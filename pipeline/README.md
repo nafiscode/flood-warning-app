@@ -7,6 +7,26 @@ uv sync                 # install dependencies
 uv run pytest           # offline tests
 ```
 
+## r2sync (large outputs to Cloudflare R2)
+
+PMTiles and COG rasters go to R2, not git. Two buckets: `jaga-tiles` (public, served to the app) and `jaga-rasters` (private). Settings are the `R2_*` values in `.env.local` (see `../SETUP.md`, "One-time: Cloudflare R2").
+
+```powershell
+uv run python -m r2sync check                                   # can we reach both buckets?
+uv run python -m r2sync push out\rp100.pmtiles --bucket public --key hazard/flood-depth-rp100/2026-10-05.pmtiles --dry-run
+uv run python -m r2sync push out\rp100.pmtiles --bucket public --key hazard/flood-depth-rp100/2026-10-05.pmtiles
+uv run python -m r2sync manifest flood-depth-rp100 hazard/flood-depth-rp100/2026-10-05.pmtiles
+uv run python -m r2sync ls --bucket public --prefix hazard/
+uv run python -m r2sync manifest --show
+```
+
+- Keys are **write-once**: `push` refuses to overwrite. Publish a new version under a new key (use the date), then point `manifest.json` at it. The app reads the manifest (cached 5 min); tile files are cached for a year.
+- Allowed prefixes: public `hazard/ extents/ stage/ assets/`; private `dem/ sar/ hazard/ extents/ stage/`.
+- Only science outputs go to R2, never user data.
+- CORS for `jaga-tiles`: `r2sync/cors-jaga-tiles.json` (paste into the bucket's CORS policy).
+
+## Data
+
 `data/` is not part of this repo: it is a clone of the private repo `nafiscode/jaga-data` (see `../SETUP.md`).
 
 ## ingest_thaiwater (S1)
