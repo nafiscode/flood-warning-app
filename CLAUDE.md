@@ -118,7 +118,9 @@ Scripts and config never use absolute paths; everything is relative to the repo.
   - Rate-limit OTP and report endpoints per device and per phone. SOS is never rejected: over the limit it merges or is flagged `suspected_spam` (safety rule 1).
   - Never put a CAPTCHA in front of SOS.
 - **Definition of done:** lint, typecheck and tests pass. Briefly report what changed, how it was tested, and anything left open.
-- **Commits:** keep them small and reviewable, one logical change each.
+- **Commits:** keep them small and reviewable, one logical change each. Commit with the owner's GitHub noreply address, never a personal email. The repo is public: no secrets, personal data or employer details in any commit.
+- **Contact:** the project email comes from `CONTACT_EMAIL` (`.env.example` / `.env.local`); never hardcode it.
+- **GitHub Actions:** default `permissions: contents: read`; jobs using secrets run only in `nafiscode/flood-warning-app`; never use `pull_request_target`; pin third-party actions to a commit SHA.
 
 ## Working with the owner
 - For each phase, read the phase prompt and the docs it names, then propose a short plan and wait for approval before large changes.
