@@ -23,3 +23,7 @@ supabase/.branches/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Local Claude Code notes and working files (handoff, progress tracker source)
+CLAUDE.local.md
+.claude/local/
