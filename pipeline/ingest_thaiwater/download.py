@@ -83,8 +83,10 @@ def _year_has_waterlevel(ctx: Ctx, sid: int, year: int) -> bool:
                    f"waterlevel_year/{sid}/{year}")
     if payload is None:
         return True
-    graph = ((payload.get("data") or {}).get("graph_data")) or []
-    return any(g.get("data") for g in graph if isinstance(g, dict))
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return True
+    return any(g.get("data") for g in data.get("graph_data") or [] if isinstance(g, dict))
 
 
 def run_waterlevel(ctx: Ctx, station_ids: list[int], deadline: Deadline) -> bool:
@@ -118,7 +120,7 @@ def run_waterlevel(ctx: Ctx, station_ids: list[int], deadline: Deadline) -> bool
                 df = tidy.waterlevel_frame(sid, payload)
                 tidy.merge_into_partitions(df, ctx.paths.tidy)
                 got = tidy.count_values(df, "water_level_msl")
-                meta = (payload.get("data") or {})
+                meta = payload.get("data") if isinstance(payload.get("data"), dict) else {}
                 if year == ctx.today.year:
                     st["meta"] = {k: meta.get(k) for k in ("min_bank", "warning_level", "critical_level", "ground_level", "qmax")}
                 prev_n = (known or {}).get("n", 0) if year == ctx.today.year else 0

@@ -1,6 +1,7 @@
 # ThaiWater (HII) archive settings. Endpoints verified 2026-09-28 (see docs/decisions.md).
 api_base: https://api-v3.thaiwater.net/api/v1/thaiwater30
-user_agent: "Jaga-flood-archive/0.1 (non-profit flood early-warning project, southern Thailand)"
+# {contact} is filled from CONTACT_EMAIL (environment, else .env.local, else .env.example at the repo root).
+user_agent: "Jaga/0.1 (non-profit flood warning; {contact})"
 
 # DOPA province codes in scope.
 provinces:

@@ -57,7 +57,8 @@ def _frame(station_id: int, variable: str, times: list, values: list) -> pd.Data
 
 
 def waterlevel_frame(station_id: int, payload: dict) -> pd.DataFrame:
-    graph = ((payload or {}).get("data") or {}).get("graph_data") or []
+    data = (payload or {}).get("data")
+    graph = (data.get("graph_data") or []) if isinstance(data, dict) else []
     times = [g.get("datetime") for g in graph]
     parts = [
         _frame(station_id, "water_level_msl", times, [g.get("value") for g in graph]),

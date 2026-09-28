@@ -23,6 +23,23 @@ def cfg():
     return load_config()
 
 
+def test_contact_email_comes_from_env_files_not_code(tmp_path, monkeypatch):
+    from ingest_thaiwater.settings import env_value
+
+    monkeypatch.delenv("CONTACT_EMAIL", raising=False)
+    (tmp_path / ".env.example").write_text("CONTACT_EMAIL=example@test\n", encoding="utf-8")
+    assert env_value("CONTACT_EMAIL", tmp_path) == "example@test"
+    (tmp_path / ".env.local").write_text("CONTACT_EMAIL=\"local@test\"\n", encoding="utf-8")
+    assert env_value("CONTACT_EMAIL", tmp_path) == "local@test"
+    monkeypatch.setenv("CONTACT_EMAIL", "env@test")
+    assert env_value("CONTACT_EMAIL", tmp_path) == "env@test"
+
+
+def test_user_agent_includes_repo_contact(cfg):
+    assert cfg["user_agent"].startswith("Jaga/0.1 (non-profit flood warning")
+    assert "{contact}" not in cfg["user_agent"]
+
+
 def test_waterlevel_frame_converts_bangkok_to_utc_and_drops_nulls():
     df = tidy.waterlevel_frame(901, fixture("waterlevel_graph.json"))
     wl = df[df["variable"] == "water_level_msl"]
@@ -99,6 +116,26 @@ def test_gap_and_season_stats():
     s = coverage.series_stats(ts)
     assert s["step_min"] == 60 and s["gaps"] == 1 and s["longest_gap_days"] == pytest.approx(2.0, abs=0.05)
     assert 95 <= s["Nov–Dec 2025"] < 100 and s["Nov–Dec 2024"] == 0
+
+
+def test_client_retries_result_no_server_errors_and_skips_other_refusals(cfg, monkeypatch):
+    import httpx
+
+    from ingest_thaiwater import client as client_mod
+
+    monkeypatch.setattr(client_mod.time, "sleep", lambda s: None)
+    replies = iter([
+        {"result": "NO", "data": "500:  Internal Database Error ...pq: out of shared memory"},
+        {"result": "OK", "data": []},
+        {"result": "NO", "data": {"RespCode": 422, "RespMessage": "limit date range"}},
+    ])
+    c = client_mod.ThaiWaterClient(cfg)
+    c._http = httpx.Client(base_url="https://example.test",
+                           transport=httpx.MockTransport(lambda req: httpx.Response(200, json=next(replies))))
+    assert c.get("/x") == {"result": "OK", "data": []}  # retried after the database error
+    with pytest.raises(client_mod.ApiError):
+        c.get("/y")  # 422 refusal: not retried
+    assert c.requests == 3
 
 
 class FakeClient:

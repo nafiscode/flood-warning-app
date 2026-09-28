@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 PIPELINE_DIR = Path(__file__).resolve().parents[1]
+REPO_DIR = PIPELINE_DIR.parent
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 
 # Asia/Bangkok has no DST, so a fixed offset avoids needing tzdata on Windows.
@@ -62,9 +63,28 @@ class Paths:
         return self.root / "logs"
 
 
+def env_value(key: str, repo_dir: Path = REPO_DIR) -> str | None:
+    """A setting from the environment, else .env.local, else .env.example (repo root)."""
+    if os.environ.get(key):
+        return os.environ[key]
+    for name in (".env.local", ".env.example"):
+        path = repo_dir / name
+        if not path.exists():
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            k, sep, v = line.strip().partition("=")
+            if sep and k.strip() == key and v.strip():
+                return v.strip().strip('"').strip("'")
+    return None
+
+
 def load_config(path: Path = CONFIG_PATH) -> dict:
     with open(path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+    contact = env_value("CONTACT_EMAIL")
+    ua = cfg["user_agent"]
+    cfg["user_agent"] = ua.format(contact=contact) if contact else ua.replace("; {contact}", "")
+    return cfg
 
 
 def today_bangkok() -> date:
