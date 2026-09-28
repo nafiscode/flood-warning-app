@@ -155,7 +155,7 @@ Read CLAUDE.md, docs/brand.md and docs/spec.md sections 10-11.
 Set up the repository:
 - Next.js App Router, TypeScript strict, Tailwind, ESLint/Prettier.
 - Tests: Vitest and Playwright.
-- Supabase CLI local project with PostGIS enabled.
+- Supabase CLI project (npx supabase) linked to the free cloud dev project jaga-dev; PostGIS enabled by the first migration. No Docker.
 - next-intl with th (default), ms and en message files and RTL-safe layout (logical CSS properties).
 - Serwist PWA and an offline app shell. Manifest per docs/brand.md: name, short_name "Jaga", theme_color #1D3B53, background_color #F0F2EE. Icons from public/icons/ (192 and 512 with purpose any; maskable-512 with purpose maskable), plus apple-touch-icon and favicon.svg/favicon-32.png in the page head.
 - .env.example (extend the existing one).
@@ -173,7 +173,7 @@ Brand setup (docs/brand.md is the source of truth; do not invent a different loo
 
 Then, before building real screens, show me ASCII wireframes of home, the SOS flow, the admin alert console and the Transparency tab using these components, and wait for my approval.
 
-Acceptance: npm run dev shows the Jaga-branded Thai home placeholder at 360 px; /dev/brand renders every variant; the contrast check passes; supabase start works; CI is green; the app installs as a PWA with the Jaga icon.
+Acceptance: npm run dev shows the Jaga-branded Thai home placeholder at 360 px; /dev/brand renders every variant; the contrast check passes; the repo is linked to jaga-dev and supabase db push works; CI is green; the app installs as a PWA with the Jaga icon.
 ```
 
 ### A1: Database schema, RLS and geography seed

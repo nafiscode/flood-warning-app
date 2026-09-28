@@ -48,10 +48,16 @@ Read the relevant doc before starting a task. Don't load all of them every time.
 ## Stack
 - **Web app:** Next.js (App Router, TypeScript strict), Tailwind CSS.
 - **PWA:** Serwist (`@serwist/next`) for the service worker, offline cache and web push.
-- **Backend:** Supabase: Postgres + PostGIS, Auth, RLS, Realtime, Storage, Edge Functions, Cron. Use the Supabase CLI for local development.
+- **Backend:** Supabase: Postgres + PostGIS, Auth, RLS, Realtime, Storage, Edge Functions, Cron. Development runs against a free Supabase cloud project (`jaga-dev`) through the Supabase CLI (`npx supabase`); no Docker or local Supabase stack. Free projects pause after ~7 days without activity: restore from Dashboard → `jaga-dev` → **Restore project** (a few minutes). After 90 days paused a project can only be downloaded as a backup, so the migrations and seed must always rebuild it from scratch.
 - **Maps:**
   - MapLibre GL JS with the OpenFreeMap basemap (no API key).
-  - PMTiles for static layers (hazard, flood extents), hosted on Supabase Storage or Cloudflare R2.
+  - PMTiles for static layers (hazard, flood extents, stage-to-extent), hosted on Cloudflare R2 and read in MapLibre through the `pmtiles://` protocol from `NEXT_PUBLIC_TILES_BASE_URL`.
+- **Large-file storage (Cloudflare R2):**
+  - `jaga-tiles` (public: `hazard/`, `extents/`, `stage/`, `assets/`, `manifest.json`) and `jaga-rasters` (private: `dem/`, `sar/`, source COGs). R2 makes a whole bucket public or private, hence two buckets.
+  - Science outputs only, never user data. SOS and report media stay in Supabase Storage behind RLS.
+  - Keys are write-once and versioned (`hazard/<layer>/<YYYY-MM-DD>.pmtiles`); `manifest.json` names the current file per layer. Upload with `pipeline/r2sync`, which refuses to overwrite.
+  - r2.dev URL for development only; `tiles.<domain>` (custom domain on Cloudflare) before launch.
+  - Plain R2 storage only. No Workers or other paid Cloudflare products without asking.
   - Never add paid map tiles.
 - **i18n:** next-intl with locales `th` (default), `ms` (Patani Malay, critical screens first) and `en` (fallback, dev and admin). Layouts must be RTL-safe in case Jawi script is chosen (use logical CSS properties).
 - **Notifications:**
@@ -62,7 +68,7 @@ Read the relevant doc before starting a task. Don't load all of them every time.
   - Authorities: phone OTP. Fallback if the SMS provider isn't ready by launch: LINE Login, with the admin verifying the POC phone by calling it during verification.
   - Admins: invite-only, by email magic link or phone OTP.
 - **SMS:** Supabase Send SMS Hook calling a provider adapter. The provider is not chosen yet, so keep the interface generic and ship a dev/console adapter.
-- **Science pipeline:** Python 3.11+ in `pipeline/` (earthengine-api, rasterio, geopandas, xarray, pysheds or WhiteboxTools, osmnx). Outputs are COG/PMTiles files plus tables loaded into Supabase.
+- **Science pipeline:** Python 3.11+ in `pipeline/` (earthengine-api, rasterio, geopandas, xarray, pysheds or WhiteboxTools, osmnx). Outputs are COG/PMTiles files (uploaded to R2 with `pipeline/r2sync`) plus tables loaded into Supabase.
 - **Hosting:** Vercel for the web app (Hobby during development, Pro before launch), Supabase Pro for the database.
 - **Attribution:** show Open-Meteo attribution wherever its data appears (free non-commercial use; owner confirming for a non-profit).
 
@@ -70,6 +76,7 @@ Read the relevant doc before starting a task. Don't load all of them every time.
 - Budget is about $45/month off-season (Supabase Pro + Vercel Pro) and at most $150/month from October to December.
 - Ask before adding any dependency or service that costs money, bills per request, or needs a new account.
 - Compress images on the client before upload: longest side 1600 px or less, JPEG/WebP quality about 0.7. Keep voice notes to 60 s or less.
+- R2 stays inside its free tier (10 GB stored, 1M writes and 10M reads a month; downloads free). Tile reads go through the custom domain's cache before launch. Warn the owner if storage passes ~7 GB.
 - Track LINE push-message usage against the monthly quota in the database. Warn admins at 70% and 90%.
 - Users poll alert status (every 5 min, or on push/app open). Realtime subscriptions are only for the authority and admin consoles.
 
@@ -90,7 +97,7 @@ tests/               unit, e2e (Playwright), rls (SQL policy tests)
 docs/                spec, science plan, prompts, decisions, runbook
 SETUP.md             setting up a fresh Windows laptop
 ```
-Scripts and config never use absolute paths; everything is relative to the repo.
+Scripts and config never use absolute paths or drive letters; everything is relative to the repo. (The owner's personal laptop keeps the repo on `D:\jaga` because C: is nearly full; tool caches live in `D:\cache`, see SETUP.md.)
 
 ## Conventions
 - **Database changes:** always via SQL migrations. Enable RLS on every table. Write policy tests in `tests/rls/` for every role.
@@ -130,8 +137,11 @@ Scripts and config never use absolute paths; everything is relative to the repo.
 
 ## Commands (keep updated)
 - `npm run dev`: web app
-- `supabase start` / `supabase db reset`: local database with migrations and seed
+- `npx supabase link --project-ref <SUPABASE_PROJECT_REF>`: connect the repo to `jaga-dev` (once per machine; asks for the database password)
+- `npx supabase db push`: apply new migrations to `jaga-dev`
+- `npx supabase db reset --linked`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
 - `npm run test:rls`: SQL policy tests
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests
 - `cd pipeline && uv run python -m ingest_thaiwater refresh`: refresh the ThaiWater archive in `pipeline/data/` (also `waterlevel`, `rain-daily`, `rain-hourly`, `backfill`, `coverage`, `snapshot`)
+- `cd pipeline && uv run python -m r2sync check`: test the R2 connection; also `push`, `ls`, `manifest` (see `pipeline/README.md`)
