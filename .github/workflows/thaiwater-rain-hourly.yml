@@ -1,0 +1,33 @@
+name: ThaiWater hourly rain
+
+# ThaiWater keeps hourly rain for only ~42 h. Every 12 h leaves 30 h of margin for a failed run.
+on:
+  schedule:
+    - cron: "17 */12 * * *"
+  workflow_dispatch:
+
+# Read-only token by default. The data push uses JAGA_DATA_TOKEN, scoped to jaga-data only.
+permissions:
+  contents: read
+
+concurrency:
+  group: jaga-data
+  cancel-in-progress: false
+
+jobs:
+  rain-hourly:
+    # Only in the main repo: never in forks, which have no access to the data token.
+    if: github.repository == 'nafiscode/flood-warning-app'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/thaiwater-setup
+        with:
+          data-token: ${{ secrets.JAGA_DATA_TOKEN }}
+      - name: Collect hourly rain
+        working-directory: pipeline
+        run: uv run python -m ingest_thaiwater rain-hourly
+      - name: Push to jaga-data
+        if: always()
+        run: bash .github/actions/thaiwater-setup/push.sh "Hourly rain $(date -u +%Y-%m-%dT%H:%MZ)"

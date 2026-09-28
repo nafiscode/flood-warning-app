@@ -1,0 +1,27 @@
+name: Pipeline tests
+
+on:
+  push:
+    paths: ["pipeline/**", ".github/workflows/pipeline-tests.yml"]
+  pull_request:
+    paths: ["pipeline/**"]
+
+# Runs on pull requests from forks too: no secrets are used, and the token is read-only.
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: pipeline/uv.lock
+      - run: uv sync --frozen
+      - run: uv run pytest -q

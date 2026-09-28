@@ -145,7 +145,7 @@ Existing open projects that already call the ThaiWater API are useful references
 
 ## 5. Urgent this week
 
-1. Archive ThaiWater history for every station in the four provinces (done 28 Sep 2026: collectors in the public repo nafiscode/jaga-collectors, data in `pipeline/data/` = the private repo nafiscode/jaga-data). The 365-day limit turned out to be per request, not total, so all water-level years are archived. Scheduled jobs: weekly refresh, hourly rain every 12 h, and a daily-rain backfill to Oct 2017.
+1. Archive ThaiWater history for every station in the four provinces (done 28 Sep 2026: `pipeline/ingest_thaiwater`, data in `pipeline/data/` = the private repo nafiscode/jaga-data). The 365-day limit turned out to be per request, not total, so all water-level years are archived. Scheduled jobs: weekly refresh, hourly rain every 12 h, and a daily-rain backfill to Oct 2017.
 2. Fill in `event_timeline.csv` for the 2024 and 2025 events while memories and news links are fresh.
 3. Recruit field volunteers for the safe-place checks and brief them on the field sheet.
 

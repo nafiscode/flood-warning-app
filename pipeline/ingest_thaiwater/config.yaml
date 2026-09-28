@@ -1,0 +1,29 @@
+# ThaiWater (HII) archive settings. Endpoints verified 2026-09-28 (see docs/decisions.md).
+api_base: https://api-v3.thaiwater.net/api/v1/thaiwater30
+# {contact} is filled from CONTACT_EMAIL (environment, else .env.local, else .env.example at the repo root).
+user_agent: "Jaga/0.1 (non-profit flood warning; {contact})"
+
+# DOPA province codes in scope.
+provinces:
+  "90": Songkhla
+  "94": Pattani
+  "95": Yala
+  "96": Narathiwat
+
+# Loose box around the four provinces [min_lon, min_lat, max_lon, max_lat].
+# Stations must match a province code AND fall inside the box (or have no coordinates).
+bbox: [99.9, 5.5, 102.3, 8.0]
+
+http:
+  min_interval_seconds: 1.0   # polite: at most one request per second
+  timeout_seconds: 120        # the station lists are large
+  retries: 5
+  blocked_after_failures: 10  # consecutive failed requests => treat as blocked, exit code 2
+
+waterlevel:
+  floor_year: 2008            # walk back one calendar year at a time, never before this
+  stop_after_empty_years: 3   # stop walking back after this many consecutive empty years
+
+rain_daily:
+  default_since: "2023-10-01" # regular runs
+  backfill_since: "2017-10-01" # time-boxed backfill target (SAR era, matches the hindcast window)

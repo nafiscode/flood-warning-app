@@ -1,0 +1,5 @@
+{"result":"OK","data":[
+ {"rainfall_datetime":"2025-11-01","rainfall_value":null},
+ {"rainfall_datetime":"2025-11-02","rainfall_value":0},
+ {"rainfall_datetime":"2025-11-03","rainfall_value":84.5}
+]}

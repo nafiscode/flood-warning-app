@@ -28,11 +28,19 @@ The full list is in [CLAUDE.md](CLAUDE.md); the functional spec is in [docs/spec
 | `docs/` | Functional spec, science plan, brand guide, build plan and decision log |
 | `pipeline/` | Python science pipeline (gauge archive, flood mapping, safe-place ranking, thresholds) |
 | `public/brand/`, `public/icons/` | Logo and app icons (not covered by the code license, see below) |
-The web app (Next.js + Supabase) is being added in phases; see [docs/prompts.md](docs/prompts.md). The gauge data archive is kept in a separate private repository (`nafiscode/jaga-data`), filled by scheduled collectors in the public repo [nafiscode/jaga-collectors](https://github.com/nafiscode/jaga-collectors).
+| `.github/workflows/` | Tests and scheduled data collection |
+
+The web app (Next.js + Supabase) is being added in phases; see [docs/prompts.md](docs/prompts.md). The gauge data archive is kept in a separate private repository.
 
 ## Getting started
 
-See [SETUP.md](SETUP.md) for a fresh Windows machine.
+See [SETUP.md](SETUP.md) for a fresh Windows machine. For the pipeline alone:
+
+```powershell
+cd pipeline
+uv sync
+uv run pytest
+```
 
 ## Data sources
 
