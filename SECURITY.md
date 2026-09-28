@@ -4,7 +4,10 @@ Jaga handles emergency requests, exact locations and phone numbers of people in 
 
 ## Reporting a vulnerability
 
-Report it privately by email: **jagaapp.th@gmail.com**. Please don't post details in issues or chat groups.
+**Please don't open a public issue.** Report it privately instead:
+
+- Email: **jagaapp.th@gmail.com**
+- Or use GitHub's private reporting: the **Security** tab of this repository → **Report a vulnerability**.
 
 Please include:
 - what the problem is and where (file, endpoint or page),

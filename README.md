@@ -48,11 +48,15 @@ Gauge and rain data: ThaiWater public API, Hydro-Informatics Institute (HII), Th
 
 ## License
 
-This repository is private and not yet licensed for reuse. All rights reserved. The Jaga name, the **จากา** wordmark and the logo files in `public/brand/` and `public/icons/` belong to the project.
+The code and documentation are licensed under the [Apache License 2.0](LICENSE). See also [NOTICE](NOTICE).
+
+### Name and logo
+
+The Apache License covers the code, not the brand. The **Jaga** name, the **จากา** wordmark, and the logo and icon files in `public/brand/` and `public/icons/` are not licensed for reuse. If you fork this project to run your own service, please use a different name and logo so people are never confused about who is issuing an alert.
 
 ## Security
 
-See [SECURITY.md](SECURITY.md).
+Please don't report vulnerabilities in public issues. See [SECURITY.md](SECURITY.md).
 
 ## Contact
 
