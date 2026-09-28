@@ -38,6 +38,7 @@ Ready-made PNGs are in `public/icons/`:
 **Don'ts:**
 - Don't recolor the logo in any alert color, and don't place it on an alert-colored background.
 - Don't animate it as blinking or "watching" (no eyelashes, no pupil tracking).
+- Don't use eye icons anywhere else in the UI; the eye belongs to the logo only.
 - Don't use eye or monitoring language about people ("we are watching you"). The copy is about care and looking out for each other.
 - Don't distort it or add effects (shadows, gradients, glows).
 
@@ -56,7 +57,7 @@ Implement these as CSS variables and a Tailwind theme. The brand colors must nev
 | `--jaga-text-2` | #4A5E68 | Secondary text (passes on ground and surface) |
 | `--jaga-line` | #D5DCD8 | Dividers, input borders |
 
-**Alert and status palette.** A0 may adjust these for contrast but must keep each hue. Each level is always shown with its icon and label as well.
+**Alert and status palette: five levels + stale marker.** A0 may adjust these for contrast but must keep each hue. Each level is always shown with its icon and label as well.
 
 | Token | Hex | Text on it | Level |
 |---|---|---|---|
@@ -65,8 +66,22 @@ Implement these as CSS variables and a Tailwind theme. The brand colors must nev
 | `--alert-warning` | #F07F1A | #1A1A1A | เตือนภัย / Warning |
 | `--alert-evacuate` | #C62828 | white | อพยพ / Evacuate |
 | `--alert-return` | #1F6FD1 | white | กลับบ้านได้ / Safe to return |
-| `--alert-stale` | #6B7780 | white | ไม่ได้อัปเดต / Not updated |
+| `--alert-stale` | #6B7780 | white | ไม่ได้อัปเดต / Not updated (marker, not a level) |
 | `--sos` | #C62828 | white | SOS button (always paired with the SOS label and icon) |
+
+**Stale is a marker, not a sixth level.** When an alert passes its next-update time, its level badge stays as it is and a grey "not updated since [time]" marker (`--alert-stale`) is added beside it. Never replace or downgrade the level.
+
+**Level icons:**
+| Level | Icon |
+|---|---|
+| Normal | check |
+| Watch | backpack (get your go-bag ready) |
+| Warning | triangle |
+| Evacuate | running person |
+| Safe to return | house |
+| Stale marker | clock |
+
+No eye icons anywhere in the UI. The eye appears only in the logo.
 
 The MVP ships a light theme only, because it is more readable outdoors in bright sun. Dark mode comes later.
 

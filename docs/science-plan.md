@@ -19,7 +19,7 @@ Three drivers combine:
 
 ## 2. Open data sources
 
-Verify each ID and endpoint before use. Record anything that changes in `docs/decisions.md`.
+Verify each ID and endpoint before use. Record anything that changes in `docs/decisions.md`. All pipeline data lives in `pipeline/data/`.
 
 | Dataset | Source / ID | Use |
 |---|---|---|
@@ -31,11 +31,11 @@ Verify each ID and endpoint before use. Record anything that changes in `docs/de
 | ESA WorldCover 10 m | GEE `ESA/WorldCover/v200` | Land cover, urban masks |
 | GSMaP (hourly) | GEE `JAXA/GPM_L3/GSMaP/v8/operational` | Observed rain, hindcast |
 | IMERG (30-min) | GEE `NASA/GPM_L3/IMERG_V07` | Observed rain, cross-check |
-| ThaiWater (HII) public API | No key needed | Gauge levels and rain telemetry, live and history |
+| ThaiWater (HII) public API | No key needed | Gauge levels and rain telemetry, live and history. Water level: 365 days per request, older years reachable (archived by S1). Daily rain: 31-day windows. Hourly rain: last ~42 h only, collected every 6 h from 28 Sep 2026. |
 | Open-Meteo Forecast / Ensemble | Free non-commercial API | ECMWF IFS and GFS rain forecasts |
 | Open-Meteo Flood API (GloFAS) | Free non-commercial API | Discharge forecast and historical |
-| Open-Meteo Marine API | Verify sea-level/tide variable availability | Tide and sea level at river mouths |
-| Malaysia JPS publicinfobanjir | Check terms before scraping | Kolok and Kelantan-side gauges |
+| Open-Meteo Marine API | Verify sea-level/tide variable availability | Tide and sea level at river mouths (backup; ThaiWater tide/storm-surge data evaluated first in A8) |
+| Malaysia JPS publicinfobanjir | Terms unclear ("All Rights Reserved", no reuse licence); not scraped until JPS/DID grants permission | Kolok and Kelantan-side gauges (e.g. Rantau Panjang 0740121WL) |
 | OpenStreetMap | Geofabrik / osmnx | Roads, POIs, candidate safe places |
 | Google Open Buildings | GEE `GOOGLE/Research/open-buildings/v3/polygons` | Exposure, village clusters |
 | Admin boundaries | HDX COD-AB Thailand (ADM1–3) | Provinces, districts, tambons |
@@ -106,7 +106,7 @@ Existing open projects that already call the ThaiWater API are useful references
    - GloFAS discharge and its return-period exceedance
    - tide and onshore-wind proxy at the river mouth
    - Bang Lang release, if it can be obtained
-3. **Hindcast the 2024 and 2025 events.**
+3. **Hindcast the 2024 and 2025 events.** Gauges come from the S1 archive (ThaiWater water level reaches back years, so 2024 is covered where stations reported). Hourly rain before 28 Sep 2026 comes from GSMaP/IMERG.
    - Build an event timeline per zone (`pipeline/data/event_timeline.csv`, filled by the owner from news, social media and memory), recording when each district flooded, the peak, and when water receded.
    - Refine the timing with SAR scenes and gauge exceedance times.
    - Record each signal's value at T−72, −48, −24, −12 and −6 h before flood onset.
@@ -145,7 +145,7 @@ Existing open projects that already call the ThaiWater API are useful references
 
 ## 5. Urgent this week
 
-1. Archive ThaiWater hourly history for every station in the four provinces. History reportedly covers only about 365 days, and November 2025 will start dropping out in about six weeks. Re-run weekly.
+1. Archive ThaiWater history for every station in the four provinces (done 28 Sep 2026: `pipeline/ingest_thaiwater`, data in `pipeline/data/` = the private repo nafiscode/jaga-data). The 365-day limit turned out to be per request, not total, so all water-level years are archived. Scheduled jobs: weekly refresh, hourly rain every 6 h, and a daily-rain backfill to Oct 2017.
 2. Fill in `event_timeline.csv` for the 2024 and 2025 events while memories and news links are fresh.
 3. Recruit field volunteers for the safe-place checks and brief them on the field sheet.
 

@@ -1,4 +1,4 @@
-# Jaga (จากา): functional specification, v0.1 (28 September 2026)
+# Jaga (จากา): functional specification, v0.2 (28 September 2026)
 
 Status: MVP for the 2026 flood season. Target go-live is 25 October 2026.
 Open items are listed in section 14. Claude Code must ask before resolving any of them on its own.
@@ -43,6 +43,7 @@ It lets government and volunteer responders coordinate rescues without duplicati
 ## 2. Coverage and warning zones
 
 - **Admin hierarchy:** province (changwat) → district (amphoe) → subdistrict (tambon), identified by DOPA codes.
+- **Provinces:** all 77 are seeded. Pattani, Yala, Narathiwat and Songkhla are `active`; the rest are `coming_soon`. The province selector shows coming-soon provinces disabled, with "Jaga doesn't cover this province yet. In an emergency call 1784 or 1669." It never shows them as safe (same rule as placeholder hazards, section 13).
 - **Alerts** are issued per tambon.
 - **Warning zones** are groups of tambons along a river reach, used for the signal dashboard and thresholds. The first priority zones are:
   - Pattani River: Bang Lang Dam → Yala city → Pattani
@@ -55,9 +56,9 @@ It lets government and volunteer responders coordinate rescues without duplicati
 
 | Role | How to join | Sign-in | Summary |
 |---|---|---|---|
-| Visitor | No account | None | View map, alerts, safe places, hotlines. Can send SOS with a typed phone number. |
+| Visitor | No account | None | View map, alerts, safe places, hotlines. Can send SOS; the phone number is optional. |
 | User | Self sign-up | LINE Login or phone OTP (equal options) | Everything a visitor can do, plus home and saved places, household profile, reports, SOS with status, alert notifications. |
-| Authority | Self-registration, then admin verification | Phone OTP | Case board for their coverage area, claim and rescue workflow, contact requesters, hero score. |
+| Authority | Self-registration, then admin verification | Phone OTP (LINE Login as fallback, see below) | Case board for their coverage area, claim and rescue workflow, contact requesters, hero score. |
 | Admin | Invitation by super admin | Email magic link or phone OTP | Monitor, issue alerts, verify authorities, escalate and assign SOS, moderate, export. |
 | Super admin | The owner | Email magic link | Everything an admin can do, plus manage admins and system settings. |
 
@@ -79,6 +80,8 @@ It lets government and volunteer responders coordinate rescues without duplicati
 - **Capabilities** (multi-select): coordination, rescue, planning, support.
 - **Same team, different areas:** register separately under the same organization name with a different POC phone.
 - **Status:** `pending` → `verified` → `suspended`. Unverified authorities cannot see personal data.
+- **Sign-in fallback:** if the SMS provider is not ready by launch, authorities can also sign in with LINE Login. The admin then verifies the POC phone by calling it during verification.
+- **Public contact:** the organization's official phone is shown publicly only if the organization opts in (`public_contact_opt_in`, default off).
 
 ## 4. User features
 
@@ -108,6 +111,8 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 - Flood (river and coastal): active.
 - Flash flood, landslide, fire, earthquake: "coming soon" placeholders (section 13).
 - A placeholder never looks like "no risk". It states that forecasts for this hazard aren't available yet and that this does not mean there is no risk, then points to SOS and the right hotline.
+
+**Province selector:** the four active provinces are selectable; the other 73 are listed disabled as "coming soon" (section 2).
 
 **Layers:**
 - tambon alert status
@@ -160,7 +165,8 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 ### 4.6 SOS
 **Sending:**
 - SOS button → one confirmation screen → sent. That is two taps at most from home.
-- Location is sent immediately. Anonymous visitors enter a phone number on the confirmation screen.
+- Location is sent immediately. It is the only required field.
+- Anonymous visitors see a prominent, optional phone field on the confirmation screen, with the hint "Without a number, rescuers can't call you." Sending never waits for it.
 
 **Optional details** (after sending, not before):
 - what's happening: flood, flash flood, landslide, fire, earthquake/building damage, other, or not sure. Never pre-selected and never required. Defaults to "not sure".
@@ -184,7 +190,10 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 - Show one-tap calls to 1784 and 1669.
 
 **System handling:**
+- **Never rejected.** Rate limits never block or delay an SOS.
+- **Repeat SOS:** while a case is open, a new SOS from the same device or phone is merged into that case as an update (new location, details, timeline entry), not a new case.
 - **Duplicates:** same phone, or within 300 m and 2 hours, gets flagged as a possible duplicate. Admins merge. Never auto-drop.
+- **Suspected spam:** above a threshold (per device and per phone, configurable), new cases are still created and delivered but flagged `suspected_spam`. Authorities see the flag; admins review and can bulk-dismiss.
 - **Priority score:** computed from vulnerable flags, water depth, number of people, and time waiting.
 
 ### 4.7 Household and vulnerability pre-registration (optional)
@@ -210,7 +219,8 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 
 ### 5.1 Case board
 - Shows the SOS cases in the authority's coverage area, as a list and a map. Sorted by priority, then waiting time.
-- Filters: status, tambon, vulnerable flags.
+- Filters: status, tambon, vulnerable flags, suspected spam.
+- Cases flagged as suspected spam show the flag; they are never hidden from authorities.
 - Shows which unit has claimed each case.
 - Updates in real time.
 
@@ -225,6 +235,7 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 
 ### 5.3 Contacting the requester
 - A "Show phone" button reveals the number and writes to the audit log. A tap-to-call link follows.
+- Authorities can also reveal other units' POC phones within shared coverage, for coordination. Each reveal is logged.
 - LINE users can also be messaged through the Official Account.
 
 ### 5.4 Completion and confirmation
@@ -284,6 +295,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 - Shows all cases. A case unclaimed for more than 15 minutes (configurable) is highlighted.
 - Admins can assign or escalate a case to a unit, which notifies that unit by push and LINE.
 - Admins can merge duplicates and see the full case history.
+- Admins review cases flagged as suspected spam and can bulk-dismiss them (logged, reversible).
 
 ### 6.5 Other admin tools
 - **Moderation:** approve or hide report photos for public view.
@@ -297,7 +309,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 | Code | Thai | English | Color / icon | What the user should do |
 |---|---|---|---|---|
 | `normal` | ปกติ | Normal | green / check | Nothing now. Know your safe places. |
-| `watch` | เฝ้าระวัง | Watch | yellow / eye | Charge phones, pack documents and medicine, plan your route, and check on vulnerable neighbours. |
+| `watch` | เฝ้าระวัง | Watch | yellow / backpack | Charge phones, pack documents and medicine, plan your route, and check on vulnerable neighbours. |
 | `warning` | เตือนภัย | Warning | orange / triangle | Flooding is likely here within about 24–48 h. Move vulnerable people and cars to safe places now. |
 | `evacuate` | อพยพ | Evacuate | red / running person | Flooding is imminent or has started. Go to your safe place now. Use SOS if you are trapped. |
 | `return` | กลับบ้านได้ | Safe to return | blue / house | Water has receded in this area. Return carefully and watch for damaged roads and electrical hazards. |
@@ -305,7 +317,8 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 - The Malay (`ms`) labels and actions come from the owner (open item). The action checklists live in `messages/*.json`.
 - The five levels are shared across hazards. Every alert carries a `hazard_type`, and action checklists are written per hazard and level. In the MVP only flood checklists exist and only flood alerts can be issued.
 - A tambon with no active alert shows `normal`.
-- An alert past `next_update_at` shows as "not updated since [time]". It is not hidden and it is not auto-downgraded.
+- An alert past `next_update_at` keeps its level badge and gets a grey "not updated since [time]" marker. Stale is a marker, not a level: five levels + stale marker. The alert is not hidden and not auto-downgraded.
+- No eye icons anywhere in the UI except the logo.
 
 ## 8. Data model (initial)
 
@@ -320,6 +333,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 
 ### Geography
 - `provinces`, `districts`, `tambons`: DOPA code, Thai name, English name, geometry (with a simplified web version).
+  - `provinces.status`: `active` / `coming_soon` (all 77 seeded; 4 active). Districts and tambons are seeded for the active provinces.
 - `warning_zones`: name, basin, `hazard_type`, geometry.
 - `warning_zone_tambons`: links zones to tambons.
 
@@ -338,7 +352,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
   - `consent_at`, `updated_at`
 
 ### Authorities
-- `organizations`: `name`, `type`, `official_phone`.
+- `organizations`: `name`, `type`, `official_phone`, `public_contact_opt_in` (default false).
 - `authority_units`:
   - `org_id`, `unit_name`, `poc_name`, `poc_phone`, `user_id`
   - `capabilities` (enum array)
@@ -368,6 +382,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
   - `people_count`, `vulnerable_flags`, `depth_ref`, `injuries`
   - `voice_url`, `photos[]`, `text`, `battery_pct`
   - `status`, `priority_score`, `duplicate_of`
+  - `device_id`, `suspected_spam` (default false), `spam_dismissed_by`, `spam_dismissed_at`
   - `created_at`, `last_location_at`
 - `sos_locations`: location history.
 - `sos_claims`: `sos_id`, `unit_id`, `claimed_at`, `released_at`, `release_reason`. Unique active claim per SOS.
@@ -397,6 +412,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 - `handover_notes`: shift log entries.
 
 ### Donations, transparency and admin stipends
+These tables are created in phase A11 only, not with the initial schema.
 - `donation_settings`: single row.
   - `enabled` (feature flag)
   - `receiving_entity_type` (`personal` for now; `foundation` later)
@@ -427,9 +443,11 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 | Report counts (hex) and moderated photos | read | read | read | read |
 | Exact report location and reporter | none | own | read | read |
 | SOS exact location, details, phone | none | own | read (phone reveal logged) | read (logged) |
-| Households and vulnerable data | none | own (read/write/delete) | read if rescue or coordination capability (logged) | read (logged) |
-| Authority POC phones | none | none | read (same coverage) | read |
-| Authority org name and official phone | read, only if the org opts in | same | read | read |
+| SOS suspected-spam flag | none | none | read | read/write (bulk dismiss, logged) |
+| Households and vulnerable data | none | own (read/write/delete) | read only with rescue or coordination capability (logged) | read (logged) |
+| Authority POC phones | none | none | read within shared coverage (each reveal logged) | read (logged) |
+| Authority org name and official phone | read only if `public_contact_opt_in` | same | read | read |
+| Any personal phone number | never | own | as above, logged | as above, logged |
 | Coverage / responsibility map | none | none | read | read |
 | Audit log | none | none | none | read |
 | Monthly finance summary, opted-in donor wall | read | read | read | read |
@@ -461,6 +479,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
   - Android Chrome, recent versions.
   - iOS Safari 16.4 or later for push.
   - The core functions work without push.
+- **Attribution:** show Open-Meteo attribution wherever its data appears.
 - **Offline:** app shell, the last-known alert status of home and saved tambons, top-3 safe places, hotlines, the SOS and report queue, and basemap tiles around home (small, bounded area).
 
 ## 11. Design direction
@@ -575,7 +594,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 
 1. Script for Patani Malay: Rumi (Latin), Jawi (Arabic script, RTL), or Thai-script Malay.
 2. The project SOS phone line for SMS and call fallback, and who staffs it.
-3. SMS provider (a Thai local provider is preferred for cost).
+3. SMS provider (a Thai local provider is preferred for cost). The owner chooses this week. Decided fallback: LINE Login for authorities, with the POC phone verified by an admin call.
 4. Hero score weights, and whether the leaderboard is public.
 5. Retention periods (section 9).
 6. Decided: the app is named Jaga (จากา). Still open: confirm the Thai spelling, the trademark and app-store search, and the domain (see docs/brand.md).
@@ -586,3 +605,5 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 11. Test the Jaga eye mark with residents from both communities, including elderly people. If it reads as surveillance, apply the softening in docs/brand.md.
 12. Which hazard to add after flood, and when (a 2027 decision).
 13. Whether the Transparency tab should appear before donations are switched on, showing only running costs paid by the founder.
+
+Decided on 28 September 2026 (details in docs/decisions.md): SOS phone optional; SOS never rejected (merge + suspected-spam flag); phone privacy and org opt-in; household access by capability; stale marker; no eye icons; 77 provinces seeded; tide source chosen in A8; budget about $45/month off-season.
