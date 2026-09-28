@@ -1,0 +1,25 @@
+# Data archive: a separate clone of nafiscode/jaga-data (see SETUP.md)
+pipeline/data/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Env and secrets
+.env*.local
+.env
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# OS / editor
+.DS_Store
+Thumbs.db
