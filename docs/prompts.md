@@ -28,9 +28,9 @@ Read CLAUDE.md and docs/science-plan.md (sections 2 and 5).
 
 Goal: archive all available ThaiWater (HII) public-API gauge history for Pattani, Yala, Narathiwat and Songkhla before older data expires.
 
-Build in pipeline/ingest_thaiwater/:
+Build in pipeline/ingest_thaiwater/ (since moved to the public repo nafiscode/jaga-collectors):
 1. A script that lists every ThaiWater station (water level and rainfall) inside the four provinces. Use a province bounding box plus the station's province field (tambon boundaries arrive in A1). Save station metadata to pipeline/data/stations.csv: code, agency, name, lat/lon, basin, bank-full/warning/critical levels if provided.
-2. A downloader that fetches all available history per station and variable. Water level is limited to 365 days per request but older years are reachable: archive all years. Hourly rain has no history (last ~42 h only): collect it every 6 h from now on. Daily rain: from Oct 2023 now, backfilled to Oct 2017 by a time-boxed scheduled job. Save raw JSON under pipeline/data/raw/ and tidy Parquet under pipeline/data/tidy/.
+2. A downloader that fetches all available history per station and variable. Water level is limited to 365 days per request but older years are reachable: archive all years. Hourly rain has no history (last ~42 h only): collect it every 12 h from now on. Daily rain: from Oct 2023 now, backfilled to Oct 2017 by a time-boxed scheduled job. Save raw JSON under pipeline/data/raw/ and tidy Parquet under pipeline/data/tidy/.
 3. Make it idempotent and resumable, with polite rate limiting, retries and logging.
 4. A coverage report (markdown): per station, the first and last timestamp, gaps, and whether Nov–Dec 2025 is covered.
 
@@ -38,7 +38,7 @@ Use the public endpoints. The open projects github.com/bejranonda/flood2026 and 
 
 Separately, check the terms and robots.txt of Malaysia's publicinfobanjir for Kolok/Kelantan gauges. If scraping is allowed, add a similar downloader; if unclear, stop and tell me.
 
-pipeline/data/ is a clone of the private repo nafiscode/jaga-data. After the first run, make a zipped snapshot and attach it to a jaga-data release. Scheduled GitHub Actions (weekly refresh, 6-hourly rain, daily backfill) push to jaga-data; fall back to Windows Task Scheduler if ThaiWater blocks GitHub's servers.
+pipeline/data/ is a clone of the private repo nafiscode/jaga-data. After the first run, make a zipped snapshot and attach it to a jaga-data release. Scheduled GitHub Actions in nafiscode/jaga-collectors (weekly refresh, 12-hourly rain, daily backfill) push to jaga-data; fall back to Windows Task Scheduler if ThaiWater blocks GitHub's servers.
 
 Acceptance: I can run one command to refresh the archive; the coverage report shows Nov–Dec 2025 for the available stations; the scheduled jobs push to jaga-data.
 ```

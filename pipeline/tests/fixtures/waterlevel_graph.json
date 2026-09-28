@@ -1,6 +1,0 @@
-{"result":"OK","data":{"graph_data":[
- {"datetime":"2025-11-20 00:00","value":12.28,"value_out":null,"discharge":null},
- {"datetime":"2025-11-20 00:10","value":12.29,"value_out":null,"discharge":35.5},
- {"datetime":"2025-11-20 00:20","value":null,"value_out":null,"discharge":null},
- {"datetime":"2025-11-20 00:30","value":"12.31","value_out":null,"discharge":null}
-],"min_bank":13.85,"warning_level":null,"critical_level":null,"ground_level":1.74,"qmax":null}}

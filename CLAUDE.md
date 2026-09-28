@@ -86,6 +86,7 @@ supabase/functions   Edge Functions (ingestion, notifications, LINE webhook, SMS
 supabase/seed        seed data (admin boundaries, hotlines, templates)
 pipeline/            Python science pipeline (see docs/science-plan.md)
 pipeline/data/       gitignored here; a clone of the private repo nafiscode/jaga-data (see SETUP.md)
+                     (filled by the public repo nafiscode/jaga-collectors)
 tests/               unit, e2e (Playwright), rls (SQL policy tests)
 docs/                spec, science plan, prompts, decisions, runbook
 SETUP.md             setting up a fresh Windows laptop
@@ -120,7 +121,7 @@ Scripts and config never use absolute paths; everything is relative to the repo.
 - **Definition of done:** lint, typecheck and tests pass. Briefly report what changed, how it was tested, and anything left open.
 - **Commits:** keep them small and reviewable, one logical change each. Commit with the owner's GitHub noreply address, never a personal email. The repo is private but may go public later: no secrets, personal data or employer details in any commit.
 - **Contact:** the project email comes from `CONTACT_EMAIL` (`.env.example` / `.env.local`); never hardcode it.
-- **GitHub Actions:** default `permissions: contents: read`; jobs using secrets run only in `nafiscode/flood-warning-app`; never use `pull_request_target`; pin third-party actions to a commit SHA.
+- **GitHub Actions:** default `permissions: contents: read`; jobs using secrets run only in their own repo (never in forks); never use `pull_request_target`; pin third-party actions to a commit SHA.
 
 ## Working with the owner
 - For each phase, read the phase prompt and the docs it names, then propose a short plan and wait for approval before large changes.
@@ -134,4 +135,4 @@ Scripts and config never use absolute paths; everything is relative to the repo.
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
 - `npm run test:rls`: SQL policy tests
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests
-- `cd pipeline && uv run python -m ingest_thaiwater refresh`: refresh the ThaiWater archive in `pipeline/data/` (also `waterlevel`, `rain-daily`, `rain-hourly`, `backfill`, `coverage`, `snapshot`)
+- ThaiWater archive (S1): the collectors live in the public repo `nafiscode/jaga-collectors` and write to `nafiscode/jaga-data`; see its README. Here, `git -C pipeline/data pull` gets the latest data.

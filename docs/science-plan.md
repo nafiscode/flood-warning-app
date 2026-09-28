@@ -31,7 +31,7 @@ Verify each ID and endpoint before use. Record anything that changes in `docs/de
 | ESA WorldCover 10 m | GEE `ESA/WorldCover/v200` | Land cover, urban masks |
 | GSMaP (hourly) | GEE `JAXA/GPM_L3/GSMaP/v8/operational` | Observed rain, hindcast |
 | IMERG (30-min) | GEE `NASA/GPM_L3/IMERG_V07` | Observed rain, cross-check |
-| ThaiWater (HII) public API | No key needed | Gauge levels and rain telemetry, live and history. Water level: 365 days per request, older years reachable (archived by S1). Daily rain: 31-day windows. Hourly rain: last ~42 h only, collected every 6 h from 28 Sep 2026. |
+| ThaiWater (HII) public API | No key needed | Gauge levels and rain telemetry, live and history. Water level: 365 days per request, older years reachable (archived by S1). Daily rain: 31-day windows. Hourly rain: last ~42 h only, collected every 12 h from 28 Sep 2026. |
 | Open-Meteo Forecast / Ensemble | Free non-commercial API | ECMWF IFS and GFS rain forecasts |
 | Open-Meteo Flood API (GloFAS) | Free non-commercial API | Discharge forecast and historical |
 | Open-Meteo Marine API | Verify sea-level/tide variable availability | Tide and sea level at river mouths (backup; ThaiWater tide/storm-surge data evaluated first in A8) |
@@ -145,7 +145,7 @@ Existing open projects that already call the ThaiWater API are useful references
 
 ## 5. Urgent this week
 
-1. Archive ThaiWater history for every station in the four provinces (done 28 Sep 2026: `pipeline/ingest_thaiwater`, data in `pipeline/data/` = the private repo nafiscode/jaga-data). The 365-day limit turned out to be per request, not total, so all water-level years are archived. Scheduled jobs: weekly refresh, hourly rain every 6 h, and a daily-rain backfill to Oct 2017.
+1. Archive ThaiWater history for every station in the four provinces (done 28 Sep 2026: collectors in the public repo nafiscode/jaga-collectors, data in `pipeline/data/` = the private repo nafiscode/jaga-data). The 365-day limit turned out to be per request, not total, so all water-level years are archived. Scheduled jobs: weekly refresh, hourly rain every 12 h, and a daily-rain backfill to Oct 2017.
 2. Fill in `event_timeline.csv` for the 2024 and 2025 events while memories and news links are fresh.
 3. Recruit field volunteers for the safe-place checks and brief them on the field sheet.
 
