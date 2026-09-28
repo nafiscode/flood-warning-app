@@ -1,0 +1,24 @@
+name: ThaiWater archive setup
+description: Check out jaga-data into pipeline/data and install the pipeline with uv.
+inputs:
+  data-token:
+    description: Fine-grained token with contents read/write on nafiscode/jaga-data
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Check out jaga-data into pipeline/data
+      uses: actions/checkout@v4
+      with:
+        repository: nafiscode/jaga-data
+        token: ${{ inputs.data-token }}
+        path: pipeline/data
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        cache-dependency-glob: pipeline/uv.lock
+    - name: Install pipeline dependencies
+      shell: bash
+      working-directory: pipeline
+      run: uv sync --frozen

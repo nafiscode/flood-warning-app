@@ -1,0 +1,28 @@
+name: ThaiWater daily-rain backfill
+
+# Backfills daily rain to the target in config.yaml (Oct 2017), 5 hours per run.
+# Once the backfill is complete, each run exits within a minute.
+on:
+  schedule:
+    - cron: "40 22 * * *" # 05:40 Bangkok
+  workflow_dispatch:
+
+concurrency:
+  group: jaga-data
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/thaiwater-setup
+        with:
+          data-token: ${{ secrets.JAGA_DATA_TOKEN }}
+      - name: Backfill daily rain (time-boxed)
+        working-directory: pipeline
+        run: uv run python -m ingest_thaiwater backfill --max-minutes 300
+      - name: Push to jaga-data
+        if: always()
+        run: bash .github/actions/thaiwater-setup/push.sh "Daily-rain backfill $(date -u +%Y-%m-%d)"

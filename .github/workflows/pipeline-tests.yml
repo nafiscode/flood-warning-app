@@ -1,0 +1,23 @@
+name: Pipeline tests
+
+on:
+  push:
+    paths: ["pipeline/**", ".github/workflows/pipeline-tests.yml"]
+  pull_request:
+    paths: ["pipeline/**"]
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: pipeline/uv.lock
+      - run: uv sync --frozen
+      - run: uv run pytest -q

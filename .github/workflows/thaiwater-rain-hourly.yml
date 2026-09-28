@@ -1,0 +1,27 @@
+name: ThaiWater hourly rain
+
+# ThaiWater keeps hourly rain for only ~42 h, so collect it every 6 h.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: jaga-data
+  cancel-in-progress: false
+
+jobs:
+  rain-hourly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/thaiwater-setup
+        with:
+          data-token: ${{ secrets.JAGA_DATA_TOKEN }}
+      - name: Collect hourly rain
+        working-directory: pipeline
+        run: uv run python -m ingest_thaiwater rain-hourly
+      - name: Push to jaga-data
+        if: always()
+        run: bash .github/actions/thaiwater-setup/push.sh "Hourly rain $(date -u +%Y-%m-%dT%H:%MZ)"
