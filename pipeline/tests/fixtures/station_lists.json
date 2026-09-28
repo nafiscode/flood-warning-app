@@ -1,0 +1,26 @@
+{
+ "waterlevel_load":[{"waterlevel_data":{"result":"OK","data":[
+   {"id":1,"waterlevel_datetime":"2026-09-28 17:10","waterlevel_msl":"1.75",
+    "agency":{"agency_shortname":{"th":"พพภ","en":"FOP"}},
+    "basin":{"basin_code":21,"basin_name":{"en":"Peninsula - Lower East Coast Basin"}},
+    "station":{"id":740742,"tele_station_name":{"en":"Su Nga Ba Ru 4","th":"คลองสุหงาบารู หมู่ที่ 4"},
+      "tele_station_lat":6.737094,"tele_station_long":101.27308,"tele_station_oldcode":"FOP041",
+      "min_bank":6.76,"left_bank":6.764,"right_bank":7.063,"ground_level":-12.58,"sub_basin_id":336,
+      "is_key_station":false,"warning_level_m":null,"critical_level_m":null,"critical_level_msl":null},
+    "geocode":{"province_code":"94","province_name":{"en":"Pattani"},"amphoe_name":{"en":"Yarang District"},"tumbon_name":{"en":"Khlong Mai"}},
+    "river_name":"คลองสุหงาบารู"}]}}],
+ "rain_24h":[{"result":"OK","data":[
+   {"id":2,"rain_24h":11,"rain_1h":0,"rainfall_datetime":"2026-09-28 12:00",
+    "agency":{"agency_shortname":{"en":"DWR"}},
+    "geocode":{"province_code":"94","province_name":{"en":"Pattani"}},
+    "station":{"id":1123993,"tele_station_name":{"th":"บ้านเจาะกะพ้อใน"},"tele_station_lat":6.57163,"tele_station_long":101.541221,"tele_station_oldcode":"STN2156"},
+    "basin":{"basin_code":21}}]}],
+ "station_all":[{"result":"OK","data":[
+   {"station_id":740742,"station_name":{"th":"x"},"station_old_code":"FOP041","station_lat":6.737094,"station_long":101.27308,"province_code":"94","station_type":"W"},
+   {"station_id":726684,"station_name":{"th":"X.275"},"station_old_code":"X.275","station_lat":6.8,"station_long":101.2,"province_code":"94","station_type":"W"},
+   {"station_id":6855855,"station_name":{"th":"4157"},"station_old_code":"G09006","station_lat":6.7072,"station_long":101.62211,"province_code":"94","station_type":"A"},
+   {"station_id":886,"station_name":{"th":"STH002"},"station_old_code":"STH002","station_lat":6.9,"station_long":101.3,"province_code":"94","station_type":"R"},
+   {"station_id":999,"station_name":{"th":"far away"},"station_lat":13.7,"station_long":100.5,"province_code":"94","station_type":"W"},
+   {"station_id":1000,"station_name":{"th":"Bangkok"},"station_lat":13.7,"station_long":100.5,"province_code":"10","station_type":"W"}
+ ]}]
+}

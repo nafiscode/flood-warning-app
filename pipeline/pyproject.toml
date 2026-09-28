@@ -1,0 +1,21 @@
+[project]
+name = "jaga-pipeline"
+version = "0.1.0"
+description = "Jaga science pipeline: data ingestion and hydrology/GIS analysis"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "pandas>=2.2",
+    "pyarrow>=16",
+    "pyyaml>=6",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

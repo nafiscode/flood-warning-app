@@ -1,0 +1,6 @@
+{"result":"OK","data":[
+ {"date_time":"2025-01-31 00:00","rainfall":71.2,"day_count":30},
+ {"date_time":"2025-02-28 00:00","rainfall":null,"day_count":null},
+ {"date_time":"2025-11-30 00:00","rainfall":410.0,"day_count":30},
+ {"date_time":"2025-12-31 00:00","rainfall":0,"day_count":0}
+]}
