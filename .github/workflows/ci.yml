@@ -40,3 +40,23 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  rls:
+    # RLS policy tests on a throwaway local Supabase database (Docker is built into the runner).
+    # No secrets: this never touches jaga-dev or production.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Start a throwaway database with our migrations and seed
+        run: |
+          npx supabase db start
+          npx supabase db reset --local
+      - run: npm run test:rls
