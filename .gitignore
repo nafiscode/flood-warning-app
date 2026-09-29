@@ -11,6 +11,22 @@ __pycache__/
 node_modules/
 .next/
 out/
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+*.pem
+npm-debug.log*
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Service worker built by Serwist at request/build time
+public/sw.js
+public/sw.js.map
+public/swe-worker-*.js
 
 # Env and secrets
 .env*.local

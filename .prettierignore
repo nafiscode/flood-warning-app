@@ -1,0 +1,13 @@
+# Hand-written docs and generated or foreign files: don't reformat
+*.md
+pipeline/
+supabase/
+public/
+.claude/
+.next/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
+next-env.d.ts
+.github/

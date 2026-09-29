@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* Jaga tokens (docs/brand.md). Keep in sync with lib/brand/tokens.ts; a unit test checks it. */
+:root {
+  --jaga-slate: #1d3b53;
+  --jaga-teal: #2f9c95;
+  --jaga-teal-ink: #1f7a74;
+  --jaga-teal-light: #7fd1c9;
+  --jaga-ground: #f0f2ee;
+  --jaga-surface: #ffffff;
+  --jaga-text: #1a3040;
+  --jaga-text-2: #4a5e68;
+  --jaga-line: #d5dcd8;
+
+  --alert-normal: #2f7a25;
+  --alert-normal-fg: #ffffff;
+  --alert-watch: #f2c230;
+  --alert-watch-fg: #1a1a1a;
+  --alert-warning: #f07f1a;
+  --alert-warning-fg: #1a1a1a;
+  --alert-evacuate: #c62828;
+  --alert-evacuate-fg: #ffffff;
+  --alert-return: #1f6fd1;
+  --alert-return-fg: #ffffff;
+  --alert-stale: #6b7780;
+  --alert-stale-fg: #ffffff;
+  --sos: #c62828;
+  --sos-fg: #ffffff;
+}
+
+@theme inline {
+  --color-jaga-slate: var(--jaga-slate);
+  --color-jaga-teal: var(--jaga-teal);
+  --color-jaga-teal-ink: var(--jaga-teal-ink);
+  --color-jaga-teal-light: var(--jaga-teal-light);
+  --color-jaga-ground: var(--jaga-ground);
+  --color-jaga-surface: var(--jaga-surface);
+  --color-jaga-text: var(--jaga-text);
+  --color-jaga-text-2: var(--jaga-text-2);
+  --color-jaga-line: var(--jaga-line);
+
+  --color-alert-normal: var(--alert-normal);
+  --color-alert-normal-fg: var(--alert-normal-fg);
+  --color-alert-watch: var(--alert-watch);
+  --color-alert-watch-fg: var(--alert-watch-fg);
+  --color-alert-warning: var(--alert-warning);
+  --color-alert-warning-fg: var(--alert-warning-fg);
+  --color-alert-evacuate: var(--alert-evacuate);
+  --color-alert-evacuate-fg: var(--alert-evacuate-fg);
+  --color-alert-return: var(--alert-return);
+  --color-alert-return-fg: var(--alert-return-fg);
+  --color-alert-stale: var(--alert-stale);
+  --color-alert-stale-fg: var(--alert-stale-fg);
+  --color-sos: var(--sos);
+  --color-sos-fg: var(--sos-fg);
+
+  --font-sans: var(--font-plex-thai), system-ui, sans-serif;
+
+  /* Type scale (docs/brand.md): Thai body 18/1.6, never below 16; headings 24/30/40 at 700 */
+  --text-body: 1.125rem;
+  --text-body--line-height: 1.6;
+  --text-small: 1rem;
+  --text-small--line-height: 1.5;
+  --text-h3: 1.5rem;
+  --text-h3--line-height: 1.35;
+  --text-h2: 1.875rem;
+  --text-h2--line-height: 1.3;
+  --text-h1: 2.5rem;
+  --text-h1--line-height: 1.2;
+  --text-hero: 2.25rem;
+  --text-hero--line-height: 1.2;
+
+  /* Minimum tap target (CLAUDE.md: at least 48 px) */
+  --spacing-tap: 3rem;
+}
+
+html {
+  /* Light theme only in the MVP: more readable outdoors in bright sun (docs/brand.md). */
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--jaga-ground);
+  color: var(--jaga-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 3px solid var(--jaga-teal-ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

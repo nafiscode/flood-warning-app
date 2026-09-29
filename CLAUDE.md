@@ -16,6 +16,7 @@ Read the relevant doc before starting a task. Don't load all of them every time.
 - `docs/prompts.md`: the phased build plan. The owner pastes one phase at a time.
 - `docs/brand.md`: name, logo assets, color and alert tokens, typography, voice. Read it before any UI work.
 - `docs/decisions.md`: decision log. Append an entry whenever a decision is made.
+- `AGENTS.md`: Next.js 16 note, managed by `next dev` (don't edit the block). Next.js 16 differs from older versions (e.g. `proxy.ts` replaces middleware, request APIs are async-only, Turbopack builds by default): read the matching guide in `node_modules/next/dist/docs/` before writing Next.js code.
 
 ## Non-negotiable safety rules
 1. Never block or delay an SOS.
