@@ -2,7 +2,9 @@
 
 For Windows 10/11. Use **PowerShell** for every command below. Where a step says "as administrator", right-click PowerShell and choose *Run as administrator*; otherwise use a normal window.
 
-Keep the code **outside OneDrive**, on a drive with room to spare. On the owner's personal laptop that's `D:\jaga`, because C: has only about 16 GB free; the examples below use `D:\jaga`. OneDrive sync breaks `node_modules` and the data archive. Nothing in the repo depends on the folder or drive you choose.
+Keep the code **outside OneDrive**, on a drive with room to spare (about 5 GB with dependencies and the data archive). The examples use `C:\dev\jaga`, where development happens now. On a laptop with a nearly full C:, use another drive (e.g. `D:\jaga`) and do step 2. OneDrive sync breaks `node_modules` and the data archive. Nothing in the repo depends on the folder or drive you choose.
+
+Moving from an existing machine? Read "Moving to another machine" at the end first.
 
 No Docker is needed: development uses a free Supabase cloud project (see "One-time: the Supabase dev project" below).
 
@@ -28,9 +30,9 @@ uv --version
 gh --version
 ```
 
-## 2. Move the tool caches off C:
+## 2. Only if C: is nearly full: move the tool caches to another drive
 
-Skip this if C: has plenty of room. Otherwise do it now, before anything downloads packages: npm, uv, pip and Playwright otherwise fill `C:\Users\<you>\AppData` with several GB. Having uv's cache on the same drive as the repo also lets it hard-link packages instead of copying them.
+Skip this if C: has plenty of room (the current development laptop does). Otherwise do it now, before anything downloads packages: npm, uv, pip and Playwright otherwise fill `C:\Users\<you>\AppData` with several GB. Having uv's cache on the same drive as the repo also lets it hard-link packages instead of copying them.
 
 ```powershell
 # 1. Clear whatever is already cached on C: (errors about an empty cache are fine)
@@ -38,7 +40,7 @@ npm cache clean --force
 uv cache clean
 py -m pip cache purge
 
-# 2. Point every cache at D:
+# 2. Point every cache at D: (change the drive letter if needed)
 New-Item -ItemType Directory -Force D:\cache | Out-Null
 npm config set cache D:\cache\npm
 [Environment]::SetEnvironmentVariable("UV_CACHE_DIR", "D:\cache\uv", "User")
@@ -70,11 +72,22 @@ gh auth status         # should show: Logged in to github.com account nafiscode
 The data archive (`nafiscode/jaga-data`, private) goes **inside** the app repo, at `pipeline\data`. The app repo ignores that folder.
 
 ```powershell
-cd D:\
+New-Item -ItemType Directory -Force C:\dev | Out-Null
+cd C:\dev
 git clone https://github.com/nafiscode/flood-warning-app.git jaga
 git clone https://github.com/nafiscode/jaga-data.git jaga\pipeline\data
 cd jaga
+
+# Commits in both repos must use the GitHub noreply address, never a personal email
+# (decisions, 28 Sep). Set per repo, so your other repos keep their own identity.
+foreach ($r in ".", "pipeline\data") {
+  git -C $r config user.name "nafiscode"
+  git -C $r config user.email "135354913+nafiscode@users.noreply.github.com"
+}
+git config user.email   # should print the noreply address
 ```
+
+Belt and braces, once per GitHub account: *GitHub → Settings → Emails* → tick **Keep my email addresses private** and **Block command line pushes that expose my email**. GitHub then refuses any push whose commits carry the private address.
 
 The scheduled GitHub jobs keep jaga-data up to date. Before working with the data, get the latest:
 
@@ -106,7 +119,20 @@ uv run python -m ingest_thaiwater coverage   # rewrites data\reports\coverage.md
 cd ..
 ```
 
-## 7. Open in VS Code
+## 7. Set up and test the web app
+
+```powershell
+npm ci                                  # installs exactly what package-lock.json lists
+npx playwright install chromium         # test browser, about 150 MB
+npm run lint; npm run typecheck; npm test
+npm run test:e2e                        # builds the app and tests it at 360 px, offline included
+npm run db:migrations                   # needs .env.local; lists migrations applied on jaga-dev
+npm run dev                             # http://localhost:3000 and http://localhost:3000/dev/brand
+```
+
+npm may warn that a few packages' install scripts are waiting for approval (`@swc/core`, `unrs-resolver`, `@parcel/watcher`). They work without them; don't approve scripts you haven't checked.
+
+## 8. Open in VS Code
 
 ```powershell
 winget install --id Microsoft.VisualStudioCode -e   # if not installed
@@ -118,11 +144,12 @@ Install the Claude Code extension, then continue with the next phase in `docs/pr
 ## Checklist
 
 - [ ] `git`, `node`, `python` (3.11), `uv` and `gh` all print a version
-- [ ] `npm config get cache` and `$env:UV_CACHE_DIR` point at D: (if you moved the caches)
-- [ ] `gh auth status` shows the nafiscode account
-- [ ] `D:\jaga` and `D:\jaga\pipeline\data` both exist and `git status` is clean in each
+- [ ] `npm config get cache` and `$env:UV_CACHE_DIR` point at the other drive (only if you moved the caches)
+- [ ] `gh auth status` shows the nafiscode account; `git config user.email` in both repos prints the noreply address
+- [ ] The repo folder (e.g. `C:\dev\jaga`) and its `pipeline\data` both exist and `git status` is clean in each
 - [ ] `.env.local` exists, with the Supabase dev project values (and R2 values if you work on the pipeline outputs)
 - [ ] `uv run pytest -q` passes in `pipeline`
+- [ ] `npm test` and `npm run test:e2e` pass; `npm run db:migrations` lists the applied migrations
 
 ---
 
@@ -183,6 +210,39 @@ Large pipeline outputs (PMTiles, COG rasters) live in Cloudflare R2, not in git 
    cd pipeline
    uv run python -m r2sync check
    ```
+
+## Moving to another machine
+
+Everything that matters is in GitHub or the cloud. A move is: set up the new machine with steps 1–8 above, then recreate the few local files below. Nothing needs to be copied from the old machine except those.
+
+**Recreate these (gitignored, needed to run):**
+
+| File / setting | Where it comes from |
+|---|---|
+| `.env.local` (repo root) | `Copy-Item .env.example .env.local`, then fill in: Supabase URL, publishable key, secret key and project ref from the Supabase dashboard (*Project Settings → API Keys / Data API*); `SUPABASE_DB_URL` from *Connect → Session pooler* plus the database password from your password manager; R2 values from Cloudflare (account ID and S3 endpoint on the R2 overview, the public URL in `jaga-tiles` settings). R2 secret keys are shown only once: if you didn't save them, create a new `jaga-pipeline` token and delete the old one. |
+| `pipeline\data\` | `git clone https://github.com/nafiscode/jaga-data.git pipeline\data` (step 4). The raw API responses from the first archive are in the jaga-data release `thaiwater-2026-09-28`. |
+| Git identity | Per-repo `git config user.name/user.email` with the noreply address, in both repos (step 4). Your global git email is not used. |
+| GitHub login | `gh auth login` (step 3). |
+
+**Optional, for Claude Code (local notes, not secrets):**
+
+| File | What it is |
+|---|---|
+| `CLAUDE.local.md` | Handoff notes for the next Claude session. Copy it, or let Claude recreate it from CLAUDE.md and `docs/decisions.md`. |
+| `.claude\local\jaga-progress.html` | Source of the build tracker page. The live tracker is online (claude.ai artifact); a new session can read it back from its URL. |
+| `%USERPROFILE%\.claude\projects\<repo path>\memory\` | Claude Code's memory for this repo. The folder name follows the repo path (e.g. `c--dev-jaga`); if the path changes, copy the files into the new folder. |
+
+**Rebuilt automatically, never copy:** `node_modules\`, `.next\`, `pipeline\.venv\`, `test-results\`, `next-env.d.ts`, `*.tsbuildinfo`, `supabase\.temp\`, Playwright browsers, the npm/uv/pip caches, `pipeline\data\logs\`, `pipeline\data\snapshots\` and `*.out` logs.
+
+**Nothing to copy, only the keys above:**
+- **Supabase `jaga-dev`**: the database lives in the cloud. Its structure is rebuilt from `supabase\migrations` at any time (`npm run db:reset`).
+- **Cloudflare R2**: files live in the buckets; the pipeline reaches them with the keys in `.env.local`.
+- **Scheduled data jobs**: run on GitHub with the `JAGA_DATA_TOKEN` secret stored there; no local copy exists or is needed.
+- **Vercel**: builds from GitHub; its settings live in the Vercel project.
+
+**Keep in your password manager** (these can't be recreated from the repo): the GitHub account and its 2FA backup codes; jagaapp.th@gmail.com; the Supabase account and the `jaga-dev` database password; the Cloudflare account and its 2FA backup codes; the R2 `jaga-pipeline` keys (or plan to recreate the token); a copy of `.env.local` as a secure note.
+
+**Check on the new machine:** the checklist above, then `npm run db:migrations` (Supabase keys work) and `cd pipeline; uv run python -m r2sync check` (R2 keys work).
 
 ## Fallback: run the data jobs with Windows Task Scheduler
 

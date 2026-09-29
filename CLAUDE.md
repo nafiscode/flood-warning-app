@@ -98,7 +98,7 @@ tests/               unit, e2e (Playwright), rls (SQL policy tests)
 docs/                spec, science plan, prompts, decisions, runbook
 SETUP.md             setting up a fresh Windows laptop
 ```
-Scripts and config never use absolute paths or drive letters; everything is relative to the repo. (The owner's personal laptop keeps the repo on `D:\jaga` because C: is nearly full; tool caches live in `D:\cache`, see SETUP.md.)
+Scripts and config never use absolute paths or drive letters; everything is relative to the repo. Development happens in `C:\dev\jaga` on the owner's current laptop; a move to another machine (possibly with the repo on `D:`) is a later option, covered by SETUP.md, "Moving to another machine".
 
 ## Conventions
 - **Database changes:** always via SQL migrations. Enable RLS on every table. Write policy tests in `tests/rls/` for every role.
