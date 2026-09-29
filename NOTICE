@@ -6,3 +6,12 @@ This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 The Apache License does not cover the Jaga name, the จากา wordmark, or the Jaga
 logo and icon files in public/brand/ and public/icons/. They are not licensed
 for reuse; see "Name and logo" in README.md.
+
+Third-party data
+
+supabase/seed/10_provinces.sql, 20_districts.sql and 30_tambons.sql are derived from
+"Thailand - Subnational Administrative Boundaries" (COD-AB), Royal Thai Survey Department,
+published by OCHA on the Humanitarian Data Exchange (https://data.humdata.org/dataset/cod-ab-tha),
+licensed under Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO 3.0).
+Jaga simplified the geometry (tambons to about 10 m and 100 m, provinces to about 500 m) and
+selected the provinces it covers. These are not official boundaries.

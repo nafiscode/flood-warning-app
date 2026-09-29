@@ -43,3 +43,6 @@ Thumbs.db
 # Local Claude Code notes and working files (handoff, progress tracker source)
 CLAUDE.local.md
 .claude/local/
+
+# Downloaded source data (recreated by scripts)
+pipeline/.cache/
