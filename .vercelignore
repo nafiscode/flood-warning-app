@@ -1,0 +1,7 @@
+# Vercel deploys only the Next.js web app. The Python science pipeline runs in GitHub Actions and
+# on the laptop, never on Vercel (decisions, 29 Sep 2026).
+pipeline/
+docs/
+tests/
+*.md
+!README.md
