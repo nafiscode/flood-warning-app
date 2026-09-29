@@ -57,7 +57,7 @@ It lets government and volunteer responders coordinate rescues without duplicati
 | Role | How to join | Sign-in | Summary |
 |---|---|---|---|
 | Visitor | No account | None | View map, alerts, safe places, hotlines. Can send SOS; the phone number is optional. |
-| User | Self sign-up | LINE Login or phone OTP (equal options) | Everything a visitor can do, plus home and saved places, household profile, reports, SOS with status, alert notifications. |
+| User | Self sign-up | LINE Login or phone OTP (equal options) | Everything a visitor can do, plus home and watched places, household profiles, reports, SOS with status, alert notifications. |
 | Authority | Self-registration, then admin verification | Phone OTP (LINE Login as fallback, see below) | Case board for their coverage area, claim and rescue workflow, contact requesters, hero score. |
 | Admin | Invitation by super admin | Email magic link or phone OTP | Monitor, issue alerts, verify authorities, escalate and assign SOS, moderate, export. |
 | Super admin | The owner | Email magic link | Everything an admin can do, plus manage admins and system settings. |
@@ -67,7 +67,7 @@ It lets government and volunteer responders coordinate rescues without duplicati
 - Optional:
   - phone number (verified if they signed in with OTP; typed and unverified if they used LINE Login)
   - home location, which sets the home tambon
-  - up to 3 saved places (work, parents' house)
+  - up to 10 **watched places** (e.g. Mum's house, in-laws, a shop or farm), each with a label and, optionally, the name and phone of the person there (see 4.9)
   - preferred language
 
 **Authority registration fields:**
@@ -94,7 +94,8 @@ The home screen is the most important screen. It must be fully usable without lo
 - Issue time and next-update time, with a stale warning if overdue.
 
 **Also on the home screen:**
-- Status of the user's saved places.
+- **Most severe first:** when a watched place has a more severe alert than the user's home, a banner above the hero shows it first, e.g. red "Mum's house (Taluboh): EVACUATE" with [Call Mum] and [SOS for Mum's house]. The home hero stays directly below.
+- **Places you watch:** each watched place with its level badge (icon + label + color), the stale marker when late, and [Call] when a phone is stored (4.9).
 - Top-3 safe places (4.3).
 - Large SOS button and "Report flooding" button.
 - Hotlines: 1784 (DDPM), 1669 (medical), 191 (police), 199 (fire), plus the project SOS line (see open items).
@@ -202,8 +203,9 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
   - household size
   - counts per vulnerable category
   - mobility notes
-  - home location
+  - home location, or one of the user's watched places (4.9)
   - contact phone
+- **For someone else:** a user may register a household at a watched place (e.g. a bedridden mother without a phone). They confirm that the person agreed. One household for the user's home and one per watched place.
 - **User control:** the user can view, edit and delete it at any time.
 - **Access:** visible only to verified authorities with rescue or coordination capability covering that tambon, and to admins. Every view is logged.
 
@@ -211,9 +213,17 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 - **Web push:** opt-in. On iOS, first show a guide to "Add to Home Screen", which iOS 16.4 or later requires for web push.
 - **LINE:** "Add the LINE Official Account" link. LINE Login prompts the user to add the account as a friend.
 - **Users receive:**
-  - alerts for their home tambon and saved places
+  - alerts for their home tambon and every watched place with notifications on. One notification per alert, listing all affected places, e.g. "Warning: your home (Bana) and Mum's house (Taluboh)". LINE is billed per recipient, so watching more places costs nothing extra.
   - status updates on their own SOS
   - rescue-confirmation requests
+
+### 4.9 Watching places for others
+Many people at risk are elderly and have no smartphone. Their children or relatives, often living elsewhere, watch their place for them and call them when there is a warning.
+- **Watched places:** up to 10 per user, each a pin or the user's GPS position, a label ("Mum's house") and a notifications on/off switch. The tambon is derived from the pin.
+- **Person there (optional):** name and phone of the person at the place, so alerts and home show a one-tap [Call Mum]. The user confirms the person agreed (PDPA). Private to the user: never visible to authorities or admins, and deleted with the place.
+- **SOS for them:** from a watched place, [SOS for Mum's house] sends an SOS at that place's location, marked as sent by a relative, with the person's phone (if stored) and the user's own phone as callbacks. Still two taps; never blocked (safety rule 1). The user's own location is not sent.
+- **Household for them:** see 4.7.
+- **Alerts:** as 4.8. The alert text names the place with the user's own label; the label never leaves the user's account.
 
 ## 5. Authority features
 
@@ -344,9 +354,9 @@ Admins decide. The system never auto-publishes. Every data source shows its last
   - `preferred_locale`
   - `home_point`, `home_tambon`
   - consent flags, timestamps
-- `saved_places`: `user_id`, `label`, `point`, `tambon`.
+- `saved_places` (watched places, up to 10 per user): `user_id`, `label`, `point`, `tambon`, `notify`, optional `contact_name`, `contact_phone` and `contact_consent_at`. Owner-only; nobody else reads it.
 - `households`:
-  - `owner_id`, `point`, `tambon`, `size`
+  - `owner_id`, `saved_place_id` (null for the user's own home), `on_behalf_of_other`, `point`, `tambon`, `size`
   - `vulnerable` (jsonb counts by category)
   - `mobility_notes`, `contact_phone`
   - `consent_at`, `updated_at`
@@ -377,7 +387,8 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 
 ### SOS
 - `sos_requests`:
-  - `requester_id` (nullable), `contact_phone`, `point`, `tambon`
+  - `requester_id` (nullable), `on_behalf` and `on_behalf_note` (sent by a relative for a watched place), `point`, `tambon`
+  - phones in `sos_contacts`: `contact_phone` (whoever to call back) and `on_site_phone` (the person at the location, when sent on their behalf)
   - `hazard_type` (default `unknown`)
   - `people_count`, `vulnerable_flags`, `depth_ref`, `injuries`
   - `voice_url`, `photos[]`, `text`, `battery_pct`
@@ -444,6 +455,7 @@ These tables are created in phase A11 only, not with the initial schema.
 | Exact report location and reporter | none | own | read | read |
 | SOS exact location, details, phone | none | own | read (phone reveal logged) | read (logged) |
 | SOS suspected-spam flag | none | none | read | read/write (bulk dismiss, logged) |
+| Watched places and the stored person's name and phone | none | own (read/write/delete) | none | none |
 | Households and vulnerable data | none | own (read/write/delete) | read only with rescue or coordination capability (logged) | read (logged) |
 | Authority POC phones | none | none | read within shared coverage (each reveal logged) | read (logged) |
 | Authority org name and official phone | read only if `public_contact_opt_in` | same | read | read |
