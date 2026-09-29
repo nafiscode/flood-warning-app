@@ -390,7 +390,7 @@ Acceptance: airplane-mode walkthrough of home → safe places → SOS works; the
 Read all docs.
 
 1. Security review: try to escalate privileges and read personal data as each role; check rate limits and secrets. Fix and document.
-   Move Vercel to the Pro plan before launch.
+   Move Vercel to the Pro plan before launch. Remove JAGA_DEV_PAGES from the Vercel production environment, so /dev/* pages return 404 in production.
 2. Load test (k6): 5,000 users opening home within 10 minutes after an alert push; confirm Supabase plan limits and caching hold.
 3. Backup and restore test.
 4. Staging dry run: replay the observed Nov 2025 data through the signal dashboard while admins issue alerts and test authorities work fake SOS cases. Record issues.
