@@ -1,0 +1,62 @@
+{
+  "app": {
+    "name": "Jaga",
+    "nameThai": "จากา",
+    "tagline": "Jaga diri, jaga jiran",
+    "pwaName": "Jaga – Amaran dan bantuan kecemasan",
+    "description": "Amaran banjir dan minta bantuan untuk Patani, Yala, Narathiwat dan Songkhla",
+    "skipToContent": "Langkau ke kandungan"
+  },
+  "home": {
+    "title": "Jaga sedang bersedia untuk musim banjir",
+    "body": "Aplikasi ini belum mengeluarkan amaran. Ikuti amaran rasmi daripada DDPM dan pihak berkuasa tempatan.",
+    "emergency": "Kecemasan: telefon 1784 atau 1669 terus dari butang di bawah"
+  },
+  "alert": {
+    "level": {
+      "normal": "Biasa",
+      "watch": "Berjaga-jaga",
+      "warning": "Amaran",
+      "evacuate": "Pindah",
+      "return": "Boleh balik rumah"
+    },
+    "stale": "Tidak dikemas kini sejak {time}"
+  },
+  "sos": {
+    "label": "SOS",
+    "action": "Minta tolong"
+  },
+  "hotlines": {
+    "title": "Talian kecemasan",
+    "call": "Telefon {number} {name}",
+    "ddpm": "Bencana (DDPM)",
+    "medical": "Perubatan kecemasan",
+    "police": "Polis",
+    "fire": "Bomba"
+  },
+  "attribution": {
+    "openMeteo": "Data cuaca daripada Open-Meteo.com (CC BY 4.0)"
+  },
+  "offline": {
+    "title": "Tiada sambungan internet",
+    "body": "Talian kecemasan di bawah masih boleh dihubungi. Aplikasi akan dimuat semula apabila dalam talian."
+  },
+  "language": {
+    "label": "Bahasa",
+    "th": "ภาษาไทย",
+    "ms": "Bahasa Melayu",
+    "en": "English"
+  },
+  "devBrand": {
+    "title": "Brand review",
+    "note": "Development and preview only. Not available in production.",
+    "logo": "Logo",
+    "levels": "Alert levels",
+    "stale": "Stale marker (beside the level, never instead of it)",
+    "sos": "SOS button",
+    "hotlines": "Hotline bar",
+    "attribution": "Attribution",
+    "tokens": "Color tokens",
+    "sampleTime": "Sample time"
+  }
+}

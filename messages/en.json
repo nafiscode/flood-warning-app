@@ -1,0 +1,62 @@
+{
+  "app": {
+    "name": "Jaga",
+    "nameThai": "จากา",
+    "tagline": "Watch over each other",
+    "pwaName": "Jaga – Flood alerts and help",
+    "description": "Flood alerts and emergency help for Pattani, Yala, Narathiwat and Songkhla",
+    "skipToContent": "Skip to content"
+  },
+  "home": {
+    "title": "Jaga is getting ready for the flood season",
+    "body": "This app doesn't issue alerts yet. Follow official warnings from DDPM and local authorities.",
+    "emergency": "In an emergency, call 1784 or 1669 straight from the buttons below"
+  },
+  "alert": {
+    "level": {
+      "normal": "Normal",
+      "watch": "Watch",
+      "warning": "Warning",
+      "evacuate": "Evacuate",
+      "return": "Safe to return"
+    },
+    "stale": "Not updated since {time}"
+  },
+  "sos": {
+    "label": "SOS",
+    "action": "Get help"
+  },
+  "hotlines": {
+    "title": "Hotlines",
+    "call": "Call {number} {name}",
+    "ddpm": "Disasters (DDPM)",
+    "medical": "Medical emergency",
+    "police": "Police",
+    "fire": "Fire"
+  },
+  "attribution": {
+    "openMeteo": "Weather data by Open-Meteo.com (CC BY 4.0)"
+  },
+  "offline": {
+    "title": "No internet connection",
+    "body": "The hotlines below still work. The app reloads when you're back online."
+  },
+  "language": {
+    "label": "Language",
+    "th": "ภาษาไทย",
+    "ms": "Bahasa Melayu",
+    "en": "English"
+  },
+  "devBrand": {
+    "title": "Brand review",
+    "note": "Development and preview only. Not available in production.",
+    "logo": "Logo",
+    "levels": "Alert levels",
+    "stale": "Stale marker (beside the level, never instead of it)",
+    "sos": "SOS button",
+    "hotlines": "Hotline bar",
+    "attribution": "Attribution",
+    "tokens": "Color tokens",
+    "sampleTime": "Sample time"
+  }
+}

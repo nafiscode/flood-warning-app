@@ -1,0 +1,62 @@
+{
+  "app": {
+    "name": "Jaga",
+    "nameThai": "จากา",
+    "tagline": "ดูแลกันและกัน",
+    "pwaName": "Jaga – เตือนภัยและขอความช่วยเหลือ",
+    "description": "เตือนภัยน้ำท่วมและขอความช่วยเหลือ สำหรับปัตตานี ยะลา นราธิวาส และสงขลา",
+    "skipToContent": "ข้ามไปยังเนื้อหา"
+  },
+  "home": {
+    "title": "Jaga กำลังเตรียมพร้อมสำหรับฤดูน้ำหลาก",
+    "body": "แอปนี้ยังไม่ออกประกาศเตือนภัย โปรดติดตามประกาศทางการจาก ปภ. และหน่วยงานในพื้นที่",
+    "emergency": "เหตุฉุกเฉิน โทร 1784 หรือ 1669 ได้ทันทีจากปุ่มด้านล่าง"
+  },
+  "alert": {
+    "level": {
+      "normal": "ปกติ",
+      "watch": "เฝ้าระวัง",
+      "warning": "เตือนภัย",
+      "evacuate": "อพยพ",
+      "return": "กลับบ้านได้"
+    },
+    "stale": "ไม่ได้อัปเดตตั้งแต่ {time}"
+  },
+  "sos": {
+    "label": "SOS",
+    "action": "ขอความช่วยเหลือ"
+  },
+  "hotlines": {
+    "title": "สายด่วน",
+    "call": "โทร {number} {name}",
+    "ddpm": "ปภ. สาธารณภัย",
+    "medical": "เจ็บป่วยฉุกเฉิน",
+    "police": "ตำรวจ",
+    "fire": "ดับเพลิง"
+  },
+  "attribution": {
+    "openMeteo": "ข้อมูลสภาพอากาศจาก Open-Meteo.com (CC BY 4.0)"
+  },
+  "offline": {
+    "title": "ไม่มีการเชื่อมต่ออินเทอร์เน็ต",
+    "body": "สายด่วนด้านล่างยังโทรได้ แอปจะโหลดใหม่เมื่อกลับมาออนไลน์"
+  },
+  "language": {
+    "label": "ภาษา",
+    "th": "ภาษาไทย",
+    "ms": "Bahasa Melayu",
+    "en": "English"
+  },
+  "devBrand": {
+    "title": "Brand review",
+    "note": "Development and preview only. Not available in production.",
+    "logo": "Logo",
+    "levels": "Alert levels",
+    "stale": "Stale marker (beside the level, never instead of it)",
+    "sos": "SOS button",
+    "hotlines": "Hotline bar",
+    "attribution": "Attribution",
+    "tokens": "Color tokens",
+    "sampleTime": "Sample time"
+  }
+}
