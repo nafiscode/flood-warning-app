@@ -138,9 +138,11 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 
 ## Commands (keep updated)
 - `npm run dev`: web app
-- `npx supabase link --project-ref <SUPABASE_PROJECT_REF>`: connect the repo to `jaga-dev` (once per machine; asks for the database password)
-- `npx supabase db push`: apply new migrations to `jaga-dev`
-- `npx supabase db reset --linked`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
+- `npm run db:new <name>`: create a new migration in `supabase/migrations/`
+- `npm run db:push` (add `-- --dry-run` to preview): apply new migrations to `jaga-dev`
+- `npm run db:migrations`: which migrations are applied on `jaga-dev`
+- `npm run db:reset`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
+- These use `SUPABASE_DB_URL` from `.env.local` via `scripts/db.mjs` (never printed), so no `supabase login` or `link` is needed.
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
 - `npm run test:rls`: RLS policy tests. On the laptop they run against `jaga-dev` (`SUPABASE_DB_URL`); in CI against a throwaway Supabase on the GitHub runner. Each test runs in a transaction that is rolled back.
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests

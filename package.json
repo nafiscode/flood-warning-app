@@ -18,7 +18,11 @@
     "test:e2e": "playwright test",
     "test:rls": "node -e \"console.log('RLS tests arrive in phase A1 (see docs/decisions.md, 2026-09-29).')\"",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:push": "node scripts/db.mjs db push",
+    "db:reset": "node scripts/db.mjs db reset",
+    "db:migrations": "node scripts/db.mjs migration list",
+    "db:new": "supabase migration new"
   },
   "dependencies": {
     "@serwist/turbopack": "^9.5.12",
