@@ -50,21 +50,35 @@ test("web manifest matches the brand", async ({ request }) => {
   expect(manifest.icons.map((i: { purpose: string }) => i.purpose)).toContain("maskable");
 });
 
-test("offline: the service worker serves the fallback page with the hotlines", async ({
-  page,
-  context,
-}) => {
-  await page.goto("/");
-  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
-  expect(new URL(scope).pathname).toBe("/");
-  // Wait until the worker controls the page, then cut the network.
-  await page.reload();
-  await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
-  await context.setOffline(true);
-  await page.goto("/en"); // never visited, so not cached: the offline fallback must appear
-  await expect(page.locator("body")).toContainText("ไม่มีการเชื่อมต่ออินเทอร์เน็ต");
-  for (const number of HOTLINES) {
-    await expect(page.locator(`a[href="tel:${number}"]`)).toBeVisible();
-  }
-  await context.setOffline(false);
+test.describe("offline (safety rule 7)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+    expect(new URL(scope).pathname).toBe("/");
+    // Load the home page once more under the worker's control, so it is in the page cache.
+    await page.reload();
+    await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+    await page.waitForLoadState("networkidle");
+  });
+
+  test("a page visited before opens from the cache", async ({ page, context }) => {
+    await context.setOffline(true);
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Jaga");
+    for (const number of HOTLINES) {
+      await expect(page.locator(`a[href="tel:${number}"]`)).toBeVisible();
+    }
+  });
+
+  test("a page never visited shows the offline page with the hotlines", async ({
+    page,
+    context,
+  }) => {
+    await context.setOffline(true);
+    await page.goto("/en");
+    await expect(page.locator("body")).toContainText("ไม่มีการเชื่อมต่ออินเทอร์เน็ต");
+    for (const number of HOTLINES) {
+      await expect(page.locator(`a[href="tel:${number}"]`)).toBeVisible();
+    }
+  });
 });
