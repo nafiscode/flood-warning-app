@@ -141,7 +141,7 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - `npx supabase db push`: apply new migrations to `jaga-dev`
 - `npx supabase db reset --linked`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
-- `npm run test:rls`: SQL policy tests
+- `npm run test:rls`: RLS policy tests. On the laptop they run against `jaga-dev` (`SUPABASE_DB_URL`); in CI against a throwaway Supabase on the GitHub runner. Each test runs in a transaction that is rolled back.
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests
 - `cd pipeline && uv run python -m ingest_thaiwater refresh`: refresh the ThaiWater archive in `pipeline/data/` (also `waterlevel`, `rain-daily`, `rain-hourly`, `backfill`, `coverage`, `snapshot`)
 - `cd pipeline && uv run python -m r2sync check`: test the R2 connection; also `push`, `ls`, `manifest` (see `pipeline/README.md`)
