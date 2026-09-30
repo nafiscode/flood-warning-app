@@ -606,7 +606,7 @@ These tables are created in phase A11 only, not with the initial schema.
 
 1. Script for Patani Malay: Rumi (Latin), Jawi (Arabic script, RTL), or Thai-script Malay.
 2. The project SOS phone line for SMS and call fallback, and who staffs it.
-3. SMS provider (a Thai local provider is preferred for cost). The owner chooses this week. Decided fallback: LINE Login for authorities, with the POC phone verified by an admin call.
+3. SMS provider (a Thai local provider is preferred for cost). Deferred until after launch (30 Sep); phone sign-in goes live once it is chosen. Decided fallback: LINE Login for authorities, with the POC phone verified by an admin call.
 4. Hero score weights, and whether the leaderboard is public.
 5. Retention periods (section 9).
 6. Decided: the app is named Jaga (จากา). Still open: confirm the Thai spelling, the trademark and app-store search, and the domain (see docs/brand.md).
