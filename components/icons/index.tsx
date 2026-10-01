@@ -1,7 +1,7 @@
 /**
  * Jaga's own icon set (decisions, 2026-09-29). 24×24 grid, 2 px strokes, currentColor.
  * Decorative only: every icon sits next to a text label, so they are hidden from screen readers.
- * No eye icons anywhere; the eye belongs to the logo (docs/brand.md).
+ * No eye icons anywhere, and no umbrella icons: the umbrella belongs to the logo (docs/brand.md).
  */
 import type { SVGProps } from "react";
 

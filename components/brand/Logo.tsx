@@ -10,6 +10,8 @@ type Props = {
 };
 
 export const SMALL_MARK_BELOW = 64;
+/** The mark files are 84 × 120: the j under its canopy is taller than it is wide. */
+export const MARK_ASPECT = 84 / 120;
 
 export function markSrc(size: number, tone: "light" | "reverse"): string {
   const small = size < SMALL_MARK_BELOW ? "-small" : "";
@@ -20,14 +22,14 @@ export function markSrc(size: number, tone: "light" | "reverse"): string {
 /**
  * The Jaga lockup: mark, then the wordmark "Jaga" (700, -0.01em) with "จากา" underneath at
  * about 35% of the wordmark size. Horizontal: the mark is about 1.7× the wordmark cap height.
- * Clear space: about 12% of the mark width on every side. Never recolored (docs/brand.md).
+ * Clear space: about 12% of the mark height on every side. Never recolored (docs/brand.md).
  */
 export function Logo({ size = 48, layout = "horizontal", tone = "light" }: Props) {
   const t = useTranslations("app");
   const mark = (
     <img
       src={markSrc(size, tone)}
-      width={size}
+      width={Math.round(size * MARK_ASPECT)}
       height={size}
       alt={layout === "mark" ? t("name") : ""}
       className="shrink-0"

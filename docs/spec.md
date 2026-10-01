@@ -328,7 +328,7 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 - The five levels are shared across hazards. Every alert carries a `hazard_type`, and action checklists are written per hazard and level. In the MVP only flood checklists exist and only flood alerts can be issued.
 - A tambon with no active alert shows `normal`.
 - An alert past `next_update_at` keeps its level badge and gets a grey "not updated since [time]" marker. Stale is a marker, not a level: five levels + stale marker. The alert is not hidden and not auto-downgraded.
-- No eye icons anywhere in the UI except the logo.
+- No eye icons anywhere in the UI, and no umbrella icons except the logo.
 
 ## 8. Data model (initial)
 
@@ -510,7 +510,7 @@ These tables are created in phase A11 only, not with the initial schema.
   - The map is secondary for villagers and primary for authorities and admins.
 - **Brand:** the app is Jaga. `docs/brand.md` is the source of truth for the logo, color tokens, the alert palette, typography (IBM Plex Sans Thai) and voice.
 - **Colors:** the brand slate and teal stay calm and never signal status. The alert palette (green / yellow / orange / red, plus blue for return and grey for stale) follows common Thai disaster conventions and carries all of the meaning.
-- **Tone:** care, not surveillance. The eye in the logo means looking out for each other; the copy never talks about watching people.
+- **Tone:** care, not surveillance. The logo, a j sheltered under a canopy, means looking out for each other; the copy never talks about watching people.
 - **Process:** before building screens, show component-level details and ASCII wireframes (home, SOS flow, alert console, Transparency tab) built on the brand tokens, for owner approval.
 
 ## 12. Donations, transparency and admin stipends (support the app)
@@ -614,7 +614,7 @@ These tables are created in phase A11 only, not with the initial schema.
 8. Decided: donations go to a dedicated account in the founder's name for now, moving to a foundation once registered. Still open: set up a separate account and PromptPay ID used only for the app.
 9. Legal check. Public fundraising in Thailand falls under the Fundraising Control Act B.E. 2487 (1944). Confirm with a Thai lawyer or the district office whether a permit is needed for this setup, or whether a partner foundation covers it.
 10. Stipend numbers: rate per shift, minimum shift length, monthly cap per admin, cap as a share of monthly donations, and whether the owner takes a stipend (recommended: no, while the account is in the founder's name). Also: amount bands vs exact amounts on the donor wall, and whether to show the post-rescue thank-you card.
-11. Test the Jaga eye mark with residents from both communities, including elderly people. If it reads as surveillance, apply the softening in docs/brand.md.
+11. Test the Jaga mark (the j sheltered under a canopy) with residents from both communities, including elderly people. If it reads as surveillance, apply the softening in docs/brand.md.
 12. Which hazard to add after flood, and when (a 2027 decision).
 13. Whether the Transparency tab should appear before donations are switched on, showing only running costs paid by the founder.
 

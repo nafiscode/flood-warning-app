@@ -168,7 +168,7 @@ Brand setup (docs/brand.md is the source of truth; do not invent a different loo
 - Color and alert tokens as CSS variables plus a Tailwind theme. Check every text/background pair for 4.5:1 (3:1 for 24 px and up); if an alert color fails, adjust its lightness and keep the hue.
 - IBM Plex Sans Thai 400/500/700 via next/font, with the type scale from docs/brand.md.
 - A Logo component: the mark SVG plus the "Jaga" wordmark and "จากา", with horizontal and stacked variants and light/reverse versions. It switches automatically to the small mark below 64 px.
-- An AlertBadge component for the five alert levels (icon + label + color) plus the grey "not updated since [time]" stale marker, which sits beside the level badge and never replaces it. Watch uses a backpack icon; no eye icons anywhere except the logo. Also an SOS button component.
+- An AlertBadge component for the five alert levels (icon + label + color) plus the grey "not updated since [time]" stale marker, which sits beside the level badge and never replaces it. Watch uses a backpack icon; no eye icons anywhere, and no umbrella icons except the logo. Also an SOS button component.
 - A /dev/brand page showing the logo variants, the tokens and every alert state at 360 px, for my review.
 
 Then, before building real screens, show me ASCII wireframes of home, the SOS flow, the admin alert console and the Transparency tab using these components, and wait for my approval.

@@ -1,7 +1,7 @@
 # Jaga (จากา): brand guide
 
 The app is called **Jaga** (Thai: จากา). The name is Malay for "watch over, take care of", as in *jaga diri, jaga jiran*: take care of yourself, take care of your neighbours.
-The logo is an eye drawn with terrain contour lines: watching over the land and the people on it. The tone is **care, not surveillance**.
+The logo is the **Sheltered j**: the letter j of Jaga with its dot under a small teal canopy. It reads as a person sheltered by an umbrella, and, gently, as someone watching over them. The tone is **care, not surveillance**. (Chosen on 1 October 2026; it replaces the contour-eye mark. See `docs/decisions.md`.)
 
 ## Name and taglines
 | Use | Text |
@@ -19,7 +19,7 @@ The logo is an eye drawn with terrain contour lines: watching over the land and 
 |---|---|
 | `jaga-mark.svg` | Full mark on light backgrounds, 64 px and up |
 | `jaga-mark-reverse.svg` | Full mark on the brand slate or other dark backgrounds, 64 px and up |
-| `jaga-mark-small.svg` / `-small-reverse.svg` | Simplified mark (outer eye and pupil only) for 16–63 px |
+| `jaga-mark-small.svg` / `-small-reverse.svg` | Heavier mark (wider canopy with three scallops, larger dot, thicker stem) for 16–63 px |
 | `jaga-app-icon.svg` | Rounded app icon, for in-app and marketing use |
 | `jaga-app-icon-square.svg` | Full-bleed icon source; platforms apply their own corner rounding |
 | `jaga-app-icon-maskable.svg` | PWA maskable icon, with the mark inside the 80% safe zone |
@@ -31,14 +31,19 @@ Ready-made PNGs are in `public/icons/`:
 - `apple-touch-icon.png`: 180 px iOS home-screen icon
 - `favicon-32.png`: browser tab fallback
 
+After changing a logo SVG, re-render the PNGs with `npm run icons`.
+
+**The mark.** The canopy is teal (`--jaga-teal`; `--jaga-teal-light` on dark backgrounds). The dot and the stem of the j are slate (white on dark backgrounds). The mark files are 84 × 120: taller than wide.
+
 **Lockup.** Build it in code as a `Logo` component, not as an image: the mark, then the wordmark "Jaga" in IBM Plex Sans Thai 700 (letter-spacing -0.01em), with "จากา" underneath at about 35% of the wordmark size.
 - **Horizontal lockup:** the mark's height is about 1.7× the wordmark's cap height.
-- **Clear space:** at least one pupil diameter (about 12% of the mark width) on every side.
+- **Clear space:** about 12% of the mark height on every side.
 
 **Don'ts:**
-- Don't recolor the logo in any alert color, and don't place it on an alert-colored background.
-- Don't animate it as blinking or "watching" (no eyelashes, no pupil tracking).
-- Don't use eye icons anywhere else in the UI; the eye belongs to the logo only.
+- Don't recolor the logo in any alert color, and don't place it on an alert-colored background. The dot is never red: it must not look like SOS.
+- Don't turn the canopy and dot into a literal eye: no eyelid line, no eyelashes, no blinking or "watching" animation.
+- Don't use umbrella icons anywhere else in the UI (including map and weather layers); the umbrella belongs to the logo only.
+- Don't use eye icons anywhere in the UI.
 - Don't use eye or monitoring language about people ("we are watching you"). The copy is about care and looking out for each other.
 - Don't distort it or add effects (shadows, gradients, glows).
 
@@ -48,7 +53,7 @@ Implement these as CSS variables and a Tailwind theme. The brand colors must nev
 | Token | Hex | Use |
 |---|---|---|
 | `--jaga-slate` | #1D3B53 | Primary brand, header bar, primary (non-emergency) buttons, logo |
-| `--jaga-teal` | #2F9C95 | Accent fills, selected states, logo pupil (not for small text) |
+| `--jaga-teal` | #2F9C95 | Accent fills, selected states, logo canopy (not for small text) |
 | `--jaga-teal-ink` | #1F7A74 | Teal for text and links on light backgrounds (passes 4.5:1) |
 | `--jaga-teal-light` | #7FD1C9 | Accent on dark backgrounds |
 | `--jaga-ground` | #F0F2EE | App background |
@@ -81,7 +86,7 @@ Implement these as CSS variables and a Tailwind theme. The brand colors must nev
 | Safe to return | house |
 | Stale marker | clock |
 
-No eye icons anywhere in the UI. The eye appears only in the logo.
+No eye icons anywhere in the UI, and no umbrella icons: the umbrella appears only in the logo.
 
 The MVP ships a light theme only, because it is more readable outdoors in bright sun. Dark mode comes later.
 
@@ -101,4 +106,4 @@ The MVP ships a light theme only, because it is more readable outdoors in bright
 ## Open brand checks (owner)
 - Confirm the Thai spelling จากา with local speakers.
 - Search the app stores and the Thai trademark register for "Jaga"; check domain availability.
-- Test the mark with a few residents from both communities, including elderly people. If it reads as surveillance, soften it: emphasize the contour lines and use the tagline everywhere.
+- Test the mark with a few residents from both communities, including elderly people. Show the app icon without the name and ask "What do you see? What would this app do?" If the canopy and dot read as a watching eye or as surveillance, soften it: drop the dot (the plain "j under a canopy") and use the tagline everywhere.

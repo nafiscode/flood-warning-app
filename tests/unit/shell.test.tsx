@@ -47,10 +47,14 @@ describe("SOS button", () => {
   });
 });
 
-describe("no eye icons outside the logo (docs/brand.md)", () => {
-  it("the icon set has no eye icon", () => {
-    expect(Object.keys(icons).filter((name) => /eye|view|watch/i.test(name))).toEqual([]);
-    expect(readFileSync("components/icons/index.tsx", "utf8")).not.toMatch(/\bEye\w*Icon\b/);
+describe("no eye or umbrella icons in the UI (docs/brand.md)", () => {
+  it("the icon set has no eye icon and no umbrella icon", () => {
+    expect(
+      Object.keys(icons).filter((name) => /eye|view|watch|umbrella|canopy/i.test(name)),
+    ).toEqual([]);
+    expect(readFileSync("components/icons/index.tsx", "utf8")).not.toMatch(
+      /\b(Eye|Umbrella)\w*Icon\b/,
+    );
   });
 });
 

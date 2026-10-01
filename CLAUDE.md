@@ -116,7 +116,7 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - **Brand:** use only the tokens in `docs/brand.md`, via CSS variables and the Tailwind theme. Brand slate and teal never show a status; only the alert palette does. Never recolor the logo.
 - **Accessibility:**
   - Alert levels are never shown by color alone: always icon + text + color.
-  - No eye icons anywhere in the UI except the logo. Watch uses a backpack icon (get your go-bag ready).
+  - No eye icons anywhere in the UI, and no umbrella icons except the logo (a j under a canopy). Watch uses a backpack icon (get your go-bag ready).
   - Tap targets are at least 48 px. Thai body text is at least 18 px.
 - **Mobile-first:**
   - Design and test at 360×640 on low-end Android.
@@ -144,6 +144,7 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - `npm run db:reset`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
 - These use `SUPABASE_DB_URL` from `.env.local` via `scripts/db.mjs` (never printed), so no `supabase login` or `link` is needed.
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
+- `npm run icons`: re-render the PNG icons in `public/icons/` from the SVGs in `public/brand/` (after a logo change)
 - `npm run test:rls`: RLS policy tests. On the laptop they run against `jaga-dev` (`SUPABASE_DB_URL`); in CI against a throwaway Supabase on the GitHub runner. Each test runs in a transaction that is rolled back.
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests
 - `cd pipeline && uv run python -m ingest_thaiwater refresh`: refresh the ThaiWater archive in `pipeline/data/` (also `waterlevel`, `rain-daily`, `rain-hourly`, `backfill`, `coverage`, `snapshot`)
