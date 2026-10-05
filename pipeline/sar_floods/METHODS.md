@@ -1,6 +1,8 @@
 # Sentinel-1 flood extents: methods note (S2)
 
-Status, 5 Oct 2026: **the code has not been run against Earth Engine yet** (no sign-in or project on the build machine). The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). Nothing below has been tuned or validated on real scenes. Treat every number as a starting value.
+Status, 5 Oct 2026: **first run against Earth Engine done up to the thresholds; nothing exported yet.** The connection check, the scene listing, the look direction and the per-tile histograms ran for November–December 2024 (20 passes). Classification, export, download and the frequency step have not run. The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). No parameter below has been tuned or validated on real scenes. Treat every number as a starting value.
+
+First result: the per-tile Otsu threshold was accepted on 3 of about 1,100 tile checks (two VV tiles at −4.8 and −5.2 dB and one VH tile at −3.6 dB, all on the 29 Nov 2024 pass of orbit 172). Everywhere else the fixed −3 dB drop applies, so that value in practice decides the maps.
 
 All parameters are in `config.yaml`; every run writes them, the scenes and every threshold into `out/sar_floods/runs/<run id>.json`.
 
