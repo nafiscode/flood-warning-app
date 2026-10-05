@@ -195,6 +195,27 @@ The secret key and the database password bypass RLS. They go only into `.env.loc
 
 **Pausing:** free projects pause after about 7 days without activity, and the app then fails to connect. To restore: Dashboard → the `jaga-dev` project → **Restore project** (takes a few minutes). A project paused for more than 90 days can't be restored, only downloaded as a backup; the migrations and seed rebuild it.
 
+## One-time: LINE sign-in
+
+Sign-in settings live in the LINE and Supabase dashboards, not in migrations, so a rebuilt or new Supabase project needs these steps again. A click-by-click version is in the build tracker ("LINE channels" tab).
+
+1. LINE Developers Console (business login, jagaapp.th@gmail.com): one provider `Jaga` holding a **LINE Login** channel (web app) and the Messaging API channel of the LINE Official Account. Both must be in the same provider, or the LINE user IDs won't match; that choice is permanent. Link the Official Account under *LINE Login channel → Basic settings → Linked LINE Official Account*.
+2. Copy the four `LINE_*` values into `.env.local` (names in `.env.example`).
+3. *LINE Login channel → LINE Login tab → Callback URL*: `https://<ref>.supabase.co/auth/v1/callback`.
+4. Supabase dashboard → *Authentication → Sign In / Providers* → add a custom provider:
+   - Provider identifier `line` (the app calls it `custom:line`), display name `LINE`
+   - Configuration method **Manual configuration**
+   - Issuer URL `https://access.line.me`, discovery URL empty
+   - Authorization URL `https://access.line.me/oauth2/v2.1/authorize`
+   - Token URL `https://api.line.me/oauth2/v2.1/token`
+   - Userinfo URL `https://api.line.me/oauth2/v2.1/userinfo`
+   - JWKS URI, if asked: `https://api.line.me/oauth2/v2.1/certs`
+   - Client ID and secret: the LINE Login channel ID and secret (watch for the browser auto-filling a saved login here)
+   - Scopes `openid, profile`
+   - **Allow users without email: on.** LINE gives no email; with it off, sign-in ends in "Error getting user email from external provider".
+5. *Authentication → URL Configuration → Redirect URLs*: `http://localhost:3000/**` and the deployed address.
+6. While the LINE Login channel is in **Developing** status, only LINE accounts with a role on it can sign in ("User need to have developer role" otherwise): *Roles → Invite by email*, role **Tester**, and accept the invitation while logged in as that person's own LINE account. Publishing the channel is a launch step.
+
 ## One-time: Cloudflare R2 for tiles and rasters
 
 Large pipeline outputs (PMTiles, COG rasters) live in Cloudflare R2, not in git or on the laptop. A click-by-click version is in the build tracker ("Approvals & Cloudflare" tab); in short:
