@@ -13,5 +13,9 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(await finishSignIn(supabase, next), origin));
   }
-  return NextResponse.redirect(new URL("/sign-in?error=link", origin));
+  // An expired email link comes back as otp_expired; any other error is from the LINE sign-in.
+  const failed =
+    !code && searchParams.has("error") && searchParams.get("error_code") !== "otp_expired";
+  const reason = failed ? "line" : "link";
+  return NextResponse.redirect(new URL(`/sign-in?error=${reason}`, origin));
 }

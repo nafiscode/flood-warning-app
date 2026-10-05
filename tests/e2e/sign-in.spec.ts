@@ -40,6 +40,16 @@ test("a broken sign-in link explains itself", async ({ page }) => {
   await expect(page.locator('p[role="alert"]')).toHaveText(th.signIn.error.link);
 });
 
+test("a failed LINE sign-in says so, an expired email link still asks for a new link", async ({
+  page,
+}) => {
+  await page.goto("/api/auth/callback?error=server_error&error_code=unexpected_failure");
+  await expect(page).toHaveURL(/\/sign-in\?error=line/);
+  await expect(page.locator('p[role="alert"]')).toHaveText(th.signIn.error.line);
+  await page.goto("/api/auth/callback?error=access_denied&error_code=otp_expired");
+  await expect(page).toHaveURL(/\/sign-in\?error=link/);
+});
+
 test("sign-out only accepts a form post", async ({ request }) => {
   const response = await request.get("/api/auth/sign-out", { maxRedirects: 0 });
   expect(response.status()).toBe(405);
