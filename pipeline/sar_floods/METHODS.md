@@ -1,0 +1,112 @@
+# Sentinel-1 flood extents: methods note (S2)
+
+Status, 5 Oct 2026: **the code has not been run against Earth Engine yet** (no sign-in or project on the build machine). The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). Nothing below has been tuned or validated on real scenes. Treat every number as a starting value.
+
+All parameters are in `config.yaml`; every run writes them, the scenes and every threshold into `out/sar_floods/runs/<run id>.json`.
+
+## What is computed
+
+1. **Scenes.** `COPERNICUS/S1_GRD`, IW, 10 m, scenes with both VV and VH, over the four provinces (`aoi.geojson`). Earth Engine's collection is sigma0 in dB after thermal-noise removal, radiometric calibration and range-Doppler terrain correction; it is not terrain-flattened. The ~25 s slices of one overflight are mosaicked into one **pass**. Near- and far-range edges are trimmed (incidence angle kept between 30.64° and 45.24°) against border noise.
+2. **Orbits.** Passes are handled per relative orbit and direction (e.g. `D091`). An event pass is only ever compared with a reference from the same orbit, so the viewing geometry is identical.
+3. **Dry reference.** Per orbit, the per-pixel **median** (in dB) of all scenes from 1 Feb to 30 Apr of the season's start year, all platforms. For season 2024 (1 Oct 2024 to 31 Jan 2025) that is Feb–Apr 2024. Reasons: Feb–Apr is the driest stretch on the east coast; the dry season *before* the event has the closest land cover; the median ignores an occasional wet scene. An orbit with fewer than 4 reference passes is skipped and logged.
+4. **Speckle.** Focal median, 30 m radius circle, on the dB image; the same filter on the event pass and on the reference composite. Chosen because it is one standard, cheap operation with one parameter, robust to bright point targets, and gives the same result in dB and linear power. Refined Lee keeps edges better but is far heavier in Earth Engine and has more to tune; not used.
+5. **Change.** `change = event − reference` in dB, per polarisation. Flood = strong drop.
+6. **Masks** (pixel is not classified):
+   - permanent water: JRC Global Surface Water v1.4 occurrence > 80 %
+   - slope > 5° from FABDEM (bare earth; a surface model puts false steps at plantation edges), computed on the DEM's own 30 m grid
+   - MERIT Hydro `hnd` (HAND) > 15 m (90 m data, first pass; S3 replaces it with FABDEM HAND)
+   - radar layover and shadow per orbit (below)
+7. **Threshold per tile.** The area is cut into 0.1° tiles (215 touch the provinces). For every pass, polarisation and tile, a histogram of the change (−20 to +10 dB, 0.2 dB bins, valid pixels only) is fetched and Otsu's threshold is computed locally (`threshold.py`). It is **used only if the histogram is bimodal enough**:
+   - at least 2000 valid pixels (at the 50 m histogram scale)
+   - each side of the threshold holds ≥ 5 % of the pixels
+   - on the histogram smoothed over 5 bins, the lowest point between the mode below and the mode above the threshold is ≤ 0.7 × the smaller mode (a single hump fails: Otsu still cuts it in half, but both "modes" then sit at the cut)
+   - the two modes are ≥ 3 dB apart
+   - the threshold lies between −12 and −2 dB
+
+   Otherwise the tile gets the **fixed drop of −3 dB** (power halved). The log records, per tile, the method, the threshold, the reason and the statistics. Tiles without data get the fixed drop.
+8. **Clean-up.** Flood patches smaller than 8 connected pixels are removed per pass and polarisation. (Not in the original brief; added because a maximum over 20–100 passes otherwise keeps every pass's leftover speckle. `min_connected_pixels: 0` turns it off.)
+9. **Polarisations.** VV and VH are thresholded separately and both are kept as bits in the extent rasters. `flood_rule: vv` decides what counts as flooded in `n_flooded` and the frequency (VV is the usual choice for open-water flooding; VH is noisier and close to the noise floor over water).
+
+## Outputs
+
+All rasters share one grid: EPSG:32647 (UTM 47N), 10 m, origin snapped to 30 m, 22 851 × 26 016 pixels.
+
+| File | Made | Content |
+|---|---|---|
+| `jaga_sar_scene_<UTC time>_<S1x>_<orbit>_10m_<hash>.tif` | Earth Engine, priority events only | 1 band `extent` |
+| `jaga_sar_max_<event>_10m_<hash>.tif` | Earth Engine, every season and both priority events | `extent` (flooded in any pass), `n_valid`, `n_flooded` |
+| `jaga_sar_frequency_2017-2025_10m_<hash>.tif` | locally, from the season files | `frequency` = Σ n_flooded ÷ Σ n_valid (−1 = never validly observed), `n_flooded`, `n_valid` |
+
+`extent` codes: 0 observed and dry, 1 flooded in VV only, 2 in VH only, 3 in both, 250 masked terrain (slope, HAND; in per-scene files also layover/shadow), 251 permanent water, 255 no valid observation. `<hash>` identifies the processing parameters and the area. Pass times are UTC, as in Sentinel product names: the ~06:20 Bangkok descending pass carries the previous day's date.
+
+## Radar layover and shadow: method and limits
+
+Method: the angular model of Vollrath, Mullissa & Reiche (2020). Terrain slope and aspect (FABDEM, 30 m) are combined with the orbit's incidence angle and range direction (taken from the gradient of the scene's `angle` band). Layover is flagged where the slope towards the radar is at least the incidence angle; shadow where the local incidence angle is ≥ 85°. The mask is grown by 100 m.
+
+Limits, stated plainly:
+- It flags the slopes that **cause** layover and shadow. It does not trace where the displaced signal lands. A mountain's layover falls on the ground in front of it (towards the radar), by roughly height ÷ tan(incidence): about 400 m for a 300 m ridge. The 100 m buffer covers only part of that.
+- In layover the image is bright, so floods there are **missed**, not invented. Narrow valley floors between steep slopes (Betong, Than To, Bannang Sata, upper Sai Buri, Sukhirin, Waeng) are therefore unreliable in these maps even where not masked.
+- True radar shadow needs back-slopes steeper than ~45–60° here and is rare; most of the mask is layover.
+- A 30 m DEM misses cliffs, cuttings and buildings. Urban layover is not handled at all (see below).
+- Most affected terrain is already removed by the slope and HAND masks; the separate mask mainly matters at their edges.
+
+## Known issues
+
+- **Wind and rain on water.** Wind-roughened or rain-struck water is bright in VV, so flooded areas can be missed on the day (monsoon surges are windy). VH is less sensitive; compare code 2 (VH only) with code 1 on such passes.
+- **Flooded vegetation.** Standing water under rubber, oil palm, mangrove and melaleuca/peat-swamp forest (Phru To Daeng, Phru Bacho) raises backscatter (double bounce) or leaves it unchanged. A drop-only detector misses it. Flooded plantations and swamp forest are under-mapped; this is the main omission to expect in Narathiwat.
+- **Urban areas.** Buildings give layover and double bounce; water between buildings is mostly invisible at this resolution. Hat Yai, Yala, Pattani, Narathiwat and Sungai Kolok town centres will look dry even when flooded. Do not read "not flooded" in built-up areas as safe.
+- **Rice paddies.** Main-season rice here is planted late (roughly Aug–Nov) and stands in water through Nov–Dec; in Feb–Apr fields are ripe, stubble or fallow. Paddy water is therefore mapped as flood (correct as "water present", wrong as "disaster flooding") and raises the frequency over paddy land. The reverse also happens: where dry-season rice is irrigated in Feb–Apr (e.g. the Songkhla Lake plain around Ranot), the reference is already dark and real floods are missed. The owner knows the local crop calendar better than this note; the reference window is one config line.
+- **Wet reference.** Late floods fall inside the window in some years (e.g. end of February 2022). The median absorbs a minority of wet scenes, not a majority; on a thin reference (4–7 passes) it can be biased dark, which hides floods.
+- **Change detection flags any strong darkening**: harvest, ploughing, cleared plantations, new ponds, aquaculture. There is no absolute backscatter test yet.
+- **Otsu is rarely used when floods are small in a tile.** With a few percent of a tile flooded, Otsu cuts the main hump instead (covered by a test) and the tile falls back to −3 dB. Expect the fixed drop in most tiles; the log shows the share. Per-tile thresholds also leave visible steps at tile borders where neighbours differ.
+- **Histogram scale.** Histograms are sampled at 50 m (Earth Engine reads the 40 m pyramid level, an average of dB values) for speed, while thresholds are applied to the 10 m filtered image. The class means agree; the spreads differ slightly.
+- **Speckle filter** blurs edges by about 30 m and removes narrow features (canals, roads under water).
+- **Orbit gaps and revisit.**
+  - Sentinel-1B stopped on 23 Dec 2021. Seasons 2017–2020 may have both satellites (6-day repeat per orbit where B acquired here); season 2021 loses B mid-season; seasons 2022–2024 have Sentinel-1A only: one pass per orbit every 12 days, so a flood that rises and drains between passes is not seen at all. Overlapping orbits shorten the gap in places, unevenly.
+  - Sentinel-1C was launched in Dec 2024 and Sentinel-1D in Nov 2025. Whether and from when their scenes are in `COPERNICUS/S1_GRD` over this area has not been checked; `run --dry-run` lists the platform of every pass.
+  - The **maximum extent is the maximum of what was imaged**, not of the flood. `n_valid` shows how often each pixel was seen. Flood frequency mixes dense (2017–2021) and sparse (2022–2024) sampling.
+  - A skipped orbit (thin reference) removes its passes from the event; the log lists them.
+- **Relative orbit number.** Passes are grouped by `relativeOrbitNumber_start`. It changes at the equator on ascending passes; slices over 5.6–8° N start north of it, so start and stop numbers should agree, but this is unverified.
+- **Border noise** in 2017–2018 scenes may survive the angle trim as dark stripes along swath edges, which would read as flood.
+- **Area.** Processing stops at the province outline (+~1 km). The Malaysian side of the Kolok basin is not mapped.
+- **Earth Engine catalog changes** (JRC v1.4, FABDEM community asset) would change results; asset ids are in the run log.
+
+## To check by eye in the Code Editor
+
+`code_editor/sar_floods.js` runs the same chain for one pass. For at least one pass per orbit of each priority event:
+1. Reference VV: no dark stripes at swath edges, no obviously flooded reference (compare with the next orbit).
+2. Change VV and VH: the flood stands out; note wind streaks on the lake and sea.
+3. Threshold layer and Console table: where Otsu was used, is the value plausible (about −3 to −8 dB)? Do tile borders show in the flood layer?
+4. Layover/shadow mask against the hillshade in the mountains: on the correct side of the ridges for ascending vs descending?
+5. Slope and HAND masks: do they cut into real floodplain (Pattani and Sai Buri valleys, Kolok plain, around Songkhla Lake)?
+6. Known flooded places on known dates (Hat Yai, Yala town, Sungai Kolok, Tak Bai, Sai Buri) from the owner's event timeline.
+7. Paddy areas: how much of the "flood" is routine paddy water?
+8. Does −3 dB over- or under-detect? Try −2.5 and −4.
+
+## To verify on first run (untested Earth Engine and Drive usage)
+
+Run `python -m sar_floods check`, then `run event-2024-nov-dec --dry-run`, then `--dry-run --with-thresholds`, before starting tasks.
+
+- FABDEM asset id and band (`projects/sat-io/open-datasets/FABDEM`, `b1`) and that `first().projection()` is the common 1″ grid.
+- Scene properties used for grouping: `platform_number`, `relativeOrbitNumber_start`, `orbitNumber_start`, `orbitProperties_pass`, `resolution_meters`.
+- `reduceRegions` + `fixedHistogram` output naming for a two-band image (expected: one property per band).
+- `remap` with negative integer targets; `unmask(value, false)`; `connectedPixelCount` on a self-masked image.
+- The sign and direction convention of `ee.Terrain.aspect` on the `angle` band (expected ≈ 258° ascending, ≈ 102° descending); a wrong sign mirrors the layover mask.
+- `reproject` of slope/aspect to the DEM grid inside a 10 m export (cost).
+- Export with `crs` + `crsTransform` + `dimensions`, `fileDimensions` 23040 × 26112 (one file), `formatOptions.noData`, and that the output is a valid COG on the exact grid. If Earth Engine still splits the file, the downloader and the frequency step handle the parts.
+- Whether one task holds a whole season (up to ~100 passes) without timing out; if not, lower the load with `--scale 20` or split the season.
+- Drive download with the Earth Engine credentials and `EE_PROJECT` as quota project (the Drive API must be enabled on the project).
+- Compute used: `python -m sar_floods status` records EECU-seconds per task. The project's non-commercial quota tier has not been checked.
+
+## Validation still open
+
+- **GISTDA comparison: not done.** No GISTDA layer was accessed or downloaded. From public knowledge, candidates are (a) the yearly flood-extent layers and (b) the recurrent-flood ("repeatedly flooded area") layer shown on GISTDA's flood portal, and (c) the recent-flood layers of GISTDA's disaster/open-data API, which needs a registered key. Download formats, terms of reuse and coverage of the far south for 2017–2025 are unknown to us; the owner needs to check access or ask GISTDA. Note GISTDA's maps are largely SAR-based too, so agreement is a consistency check, not independent truth.
+- Hold-out scenes for CSI, hit rate and false-alarm rate (science plan section 4): not selected yet.
+- Gauge stage at pass time (S1 archive) and the owner's event timeline: not compared yet.
+
+## References
+
+- Otsu, N. (1979). A threshold selection method from gray-level histograms. IEEE Trans. SMC 9(1).
+- Chini, M. et al. (2017). A hierarchical split-based approach for parametric thresholding of SAR images: flood inundation as a test case. IEEE TGRS 55(12). (Why a tile must be bimodal before its threshold is trusted.)
+- Vollrath, A., Mullissa, A., Reiche, J. (2020). Angular-based radiometric slope correction for Sentinel-1 on Google Earth Engine. Remote Sensing 12(11), 1867.
+- Mullissa, A. et al. (2021). Sentinel-1 SAR backscatter Analysis Ready Data preparation in Google Earth Engine. Remote Sensing 13(10), 1954.

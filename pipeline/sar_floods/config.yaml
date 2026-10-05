@@ -1,0 +1,107 @@
+# Sentinel-1 flood extents (S2). Every value here is written into the run log; the ones that change
+# pixel values also go into the 7-character parameter hash in each file name (see settings.HASHED_KEYS).
+# Reasons and known issues: METHODS.md. Nothing here has been tuned against real scenes yet.
+
+# DOPA province codes in scope. The processing area is aoi.geojson, built from these (`sar_floods aoi`).
+provinces:
+  "90": Songkhla
+  "94": Pattani
+  "95": Yala
+  "96": Narathiwat
+
+sentinel1:
+  collection: COPERNICUS/S1_GRD       # sigma0 in dB, thermal noise removed, terrain-corrected (not flattened)
+  instrument_mode: IW
+  polarisations: [VV, VH]             # both are thresholded; flood_rule decides which one counts
+  resolution_meters: 10
+  # Swath-edge trim against border noise (limits from Mullissa et al. 2021, the S1 ARD framework).
+  incidence_angle_deg: [30.64, 45.24]
+
+# A season is named by the year it starts in: season 2024 = 1 Oct 2024 to 31 Jan 2025 (Bangkok dates).
+seasons:
+  first: 2017
+  last: 2025
+  start: "10-01"
+  end: "01-31"                        # in the following year
+
+# Per-scene extents are exported only for these (decision 2026-10-05). Bangkok dates, inclusive.
+priority_events:
+  - {id: 2024-nov-dec, start: "2024-11-01", end: "2024-12-31"}
+  - {id: 2025-nov-dec, start: "2025-11-01", end: "2025-12-31"}
+
+# Dry reference: per relative orbit and pass direction, the median of all scenes in this window.
+# February to April is the driest stretch on the east coast of the far south (north-east monsoon rain ends
+# in January, south-west monsoon showers start in May). The window is the one in the season's own
+# calendar year, i.e. 6-8 months BEFORE the season, so land cover matches as closely as possible.
+# A median, not a mean: one or two wet scenes (late floods, e.g. end of February 2022) do not move it.
+reference:
+  start: "02-01"
+  end: "04-30"
+  year_offsets: [0]                   # 0 = the season's start year; add 1 or -1 to widen a thin reference
+  min_passes: 4                       # fewer reference passes on an orbit => its event passes are skipped (logged)
+
+# Speckle: focal median on the dB image, same kernel for the event scene and the reference composite.
+# Chosen over refined Lee because it is one cheap, standard operation with one parameter, is robust to
+# bright point targets, and is identical in dB and linear power (rank filter). It blurs edges by ~radius.
+speckle:
+  filter: focal_median                # or "none"
+  radius_m: 30
+  kernel: circle
+
+threshold:
+  tile_size_deg: 0.1                  # Otsu tiles: a fixed 0.1 deg lon/lat lattice (~11 km)
+  histogram:
+    min_db: -20.0                     # change = event - reference, in dB; values are clamped into this range
+    max_db: 10.0
+    bin_db: 0.2
+    scale_m: 50                       # histograms are sampled at this scale (speed); see METHODS "Known issues"
+  # A tile's Otsu threshold is used only if ALL of these hold; otherwise the fixed drop below is used.
+  bimodality:
+    min_pixels: 2000                  # valid pixels in the tile at scale_m
+    min_class_fraction: 0.05          # each side of the threshold holds at least this share of pixels
+    smooth_bins: 5                    # moving-average width used to find the two modes and the valley
+    max_valley_ratio: 0.7             # lowest point between the modes <= this x the smaller mode
+    min_mode_separation_db: 3.0       # the two modes are at least this far apart
+  otsu_range_db: [-12.0, -2.0]        # an Otsu threshold outside this range is not a flood threshold
+  fallback_drop_db: {VV: -3.0, VH: -3.0}   # fixed backscatter drop (-3 dB = power halved)
+
+# Which polarisation counts as "flooded" in n_flooded and the frequency: vv | vh | vv_or_vh | vv_and_vh.
+# The extent rasters keep both as bits (1 = VV, 2 = VH), so this can be revisited without re-running.
+flood_rule: vv
+
+# Flood patches smaller than this many 8-connected pixels (at the export scale) are dropped, per scene
+# and per polarisation, before anything is combined. 0 = off. A maximum over many scenes otherwise
+# collects every scene's leftover speckle.
+min_connected_pixels: 8
+
+masks:
+  permanent_water:
+    asset: JRC/GSW1_4/GlobalSurfaceWater
+    band: occurrence
+    min_occurrence_pct: 80            # masked where occurrence > 80
+  slope:
+    # Bare-earth DEM: a surface model (GLO-30, SRTM) puts false steps at every plantation edge.
+    # Alternative if the community asset is unavailable: COPERNICUS/DEM/GLO30, band DEM, collection.
+    dem_asset: projects/sat-io/open-datasets/FABDEM
+    dem_band: b1
+    dem_is_collection: true
+    max_deg: 5.0                      # masked where slope > 5 deg
+  hand:
+    asset: MERIT/Hydro/v1_0_1
+    band: hnd
+    max_m: 15.0                       # masked where height above nearest drainage > 15 m (90 m data, first pass)
+  layover_shadow:
+    enabled: true
+    shadow_lia_deg: 85.0              # shadow where the local incidence angle >= this
+    buffer_m: 100                     # grow the mask by this much (partial cover for passive layover)
+
+export:
+  crs: "EPSG:32647"                   # UTM 47N for everything; the part east of 102 deg E is ~10 km into zone 48
+  scale_m: 10
+  snap_m: 30                          # grid origin snapped to this, so 30 m (FABDEM/HAND) cells nest
+  drive_folder: jaga_sar_floods       # one Google Drive folder for every export
+  max_pixels: 2000000000
+  single_file: true                   # ask Earth Engine for one GeoTIFF per export (fileDimensions)
+
+# Local outputs, relative to pipeline/ (ignored by git through the root .gitignore rule "out/").
+output_dir: out/sar_floods
