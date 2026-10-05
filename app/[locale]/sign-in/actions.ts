@@ -26,6 +26,17 @@ async function callbackUrl(form: FormData): Promise<string> {
   return `${origin}/api/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
 }
 
+/**
+ * Language of LINE's own log-in and consent screens (its `ui_locales` parameter), most wanted
+ * first. Without it LINE follows the browser language, which is often English on Thai phones.
+ * LINE has no Malay screens, so Malay falls back to Thai.
+ */
+const LINE_UI_LOCALES: Record<string, string> = {
+  th: "th-TH",
+  ms: "ms-MY th-TH",
+  en: "en-US",
+};
+
 export async function signInWithLine(form: FormData) {
   if (!supabaseConfigured() || !lineSignInConfigured()) back(form, { error: "unavailable" });
   const supabase = await createClient();
@@ -36,7 +47,10 @@ export async function signInWithLine(form: FormData) {
       redirectTo: await callbackUrl(form),
       scopes: "openid profile",
       // Offer "add Jaga as a friend" on LINE's consent screen, so alerts can reach the person.
-      queryParams: { bot_prompt: "normal" },
+      queryParams: {
+        bot_prompt: "normal",
+        ui_locales: LINE_UI_LOCALES[field(form, "locale")] ?? LINE_UI_LOCALES.th,
+      },
     },
   });
   if (error || !data.url) back(form, { error: "line" });
