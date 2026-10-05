@@ -12,7 +12,7 @@ import {
   label,
   notice,
 } from "@/lib/ui";
-import { sendEmailLink, sendPhoneCode, signInWithLine, verifyPhoneCode } from "./actions";
+import { sendEmailLink, sendPhoneCode, verifyPhoneCode } from "./actions";
 
 const ERRORS = ["link", "line", "email", "phone", "sms", "code", "rate", "unavailable"] as const;
 
@@ -40,6 +40,7 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
   const next = safeNextPath(one(query.next)) ?? "";
   const error = ERRORS.find((e) => e === one(query.error));
   const codeStep = one(query.step) === "code" && one(query.phone) !== "";
+  const lineHref = `/api/auth/line?${new URLSearchParams({ locale, ...(next ? { next } : {}) })}`;
   const hidden = (
     <>
       <input type="hidden" name="locale" value={locale} />
@@ -65,13 +66,13 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
       <section className={card}>
         <h2 className="text-body font-bold">{t("line.title")}</h2>
         {lineSignInConfigured() ? (
-          <form action={signInWithLine} className="flex flex-col gap-3">
-            {hidden}
-            <button type="submit" className={buttonPrimary}>
+          <div className="flex flex-col gap-3">
+            {/* A plain link, not a form: a phone only opens the LINE app for a tapped link. */}
+            <a href={lineHref} rel="nofollow" className={buttonPrimary}>
               {t("line.button")}
-            </button>
+            </a>
             <p className={hint}>{t("line.note")}</p>
-          </form>
+          </div>
         ) : (
           <p className={hint}>{t("line.unavailable")}</p>
         )}

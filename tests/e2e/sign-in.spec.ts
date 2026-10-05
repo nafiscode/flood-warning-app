@@ -50,6 +50,20 @@ test("a failed LINE sign-in says so, an expired email link still asks for a new 
   await expect(page).toHaveURL(/\/sign-in\?error=link/);
 });
 
+test("the LINE link answers with one redirect, to LINE or back to sign-in, never elsewhere", async ({
+  request,
+}) => {
+  const response = await request.get("/api/auth/line?locale=en&next=https://evil.example/x", {
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(307);
+  const location = response.headers()["location"] ?? "";
+  // With LINE configured (a laptop with .env.local) it goes straight to LINE; in CI it is not.
+  const toLine = location.startsWith("https://access.line.me/oauth2/v2.1/authorize?");
+  expect(toLine || location.endsWith("/en/sign-in?error=unavailable")).toBe(true);
+  expect(location).not.toContain("evil.example");
+});
+
 test("sign-out only accepts a form post", async ({ request }) => {
   const response = await request.get("/api/auth/sign-out", { maxRedirects: 0 });
   expect(response.status()).toBe(405);
