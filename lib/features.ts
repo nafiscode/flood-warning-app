@@ -10,3 +10,11 @@ export function phoneSignInEnabled(): boolean {
 export function lineSignInConfigured(): boolean {
   return !!process.env.LINE_LOGIN_CHANNEL_ID;
 }
+
+/**
+ * True for a phone's browser. Tablets and computers are false: an iPad's Safari presents itself
+ * as a Mac, and an Android tablet's browser leaves out "Mobile".
+ */
+export function isPhoneBrowser(userAgent: string | null | undefined): boolean {
+  return /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(userAgent ?? "");
+}

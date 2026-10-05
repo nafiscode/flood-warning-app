@@ -1,9 +1,10 @@
 "use server";
 
 import type { Provider } from "@supabase/supabase-js";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { finishSignIn, localePath, requestOrigin, safeNextPath } from "@/lib/auth";
-import { lineSignInConfigured, phoneSignInEnabled } from "@/lib/features";
+import { isPhoneBrowser, lineSignInConfigured, phoneSignInEnabled } from "@/lib/features";
 import { normalizePhone } from "@/lib/phone";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -39,6 +40,9 @@ const LINE_UI_LOCALES_DEFAULT = "th-TH";
 
 export async function signInWithLine(form: FormData) {
   if (!supabaseConfigured() || !lineSignInConfigured()) back(form, { error: "unavailable" });
+  // On a phone LINE's page hands over to the LINE app by itself. On a computer or tablet it would
+  // ask for an email and password first; show the QR code instead, to scan with the LINE app.
+  const onPhone = isPhoneBrowser((await headers()).get("user-agent"));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     // LINE is a custom OAuth2 provider in Supabase Auth (decision 2026-10-05).
@@ -50,6 +54,7 @@ export async function signInWithLine(form: FormData) {
       queryParams: {
         bot_prompt: "normal",
         ui_locales: LINE_UI_LOCALES[field(form, "locale")] ?? LINE_UI_LOCALES_DEFAULT,
+        ...(onPhone ? {} : { initial_amr_display: "lineqr" }),
       },
     },
   });
