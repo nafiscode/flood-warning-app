@@ -1,7 +1,7 @@
 """Everything that talks to Google Earth Engine.
 
-First run against Earth Engine on 2026-10-05: `check`, scene listing, the look direction and the
-tile histograms work; the classification and export steps have not run yet. The offline tests only
+First run against Earth Engine on 2026-10-05: `check`, scene listing, the look direction, the tile
+histograms and the classification work, and the first exports were started. The offline tests only
 execute this module against a stand-in `ee`, which catches typos but not wrong API behaviour.
 METHODS.md, "To verify on first run", lists what is still to confirm.
 
