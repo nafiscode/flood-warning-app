@@ -42,6 +42,8 @@ export async function as(db: Client, caller: Caller): Promise<void> {
     await db.query("select set_config('request.jwt.claims', $1, true)", [
       JSON.stringify({ role: "anon" }),
     ]);
+    // Clear the previous caller: auth.uid() reads this setting before the claims.
+    await db.query("select set_config('request.jwt.claim.sub', '', true)");
     await db.query("set local role anon");
   } else {
     await db.query("select set_config('request.jwt.claims', $1, true)", [
