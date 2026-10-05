@@ -31,10 +31,7 @@ export async function GET(request: NextRequest) {
     const query = new URLSearchParams({ error, ...(next ? { next } : {}) });
     return NextResponse.redirect(new URL(`${localePath(locale, "/sign-in")}?${query}`, origin));
   };
-  const asJson = searchParams.get("format") === "json";
-  if (!supabaseConfigured() || !lineSignInConfigured()) {
-    return asJson ? NextResponse.json({ url: null }) : back("unavailable");
-  }
+  if (!supabaseConfigured() || !lineSignInConfigured()) return back("unavailable");
 
   // On a computer or tablet LINE would ask for an email and password first; show the QR code
   // instead, to scan with the LINE app. Never on a phone: nobody can scan their own screen.
@@ -54,7 +51,7 @@ export async function GET(request: NextRequest) {
       },
     },
   });
-  if (error || !data.url) return asJson ? NextResponse.json({ url: null }) : back("line");
+  if (error || !data.url) return back("line");
 
   // Supabase answers its own address with a redirect to LINE. Follow that hop here, so the
   // browser goes to LINE directly. If it can't be followed, the browser takes the hop itself.
@@ -66,13 +63,7 @@ export async function GET(request: NextRequest) {
   } catch {
     // Keep Supabase's address.
   }
-  const headers = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" };
-  // The page asks for the address itself (format=json) to turn its button into a link to LINE.
-  if (asJson) {
-    return NextResponse.json(
-      { url: target.startsWith(`${LINE_AUTHORIZE}?`) ? target : null },
-      { headers },
-    );
-  }
-  return NextResponse.redirect(target, { headers });
+  return NextResponse.redirect(target, {
+    headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" },
+  });
 }
