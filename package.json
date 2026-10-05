@@ -23,7 +23,8 @@
     "db:reset": "node scripts/db.mjs db reset",
     "db:migrations": "node scripts/db.mjs migration list",
     "db:new": "supabase migration new",
-    "icons": "node scripts/icons.mjs"
+    "icons": "node scripts/icons.mjs",
+    "admin:super": "node scripts/admin.mjs super-admin"
   },
   "dependencies": {
     "@serwist/turbopack": "^9.5.12",

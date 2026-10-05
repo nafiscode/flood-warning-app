@@ -47,6 +47,256 @@
     "ms": "Bahasa Melayu",
     "en": "English"
   },
+  "nav": {
+    "account": "Akaun"
+  },
+  "signIn": {
+    "title": "Log masuk",
+    "visitorNote": "Tak perlu log masuk untuk minta tolong (SOS), tengok amaran atau telefon talian kecemasan.",
+    "line": {
+      "title": "Orang kampung dan pasukan bantuan",
+      "button": "Log masuk dengan LINE",
+      "note": "Log masuk untuk terima amaran tambon anda melalui LINE dan simpan rumah serta tempat yang anda jaga.",
+      "unavailable": "Log masuk dengan LINE belum dibuka."
+    },
+    "phone": {
+      "title": "Log masuk dengan nombor telefon",
+      "label": "Nombor telefon bimbit",
+      "send": "Hantar kod melalui SMS",
+      "codeSentTo": "Kami sudah hantar kod ke {phone}.",
+      "codeLabel": "Kod daripada SMS",
+      "verify": "Sahkan kod"
+    },
+    "admin": {
+      "summary": "Untuk pentadbir",
+      "label": "E-mel yang dijemput",
+      "send": "Hantar pautan log masuk",
+      "note": "Buka pautan dalam e-mel dengan pelayar ini. Pautan boleh diguna sekali sahaja."
+    },
+    "sent": {
+      "email": "Jika e-mel ini dijemput, kami sudah hantar pautan log masuk. Sila semak peti e-mel."
+    },
+    "error": {
+      "link": "Pautan tidak boleh diguna atau sudah tamat tempoh. Sila minta pautan baru.",
+      "line": "Log masuk dengan LINE tidak berjaya. Sila cuba lagi.",
+      "email": "E-mel tidak betul.",
+      "phone": "Nombor telefon tidak betul.",
+      "sms": "Kod tidak dapat dihantar. Sila cuba lagi.",
+      "code": "Kod salah atau sudah tamat tempoh.",
+      "rate": "Terlalu kerap. Tunggu sekejap dan cuba lagi.",
+      "unavailable": "Cara log masuk ini belum boleh diguna sekarang."
+    }
+  },
+  "account": {
+    "title": "Akaun saya",
+    "setup": {
+      "title": "Maklumat anda",
+      "intro": "Isi nama sahaja sudah boleh mula. Yang lain tidak wajib."
+    },
+    "name": {
+      "label": "Nama paparan",
+      "hint": "Nama panggilan pun boleh. Petugas nampak nama ini bila anda minta tolong."
+    },
+    "phone": {
+      "label": "Nombor telefon (tidak wajib)",
+      "hint": "Tanpa nombor, pasukan penyelamat tak boleh telefon anda. Nombor anda tidak didedahkan kepada umum."
+    },
+    "language": {
+      "label": "Bahasa"
+    },
+    "home": {
+      "title": "Lokasi rumah (tidak wajib)",
+      "why": "Diguna untuk tunjuk amaran tambon anda dan tempat selamat dekat rumah.",
+      "saved": "Lokasi rumah sudah disimpan.",
+      "useGps": "Guna lokasi saya sekarang",
+      "locating": "Sedang cari lokasi…",
+      "found": "Lokasi dijumpai:",
+      "failed": "Lokasi tak dapat dicari. Buka GPS dan cuba lagi, atau langkau dulu.",
+      "clear": "Jangan guna lokasi ini",
+      "consent": "Saya setuju Jaga simpan lokasi rumah saya untuk tujuan amaran.",
+      "remove": "Padam lokasi rumah yang disimpan"
+    },
+    "save": "Simpan",
+    "error": {
+      "name": "Sila isi nama (tidak lebih 80 huruf).",
+      "phone": "Nombor telefon tidak betul.",
+      "location": "Lokasi tidak betul.",
+      "consent": "Sila tanda setuju sebelum simpan lokasi rumah, atau pilih jangan guna lokasi.",
+      "save": "Tidak dapat disimpan. Sila cuba lagi."
+    },
+    "role": {
+      "user": "Pengguna",
+      "authority": "Pasukan bantuan",
+      "admin": "Pentadbir",
+      "super_admin": "Pentadbir utama"
+    },
+    "edit": "Ubah maklumat",
+    "signOut": "Log keluar",
+    "adminLink": "Buka halaman pentadbir",
+    "authority": {
+      "title": "Untuk pasukan bantuan",
+      "intro": "Pasukan penyelamat, jabatan kerajaan, yayasan dan pasukan sukarela mendaftar untuk terima permintaan bantuan di kawasan masing-masing.",
+      "register": "Daftar pasukan",
+      "registered": "Pendaftaran sudah dihantar. Pentadbir akan telefon penyelaras sebelum meluluskan.",
+      "status": {
+        "pending": "Menunggu semakan pentadbir",
+        "verified": "Sudah disahkan",
+        "suspended": "Digantung"
+      }
+    }
+  },
+  "authorityRegister": {
+    "title": "Daftar pasukan bantuan",
+    "intro": "Selepas borang dihantar, pentadbir Jaga akan telefon penyelaras sebelum meluluskan. Sementara menunggu, anda belum boleh nampak data peribadi orang yang minta tolong.",
+    "orgType": {
+      "label": "Jenis organisasi",
+      "government": "Jabatan kerajaan",
+      "private": "Swasta",
+      "nonprofit": "Yayasan / pertubuhan bukan untung",
+      "volunteer": "Pasukan sukarela"
+    },
+    "orgName": {
+      "label": "Nama organisasi atau jabatan induk",
+      "hint": "Jika satu pasukan jaga beberapa kawasan, daftar berasingan dengan nama organisasi yang sama."
+    },
+    "unitName": {
+      "label": "Nama unit atau pejabat",
+      "hint": "Contoh: Pasukan bot penyelamat 1"
+    },
+    "officialPhone": {
+      "label": "Nombor telefon rasmi unit (tidak wajib)"
+    },
+    "publicContact": {
+      "label": "Tunjuk nombor rasmi ini kepada umum",
+      "hint": "Ditunjuk hanya selepas pentadbir meluluskan unit. Jika tidak ditanda, nombor tidak ditunjuk."
+    },
+    "poc": {
+      "title": "Penyelaras",
+      "privacy": "Nama dan nombor penyelaras tidak didedahkan kepada umum. Hanya pentadbir dan unit yang berkongsi kawasan boleh tengok, dan setiap kali dibuka akan direkod.",
+      "name": "Nama penyelaras",
+      "phone": "Nombor telefon bimbit penyelaras",
+      "phoneHint": "Pentadbir akan telefon nombor ini untuk pengesahan."
+    },
+    "capability": {
+      "label": "Keupayaan unit (boleh pilih lebih daripada satu)",
+      "coordination": {
+        "name": "Penyelarasan",
+        "hint": "Terima aduan dan selaras dengan unit lain"
+      },
+      "rescue": {
+        "name": "Menyelamat",
+        "hint": "Ada pasukan dan peralatan untuk sampai kepada mangsa"
+      },
+      "planning": {
+        "name": "Perancangan",
+        "hint": "Merancang dan memantau keadaan"
+      },
+      "support": {
+        "name": "Sokongan",
+        "hint": "Makanan, tempat tinggal, ubat atau pengangkutan"
+      }
+    },
+    "coverage": {
+      "label": "Kawasan tanggungjawab",
+      "hint": "Pilih seluruh wilayah, seluruh daerah, atau pilih tambon satu-satu.",
+      "wholeProvince": "Seluruh wilayah {name}",
+      "chooseDistricts": "Pilih daerah dalam {name}",
+      "wholeDistrict": "Seluruh daerah {name}",
+      "chooseTambons": "Pilih tambon dalam {name}",
+      "unavailable": "Senarai kawasan tidak dapat dimuat. Sila cuba lagi nanti."
+    },
+    "afterSubmit": "Selepas dihantar, status kekal \"menunggu\" sehingga pentadbir meluluskan.",
+    "submit": "Hantar pendaftaran",
+    "error": {
+      "required": "Sila isi semua maklumat yang wajib.",
+      "pocPhone": "Nombor penyelaras tidak betul.",
+      "officialPhone": "Nombor rasmi tidak betul.",
+      "capability": "Sila pilih sekurang-kurangnya satu keupayaan.",
+      "coverage": "Sila pilih sekurang-kurangnya satu kawasan.",
+      "limit": "Satu akaun boleh daftar paling banyak 5 unit.",
+      "save": "Pendaftaran tidak berjaya. Sila cuba lagi."
+    }
+  },
+  "admin": {
+    "title": "Pentadbir",
+    "signedInAs": "Log masuk sebagai {name}",
+    "bangkokTime": "(waktu Thai)",
+    "nav": {
+      "label": "Menu pentadbir",
+      "home": "Utama",
+      "authorities": "Semak pasukan",
+      "invitations": "Pentadbir"
+    },
+    "role": {
+      "admin": "Pentadbir",
+      "super_admin": "Pentadbir utama"
+    },
+    "authorities": {
+      "title": "Semak pasukan bantuan",
+      "pendingCount": "{count} menunggu semakan",
+      "open": "Buka senarai",
+      "pending": "Menunggu ({count})",
+      "none": "Tiada pasukan yang menunggu.",
+      "others": "Sudah disahkan atau digantung",
+      "coverage": "Dipilih: {provinces} wilayah, {districts} daerah, {tambons} tambon · jumlah {total} tambon",
+      "registered": "Didaftar pada",
+      "contact": "Penyelaras",
+      "reveal": "Tengok nama dan nombor penyelaras (direkod setiap kali)",
+      "called": "Saya sudah telefon nombor ini dan penyelaras mengesahkan pendaftaran",
+      "verify": "Luluskan unit ini",
+      "suspend": "Gantung unit ini",
+      "reason": "Sebab",
+      "suspendConfirm": "Sahkan penggantungan",
+      "status": {
+        "pending": "Menunggu",
+        "verified": "Sudah disahkan",
+        "suspended": "Digantung"
+      },
+      "error": {
+        "call": "Telefon nombor penyelaras untuk pengesahan sebelum meluluskan.",
+        "save": "Tidak berjaya. Sila cuba lagi."
+      },
+      "done": {
+        "verified": "Unit sudah diluluskan.",
+        "suspended": "Unit sudah digantung."
+      }
+    },
+    "invitations": {
+      "title": "Pentadbir dan jemputan",
+      "open": "Urus",
+      "new": "Jemput pentadbir",
+      "email": "E-mel",
+      "asSuperAdmin": "Jadikan pentadbir utama",
+      "asSuperAdminHint": "Boleh urus pentadbir lain. Hanya bila betul-betul perlu.",
+      "send": "Jemput",
+      "how": "E-mel jemputan tidak dihantar secara automatik. Beritahu orang itu buka halaman log masuk, pilih \"Untuk pentadbir\" dan isi e-mel ini. Jemputan tamat selepas 14 hari.",
+      "list": "Jemputan",
+      "none": "Belum ada jemputan.",
+      "revoke": "Batal jemputan",
+      "admins": "Pentadbir sekarang",
+      "noName": "(belum ada nama)",
+      "remove": "Tarik balik peranan pentadbir",
+      "status": {
+        "pending": "Menunggu",
+        "accepted": "Diterima",
+        "revoked": "Dibatal",
+        "expired": "Tamat tempoh"
+      },
+      "error": {
+        "forbidden": "Hanya pentadbir utama boleh buat ini.",
+        "email": "E-mel tidak betul.",
+        "duplicate": "E-mel ini sudah ada jemputan yang menunggu.",
+        "account": "Akaun untuk e-mel ini tidak dapat dibuat. Sila cuba lagi.",
+        "unavailable": "Sistem ini belum disediakan untuk jemputan.",
+        "save": "Tidak berjaya. Sila cuba lagi."
+      },
+      "done": {
+        "invited": "Jemputan sudah disimpan.",
+        "revoked": "Jemputan sudah dibatal.",
+        "removed": "Peranan sudah ditarik balik."
+      }
+    }
+  },
   "devBrand": {
     "title": "Brand review",
     "note": "Development and preview only. Not available in production.",

@@ -52,6 +52,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const t = await getTranslations("app");
+  const tNav = await getTranslations("nav");
   // Only client components need messages in the browser; send just their namespaces (slow 3G).
   const messages = await getMessages();
   const clientMessages = { language: messages.language };
@@ -72,7 +73,16 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                 <Link href="/" className="inline-flex min-h-tap items-center">
                   <Logo size={40} tone="reverse" />
                 </Link>
-                <LanguageSwitcher />
+                <div className="flex flex-wrap items-center">
+                  <LanguageSwitcher />
+                  <Link
+                    href="/account"
+                    prefetch={false}
+                    className="inline-flex min-h-tap items-center rounded px-2 text-small font-medium text-white underline"
+                  >
+                    {tNav("account")}
+                  </Link>
+                </div>
               </div>
             </header>
             <main id="main" className="mx-auto w-full max-w-screen-sm flex-1 px-4 py-6">

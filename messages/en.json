@@ -47,6 +47,256 @@
     "ms": "Bahasa Melayu",
     "en": "English"
   },
+  "nav": {
+    "account": "Account"
+  },
+  "signIn": {
+    "title": "Sign in",
+    "visitorNote": "You don't need to sign in to send an SOS, see alerts or call the hotlines.",
+    "line": {
+      "title": "Residents and response units",
+      "button": "Sign in with LINE",
+      "note": "Sign in to get your tambon's alerts in LINE and to save your home and the places you watch.",
+      "unavailable": "Sign-in with LINE isn't available yet."
+    },
+    "phone": {
+      "title": "Sign in with your phone number",
+      "label": "Mobile number",
+      "send": "Send a code by SMS",
+      "codeSentTo": "We sent a code to {phone}.",
+      "codeLabel": "Code from the SMS",
+      "verify": "Confirm the code"
+    },
+    "admin": {
+      "summary": "For admins",
+      "label": "Invited email address",
+      "send": "Send a sign-in link",
+      "note": "Open the link from the email in this browser. It works once."
+    },
+    "sent": {
+      "email": "If this address was invited, we've sent it a sign-in link. Check the inbox."
+    },
+    "error": {
+      "link": "That link doesn't work or has expired. Ask for a new one.",
+      "line": "Sign-in with LINE didn't work. Try again.",
+      "email": "That email address isn't valid.",
+      "phone": "That phone number isn't valid.",
+      "sms": "We couldn't send the code. Try again.",
+      "code": "That code is wrong or has expired.",
+      "rate": "Too many requests. Wait a moment and try again.",
+      "unavailable": "This way of signing in isn't available right now."
+    }
+  },
+  "account": {
+    "title": "My account",
+    "setup": {
+      "title": "About you",
+      "intro": "Only your name is needed to start. Everything else is optional."
+    },
+    "name": {
+      "label": "Display name",
+      "hint": "A nickname is fine. Responders see this name when you ask for help."
+    },
+    "phone": {
+      "label": "Phone number (optional)",
+      "hint": "Without a number, rescuers can't call you. Your number is never public."
+    },
+    "language": {
+      "label": "Language"
+    },
+    "home": {
+      "title": "Home location (optional)",
+      "why": "Used to show your tambon's alerts and the safe places near your home.",
+      "saved": "A home location is saved.",
+      "useGps": "Use my current location",
+      "locating": "Finding your location…",
+      "found": "Location found:",
+      "failed": "Couldn't find your location. Turn on GPS and try again, or skip this for now.",
+      "clear": "Don't use this location",
+      "consent": "I agree that Jaga stores my home location for alerts.",
+      "remove": "Delete the saved home location"
+    },
+    "save": "Save",
+    "error": {
+      "name": "Enter a name (up to 80 characters).",
+      "phone": "That phone number isn't valid.",
+      "location": "That location isn't valid.",
+      "consent": "Tick the consent box to save your home location, or choose not to use it.",
+      "save": "Couldn't save. Try again."
+    },
+    "role": {
+      "user": "Resident",
+      "authority": "Response unit",
+      "admin": "Admin",
+      "super_admin": "Super admin"
+    },
+    "edit": "Edit my details",
+    "signOut": "Sign out",
+    "adminLink": "Open the admin console",
+    "authority": {
+      "title": "For response units",
+      "intro": "Rescue teams, government units, foundations and volunteer teams register to receive requests for help in their area.",
+      "register": "Register a unit",
+      "registered": "Registration sent. An admin will call the contact person before approving it.",
+      "status": {
+        "pending": "Waiting for an admin to verify",
+        "verified": "Verified",
+        "suspended": "Suspended"
+      }
+    }
+  },
+  "authorityRegister": {
+    "title": "Register a response unit",
+    "intro": "After you send this form, a Jaga admin calls the contact person before approving it. Until then you won't see the personal data of people asking for help.",
+    "orgType": {
+      "label": "Type of organization",
+      "government": "Government",
+      "private": "Private",
+      "nonprofit": "Foundation / non-profit",
+      "volunteer": "Volunteer team"
+    },
+    "orgName": {
+      "label": "Organization or parent department",
+      "hint": "If one team covers several areas, register each separately under the same organization name."
+    },
+    "unitName": {
+      "label": "Unit or office name",
+      "hint": "For example: Rescue boat team 1"
+    },
+    "officialPhone": {
+      "label": "Official phone of the unit (optional)"
+    },
+    "publicContact": {
+      "label": "Show this official phone to the public",
+      "hint": "Shown only after an admin has approved the unit. If you don't tick this, the number isn't shown."
+    },
+    "poc": {
+      "title": "Contact person",
+      "privacy": "The contact's name and phone are never public. Only admins and units that share your coverage can see them, and every view is logged.",
+      "name": "Contact person's name",
+      "phone": "Contact person's mobile number",
+      "phoneHint": "An admin will call this number to confirm."
+    },
+    "capability": {
+      "label": "What the unit can do (choose all that apply)",
+      "coordination": {
+        "name": "Coordination",
+        "hint": "Takes requests and coordinates other units"
+      },
+      "rescue": {
+        "name": "Rescue",
+        "hint": "Has a team and equipment to reach people"
+      },
+      "planning": {
+        "name": "Planning",
+        "hint": "Plans and follows the situation"
+      },
+      "support": {
+        "name": "Support",
+        "hint": "Food, shelter, medicine or transport"
+      }
+    },
+    "coverage": {
+      "label": "Coverage area",
+      "hint": "Choose a whole province, a whole district, or single tambons.",
+      "wholeProvince": "All of {name} province",
+      "chooseDistricts": "Choose districts in {name}",
+      "wholeDistrict": "All of {name} district",
+      "chooseTambons": "Choose tambons in {name}",
+      "unavailable": "The list of areas couldn't be loaded. Try again later."
+    },
+    "afterSubmit": "After you send it, the status stays \"waiting\" until an admin approves it.",
+    "submit": "Send registration",
+    "error": {
+      "required": "Fill in all required fields.",
+      "pocPhone": "The contact's phone number isn't valid.",
+      "officialPhone": "The official phone number isn't valid.",
+      "capability": "Choose at least one capability.",
+      "coverage": "Choose at least one area.",
+      "limit": "One account can register at most 5 units.",
+      "save": "Registration failed. Try again."
+    }
+  },
+  "admin": {
+    "title": "Admin",
+    "signedInAs": "Signed in as {name}",
+    "bangkokTime": "(Bangkok)",
+    "nav": {
+      "label": "Admin menu",
+      "home": "Home",
+      "authorities": "Verify units",
+      "invitations": "Admins"
+    },
+    "role": {
+      "admin": "Admin",
+      "super_admin": "Super admin"
+    },
+    "authorities": {
+      "title": "Verify response units",
+      "pendingCount": "{count} waiting for verification",
+      "open": "Open the queue",
+      "pending": "Waiting ({count})",
+      "none": "No units are waiting.",
+      "others": "Verified or suspended",
+      "coverage": "Selected: {provinces} provinces, {districts} districts, {tambons} tambons · {total} tambons in total",
+      "registered": "Registered",
+      "contact": "Contact person",
+      "reveal": "Show the contact's name and phone (logged every time)",
+      "called": "I called this number and the contact confirmed the registration",
+      "verify": "Approve this unit",
+      "suspend": "Suspend this unit",
+      "reason": "Reason",
+      "suspendConfirm": "Confirm suspension",
+      "status": {
+        "pending": "Waiting",
+        "verified": "Verified",
+        "suspended": "Suspended"
+      },
+      "error": {
+        "call": "Call the contact's phone to confirm it before approving.",
+        "save": "That didn't work. Try again."
+      },
+      "done": {
+        "verified": "Unit approved.",
+        "suspended": "Unit suspended."
+      }
+    },
+    "invitations": {
+      "title": "Admins and invitations",
+      "open": "Manage",
+      "new": "Invite an admin",
+      "email": "Email address",
+      "asSuperAdmin": "Make them a super admin",
+      "asSuperAdminHint": "Can manage other admins. Only when really needed.",
+      "send": "Invite",
+      "how": "No invitation email is sent automatically. Tell the person to open the sign-in page, choose \"For admins\" and enter this address. Invitations lapse after 14 days.",
+      "list": "Invitations",
+      "none": "No invitations yet.",
+      "revoke": "Withdraw the invitation",
+      "admins": "Current admins",
+      "noName": "(no name yet)",
+      "remove": "Remove admin role",
+      "status": {
+        "pending": "Waiting",
+        "accepted": "Accepted",
+        "revoked": "Withdrawn",
+        "expired": "Expired"
+      },
+      "error": {
+        "forbidden": "Only the super admin can do this.",
+        "email": "That email address isn't valid.",
+        "duplicate": "This address already has a waiting invitation.",
+        "account": "Couldn't create an account for this address. Try again.",
+        "unavailable": "This deployment isn't set up to send invitations.",
+        "save": "That didn't work. Try again."
+      },
+      "done": {
+        "invited": "Invitation saved.",
+        "revoked": "Invitation withdrawn.",
+        "removed": "Admin role removed."
+      }
+    }
+  },
   "devBrand": {
     "title": "Brand review",
     "note": "Development and preview only. Not available in production.",

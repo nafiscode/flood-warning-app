@@ -6,7 +6,7 @@
  */
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { ExpirationPlugin, NetworkFirst, Serwist } from "serwist";
+import { ExpirationPlugin, NetworkFirst, NetworkOnly, Serwist } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -16,12 +16,21 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+// With or without a language prefix (/ms/account, /account).
+const PRIVATE_PATH = /^\/(?:(?:th|ms|en)\/)?(?:account|admin|authority|sign-in|api)(?:\/|$)/;
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
+    // Personal and sign-in pages are never stored: on a shared phone the next person must not
+    // see the last person's account, cases or admin screens from the cache.
+    {
+      matcher: ({ url, sameOrigin }) => sameOrigin && PRIVATE_PATH.test(url.pathname),
+      handler: new NetworkOnly(),
+    },
     // Page loads: network first, but give up after 5 s on a bad connection and use the copy of
     // this exact page from the last visit. A page never visited falls back to /offline (below).
     // Serwist's defaults match pages by a Content-Type request header that navigations don't send.
