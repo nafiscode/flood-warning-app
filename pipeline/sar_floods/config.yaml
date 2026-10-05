@@ -1,6 +1,8 @@
 # Sentinel-1 flood extents (S2). Every value here is written into the run log; the ones that change
 # pixel values also go into the 7-character parameter hash in each file name (see settings.HASHED_KEYS).
 # Reasons and known issues: METHODS.md. Nothing here has been tuned against real scenes yet.
+# Confirmed by the owner on 2026-10-05 (docs/decisions.md): fallback_drop_db, flood_rule,
+# min_connected_pixels, the reference window, and 10 m for the two priority events.
 
 # DOPA province codes in scope. The processing area is aoi.geojson, built from these (`sar_floods aoi`).
 provinces:
