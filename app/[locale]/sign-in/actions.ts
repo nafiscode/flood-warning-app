@@ -29,7 +29,7 @@ async function callbackUrl(form: FormData): Promise<string> {
 /**
  * Language of LINE's own log-in and consent screens (its `ui_locales` parameter), most wanted
  * first. Without it LINE follows the browser language, which is often English on Thai phones.
- * LINE has no Malay screens, so Malay falls back to Thai.
+ * Malay falls back to Thai. Checked on the live site on 2026-10-05: LINE has Thai, Malay and English.
  */
 const LINE_UI_LOCALES: Record<string, string | undefined> = {
   ms: "ms-MY th-TH",
