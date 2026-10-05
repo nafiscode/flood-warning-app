@@ -1,9 +1,9 @@
 """Everything that talks to Google Earth Engine.
 
-NOT YET RUN AGAINST EARTH ENGINE (written 2026-10-05 without credentials). The offline tests only
+First run against Earth Engine on 2026-10-05: `check`, scene listing, the look direction and the
+tile histograms work; the classification and export steps have not run yet. The offline tests only
 execute this module against a stand-in `ee`, which catches typos but not wrong API behaviour.
-`python -m sar_floods check` is the first thing to run once EE_PROJECT is set; METHODS.md,
-"To verify on first run", lists what else to confirm.
+METHODS.md, "To verify on first run", lists what is still to confirm.
 
 Nothing here runs at import time: `ee` is imported and initialised only inside `init`.
 The Code Editor script (code_editor/sar_floods.js) mirrors these functions one to one.
@@ -19,6 +19,9 @@ from .plan import Export, Pass
 from .settings import histogram_bins
 
 _ee = None
+
+# Margin around the area when measuring an orbit's look direction (see look_direction).
+LOOK_DIRECTION_MARGIN_M = 100_000
 
 
 def ee():
@@ -121,7 +124,39 @@ def static_masks(cfg: dict) -> dict:
     return {"water": water, "terrain": steep.Or(high), "slope": slope, "aspect": aspect}
 
 
-def layover_shadow(ref_angle, masks: dict, cfg: dict, aoi):
+def look_direction(cfg: dict, scene_ids: list[str], aoi) -> float:
+    """Compass direction from the ground towards the satellite for one orbit, in degrees
+    (measured 2026-10-05: 258-259 ascending, 101-102 descending).
+
+    A plane is fitted to the orbit's incidence angle (angle ~ a + b*east + c*north, in the export
+    CRS); the angle falls towards the satellite, so the direction is that of (-b, -c). Taken from the
+    untrimmed scenes over the area plus a margin: where an orbit only clips the area, the swath
+    inside it is too narrow for a stable fit. `ee.Terrain.aspect` is not used: the `angle` band is
+    a ~16 km grid, so its aspect exists only along cell edges (and nowhere at all for orbit D062).
+    """
+    s1 = cfg["sentinel1"]
+    crs = cfg["export"]["crs"]
+    angle = ee().ImageCollection([ee().Image(f"{s1['collection']}/{i}").select("angle")
+                                  for i in scene_ids]).median()
+    stack = (ee().Image.constant(1).addBands(ee().Image.pixelCoordinates(ee().Projection(crs)).select(["x", "y"]))
+             .addBands(angle).updateMask(angle.mask()))
+    region = aoi.bounds(1).buffer(LOOK_DIRECTION_MARGIN_M, 1000).bounds(1)
+    fit = stack.reduceRegion(reducer=ee().Reducer.linearRegression(3, 1), geometry=region, crs=crs,
+                             scale=5000, maxPixels=1e9).get("coefficients").getInfo()
+    return bearing_towards_radar(fit)
+
+
+def bearing_towards_radar(coefficients) -> float:
+    """Bearing (degrees clockwise from north) of (-b, -c) from the 3x1 plane-fit coefficients."""
+    if not coefficients or len(coefficients) != 3:
+        raise ValueError("The incidence-angle plane fit returned no result (no scenes over the area?).")
+    east, north = float(coefficients[1][0]), float(coefficients[2][0])
+    if east == 0 and north == 0:
+        raise ValueError("The incidence angle is flat over the area; the look direction is undefined.")
+    return math.degrees(math.atan2(-east, -north)) % 360
+
+
+def layover_shadow(ref_angle, towards_radar: float, masks: dict, cfg: dict):
     """0/1 image, 1 = radar layover or shadow for this orbit's viewing geometry.
 
     The angular model of Vollrath, Mullissa & Reiche (2020, Remote Sensing 12(11), 1867):
@@ -130,7 +165,7 @@ def layover_shadow(ref_angle, masks: dict, cfg: dict, aoi):
       layover where alpha_r >= the incidence angle (the slope faces the radar more steeply than
                               the radar looks down),
       shadow  where the local incidence angle >= shadow_lia_deg (the slope faces away).
-    The range direction comes from the gradient of the scene's incidence-angle band.
+    The range direction (`towards_radar`, one value per orbit) comes from `look_direction`.
 
     Limits: this flags the slopes that CAUSE layover and shadow, at the DEM's 30 m. It does not
     trace where the displaced signal lands (the valley floor in front of a mountain) or how far a
@@ -139,13 +174,8 @@ def layover_shadow(ref_angle, masks: dict, cfg: dict, aoi):
     ls = cfg["masks"]["layover_shadow"]
     if not ls["enabled"]:
         return ee().Image.constant(0)
-    # Aspect of the incidence-angle surface = the compass direction in which the angle falls,
-    # i.e. from the ground towards the satellite. One mean value per orbit, taken at 1 km.
-    towards_radar = (ee().Terrain.aspect(ref_angle)
-                     .reduceRegion(reducer=ee().Reducer.mean(), geometry=aoi, scale=1000, maxPixels=1e9)
-                     .get("aspect"))
     rad = math.pi / 180
-    phi_r = ee().Image.constant(ee().Number(towards_radar)).subtract(masks["aspect"]).multiply(rad)
+    phi_r = ee().Image.constant(towards_radar).subtract(masks["aspect"]).multiply(rad)
     alpha_s = masks["slope"].multiply(rad)
     theta = ref_angle.multiply(rad)
     alpha_r = alpha_s.tan().multiply(phi_r.cos()).atan()

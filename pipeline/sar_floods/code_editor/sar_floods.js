@@ -261,13 +261,26 @@ function staticMasks() {
 }
 
 // 1 = layover or shadow for this orbit (Vollrath et al. 2020 angular model; limits in METHODS.md).
-function layoverShadow(refAngle, masks) {
+// Direction from the ground towards the satellite: a plane fitted to the incidence angle
+// (angle ~ a + b*east + c*north); the angle falls towards the satellite. Untrimmed scenes, area plus
+// 100 km. Not ee.Terrain.aspect: the angle band is a ~16 km grid (see ee_ops.look_direction).
+function lookDirection(refCollection) {
+  var angle = refCollection.select('angle').median();
+  var stack = ee.Image.constant(1)
+      .addBands(ee.Image.pixelCoordinates(ee.Projection(P.crs)).select(['x', 'y']))
+      .addBands(angle).updateMask(angle.mask());
+  var region = aoi.bounds(1).buffer(100000, 1000).bounds(1);
+  var coef = ee.Array(stack.reduceRegion({reducer: ee.Reducer.linearRegression(3, 1), geometry: region,
+    crs: P.crs, scale: 5000, maxPixels: 1e9}).get('coefficients'));
+  var east = ee.Number(coef.get([1, 0])).multiply(-1);
+  var north = ee.Number(coef.get([2, 0])).multiply(-1);
+  return north.atan2(east).multiply(180 / Math.PI).add(360).mod(360);   // bearing, clockwise from north
+}
+
+function layoverShadow(refAngle, towardsRadar, masks) {
   if (!P.layoverShadow.enabled) return ee.Image.constant(0);
-  var towardsRadar = ee.Terrain.aspect(refAngle)
-      .reduceRegion({reducer: ee.Reducer.mean(), geometry: aoi, scale: 1000, maxPixels: 1e9})
-      .get('aspect');
   var rad = Math.PI / 180;
-  var phiR = ee.Image.constant(ee.Number(towardsRadar)).subtract(masks.aspect).multiply(rad);
+  var phiR = ee.Image.constant(towardsRadar).subtract(masks.aspect).multiply(rad);
   var alphaS = masks.slope.multiply(rad);
   var theta = refAngle.multiply(rad);
   var alphaR = alphaS.tan().multiply(phiR.cos()).atan();
@@ -371,7 +384,7 @@ function showPass(pass) {
   var change = eventFiltered.subtract(reference);
 
   var masks = staticMasks();
-  var layover = layoverShadow(refAngle, masks);
+  var layover = layoverShadow(refAngle, lookDirection(refCollection), masks);
   var observed = change.mask().reduce(ee.Reducer.min()).gt(0).unmask(0, false);
   var valid = observed.and(masks.water.or(masks.terrain).or(layover).not()).unmask(0, false);
 

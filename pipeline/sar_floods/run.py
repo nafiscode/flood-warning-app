@@ -117,7 +117,10 @@ def run_event(cfg: dict, event: seasons.Event, *, dry_run: bool, with_thresholds
     for p in used:
         if p.orbit not in ref_images:
             ref_images[p.orbit] = ee_ops.reference(cfg, reference[p.orbit]["scenes"])
-            layover[p.orbit] = ee_ops.layover_shadow(ref_images[p.orbit][1], masks, cfg, area)
+            towards_radar = ee_ops.look_direction(cfg, reference[p.orbit]["scenes"], area)
+            reference[p.orbit]["towards_radar_deg"] = round(towards_radar, 2)
+            log.info("orbit %s: towards the radar %.1f deg", p.orbit, towards_radar)
+            layover[p.orbit] = ee_ops.layover_shadow(ref_images[p.orbit][1], towards_radar, masks, cfg)
         change = ee_ops.change_image(cfg, p, ref_images[p.orbit][0])
         observed, valid = ee_ops.validity(change, masks, layover[p.orbit])
         decisions = _thresholds_for_pass(

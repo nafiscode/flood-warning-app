@@ -475,6 +475,16 @@ def test_histogram_parsing_handles_band_names_single_band_and_empty_tiles():
         ee_ops.parse_histograms([{"properties": {"tile": 1, "VV": rows[:10]}}], ["VV"], 150)
 
 
+def test_look_direction_is_the_bearing_in_which_the_incidence_angle_falls():
+    # Plane-fit coefficients [[a], [per metre east], [per metre north]] as measured on 2026-10-05.
+    assert ee_ops.bearing_towards_radar([[30.0], [5.72e-5], [1.21e-5]]) == pytest.approx(258.05, abs=0.05)   # A070
+    assert ee_ops.bearing_towards_radar([[30.0], [-6.31e-5], [1.36e-5]]) == pytest.approx(102.16, abs=0.05)  # D062
+    assert ee_ops.bearing_towards_radar([[30.0], [0.0], [1e-5]]) == pytest.approx(180.0)   # rises northwards
+    for nothing in (None, [], [[30.0], [0.0], [0.0]]):
+        with pytest.raises(ValueError):
+            ee_ops.bearing_towards_radar(nothing)
+
+
 def test_drive_duplicates_resolve_to_the_newest_file():
     files = [{"name": "jaga_sar_max_season-2024_10m_a.tif", "id": "1", "modifiedTime": "2026-10-06T10:00:00.000Z"},
              {"name": "jaga_sar_max_season-2023_10m_a.tif", "id": "2", "modifiedTime": "2026-10-06T09:00:00.000Z"},
@@ -510,6 +520,8 @@ def fake_run(cfg, tmp_path, monkeypatch):
                            "VH": [float(c) for c in HISTOGRAMS["dry_tile"]]}}
 
     monkeypatch.setattr(ee_ops, "tile_histograms", histograms)
+    monkeypatch.setattr(ee_ops, "look_direction",
+                        lambda cfg_, scene_ids, area: 258.4 if scene_ids[0].startswith("REF_A") else 101.6)
     yield SimpleNamespace(cfg=cfg, tmp=tmp_path, started=started, histogram_calls=calls, ee=fake, listings=listings)
     ee_ops._ee = None
 

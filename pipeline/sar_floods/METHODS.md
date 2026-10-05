@@ -41,7 +41,7 @@ All rasters share one grid: EPSG:32647 (UTM 47N), 10 m, origin snapped to 30 m, 
 
 ## Radar layover and shadow: method and limits
 
-Method: the angular model of Vollrath, Mullissa & Reiche (2020). Terrain slope and aspect (FABDEM, 30 m) are combined with the orbit's incidence angle and range direction (taken from the gradient of the scene's `angle` band). Layover is flagged where the slope towards the radar is at least the incidence angle; shadow where the local incidence angle is ≥ 85°. The mask is grown by 100 m.
+Method: the angular model of Vollrath, Mullissa & Reiche (2020). Terrain slope and aspect (FABDEM, 30 m) are combined with the orbit's incidence angle and range direction. The range direction is one bearing per orbit, from a plane fitted to the orbit's incidence-angle band over the area plus 100 km (measured 5 Oct 2026: 258–259° towards the radar on the ascending orbits 70 and 172, 101–102° on the descending orbits 62, 91 and 164; logged per run as `towards_radar_deg`). Layover is flagged where the slope towards the radar is at least the incidence angle; shadow where the local incidence angle is ≥ 85°. The mask is grown by 100 m.
 
 Limits, stated plainly:
 - It flags the slopes that **cause** layover and shadow. It does not trace where the displaced signal lands. A mountain's layover falls on the ground in front of it (towards the radar), by roughly height ÷ tan(incidence): about 400 m for a 300 m ridge. The 100 m buffer covers only part of that.
@@ -91,7 +91,7 @@ Run `python -m sar_floods check`, then `run event-2024-nov-dec --dry-run`, then 
 - Scene properties used for grouping: `platform_number`, `relativeOrbitNumber_start`, `orbitNumber_start`, `orbitProperties_pass`, `resolution_meters`.
 - `reduceRegions` + `fixedHistogram` output naming for a two-band image (expected: one property per band).
 - `remap` with negative integer targets; `unmask(value, false)`; `connectedPixelCount` on a self-masked image.
-- The sign and direction convention of `ee.Terrain.aspect` on the `angle` band (expected ≈ 258° ascending, ≈ 102° descending); a wrong sign mirrors the layover mask.
+- ~~The look direction per orbit.~~ Verified 5 Oct 2026: 258–259° ascending, 101–102° descending, as expected. `ee.Terrain.aspect` on the `angle` band turned out unusable (a ~16 km grid: values only along cell edges, none at all for orbit 62, and about 20° off when taken in a scene's own projection), so the direction now comes from a plane fit.
 - `reproject` of slope/aspect to the DEM grid inside a 10 m export (cost).
 - Export with `crs` + `crsTransform` + `dimensions`, `fileDimensions` 23040 × 26112 (one file), `formatOptions.noData`, and that the output is a valid COG on the exact grid. If Earth Engine still splits the file, the downloader and the frequency step handle the parts.
 - Whether one task holds a whole season (up to ~100 passes) without timing out; if not, lower the load with `--scale 20` or split the season.
