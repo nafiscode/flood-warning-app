@@ -103,8 +103,11 @@ def _despeckle(img, cfg: dict):
 def static_masks(cfg: dict) -> dict:
     """Scene-independent masks as 0/1 images (1 = excluded), plus the DEM terrain for layover."""
     m = cfg["masks"]
-    water = (ee().Image(m["permanent_water"]["asset"]).select(m["permanent_water"]["band"])
-             .unmask(0).gt(m["permanent_water"]["min_occurrence_pct"]))
+    # JRC occurrence carries a partial mask (its mask is the occurrence itself, 0.01 to 1), which
+    # `unmask` keeps and every later And/Or inherits: reducers then weight those pixels by it
+    # (seen 2026-10-05). Painting onto a constant gives a 0/1 image with a full mask.
+    occurrence = ee().Image(m["permanent_water"]["asset"]).select(m["permanent_water"]["band"])
+    water = ee().Image.constant(0).where(occurrence.gt(m["permanent_water"]["min_occurrence_pct"]), 1)
 
     if m["slope"]["dem_is_collection"]:
         tiles = ee().ImageCollection(m["slope"]["dem_asset"]).select(m["slope"]["dem_band"])

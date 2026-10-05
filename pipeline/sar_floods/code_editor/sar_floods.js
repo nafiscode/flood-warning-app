@@ -242,7 +242,8 @@ function despeckle(img) {
 }
 
 function staticMasks() {
-  var water = ee.Image(P.water.asset).select(P.water.band).unmask(0).gt(P.water.minOccurrencePct);
+  // Painted onto a constant: JRC occurrence has a partial mask that unmask() would keep (see ee_ops.py).
+  var water = ee.Image.constant(0).where(ee.Image(P.water.asset).select(P.water.band).gt(P.water.minOccurrencePct), 1);
   var dem, demProjection;
   if (P.slope.demIsCollection) {
     var tiles = ee.ImageCollection(P.slope.demAsset).select(P.slope.demBand);
