@@ -12,6 +12,7 @@ import {
   label,
   notice,
 } from "@/lib/ui";
+import { LineSignInLink } from "@/components/account/LineSignInLink";
 import { sendEmailLink, sendPhoneCode, verifyPhoneCode } from "./actions";
 
 const ERRORS = ["link", "line", "email", "phone", "sms", "code", "rate", "unavailable"] as const;
@@ -68,9 +69,7 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
         {lineSignInConfigured() ? (
           <div className="flex flex-col gap-3">
             {/* A plain link, not a form: a phone only opens the LINE app for a tapped link. */}
-            <a href={lineHref} rel="nofollow" className={buttonPrimary}>
-              {t("line.button")}
-            </a>
+            <LineSignInLink href={lineHref}>{t("line.button")}</LineSignInLink>
             <p className={hint}>{t("line.note")}</p>
           </div>
         ) : (
