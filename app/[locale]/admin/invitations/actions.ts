@@ -31,7 +31,6 @@ export async function inviteAdmin(form: FormData) {
   const email = field(form, "email").toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)
     back(form, { error: "email" });
-  const role = field(form, "role") === "super_admin" ? "super_admin" : "admin";
 
   const admin = createAdminClient();
   if (!admin) back(form, { error: "unavailable" });
@@ -45,7 +44,7 @@ export async function inviteAdmin(form: FormData) {
   const supabase = await createClient();
   const { error } = await supabase
     .from("admin_invitations")
-    .insert({ email_or_phone: email, role, invited_by: session.userId });
+    .insert({ email_or_phone: email, role: "admin", invited_by: session.userId });
   if (error) back(form, { error: error.code === "23505" ? "duplicate" : "save" });
   back(form, { done: "invited" });
 }

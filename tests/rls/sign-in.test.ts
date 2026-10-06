@@ -126,6 +126,17 @@ describe("roles", () => {
     expect(await expectDenied(db, "select set_admin_role($1, 'user')", [w.superAdmin])).toBe(
       "23514",
     );
+    // One super admin only: the role can be neither granted nor invited from the app.
+    expect(await expectDenied(db, "select set_admin_role($1, 'super_admin')", [w.otherUser])).toBe(
+      "23514",
+    );
+    expect(
+      await expectDenied(
+        db,
+        "insert into admin_invitations (email_or_phone, role, invited_by) values ('s@test.invalid', 'super_admin', $1)",
+        [w.superAdmin],
+      ),
+    ).toBe("23514");
     await db.query("select set_admin_role($1, 'user')", [w.admin]);
     expect(await roleOf(w.admin)).toBe("user");
   });

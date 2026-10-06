@@ -62,6 +62,16 @@ if (error && error.status !== 422 && error.code !== "email_exists") {
 const db = new pg.Client({ connectionString: dbUrl });
 await db.connect();
 try {
+  // One super admin only (decision 2026-10-06): stop if someone else already has the role.
+  const others = await db.query(
+    `select 1 from public.profiles p join auth.users u on u.id = p.user_id
+     where p.role = 'super_admin' and lower(u.email) is distinct from $1`,
+    [email],
+  );
+  if (others.rowCount > 0) {
+    console.error("Another account is already the super admin; nothing changed.");
+    process.exit(1);
+  }
   const { rowCount } = await db.query(
     `update public.profiles p set role = 'super_admin'
      from auth.users u

@@ -4,17 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DualTime } from "@/components/admin/DualTime";
 import { getSessionProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import {
-  buttonPrimary,
-  buttonSecondary,
-  card,
-  checkBox,
-  checkRow,
-  errorNotice,
-  hint,
-  input,
-  label,
-} from "@/lib/ui";
+import { buttonPrimary, buttonSecondary, card, errorNotice, hint, input, label } from "@/lib/ui";
 import { inviteAdmin, removeAdmin, revokeInvitation } from "./actions";
 
 const ERRORS = ["forbidden", "email", "duplicate", "account", "unavailable", "save"] as const;
@@ -86,13 +76,6 @@ export default async function AdminInvitations({
           {t("invitations.email")}
         </label>
         <input id="email" name="email" type="email" autoComplete="off" required className={input} />
-        <label className={checkRow}>
-          <input type="checkbox" name="role" value="super_admin" className={checkBox} />
-          <span>
-            {t("invitations.asSuperAdmin")}
-            <span className={`block ${hint}`}>{t("invitations.asSuperAdminHint")}</span>
-          </span>
-        </label>
         <button type="submit" className={buttonPrimary}>
           {t("invitations.send")}
         </button>
