@@ -2,8 +2,8 @@
  * A2 flows end to end against the dev project: first sign-in and setup, authority registration,
  * admin invitation by the super admin, and verification by a call.
  *
- * Needs SUPABASE_SECRET_KEY and SUPABASE_DB_URL (.env.local on the laptop). CI has no secrets,
- * so these tests are skipped there; the database rules behind them are covered by tests/rls.
+ * Needs a Supabase project and its keys: jaga-dev on the laptop (.env.local), a throwaway local
+ * Supabase on the runner in CI (public demo keys). Without them the tests are skipped.
  * Sign-in uses one-time links made with the Auth admin API, so no email is sent. Everything the
  * tests create is deleted afterwards.
  */
@@ -42,7 +42,7 @@ const emails = {
 };
 
 test.describe.configure({ mode: "serial" });
-test.skip(!url || !secret || !dbUrl, "needs the dev project's keys (.env.local)");
+test.skip(!url || !secret || !dbUrl, "needs a Supabase project and its keys");
 
 const admin = () =>
   createClient(url!, secret!, { auth: { persistSession: false, autoRefreshToken: false } });

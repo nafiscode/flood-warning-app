@@ -18,7 +18,7 @@ concurrency:
 jobs:
   web:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -30,6 +30,29 @@ jobs:
       - run: npm run typecheck
       - run: npm run format:check
       - run: npm test
+      - name: Start a throwaway Supabase for the sign-in flows
+        # Database, sign-in service and API in Docker on the runner, with our migrations and seed.
+        # Its keys are the Supabase CLI's public demo keys, not secrets; nothing here touches
+        # jaga-dev or production. It comes before the build because NEXT_PUBLIC_* values are
+        # built into the app.
+        run: |
+          npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,mailpit,supavisor
+          npx supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          value() { grep -E "^$1=" "$RUNNER_TEMP/supabase.env" | head -1 | cut -d= -f2- | tr -d '"'; }
+          publishable="$(value PUBLISHABLE_KEY)"
+          [ -n "$publishable" ] || publishable="$(value ANON_KEY)"
+          secret="$(value SECRET_KEY)"
+          [ -n "$secret" ] || secret="$(value SERVICE_ROLE_KEY)"
+          for name in API_URL DB_URL; do
+            [ -n "$(value "$name")" ] || { echo "supabase status did not report $name"; exit 1; }
+          done
+          [ -n "$publishable" ] && [ -n "$secret" ] || { echo "supabase status reported no keys"; exit 1; }
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(value API_URL)"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$publishable"
+            echo "SUPABASE_SECRET_KEY=$secret"
+            echo "SUPABASE_DB_URL=$(value DB_URL)"
+          } >> "$GITHUB_ENV"
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
