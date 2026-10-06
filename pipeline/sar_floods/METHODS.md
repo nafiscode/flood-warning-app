@@ -1,6 +1,6 @@
 # Sentinel-1 flood extents: methods note (S2)
 
-Status, 5 Oct 2026: **the 21 exports for November–December 2024 were started** (20 passes and the event maximum, 10 m, parameters `cd222f1`). The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; download and the frequency step have not run. The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
+Status, 6 Oct 2026: **the 21 exports for November–December 2024 completed on Earth Engine** (20 passes and the event maximum, 10 m, parameters `cd222f1`); they are in Google Drive and not yet downloaded or checked. They used 232 EECU-hours and the project is now over its non-commercial compute quota (see "Compute used"). The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; download and the frequency step have not run (the Drive API is not yet enabled on the project). The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
 
 First result: the per-tile Otsu threshold was accepted on 3 of about 1,100 tile checks (two VV tiles at −4.8 and −5.2 dB and one VH tile at −3.6 dB, all on the 29 Nov 2024 pass of orbit 172). Everywhere else the fixed −3 dB drop applies, so that value in practice decides the maps.
 
@@ -73,6 +73,19 @@ Limits, stated plainly:
 - **Area.** Processing stops at the province outline (+~1 km). The Malaysian side of the Kolok basin is not mapped.
 - **Earth Engine catalog changes** (JRC v1.4, FABDEM community asset) would change results; asset ids are in the run log.
 
+## Compute used
+
+Run `20261005T115614Z_event-2024-nov-dec` (5–6 Oct 2026), from `sar_floods status`:
+
+| Export | Passes | EECU-hours each | EECU-hours total |
+|---|---|---|---|
+| Per-scene, orbits A070 and A172 (cover most of the area) | 10 | 10.5–17.7 | 141.1 |
+| Per-scene, orbits D062 and D091 (clip the area) | 10 | 1.8–3.3 | 23.8 |
+| Event maximum (all 20 passes) | 1 | 67.2 | 67.2 |
+| **Total** | 21 | | **232.1** |
+
+After the last task the client warned: "Your project has exceeded its noncommercial compute quota and is now in restricted mode." No further exports were started. At this cost the 2025 event and the nine seasons do not fit the free tier as planned; the processing has to get cheaper or the plan smaller before anything else runs. Not yet investigated: which step dominates (candidates: slope and aspect reprojected to the DEM grid inside every 10 m export, the focal median in metres, `connectedPixelCount`, exporting the full 22 851 × 26 016 grid for passes that cover a fraction of it).
+
 ## To check by eye in the Code Editor
 
 `code_editor/sar_floods.js` runs the same chain for one pass. For at least one pass per orbit of each priority event:
@@ -99,7 +112,8 @@ Run `python -m sar_floods check`, then `run event-2024-nov-dec --dry-run`, then 
 - Export with `crs` + `crsTransform` + `dimensions`, `fileDimensions` 23040 × 26112 (one file), `formatOptions.noData`, and that the output is a valid COG on the exact grid. If Earth Engine still splits the file, the downloader and the frequency step handle the parts.
 - Whether one task holds a whole season (up to ~100 passes) without timing out; if not, lower the load with `--scale 20` or split the season.
 - Drive download with the Earth Engine credentials and `EE_PROJECT` as quota project (the Drive API must be enabled on the project).
-- Compute used: `python -m sar_floods status` records EECU-seconds per task. The project's non-commercial quota tier has not been checked.
+- ~~Compute used.~~ Measured 6 Oct 2026, see "Compute used". The project's quota tier and its reset date have not been checked against Google's documentation.
+- ~~Whether one task holds a whole event.~~ The 20-pass event maximum completed as one task (67 EECU-hours). A season with up to ~100 passes is untested.
 
 ## Validation still open
 
