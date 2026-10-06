@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 
 from r2sync.core import check_key
-from sar_floods import aoi, ee_ops, frequency, grid, naming, plan, run, runlog, seasons, settings, threshold
+from sar_floods import aoi, ee_ops, frequency, grid, maximum, naming, plan, run, runlog, seasons, settings, threshold
 from sar_floods.__main__ import main, upload_commands
 from sar_floods.drive import pick_latest
 
@@ -424,6 +424,26 @@ def test_per_scene_exports_only_for_priority_events(cfg):
     assert priority[-1].grid == master and priority[-1].bands == ("extent", "n_valid", "n_flooded")
     season = plan.planned_exports(seasons.find_event("season-2024", cfg), passes, master, "abc1234")
     assert [e.name for e in season] == ["jaga_sar_max_season-2024_10m_abc1234"]
+    # With the event raster built locally, every event exports its passes and nothing else.
+    for event_id in ("season-2024", "event-2024-nov-dec"):
+        local = plan.planned_exports(seasons.find_event(event_id, cfg), passes, master, "abc1234", local_max=True)
+        assert [e.kind for e in local] == ["scene", "scene"]
+
+
+def test_seasons_run_at_their_own_pixel_size_and_the_event_raster_is_local_by_default(cfg):
+    from sar_floods.__main__ import _event_config
+
+    assert cfg["seasons"]["scale_m"] == 20 and cfg["export"]["maximum"] == "local"
+    args = SimpleNamespace(scale=None)
+    assert _event_config(cfg, seasons.find_event("season-2024", cfg), args)["export"]["scale_m"] == 20
+    assert _event_config(cfg, seasons.find_event("event-2024-nov-dec", cfg), args) is cfg
+    assert _event_config(cfg, seasons.find_event("season-2024", cfg), SimpleNamespace(scale=10)) is cfg
+    # The pixel size is not part of the parameter hash: it is in every name instead.
+    assert settings.params_hash(settings.load_config(scale_m=20), "x") == settings.params_hash(cfg, "x")
+    # A 20 m grid starts on the 10 m lattice, so every 20 m pixel is four 10 m pixels.
+    fine = grid.master_grid(aoi.bounds(aoi.load()), "EPSG:32647", 10, 30)
+    coarse = grid.master_grid(aoi.bounds(aoi.load()), "EPSG:32647", 20, 30)
+    assert (coarse.x0 - fine.x0) % 10 == 0 and (coarse.y0 - fine.y0) % 10 == 0 and coarse.x0 % 20 == 0
 
 
 def test_no_exports_without_usable_passes_and_no_overflowing_counts(cfg):
@@ -497,7 +517,9 @@ def test_drive_duplicates_resolve_to_the_newest_file():
 
 @pytest.fixture
 def fake_run(cfg, tmp_path, monkeypatch):
-    """run_event wired to a stand-in Earth Engine: canned scene lists and histograms, recorded exports."""
+    """run_event wired to a stand-in Earth Engine: canned scene lists and histograms, recorded exports.
+    The event raster is exported by Earth Engine here, so that path stays covered."""
+    cfg["export"]["maximum"] = "earth_engine"
     fake = MagicMock(name="ee")
     started = []
 
@@ -786,6 +808,71 @@ def test_frequency_sums_seasons_including_split_and_partial_files(tmp_path):
     assert n_fl[0, 0] == 6 and not list(dest.parent.glob("*.tmp.tif"))
 
 
+def write_scene_raster(path, g, codes):
+    import rasterio
+    from rasterio.transform import Affine
+
+    with rasterio.open(path, "w", driver="GTiff", dtype="uint8", count=1, width=g.width, height=g.height,
+                       crs=g.crs, transform=Affine(g.scale, 0, g.x0, 0, -g.scale, g.y0), nodata=255) as dst:
+        dst.write(np.asarray(codes, dtype="uint8"), 1)
+
+
+def test_local_maximum_combines_scene_codes_like_the_event_raster():
+    a = np.array([[0, 1, 2, 3, 250, 251, 255, 250, 255]], dtype="uint8")
+    b = np.array([[1, 1, 0, 0, 250, 251, 255, 0, 250]], dtype="uint8")
+    extent, n_valid, n_flooded = maximum.combine([a, b], "vv")
+    assert extent.tolist() == [[1, 1, 2, 3, 250, 251, 255, 0, 250]]
+    assert n_valid.tolist() == [[2, 2, 2, 2, 0, 0, 0, 1, 0]] and n_flooded.tolist() == [[1, 2, 0, 1, 0, 0, 0, 0, 0]]
+    assert maximum.combine([a, b], "vv_or_vh")[2].tolist() == [[1, 2, 1, 1, 0, 0, 0, 0, 0]]
+    assert maximum.combine([a, b], "vv_and_vh")[2].tolist() == [[0, 0, 0, 1, 0, 0, 0, 0, 0]]
+
+
+def test_local_maximum_reads_the_latest_run_and_writes_a_raster_the_frequency_accepts(tmp_path):
+    import rasterio
+
+    master = grid.Grid("EPSG:32647", 20, 600000, 800000, 40, 30)
+    drive, products, runs = tmp_path / "drive", tmp_path / "products", tmp_path / "runs"
+    drive.mkdir()
+    passes = ["20231105T1134Z_S1A_A070", "20231106T2255Z_S1A_D091", "20231112T1126Z_S1A_A172"]
+    base = {"event": {"id": "season-2023"}, "dry_run": False, "params_hash": "abc1234",
+            "config": {"export": {"scale_m": 20}}, "exports": [],
+            "passes": [{"pass_id": p, "status": "used"} for p in passes[:2]] + [{"pass_id": passes[2], "status": "skipped"}]}
+    runlog.RunLog(runs / "20261006T120000Z_season-2023.json", {**base, "run_id": "a"}).save()
+    runlog.RunLog(runs / "20261006T130000Z_season-2023.json", {**base, "run_id": "b", "dry_run": True, "passes": []}).save()
+    runlog.RunLog(runs / "20261006T140000Z_season-2023.json",
+                  {**base, "run_id": "c", "purpose": "reference assets", "passes": []}).save()
+    assert maximum.used_passes(runs, "season-2023", 20, "abc1234") == passes[:2]
+    with pytest.raises(frequency.FrequencyError, match="Run it first"):
+        maximum.used_passes(runs, "season-2023", 10, "abc1234")
+    with pytest.raises(frequency.FrequencyError, match="2 of 2 scene files"):
+        maximum.scene_files(drive, passes[:2], 20, "abc1234")
+
+    left = grid.Grid("EPSG:32647", 20, 600000, 800000, 24, 30)           # the west 24 columns
+    whole = np.zeros((30, 40))
+    whole[:10] = 1
+    whole[25:] = 250
+    write_scene_raster(drive / f"jaga_sar_scene_{passes[0]}_20m_abc1234.tif", left, np.full((30, 24), 3))
+    write_scene_raster(drive / f"jaga_sar_scene_{passes[1]}_20m_abc1234.tif", master, whole)
+    scenes = maximum.scene_files(drive, passes[:2], 20, "abc1234")
+    dest = products / "jaga_sar_max_season-2023_20m_abc1234.tif"
+    summary = maximum.write_maximum(scenes, master, dest, "vv", block=16)
+    assert summary == {"scenes": 2, "pixels_observed": 24 * 30 + 16 * 25, "pixels_flooded": 24 * 30 + 16 * 10}
+    with rasterio.open(dest) as ds:
+        assert ds.descriptions == naming.EVENT_BANDS and ds.nodata == 255 and ds.dtypes[0] == "uint8"
+        assert ds.tags(ns="IMAGE_STRUCTURE").get("LAYOUT") == "COG"
+        extent, n_valid, n_flooded = ds.read()
+    assert extent[0, 0] == 3 and n_valid[0, 0] == 2 and n_flooded[0, 0] == 2      # both passes, both flooded
+    assert extent[27, 0] == 3 and n_valid[27, 0] == 1                             # masked in one pass, seen by the other
+    assert extent[0, 30] == 1 and extent[15, 30] == 0 and n_valid[15, 30] == 1    # east part: one pass only
+    assert extent[27, 30] == 250 and n_valid[27, 30] == 0
+    files = frequency.season_files([products, drive], [2023], 20, "abc1234")
+    assert files == {2023: [dest]}
+    assert frequency.write_frequency(files, master, tmp_path / "f.tif", block=16)["pixels_observed"] == summary["pixels_observed"]
+    shifted = grid.Grid("EPSG:32647", 20, 600010, 800000, 40, 30)
+    with pytest.raises(frequency.FrequencyError, match="not on the export grid"):
+        maximum.write_maximum(scenes, shifted, tmp_path / "x.tif", "vv")
+
+
 def test_frequency_refuses_rasters_from_another_grid(tmp_path):
     master = grid.Grid("EPSG:32647", 10, 600000, 800000, 40, 30)
     shifted = grid.Grid("EPSG:32647", 10, 600005, 800000, 40, 30)
@@ -810,7 +897,9 @@ def test_upload_plan_prints_r2sync_commands_with_relative_paths(tmp_path):
                   {"run_id": "20261006T101500Z_season-2024", "exports": [{"name": "x", "task_id": "T1"}]}).save()
     runlog.RunLog(paths.runs / "20261006T090000Z_season-2024.json",
                   {"run_id": "20261006T090000Z_season-2024", "exports": [{"name": "x", "task_id": None}]}).save()
-    lines = upload_commands(paths, date(2026, 10, 6), base=tmp_path)
+    (paths.drive / "jaga_sar_scene_20241129T1130Z_S1A_A172_20m_abc1234.tif").write_bytes(b"II*\0")
+    assert len(upload_commands(paths, date(2026, 10, 6), base=tmp_path)) == 4
+    lines = upload_commands(paths, date(2026, 10, 6), base=tmp_path, scene_scale=10)   # a season's pass: stays local
     assert len(lines) == 3 and all(line.startswith("uv run python -m r2sync push out") for line in lines)
     assert all("--bucket private --key sar/" in line and str(tmp_path) not in line for line in lines)
     assert lines[0].endswith("--key sar/max/season-2024_10m_abc1234/2026-10-06.tif")

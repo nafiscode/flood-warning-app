@@ -44,7 +44,7 @@ class Paths:
 
     @property
     def products(self) -> Path:
-        """Rasters computed locally (flood frequency)."""
+        """Rasters computed locally (per-event maximum, flood frequency)."""
         return self.root / "products"
 
     def thresholds(self, params_hash: str) -> Path:
@@ -107,6 +107,7 @@ def validate(cfg: dict) -> dict:
           "seasons: first and last must be years with 2014 <= first <= last (Sentinel-1A launched in 2014).")
     start, end = _mmdd(se["start"], "seasons.start"), _mmdd(se["end"], "seasons.end")
     _need(end < start, "seasons: the season must cross the new year (end month-day before start month-day).")
+    _need(isinstance(se["scale_m"], int) and se["scale_m"] > 0, "seasons.scale_m must be a whole number of metres.")
 
     ids = set()
     for ev in cfg["priority_events"]:
@@ -175,6 +176,7 @@ def validate(cfg: dict) -> dict:
     _need(assets and all(ch.isalnum() or ch in "_-" for ch in assets),
           "export.asset_folder must be one folder name made of letters, digits, '_' and '-'.")
     _need(ex["reference_margin_m"] >= 0, "export.reference_margin_m cannot be negative.")
+    _need(ex["maximum"] in ("local", "earth_engine"), "export.maximum must be local or earth_engine.")
     output_paths(cfg)
     return cfg
 

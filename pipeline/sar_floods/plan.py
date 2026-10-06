@@ -132,20 +132,23 @@ def apply_reference_rule(passes: list[Pass], reference: dict[str, dict], min_pas
             p.skip_reason = f"reference has {have} passes on orbit {p.orbit}, needs {min_passes}"
 
 
-def planned_exports(event: seasons.Event, passes: list[Pass], master: Grid, params_hash: str) -> list[Export]:
-    """One raster per used pass (priority events only) and one for the event."""
+def planned_exports(event: seasons.Event, passes: list[Pass], master: Grid, params_hash: str,
+                    local_max: bool = False) -> list[Export]:
+    """With local_max: one raster per used pass, for every event; the event raster is then built from
+    the downloaded files (maximum.py). Without: one raster per used pass for priority events only,
+    and one Earth Engine export for the event."""
     used = [p for p in passes if p.status == "used"]
     if len(used) > MAX_PASSES_PER_EVENT:
         raise ValueError(f"{event.id} has {len(used)} passes; the 8-bit count bands hold at most "
                          f"{MAX_PASSES_PER_EVENT}. Shorten the event.")
     out = []
-    if event.per_scene:
+    if event.per_scene or local_max:
         for p in used:
             window = master.window(p.bounds)
             if window is not None:
                 out.append(Export(naming.scene_name(p.pass_id, master.scale, params_hash), "scene",
                                   window, ("extent",), p.pass_id))
-    if used:
+    if used and not local_max:
         out.append(Export(naming.event_name(event.id, master.scale, params_hash), "max", master,
                           naming.EVENT_BANDS))
     return out

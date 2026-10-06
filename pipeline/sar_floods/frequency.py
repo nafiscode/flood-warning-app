@@ -27,15 +27,18 @@ class FrequencyError(Exception):
     """A problem with the input rasters that the user can fix; the message says how."""
 
 
-def season_files(drive_dir: Path, years: list[int], scale: int, params_hash: str) -> dict[int, list[Path]]:
-    """Per season, its downloaded raster: one file, or the parts Earth Engine split it into."""
+def season_files(folders: Path | list[Path], years: list[int], scale: int, params_hash: str) -> dict[int, list[Path]]:
+    """Per season, its raster: one file, or the parts Earth Engine split it into. `folders` are
+    searched in order (locally combined rasters first, then downloads); the first that has it wins."""
     out: dict[int, list[Path]] = {}
     for year in years:
         base = naming.event_name(f"season-{year}", scale, params_hash)
-        parts = [p for p in sorted(drive_dir.glob(base + "*.tif"))
-                 if (naming.split_part(p.name) or ("", ""))[0] == base]
-        if parts:
-            out[year] = parts
+        for folder in ([folders] if isinstance(folders, Path) else folders):
+            parts = [p for p in sorted(folder.glob(base + "*.tif"))
+                     if (naming.split_part(p.name) or ("", ""))[0] == base]
+            if parts:
+                out[year] = parts
+                break
     return out
 
 

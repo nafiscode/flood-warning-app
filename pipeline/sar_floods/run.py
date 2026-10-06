@@ -182,7 +182,7 @@ def run_event(cfg: dict, event: seasons.Event, *, dry_run: bool, with_thresholds
         log.warning("%s: no usable passes; nothing to export", event.id)
 
     # 2. Planned exports.
-    exports = plan.planned_exports(event, passes, master, params_hash)
+    exports = plan.planned_exports(event, passes, master, params_hash, local_max=ex["maximum"] == "local")
     done = {} if force else runlog.already_exported(paths.runs)
     records = []
     for e in exports:
