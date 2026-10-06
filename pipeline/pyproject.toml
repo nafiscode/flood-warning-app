@@ -18,6 +18,7 @@ dependencies = [
     "pyyaml>=6",
     "rasterio>=1.4.4",
     "shapely>=2.1.2",
+    "whitebox>=2.3.6",
 ]
 
 [dependency-groups]

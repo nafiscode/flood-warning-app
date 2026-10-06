@@ -48,6 +48,19 @@ Other commands: `stations`, `waterlevel`, `rain-daily [--since YYYY-MM-DD]`, `ra
 
 API notes (verified 28 Sep 2026): water level is limited to 365 days per request but older years are reachable; hourly rain exists only for the last ~42 h; daily rain comes in windows of 31 days or less. Endpoint references: [bejranonda/flood2026](https://github.com/bejranonda/flood2026) (MIT) and gain9999/thaiwater (no licence, endpoints only). No code was copied from either.
 
+## hazard (S3, started 6 Oct 2026)
+
+HAND and the hazard baseline. So far: the source rasters and the HAND chain.
+
+```powershell
+uv run python -m hazard sources-export      # FABDEM and JRC water occurrence for 99-103 E, 5-9 N -> Google Drive (a few EECU-minutes)
+uv run python -m hazard sources-download    # -> out\hazard\sources
+```
+
+- Settings: `hazard/config.yaml`. Outputs: `out/hazard/` (ignored by git).
+- FABDEM is CC BY-NC-SA 4.0: non-commercial, and what is derived from it (HAND, hazard classes) must carry the same licence and the attribution in the config.
+- HAND uses WhiteboxTools through the `whitebox` package, which downloads its binary on first use.
+
 ## sar_floods (S2)
 
 Sentinel-1 flood extents in Google Earth Engine: per-scene extents for the two priority events (Nov–Dec 2024 and 2025), the maximum extent of every Oct–Jan season 2017–2025, and the flood frequency. Method, parameters and known issues: `sar_floods/METHODS.md`. First run against Earth Engine on 5–6 Oct 2026 (the Nov–Dec 2024 event; status and compute in the methods note); start with `check` and the dry runs.

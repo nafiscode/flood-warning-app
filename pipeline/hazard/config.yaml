@@ -1,0 +1,29 @@
+# Hazard baseline (S3): HAND from FABDEM, hazard classes, aggregation. Reasons and open points: METHODS.md.
+# Nothing here has been tuned yet.
+
+# Working area in whole degrees [west, south, east, north]: the four provinces plus everything that can
+# drain into them (the Malaysian side of the Kolok basin, the Songkhla Lake basin to the north). The
+# catchments themselves are cut out of this box from the DEM's own flow directions.
+bbox_deg: [99, 5, 103, 9]
+
+dem:
+  # FABDEM V1-2, bare-earth 1 arc-second. Licence CC BY-NC-SA 4.0: non-commercial, and anything derived
+  # from it (HAND, hazard classes) must be shared under the same licence with attribution.
+  asset: projects/sat-io/open-datasets/FABDEM
+  band: b1
+  attribution: >-
+    FABDEM (Hawker et al. 2022), CC BY-NC-SA 4.0. Produced using Copernicus WorldDEM-30 © DLR e.V.
+    2010-2014 and © Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the
+    European Union and ESA; all rights reserved.
+
+water:
+  asset: JRC/GSW1_4/GlobalSurfaceWater
+  band: occurrence
+
+export:
+  drive_folder: jaga_hazard           # Google Drive folder for the two source rasters
+  crs: "EPSG:32647"                   # working grid: UTM 47N, as the flood rasters
+  scale_m: 30
+
+# Local outputs, relative to pipeline/ (ignored by git through the root rule "out/").
+output_dir: out/hazard
