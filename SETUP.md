@@ -216,6 +216,14 @@ Sign-in settings live in the LINE and Supabase dashboards, not in migrations, so
 5. *Authentication → URL Configuration → Redirect URLs*: `http://localhost:3000/**` and the deployed address.
 6. While the LINE Login channel is in **Developing** status, only LINE accounts with a role on it can sign in ("User need to have developer role" otherwise): *Roles → Invite by email*, role **Tester**, and accept the invitation while logged in as that person's own LINE account. Publishing the channel is a launch step.
 
+## One-time: email for admin sign-in links
+
+Supabase's built-in email only delivers to members of the Supabase organisation, so admin sign-in links for anyone else need custom SMTP. Like the LINE settings, this lives in the dashboard: a rebuilt or new Supabase project needs it again. Free; tested on `jaga-dev` on 6 Oct 2026.
+
+1. Google account of the project email (2-Step Verification on) → https://myaccount.google.com/apppasswords → create an app password named `Jaga Supabase`. It is shown once and goes into the Supabase dashboard only: not `.env.local`, not Vercel, not the chat.
+2. Supabase dashboard → *Authentication → Emails → SMTP Settings* → enable custom SMTP: sender email and username = the project email, sender name `Jaga`, host `smtp.gmail.com`, port `465` (or `587`), password = the app password.
+3. Invite an admin from the laptop with `npm run admin:invite -- <email>`; the person then asks for the link at `/sign-in` under "For admins". An address that was not invited gets no email, by design.
+
 ## One-time: Cloudflare R2 for tiles and rasters
 
 Large pipeline outputs (PMTiles, COG rasters) live in Cloudflare R2, not in git or on the laptop. A click-by-click version is in the build tracker ("Approvals & Cloudflare" tab); in short:
