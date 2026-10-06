@@ -74,9 +74,24 @@ test.describe("offline (safety rule 7)", () => {
     page,
     context,
   }) => {
+    // This test has failed now and then in CI (3 of 12 runs up to 6 Oct): the offline page was
+    // served for /en, then the page moved on to the cached home page. Not reproduced locally.
+    // Until the cause is known, a failure reports every navigation and browser error it saw.
+    const seen: string[] = [];
+    page.on("framenavigated", (frame) => {
+      if (frame === page.mainFrame()) seen.push(`navigated ${frame.url()}`);
+    });
+    page.on("console", (message) => {
+      if (message.type() === "error") seen.push(`console ${message.text().slice(0, 200)}`);
+    });
+    page.on("pageerror", (error) => seen.push(`pageerror ${String(error).slice(0, 200)}`));
     await context.setOffline(true);
     await page.goto("/en");
-    await expect(page.locator("body")).toContainText("ไม่มีการเชื่อมต่ออินเทอร์เน็ต");
+    try {
+      await expect(page.locator("body")).toContainText("ไม่มีการเชื่อมต่ออินเทอร์เน็ต");
+    } catch (error) {
+      throw new Error(`${(error as Error).message}\nSeen: ${JSON.stringify(seen, null, 1)}`);
+    }
     for (const number of HOTLINES) {
       await expect(page.locator(`a[href="tel:${number}"]`)).toBeVisible();
     }
