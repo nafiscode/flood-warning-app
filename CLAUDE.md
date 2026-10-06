@@ -144,7 +144,8 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - `npm run db:reset`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
 - These use `SUPABASE_DB_URL` from `.env.local` via `scripts/db.mjs` (never printed), so no `supabase login` or `link` is needed.
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
-- `npm run admin:super -- <email>`: make the first super admin (the owner); later admins are invited at `/admin/invitations`. Run once per Supabase project.
+- `npm run admin:super -- <email>`: make the one super admin (the project account). Run once per Supabase project.
+- `npm run admin:invite -- <email>`: invite an admin from this laptop (what `/admin/invitations` does; that page needs the secret key, which is not on the live site).
 - `npm run icons`: re-render the PNG icons in `public/icons/` from the SVGs in `public/brand/` (after a logo change)
 - `npm run test:rls`: RLS policy tests. On the laptop they run against `jaga-dev` (`SUPABASE_DB_URL`); in CI against a throwaway Supabase on the GitHub runner. Each test runs in a transaction that is rolled back.
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests

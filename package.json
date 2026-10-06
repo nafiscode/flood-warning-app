@@ -27,6 +27,7 @@
     "db:new": "supabase migration new",
     "icons": "node scripts/icons.mjs",
     "admin:super": "node scripts/admin.mjs super-admin",
+    "admin:invite": "node scripts/admin.mjs invite",
     "postinstall": "node scripts/vendor-maplibre.mjs"
   },
   "dependencies": {
