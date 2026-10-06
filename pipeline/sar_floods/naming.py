@@ -3,6 +3,8 @@
   jaga_sar_scene_<UTC time>_<platform>_<A|D><orbit>_<scale>m_<hash>    one pass, priority events only
   jaga_sar_max_<event id>_<scale>m_<hash>                              one event: extent + counts
   jaga_sar_frequency_<first>-<last>_<scale>m_<hash>                    all seasons, computed locally
+  jaga_sar_ref_<year(s)>_<A|D><orbit>_<scale>m_<hash>                  dry reference of one orbit: an
+                                                                       Earth Engine asset, never a file
 
 <hash> is settings.params_hash: rasters made with different parameters never share a name, and the
 run log with the same hash says exactly how a file was made.
@@ -45,6 +47,14 @@ def event_name(event_id: str, scale: int, params_hash: str) -> str:
 
 def frequency_name(first: int, last: int, scale: int, params_hash: str) -> str:
     return f"{PREFIX}frequency_{first}-{last}_{scale}m_{params_hash}"
+
+
+REFERENCE_LAYOVER_BAND = "layover"
+
+
+def reference_name(years: list[int], orbit: str, scale: int, params_hash: str) -> str:
+    """Asset name of one orbit's dry reference; `years` are the calendar years of its dry windows."""
+    return f"{PREFIX}ref_{'-'.join(str(y) for y in sorted(years))}_{orbit}_{scale}m_{params_hash}"
 
 
 def split_part(filename: str) -> tuple[str, str] | None:

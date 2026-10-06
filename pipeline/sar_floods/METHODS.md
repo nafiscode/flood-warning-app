@@ -94,7 +94,18 @@ After the last task the client warned: "Your project has exceeded its noncommerc
 | resampling, dB conversion, asset loading, other | about 55 | |
 | slope, aspect and HAND masks alone | under 3 | the DEM reprojection is not the problem |
 
-So roughly 60 % of each pass is spent on things that are identical for all passes of an orbit in a season: the reference median, its speckle filter and the layover mask. Plan (not built): export these once per orbit and season as Earth Engine assets on the output grid, and let the passes read them. Same pixel values, one extra export per orbit. The profile is one flat box; mountain tiles and `connectedPixelCount` at full scale may differ.
+So roughly 60 % of each pass is spent on things that are identical for all passes of an orbit in a season: the reference median, its speckle filter and the layover mask. Since 6 Oct 2026 `sar_floods prepare` exports these once per orbit and season as Earth Engine assets on the output grid, and `run` reads them (see "Stored references"). **Not yet run for real**: the saving is an estimate until the first prepared event is measured. The profile is one flat box; mountain tiles and `connectedPixelCount` at full scale may differ.
+
+## Stored references
+
+`sar_floods prepare <event>` starts one export per orbit to `projects/<EE_PROJECT>/assets/jaga_sar/jaga_sar_ref_<year>_<orbit>_<scale>m_<hash>`: the despeckled reference per polarisation and the layover mask, on the master grid, cut to the area plus 500 m. `run` uses a stored reference whose name matches (same reference year, orbit, pixel size and parameter hash) and otherwise computes the reference inside every request, as before. The run log records the source per orbit.
+
+What changes in the results, as far as can be said without a real run:
+- At the export pixel size the reference is the same computation, stored as 32-bit instead of 64-bit numbers: differences of about 1e-6 dB, which can flip a pixel only if its change sits exactly on the threshold.
+- The tile histograms are sampled at 50 m. A stored reference is read there from the asset's pyramid (mean of 10 m pixels of the filtered median) instead of being recomputed from Sentinel-1's own pyramid. Histograms, and so the few Otsu thresholds, can differ slightly; the fixed drop is not affected. Thresholds already cached for a pass are reused.
+- The layover mask's pyramid uses the maximum, so at 50 m a cell counts as layover if any 10 m pixel in it does.
+
+To verify on the first prepared run: that the asset lands on the exact master grid; one pass exported both ways gives the same extent raster; the compute per pass and per reference; the asset sizes against the project's asset storage quota.
 
 ## To check by eye in the Code Editor
 

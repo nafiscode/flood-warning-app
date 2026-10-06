@@ -171,6 +171,10 @@ def validate(cfg: dict) -> dict:
     folder = str(ex["drive_folder"])
     _need(folder and "/" not in folder and "\\" not in folder, "export.drive_folder must be one folder name.")
     _need("gs://" not in folder, "Exports go to Google Drive only (Cloud Storage bills).")
+    assets = str(ex["asset_folder"])
+    _need(assets and all(ch.isalnum() or ch in "_-" for ch in assets),
+          "export.asset_folder must be one folder name made of letters, digits, '_' and '-'.")
+    _need(ex["reference_margin_m"] >= 0, "export.reference_margin_m cannot be negative.")
     output_paths(cfg)
     return cfg
 

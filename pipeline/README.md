@@ -50,7 +50,7 @@ API notes (verified 28 Sep 2026): water level is limited to 365 days per request
 
 ## sar_floods (S2)
 
-Sentinel-1 flood extents in Google Earth Engine: per-scene extents for the two priority events (Nov–Dec 2024 and 2025), the maximum extent of every Oct–Jan season 2017–2025, and the flood frequency. Method, parameters and known issues: `sar_floods/METHODS.md`. **Not yet run against Earth Engine** (written 5 Oct 2026 without credentials); start with `check` and the dry runs.
+Sentinel-1 flood extents in Google Earth Engine: per-scene extents for the two priority events (Nov–Dec 2024 and 2025), the maximum extent of every Oct–Jan season 2017–2025, and the flood frequency. Method, parameters and known issues: `sar_floods/METHODS.md`. First run against Earth Engine on 5–6 Oct 2026 (the Nov–Dec 2024 event; status and compute in the methods note); start with `check` and the dry runs.
 
 One-time: put the Cloud project ID in `.env.local` as `EE_PROJECT`, enable the Earth Engine API and the Google Drive API on that project, then sign in (credentials are stored outside the repo):
 
@@ -63,6 +63,7 @@ uv run python -m sar_floods events                                   # the 9 sea
 uv run python -m sar_floods check                                    # sign-in, dataset ids, band names
 uv run python -m sar_floods run event-2024-nov-dec --dry-run         # scenes, reference per orbit, planned exports; starts nothing
 uv run python -m sar_floods run event-2024-nov-dec --dry-run --with-thresholds   # also the Otsu/fallback threshold per tile
+uv run python -m sar_floods prepare event-2024-nov-dec               # one asset export per orbit: dry reference + layover mask (wait for these)
 uv run python -m sar_floods run event-2024-nov-dec                   # start the Drive exports of ONE event
 uv run python -m sar_floods status                                   # task states and EECU-seconds (the quota measurement)
 uv run python -m sar_floods download                                 # Drive folder jaga_sar_floods -> out\sar_floods\drive
@@ -76,7 +77,8 @@ uv run python -m sar_floods upload-plan                              # prints th
 - Every run writes a log to `out/sar_floods/runs/<UTC time>_<event>.json`: all parameters, the scenes of each pass and of each orbit's dry reference, the threshold per pass, polarisation and tile (Otsu or the fixed drop, and why), and the task ids. `status` adds task states and compute used.
 - File names are deterministic: `jaga_sar_scene_<UTC time>_<S1x>_<orbit>_10m_<hash>.tif`, `jaga_sar_max_<event>_10m_<hash>.tif`, `jaga_sar_frequency_<first>-<last>_10m_<hash>.tif`. `<hash>` changes when a processing parameter changes. A second `run` skips exports that an earlier run already started (`--force` overrides).
 - Local outputs live in `out/sar_floods/` (ignored by git via the root rule `out/`). They never go into `data/`.
-- Exports go to Google Drive only, never Cloud Storage. The area is `sar_floods/aoi.geojson` (the four provinces, simplified; `uv run python -m sar_floods aoi` rebuilds it from `supabase/seed/10_provinces.sql`), sent inline, so no Earth Engine asset is needed.
+- `prepare` stores each orbit's dry reference and layover mask as an Earth Engine asset (`projects/<EE_PROJECT>/assets/jaga_sar/`); `run` reads a stored reference with the same parameters and computes it inside every request otherwise. The run log says which (`reference.orbits.<orbit>.source`). One `prepare` per season year covers its season and its priority event.
+- Exports go to Google Drive only, never Cloud Storage. The area is `sar_floods/aoi.geojson` (the four provinces, simplified; `uv run python -m sar_floods aoi` rebuilds it from `supabase/seed/10_provinces.sql`), sent inline.
 - Visual check: paste `sar_floods/code_editor/sar_floods.js` into the Code Editor (one pass at a time, same processing).
 
 After download, upload to the private bucket (write-once keys under `sar/`, dated; `upload-plan` prints one line per file with today's date):

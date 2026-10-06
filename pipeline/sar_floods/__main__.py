@@ -8,6 +8,10 @@ Commands
                          (e.g. event-2024-nov-dec, season-2024) or `all-seasons`.
                          --dry-run lists scenes and planned exports and starts nothing;
                          add --with-thresholds to also compute and log the per-tile thresholds.
+  prepare EVENT [--dry-run] [--scale M] [--force]
+                         start one asset export per orbit: the dry reference and the layover mask of
+                         the event's season. `run` then reads them instead of recomputing them for
+                         every pass (about 60 % less compute). Wait for these tasks before `run`.
   status [RUN_ID]        task states and EECU-seconds of a run (default: the latest with tasks)
   download [--dry-run]   fetch finished exports from Google Drive into <output_dir>/drive/
   frequency [--allow-missing]
@@ -79,6 +83,11 @@ def _run(cfg: dict, args, command: str) -> int:
             todo = [seasons.find_event(args.event, cfg)]
         except KeyError:
             raise settings.ConfigError(f"Unknown event '{args.event}'. `sar_floods events` lists them.") from None
+    if args.command == "prepare":
+        for ev in todo:
+            rl = run.prepare_references(cfg, ev, dry_run=args.dry_run, force=args.force, command=command)
+            log.info("run log: %s", rl.path.relative_to(PIPELINE_DIR))
+        return 0
     if args.with_thresholds and not args.dry_run:
         raise settings.ConfigError("--with-thresholds only makes sense with --dry-run.")
     for ev in todo:
@@ -169,6 +178,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--with-thresholds", action="store_true", help="with --dry-run: also compute thresholds")
     p.add_argument("--scale", type=int, default=None, help="export pixel size in metres (default: config)")
     p.add_argument("--force", action="store_true", help="start exports even if an earlier run started them")
+    p = sub.add_parser("prepare")
+    p.add_argument("event")
+    p.add_argument("--dry-run", action="store_true", help="list the references; start no tasks")
+    p.add_argument("--scale", type=int, default=None, help="pixel size in metres (default: config)")
+    p.add_argument("--force", action="store_true", help="export again even if the asset or a task exists")
     p = sub.add_parser("status")
     p.add_argument("run_id", nargs="?")
     p = sub.add_parser("download")
@@ -197,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
         command = "sar_floods " + " ".join(argv if argv is not None else sys.argv[1:])
         if args.command == "check":
             return _check(cfg)
-        if args.command == "run":
+        if args.command in ("run", "prepare"):
             return _run(cfg, args, command)
         if args.command == "status":
             return _status(cfg, args, paths)

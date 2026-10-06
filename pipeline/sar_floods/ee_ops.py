@@ -200,6 +200,55 @@ def reference(cfg: dict, scene_ids: list[str]):
     return _despeckle(median.select(pols), cfg), median.select("angle")
 
 
+# ---------------------------------------------------------------- stored references (assets)
+
+def asset_folder_id(project: str, cfg: dict) -> str:
+    return f"projects/{project}/assets/{cfg['export']['asset_folder']}"
+
+
+def reference_assets(project: str, cfg: dict) -> set[str]:
+    """Names of the finished reference images in the asset folder (empty if there is no folder)."""
+    try:
+        listing = ee().data.listAssets({"parent": asset_folder_id(project, cfg)})
+    except ee().EEException:
+        return set()
+    return {a["name"].rsplit("/", 1)[-1] for a in listing.get("assets", []) if a.get("type") == "IMAGE"}
+
+
+def ensure_asset_folder(project: str, cfg: dict) -> str:
+    folder = asset_folder_id(project, cfg)
+    try:
+        ee().data.getAsset(folder)
+    except ee().EEException:
+        ee().data.createAsset({"type": "FOLDER"}, folder)
+    return folder
+
+
+def reference_asset_image(cfg: dict, ref_backscatter, layover, aoi):
+    """What is stored per orbit: the despeckled reference per polarisation (float32) and the layover
+    mask, cut to the area plus a margin so the pixels the products use keep a full mask."""
+    margin = cfg["export"]["reference_margin_m"]
+    region = aoi.buffer(margin, 30) if margin > 0 else aoi
+    return (ref_backscatter.toFloat()
+            .addBands(layover.rename(naming.REFERENCE_LAYOVER_BAND).toFloat())
+            .clip(region))
+
+
+def load_reference_asset(cfg: dict, asset_id: str):
+    """(reference backscatter, layover 0/1 image) from a stored reference."""
+    img = ee().Image(asset_id)
+    layover = img.select(naming.REFERENCE_LAYOVER_BAND).unmask(0).gt(0).rename("layover_shadow")
+    return img.select(list(cfg["sentinel1"]["polarisations"])), layover
+
+
+def reference_export_task(image, name: str, asset_id: str, grid: Grid, cfg: dict):
+    """An UNSTARTED export of a reference image to an asset on the exact pixel grid."""
+    return ee().batch.Export.image.toAsset(
+        image=image, description=name, assetId=asset_id, crs=grid.crs, crsTransform=grid.transform,
+        dimensions=grid.dimensions, maxPixels=int(cfg["export"]["max_pixels"]),
+        pyramidingPolicy={".default": "mean", naming.REFERENCE_LAYOVER_BAND: "max"})
+
+
 def change_image(cfg: dict, p: Pass, ref_backscatter):
     """event - reference in dB for one pass (its slices mosaicked). Masked where either is missing."""
     pols = cfg["sentinel1"]["polarisations"]

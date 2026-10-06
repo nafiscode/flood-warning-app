@@ -507,6 +507,9 @@ def fake_run(cfg, tmp_path, monkeypatch):
         return task
 
     fake.batch.Export.image.toDrive.side_effect = to_drive
+    fake.batch.Export.image.toAsset.side_effect = to_drive
+    stored = set()
+    monkeypatch.setattr(ee_ops, "reference_assets", lambda project, cfg_: set(stored))
     monkeypatch.setenv("EE_PROJECT", "jaga-test-project")
     monkeypatch.setattr(ee_ops, "init", lambda project: (setattr(ee_ops, "_ee", fake), "fake-ee")[1])
     monkeypatch.setattr(settings, "output_paths", lambda c: settings.Paths(tmp_path))
@@ -520,9 +523,11 @@ def fake_run(cfg, tmp_path, monkeypatch):
                            "VH": [float(c) for c in HISTOGRAMS["dry_tile"]]}}
 
     monkeypatch.setattr(ee_ops, "tile_histograms", histograms)
-    monkeypatch.setattr(ee_ops, "look_direction",
-                        lambda cfg_, scene_ids, area: 258.4 if scene_ids[0].startswith("REF_A") else 101.6)
-    yield SimpleNamespace(cfg=cfg, tmp=tmp_path, started=started, histogram_calls=calls, ee=fake, listings=listings)
+    looks = []
+    monkeypatch.setattr(ee_ops, "look_direction", lambda cfg_, scene_ids, area: (
+        looks.append(scene_ids[0]), 258.4 if scene_ids[0].startswith("REF_A") else 101.6)[1])
+    yield SimpleNamespace(cfg=cfg, tmp=tmp_path, started=started, histogram_calls=calls, ee=fake, listings=listings,
+                          stored=stored, looks=looks)
     ee_ops._ee = None
 
 
@@ -596,6 +601,65 @@ def test_run_log_records_parameters_scenes_reference_and_task_ids(fake_run):
     assert [e["state"] for e in again.data["exports"]] == ["SKIPPED_ALREADY_EXPORTED"] * 3
     assert len(fake_run.started) == 3 and len(fake_run.histogram_calls) == 2     # cache hit, no new requests
     assert again.data["exports"][0]["previous"]["task_id"] == "TASK000"
+
+
+def test_prepare_starts_one_reference_asset_per_orbit_with_enough_passes(fake_run):
+    cfg = fake_run.cfg
+    ev = seasons.find_event("event-2024-nov-dec", cfg)
+    fake_run.listings[:] = [reference_features({(91, "DESCENDING"): 5, (172, "ASCENDING"): 4, (99, "ASCENDING"): 2})]
+    dry = run.prepare_references(cfg, ev, dry_run=True, now=utc(2026, 10, 6, 9, 0))
+    assert fake_run.started == [] and [e["state"] for e in dry.data["exports"]] == [
+        "SKIPPED_THIN_REFERENCE", "PLANNED", "PLANNED"]
+
+    fake_run.listings[:] = [reference_features({(91, "DESCENDING"): 5, (172, "ASCENDING"): 4, (99, "ASCENDING"): 2})]
+    rl = run.prepare_references(cfg, ev, dry_run=False, command="sar_floods prepare event-2024-nov-dec",
+                                now=utc(2026, 10, 6, 9, 5))
+    log = json.loads(rl.path.read_text(encoding="utf-8"))
+    h = log["params_hash"]
+    assert log["purpose"] == "reference assets" and log["reference"]["windows"] == [["2024-02-01", "2024-04-30"]]
+    assert [(e["name"], e["state"]) for e in log["exports"]] == [
+        (f"jaga_sar_ref_2024_A099_10m_{h}", "SKIPPED_THIN_REFERENCE"),
+        (f"jaga_sar_ref_2024_A172_10m_{h}", "SUBMITTED"), (f"jaga_sar_ref_2024_D091_10m_{h}", "SUBMITTED")]
+    assert any("A099" in w for w in log["warnings"])
+    assert log["reference"]["orbits"]["A172"]["towards_radar_deg"] == 258.4
+    first = fake_run.started[0].options
+    assert len(fake_run.started) == 2 and all(t.started for t in fake_run.started)
+    assert first["assetId"] == f"projects/jaga-test-project/assets/jaga_sar/jaga_sar_ref_2024_A172_10m_{h}"
+    assert first["description"] == f"jaga_sar_ref_2024_A172_10m_{h}" and first["crs"] == "EPSG:32647"
+    assert first["crsTransform"] == log["grid"]["crs_transform"] and first["dimensions"] == log["grid"]["dimensions"]
+    assert first["pyramidingPolicy"] == {".default": "mean", "layover": "max"}
+    fake_run.ee.batch.Export.image.toDrive.assert_not_called()
+
+    # Not started twice: a task already submitted, or the finished asset, is enough.
+    fake_run.listings[:] = [reference_features({(91, "DESCENDING"): 5, (172, "ASCENDING"): 4})]
+    fake_run.stored.add(f"jaga_sar_ref_2024_D091_10m_{h}")
+    again = run.prepare_references(cfg, ev, dry_run=False, now=utc(2026, 10, 6, 9, 30))
+    assert [e["state"] for e in again.data["exports"]] == ["SKIPPED_ALREADY_EXPORTED", "SKIPPED_ASSET_EXISTS"]
+    assert len(fake_run.started) == 2
+
+
+def test_run_reads_a_stored_reference_and_computes_the_others(fake_run):
+    cfg = fake_run.cfg
+    h = settings.params_hash(cfg, settings.aoi_sha256())
+    fake_run.stored.add(f"jaga_sar_ref_2024_D091_10m_{h}")
+    fake_run.stored.add("jaga_sar_ref_2024_A172_10m_0000000")        # other parameters: not used
+    ev = seasons.find_event("event-2024-nov-dec", cfg)
+    rl = run.run_event(cfg, ev, dry_run=True, with_thresholds=True, now=utc(2026, 10, 6, 10, 15))
+    orbits = rl.data["reference"]["orbits"]
+    assert orbits["D091"]["source"] == f"projects/jaga-test-project/assets/jaga_sar/jaga_sar_ref_2024_D091_10m_{h}"
+    assert "towards_radar_deg" not in orbits["D091"]
+    assert orbits["A172"]["source"] == "computed" and orbits["A172"]["towards_radar_deg"] == 258.4
+    assert fake_run.looks == ["REF_A172_0"]                          # no plane fit for the stored orbit
+    fake_run.ee.Image.assert_any_call(orbits["D091"]["source"])
+
+
+def test_reference_names_and_the_asset_folder(cfg):
+    assert naming.reference_name([2025, 2024], "D091", 10, "abc1234") == "jaga_sar_ref_2024-2025_D091_10m_abc1234"
+    assert ee_ops.asset_folder_id("jaga-test-project", cfg) == "projects/jaga-test-project/assets/jaga_sar"
+    bad = copy.deepcopy(cfg)
+    bad["export"]["asset_folder"] = "a/b"
+    with pytest.raises(settings.ConfigError, match="asset_folder"):
+        settings.validate(bad)
 
 
 def test_remaining_earth_engine_functions_run_against_the_stand_in(cfg, monkeypatch):

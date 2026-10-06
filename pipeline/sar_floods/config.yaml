@@ -102,6 +102,10 @@ export:
   scale_m: 10
   snap_m: 30                          # grid origin snapped to this, so 30 m (FABDEM/HAND) cells nest
   drive_folder: jaga_sar_floods       # one Google Drive folder for every export
+  # Earth Engine asset folder (under projects/<EE_PROJECT>/assets/) for the per-orbit dry references
+  # made by `sar_floods prepare`. `run` uses a reference found there and computes it otherwise.
+  asset_folder: jaga_sar
+  reference_margin_m: 500             # the stored reference covers the area plus this margin
   max_pixels: 2000000000
   single_file: true                   # ask Earth Engine for one GeoTIFF per export (fileDimensions)
 

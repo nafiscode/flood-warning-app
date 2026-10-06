@@ -10,7 +10,7 @@ from pathlib import Path
 from shapely.geometry import shape
 
 from . import aoi as aoi_module
-from . import ee_ops, grid, plan, runlog, seasons, settings, threshold
+from . import ee_ops, grid, naming, plan, runlog, seasons, settings, threshold
 
 log = logging.getLogger("sar_floods")
 
@@ -34,6 +34,97 @@ def _thresholds_for_pass(cfg: dict, cache_dir: Path, p: plan.Pass, compute) -> d
     cache.write_text(json.dumps({pol: {str(i): d.as_dict() for i, d in tiles.items()}
                                  for pol, tiles in decisions.items()}), encoding="utf-8")
     return decisions
+
+
+def _orbit_reference(cfg: dict, project: str, orbit: str, entry: dict, years: list[int], scale: int,
+                     params_hash: str, stored: set[str], masks: dict, area):
+    """(reference backscatter, layover mask) for one orbit: the stored asset if `prepare` made one for
+    these parameters, else computed inside every request. `entry` (the run log's record) says which."""
+    name = naming.reference_name(years, orbit, scale, params_hash)
+    if name in stored:
+        entry["source"] = f"{ee_ops.asset_folder_id(project, cfg)}/{name}"
+        log.info("orbit %s: stored reference %s", orbit, name)
+        return ee_ops.load_reference_asset(cfg, entry["source"])
+    backscatter, angle = ee_ops.reference(cfg, entry["scenes"])
+    towards_radar = ee_ops.look_direction(cfg, entry["scenes"], area)
+    entry["source"] = "computed"
+    entry["towards_radar_deg"] = round(towards_radar, 2)
+    log.info("orbit %s: reference computed in each request; towards the radar %.1f deg", orbit, towards_radar)
+    return backscatter, ee_ops.layover_shadow(angle, towards_radar, masks, cfg)
+
+
+def prepare_references(cfg: dict, event: seasons.Event, *, dry_run: bool, force: bool = False,
+                       command: str = "", now: datetime | None = None) -> runlog.RunLog:
+    """Start one asset export per orbit of the event: the dry reference and the layover mask.
+
+    They are the same for every pass of an orbit, and were about 60 % of each pass's compute
+    (METHODS.md, "Compute used"). Orbits whose reference is too thin are left out, as in `run`.
+    """
+    now = now or datetime.now(timezone.utc)
+    paths = settings.output_paths(cfg)
+    project = settings.ee_project()
+    geometry = aoi_module.load()
+    aoi_sha = settings.aoi_sha256()
+    params_hash = settings.params_hash(cfg, aoi_sha)
+    ee_version = ee_ops.init(project)
+    rl = runlog.RunLog.start(paths.runs, event=event, cfg=cfg, params_hash=params_hash, aoi_sha256=aoi_sha,
+                             project=project, dry_run=dry_run, command=command, now=now, ee_version=ee_version)
+    rl.data["purpose"] = "reference assets"
+    ex = cfg["export"]
+    master = grid.master_grid(aoi_module.bounds(geometry), ex["crs"], ex["scale_m"], ex["snap_m"])
+    rl.data["grid"] = master.as_dict()
+
+    area = ee_ops.area(geometry)
+    windows = seasons.reference_windows(event, cfg)
+    scenes = []
+    for a, b in windows:
+        scenes += [plan.scene_from_feature(f)
+                   for f in ee_ops.list_scenes(ee_ops.s1_collection(cfg, area, *seasons.utc_millis(a, b)))]
+    reference = plan.reference_by_orbit(scenes)
+    rl.data["reference"] = {"windows": [[a.isoformat(), b.isoformat()] for a, b in windows], "orbits": reference}
+    years = [a.year for a, _ in windows]
+    stored = set() if force else ee_ops.reference_assets(project, cfg)
+    done = {} if force else runlog.already_exported(paths.runs)
+    folder = ee_ops.asset_folder_id(project, cfg)
+
+    todo = []
+    for orbit, entry in reference.items():
+        name = naming.reference_name(years, orbit, master.scale, params_hash)
+        rec = {"name": name, "kind": "reference", "orbit": orbit, "asset_id": f"{folder}/{name}",
+               "task_id": None, "state": "PLANNED"}
+        if entry["passes"] < cfg["reference"]["min_passes"]:
+            rec["state"] = "SKIPPED_THIN_REFERENCE"
+            rl.warn(f"orbit {orbit}: reference has {entry['passes']} passes, needs {cfg['reference']['min_passes']}")
+        elif name in stored:
+            rec["state"] = "SKIPPED_ASSET_EXISTS"
+        elif name in done:
+            rec["state"] = "SKIPPED_ALREADY_EXPORTED"
+            rec["previous"] = done[name]
+        else:
+            todo.append((entry, rec))
+        rl.data["exports"].append(rec)
+        log.info("reference %s: %d passes, %d scenes, %s", name, entry["passes"], len(entry["scenes"]),
+                 rec["state"].lower())
+    rl.save()
+    if dry_run or not todo:
+        rl.finish(datetime.now(timezone.utc))
+        return rl
+
+    ee_ops.ensure_asset_folder(project, cfg)
+    masks = ee_ops.static_masks(cfg)
+    for entry, rec in todo:
+        backscatter, angle = ee_ops.reference(cfg, entry["scenes"])
+        towards_radar = ee_ops.look_direction(cfg, entry["scenes"], area)
+        entry["towards_radar_deg"] = round(towards_radar, 2)
+        image = ee_ops.reference_asset_image(
+            cfg, backscatter, ee_ops.layover_shadow(angle, towards_radar, masks, cfg), area)
+        task = ee_ops.reference_export_task(image, rec["name"], rec["asset_id"], master, cfg)
+        task.start()
+        rec.update(task_id=task.id, state="SUBMITTED")
+        log.info("started %s (task %s), towards the radar %.1f deg", rec["name"], task.id, towards_radar)
+        rl.save()
+    rl.finish(datetime.now(timezone.utc))
+    return rl
 
 
 def run_event(cfg: dict, event: seasons.Event, *, dry_run: bool, with_thresholds: bool = False,
@@ -112,16 +203,15 @@ def run_event(cfg: dict, event: seasons.Event, *, dry_run: bool, with_thresholds
     # 3. Thresholds: one histogram request per pass, decided locally (threshold.py).
     masks = ee_ops.static_masks(cfg)
     tile_index = ee_ops.tile_index_image(lattice)
+    stored = ee_ops.reference_assets(project, cfg)
+    years = [a.year for a, _ in windows]
     ref_images, layover = {}, {}
     per_pass = {}
     for p in used:
         if p.orbit not in ref_images:
-            ref_images[p.orbit] = ee_ops.reference(cfg, reference[p.orbit]["scenes"])
-            towards_radar = ee_ops.look_direction(cfg, reference[p.orbit]["scenes"], area)
-            reference[p.orbit]["towards_radar_deg"] = round(towards_radar, 2)
-            log.info("orbit %s: towards the radar %.1f deg", p.orbit, towards_radar)
-            layover[p.orbit] = ee_ops.layover_shadow(ref_images[p.orbit][1], towards_radar, masks, cfg)
-        change = ee_ops.change_image(cfg, p, ref_images[p.orbit][0])
+            ref_images[p.orbit], layover[p.orbit] = _orbit_reference(
+                cfg, project, p.orbit, reference[p.orbit], years, master.scale, params_hash, stored, masks, area)
+        change = ee_ops.change_image(cfg, p, ref_images[p.orbit])
         observed, valid = ee_ops.validity(change, masks, layover[p.orbit])
         decisions = _thresholds_for_pass(
             cfg, paths.thresholds(params_hash), p,
