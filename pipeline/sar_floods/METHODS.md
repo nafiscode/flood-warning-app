@@ -115,7 +115,7 @@ After the last task the client warned: "Your project has exceeded its noncommerc
 | resampling, dB conversion, asset loading, other | about 55 | |
 | slope, aspect and HAND masks alone | under 3 | the DEM reprojection is not the problem |
 
-So roughly 60 % of each pass is spent on things that are identical for all passes of an orbit in a season: the reference median, its speckle filter and the layover mask. Since 6 Oct 2026 `sar_floods prepare` exports these once per orbit and season as Earth Engine assets on the output grid, and `run` reads them (see "Stored references"). **Not yet run for real**: the saving is an estimate until the first prepared event is measured. The profile is one flat box; mountain tiles and `connectedPixelCount` at full scale may differ.
+So roughly 60 % of each pass is spent on things that are identical for all passes of an orbit in a season: the reference median, its speckle filter and the layover mask. Since 6 Oct 2026 `sar_floods prepare` exports these once per orbit and season as Earth Engine assets on the output grid, and `run` reads them (see "Stored references"). The references for 2025 were made this way on 6 Oct (37.9 EECU-hours); the saving per pass is an estimate until the 2025 exports finish. The profile is one flat box; mountain tiles and `connectedPixelCount` at full scale may differ.
 
 ## Stored references
 
@@ -126,7 +126,22 @@ What changes in the results, as far as can be said without a real run:
 - The tile histograms are sampled at 50 m. A stored reference is read there from the asset's pyramid (mean of 10 m pixels of the filtered median) instead of being recomputed from Sentinel-1's own pyramid. Histograms, and so the few Otsu thresholds, can differ slightly; the fixed drop is not affected. Thresholds already cached for a pass are reused.
 - The layover mask's pyramid uses the maximum, so at 50 m a cell counts as layover if any 10 m pixel in it does.
 
-To verify on the first prepared run: that the asset lands on the exact master grid; one pass exported both ways gives the same extent raster; the compute per pass and per reference; the asset sizes against the project's asset storage quota.
+First prepared run, references for Nov–Dec 2025 (run `20261006T080529Z_event-2025-nov-dec`, 6 Oct 2026):
+
+| Orbit | Reference passes | EECU-hours | Asset size |
+|---|---|---|---|
+| A070 | 8 | 11.5 | 0.79 GB |
+| A172 | 7 | 10.9 | 0.95 GB |
+| D062 | 8 | 6.8 | 0.01 GB |
+| D091 | 8 | 8.7 | 0.16 GB |
+| **Total** | | **37.9** | **1.9 GB** of 250 GB asset storage |
+
+The four tasks took 2 h 40 min of wall time, three running at once. Checked the same day:
+- All four assets are on the exact master grid (EPSG:32647, 10 m, origin 615210, 879810, 22851 × 26016).
+- One pass per orbit, the per-scene product built both ways (stored reference, and reference computed in the request, same cached thresholds), read back on 256 × 256 pixel blocks at five places: on the six blocks with data (Hat Yai, Pattani plain, Sai Buri hills with 92 % masked terrain, Kolok plain twice, Yala valley edge) every pixel is equal. The other blocks lie outside the pass. No block of orbit D062 had data, so that orbit is unchecked. This is a sample, not a full export both ways.
+- The thresholds for the 2025 passes were decided with the stored references from the start; they were not compared with thresholds from computed references.
+
+Still to measure: the compute per pass with a stored reference (the 2025 exports started 6 Oct, 13:52 UTC+3).
 
 ## To check by eye in the Code Editor
 
