@@ -84,7 +84,17 @@ Run `20261005T115614Z_event-2024-nov-dec` (5–6 Oct 2026), from `sar_floods sta
 | Event maximum (all 20 passes) | 1 | 67.2 | 67.2 |
 | **Total** | 21 | | **232.1** |
 
-After the last task the client warned: "Your project has exceeded its noncommercial compute quota and is now in restricted mode." No further exports were started. At this cost the 2025 event and the nine seasons do not fit the free tier as planned; the processing has to get cheaper or the plan smaller before anything else runs. Not yet investigated: which step dominates (candidates: slope and aspect reprojected to the DEM grid inside every 10 m export, the focal median in metres, `connectedPixelCount`, exporting the full 22 851 × 26 016 grid for passes that cover a fraction of it).
+After the last task the client warned: "Your project has exceeded its noncommercial compute quota and is now in restricted mode." No further exports were started. At this cost the 2025 event and the nine seasons do not fit the free tier as planned; the processing has to get cheaper or the plan smaller before anything else runs. Where it goes, from Earth Engine's profiler on one 0.1° box (Pattani plain, the 29 Nov 2024 pass, per-scene product, 10 m; about 190 EECU-seconds in total, 6 Oct 2026):
+
+| Step | EECU-s | Note |
+|---|---|---|
+| `focalMedian` (speckle) | 55 | event pass and reference, two bands each; about half is the reference |
+| `focalMax` (100 m layover buffer) | 53 | a 30 m mask grown at 10 m; the same for every pass of an orbit |
+| `reduce.median` (reference composite) | 28 | recomputed for every pass |
+| resampling, dB conversion, asset loading, other | about 55 | |
+| slope, aspect and HAND masks alone | under 3 | the DEM reprojection is not the problem |
+
+So roughly 60 % of each pass is spent on things that are identical for all passes of an orbit in a season: the reference median, its speckle filter and the layover mask. Plan (not built): export these once per orbit and season as Earth Engine assets on the output grid, and let the passes read them. Same pixel values, one extra export per orbit. The profile is one flat box; mountain tiles and `connectedPixelCount` at full scale may differ.
 
 ## To check by eye in the Code Editor
 
