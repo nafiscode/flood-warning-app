@@ -1,6 +1,6 @@
 # Sentinel-1 flood extents: methods note (S2)
 
-Status, 6 Oct 2026: **the 21 exports for November–December 2024 completed on Earth Engine** (20 passes and the event maximum, 10 m, parameters `cd222f1`); they are in Google Drive and not yet downloaded or checked. They used 232 EECU-hours and the project is now over its non-commercial compute quota (see "Compute used"). The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; download and the frequency step have not run (the Drive API is not yet enabled on the project). The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
+Status, 6 Oct 2026: **the 21 exports for November–December 2024 completed on Earth Engine** (20 passes and the event maximum, 10 m, parameters `cd222f1`); downloaded, checked and uploaded to the private bucket on 6 Oct (see "First results, Nov–Dec 2024"). They used 232 EECU-hours (see "Compute used"); the project moved to the Contributor tier on 6 Oct. The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; the frequency step has not run. The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
 
 First result: the per-tile Otsu threshold was accepted on 3 of about 1,100 tile checks (two VV tiles at −4.8 and −5.2 dB and one VH tile at −3.6 dB, all on the 29 Nov 2024 pass of orbit 172). Everywhere else the fixed −3 dB drop applies, so that value in practice decides the maps.
 
@@ -67,11 +67,32 @@ Limits, stated plainly:
   - Sentinel-1B stopped on 23 Dec 2021. Seasons 2017–2020 may have both satellites (6-day repeat per orbit where B acquired here); season 2021 loses B mid-season; seasons 2022–2024 have Sentinel-1A only: one pass per orbit every 12 days, so a flood that rises and drains between passes is not seen at all. Overlapping orbits shorten the gap in places, unevenly.
   - Sentinel-1C was launched in Dec 2024 and Sentinel-1D in Nov 2025. Whether and from when their scenes are in `COPERNICUS/S1_GRD` over this area has not been checked; `run --dry-run` lists the platform of every pass.
   - The **maximum extent is the maximum of what was imaged**, not of the flood. `n_valid` shows how often each pixel was seen. Flood frequency mixes dense (2017–2021) and sparse (2022–2024) sampling.
-  - A skipped orbit (thin reference) removes its passes from the event; the log lists them.
+  - A skipped orbit (thin reference) removes its passes from the event; the log lists them. In Nov–Dec 2025 that is orbit D164: six passes (five Sentinel-1A, one Sentinel-1C), but no acquisition at all in Feb–Apr 2025, so they are not used.
 - **Relative orbit number.** Passes are grouped by `relativeOrbitNumber_start`. It changes at the equator on ascending passes; slices over 5.6–8° N start north of it, so start and stop numbers should agree, but this is unverified.
 - **Border noise** in 2017–2018 scenes may survive the angle trim as dark stripes along swath edges, which would read as flood.
 - **Area.** Processing stops at the province outline (+~1 km). The Malaysian side of the Kolok basin is not mapped.
 - **Earth Engine catalog changes** (JRC v1.4, FABDEM community asset) would change results; asset ids are in the run log.
+
+## First results, Nov–Dec 2024 (checked 6 Oct 2026, not validated)
+
+Files: 20 per-scene rasters and the event maximum, 133 MB in total, in `jaga-rasters` under `sar/scene/` and `sar/max/` with the run log. All are valid COGs on the master grid (per-scene files are windows of it), with only the documented codes. A 256 × 256 pixel block of the 29 Nov scene near Tak Bai is identical, pixel for pixel, to the same block computed live in Earth Engine.
+
+Area budget of the event maximum, inside the four provinces (19 860 km²):
+
+| | km² | share |
+|---|---|---|
+| Masked terrain (slope > 5° or HAND > 15 m) | 9 964 | 50 % |
+| Permanent water | 1 107 | 6 % |
+| Observed, never flooded | 7 813 | 39 % |
+| Flooded in at least one pass: VV only / VH only / both | 133 / 286 / 560 | 5 % |
+
+- **Half the area is masked as terrain.** Whether the 90 m MERIT HAND > 15 m limit cuts into real floodplain has not been looked at; it is the first thing to check by eye.
+- Flooded by the VV rule (codes 1 and 3): 693 km², 7.9 % of the observed land. The 29 Nov pass of orbit 172 alone has 8.3 %; the other passes of the wide orbits 1–3 %.
+- VH-only pixels (286 km²) are about 40 % of the VV total. They do not count under `flood_rule: vv`.
+- Each place was seen 5 times in the two months (one orbit) or 10 times (two orbits); almost nowhere more. Orbit 62 covers only about 80 km² of valid land.
+- The share of flooded land on the quiet passes (1–3 %) is an upper bound on the false-alarm level of the −3 dB rule plus routine paddy water; it has not been separated.
+
+Nothing here has been compared with gauges, the event timeline, GISTDA or local knowledge.
 
 ## Compute used
 
@@ -132,7 +153,8 @@ Run `python -m sar_floods check`, then `run event-2024-nov-dec --dry-run`, then 
 - `reproject` of slope/aspect to the DEM grid inside a 10 m export (cost).
 - Export with `crs` + `crsTransform` + `dimensions`, `fileDimensions` 23040 × 26112 (one file), `formatOptions.noData`, and that the output is a valid COG on the exact grid. If Earth Engine still splits the file, the downloader and the frequency step handle the parts.
 - Whether one task holds a whole season (up to ~100 passes) without timing out; if not, lower the load with `--scale 20` or split the season.
-- Drive download with the Earth Engine credentials and `EE_PROJECT` as quota project (the Drive API must be enabled on the project).
+- ~~Drive download with the Earth Engine credentials.~~ Works since the Drive API was enabled on the project (6 Oct 2026); 21 files, checksums verified by the downloader.
+- ~~Export options.~~ One file per export, valid COG, exact grid, noData 255 (6 Oct 2026).
 - ~~Compute used.~~ Measured 6 Oct 2026, see "Compute used". The project's quota tier and its reset date have not been checked against Google's documentation.
 - ~~Whether one task holds a whole event.~~ The 20-pass event maximum completed as one task (67 EECU-hours). A season with up to ~100 passes is untested.
 
