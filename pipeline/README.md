@@ -50,14 +50,17 @@ API notes (verified 28 Sep 2026): water level is limited to 365 days per request
 
 ## hazard (S3, started 6 Oct 2026)
 
-HAND and the hazard baseline. So far: the source rasters and the HAND chain.
+HAND and the hazard baseline. So far: the source rasters, HAND for four candidate stream thresholds, and their comparison with mapped rivers. Method, first results and open points: `hazard/METHODS.md`.
 
 ```powershell
 uv run python -m hazard sources-export      # FABDEM and JRC water occurrence for 99-103 E, 5-9 N -> Google Drive (a few EECU-minutes)
 uv run python -m hazard sources-download    # -> out\hazard\sources
+uv run python -m hazard hand                # local, about 10 minutes -> out\hazard\work (finished steps are skipped)
+uv run python -m hazard streams-compare     # OpenStreetMap waterways (Overpass, cached) and JRC water -> out\hazard\streams_compare.json
 ```
 
 - Settings: `hazard/config.yaml`. Outputs: `out/hazard/` (ignored by git).
+- OpenStreetMap data is ODbL: credit "© OpenStreetMap contributors" wherever it is shown.
 - FABDEM is CC BY-NC-SA 4.0: non-commercial, and what is derived from it (HAND, hazard classes) must carry the same licence and the attribution in the config.
 - HAND uses WhiteboxTools through the `whitebox` package, which downloads its binary on first use.
 

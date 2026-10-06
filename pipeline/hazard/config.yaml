@@ -25,5 +25,25 @@ export:
   crs: "EPSG:32647"                   # working grid: UTM 47N, as the flood rasters
   scale_m: 30
 
+hand:
+  # Part of the box HAND is computed for, [west, south, east, north]. The whole box is about 220 million
+  # cells, too many for a 16 GB laptop. To verify after the run: no catchment that reaches the four
+  # provinces is cut by this edge.
+  bbox_deg: [99.5, 5.5, 102.5, 8.5]
+  sea_value_m: 0                      # FABDEM's value for the sea and Songkhla Lake: nodata, streams end there
+  breach_dist_cells: 50               # longest cut through an embankment or dam: 1.5 km
+  breach_max_cost: null               # no limit on the depth of a cut; what cannot be breached is filled
+  # Candidate stream thresholds in 30 m cells (0.45, 0.9, 1.8 and 4.5 km2); one is chosen after the
+  # comparison with mapped rivers.
+  stream_thresholds_cells: [500, 1000, 2000, 5000]
+
+# Mapped water the candidate stream networks are scored against (compare.py).
+compare:
+  overpass_url: https://overpass-api.de/api/interpreter
+  user_agent: "Jaga/0.1 (non-profit flood warning; {contact})"    # contact from CONTACT_EMAIL
+  waterway_classes: [river, canal, stream, drain]   # OpenStreetMap, ODbL: credit "© OpenStreetMap contributors"
+  jrc_min_occurrence_pct: 50
+  tolerance_cells: 2                  # a mapped cell counts as found with a modelled stream within 60 m
+
 # Local outputs, relative to pipeline/ (ignored by git through the root rule "out/").
 output_dir: out/hazard

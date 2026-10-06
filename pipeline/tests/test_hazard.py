@@ -6,13 +6,14 @@ import numpy as np
 import pytest
 import rasterio
 
-from hazard import hand, sources
+from hazard import compare, hand, sources
 from hazard.__main__ import load_config
 
 
 def test_shipped_config_is_valid_and_names_follow_the_box():
     cfg = load_config()
     assert cfg["bbox_deg"] == [99, 5, 103, 9] and cfg["export"]["crs"] == "EPSG:32647"
+    assert cfg["hand"]["stream_thresholds_cells"] == sorted(cfg["hand"]["stream_thresholds_cells"])
     assert sources.names(cfg) == {"dem": "jaga_hazard_fabdem_e099n05_e103n09",
                                   "water": "jaga_hazard_jrc_occurrence_e099n05_e103n09"}
     transform, dimensions = sources.grid(cfg)
@@ -20,6 +21,39 @@ def test_shipped_config_is_valid_and_names_follow_the_box():
     # FABDEM's cell centres lie on whole arc-seconds: the first cell is centred on 99 E, 9 N.
     assert transform[2] + transform[0] / 2 == pytest.approx(99) and transform[5] + transform[4] / 2 == pytest.approx(9)
     assert "CC BY-NC-SA" in cfg["dem"]["attribution"]
+
+
+def test_stream_scores_count_mapped_water_found_and_streams_explained():
+    streams = np.zeros((20, 20), dtype=bool)
+    streams[:, 5] = True                               # one modelled stream down column 5
+    river = np.zeros_like(streams)
+    river[:, 7] = True                                 # a mapped river two cells away: found
+    canal = np.zeros_like(streams)
+    canal[10, 10:20] = True                            # a canal the model does not follow
+    grown = compare.dilate(streams, 2)
+    assert grown[:, 3:8].all() and not grown[:, 8:].any() and not grown[:, :3].any()
+    s = compare.score(streams, {"river": river, "canal": canal}, tolerance_cells=2)
+    assert s["stream_cells"] == 20 and s["found"]["river"] == {"cells": 20, "share": 1.0}
+    assert s["found"]["canal"]["share"] == 0.0 and s["explained"] == 1.0
+    assert compare.score(streams, {"river": river}, tolerance_cells=1)["found"]["river"]["share"] == 0.0
+    top = np.zeros_like(streams)
+    top[:5] = True                                     # scores restricted to an area
+    inside = compare.score(streams, {"canal": canal, "none": np.zeros_like(streams)}, 2, within=top)
+    assert inside["stream_cells"] == 5 and inside["found"]["canal"]["cells"] == 0
+    assert inside["found"]["none"]["share"] is None and inside["explained"] == 0.0
+
+
+def test_downslope_paths_follow_the_pointer_until_it_ends():
+    pointer = np.zeros((5, 6), dtype="float32")
+    pointer[0, :5] = 2                                 # row 0 flows east ...
+    pointer[0, 5] = 8                                  # ... then south down the last column
+    pointer[1:4, 5] = 8                                # and stops at the bottom cell (0)
+    pointer[2, 0:3] = -32768                           # nodata never moves
+    seeds = np.zeros(pointer.shape, dtype=bool)
+    seeds[0, 2] = seeds[2, 1] = True
+    paths = hand.downslope_paths(pointer, seeds)
+    assert paths[0, 2:].all() and paths[:, 5].all() and paths[2, 1]
+    assert paths.sum() == 4 + 4 + 1 and not paths[0, :2].any()
 
 
 def write_dem(path, data, crs="EPSG:32647", scale=30, west=700020.0, north=700020.0, nodata=hand.NODATA):
@@ -33,19 +67,27 @@ def test_working_grid_is_snapped_and_the_sea_becomes_nodata(tmp_path):
     # One degree-grid tile near Pattani: land rising inland, the sea stored as 0.
     data = np.tile(np.linspace(0, 50, 60, dtype="float32"), (60, 1))
     data[:, :10] = 0
+    data[4:7, 29:32] = -4              # land below sea level stays land
+    data[50:, 50:] = np.nan            # an all-sea tile comes as missing
     src = tmp_path / "src.tif"
     step = 1 / 3600
     with rasterio.open(src, "w", driver="GTiff", dtype="float32", count=1, width=60, height=60, crs="EPSG:4326",
                        transform=rasterio.Affine(step, 0, 101.25, 0, -step, 6.9), nodata=-9999) as dst:
         dst.write(data, 1)
-    info = hand.to_working_grid(src, tmp_path / "work" / "dem_utm.tif", "EPSG:32647", 30, sea_level_m=0.0)
+    info = hand.to_working_grid(src, tmp_path / "work" / "dem_utm.tif", "EPSG:32647", 30, sea_value_m=0.0)
     with rasterio.open(tmp_path / "work" / "dem_utm.tif") as out:
         assert out.crs.to_epsg() == 32647 and out.res == (30, 30)
         assert out.transform.c % 30 == 0 and out.transform.f % 30 == 0
+        assert out.tags(ns="IMAGE_STRUCTURE").get("PREDICTOR", "1") == "1"      # WhiteboxTools cannot read 3
         band = out.read(1)
     valid = band != hand.NODATA
     assert 0 < info["valid_cells"] == valid.sum() < band.size
-    assert band[valid].min() > 0 and info["max_m"] <= 50
+    assert info["min_m"] < 0 and info["max_m"] <= 50
+    assert not np.isnan(band).any() and (band[valid] != 0).all()
+    part = hand.to_working_grid(src, tmp_path / "work" / "part.tif", "EPSG:32647", 30, sea_value_m=0.0,
+                                bbox_deg=[101.25, 6.9 - 30 * step, 101.25 + 30 * step, 6.9])
+    assert part["width"] < info["width"] and part["height"] < info["height"] and part["min_m"] < 0
+    assert not valid[:, :5].any() and not valid[-5:, -5:].any() and valid[20:40, 20:40].all()
 
 
 # The whitebox package downloads its binary on first use; CI does not depend on that download.
@@ -72,3 +114,10 @@ def test_hand_is_zero_on_the_stream_and_rises_up_the_valley_sides(tmp_path):
     # the down-valley slope along the flow path.
     assert 15 < h[45, mid + 10] < 21 and 15 < h[45, mid - 10] < 21
     assert h[45, mid + 15] > h[45, mid + 5]
+    # Our reading of the tool's pointer codes: a path from the valley side reaches the stream and follows it south.
+    with rasterio.open(tmp_path / "d8_pointer.tif") as src:
+        pointer = src.read(1)
+    seeds = np.zeros(pointer.shape, dtype=bool)
+    seeds[10, mid + 10] = True
+    paths = hand.downslope_paths(pointer, seeds)
+    assert paths[50:56, mid].all() and not paths[:10].any() and not paths[:, :mid].any()
