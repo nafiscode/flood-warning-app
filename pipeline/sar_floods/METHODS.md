@@ -159,7 +159,7 @@ A per-scene export costs about a quarter of what it did. The event maximum barel
 
 ## Results, Nov–Dec 2025 (checked 6 Oct 2026, not validated)
 
-20 files (139 MB), all on the master grid as cloud-optimised GeoTIFFs with only the documented codes; uploaded to the private bucket. A 256 × 256 block of the 24 Nov pass (Pattani plain) is identical to a live Earth Engine computation.
+20 files (141 MB), all on the master grid as cloud-optimised GeoTIFFs with only the documented codes; uploaded to the private bucket. A 256 × 256 block of the 24 Nov pass (Pattani plain) is identical to a live Earth Engine computation.
 
 Event maximum inside the four provinces (19,865 km²):
 
