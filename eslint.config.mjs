@@ -19,6 +19,8 @@ const eslintConfig = defineConfig([
     "pipeline/**",
     "supabase/functions/**",
     ".claude/**",
+    // Copied from node_modules by scripts/vendor-maplibre.mjs
+    "public/vendor/**",
   ]),
 ]);
 

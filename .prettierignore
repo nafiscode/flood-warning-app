@@ -11,3 +11,4 @@ test-results/
 package-lock.json
 next-env.d.ts
 .github/
+public/vendor/

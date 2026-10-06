@@ -8,7 +8,9 @@
     "node": ">=22"
   },
   "scripts": {
+    "predev": "node scripts/vendor-maplibre.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/vendor-maplibre.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -24,12 +26,14 @@
     "db:migrations": "node scripts/db.mjs migration list",
     "db:new": "supabase migration new",
     "icons": "node scripts/icons.mjs",
-    "admin:super": "node scripts/admin.mjs super-admin"
+    "admin:super": "node scripts/admin.mjs super-admin",
+    "postinstall": "node scripts/vendor-maplibre.mjs"
   },
   "dependencies": {
     "@serwist/turbopack": "^9.5.12",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
+    "maplibre-gl": "^6.12.0",
     "next": "16.3.6",
     "next-intl": "^4.14.7",
     "react": "19.2.8",

@@ -114,7 +114,11 @@
       "failed": "Couldn't find your location. Turn on GPS and try again, or skip this for now.",
       "clear": "Don't use this location",
       "consent": "I agree that Jaga stores my home location for alerts.",
-      "remove": "Delete the saved home location"
+      "remove": "Delete the saved home location",
+      "useMap": "Choose the place on the map",
+      "hideMap": "Hide the map",
+      "mapHint": "Tap the map where your home is. Zoom in to be more exact.",
+      "mapFailed": "The map couldn't be loaded. Try again, or use your current location."
     },
     "save": "Save",
     "error": {
@@ -203,7 +207,13 @@
       "chooseDistricts": "Choose districts in {name}",
       "wholeDistrict": "All of {name} district",
       "chooseTambons": "Choose tambons in {name}",
-      "unavailable": "The list of areas couldn't be loaded. Try again later."
+      "unavailable": "The list of areas couldn't be loaded. Try again later.",
+      "useMap": "Choose on the map",
+      "hideMap": "Hide the map",
+      "mapHint": "Tap a tambon to select or unselect it. The list below follows.",
+      "mapCount": "{count} tambons selected",
+      "mapLocked": "This tambon is selected as part of a whole district or province. Undo that in the list below.",
+      "mapFailed": "The map couldn't be loaded. Choose from the list below."
     },
     "afterSubmit": "After you send it, the status stays \"waiting\" until an admin approves it.",
     "submit": "Send registration",
@@ -266,8 +276,6 @@
       "open": "Manage",
       "new": "Invite an admin",
       "email": "Email address",
-      "asSuperAdmin": "Make them a super admin",
-      "asSuperAdminHint": "Can manage other admins. Only when really needed.",
       "send": "Invite",
       "how": "No invitation email is sent automatically. Tell the person to open the sign-in page, choose \"For admins\" and enter this address. Invitations lapse after 14 days.",
       "list": "Invitations",

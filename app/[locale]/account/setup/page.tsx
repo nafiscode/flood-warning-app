@@ -111,6 +111,10 @@ export default async function AccountSetup({
             found: t("home.found"),
             failed: t("home.failed"),
             clear: t("home.clear"),
+            useMap: t("home.useMap"),
+            hideMap: t("home.hideMap"),
+            mapHint: t("home.mapHint"),
+            mapFailed: t("home.mapFailed"),
           }}
         />
         <label className={checkRow}>

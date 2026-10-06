@@ -8,7 +8,7 @@
  * tests create is deleted afterwards.
  */
 import { createClient } from "@supabase/supabase-js";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { Client } from "pg";
@@ -70,6 +70,12 @@ async function signIn(page: Page, email: string) {
   await page.goto(`/api/auth/confirm?token_hash=${data.properties.hashed_token}&type=magiclink`);
 }
 
+/** Tap the middle of a map: the middle of the service area is land in a covered province. */
+async function tapMiddle(map: Locator) {
+  const box = (await map.boundingBox())!;
+  await map.click({ position: { x: box.width / 2, y: box.height / 2 } });
+}
+
 async function finishSetup(page: Page, name: string) {
   await expect(page).toHaveURL(/\/account\/setup/);
   await page.locator("#displayName").fill(name);
@@ -104,6 +110,53 @@ test("first sign-in asks for a name, then shows the account as a plain user", as
   // Not an admin: the admin console doesn't exist for this person.
   const response = await page.goto("/admin");
   expect(response?.status()).toBe(404);
+});
+
+test("the home location can be set with a pin on the map", async ({ page }) => {
+  await signIn(page, emails.authority);
+  await page.goto("/account/setup");
+  await page.getByRole("button", { name: th.account.home.useMap }).click();
+  const map = page.locator('[data-map-ready="true"]');
+  await expect(map).toBeVisible({ timeout: 30_000 });
+  await tapMiddle(map);
+  // The middle of the service area is on land, inside the covered provinces.
+  await expect
+    .poll(async () => Number(await page.locator('input[name="lat"]').inputValue()))
+    .toBeGreaterThan(5.5);
+  expect(Number(await page.locator('input[name="lon"]').inputValue())).toBeGreaterThan(100);
+  await page.locator('input[name="locationConsent"]').check();
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/account$/);
+  const [profile] = await sql(
+    "select p.home_tambon from public.profiles p join auth.users u on u.id = p.user_id where u.email = $1",
+    [emails.authority],
+  );
+  expect(profile!.home_tambon).toMatch(/^9[0456][0-9]{4}$/);
+});
+
+test("coverage can be chosen on the map, and the list follows", async ({ page }) => {
+  await signIn(page, emails.authority);
+  await page.goto("/authority/register");
+  await page.getByRole("button", { name: th.authorityRegister.coverage.useMap }).click();
+  const map = page.locator('[data-map-ready="true"]');
+  await expect(map).toBeVisible({ timeout: 30_000 });
+  const ticked = page.locator('input[name="tambon"]:checked');
+  await tapMiddle(map);
+  await expect(ticked).toHaveCount(1);
+  await expect(
+    page.getByText(th.authorityRegister.coverage.mapCount.replace("{count}", "1")),
+  ).toBeVisible();
+  // Tapping the same tambon again takes it out.
+  await tapMiddle(map);
+  await expect(ticked).toHaveCount(0);
+  // A whole province ticked in the list is counted on the map.
+  await page.locator('input[name="province"][value="94"]').check();
+  const [{ n }] = (await sql(
+    "select count(*)::int as n from public.tambons where province_code = '94'",
+  )) as [{ n: number }];
+  await expect(
+    page.getByText(th.authorityRegister.coverage.mapCount.replace("{count}", String(n))),
+  ).toBeVisible();
 });
 
 test("an authority registers and stays pending", async ({ page }) => {

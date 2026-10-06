@@ -46,3 +46,6 @@ CLAUDE.local.md
 
 # Downloaded source data (recreated by scripts)
 pipeline/.cache/
+
+# MapLibre worker files, copied from node_modules by scripts/vendor-maplibre.mjs
+/public/vendor/

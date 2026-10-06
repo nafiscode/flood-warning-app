@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { CoverageMap } from "@/components/authority/CoverageMap";
 import { getSessionProfile, localePath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -197,6 +198,16 @@ export default async function AuthorityRegister({
       <fieldset className={card}>
         <legend className={`${label} float-start`}>{t("coverage.label")}</legend>
         <p className={`clear-both ${hint}`}>{t("coverage.hint")}</p>
+        <CoverageMap
+          text={{
+            useMap: t("coverage.useMap"),
+            hideMap: t("coverage.hideMap"),
+            mapHint: t("coverage.mapHint"),
+            count: t("coverage.mapCount", { count: "{n}" }),
+            locked: t("coverage.mapLocked"),
+            mapFailed: t("coverage.mapFailed"),
+          }}
+        />
         {((provinces ?? []) as Area[]).map((province) => (
           <div key={province.code} className="flex flex-col border-t border-jaga-line pt-2">
             <label className={checkRow}>

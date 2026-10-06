@@ -114,7 +114,11 @@
       "failed": "Lokasi tak dapat dicari. Buka GPS dan cuba lagi, atau langkau dulu.",
       "clear": "Jangan guna lokasi ini",
       "consent": "Saya setuju Jaga simpan lokasi rumah saya untuk tujuan amaran.",
-      "remove": "Padam lokasi rumah yang disimpan"
+      "remove": "Padam lokasi rumah yang disimpan",
+      "useMap": "Pilih tempat di peta",
+      "hideMap": "Sembunyi peta",
+      "mapHint": "Sentuh peta di tempat rumah anda. Besarkan peta supaya lebih tepat.",
+      "mapFailed": "Peta tidak dapat dimuat. Cuba lagi, atau guna lokasi sekarang."
     },
     "save": "Simpan",
     "error": {
@@ -203,7 +207,13 @@
       "chooseDistricts": "Pilih daerah dalam {name}",
       "wholeDistrict": "Seluruh daerah {name}",
       "chooseTambons": "Pilih tambon dalam {name}",
-      "unavailable": "Senarai kawasan tidak dapat dimuat. Sila cuba lagi nanti."
+      "unavailable": "Senarai kawasan tidak dapat dimuat. Sila cuba lagi nanti.",
+      "useMap": "Pilih dari peta",
+      "hideMap": "Sembunyi peta",
+      "mapHint": "Sentuh tambon untuk pilih atau batal. Senarai di bawah ikut berubah.",
+      "mapCount": "{count} tambon dipilih",
+      "mapLocked": "Tambon ini dipilih sebagai seluruh daerah atau wilayah. Batalkan dalam senarai di bawah.",
+      "mapFailed": "Peta tidak dapat dimuat. Sila pilih dari senarai di bawah."
     },
     "afterSubmit": "Selepas dihantar, status kekal \"menunggu\" sehingga pentadbir meluluskan.",
     "submit": "Hantar pendaftaran",
@@ -266,8 +276,6 @@
       "open": "Urus",
       "new": "Jemput pentadbir",
       "email": "E-mel",
-      "asSuperAdmin": "Jadikan pentadbir utama",
-      "asSuperAdminHint": "Boleh urus pentadbir lain. Hanya bila betul-betul perlu.",
       "send": "Jemput",
       "how": "E-mel jemputan tidak dihantar secara automatik. Beritahu orang itu buka halaman log masuk, pilih \"Untuk pentadbir\" dan isi e-mel ini. Jemputan tamat selepas 14 hari.",
       "list": "Jemputan",
