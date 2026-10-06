@@ -72,6 +72,8 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
               {t("line.button")}
             </a>
             <p className={hint}>{t("line.note")}</p>
+            {/* In-app browsers (Messenger, Chrome on iPhone) get LINE's web page, not the app. */}
+            <p className={hint}>{t("line.appHint")}</p>
           </div>
         ) : (
           <p className={hint}>{t("line.unavailable")}</p>

@@ -57,6 +57,7 @@
       "title": "Orang kampung dan pasukan bantuan",
       "button": "Log masuk dengan LINE",
       "note": "Log masuk untuk terima amaran tambon anda melalui LINE dan simpan rumah serta tempat yang anda jaga.",
+      "appHint": "Jika LINE meminta e-mel dan kata laluan, tekan pautan log masuk dengan aplikasi LINE di bahagian bawah halaman itu.",
       "unavailable": "Log masuk dengan LINE belum dibuka."
     },
     "phone": {

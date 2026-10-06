@@ -57,6 +57,7 @@
       "title": "Residents and response units",
       "button": "Sign in with LINE",
       "note": "Sign in to get your tambon's alerts in LINE and to save your home and the places you watch.",
+      "appHint": "If LINE asks for an email and password, tap the link to log in with the LINE app at the bottom of that page.",
       "unavailable": "Sign-in with LINE isn't available yet."
     },
     "phone": {
