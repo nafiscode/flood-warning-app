@@ -1,6 +1,6 @@
 # Sentinel-1 flood extents: methods note (S2)
 
-Status, 6 Oct 2026: **the 21 exports for November–December 2024 completed on Earth Engine** (20 passes and the event maximum, 10 m, parameters `cd222f1`); downloaded, checked and uploaded to the private bucket on 6 Oct (see "First results, Nov–Dec 2024"). They used 232 EECU-hours (see "Compute used"); the project moved to the Contributor tier on 6 Oct. The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; the frequency step has not run. The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
+Status, 6 Oct 2026: **both priority events are exported, checked and stored**: November–December 2025 (19 passes and the event maximum, with stored references, 129.5 EECU-hours including the references; see "Stored references") and November–December 2024. **The 21 exports for November–December 2024 completed on Earth Engine** (20 passes and the event maximum, 10 m, parameters `cd222f1`); downloaded, checked and uploaded to the private bucket on 6 Oct (see "First results, Nov–Dec 2024"). They used 232 EECU-hours (see "Compute used"); the project moved to the Contributor tier on 6 Oct. The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; the frequency step has not run. The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
 
 First result: the per-tile Otsu threshold was accepted on 3 of about 1,100 tile checks (two VV tiles at −4.8 and −5.2 dB and one VH tile at −3.6 dB, all on the 29 Nov 2024 pass of orbit 172). Everywhere else the fixed −3 dB drop applies, so that value in practice decides the maps.
 
@@ -115,7 +115,7 @@ After the last task the client warned: "Your project has exceeded its noncommerc
 | resampling, dB conversion, asset loading, other | about 55 | |
 | slope, aspect and HAND masks alone | under 3 | the DEM reprojection is not the problem |
 
-So roughly 60 % of each pass is spent on things that are identical for all passes of an orbit in a season: the reference median, its speckle filter and the layover mask. Since 6 Oct 2026 `sar_floods prepare` exports these once per orbit and season as Earth Engine assets on the output grid, and `run` reads them (see "Stored references"). The references for 2025 were made this way on 6 Oct (37.9 EECU-hours); the saving per pass is an estimate until the 2025 exports finish. The profile is one flat box; mountain tiles and `connectedPixelCount` at full scale may differ.
+So roughly 60 % of each pass is spent on things that are identical for all passes of an orbit in a season: the reference median, its speckle filter and the layover mask. Since 6 Oct 2026 `sar_floods prepare` exports these once per orbit and season as Earth Engine assets on the output grid, and `run` reads them (see "Stored references"). The references for 2025 were made this way on 6 Oct (37.9 EECU-hours); measured on the 2025 event: a per-scene export costs about a quarter of what it did (see "Stored references"). The profile is one flat box; mountain tiles and `connectedPixelCount` at full scale may differ.
 
 ## Stored references
 
@@ -141,7 +141,37 @@ The four tasks took 2 h 40 min of wall time, three running at once. Checked the 
 - One pass per orbit, the per-scene product built both ways (stored reference, and reference computed in the request, same cached thresholds), read back on 256 × 256 pixel blocks at five places: on the six blocks with data (Hat Yai, Pattani plain, Sai Buri hills with 92 % masked terrain, Kolok plain twice, Yala valley edge) every pixel is equal. The other blocks lie outside the pass. No block of orbit D062 had data, so that orbit is unchecked. This is a sample, not a full export both ways.
 - The thresholds for the 2025 passes were decided with the stored references from the start; they were not compared with thresholds from computed references.
 
-Still to measure: the compute per pass with a stored reference (the 2025 exports started 6 Oct, 13:52 UTC+3).
+### Compute with stored references: Nov–Dec 2025
+
+Run `20261006T105213Z_event-2025-nov-dec` (6 Oct 2026, 13:52 to 15:24 UTC+3), next to the 2024 run without stored references:
+
+| Export | 2025: passes | EECU-hours each | Total | 2024: passes | Each | Total |
+|---|---|---|---|---|---|---|
+| Per-scene, orbits A070 and A172 | 10 | 2.6–3.8 | 32.6 | 10 | 10.5–17.7 | 141.1 |
+| Per-scene, orbits D062 and D091 | 9 | 0.35–0.84 | 5.0 | 10 | 1.8–3.3 | 23.8 |
+| Event maximum | 1 | 54.0 | 54.0 | 1 | 67.2 | 67.2 |
+| Dry references (once per orbit and year) | 4 | 6.8–11.5 | 37.9 | | | |
+| **Total** | | | **129.5** | | | **232.1** |
+
+A per-scene export costs about a quarter of what it did. The event maximum barely changed, because it still rebuilds every pass inside one request, and is now the largest single item.
+
+**The event maximum does not need Earth Engine.** On the 2025 files, the event raster's flood pixels (VV rule, and any rule) are exactly the union of the 19 scene files, and its count of valid observations equals the count over the scene files on all 87.9 million observed pixels. Building it locally from the downloaded scenes would have saved 54 of the 129.5 EECU-hours. Not built yet.
+
+## Results, Nov–Dec 2025 (checked 6 Oct 2026, not validated)
+
+20 files (139 MB), all on the master grid as cloud-optimised GeoTIFFs with only the documented codes; uploaded to the private bucket. A 256 × 256 block of the 24 Nov pass (Pattani plain) is identical to a live Earth Engine computation.
+
+Event maximum inside the four provinces (19,865 km²):
+
+| | km² | Share |
+|---|---|---|
+| Masked terrain | 9,964 | 50.2 % |
+| Permanent water | 1,107 | 5.6 % |
+| Observed, never flooded | 7,624 | 38.4 % |
+| Flooded by the VV rule (codes 1 and 3) | 833 | 4.2 % |
+| VH only (code 2) | 337 | 1.7 % |
+
+The wettest passes: 24 Nov (orbit A172, 7.9 % of the observed land by the VV rule) and 29 Nov (A070, 6.4 %). Orbit D062 observes only about 80 km² of unmasked land in the provinces, so its high percentages (44 % on 28 Nov) describe a small strip. Six passes on orbit D164 were left out: it has no February–April 2025 images for a reference.
 
 ## To check by eye in the Code Editor
 
