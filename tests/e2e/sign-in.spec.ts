@@ -68,3 +68,29 @@ test("sign-out only accepts a form post", async ({ request }) => {
   const response = await request.get("/api/auth/sign-out", { maxRedirects: 0 });
   expect(response.status()).toBe(405);
 });
+
+test("inside Messenger's browser the page offers to open the phone's own browser first", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 640 },
+    userAgent:
+      "Mozilla/5.0 (Linux; Android 13; SM-A146P Build/TP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/140.0.0.0 Mobile Safari/537.36 [FB_IAB/Orca-Android;FBAV/480.0.0.50.109;]",
+  });
+  const page = await context.newPage();
+  await page.goto("/en/sign-in?next=/account");
+  // The notice belongs to the LINE button, which CI (no LINE channel) does not show.
+  test.skip((await page.locator('a[href^="/api/auth/line"]').count()) === 0, "LINE not configured");
+  const open = page.locator('a[href^="intent://"]');
+  await expect(open).toBeVisible();
+  const href = (await open.getAttribute("href")) ?? "";
+  expect(href).toContain("/en/sign-in?next=%2Faccount#Intent;scheme=http");
+  expect((await open.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(48);
+  // Signing in here stays possible, and the page still fits a 360 px screen.
+  await expect(page.locator('a[href^="/api/auth/line"]')).toBeVisible();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+  await context.close();
+});

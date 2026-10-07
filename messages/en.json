@@ -60,6 +60,16 @@
       "appHint": "If LINE asks for an email and password, tap the link to log in with the LINE app at the bottom of that page.",
       "unavailable": "Sign-in with LINE isn't available yet."
     },
+    "inApp": {
+      "title": "Open Jaga in your browser first",
+      "body": "You opened Jaga inside another app, such as Messenger. Signing in with LINE from here usually fails the first time.",
+      "open": {
+        "android": "Open in my browser",
+        "ios": "Open in Safari"
+      },
+      "manual": "If the button does nothing, tap the menu (⋯) in the corner of the screen and choose \"Open in browser\".",
+      "stay": "Or sign in here. If it says the link has expired, tap \"Sign in with LINE\" once more."
+    },
     "phone": {
       "title": "Sign in with your phone number",
       "label": "Mobile number",

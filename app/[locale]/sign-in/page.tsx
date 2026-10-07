@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { safeNextPath } from "@/lib/auth";
-import { lineSignInConfigured, phoneSignInEnabled } from "@/lib/features";
+import { headers } from "next/headers";
+import { localePath, requestOrigin, safeNextPath } from "@/lib/auth";
+import {
+  inAppBrowser,
+  lineSignInConfigured,
+  openInBrowserHref,
+  phoneSignInEnabled,
+} from "@/lib/features";
 import {
   buttonPrimary,
   buttonSecondary,
@@ -41,6 +47,15 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
   const error = ERRORS.find((e) => e === one(query.error));
   const codeStep = one(query.step) === "code" && one(query.phone) !== "";
   const lineHref = `/api/auth/line?${new URLSearchParams({ locale, ...(next ? { next } : {}) })}`;
+  // Inside another app's built-in browser (Messenger and the like) a LINE sign-in comes back in
+  // the phone's own browser and fails the first time: offer to open this page there first.
+  const inApp = lineSignInConfigured() ? inAppBrowser((await headers()).get("user-agent")) : null;
+  const outHref = inApp
+    ? openInBrowserHref(
+        inApp,
+        `${await requestOrigin()}${localePath(locale, "/sign-in")}${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      )
+    : "";
   const hidden = (
     <>
       <input type="hidden" name="locale" value={locale} />
@@ -67,8 +82,21 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
         <h2 className="text-body font-bold">{t("line.title")}</h2>
         {lineSignInConfigured() ? (
           <div className="flex flex-col gap-3">
+            {inApp && (
+              <>
+                <div className={notice}>
+                  <p className="font-medium">{t("inApp.title")}</p>
+                  <p>{t("inApp.body")}</p>
+                </div>
+                <a href={outHref} rel="nofollow" className={buttonPrimary}>
+                  {t(`inApp.open.${inApp}`)}
+                </a>
+                <p className={hint}>{t("inApp.manual")}</p>
+                <p className={hint}>{t("inApp.stay")}</p>
+              </>
+            )}
             {/* A plain link, not a form: a phone only opens the LINE app for a tapped link. */}
-            <a href={lineHref} rel="nofollow" className={buttonPrimary}>
+            <a href={lineHref} rel="nofollow" className={inApp ? buttonSecondary : buttonPrimary}>
               {t("line.button")}
             </a>
             <p className={hint}>{t("line.note")}</p>
