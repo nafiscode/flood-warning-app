@@ -10,8 +10,14 @@ const HOME_PATHS = new Set(["/", ...routing.locales.map((locale) => `/${locale}`
 // session fresh; it never blocks a request and never requires sign-in (safety rule 1).
 export default async function proxy(request: NextRequest) {
   // A sign-in link that lands on the home page (Supabase falls back to the site address when
-  // the redirect address isn't on its allow-list) is handed to the callback.
-  if (request.nextUrl.searchParams.has("code") && HOME_PATHS.has(request.nextUrl.pathname)) {
+  // the redirect address isn't on its allow-list) is handed to the callback. So is a sign-in
+  // that failed at Supabase (for one, a LINE sign-in whose state was already used: seen
+  // 2026-10-07), so the person reads why instead of a silent home page.
+  const { searchParams } = request.nextUrl;
+  if (
+    (searchParams.has("code") || searchParams.has("error_code")) &&
+    HOME_PATHS.has(request.nextUrl.pathname)
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/api/auth/callback";
     return NextResponse.redirect(url);

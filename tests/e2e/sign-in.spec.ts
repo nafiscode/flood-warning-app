@@ -110,3 +110,11 @@ test("on an older iPhone inside Messenger the page gives written steps, not a de
   await expect(page.getByText('choose "Open in browser", then sign in there')).toBeVisible();
   await context.close();
 });
+
+test("a sign-in that failed at Supabase and landed on the home page says so", async ({ page }) => {
+  await page.goto(
+    "/?error=server_error&error_code=oauth_client_state_not_found&error_description=OAuth+state+not+found",
+  );
+  await expect(page).toHaveURL(/\/sign-in\?error=line/);
+  await expect(page.locator('p[role="alert"]')).toHaveText(th.signIn.error.line);
+});
