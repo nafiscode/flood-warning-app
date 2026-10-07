@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inAppBrowser, isPhoneBrowser, openInBrowserHref } from "@/lib/features";
+import { canOpenBrowser, inAppBrowser, isPhoneBrowser, openInBrowserHref } from "@/lib/features";
 import { normalizePhone } from "@/lib/phone";
 import { isSessionCookie } from "@/lib/supabase/env";
 
@@ -92,6 +92,13 @@ describe("inAppBrowser", () => {
     ]) {
       expect(inAppBrowser(ua)).toBeNull();
     }
+  });
+
+  it("offers the button on Android and on iOS 17 or later, written steps on older iPhones", () => {
+    expect(canOpenBrowser("android", MESSENGER_ANDROID)).toBe(true);
+    expect(canOpenBrowser("ios", MESSENGER_IPHONE)).toBe(true);
+    expect(canOpenBrowser("ios", MESSENGER_IPHONE.replace("OS 18_5", "OS 16_7_2"))).toBe(false);
+    expect(canOpenBrowser("ios", "iPhone")).toBe(false);
   });
 
   it("builds a link that opens the page in the phone's own browser", () => {

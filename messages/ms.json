@@ -68,6 +68,7 @@
         "ios": "Buka dalam Safari"
       },
       "manual": "Jika butang tidak berfungsi, tekan menu (⋯) di sudut skrin dan pilih \"Buka dalam pelayar\".",
+      "manualOnly": "Tekan menu (⋯) di sudut skrin dan pilih \"Buka dalam pelayar\", kemudian log masuk di sana.",
       "stay": "Atau log masuk di sini. Jika pautan dikatakan tamat tempoh, tekan \"Log masuk dengan LINE\" sekali lagi."
     },
     "phone": {

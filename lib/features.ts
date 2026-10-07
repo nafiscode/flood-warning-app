@@ -36,6 +36,19 @@ export function inAppBrowser(userAgent: string | null | undefined): "android" | 
 }
 
 /**
+ * Whether openInBrowserHref can work in this built-in browser. On iPhones before iOS 17 Safari's
+ * address scheme does nothing (seen on the owner's phone, 2026-10-07): show written steps only.
+ */
+export function canOpenBrowser(
+  system: "android" | "ios",
+  userAgent: string | null | undefined,
+): boolean {
+  if (system === "android") return true;
+  const major = /\bOS (\d+)_/.exec(userAgent ?? "")?.[1];
+  return major !== undefined && Number(major) >= 17;
+}
+
+/**
  * A link that opens `url` in the phone's own browser from inside another app's built-in one.
  * Android: an intent link, which the system hands to the default browser. iPhone: Safari's own
  * address scheme (iOS 17 and later; on older ones the link does nothing).

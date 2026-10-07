@@ -68,6 +68,7 @@
         "ios": "Open in Safari"
       },
       "manual": "If the button does nothing, tap the menu (⋯) in the corner of the screen and choose \"Open in browser\".",
+      "manualOnly": "Tap the menu (⋯) in the corner of the screen and choose \"Open in browser\", then sign in there.",
       "stay": "Or sign in here. If it says the link has expired, tap \"Sign in with LINE\" once more."
     },
     "phone": {

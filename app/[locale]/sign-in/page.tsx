@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { headers } from "next/headers";
 import { localePath, requestOrigin, safeNextPath } from "@/lib/auth";
 import {
+  canOpenBrowser,
   inAppBrowser,
   lineSignInConfigured,
   openInBrowserHref,
@@ -49,13 +50,15 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
   const lineHref = `/api/auth/line?${new URLSearchParams({ locale, ...(next ? { next } : {}) })}`;
   // Inside another app's built-in browser (Messenger and the like) a LINE sign-in comes back in
   // the phone's own browser and fails the first time: offer to open this page there first.
-  const inApp = lineSignInConfigured() ? inAppBrowser((await headers()).get("user-agent")) : null;
-  const outHref = inApp
-    ? openInBrowserHref(
-        inApp,
-        `${await requestOrigin()}${localePath(locale, "/sign-in")}${next ? `?next=${encodeURIComponent(next)}` : ""}`,
-      )
-    : "";
+  const userAgent = (await headers()).get("user-agent");
+  const inApp = lineSignInConfigured() ? inAppBrowser(userAgent) : null;
+  const outHref =
+    inApp && canOpenBrowser(inApp, userAgent)
+      ? openInBrowserHref(
+          inApp,
+          `${await requestOrigin()}${localePath(locale, "/sign-in")}${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+        )
+      : "";
   const hidden = (
     <>
       <input type="hidden" name="locale" value={locale} />
@@ -88,10 +91,16 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
                   <p className="font-medium">{t("inApp.title")}</p>
                   <p>{t("inApp.body")}</p>
                 </div>
-                <a href={outHref} rel="nofollow" className={buttonPrimary}>
-                  {t(`inApp.open.${inApp}`)}
-                </a>
-                <p className={hint}>{t("inApp.manual")}</p>
+                {outHref ? (
+                  <>
+                    <a href={outHref} rel="nofollow" className={buttonPrimary}>
+                      {t(`inApp.open.${inApp}`)}
+                    </a>
+                    <p className={hint}>{t("inApp.manual")}</p>
+                  </>
+                ) : (
+                  <p className="font-medium">{t("inApp.manualOnly")}</p>
+                )}
                 <p className={hint}>{t("inApp.stay")}</p>
               </>
             )}
