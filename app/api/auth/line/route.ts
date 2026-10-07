@@ -2,8 +2,9 @@ import type { Provider } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { localePath, safeNextPath } from "@/lib/auth";
 import { isPhoneBrowser, lineSignInConfigured } from "@/lib/features";
+import { newFlowId, packVerifier } from "@/lib/sign-in-flow";
 import { supabaseConfigured } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, type PlainCookie } from "@/lib/supabase/server";
 
 /**
  * Language of LINE's own log-in and consent screens (its `ui_locales` parameter), most wanted
@@ -36,12 +37,17 @@ export async function GET(request: NextRequest) {
   // On a computer or tablet LINE would ask for an email and password first; show the QR code
   // instead, to scan with the LINE app. Never on a phone: nobody can scan their own screen.
   const onPhone = isPhoneBrowser(request.headers.get("user-agent"));
-  const supabase = await createClient();
+  // The LINE app may hand the person back to another browser than this one (it does from
+  // inside Messenger). So the one-time key Supabase sets as a cookie here is also kept in the
+  // database, under an id that comes back in the return address.
+  const flow = newFlowId();
+  const set: PlainCookie[] = [];
+  const supabase = await createClient({ onSetCookies: (cookies) => set.push(...cookies) });
   const { data, error } = await supabase.auth.signInWithOAuth({
     // LINE is a custom OAuth2 provider in Supabase Auth (decision 2026-10-05).
     provider: "custom:line" as Provider,
     options: {
-      redirectTo: `${origin}/api/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      redirectTo: `${origin}/api/auth/callback?${new URLSearchParams({ flow, ...(next ? { next } : {}) })}`,
       scopes: "openid profile",
       // Offer "add Jaga as a friend" on LINE's consent screen, so alerts can reach the person.
       queryParams: {
@@ -52,6 +58,11 @@ export async function GET(request: NextRequest) {
     },
   });
   if (error || !data.url) return back("line");
+  const verifier = packVerifier(set);
+  if (verifier) {
+    // If this fails the sign-in still works in the browser that started it.
+    await supabase.rpc("sign_in_flow_put", { p_id: flow, p_verifier: verifier });
+  }
 
   // Supabase answers its own address with a redirect to LINE. Follow that hop here, so the
   // browser goes to LINE directly. If it can't be followed, the browser takes the hop itself.

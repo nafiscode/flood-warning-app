@@ -331,3 +331,51 @@ describe("sign-in codes by SMS", () => {
     expect(await expectDenied(db, "select 1 from otp_send_log")).toBe("42501");
   });
 });
+
+describe("a LINE sign-in that finishes in another browser", () => {
+  const ID = "A".repeat(43);
+  const take = async (id: string) =>
+    (await one<{ v: string | null }>("select sign_in_flow_take($1) as v", [id])).v;
+
+  it("hands the one-time key back once, to whoever holds the id, and to nobody else", async () => {
+    await as(db, "anon");
+    await db.query("select sign_in_flow_put($1, $2)", [ID, "key-1"]);
+    // The table itself is closed, and stores no usable id.
+    expect(await expectDenied(db, "select 1 from sign_in_flows")).toBe("42501");
+    await asOwner(db);
+    expect(await rows(db, "select 1 from sign_in_flows where id_hash = $1", [ID])).toHaveLength(0);
+    await as(db, "anon");
+    expect(await take("B".repeat(43))).toBeNull();
+    expect(await take(ID)).toBe("key-1");
+    expect(await take(ID)).toBeNull();
+    // A signed-in person may take one too (the sign-in may land where someone is signed in).
+    await db.query("select sign_in_flow_put($1, $2)", [ID, "key-2"]);
+    await as(db, { uid: w.otherUser });
+    expect(await take(ID)).toBe("key-2");
+  });
+
+  it("forgets a key after ten minutes and refuses malformed input", async () => {
+    await as(db, "anon");
+    await db.query("select sign_in_flow_put($1, $2)", [ID, "key-1"]);
+    await asOwner(db);
+    await db.query("update sign_in_flows set created_at = now() - interval '11 minutes'");
+    await as(db, "anon");
+    expect(await take(ID)).toBeNull();
+    // An old row is cleared by the next put, whoever makes it.
+    await asOwner(db);
+    await db.query(
+      "insert into sign_in_flows (id_hash, verifier, created_at) values ('old', 'x', now() - interval '1 hour')",
+    );
+    await as(db, "anon");
+    await db.query("select sign_in_flow_put($1, $2)", ["C".repeat(43), "key-3"]);
+    await asOwner(db);
+    expect(await rows(db, "select 1 from sign_in_flows where id_hash = 'old'")).toHaveLength(0);
+    await as(db, "anon");
+    expect(await expectDenied(db, "select sign_in_flow_put('short', 'key')")).toBe("22023");
+    expect(await expectDenied(db, "select sign_in_flow_put($1, '')", [ID])).toBe("22023");
+    expect(await expectDenied(db, "select sign_in_flow_put($1, $2)", [ID, "x".repeat(2001)])).toBe(
+      "22023",
+    );
+    expect(await take(null as unknown as string)).toBeNull();
+  });
+});

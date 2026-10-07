@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { canOpenBrowser, inAppBrowser, isPhoneBrowser, openInBrowserHref } from "@/lib/features";
 import { normalizePhone } from "@/lib/phone";
+import {
+  isFlowId,
+  isVerifierCookie,
+  newFlowId,
+  packVerifier,
+  signedInNoticePath,
+  unpackVerifier,
+} from "@/lib/sign-in-flow";
 import { isSessionCookie } from "@/lib/supabase/env";
 
 describe("normalizePhone", () => {
@@ -107,5 +115,57 @@ describe("inAppBrowser", () => {
     expect(openInBrowserHref("android", url)).toBe(
       `intent://jaga.example/en/sign-in?next=%2Faccount#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(url)};end`,
     );
+  });
+});
+
+describe("sign-in flow kept for another browser", () => {
+  const NAME = "sb-abcdefgh-auth-token-code-verifier";
+
+  it("makes ids that only it accepts", () => {
+    const id = newFlowId();
+    expect(isFlowId(id)).toBe(true);
+    expect(newFlowId()).not.toBe(id);
+    for (const bad of ["", "short", id + "x", id.slice(0, 42) + "/", null, undefined]) {
+      expect(isFlowId(bad)).toBe(false);
+    }
+  });
+
+  it("keeps only the one-time key cookies, and gives them back unchanged", () => {
+    expect(isVerifierCookie(NAME)).toBe(true);
+    expect(isVerifierCookie(`${NAME}.0`)).toBe(true);
+    expect(isVerifierCookie("sb-abcdefgh-auth-token")).toBe(false);
+    expect(isVerifierCookie("NEXT_LOCALE")).toBe(false);
+    const packed = packVerifier([
+      { name: "sb-abcdefgh-auth-token", value: "session" },
+      { name: NAME, value: 'base64-"abc"' },
+      { name: `${NAME}.1`, value: "" },
+    ]);
+    expect(unpackVerifier(packed)).toEqual([{ name: NAME, value: 'base64-"abc"' }]);
+    expect(packVerifier([{ name: "sb-abcdefgh-auth-token", value: "session" }])).toBeNull();
+  });
+
+  it("never turns stored text into any other cookie", () => {
+    for (const bad of [
+      null,
+      undefined,
+      "",
+      "not json",
+      "{}",
+      '[["sb-abcdefgh-auth-token","stolen-session"]]',
+      `[["${NAME}"]]`,
+      `[["${NAME}", 5]]`,
+      `[["${NAME}","ok"],["NEXT_LOCALE","en"]]`,
+    ]) {
+      expect(unpackVerifier(bad)).toEqual([]);
+    }
+  });
+
+  it("sends the person to the notice in the language of where they were going", () => {
+    expect(signedInNoticePath("/account")).toBe("/account/signed-in?next=%2Faccount");
+    expect(signedInNoticePath("/en/admin")).toBe("/en/account/signed-in?next=%2Fen%2Fadmin");
+    expect(signedInNoticePath("/ms/account/setup?next=%2Fx")).toBe(
+      "/ms/account/signed-in?next=%2Fms%2Faccount%2Fsetup%3Fnext%3D%252Fx",
+    );
+    expect(signedInNoticePath("/english")).toBe("/account/signed-in?next=%2Fenglish");
   });
 });

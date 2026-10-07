@@ -62,14 +62,14 @@
     },
     "inApp": {
       "title": "Open Jaga in your browser first",
-      "body": "You opened Jaga inside another app, such as Messenger. Signing in with LINE from here usually fails the first time.",
+      "body": "You opened Jaga inside another app, such as Messenger. After signing in with LINE you will continue in your phone's browser.",
       "open": {
         "android": "Open in my browser",
         "ios": "Open in Safari"
       },
       "manual": "If the button does nothing, tap the menu (⋯) in the corner of the screen and choose \"Open in browser\".",
       "manualOnly": "Tap the menu (⋯) in the corner of the screen and choose \"Open in browser\", then sign in there.",
-      "stay": "Or sign in here. If it says the link has expired, tap \"Sign in with LINE\" once more."
+      "stay": "Or sign in with LINE right here."
     },
     "phone": {
       "title": "Sign in with your phone number",
@@ -159,6 +159,14 @@
         "verified": "Verified",
         "suspended": "Suspended"
       }
+    },
+    "signedIn": {
+      "title": "You're signed in",
+      "as": "You are signed in as",
+      "unnamed": "your LINE account",
+      "why": "This sign-in started in another app or browser. Please check that this is your account.",
+      "continue": "Yes, continue",
+      "notMe": "Not me, sign out"
     }
   },
   "authorityRegister": {

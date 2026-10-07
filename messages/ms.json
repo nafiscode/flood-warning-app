@@ -62,14 +62,14 @@
     },
     "inApp": {
       "title": "Buka Jaga dalam pelayar dahulu",
-      "body": "Anda membuka Jaga dari dalam aplikasi lain, seperti Messenger. Log masuk dengan LINE dari sini biasanya gagal pada kali pertama.",
+      "body": "Anda membuka Jaga dari dalam aplikasi lain, seperti Messenger. Selepas log masuk dengan LINE, anda akan meneruskan dalam pelayar telefon anda.",
       "open": {
         "android": "Buka dalam pelayar",
         "ios": "Buka dalam Safari"
       },
       "manual": "Jika butang tidak berfungsi, tekan menu (⋯) di sudut skrin dan pilih \"Buka dalam pelayar\".",
       "manualOnly": "Tekan menu (⋯) di sudut skrin dan pilih \"Buka dalam pelayar\", kemudian log masuk di sana.",
-      "stay": "Atau log masuk di sini. Jika pautan dikatakan tamat tempoh, tekan \"Log masuk dengan LINE\" sekali lagi."
+      "stay": "Atau terus log masuk dengan LINE dari sini."
     },
     "phone": {
       "title": "Log masuk dengan nombor telefon",
@@ -159,6 +159,14 @@
         "verified": "Sudah disahkan",
         "suspended": "Digantung"
       }
+    },
+    "signedIn": {
+      "title": "Anda sudah log masuk",
+      "as": "Anda log masuk sebagai",
+      "unnamed": "akaun LINE anda",
+      "why": "Log masuk ini bermula dari aplikasi atau pelayar lain. Sila pastikan ini akaun anda.",
+      "continue": "Ya, teruskan",
+      "notMe": "Bukan saya, log keluar"
     }
   },
   "authorityRegister": {

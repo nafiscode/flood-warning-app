@@ -263,3 +263,52 @@ test("signing out ends the session", async ({ page }) => {
   await page.goto("/account");
   await expect(page).toHaveURL(/\/sign-in/);
 });
+
+test("a started LINE sign-in keeps its one-time key for another browser", async ({
+  request,
+  playwright,
+  baseURL,
+}) => {
+  const db = new Client({ connectionString: dbUrl });
+  await db.connect();
+  try {
+    const stored = async () =>
+      Number((await db.query("select count(*) as n from public.sign_in_flows")).rows[0].n);
+    const before = await stored();
+    const start = await request.get("/api/auth/line?locale=en", { maxRedirects: 0 });
+    const location = start.headers()["location"] ?? "";
+    test.skip(!location.startsWith("https://access.line.me/"), "LINE not configured here");
+    expect(await stored()).toBeGreaterThan(before);
+    // Another browser (no cookies) with an id nobody was given and a code LINE never issued:
+    // no session.
+    const other = await playwright.request.newContext({ baseURL });
+    const back = await other.get(`/api/auth/callback?code=not-a-code&flow=${"A".repeat(43)}`, {
+      maxRedirects: 0,
+    });
+    await other.dispose();
+    expect(back.headers()["location"]).toMatch(/\/sign-in\?error=link$/);
+  } finally {
+    await db.end();
+  }
+});
+
+test("the notice after a sign-in from another browser names the account and needs a session", async ({
+  page,
+}) => {
+  await page.goto("/en/account/signed-in?next=/en/account");
+  await expect(page).toHaveURL(/\/en\/sign-in$/);
+  await signIn(page, emails.authority);
+  await page.goto("/en/account/signed-in?next=/en/account");
+  await expect(page.getByText(`E2E unit ${run}`)).toBeVisible();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+  await page.getByRole("link", { name: "Yes, continue" }).click();
+  await expect(page).toHaveURL(/\/en\/account$/);
+  // "Not me" signs out.
+  await page.goto("/en/account/signed-in?next=/en/account");
+  await page.getByRole("button", { name: "Not me, sign out" }).click();
+  await page.goto("/en/account");
+  await expect(page).toHaveURL(/\/en\/sign-in$/);
+});
