@@ -137,6 +137,24 @@ Existing open projects that already call the ThaiWater API are useful references
 2. Use reports during an event to confirm or correct Module 4 extents locally, and to support admin decisions.
 3. After the season, the reports become a validation dataset for thresholds and extents.
 
+### Module 7: Dam release (Bang Lang)
+
+Added 9 Oct 2026 (owner). Bang Lang dam on the Pattani River (EGAT, Yala) releases water in the peak season; the flood wave then travels through Bannang Sata, Yala town, Yarang and Pattani town to the sea.
+
+Data, all free:
+- ThaiWater `analyst/dam`: storage, level, inflow, release and spill for Bang Lang by the hour (dam id 50, EGAT) and by the day (id 26, RID), with history through `dam_hourly_graph`, `dam_daily_graph` and `dam_yearly_graph`.
+- EGAT's telemetry gauges along the river, already in the S1 archive (BLGTD01 at the tailwater bridge to BLGTD05 at Pattani town), and the RID gauges X.77, X.40A, X.275 and X.10A.
+- The radar seasons of S2 (the release of January 2021 falls in season 2020).
+
+Steps:
+1. Archive the dam's hourly and daily series with the S1 collector, from the first year ThaiWater has, and keep collecting.
+2. Find the past releases (spill above zero, or release well above the turbine range) and, for each, the time the rise reached each gauge. This gives a travel time per reach as a range over the events, and how it shortens as the release grows.
+3. The affected zone: tambons along the river below the dam, from HAND and from the radar extents of the release floods. Two or three release sizes, not a continuous model.
+4. A signal for admins: storage against the level at which the spillway is used, the rate of rise and the inflow. Advisory only.
+5. Output for the app: per release size, the tambons affected and for each the earliest and latest arrival after the gates open, with a safety margin taken off the earliest.
+
+Limits to state wherever this is shown: a few past events, hourly gauges, no hydraulic model, and rain below the dam adds water the dam's figures do not include. The estimate is a range from past releases, not a forecast.
+
 ## 4. Validation metrics
 
 - **Extents:** CSI, hit rate, false-alarm rate against held-out SAR.

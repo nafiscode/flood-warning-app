@@ -146,6 +146,18 @@ Acceptance: layers and a lookup table the app can use; honest notes on reliabili
 
 ---
 
+### S7: Dam release (Bang Lang)
+
+Added 9 Oct 2026. Read `docs/science-plan.md` Module 7 and the decision of 2026-10-09.
+
+Before launch:
+1. Add the dam to the ThaiWater collector: hourly and daily series for Bang Lang, backfilled as far as the API goes, then on the same schedule as the gauges. Tests offline.
+2. List the past releases and measure the travel time to each gauge along the Pattani River; write the method and its limits into a methods note.
+3. The downstream zone and the arrival ranges per tambon, as a table the app can load.
+4. Show the result to the owner before it is used anywhere.
+
+Acceptance: the collector fills the archive without gaps it does not report; every arrival time is a range with the events behind it; a place the analysis cannot speak for says so.
+
 ## App track
 
 ### A0: Scaffold and Jaga brand setup
@@ -439,6 +451,14 @@ Acceptance:
 ```
 
 ---
+
+### A12: Dam release notice
+
+Added 9 Oct 2026. Read `docs/spec.md` section 15 and the decision of 2026-10-09. Two parts.
+
+Part 1, before launch (with A6 and A8): a "dam release" alert template that admins send, with the affected tambons and the arrival ranges from S7 filled in, and the dam's state on the admin signal dashboard.
+
+Part 2, after someone at the dam has agreed to use it: the dam operator role and its one screen (spec section 15). RLS tests for the role: it can send a dam release notice to the fixed zone and nothing else.
 
 ## Later (2027+): template for activating a new hazard
 ```text

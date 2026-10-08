@@ -619,3 +619,17 @@ These tables are created in phase A11 only, not with the initial schema.
 13. Whether the Transparency tab should appear before donations are switched on, showing only running costs paid by the founder.
 
 Decided on 28 September 2026 (details in docs/decisions.md): SOS phone optional; SOS never rejected (merge + suspected-spam flag); phone privacy and org opt-in; household access by capability; stale marker; no eye icons; 77 provinces seeded; tide source chosen in A8; budget about $45/month off-season.
+
+## 15. Dam release warnings (Bang Lang)
+
+Added 9 Oct 2026 (decision of that date). Releases from Bang Lang dam flood land along the Pattani River, often with little warning. Jaga gives the dam's operator a direct way to warn the people downstream.
+
+- **Role.** A dam operator is an authority unit of its own kind, verified by an admin like any other unit. It has one power the other units lack: it can send a dam release notice.
+- **The notice.** The operator enters when the gates open (or opened), the release in cubic metres per second, and optionally when it is expected to end. Nothing else is free text: the message comes from a reviewed template in Thai, Malay and English.
+- **Where it goes.** To a fixed zone, the tambons along the river below the dam (from S7). The operator cannot widen it. Everyone whose home or watched place is in the zone is notified at once, each with the arrival range for their own tambon; reminders follow as that time comes closer.
+- **What people see.** The alert names the dam, the release, the issuer, the time, and for their place "water is expected between [earliest] and [latest]", with the note that this is an estimate from past releases. The earliest time already has the safety margin taken off. Then the same actions as any alert: the nearest safe places, high ground for cars, SOS, hotlines.
+- **Admins.** Told at the same moment. They can extend, supersede or cancel the notice, and they see the dam's state (storage, level, release, spill) on the signal dashboard at all times.
+- **Until an operator has joined**, admins send the same notice from the same template.
+- **Safety rules.** A person publishes every notice (rule 2). The estimate is always a range with its source and time (rule 8). The notice never replaces an alert level; the level for the zone is set by the template and can be raised by an admin.
+
+Open: who at the dam will use it (the owner makes the contact); the alert level a release notice carries by default; whether the operator may also send the "release has ended" message.
