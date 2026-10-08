@@ -94,6 +94,44 @@ body {
   outline-offset: 2px;
 }
 
+/* Trial (9 Oct 2026): lightning on the logo's canopy. One of three shapes flashes every 5 s:
+   two quick flashes inside half a second, then nothing (components/brand/SpinningMark.tsx). */
+@keyframes jaga-bolt {
+  0%,
+  4%,
+  100% {
+    opacity: 0;
+  }
+  0.4% {
+    opacity: 1;
+  }
+  1.1% {
+    opacity: 0.15;
+  }
+  1.7% {
+    opacity: 1;
+  }
+  2.6% {
+    opacity: 0.6;
+  }
+}
+
+.jaga-bolt {
+  animation: jaga-bolt 15s linear infinite;
+}
+
+.jaga-bolt-1 {
+  animation-delay: 2s;
+}
+
+.jaga-bolt-2 {
+  animation-delay: 7s;
+}
+
+.jaga-bolt-3 {
+  animation-delay: 12s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -1,6 +1,15 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { canopyPath, dotMark, easeInOut, FULL_MARK, SMALL_MARK, TURNS } from "@/lib/brand/mark";
+import {
+  BOLTS,
+  canopyPath,
+  dotMark,
+  easeInOut,
+  FULL_MARK,
+  ray,
+  SMALL_MARK,
+  TURNS,
+} from "@/lib/brand/mark";
 
 const file = (name: string) => readFileSync(`public/brand/${name}`, "utf8");
 
@@ -22,6 +31,23 @@ describe("the turning mark (trial)", () => {
     expect(dotMark(SMALL_MARK, 0).rx).toBe(0);
     expect(dotMark(SMALL_MARK, 360 * TURNS).rx).toBe(0);
     expect(dotMark(SMALL_MARK, 180).rx).toBeGreaterThan(0);
+  });
+
+  it("the ray is absent at rest, stays inside the mark, and is fainter while pointing away", () => {
+    expect(ray(SMALL_MARK, 0, 0)).toBeNull();
+    expect(ray(SMALL_MARK, 360 * TURNS, 1)).toBeNull();
+    const front = ray(SMALL_MARK, 135, 0.5);
+    const back = ray(SMALL_MARK, 45, 0.5);
+    expect(front?.opacity).toBeGreaterThan(back?.opacity ?? 1);
+    for (let deg = 0; deg <= 360; deg += 15) {
+      const r = ray(SMALL_MARK, deg, 0.5);
+      if (r) expect(r.tipX >= 18 && r.tipX <= 102).toBe(true); // the mark's box is x 18 to 102
+    }
+  });
+
+  it("there are three lightning shapes", () => {
+    expect(BOLTS).toHaveLength(3);
+    expect(new Set(BOLTS.map((b) => b.d)).size).toBe(3);
   });
 
   it("starts and stops gently", () => {

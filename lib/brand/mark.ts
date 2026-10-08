@@ -1,7 +1,8 @@
 /**
  * Geometry of the Jaga mark (the Sheltered j), shared by the static files in public/brand/ and
  * the turning mark (components/brand/SpinningMark.tsx). TRIAL, 9 Oct 2026: the owner is trying a
- * mark that turns three times when a page opens. At rest it is exactly the static mark.
+ * mark that turns three times, rests, and turns again, with a ray from the dot while it turns and
+ * lightning on the canopy. At rest it is exactly the static mark.
  */
 
 export type MarkSpec = {
@@ -74,9 +75,44 @@ export function dotMark(
   return { cx: dot.cx + dot.r * 0.5 * Math.sin(a), rx: facing > 0 ? ry * facing : 0, ry };
 }
 
-/** Three turns. */
+/**
+ * The ray from the dot while it turns, like a radar or lighthouse beam seen from the side: a
+ * narrow cone from the dot toward wherever the dot is facing, longest when it faces left or
+ * right, fainter while it points away from the viewer, and absent at rest. `progress` is how far
+ * through the three turns we are (0 to 1); the ray fades in after the start and out before the end.
+ */
+export function ray(
+  { dot }: MarkSpec,
+  turnDeg: number,
+  progress: number,
+): { points: string; tipX: number; opacity: number } | null {
+  const a = ((turnDeg + 180) * Math.PI) / 180;
+  const reach = 40 * Math.sin(a);
+  const strength = Math.sin(Math.PI * Math.min(1, Math.max(0, progress))) ** 0.6;
+  if (Math.abs(reach) < 2 || strength < 0.02) return null;
+  const tipX = dot.cx + reach;
+  const half = dot.r * 1.15;
+  return {
+    points: `${n1(dot.cx)},${n1(dot.cy)} ${n1(tipX)},${n1(dot.cy - half)} ${n1(tipX)},${n1(dot.cy + half)}`,
+    tipX,
+    opacity: strength * (Math.cos(a) > 0 ? 1 : 0.45),
+  };
+}
+
+/** Three turns, then a rest, then again. */
 export const TURNS = 3;
 export const TURN_MS = 9000;
+export const REST_MS = 3000;
+
+/**
+ * Lightning on the canopy: three shapes, drawn for the small mark (the full mark scales them).
+ * They flash in turn, one every 5 seconds (the timing is in app/globals.css).
+ */
+export const BOLTS = [
+  { kind: "fill", d: "M63 6 L50 21 H58 L52 33 L71 16 H62 L67 6 Z" },
+  { kind: "line", d: "M75 10 L68 18 L75 20 L69 31 M72 19 L81 27" },
+  { kind: "line", d: "M40 12 L34 20 L41 21 L35 31 M49 8 L45 15 L50 16 L46 23" },
+] as const;
 
 /** Rest, a gentle start, a steady turn, a gentle stop: 0 to 1 over 0 to 1, flat at both ends. */
 export function easeInOut(p: number): number {

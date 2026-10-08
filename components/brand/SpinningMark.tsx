@@ -3,11 +3,14 @@
 import { useEffect, useId, useRef } from "react";
 
 import {
+  BOLTS,
   canopyPath,
   dotMark,
   easeInOut,
   FULL_MARK,
   MARK_VIEWBOX,
+  ray,
+  REST_MS,
   SMALL_MARK,
   TURN_MS,
   TURNS,
@@ -22,51 +25,84 @@ type Props = {
   label: string;
 };
 
+// Lightning is white with a thin dark edge, never yellow: yellow is the Watch level (docs/brand.md).
 const COLORS = {
-  light: { ink: "#1D3B53", canopy: "#2F9C95", mark: "#FFFFFF" },
-  reverse: { ink: "#FFFFFF", canopy: "#7FD1C9", mark: "#1D3B53" },
+  light: { ink: "#1D3B53", canopy: "#2F9C95", mark: "#FFFFFF", ray: "#2F9C95", edge: "#1F7A74" },
+  reverse: { ink: "#FFFFFF", canopy: "#7FD1C9", mark: "#1D3B53", ray: "#7FD1C9", edge: "#1D3B53" },
 } as const;
 
+/** About 30 pictures a second is plenty for a slow turn and half the work for a cheap phone. */
+const FRAME_MS = 32;
+
 /**
- * TRIAL (9 Oct 2026, owner's request): when a page opens, the canopy turns three times about the
- * stem and the dot turns with it, then both come to rest as the static mark. One run per page
- * load; nothing moves for people who ask their device for reduced motion. Before the script
- * runs, and without it, this is the static mark.
+ * TRIAL (9 Oct 2026, owner's request). The canopy turns three times about the stem and the dot
+ * turns with it, sending out a ray like a radar while it does; then both rest as the static mark
+ * for three seconds, and it starts again. Lightning flashes on the canopy every five seconds, in
+ * three shapes (timed in app/globals.css). Nothing moves for people who ask their device for
+ * reduced motion, and before the script runs, or without it, this is the static mark.
  */
 export function SpinningMark({ width, height, small, tone, label }: Props) {
   const spec = small ? SMALL_MARK : FULL_MARK;
   const colors = COLORS[tone];
-  const clip = useId();
+  const id = useId();
   const canopy = useRef<SVGPathElement>(null);
   const mark = useRef<SVGEllipseElement>(null);
+  const beam = useRef<SVGPolygonElement>(null);
+  const fade = useRef<SVGLinearGradientElement>(null);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const scallopDeg = 180 / spec.canopy.scallops; // the front half shows `scallops` of them
+    const cycle = TURN_MS + REST_MS;
+    const start = performance.now() + 500;
     let frame = 0;
-    let start = 0;
+    let timer = 0;
+    let last = 0;
 
-    const draw = (turnDeg: number) => {
+    const draw = (turnDeg: number, progress: number) => {
       canopy.current?.setAttribute("d", canopyPath(spec, turnDeg / scallopDeg));
       const m = dotMark(spec, turnDeg);
       mark.current?.setAttribute("cx", m.cx.toFixed(2));
       mark.current?.setAttribute("rx", m.rx.toFixed(2));
+      const r = ray(spec, turnDeg, progress);
+      beam.current?.setAttribute("opacity", r ? r.opacity.toFixed(2) : "0");
+      if (r) {
+        beam.current?.setAttribute("points", r.points);
+        fade.current?.setAttribute("x2", r.tipX.toFixed(1));
+      }
+    };
+    const later = (ms: number) => {
+      timer = window.setTimeout(() => (frame = requestAnimationFrame(step)), ms);
     };
     const step = (now: number) => {
-      if (!start) start = now;
-      const p = (now - start) / TURN_MS;
-      if (p >= 1) return draw(0); // exactly the static mark
-      draw(360 * TURNS * easeInOut(p));
+      const t = now - start;
+      if (t < 0) return later(-t);
+      const inCycle = t % cycle;
+      if (inCycle >= TURN_MS) {
+        draw(0, 0); // exactly the static mark, and no work until the next turn
+        return later(cycle - inCycle);
+      }
+      if (now - last >= FRAME_MS) {
+        last = now;
+        const p = inCycle / TURN_MS;
+        draw(360 * TURNS * easeInOut(p), p);
+      }
       frame = requestAnimationFrame(step);
     };
-    const wait = window.setTimeout(() => (frame = requestAnimationFrame(step)), 500);
+    frame = requestAnimationFrame(step);
     return () => {
-      window.clearTimeout(wait);
+      window.clearTimeout(timer);
       cancelAnimationFrame(frame);
     };
   }, [spec]);
 
   const rest = dotMark(spec, 0);
+  const { x0, x1, top } = spec.canopy;
+  // The bolts are drawn for the small mark's canopy (x 20–100, y 4–34); the full mark's is smaller.
+  const fit = small
+    ? undefined
+    : `translate(${x0 - (20 * (x1 - x0)) / 80} ${top - (4 * (34 - top)) / 30}) scale(${(x1 - x0) / 80} ${(34 - top) / 30})`;
+
   return (
     <svg
       viewBox={MARK_VIEWBOX}
@@ -77,10 +113,48 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
       aria-label={label || undefined}
       aria-hidden={label ? undefined : true}
     >
-      <clipPath id={clip}>
-        <circle cx={spec.dot.cx} cy={spec.dot.cy} r={spec.dot.r} />
-      </clipPath>
+      <defs>
+        <clipPath id={`${id}dot`}>
+          <circle cx={spec.dot.cx} cy={spec.dot.cy} r={spec.dot.r} />
+        </clipPath>
+        <clipPath id={`${id}dome`}>
+          <path d={canopyPath(spec)} />
+        </clipPath>
+        <linearGradient
+          ref={fade}
+          id={`${id}fade`}
+          gradientUnits="userSpaceOnUse"
+          x1={spec.dot.cx}
+          y1="0"
+          x2={spec.dot.cx + 40}
+          y2="0"
+        >
+          <stop offset="0" stopColor={colors.ray} stopOpacity="0.85" />
+          <stop offset="1" stopColor={colors.ray} stopOpacity="0" />
+        </linearGradient>
+      </defs>
       <path ref={canopy} d={canopyPath(spec)} fill={colors.canopy} />
+      <g clipPath={`url(#${id}dome)`} transform={fit}>
+        {BOLTS.map((bolt, i) => (
+          <g
+            key={bolt.d}
+            className={`jaga-bolt jaga-bolt-${i + 1}`}
+            opacity="0"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {bolt.kind === "fill" ? (
+              <path d={bolt.d} fill="#FFFFFF" stroke={colors.edge} strokeWidth="1.4" />
+            ) : (
+              <>
+                <path d={bolt.d} fill="none" stroke={colors.edge} strokeWidth="5.6" />
+                <path d={bolt.d} fill="none" stroke="#FFFFFF" strokeWidth="3.2" />
+              </>
+            )}
+          </g>
+        ))}
+      </g>
+      <polygon ref={beam} points="" fill={`url(#${id}fade)`} opacity="0" />
       <circle cx={spec.dot.cx} cy={spec.dot.cy} r={spec.dot.r} fill={colors.ink} />
       <ellipse
         ref={mark}
@@ -89,7 +163,7 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
         rx={rest.rx}
         ry={rest.ry}
         fill={colors.mark}
-        clipPath={`url(#${clip})`}
+        clipPath={`url(#${id}dot)`}
       />
       <path
         d={spec.stem.d}
