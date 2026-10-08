@@ -134,6 +134,64 @@ test("the home location can be set with a pin on the map", async ({ page }) => {
   expect(profile!.home_tambon).toMatch(/^9[0456][0-9]{4}$/);
 });
 
+test("a watched place can be added with a pin, shows on home with Call, and can be deleted", async ({
+  page,
+}) => {
+  await signIn(page, emails.authority);
+  await page.goto("/account/places");
+  await page.getByRole("link", { name: th.watched.add }).click();
+  await page.locator("#label").fill("บ้านแม่");
+  // A name without the consent tick is refused.
+  await page.locator("#contactName").fill("แม่");
+  await page.locator("#contactPhone").fill("081-234-5678");
+  await page.getByRole("button", { name: th.account.home.useMap }).click();
+  const map = page.locator('[data-map-ready="true"]');
+  await expect(map).toBeVisible({ timeout: 30_000 });
+  await tapMiddle(map);
+  await expect
+    .poll(async () => Number(await page.locator('input[name="lat"]').inputValue()))
+    .toBeGreaterThan(5.5);
+  await page.getByRole("button", { name: th.watched.save }).click();
+  await expect(page.locator('main [role="alert"]')).toContainText(th.watched.error.consent);
+
+  await page.locator("#label").fill("บ้านแม่");
+  await page.locator("#contactName").fill("แม่");
+  await page.locator("#contactPhone").fill("081-234-5678");
+  await page.getByRole("button", { name: th.account.home.useMap }).click();
+  await expect(map).toBeVisible({ timeout: 30_000 });
+  await tapMiddle(map);
+  await expect
+    .poll(async () => Number(await page.locator('input[name="lat"]').inputValue()))
+    .toBeGreaterThan(5.5);
+  await page.locator('input[name="contactConsent"]').check();
+  await page.getByRole("button", { name: th.watched.save }).click();
+  await expect(page).toHaveURL(/\/account\/places\?done=saved$/);
+  await expect(page.locator("[data-place]")).toHaveCount(1);
+  await expect(page.locator('[data-place] a[href="tel:+66812345678"]')).toBeVisible();
+  const [saved] = await sql(
+    `select sp.tambon, sp.notify, sp.contact_consent_at from public.saved_places sp
+     join auth.users u on u.id = sp.user_id where u.email = $1`,
+    [emails.authority],
+  );
+  expect(saved!.tambon).toMatch(/^9[0456][0-9]{4}$/);
+  expect(saved!.notify).toBe(true);
+  expect(saved!.contact_consent_at).not.toBeNull();
+
+  // Home lists it with one tap to call the person there.
+  await page.goto("/");
+  const watched = page.locator("[data-watched]");
+  await expect(watched).toContainText("บ้านแม่");
+  await expect(watched.locator('a[href="tel:+66812345678"]')).toContainText("แม่");
+  await expect(page.locator("[data-manage-places]")).toBeVisible();
+
+  await page.goto("/account/places");
+  await page.getByRole("link", { name: th.watched.edit }).click();
+  await page.getByText(th.watched.delete).click();
+  await page.getByRole("button", { name: th.watched.deleteConfirm }).click();
+  await expect(page).toHaveURL(/\/account\/places\?done=deleted$/);
+  await expect(page.locator("[data-place]")).toHaveCount(0);
+});
+
 test("coverage can be chosen on the map, and the list follows", async ({ page }) => {
   await signIn(page, emails.authority);
   await page.goto("/authority/register");

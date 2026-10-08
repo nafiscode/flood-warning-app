@@ -23,6 +23,7 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
   if (!session) redirect(localePath(locale, "/sign-in"));
   if (session.displayName === "") redirect(localePath(locale, "/account/setup"));
   const t = await getTranslations("account");
+  const tWatched = await getTranslations("watched");
 
   const supabase = await createClient();
   const { data: units } = await supabase
@@ -46,6 +47,10 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
           {t("edit")}
         </Link>
       </section>
+
+      <Link href="/account/places" className={buttonSecondary}>
+        {tWatched("title")}
+      </Link>
 
       <section className={card}>
         <h2 className="text-body font-bold">{t("authority.title")}</h2>

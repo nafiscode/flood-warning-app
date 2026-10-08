@@ -64,7 +64,9 @@
       "call": "Telefon {name}",
       "sosFor": "SOS untuk {label}",
       "outside": "Di luar kawasan liputan Jaga",
-      "unknown": "Status belum diketahui"
+      "unknown": "Status belum diketahui",
+      "manage": "Urus tempat yang dijaga",
+      "addFirst": "Tambah tempat yang anda jaga, contohnya rumah mak"
     },
     "mapLink": "Buka peta",
     "projectLine": "Talian bantuan Jaga"
@@ -379,6 +381,54 @@
       "why": "Log masuk ini bermula dari aplikasi atau pelayar lain. Sila pastikan ini akaun anda.",
       "continue": "Ya, teruskan",
       "notMe": "Bukan saya, log keluar"
+    }
+  },
+  "watched": {
+    "title": "Tempat yang saya jaga",
+    "intro": "Tambah rumah ibu bapa, saudara atau kedai untuk menerima amaran bagi tempat itu, menelefon orang di sana dengan satu ketikan, dan meminta bantuan bagi pihak mereka.",
+    "count": "{count} daripada 10 tempat",
+    "none": "Belum ada tempat.",
+    "add": "Tambah tempat",
+    "addTitle": "Tambah tempat yang dijaga",
+    "editTitle": "Ubah tempat",
+    "edit": "Ubah",
+    "back": "Kembali ke senarai",
+    "label": {
+      "label": "Nama panggilan tempat",
+      "hint": "Contoh: Rumah mak. Nama ini hanya anda yang nampak."
+    },
+    "location": {
+      "title": "Lokasi",
+      "why": "Guna lokasi sekarang jika anda berada di sana, atau ketik pada peta. Tambon dicari daripada lokasi ini.",
+      "saved": "Lokasi sudah disimpan. Pilih semula jika mahu memindahkan pin.",
+      "outside": "Di luar kawasan liputan Jaga, jadi tiada amaran untuk tempat ini."
+    },
+    "notify": "Beritahu saya apabila ada amaran di sini",
+    "notifyOff": "Pemberitahuan dimatikan",
+    "person": {
+      "title": "Orang di sana (pilihan)",
+      "privacy": "Nama dan nombor ini hanya anda yang nampak. Pihak berkuasa dan admin tidak nampak, dan ia dipadam bersama tempat ini.",
+      "name": "Nama",
+      "nameHint": "Contoh: Mak",
+      "phone": "Nombor telefon",
+      "consent": "Orang ini bersetuju saya menyimpan nama dan nombor telefonnya di sini"
+    },
+    "save": "Simpan",
+    "delete": "Padam tempat ini",
+    "deleteConfirm": "Sahkan padam",
+    "deleteNote": "Nama dan nombor orang di sana turut dipadam.",
+    "done": {
+      "saved": "Tempat disimpan.",
+      "deleted": "Tempat dipadam."
+    },
+    "error": {
+      "label": "Masukkan nama panggilan tempat (hingga 60 aksara).",
+      "location": "Pilih lokasi tempat dahulu.",
+      "phone": "Nombor telefon tidak sah.",
+      "name": "Nama terlalu panjang (hingga 80 aksara).",
+      "consent": "Tandakan bahawa orang ini bersetuju, atau kosongkan nama dan nombor.",
+      "limit": "Paling banyak 10 tempat. Padam satu dahulu sebelum menambah.",
+      "save": "Tidak dapat disimpan. Cuba lagi."
     }
   },
   "authorityRegister": {

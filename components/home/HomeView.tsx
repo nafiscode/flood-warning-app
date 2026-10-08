@@ -189,6 +189,16 @@ export function HomeView(props: HomeViewProps) {
       )}
 
       <WatchedPlaces items={watched} now={now} />
+      {me?.signedIn && (
+        <Link
+          href="/account/places"
+          prefetch={false}
+          data-manage-places="true"
+          className="inline-flex min-h-tap items-center underline"
+        >
+          {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
+        </Link>
+      )}
 
       {home && !loading && (
         <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />

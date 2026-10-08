@@ -64,7 +64,9 @@
       "call": "Call {name}",
       "sosFor": "SOS for {label}",
       "outside": "Outside the area Jaga covers",
-      "unknown": "Status not known yet"
+      "unknown": "Status not known yet",
+      "manage": "Manage the places I watch",
+      "addFirst": "Add a place you watch, such as Mum's house"
     },
     "mapLink": "Open the map",
     "projectLine": "Jaga help line"
@@ -379,6 +381,54 @@
       "why": "This sign-in started in another app or browser. Please check that this is your account.",
       "continue": "Yes, continue",
       "notMe": "Not me, sign out"
+    }
+  },
+  "watched": {
+    "title": "Places I watch",
+    "intro": "Add your parents' house, a relative's home or a shop to get its alerts, call the person there in one tap, and ask for help on their behalf.",
+    "count": "{count} of 10 places",
+    "none": "No places yet.",
+    "add": "Add a place",
+    "addTitle": "Add a place to watch",
+    "editTitle": "Edit place",
+    "edit": "Edit",
+    "back": "Back to the list",
+    "label": {
+      "label": "Name for this place",
+      "hint": "For example: Mum's house. Only you see this name."
+    },
+    "location": {
+      "title": "Location",
+      "why": "Use your current location if you are there, or tap the map. The tambon is found from this location.",
+      "saved": "A location is saved. Choose again only to move the pin.",
+      "outside": "Outside the area Jaga covers, so there are no alerts for this place."
+    },
+    "notify": "Notify me when there is an alert here",
+    "notifyOff": "Notifications off",
+    "person": {
+      "title": "The person there (optional)",
+      "privacy": "Only you see this name and number. Authorities and admins cannot see them, and they are deleted with the place.",
+      "name": "Name",
+      "nameHint": "For example: Mum",
+      "phone": "Phone number",
+      "consent": "This person agreed that I store their name and phone number here"
+    },
+    "save": "Save",
+    "delete": "Delete this place",
+    "deleteConfirm": "Confirm delete",
+    "deleteNote": "The name and number of the person there are deleted too.",
+    "done": {
+      "saved": "Place saved.",
+      "deleted": "Place deleted."
+    },
+    "error": {
+      "label": "Enter a name for the place (up to 60 characters).",
+      "location": "Choose the place's location first.",
+      "phone": "That phone number isn't valid.",
+      "name": "That name is too long (up to 80 characters).",
+      "consent": "Tick that this person agreed, or leave the name and number empty.",
+      "limit": "You can watch at most 10 places. Delete one before adding another.",
+      "save": "Couldn't save. Try again."
     }
   },
   "authorityRegister": {
