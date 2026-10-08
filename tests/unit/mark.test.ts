@@ -8,6 +8,7 @@ import {
   FULL_MARK,
   ray,
   SMALL_MARK,
+  stemPath,
   TURNS,
 } from "@/lib/brand/mark";
 
@@ -17,8 +18,8 @@ describe("the turning mark (trial)", () => {
   it("at rest it is the static mark, character for character", () => {
     expect(file("jaga-mark.svg")).toContain(`d="${canopyPath(FULL_MARK)}"`);
     expect(file("jaga-mark-small.svg")).toContain(`d="${canopyPath(SMALL_MARK)}"`);
-    expect(file("jaga-mark.svg")).toContain(`d="${FULL_MARK.stem.d}"`);
-    expect(file("jaga-mark-small.svg")).toContain(`d="${SMALL_MARK.stem.d}"`);
+    expect(file("jaga-mark.svg")).toContain(`d="${stemPath(FULL_MARK)}"`);
+    expect(file("jaga-mark-small.svg")).toContain(`d="${stemPath(SMALL_MARK)}"`);
   });
 
   it("a whole number of scallops later the canopy looks the same again", () => {
@@ -43,6 +44,12 @@ describe("the turning mark (trial)", () => {
       const r = ray(SMALL_MARK, deg, 0.5);
       if (r) expect(r.tipX >= 18 && r.tipX <= 102).toBe(true); // the mark's box is x 18 to 102
     }
+  });
+
+  it("the j turns with the dot: edge-on at a quarter turn, mirrored at a half turn, back after a full one", () => {
+    expect(stemPath(SMALL_MARK, 360)).toBe(stemPath(SMALL_MARK, 0));
+    expect(stemPath(SMALL_MARK, 90)).toBe("M60 68 V92 C60 106 60 113 60 111");
+    expect(stemPath(SMALL_MARK, 180)).toBe("M60 68 V92 C60 106 71 113 90 111");
   });
 
   it("there are three lightning shapes", () => {

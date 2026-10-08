@@ -12,6 +12,7 @@ import {
   ray,
   REST_MS,
   SMALL_MARK,
+  stemPath,
   TURN_MS,
   TURNS,
 } from "@/lib/brand/mark";
@@ -35,9 +36,9 @@ const COLORS = {
 const FRAME_MS = 32;
 
 /**
- * TRIAL (9 Oct 2026, owner's request). The canopy turns three times about the stem and the dot
- * turns with it, sending out a ray like a radar while it does; then both rest as the static mark
- * for three seconds, and it starts again. Lightning flashes on the canopy every five seconds, in
+ * TRIAL (9 Oct 2026, owner's request). The canopy, the dot and the j turn three times together
+ * about the upright of the j, the dot sending out a ray like a radar while they do; then all rest
+ * as the static mark for three seconds, and it starts again. Lightning flashes on the canopy every five seconds, in
  * three shapes (timed in app/globals.css). Nothing moves for people who ask their device for
  * reduced motion, and before the script runs, or without it, this is the static mark.
  */
@@ -47,6 +48,7 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
   const id = useId();
   const canopy = useRef<SVGPathElement>(null);
   const mark = useRef<SVGEllipseElement>(null);
+  const stem = useRef<SVGPathElement>(null);
   const beam = useRef<SVGPolygonElement>(null);
   const fade = useRef<SVGLinearGradientElement>(null);
 
@@ -61,6 +63,7 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
 
     const draw = (turnDeg: number, progress: number) => {
       canopy.current?.setAttribute("d", canopyPath(spec, turnDeg / scallopDeg));
+      stem.current?.setAttribute("d", stemPath(spec, turnDeg));
       const m = dotMark(spec, turnDeg);
       mark.current?.setAttribute("cx", m.cx.toFixed(2));
       mark.current?.setAttribute("rx", m.rx.toFixed(2));
@@ -166,7 +169,8 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
         clipPath={`url(#${id}dot)`}
       />
       <path
-        d={spec.stem.d}
+        ref={stem}
+        d={stemPath(spec)}
         fill="none"
         stroke={colors.ink}
         strokeWidth={spec.stem.width}

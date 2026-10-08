@@ -1,7 +1,7 @@
 /**
  * Geometry of the Jaga mark (the Sheltered j), shared by the static files in public/brand/ and
  * the turning mark (components/brand/SpinningMark.tsx). TRIAL, 9 Oct 2026: the owner is trying a
- * mark that turns three times, rests, and turns again, with a ray from the dot while it turns and
+ * mark that turns three times (canopy, dot and j together), rests, and turns again, with a ray from the dot while it turns and
  * lightning on the canopy. At rest it is exactly the static mark.
  */
 
@@ -9,21 +9,40 @@ export type MarkSpec = {
   /** Canopy: a dome from x0 to x1 with `scallops` scallops along its lower edge. */
   canopy: { x0: number; x1: number; top: number; base: number; scallops: number };
   dot: { cx: number; cy: number; r: number };
-  stem: { d: string; width: number };
+  /** The j: straight down from `top` to `bend` on the axis, then the hook through three curve points. */
+  stem: { top: number; bend: number; hook: [number, number][]; width: number };
 };
 
 /** 64 px and up (jaga-mark.svg). */
 export const FULL_MARK: MarkSpec = {
   canopy: { x0: 30, x1: 90, top: 8, base: 34, scallops: 4 },
   dot: { cx: 60, cy: 46, r: 6.5 },
-  stem: { d: "M60 63 V92 C60 106 50 112 34 110", width: 14 },
+  stem: {
+    top: 63,
+    bend: 92,
+    hook: [
+      [60, 106],
+      [50, 112],
+      [34, 110],
+    ],
+    width: 14,
+  },
 };
 
 /** 16 to 63 px (jaga-mark-small.svg). */
 export const SMALL_MARK: MarkSpec = {
   canopy: { x0: 20, x1: 100, top: 4, base: 34, scallops: 3 },
   dot: { cx: 60, cy: 47, r: 8.5 },
-  stem: { d: "M60 68 V92 C60 106 49 113 30 111", width: 17 },
+  stem: {
+    top: 68,
+    bend: 92,
+    hook: [
+      [60, 106],
+      [49, 113],
+      [30, 111],
+    ],
+    width: 17,
+  },
 };
 
 export const MARK_VIEWBOX = "18 0 84 120";
@@ -59,6 +78,17 @@ export function canopyPath({ canopy }: MarkSpec, phase = 0): string {
     a = b;
   }
   return `${d} Z`;
+}
+
+/**
+ * The j as it turns about its own upright with the dot: the hook swings round, so from the front
+ * it shortens, shows edge-on at a quarter turn, points the other way at a half turn, and comes
+ * back. `turnDeg` 0 is the path of the static files, character for character.
+ */
+export function stemPath({ dot, stem }: MarkSpec, turnDeg = 0): string {
+  const across = Math.cos((turnDeg * Math.PI) / 180);
+  const hook = stem.hook.map(([x, y]) => `${n1(dot.cx + (x - dot.cx) * across)} ${n1(y)}`);
+  return `M${n1(dot.cx)} ${n1(stem.top)} V${n1(stem.bend)} C${hook.join(" ")}`;
 }
 
 /**
