@@ -52,6 +52,15 @@ const chip =
   "inline-flex min-h-tap items-center gap-2 rounded-full border-2 px-4 py-1 font-medium active:translate-y-px";
 const chipOn = "border-jaga-slate bg-jaga-slate text-white";
 const chipOff = "border-jaga-slate bg-jaga-surface text-jaga-slate";
+/*
+ * A hazard that is not the chosen one takes less room on a phone or tablet (the owner's note, 9
+ * Oct): every hazard but floods is still "coming soon", and the switcher was eating the top of
+ * a 360 px screen. The pill is smaller to look at, but the invisible box after it keeps the
+ * target at the full 48 px (CLAUDE.md), so it is no harder to hit. On a laptop, where there is
+ * room, every chip keeps its usual size.
+ */
+const chipQuiet =
+  "relative inline-flex min-h-9 items-center gap-1.5 rounded-full border-2 px-3 py-0.5 text-small font-medium after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-[''] active:translate-y-px lg:min-h-tap lg:gap-2 lg:px-4 lg:py-1 lg:text-body lg:after:hidden";
 
 /**
  * The map dashboard (spec 4.2), drawn from what it is given. Map tab: hazard switcher, province
@@ -251,7 +260,7 @@ export function DashboardView(props: DashboardViewProps) {
                       setHazardCode(h.code);
                       setSelection(null);
                     }}
-                    className={`${chip} ${h.code === hazard.code ? chipOn : chipOff}`}
+                    className={`${h.code === hazard.code ? `${chip} ${chipOn}` : `${chipQuiet} ${chipOff}`}`}
                   >
                     {localName(h.name, locale)}
                     {h.status !== "active" && (

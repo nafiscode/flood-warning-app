@@ -305,3 +305,39 @@ describe("the label on a pin", () => {
     expect(box.textContent).toContain("<b>not bold</b>");
   });
 });
+
+describe("the hazard switcher on a small screen", () => {
+  it("the chosen hazard keeps its size; the others are smaller until chosen", () => {
+    const c = dashboard();
+    const flood = c.querySelector('[data-hazard="flood"]')!;
+    const fire = c.querySelector('[data-hazard="fire"]')!;
+    expect(flood.getAttribute("aria-pressed")).toBe("true");
+    expect(flood.className).toContain("min-h-tap");
+    expect(fire.className).toContain("min-h-9");
+    // Smaller to look at, but still a full 48 px target: the box after it makes up the rest.
+    expect(fire.className).toContain("after:-inset-y-1.5");
+    // On a laptop every chip keeps its usual size.
+    expect(fire.className).toContain("lg:min-h-tap");
+  });
+
+  it("choosing one gives it the full size and shrinks the one left behind", () => {
+    const c = dashboard();
+    fireEvent.click(c.querySelector('[data-hazard="fire"]')!);
+    const flood = c.querySelector('[data-hazard="flood"]')!;
+    const fire = c.querySelector('[data-hazard="fire"]')!;
+    expect(fire.className).toContain("min-h-tap");
+    expect(fire.className).not.toContain("min-h-9");
+    expect(flood.className).toContain("min-h-9");
+  });
+
+  it("a hazard that is still coming says so, chosen or not (safety rule 10)", () => {
+    const c = dashboard();
+    expect(c.querySelector('[data-hazard="fire"]')?.textContent).toContain(
+      th.map.hazard.comingSoon,
+    );
+    fireEvent.click(c.querySelector('[data-hazard="fire"]')!);
+    expect(c.querySelector('[data-hazard="fire"]')?.textContent).toContain(
+      th.map.hazard.comingSoon,
+    );
+  });
+});
