@@ -129,6 +129,10 @@ def validate(cfg: dict) -> dict:
     _need(ref["year_offsets"] and all(isinstance(o, int) for o in ref["year_offsets"]),
           "reference.year_offsets must be a list of whole numbers, e.g. [0].")
     _need(int(ref["min_passes"]) >= 1, "reference.min_passes must be at least 1.")
+    for x in cfg.get("reference_exceptions") or []:
+        _need(isinstance(x, dict) and isinstance(x.get("season"), int) and isinstance(x.get("reference_year"), int)
+              and isinstance(x.get("orbit"), str) and x["orbit"][:1] in "AD" and x["orbit"][1:].isdigit(),
+              "reference_exceptions: each entry needs season (year), orbit (e.g. D164) and reference_year.")
 
     sp = cfg["speckle"]
     _need(sp["filter"] in ("focal_median", "none"), "speckle.filter must be focal_median or none.")

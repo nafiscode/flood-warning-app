@@ -36,11 +36,31 @@ def _thresholds_for_pass(cfg: dict, cache_dir: Path, p: plan.Pass, compute) -> d
     return decisions
 
 
+def _reference_by_orbit(cfg: dict, event: seasons.Event, area) -> tuple[dict, list]:
+    """(reference per orbit, the event's own dry windows). An orbit named in reference_exceptions for
+    this season takes its scenes from the other year's window instead; its entry then carries `years`,
+    `window` and a note for the run log."""
+    windows = seasons.reference_windows(event, cfg)
+    scenes = []
+    for a, b in windows:
+        scenes += [plan.scene_from_feature(f)
+                   for f in ee_ops.list_scenes(ee_ops.s1_collection(cfg, area, *seasons.utc_millis(a, b)))]
+    reference = plan.reference_by_orbit(scenes)
+    for orbit, (a, b) in seasons.exception_windows(event, cfg).items():
+        other = [s for s in (plan.scene_from_feature(f) for f in ee_ops.list_scenes(
+            ee_ops.s1_collection(cfg, area, *seasons.utc_millis(a, b)))) if s.orbit == orbit]
+        entry = plan.reference_by_orbit(other).get(orbit, {"passes": 0, "scenes": []})
+        entry.update(years=[a.year], window=[a.isoformat(), b.isoformat()],
+                     note=f"reference from {a.year} by exception (reference_exceptions)")
+        reference[orbit] = entry
+    return dict(sorted(reference.items())), windows
+
+
 def _orbit_reference(cfg: dict, project: str, orbit: str, entry: dict, years: list[int], scale: int,
                      params_hash: str, stored: set[str], masks: dict, area):
     """(reference backscatter, layover mask) for one orbit: the stored asset if `prepare` made one for
     these parameters, else computed inside every request. `entry` (the run log's record) says which."""
-    name = naming.reference_name(years, orbit, scale, params_hash)
+    name = naming.reference_name(entry.get("years", years), orbit, scale, params_hash)
     if name in stored:
         entry["source"] = f"{ee_ops.asset_folder_id(project, cfg)}/{name}"
         log.info("orbit %s: stored reference %s", orbit, name)
@@ -75,12 +95,7 @@ def prepare_references(cfg: dict, event: seasons.Event, *, dry_run: bool, force:
     rl.data["grid"] = master.as_dict()
 
     area = ee_ops.area(geometry)
-    windows = seasons.reference_windows(event, cfg)
-    scenes = []
-    for a, b in windows:
-        scenes += [plan.scene_from_feature(f)
-                   for f in ee_ops.list_scenes(ee_ops.s1_collection(cfg, area, *seasons.utc_millis(a, b)))]
-    reference = plan.reference_by_orbit(scenes)
+    reference, windows = _reference_by_orbit(cfg, event, area)
     rl.data["reference"] = {"windows": [[a.isoformat(), b.isoformat()] for a, b in windows], "orbits": reference}
     years = [a.year for a, _ in windows]
     stored = set() if force else ee_ops.reference_assets(project, cfg)
@@ -89,7 +104,7 @@ def prepare_references(cfg: dict, event: seasons.Event, *, dry_run: bool, force:
 
     todo = []
     for orbit, entry in reference.items():
-        name = naming.reference_name(years, orbit, master.scale, params_hash)
+        name = naming.reference_name(entry.get("years", years), orbit, master.scale, params_hash)
         rec = {"name": name, "kind": "reference", "orbit": orbit, "asset_id": f"{folder}/{name}",
                "task_id": None, "state": "PLANNED"}
         if entry["passes"] < cfg["reference"]["min_passes"]:
@@ -159,12 +174,7 @@ def run_event(cfg: dict, event: seasons.Event, *, dry_run: bool, with_thresholds
     start_ms, end_ms = seasons.utc_millis(event.start, event.end)
     passes = plan.group_passes([plan.scene_from_feature(f)
                                 for f in ee_ops.list_scenes(ee_ops.s1_collection(cfg, area, start_ms, end_ms))])
-    windows = seasons.reference_windows(event, cfg)
-    ref_scenes = []
-    for a, b in windows:
-        ref_scenes += [plan.scene_from_feature(f)
-                       for f in ee_ops.list_scenes(ee_ops.s1_collection(cfg, area, *seasons.utc_millis(a, b)))]
-    reference = plan.reference_by_orbit(ref_scenes)
+    reference, windows = _reference_by_orbit(cfg, event, area)
     plan.apply_reference_rule(passes, reference, cfg["reference"]["min_passes"])
     rl.data["reference"] = {"windows": [[a.isoformat(), b.isoformat()] for a, b in windows], "orbits": reference}
     rl.data["passes"] = [p.as_dict() for p in passes]

@@ -45,6 +45,15 @@ reference:
   year_offsets: [0]                   # 0 = the season's start year; add 1 or -1 to widen a thin reference
   min_passes: 4                       # fewer reference passes on an orbit => its event passes are skipped (logged)
 
+# Orbits whose own dry window is too thin take their reference from another year (owner, 2026-10-09).
+# Not part of the parameter hash: it adds passes, it does not change how any other pass is made. The
+# run log and the reference's name say which year was used. A reference from AFTER the flood season is
+# an exception to the rule above: land cover may have changed in between.
+reference_exceptions:
+  # Orbit D164 has no Feb-Apr 2025 images but eight for 2026. Its 24 Nov 2025 pass (06:02 Bangkok) is
+  # the only one within days of the Hat Yai flood of 19-21 Nov 2025.
+  - {season: 2025, orbit: D164, reference_year: 2026}
+
 # Speckle: focal median on the dB image, same kernel for the event scene and the reference composite.
 # Chosen over refined Lee because it is one cheap, standard operation with one parameter, is robust to
 # bright point targets, and is identical in dB and linear power (rank filter). It blurs edges by ~radius.

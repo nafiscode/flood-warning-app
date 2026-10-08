@@ -67,6 +67,14 @@ def reference_windows(ev: Event, cfg: dict) -> list[tuple[date, date]]:
     return [(date(y, sm, sd), date(y, em, ed)) for y in years]
 
 
+def exception_windows(ev: Event, cfg: dict) -> dict[str, tuple[date, date]]:
+    """Orbit -> the dry window of another year, for the orbits listed in reference_exceptions for this
+    event's season."""
+    (sm, sd), (em, ed) = _mmdd(cfg["reference"]["start"]), _mmdd(cfg["reference"]["end"])
+    return {x["orbit"]: (date(x["reference_year"], sm, sd), date(x["reference_year"], em, ed))
+            for x in cfg.get("reference_exceptions") or [] if x["season"] == ev.season_year}
+
+
 def utc_millis(start: date, end: date) -> tuple[int, int]:
     """[start 00:00 Bangkok, the day after end 00:00 Bangkok) as UTC epoch milliseconds."""
     a = datetime.combine(start, time.min, BANGKOK)

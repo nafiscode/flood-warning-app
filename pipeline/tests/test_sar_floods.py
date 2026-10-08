@@ -437,6 +437,18 @@ def test_per_scene_exports_only_for_priority_events(cfg):
         assert [e.kind for e in local] == ["scene", "scene"]
 
 
+def test_reference_exceptions_name_another_year_for_one_orbit_and_leave_the_hash_alone(cfg):
+    assert {"season": 2025, "orbit": "D164", "reference_year": 2026} in cfg["reference_exceptions"]
+    ev = seasons.find_event("event-2025-nov-dec", cfg)
+    assert seasons.exception_windows(ev, cfg) == {"D164": (date(2026, 2, 1), date(2026, 4, 30))}
+    assert seasons.exception_windows(seasons.find_event("season-2025", cfg), cfg).keys() == {"D164"}
+    assert seasons.exception_windows(seasons.find_event("event-2024-nov-dec", cfg), cfg) == {}
+    assert settings.params_hash({**cfg, "reference_exceptions": []}, "x") == settings.params_hash(cfg, "x")
+    assert naming.reference_name([2026], "D164", 10, "abc1234") == "jaga_sar_ref_2026_D164_10m_abc1234"
+    with pytest.raises(settings.ConfigError, match="reference_exceptions"):
+        settings.validate({**cfg, "reference_exceptions": [{"season": 2025, "orbit": "164"}]})
+
+
 def test_seasons_run_at_their_own_pixel_size_and_the_event_raster_is_local_by_default(cfg):
     from sar_floods.__main__ import _event_config
 
