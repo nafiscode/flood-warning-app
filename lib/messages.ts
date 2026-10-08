@@ -19,6 +19,22 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
   };
 }
 
+/**
+ * The SOS screens: their own text, the hotline names, the area chooser's (home.area and the
+ * province list) for when GPS fails, and the report form's depth labels.
+ */
+export function sosMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  return {
+    ...pick(messages, ["sos", "report", "hotlines", "home"]),
+    map: { province: all.map!.province! },
+  };
+}
+
+export function reportMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  return pick(messages, ["report", "sos", "hotlines"]);
+}
+
 export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   return pick(messages, ["map", "home", "alert", "sos", "places", "hotlines"]);
 }

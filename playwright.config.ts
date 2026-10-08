@@ -31,6 +31,8 @@ export default defineConfig({
     command: process.env.CI
       ? `npm run start -- -p ${PORT}`
       : `npm run build && npm run start -- -p ${PORT}`,
+    // The SOS and report flows are off in a production build until launch; the tests need them.
+    env: { JAGA_SOS_SENDING_FOR_TESTS: "1" },
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,

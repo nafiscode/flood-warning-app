@@ -27,6 +27,21 @@ export function inService(): boolean {
   return process.env.JAGA_IN_SERVICE === "1";
 }
 
+/**
+ * Sending an SOS or a report reaches a real case board only once the launch switch is on. Until
+ * then the app must not take a request nobody is watching (safety rule 1): the SOS page shows the
+ * hotlines instead, and the endpoints answer 503. The flow itself is built and runs in
+ * development; JAGA_SOS_SENDING_FOR_TESTS=1 is only for the end-to-end tests, which run a
+ * production build.
+ */
+export function sosSendingEnabled(): boolean {
+  return (
+    inService() ||
+    process.env.NODE_ENV !== "production" ||
+    process.env.JAGA_SOS_SENDING_FOR_TESTS === "1"
+  );
+}
+
 /** Donations and the Transparency tab stay off until the owner turns them on (safety rule 9). */
 export function donationsEnabled(): boolean {
   return process.env.JAGA_DONATIONS === "1";

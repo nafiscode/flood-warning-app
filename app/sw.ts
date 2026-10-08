@@ -4,11 +4,13 @@
  * A0: precaches the app shell and falls back to /offline for pages that can't load.
  * The last alert status and top-3 safe places are kept by the home screen itself, in the phone's
  * storage (lib/phone-store.ts), so they show offline with the cached page (safety rule 7).
- * A4 adds the SOS and report queue.
+ * A4: it also empties the offline queue (lib/queue.ts) through Background Sync, so a queued SOS
+ * goes out as soon as the phone has signal again even if the app was closed (safety rules 1, 7).
  */
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { ExpirationPlugin, NetworkFirst, NetworkOnly, Serwist } from "serwist";
+import { flush, SYNC_TAG } from "@/lib/queue";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -57,3 +59,16 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+/**
+ * Background Sync: the browser wakes this worker when the connection is back and lets it send
+ * what is waiting. Chrome has it; Safari does not, where the page's own retries do the same job.
+ * The queue removes an item only once the server has accepted it, so trying twice is harmless.
+ */
+type SyncEvent = ExtendableEvent & { tag: string };
+
+self.addEventListener("sync", (event) => {
+  const sync = event as SyncEvent;
+  if (sync.tag !== SYNC_TAG) return;
+  sync.waitUntil(flush());
+});

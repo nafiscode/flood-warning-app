@@ -122,7 +122,116 @@
   },
   "sos": {
     "label": "SOS",
-    "action": "Minta tolong"
+    "action": "Minta bantuan",
+    "title": "Minta bantuan",
+    "intro": "Tekan butang merah untuk menghantar permintaan. Lokasi anda dihantar serta-merta. Tiada log masuk diperlukan.",
+    "send": "Hantar SOS",
+    "sending": "Menghantar…",
+    "phoneLabel": "Nombor telefon (pilihan)",
+    "phoneHint": "Tanpa nombor, penyelamat tidak dapat menelefon anda.",
+    "phoneBad": "Nombor itu tidak sah, tetapi permintaan anda tetap dihantar.",
+    "location": {
+      "locating": "Mencari lokasi…",
+      "found": "Lokasi diperoleh (lebih kurang {meters} m)",
+      "failed": "Lokasi tidak diperoleh. Tandakan pada peta atau taip nama tempat.",
+      "useMap": "Tandakan pada peta",
+      "hideMap": "Tutup peta",
+      "mapHint": "Ketik peta pada tempat anda berada.",
+      "mapFailed": "Peta tidak dapat dimuatkan. Taip nama tempat.",
+      "textLabel": "Terangkan lokasi anda",
+      "textHint": "Contohnya nombor rumah, nama kampung, masjid atau tanda lain.",
+      "needed": "Permintaan perlukan lokasi. Guna GPS, tandakan pada peta, atau pilih daerah anda.",
+      "area": "Pilih daerah anda"
+    },
+    "forPlace": {
+      "title": "Minta bantuan untuk orang di {place}",
+      "note": "Beritahu penyelamat tentang orang di sana (pilihan)",
+      "sitePhone": "Nombor orang di sana (pilihan)",
+      "yourPhone": "Nombor anda (pilihan)",
+      "locationHint": "Lokasi yang dihantar ialah tempat itu, bukan tempat anda berada."
+    },
+    "sent": {
+      "title": "Permintaan dihantar",
+      "body": "Penyelamat di daerah anda menerima permintaan ini. Ikuti statusnya di halaman ini.",
+      "merged": "Permintaan ini digabungkan dengan permintaan anda yang masih terbuka. Maklumat terbaru anda telah ditambah.",
+      "queuedTitle": "Belum dapat dihantar, masih mencuba",
+      "queuedBody": "Tiada sambungan internet. Permintaan anda disimpan dalam telefon dan akan dihantar sebaik sahaja ada sambungan. Jangan tutup aplikasi. Jika terdesak, telefon atau hantar SMS di bawah.",
+      "failedTitle": "Permintaan tidak dapat dihantar",
+      "failedBody": "Telefon bantuan di bawah sekarang.",
+      "retry": "Cuba hantar lagi",
+      "smsInstead": "Hantar SMS",
+      "smsHint": "Membuka aplikasi mesej dengan koordinat anda."
+    },
+    "status": {
+      "title": "Permintaan anda",
+      "sentAt": "Dihantar {time}",
+      "received": "Permintaan diterima",
+      "assigned": "Diberikan kepada {unit}",
+      "en_route": "Sedang menuju kepada anda",
+      "rescued": "Sudah diselamatkan",
+      "safe_cancelled": "Anda memberitahu bahawa anda selamat",
+      "dismissed": "Permintaan ini ditutup",
+      "waiting": "Belum ada unit mengambilnya. Penyelamat sudah melihat permintaan anda.",
+      "repeat_merged": "Permintaan berulang ditambah ke dalam kes ini",
+      "details_added": "Butiran ditambah",
+      "unit": "Unit bertanggungjawab: {unit}",
+      "refresh": "Kemas kini status",
+      "updated": "Dikemas kini {time}",
+      "loadFailed": "Status tidak dapat dimuatkan. Periksa sambungan dan cuba lagi.",
+      "notFound": "Permintaan itu tidak dijumpai dalam telefon ini.",
+      "timeline": "Apa yang berlaku",
+      "safeNow": "Saya selamat sekarang",
+      "safeConfirm": "Sahkan bahawa anda selamat dan tidak lagi perlukan bantuan.",
+      "rescuedNow": "Sahkan saya diselamatkan",
+      "closing": "Menyimpan…",
+      "closed": "Permintaan ditutup. Jika anda perlukan bantuan lagi, hantar SOS baharu.",
+      "openCase": "Anda ada permintaan yang masih terbuka.",
+      "openCaseLink": "Lihat status permintaan anda"
+    },
+    "details": {
+      "title": "Tambah butiran (pilihan)",
+      "intro": "Permintaan anda sudah dihantar. Butiran tambahan membantu penyelamat bersiap dengan betul.",
+      "hazard": "Apa yang berlaku",
+      "hazardUnset": "Tidak dinyatakan",
+      "people": "Berapa orang",
+      "vulnerable": "Ada sesiapa perlukan bantuan khas",
+      "depth": "Paras air",
+      "injuries": "Ada yang cedera",
+      "text": "Perkara lain yang penyelamat patut tahu",
+      "photos": "Gambar (sampai 3)",
+      "voice": "Rakaman suara",
+      "save": "Simpan butiran",
+      "saving": "Menyimpan…",
+      "saved": "Butiran disimpan",
+      "saveFailed": "Tidak dapat disimpan. Cuba lagi; permintaan anda masih ada.",
+      "mediaFailed": "{count} fail gambar atau suara tidak dapat dihantar. Cuba lagi nanti."
+    },
+    "hazards": {
+      "flood": "Banjir",
+      "flash_flood": "Banjir kilat",
+      "landslide": "Tanah runtuh",
+      "fire": "Kebakaran",
+      "earthquake": "Gempa bumi atau bangunan rosak",
+      "other": "Lain-lain",
+      "unknown": "Tidak pasti"
+    },
+    "vulnerable": {
+      "elderly": "Orang tua",
+      "bedridden": "Pesakit terlantar",
+      "infant_child": "Bayi atau kanak-kanak",
+      "pregnant": "Ibu mengandung",
+      "disability": "Orang kurang upaya",
+      "needs_medicine": "Perlukan ubat",
+      "needs_oxygen": "Perlukan oksigen",
+      "needs_dialysis": "Perlukan dialisis"
+    },
+    "offline": {
+      "title": "Tiada sambungan internet",
+      "body": "Permintaan disimpan dan dihantar sebaik sahaja ada sambungan."
+    },
+    "back": "Kembali ke halaman utama",
+    "soonTitle": "Butang SOS belum berfungsi",
+    "soonBody": "Permintaan bantuan melalui Jaga akan dibuka sebelum musim banjir. Sekarang tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera."
   },
   "hotlines": {
     "title": "Talian kecemasan",
@@ -251,19 +360,13 @@
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya"
   },
-  "soon": {
-    "sosTitle": "Butang SOS belum berfungsi",
-    "sosBody": "Permintaan bantuan melalui Jaga akan dibuka sebelum musim banjir. Sekarang tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera.",
-    "reportTitle": "Laporan banjir belum berfungsi",
-    "reportBody": "Akan dibuka sebelum musim banjir. Jika kecemasan, telefon segera.",
-    "back": "Kembali ke halaman utama"
-  },
   "attribution": {
     "openMeteo": "Data cuaca daripada Open-Meteo.com (CC BY 4.0)"
   },
   "offline": {
     "title": "Tiada sambungan internet",
-    "body": "Talian kecemasan di bawah masih boleh dihubungi. Aplikasi akan dimuat semula apabila dalam talian."
+    "body": "Talian kecemasan di bawah masih boleh dihubungi. Aplikasi akan dimuat semula apabila dalam talian.",
+    "retry": "Cuba lagi"
   },
   "language": {
     "label": "Bahasa",
@@ -272,6 +375,7 @@
     "en": "English"
   },
   "nav": {
+    "home": "Utama",
     "account": "Akaun",
     "map": "Peta"
   },
@@ -615,6 +719,71 @@
       "return": "Boleh balik rumah",
       "watched": "Tempat yang dijaga lebih teruk daripada rumah",
       "unavailable": "Status tidak dapat dimuat"
+    }
+  },
+  "report": {
+    "title": "Lapor banjir",
+    "intro": "Apa yang anda lihat memberi amaran kepada jiran dan membantu pihak berkuasa.",
+    "notEmergency": "Jika anda perlukan bantuan segera, guna butang SOS atau telefon 1669.",
+    "signInTitle": "Log masuk untuk melapor banjir",
+    "signInBody": "Laporan banjir memerlukan log masuk supaya pihak berkuasa boleh bertanya lanjut. Permintaan bantuan (SOS) tidak memerlukan log masuk.",
+    "signIn": "Log masuk",
+    "location": "Tempat banjir",
+    "locationHint": "Guna lokasi anda sekarang, atau tandakan pada peta.",
+    "useGps": "Guna lokasi saya sekarang",
+    "locating": "Mencari lokasi…",
+    "useMap": "Tandakan pada peta",
+    "hideMap": "Tutup peta",
+    "mapHint": "Ketik peta di tempat banjir.",
+    "mapFailed": "Peta tidak dapat dimuatkan. Guna lokasi anda sekarang.",
+    "depth": "Paras air",
+    "depthHint": "Berbanding badan orang.",
+    "trend": "Arah",
+    "roadAccess": "Bolehkah jalan dilalui",
+    "text": "Butiran lain (pilihan)",
+    "photos": "Gambar (sampai 3)",
+    "photosHint": "Gambar dikecilkan dalam telefon sebelum dihantar, dan hanya ditunjukkan kepada umum selepas disemak.",
+    "voice": "Rakaman suara (sampai 60 saat)",
+    "record": "Mula merakam",
+    "stopRecording": "Berhenti merakam",
+    "recording": "Merakam… {seconds} saat",
+    "recorded": "Dirakam {seconds} saat",
+    "removeVoice": "Buang rakaman",
+    "recordFailed": "Tidak dapat merakam. Periksa kebenaran mikrofon.",
+    "addPhoto": "Tambah gambar",
+    "removePhoto": "Buang gambar ini",
+    "send": "Hantar laporan",
+    "sending": "Menghantar…",
+    "sentTitle": "Laporan dihantar. Terima kasih.",
+    "sentBody": "Laporan anda muncul di peta sebagai bilangan laporan setiap kawasan. Gambar muncul selepas disemak.",
+    "queuedTitle": "Belum dapat dihantar, masih mencuba",
+    "queuedBody": "Tiada sambungan internet. Laporan anda disimpan dan akan dihantar apabila ada sambungan.",
+    "needLocation": "Laporan perlukan lokasi.",
+    "rateLimited": "Terlalu banyak laporan dalam sejam ini. Cuba lagi nanti.",
+    "failed": "Laporan tidak dapat dihantar. Cuba lagi.",
+    "mediaFailed": "{count} fail gambar atau suara tidak dapat dihantar. Laporan anda disimpan.",
+    "another": "Lapor tempat lain",
+    "home": "Kembali ke halaman utama",
+    "soonTitle": "Laporan banjir belum berfungsi",
+    "soonBody": "Akan dibuka sebelum musim banjir. Jika kecemasan, telefon segera.",
+    "depths": {
+      "dry": "Kering",
+      "ankle": "Paras buku lali",
+      "knee": "Paras lutut",
+      "waist": "Paras pinggang",
+      "chest": "Paras dada",
+      "above_head": "Lebih tinggi daripada kepala",
+      "roof": "Paras bumbung"
+    },
+    "trends": {
+      "rising": "Naik",
+      "steady": "Sama",
+      "falling": "Turun"
+    },
+    "roads": {
+      "car": "Kereta boleh lalu",
+      "motorbike_only": "Motosikal sahaja",
+      "impassable": "Tidak boleh dilalui"
     }
   }
 }

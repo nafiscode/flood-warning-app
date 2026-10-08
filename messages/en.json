@@ -122,7 +122,116 @@
   },
   "sos": {
     "label": "SOS",
-    "action": "Get help"
+    "action": "Ask for help",
+    "title": "Ask for help",
+    "intro": "Press the red button to send. Your location goes immediately. No sign-in needed.",
+    "send": "Send SOS",
+    "sending": "Sending…",
+    "phoneLabel": "Phone number (optional)",
+    "phoneHint": "Without a number, rescuers can't call you.",
+    "phoneBad": "That number isn't valid, but your request was still sent.",
+    "location": {
+      "locating": "Finding your location…",
+      "found": "Location found (about {meters} m)",
+      "failed": "Couldn't find your location. Drop a pin on the map, or type a place.",
+      "useMap": "Drop a pin on the map",
+      "hideMap": "Hide the map",
+      "mapHint": "Tap the map where you are.",
+      "mapFailed": "The map couldn't load. Type a place instead.",
+      "textLabel": "Describe your location",
+      "textHint": "For example a house number, village name, mosque or landmark.",
+      "needed": "A request needs a location. Use GPS, drop a pin, or choose your area.",
+      "area": "Choose your area"
+    },
+    "forPlace": {
+      "title": "Ask for help for someone at {place}",
+      "note": "Tell rescuers about the person there (optional)",
+      "sitePhone": "Phone of the person there (optional)",
+      "yourPhone": "Your phone (optional)",
+      "locationHint": "The location sent is that place, not where you are."
+    },
+    "sent": {
+      "title": "Request sent",
+      "body": "Rescuers covering your area have this request. Follow it on this page.",
+      "merged": "This was added to your request that is still open, with your latest details.",
+      "queuedTitle": "Not sent yet, still trying",
+      "queuedBody": "There is no connection. Your request is kept on this phone and goes out as soon as there is signal. Keep the app open. If it is urgent, call or send an SMS below.",
+      "failedTitle": "The request couldn't be sent",
+      "failedBody": "Call for help on the numbers below now.",
+      "retry": "Try again",
+      "smsInstead": "Send an SMS instead",
+      "smsHint": "Opens your messages app with your coordinates."
+    },
+    "status": {
+      "title": "Your request",
+      "sentAt": "Sent {time}",
+      "received": "Request received",
+      "assigned": "Assigned to {unit}",
+      "en_route": "On the way to you",
+      "rescued": "Rescued",
+      "safe_cancelled": "You said you are safe",
+      "dismissed": "This request was closed",
+      "waiting": "No unit has taken it yet. Rescuers can see your request.",
+      "repeat_merged": "A repeat request was added to this case",
+      "details_added": "Details added",
+      "unit": "Unit responsible: {unit}",
+      "refresh": "Update status",
+      "updated": "Updated {time}",
+      "loadFailed": "The status couldn't load. Check your connection and try again.",
+      "notFound": "That request isn't known on this phone.",
+      "timeline": "What has happened",
+      "safeNow": "I'm safe now",
+      "safeConfirm": "Confirm that you are safe and no longer need help.",
+      "rescuedNow": "Confirm I was rescued",
+      "closing": "Saving…",
+      "closed": "The request is closed. If you need help again, send a new SOS.",
+      "openCase": "You have a request that is still open.",
+      "openCaseLink": "See the status of your request"
+    },
+    "details": {
+      "title": "Add details (optional)",
+      "intro": "Your request is sent. More detail helps rescuers come prepared.",
+      "hazard": "What's happening",
+      "hazardUnset": "Not said",
+      "people": "How many people",
+      "vulnerable": "Anyone who needs special help",
+      "depth": "Water depth",
+      "injuries": "Anyone injured",
+      "text": "Anything else rescuers should know",
+      "photos": "Photos (up to 3)",
+      "voice": "Voice note",
+      "save": "Save details",
+      "saving": "Saving…",
+      "saved": "Details saved",
+      "saveFailed": "Couldn't save. Try again; your request is still there.",
+      "mediaFailed": "{count} photo or voice files couldn't be sent. Try again later."
+    },
+    "hazards": {
+      "flood": "Flood",
+      "flash_flood": "Flash flood",
+      "landslide": "Landslide",
+      "fire": "Fire",
+      "earthquake": "Earthquake or building damage",
+      "other": "Something else",
+      "unknown": "Not sure"
+    },
+    "vulnerable": {
+      "elderly": "Elderly",
+      "bedridden": "Bedridden",
+      "infant_child": "Infant or child",
+      "pregnant": "Pregnant",
+      "disability": "Disability",
+      "needs_medicine": "Needs medicine",
+      "needs_oxygen": "Needs oxygen",
+      "needs_dialysis": "Needs dialysis"
+    },
+    "offline": {
+      "title": "No connection",
+      "body": "The request is kept and sent as soon as there is signal."
+    },
+    "back": "Back to the home screen",
+    "soonTitle": "The SOS button isn't working yet",
+    "soonBody": "Asking for help through Jaga opens before the flood season. Right now nobody receives requests from this app. If you need help, call straight away."
   },
   "hotlines": {
     "title": "Hotlines",
@@ -251,19 +360,13 @@
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time"
   },
-  "soon": {
-    "sosTitle": "The SOS button isn't working yet",
-    "sosBody": "Asking for help through Jaga opens before the flood season. Nobody receives requests from this app yet. If you need help, call now.",
-    "reportTitle": "Flood reports aren't open yet",
-    "reportBody": "They open before the flood season. In an emergency, call now.",
-    "back": "Back to home"
-  },
   "attribution": {
     "openMeteo": "Weather data by Open-Meteo.com (CC BY 4.0)"
   },
   "offline": {
     "title": "No internet connection",
-    "body": "The hotlines below still work. The app reloads when you're back online."
+    "body": "The hotlines below still work. The app reloads when you're back online.",
+    "retry": "Try again"
   },
   "language": {
     "label": "Language",
@@ -272,6 +375,7 @@
     "en": "English"
   },
   "nav": {
+    "home": "Home",
     "account": "Account",
     "map": "Map"
   },
@@ -615,6 +719,71 @@
       "return": "Safe to return",
       "watched": "A watched place worse than home",
       "unavailable": "Status couldn't load"
+    }
+  },
+  "report": {
+    "title": "Report flooding",
+    "intro": "What you see warns your neighbours and helps the authorities see the area.",
+    "notEmergency": "If you need help now, use the SOS button or call 1669.",
+    "signInTitle": "Sign in to report flooding",
+    "signInBody": "Reports need an account so the authorities can ask follow-up questions. Asking for help (SOS) never needs one.",
+    "signIn": "Sign in",
+    "location": "Where the flooding is",
+    "locationHint": "Use your location now, or drop a pin on the map.",
+    "useGps": "Use my location",
+    "locating": "Finding your location…",
+    "useMap": "Drop a pin on the map",
+    "hideMap": "Hide the map",
+    "mapHint": "Tap the map where the flooding is.",
+    "mapFailed": "The map couldn't load. Use your location instead.",
+    "depth": "Water depth",
+    "depthHint": "Against a person's body.",
+    "trend": "Trend",
+    "roadAccess": "Is the road passable",
+    "text": "Anything else (optional)",
+    "photos": "Photos (up to 3)",
+    "photosHint": "Photos are made smaller on your phone before sending, and are shown publicly only after moderation.",
+    "voice": "Voice note (up to 60 seconds)",
+    "record": "Start recording",
+    "stopRecording": "Stop recording",
+    "recording": "Recording… {seconds} s",
+    "recorded": "Recorded {seconds} s",
+    "removeVoice": "Remove the recording",
+    "recordFailed": "Couldn't record. Check the microphone permission.",
+    "addPhoto": "Add a photo",
+    "removePhoto": "Remove this photo",
+    "send": "Send report",
+    "sending": "Sending…",
+    "sentTitle": "Report sent. Thank you.",
+    "sentBody": "Your report appears on the map as a count per area. Photos appear after moderation.",
+    "queuedTitle": "Not sent yet, still trying",
+    "queuedBody": "There is no connection. Your report is kept and goes out when there is signal.",
+    "needLocation": "A report needs a location.",
+    "rateLimited": "That is a lot of reports in one hour. Try again later.",
+    "failed": "The report couldn't be sent. Try again.",
+    "mediaFailed": "{count} photo or voice files couldn't be sent. Your report was saved.",
+    "another": "Report another place",
+    "home": "Back to the home screen",
+    "soonTitle": "Flood reports aren't working yet",
+    "soonBody": "They open before the flood season. If this is an emergency, call straight away.",
+    "depths": {
+      "dry": "Dry",
+      "ankle": "Ankle",
+      "knee": "Knee",
+      "waist": "Waist",
+      "chest": "Chest",
+      "above_head": "Above head",
+      "roof": "Roof"
+    },
+    "trends": {
+      "rising": "Rising",
+      "steady": "Steady",
+      "falling": "Falling"
+    },
+    "roads": {
+      "car": "Passable by car",
+      "motorbike_only": "Motorbike only",
+      "impassable": "Not passable"
     }
   }
 }

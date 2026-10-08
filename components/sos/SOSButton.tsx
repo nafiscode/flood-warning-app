@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { LifebuoyIcon } from "@/components/icons";
 
 type Props = {
-  /** Where the button goes. The SOS flow arrives in A5; until then callers must pass a working target. */
+  /** Where the button goes: /sos, the one confirmation screen before a request is sent. */
   href: string;
   className?: string;
 };

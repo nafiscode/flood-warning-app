@@ -7,6 +7,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { QueueRunner } from "@/components/QueueRunner";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
@@ -60,7 +61,17 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   return (
     <html lang={locale} dir="ltr" className={plex.variable}>
       <body className="flex min-h-dvh flex-col">
-        <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV === "development"}>
+        {/*
+          reloadOnOnline is off: Serwist reloads the page by default when the connection returns,
+          which on the SOS screens would throw away what someone is in the middle of (a typed
+          phone number, the details of an open case) at the worst moment. The offline queue
+          notices the connection itself (lib/queue.ts, components/QueueRunner.tsx).
+        */}
+        <SerwistProvider
+          swUrl="/serwist/sw.js"
+          disable={process.env.NODE_ENV === "development"}
+          reloadOnOnline={false}
+        >
           <NextIntlClientProvider messages={clientMessages}>
             <a
               href="#main"
@@ -74,6 +85,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   <Logo size={40} tone="reverse" />
                 </Link>
                 <div className="flex items-center">
+                  {/* Home as a word, not only the logo: people don't tap a logo to go back. */}
+                  <Link
+                    href="/"
+                    prefetch={false}
+                    className="inline-flex min-h-tap items-center rounded px-2 text-small font-medium text-white underline"
+                  >
+                    {tNav("home")}
+                  </Link>
                   <Link
                     href="/map"
                     prefetch={false}
@@ -101,6 +120,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             <footer className="sticky bottom-0 z-10">
               <HotlineBar />
             </footer>
+            <QueueRunner />
           </NextIntlClientProvider>
         </SerwistProvider>
       </body>

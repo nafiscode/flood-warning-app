@@ -134,6 +134,21 @@ test.describe("home", () => {
     await noSidewaysScroll(page);
   });
 
+  test("the header has Home, Map and Account as words, and nothing scrolls sideways", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await page.goto("/map");
+    const header = page.locator("header");
+    // Home as a link of its own: a logo is not what people tap to go back.
+    await expect(header.locator('a[href="/"]', { hasText: th.nav.home })).toBeVisible();
+    await expect(header.getByRole("link", { name: th.nav.map })).toBeVisible();
+    await expect(header.getByRole("link", { name: th.nav.account })).toBeVisible();
+    const home = (await header.locator('a[href="/"]', { hasText: th.nav.home }).boundingBox())!;
+    expect(home.height).toBeGreaterThanOrEqual(44);
+    await noSidewaysScroll(page);
+  });
+
   test("at Evacuate, SOS sits under the hero and leads to the numbers to call", async ({
     page,
   }) => {
@@ -146,7 +161,10 @@ test.describe("home", () => {
     expect(sosBox.y).toBeLessThan(listBox.y);
     expect(sosBox.height).toBeGreaterThanOrEqual(48);
     await sos.click();
-    await expect(page.locator("[data-sos-soon]")).toContainText(th.soon.sosTitle);
+    // The SOS screen itself: one confirmation screen (tests/e2e/sos.spec.ts covers sending) with
+    // the numbers to call on it. Before launch this address shows the call-first page instead,
+    // which tests/unit/sos.test.tsx checks, because the test server has sending switched on.
+    await expect(page.locator("[data-sos-send], [data-sos-soon]")).toBeVisible();
     await expect(page.locator('main a[href="tel:1784"]')).toBeVisible();
     await expect(page.locator('main a[href="tel:1669"]')).toBeVisible();
   });
