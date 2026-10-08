@@ -395,7 +395,7 @@ Read all docs.
 3. Backup and restore test.
 4. Staging dry run: replay the observed Nov 2025 data through the signal dashboard while admins issue alerts and test authorities work fake SOS cases. Record issues.
 5. docs/runbook.md: what admins do when a data source is down, Supabase is down (fallback: a LINE OA broadcast from LINE's own manager and a static status page), the SMS provider fails, or LINE quota runs out. Include admin shift handover.
-6. Launch checklist and go/no-go criteria.
+6. Launch checklist and go/no-go criteria. The checklist includes setting JAGA_IN_SERVICE=1 in Vercel on launch day (until then a tambon without an alert shows "not in service yet", never Normal), and updating the start date in the "not in service" text if launch moves.
 
 Acceptance: I receive the runbook, the load-test results, the security findings (with fixes) and the dry-run report.
 ```
