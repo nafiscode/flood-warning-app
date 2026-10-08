@@ -19,11 +19,22 @@ export type MapSelection =
   | { kind: "tambon"; code: string; nameTh: string; nameEn: string }
   | { kind: "place"; id: string }
   | { kind: "reports"; index: number }
-  | { kind: "gauge"; id: string };
+  | { kind: "gauge"; id: string }
+  | { kind: "mine"; id: string };
+
+/**
+ * A place of the person's own: their home, or one they watch for someone (spec 4.9). It is
+ * drawn only in their own browser, from their own session (/api/me/places); nothing personal
+ * reaches the public map data (safety rule 6).
+ */
+export type MinePlace = { id: string; label: string; lat: number; lon: number; home: boolean };
 
 type Props = {
   /** What may be drawn. Empty: nothing of ours but the tambon outlines. */
   layers: MapLayer[];
+  /** The person's own places, drawn on top of everything when they ask for them. */
+  mine?: MinePlace[];
+  showMine?: boolean;
   status: PublicStatus | null;
   data: MapData | null;
   now: number;
@@ -41,6 +52,10 @@ const REPORTS = "jaga-reports";
 const REPORTS_LINE = "jaga-reports-line";
 const PLACES = "jaga-places";
 const GAUGES = "jaga-gauges";
+const MINE = "jaga-mine";
+// Brand teal for the person's own places: it marks whose they are, never a status
+// (docs/brand.md; the level is in the card and in the tambon's colour underneath).
+const TEAL = "#2f9c95";
 
 type Collection = GeoJSON.FeatureCollection;
 const collection = (features: GeoJSON.Feature[]): Collection => ({
@@ -48,8 +63,15 @@ const collection = (features: GeoJSON.Feature[]): Collection => ({
   features,
 });
 
-function toCollections(data: MapData | null): Record<string, Collection> {
+function toCollections(data: MapData | null, mine: MinePlace[]): Record<string, Collection> {
   return {
+    [MINE]: collection(
+      mine.map((place) => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [place.lon, place.lat] },
+        properties: { id: place.id, home: place.home ? 1 : 0 },
+      })),
+    ),
     [REPORTS]: collection(
       (data?.reports ?? []).map((bin, index) => ({
         type: "Feature",
@@ -80,7 +102,17 @@ function toCollections(data: MapData | null): Record<string, Collection> {
  * Drawing is repeated whenever the style changes (the street basemap arrives after our own
  * outlines), so every step here can run any number of times.
  */
-export function MapView({ layers, status, data, now, bounds, onSelect, text }: Props) {
+export function MapView({
+  layers,
+  status,
+  data,
+  now,
+  bounds,
+  onSelect,
+  text,
+  mine = [],
+  showMine = false,
+}: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   // Which data object each source holds, so data is sent again only when it changed.
@@ -94,7 +126,7 @@ export function MapView({ layers, status, data, now, bounds, onSelect, text }: P
   }, [onSelect]);
 
   useEffect(() => {
-    const collections = toCollections(data);
+    const collections = toCollections(data, mine);
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
     draw.current = () => {
       const m = map.current;
@@ -165,6 +197,20 @@ export function MapView({ layers, status, data, now, bounds, onSelect, text }: P
             },
           });
         }
+        if (!m.getLayer(MINE)) {
+          // On top of the public layers: these few points are what the person came to find.
+          m.addLayer({
+            id: MINE,
+            type: "circle",
+            source: MINE,
+            paint: {
+              "circle-radius": ["case", ["==", ["get", "home"], 1], 9, 8],
+              "circle-color": ["case", ["==", ["get", "home"], 1], TEAL, "#ffffff"],
+              "circle-stroke-color": TEAL,
+              "circle-stroke-width": 3,
+            },
+          });
+        }
         m.setPaintProperty(ALERT_FILL, "fill-color", alertFillColor(status));
         m.setFilter(ALERT_STALE, ["in", ["get", "code"], ["literal", staleTambons(status, now)]]);
         m.setLayoutProperty(ALERT_FILL, "visibility", show("alerts"));
@@ -173,12 +219,13 @@ export function MapView({ layers, status, data, now, bounds, onSelect, text }: P
         m.setLayoutProperty(REPORTS_LINE, "visibility", show("reports"));
         m.setLayoutProperty(PLACES, "visibility", show("places"));
         m.setLayoutProperty(GAUGES, "visibility", show("gauges"));
+        m.setLayoutProperty(MINE, "visibility", showMine && mine.length > 0 ? "visible" : "none");
       } catch {
         // The style is being replaced: the next "styledata" or "idle" draws again.
       }
     };
     draw.current();
-  }, [layers, status, data, now]);
+  }, [layers, status, data, now, mine, showMine]);
 
   useEffect(() => {
     if (!container.current) return;
@@ -200,13 +247,14 @@ export function MapView({ layers, status, data, now, bounds, onSelect, text }: P
         created.on("styledata", redraw);
         created.on("idle", redraw);
         created.on("click", (event) => {
-          const ids = [GAUGES, PLACES, REPORTS, TAMBON_FILL_LAYER].filter((id) =>
+          const ids = [MINE, GAUGES, PLACES, REPORTS, TAMBON_FILL_LAYER].filter((id) =>
             created.getLayer(id),
           );
           const hit = created.queryRenderedFeatures(event.point, { layers: ids })[0];
           const p = hit?.properties;
           if (!hit || !p) return;
-          if (hit.layer.id === GAUGES) select.current({ kind: "gauge", id: String(p.id) });
+          if (hit.layer.id === MINE) select.current({ kind: "mine", id: String(p.id) });
+          else if (hit.layer.id === GAUGES) select.current({ kind: "gauge", id: String(p.id) });
           else if (hit.layer.id === PLACES) select.current({ kind: "place", id: String(p.id) });
           else if (hit.layer.id === REPORTS) {
             select.current({ kind: "reports", index: Number(p.index) });

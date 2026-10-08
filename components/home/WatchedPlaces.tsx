@@ -22,7 +22,7 @@ function CallButton({ place }: { place: WatchedPlace }) {
 }
 
 /** A level badge with the stale marker, or plain grey words for the states that are not levels. */
-function PlaceStatus({ status, now }: { status: WatchedStatus["status"]; now: number }) {
+export function PlaceStatus({ status, now }: { status: WatchedStatus["status"]; now: number }) {
   const t = useTranslations("home");
   if (status.kind === "alert") {
     return (

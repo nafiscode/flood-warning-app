@@ -7,6 +7,7 @@ import {
   EXAMPLE_DIRECTORY,
   EXAMPLE_HAZARDS,
   EXAMPLE_MAP,
+  EXAMPLE_ME,
   EXAMPLE_NOW,
   EXAMPLE_PLACES,
   exampleAlert,
@@ -36,7 +37,7 @@ export function HomeExample({ scenario }: { scenario: HomeScenario }) {
   );
 }
 
-/** The map with made-up alerts, reports, places and a gauge around Pattani town. */
+/** The map with made-up alerts, reports, places, a gauge and two watched places. */
 export function MapExample() {
   return (
     <DashboardView
@@ -56,6 +57,7 @@ export function MapExample() {
       directoryState="ok"
       data={EXAMPLE_MAP}
       dataState="ok"
+      me={EXAMPLE_ME}
       now={EXAMPLE_NOW}
       transparency={false}
       initialProvince="94"

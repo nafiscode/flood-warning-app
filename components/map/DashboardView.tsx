@@ -6,6 +6,7 @@ import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { AlertHero } from "@/components/home/AlertHero";
 import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/HomeView";
+import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { pickName, type AreaDirectory } from "@/lib/area";
@@ -13,13 +14,16 @@ import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
 import { PROVINCE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
+import type { MyPlaces } from "@/lib/me";
 import { localName } from "@/lib/places";
 import { hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
 import { HazardPlaceholder } from "./HazardPlaceholder";
-import { MapView, type MapSelection } from "./MapView";
+import { Link } from "@/i18n/navigation";
+import { checkBox, checkRow } from "@/lib/ui";
+import { MapView, type MapSelection, type MinePlace } from "./MapView";
 
 export type DashboardViewProps = {
   status: PublicStatus | null;
@@ -36,6 +40,8 @@ export type DashboardViewProps = {
   now: number;
   /** The Transparency tab exists only once donations are switched on (A11, safety rule 9). */
   transparency: boolean;
+  /** The signed-in person's home and watched places, or null for a visitor. */
+  me?: MyPlaces | null;
   /** The province the map opens on; all four when left out. */
   initialProvince?: string;
   userAgent?: string;
@@ -64,6 +70,38 @@ export function DashboardView(props: DashboardViewProps) {
   const [chosenMode, setChosenMode] = useState<MapMode | null>(null);
   const [province, setProvince] = useState(props.initialProvince ?? "");
   const [selection, setSelection] = useState<MapSelection | null>(null);
+  const [showMine, setShowMine] = useState(true);
+
+  /*
+   * The person's own places on the map (spec 4.9, the owner's request on 8 Oct): their home and
+   * the places they watch. This comes from their own session and is drawn only in their browser;
+   * it is in no public answer. A place pinned outside the covered tambons has no area and is
+   * left out, because the map covers only the four provinces.
+   */
+  const mine: MinePlace[] = !props.me?.signedIn
+    ? []
+    : [
+        ...(props.me.home
+          ? [
+              {
+                id: "home",
+                label: t("mine.home"),
+                lat: props.me.home.lat,
+                lon: props.me.home.lon,
+                home: true,
+              },
+            ]
+          : []),
+        ...props.me.places
+          .filter((place) => place.area)
+          .map((place) => ({
+            id: place.id,
+            label: place.label,
+            lat: place.area!.lat,
+            lon: place.area!.lon,
+            home: false,
+          })),
+      ];
 
   // Until the list arrives (or if it can't), floods are the one hazard the map knows.
   const hazards: Hazard[] = props.hazards ?? [
@@ -122,6 +160,29 @@ export function DashboardView(props: DashboardViewProps) {
         {bin.deepest && <p>{t("reports.deepest", { depth: t(`depth.${bin.deepest}`) })}</p>}
         <p>{t("reports.latest", { time: time(bin.latest) })}</p>
         <p className={hint}>{t("reports.note")}</p>
+      </section>
+    ) : null;
+  } else if (selection?.kind === "mine") {
+    const place = mine.find((p) => p.id === selection.id);
+    const area =
+      selection.id === "home"
+        ? props.me?.signedIn
+          ? props.me.home
+          : null
+        : ((props.me?.signedIn ? props.me.places.find((p) => p.id === selection.id)?.area : null) ??
+          null);
+    selected = place ? (
+      <section className={card} data-selected="mine">
+        <p className="font-bold">{place.label}</p>
+        {area && <p className={hint}>{pickName(locale, area.nameTh, area.nameEn)}</p>}
+        <PlaceStatus
+          status={area ? heroStatusFor(status, area.code, fresh) : { kind: "outside" }}
+          now={now}
+        />
+        <p className={hint}>{t("mine.note")}</p>
+        <Link href="/account/places" prefetch={false} className="min-h-tap underline">
+          {t("mine.manage")}
+        </Link>
       </section>
     ) : null;
   } else if (selection?.kind === "gauge") {
@@ -242,7 +303,20 @@ export function DashboardView(props: DashboardViewProps) {
                 bounds={PROVINCE_BOUNDS[province]}
                 onSelect={setSelection}
                 text={{ loading: t("loading"), failed: t("failed") }}
+                mine={mine}
+                showMine={showMine}
               />
+              {mine.length > 0 && (
+                <label className={checkRow} data-mine-toggle="true">
+                  <input
+                    type="checkbox"
+                    className={checkBox}
+                    checked={showMine}
+                    onChange={(event) => setShowMine(event.target.checked)}
+                  />
+                  <span>{t("mine.toggle", { count: mine.length })}</span>
+                </label>
+              )}
               <p className={hint}>{t("tapHint")}</p>
               {props.dataState === "unavailable" && (
                 <p role="status" className={notice}>
@@ -279,6 +353,17 @@ export function DashboardView(props: DashboardViewProps) {
                     </ul>
                     <p className={hint}>{t("legendStale")}</p>
                   </div>
+                )}
+                {showMine && mine.length > 0 && (
+                  <ul className="flex flex-col gap-1">
+                    <li className="flex items-center gap-2" data-layer="mine">
+                      <span
+                        aria-hidden="true"
+                        className="size-4 shrink-0 rounded-full border-4 border-jaga-teal bg-jaga-teal"
+                      />
+                      {t("layers.mine")}
+                    </li>
+                  </ul>
                 )}
                 {drawn.length > 0 && (
                   <ul className="flex flex-col gap-1">

@@ -311,7 +311,8 @@
       "hazard": "Flood-risk areas",
       "places": "Safe places",
       "reports": "Flood reports from residents (72 hours)",
-      "gauges": "River gauges"
+      "gauges": "River gauges",
+      "mine": "My places"
     },
     "pending": {
       "hazard": "The flood-risk map is being prepared and isn't shown yet. This does not mean there is no risk.",
@@ -358,7 +359,13 @@
       "level": "Water level {value} m MSL",
       "at": "Measured {time}"
     },
-    "legendStale": "Grey dashed outline: an alert that was not updated on time"
+    "legendStale": "Grey dashed outline: an alert that was not updated on time",
+    "mine": {
+      "toggle": "Show my places on the map ({count})",
+      "home": "My home",
+      "note": "Only you see this point; it is not shown to anyone else.",
+      "manage": "Manage the places I watch"
+    }
   },
   "attribution": {
     "openMeteo": "Weather data by Open-Meteo.com (CC BY 4.0)"

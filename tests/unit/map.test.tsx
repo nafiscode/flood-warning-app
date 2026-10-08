@@ -8,6 +8,7 @@ import {
   EXAMPLE_DIRECTORY,
   EXAMPLE_HAZARDS,
   EXAMPLE_MAP,
+  EXAMPLE_ME,
   EXAMPLE_NOW,
   exampleAlert,
   exampleStatus,
@@ -17,9 +18,26 @@ import { alertFillColor, staleTambons } from "@/lib/map-style";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
 
-// The real map needs WebGL; here it reports which layers it was asked to draw.
+// The real map needs WebGL; here it reports which layers and which of the person's own places
+// it was asked to draw.
 vi.mock("@/components/map/MapView", () => ({
-  MapView: ({ layers }: { layers: string[] }) => <div data-map="true">{layers.join(",")}</div>,
+  MapView: ({
+    layers,
+    mine = [],
+    showMine = false,
+  }: {
+    layers: string[];
+    mine?: { id: string; label: string; home: boolean }[];
+    showMine?: boolean;
+  }) => (
+    <div
+      data-map="true"
+      data-mine={showMine ? mine.map((p) => p.id).join(",") : ""}
+      data-mine-count={mine.length}
+    >
+      {layers.join(",")}
+    </div>
+  ),
 }));
 
 function dashboard(more: Partial<DashboardViewProps> = {}) {
@@ -152,5 +170,43 @@ describe("map dashboard (spec 4.2)", () => {
     const tabs = [...c.querySelectorAll('[role="tab"]')];
     expect(tabs.map((tab) => tab.getAttribute("aria-selected"))).toEqual(["true", "false"]);
     expect(c.querySelector("[data-map]")).not.toBeNull();
+  });
+});
+
+describe("the places I watch, on the map", () => {
+  it("a visitor has none, and nothing personal is asked for", () => {
+    const c = dashboard();
+    expect(c.querySelector("[data-map]")?.getAttribute("data-mine-count")).toBe("0");
+    expect(c.querySelector("[data-mine-toggle]")).toBeNull();
+    expect(c.querySelector('[data-layer="mine"]')).toBeNull();
+  });
+
+  it("a signed-in person sees their own places, with a switch and a legend row", () => {
+    const c = dashboard({ me: EXAMPLE_ME });
+    const map = c.querySelector("[data-map]")!;
+    // Both watched places of the example; a place pinned outside the covered tambons is left out.
+    expect(map.getAttribute("data-mine")).toBe("w1,w2");
+    expect(c.querySelector("[data-mine-toggle]")?.textContent).toContain("2");
+    expect(c.querySelector('[data-layer="mine"]')?.textContent).toContain(th.map.layers.mine);
+  });
+
+  it("the switch takes them off the map again", () => {
+    const c = dashboard({ me: EXAMPLE_ME });
+    fireEvent.click(c.querySelector("[data-mine-toggle] input")!);
+    expect(c.querySelector("[data-map]")?.getAttribute("data-mine")).toBe("");
+    expect(c.querySelector('[data-layer="mine"]')).toBeNull();
+  });
+
+  it("a home saved in the account is one of them", () => {
+    const withHome = EXAMPLE_ME.signedIn ? { ...EXAMPLE_ME, home: BANA } : EXAMPLE_ME;
+    const c = dashboard({ me: withHome });
+    expect(c.querySelector("[data-map]")?.getAttribute("data-mine")).toBe("home,w1,w2");
+  });
+
+  it("the places are never part of the public map data", () => {
+    // What the map draws for everyone comes from /api/public/map (EXAMPLE_MAP); the person's own
+    // places arrive separately, from their own session.
+    expect(JSON.stringify(EXAMPLE_MAP)).not.toContain("w1");
+    expect(JSON.stringify(EXAMPLE_MAP)).not.toContain("บ้านแม่");
   });
 });
