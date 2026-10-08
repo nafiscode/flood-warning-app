@@ -116,6 +116,9 @@ const noSidewaysScroll = async (page: Page) =>
   ).toBeLessThanOrEqual(0);
 
 test.describe("home", () => {
+  // Requests that pass through the service worker can't be answered by a test, so it is off here.
+  test.use({ serviceWorkers: "block" });
+
   test("a stale alert keeps its level badge and shows 'not updated since'", async ({ page }) => {
     await serve(page, {
       inService: true,
@@ -187,24 +190,6 @@ test.describe("home", () => {
     await expect(page.locator("[data-checklist] input").first()).toBeChecked();
   });
 
-  test("offline, the last alert received is still shown, with when it was received", async ({
-    page,
-    context,
-  }) => {
-    await serve(page, { inService: true, alerts: [alert("warning")] });
-    await page.goto("/");
-    await expect(page.locator('[data-level="warning"]')).toBeVisible();
-    await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
-    await page.reload();
-    await expect(page.locator('[data-level="warning"]')).toBeVisible();
-    await page.unroute("**/api/public/status");
-    await context.setOffline(true);
-    await page.reload();
-    await expect(page.locator('[data-hero="alert"] [data-level="warning"]')).toBeVisible();
-    await expect(page.locator('[data-checked="old"]')).toBeVisible();
-    await expect(page.locator('a[href="tel:1784"]').first()).toBeVisible();
-  });
-
   test("the home screen never downloads the map", async ({ page }) => {
     const mapFiles: string[] = [];
     page.on("request", (request) => {
@@ -219,7 +204,39 @@ test.describe("home", () => {
   });
 });
 
+test.describe("home offline (safety rule 7)", () => {
+  test("the last alert received is still shown, with when it was received", async ({
+    page,
+    context,
+  }) => {
+    // Visit once so the service worker has the page, as shell.spec.ts does.
+    await page.goto("/");
+    await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    // What the phone holds from its last check, two minutes ago: a warning for the chosen area.
+    await page.evaluate(
+      ([area, status]) => {
+        window.localStorage.setItem("jaga.area", JSON.stringify(area));
+        window.localStorage.setItem(
+          "jaga.status",
+          JSON.stringify({ status, checkedAt: Date.now() - 120_000 }),
+        );
+      },
+      [BANA, { generatedAt: minutes(-2), inService: true, alerts: [alert("warning")] }] as const,
+    );
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.locator('[data-hero="alert"] [data-level="warning"]')).toBeVisible();
+    await expect(page.locator(`[data-area="${BANA.code}"]`)).toBeVisible();
+    await expect(page.locator('[data-checked="old"]')).toBeVisible();
+    await expect(page.locator('a[href="tel:1784"]').first()).toBeVisible();
+  });
+});
+
 test.describe("map", () => {
+  test.use({ serviceWorkers: "block" });
+
   test("a coming-soon hazard shows no map, no level and no green, only SOS and its hotline", async ({
     page,
   }) => {
