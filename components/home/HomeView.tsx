@@ -121,93 +121,104 @@ export function HomeView(props: HomeViewProps) {
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    /*
+     * One column on a phone, two on a laptop (the owner asked for the window to be used, 8 Oct).
+     * The order on a phone is exactly as before, because the left column is written first and
+     * the columns stack: what is happening on the left, what to do on the right. At Evacuate the
+     * SOS button stays directly under the hero (decision 2026-09-29), in the left column.
+     */
+    <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start lg:gap-8">
       <h1 className="sr-only">{t("title")}</h1>
 
-      {worse.map((item) => (
-        <WorseBanner key={item.place.id} item={item} now={now} />
-      ))}
+      <div className="flex flex-col gap-5">
+        {worse.map((item) => (
+          <WorseBanner key={item.place.id} item={item} now={now} />
+        ))}
 
-      {loading ? (
-        <section data-hero="loading" className={card}>
-          <p>{t("loading")}</p>
-        </section>
-      ) : !home || choosing ? (
-        <section data-hero="choose" className={card}>
-          <h2 className="text-h3 font-bold text-jaga-slate">{t("area.chooseTitle")}</h2>
-          <p>{t("area.chooseBody")}</p>
-          <AreaChooser
-            onChoose={(area) => {
-              setChoosing(false);
-              props.onChooseArea(area);
-            }}
-            onCancel={home ? () => setChoosing(false) : undefined}
-          />
-        </section>
-      ) : (
-        hero && <AlertHero status={hero} area={areaLine} now={now} onRetry={props.onRetry} />
-      )}
+        {loading ? (
+          <section data-hero="loading" className={card}>
+            <p>{t("loading")}</p>
+          </section>
+        ) : !home || choosing ? (
+          <section data-hero="choose" className={card}>
+            <h2 className="text-h3 font-bold text-jaga-slate">{t("area.chooseTitle")}</h2>
+            <p>{t("area.chooseBody")}</p>
+            <AreaChooser
+              onChoose={(area) => {
+                setChoosing(false);
+                props.onChooseArea(area);
+              }}
+              onCancel={home ? () => setChoosing(false) : undefined}
+            />
+          </section>
+        ) : (
+          hero && <AlertHero status={hero} area={areaLine} now={now} onRetry={props.onRetry} />
+        )}
 
-      {!loading && status && !status.inService && hero?.kind !== "notInService" && (
-        // Said on every home screen before launch, also beside a real alert or the chooser.
-        <p className={notice} data-not-in-service="true">
-          <span className="block font-bold">{t("notInService.title")}</span>
-          {t("notInService.body")}
-        </p>
-      )}
+        {!loading && status && !status.inService && hero?.kind !== "notInService" && (
+          // Said on every home screen before launch, also beside a real alert or the chooser.
+          <p className={notice} data-not-in-service="true">
+            <span className="block font-bold">{t("notInService.title")}</span>
+            {t("notInService.body")}
+          </p>
+        )}
 
-      {checkedAt !== null && !loading && (
-        <p
-          className={failed ? notice : hint}
-          role={failed ? "status" : undefined}
-          data-checked={failed ? "old" : "ok"}
-        >
-          {t(failed ? "status.offline" : "status.checked", {
-            time: format.dateTime(new Date(checkedAt), BANGKOK_DATE_TIME),
-          })}
-        </p>
-      )}
+        {checkedAt !== null && !loading && (
+          <p
+            className={failed ? notice : hint}
+            role={failed ? "status" : undefined}
+            data-checked={failed ? "old" : "ok"}
+          >
+            {t(failed ? "status.offline" : "status.checked", {
+              time: format.dateTime(new Date(checkedAt), BANGKOK_DATE_TIME),
+            })}
+          </p>
+        )}
 
-      {evacuate && sos}
-      {!choosing && checklist}
-      {!evacuate && sos}
+        {evacuate && sos}
+        {!choosing && checklist}
+      </div>
 
-      <Link
-        href="/report"
-        prefetch={false}
-        className={`${buttonSecondary} min-h-16 gap-3 text-h3 font-bold`}
-      >
-        <WaveIcon size={30} />
-        {t("report")}
-      </Link>
+      <div className="flex flex-col gap-5">
+        {!evacuate && sos}
 
-      {props.projectLine && (
-        <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>
-          <PhoneIcon size={22} />
-          {t("projectLine")} {props.projectLine}
-        </a>
-      )}
-
-      <WatchedPlaces items={watched} now={now} />
-      {me?.signedIn && (
         <Link
-          href="/account/places"
+          href="/report"
           prefetch={false}
-          data-manage-places="true"
-          className="inline-flex min-h-tap items-center underline"
+          className={`${buttonSecondary} min-h-16 gap-3 text-h3 font-bold`}
         >
-          {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
+          <WaveIcon size={30} />
+          {t("report")}
         </Link>
-      )}
 
-      {home && !loading && (
-        <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />
-      )}
+        {props.projectLine && (
+          <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>
+            <PhoneIcon size={22} />
+            {t("projectLine")} {props.projectLine}
+          </a>
+        )}
 
-      <Link href="/map" prefetch={false} className={`${buttonSecondary} gap-2`}>
-        <MapIcon size={22} />
-        {t("mapLink")}
-      </Link>
+        <WatchedPlaces items={watched} now={now} />
+        {me?.signedIn && (
+          <Link
+            href="/account/places"
+            prefetch={false}
+            data-manage-places="true"
+            className="inline-flex min-h-tap items-center underline"
+          >
+            {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
+          </Link>
+        )}
+
+        {home && !loading && (
+          <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />
+        )}
+
+        <Link href="/map" prefetch={false} className={`${buttonSecondary} gap-2`}>
+          <MapIcon size={22} />
+          {t("mapLink")}
+        </Link>
+      </div>
     </div>
   );
 }

@@ -87,7 +87,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               skip link.
             */}
             <header className="sticky top-0 z-20 bg-jaga-slate">
-              <div className="mx-auto flex max-w-screen-sm flex-wrap items-center justify-between gap-x-2 px-2">
+              <div className="mx-auto flex w-full max-w-screen-sm flex-wrap items-center justify-between gap-x-2 px-2 lg:max-w-6xl lg:px-4">
                 <Link href="/" prefetch={false} className="inline-flex min-h-tap items-center">
                   <Logo size={40} tone="reverse" />
                 </Link>
@@ -121,7 +121,15 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                 </div>
               </div>
             </header>
-            <main id="main" className="mx-auto w-full max-w-screen-sm flex-1 px-4 py-6">
+            {/*
+              Phone width up to the large breakpoint, then the window: on a laptop the app fills
+              the browser instead of sitting in a narrow strip (the owner's request, 8 Oct). The
+              pages themselves decide what to do with the room; text columns stay readable.
+            */}
+            <main
+              id="main"
+              className="mx-auto w-full max-w-screen-sm flex-1 px-4 py-6 lg:max-w-6xl lg:px-6"
+            >
               {children}
             </main>
             <footer className="sticky bottom-0 z-10">

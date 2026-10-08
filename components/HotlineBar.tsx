@@ -11,7 +11,9 @@ export function HotlineBar() {
   const t = useTranslations("hotlines");
   return (
     <nav aria-label={t("title")} className="border-t border-jaga-line bg-jaga-surface">
-      <ul className="mx-auto grid max-w-screen-sm grid-cols-4">
+      {/* Wider than a phone on a laptop, but not the whole window: four numbers spread over
+          1,500 px would be a row of distant buttons rather than one bar. */}
+      <ul className="mx-auto grid max-w-screen-sm grid-cols-4 lg:max-w-3xl">
         {HOTLINES.map(({ key, number }) => (
           <li key={key}>
             <a
