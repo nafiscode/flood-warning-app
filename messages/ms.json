@@ -728,6 +728,12 @@
       "return": "Boleh balik rumah",
       "watched": "Tempat yang dijaga lebih teruk daripada rumah",
       "unavailable": "Status tidak dapat dimuat"
+    },
+    "weather": {
+      "title": "Contoh halaman cuaca",
+      "forecast": "Ramalan",
+      "choose": "Belum pilih tempat",
+      "offline": "Luar talian"
     }
   },
   "report": {
@@ -793,6 +799,92 @@
       "car": "Kereta boleh lalu",
       "motorbike_only": "Motosikal sahaja",
       "impassable": "Tidak boleh dilalui"
+    }
+  },
+  "weather": {
+    "title": "Cuaca",
+    "backHome": "Balik ke laman utama",
+    "loading": "Sedang memuat cuaca…",
+    "unavailable": "Cuaca tidak dapat dimuat. Cuba lagi apabila ada sambungan.",
+    "retry": "Cuba lagi",
+    "offline": "Tiada sambungan. Menunjukkan maklumat terakhir untuk {time}.",
+    "modelTime": "Data untuk {time}",
+    "checked": "Dimuat pada {time}",
+    "old": "Maklumat ini lebih lama daripada 3 jam. Sambung ke internet untuk yang terbaru.",
+    "notAnAlert": "Ini ramalan daripada model cuaca global dan boleh berubah. Ia bukan amaran banjir Jaga.",
+    "coverage": "Amaran banjir Jaga hanya meliputi Patani, Yala, Narathiwat dan Songkhla.",
+    "now": "Sekarang",
+    "feels": "Rasa seperti",
+    "rainNow": "Hujan jam ini",
+    "humidity": "Kelembapan",
+    "wind": "Angin",
+    "windFrom": "{speed} km/j dari {from}",
+    "kmh": "{value} km/j",
+    "mm": "{value} mm",
+    "chip": {
+      "label": "Cuaca",
+      "reading": "Cuaca di {place}: {degrees} darjah, {condition}",
+      "readingAt": "Cuaca di {place}: {degrees} darjah, {condition} (data untuk {time})",
+      "readingNoTemp": "Cuaca di {place}: {condition}"
+    },
+    "place": {
+      "title": "Pilih tempat",
+      "body": "Untuk melihat cuaca di sana.",
+      "change": "Tukar tempat",
+      "useGps": "Guna lokasi sekarang",
+      "locating": "Sedang mencari lokasi…",
+      "gpsFailed": "Lokasi tidak dijumpai. Hidupkan GPS dan cuba lagi, atau taip nama tempat.",
+      "searchLabel": "Taip nama bandar atau tempat",
+      "searchPlaceholder": "Contohnya Patani",
+      "search": "Cari",
+      "searching": "Sedang mencari…",
+      "noResults": "Tempat itu tidak dijumpai. Cuba nama lain.",
+      "searchFailed": "Carian gagal. Cuba lagi.",
+      "cancel": "Batal",
+      "privacy": "Tempat yang dipilih disimpan dalam telefon ini sahaja.",
+      "yourLocation": "Lokasi anda"
+    },
+    "rain": {
+      "title": "Hujan dijangka, 48 jam akan datang",
+      "total": "Jumlah {value} mm",
+      "chart": "Graf hujan setiap jam untuk {hours} jam akan datang, jumlah {value} milimeter",
+      "scale": "Batang tertinggi = {value} mm dalam sejam"
+    },
+    "hours": {
+      "title": "24 jam akan datang",
+      "chance": "Nombor di bawah ialah kemungkinan hujan"
+    },
+    "days": {
+      "title": "7 hari akan datang",
+      "today": "Hari ini",
+      "tomorrow": "Esok",
+      "rain": "Hujan {value} mm · kemungkinan {chance}%"
+    },
+    "codes": {
+      "clear": "Langit cerah",
+      "mainlyClear": "Cerah",
+      "partlyCloudy": "Berawan sedikit",
+      "overcast": "Berawan",
+      "fog": "Berkabus",
+      "drizzle": "Hujan renyai",
+      "rainLight": "Hujan sedikit",
+      "rain": "Hujan",
+      "rainHeavy": "Hujan lebat",
+      "showers": "Hujan sekejap-sekejap",
+      "showersHeavy": "Hujan lebat sekejap-sekejap",
+      "snow": "Salji",
+      "thunder": "Hujan berguruh",
+      "thunderHail": "Hujan berguruh dan hujan batu"
+    },
+    "compass": {
+      "n": "utara",
+      "ne": "timur laut",
+      "e": "timur",
+      "se": "tenggara",
+      "s": "selatan",
+      "sw": "barat daya",
+      "w": "barat",
+      "nw": "barat laut"
     }
   }
 }

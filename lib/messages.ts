@@ -38,3 +38,22 @@ export function reportMessages(messages: AbstractIntlMessages): AbstractIntlMess
 export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   return pick(messages, ["map", "home", "alert", "sos", "places", "hotlines"]);
 }
+
+/** The weather page: its own text, plus the attribution line Open-Meteo requires. */
+export function weatherMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  return pick(messages, ["weather", "attribution"]);
+}
+
+/**
+ * The layout, on every page: the language switcher's text and the few lines the weather chip in
+ * the header needs. The weather page's own text is not sent with it, so a page that nobody opens
+ * the weather from stays as small as it was.
+ */
+export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  const weather = all.weather as { chip: AbstractIntlMessages; codes: AbstractIntlMessages };
+  return {
+    language: all.language!,
+    weather: { chip: weather.chip, codes: weather.codes },
+  };
+}

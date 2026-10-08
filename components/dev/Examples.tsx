@@ -2,6 +2,9 @@
 
 import { HomeView } from "@/components/home/HomeView";
 import { DashboardView } from "@/components/map/DashboardView";
+import { WeatherView } from "@/components/weather/WeatherView";
+import { useState } from "react";
+import { areaName } from "@/lib/area";
 import {
   BANA,
   EXAMPLE_DIRECTORY,
@@ -12,9 +15,13 @@ import {
   EXAMPLE_PLACES,
   exampleAlert,
   exampleStatus,
+  EXAMPLE_WEATHER,
+  EXAMPLE_WEATHER_PLACE,
   homeExample,
   type HomeScenario,
+  type WeatherScenario,
 } from "@/lib/dev-examples";
+import type { WeatherPlace } from "@/lib/weather";
 
 /** One home-screen example, fed with made-up data instead of the live status. */
 export function HomeExample({ scenario }: { scenario: HomeScenario }) {
@@ -61,6 +68,29 @@ export function MapExample() {
       now={EXAMPLE_NOW}
       transparency={false}
       initialProvince="94"
+    />
+  );
+}
+
+/** The weather page with a made-up forecast: full, with no place chosen yet, and offline. */
+export function WeatherExample({ scenario }: { scenario: WeatherScenario }) {
+  const [place, setPlace] = useState<WeatherPlace | null>(
+    scenario === "choose" ? null : EXAMPLE_WEATHER_PLACE,
+  );
+  return (
+    <WeatherView
+      ready
+      place={place}
+      detail={place?.from === "area" ? areaName("th", BANA) : null}
+      weather={place ? EXAMPLE_WEATHER : null}
+      fetchedAt={EXAMPLE_NOW - 4 * 60_000}
+      failed={scenario === "offline"}
+      now={EXAMPLE_NOW}
+      picking={false}
+      onPick={() => setPlace(null)}
+      onChoose={setPlace}
+      onCancelPick={() => {}}
+      onRetry={() => {}}
     />
   );
 }

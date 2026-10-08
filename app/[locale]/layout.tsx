@@ -8,8 +8,10 @@ import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { QueueRunner } from "@/components/QueueRunner";
+import { WeatherChip } from "@/components/weather/WeatherChip";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { layoutMessages } from "@/lib/messages";
 import "../globals.css";
 
 // Self-hosted at build time by next/font: no request to Google from users' phones.
@@ -55,8 +57,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const t = await getTranslations("app");
   const tNav = await getTranslations("nav");
   // Only client components need messages in the browser; send just their namespaces (slow 3G).
-  const messages = await getMessages();
-  const clientMessages = { language: messages.language };
+  const clientMessages = layoutMessages(await getMessages());
 
   return (
     // scroll-pt-28: an anchor such as #main scrolls to just below the frozen header.
@@ -88,9 +89,17 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             */}
             <header className="sticky top-0 z-20 bg-jaga-slate">
               <div className="mx-auto flex w-full max-w-screen-sm flex-wrap items-center justify-between gap-x-2 px-2 lg:max-w-6xl lg:px-4">
-                <Link href="/" prefetch={false} className="inline-flex min-h-tap items-center">
-                  <Logo size={40} tone="reverse" animated />
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href="/" prefetch={false} className="inline-flex min-h-tap items-center">
+                    <Logo size={40} tone="reverse" animated />
+                  </Link>
+                  {/*
+                    The weather, in the header's free space (the owner's request, 9 Oct): beside
+                    the logo where there is room, and at the end of the language row on a phone,
+                    where the top row is already full of Thai labels at 360 px.
+                  */}
+                  <WeatherChip where="header" className="hidden lg:inline-flex" />
+                </div>
                 <div className="flex items-center">
                   {/* Home as a word, not only the logo: people don't tap a logo to go back. */}
                   <Link
@@ -116,8 +125,11 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   </Link>
                 </div>
                 {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
-                <div className="w-full">
+                <div className="flex w-full items-center justify-between gap-x-1">
                   <LanguageSwitcher />
+                  {/* -me-1 uses the row's own end padding: at 360 px the three language names
+                      and the chip together need every pixel of the line. */}
+                  <WeatherChip where="row" className="-me-1 inline-flex lg:hidden" />
                 </div>
               </div>
             </header>

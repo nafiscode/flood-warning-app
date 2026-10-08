@@ -100,6 +100,11 @@ async function serve(
     route.fulfill({ json: { hazards: HAZARDS } }),
   );
   await page.route("**/api/geo/areas", (route) => route.fulfill({ json: AREAS }));
+  // The weather chip in the header would otherwise send our server to Open-Meteo for real;
+  // the weather itself is tested in weather.spec.ts.
+  await page.route("**/api/public/weather**", (route) =>
+    route.fulfill({ status: 503, json: { error: "unavailable" } }),
+  );
   if (area) {
     await page.addInitScript(
       (stored) => window.localStorage.setItem("jaga.area", JSON.stringify(stored)),

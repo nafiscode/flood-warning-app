@@ -9,6 +9,7 @@ import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces, SafePlace } from "@/lib/places";
 import type { PublicAlert, PublicStatus } from "@/lib/public-status";
+import type { Weather, WeatherDay, WeatherHour, WeatherPlace } from "@/lib/weather";
 import type { AlertLevel } from "@/lib/brand/tokens";
 
 /** The examples are seen at 16:30 Bangkok time on 20 November 2026. */
@@ -296,3 +297,85 @@ export function homeExample(scenario: HomeScenario): {
       return { ...base, status: null, failed: true };
   }
 }
+
+export const WEATHER_SCENARIOS = ["forecast", "choose", "offline"] as const;
+export type WeatherScenario = (typeof WEATHER_SCENARIOS)[number];
+
+/**
+ * A made-up forecast for the weather example page: a wet afternoon in the north-east monsoon,
+ * easing over the week. Shaped like Open-Meteo's answer after our server has reduced it, so the
+ * example and the real thing go through exactly the same screen.
+ */
+function exampleWeather(): Weather {
+  const hour = 3_600_000;
+  const start = Math.floor(EXAMPLE_NOW / hour) * hour;
+  // Bangkok is UTC+7: the local hour decides when it rains and when it is dark.
+  const localHour = (at: number) => Math.floor(at / hour + 7) % 24;
+  const rainAt = (at: number) => {
+    const h = localHour(at);
+    const day = Math.floor((at - start) / (24 * hour));
+    const strength = Math.max(0, 1 - day * 0.25);
+    if (h >= 13 && h <= 19) return Math.round(strength * (h === 16 ? 11 : 4) * 10) / 10;
+    if (h >= 20 && h <= 22) return Math.round(strength * 1.2 * 10) / 10;
+    return 0;
+  };
+  const codeFor = (rain: number) => (rain > 6 ? 95 : rain > 2 ? 65 : rain > 0 ? 61 : 3);
+
+  const hours: WeatherHour[] = Array.from({ length: 48 }, (_, i) => {
+    const at = start + i * hour;
+    const rain = rainAt(at);
+    const h = localHour(at);
+    return {
+      at: new Date(at).toISOString(),
+      tempC: 24 + (h >= 10 && h <= 17 ? 6 : h >= 7 && h <= 20 ? 3 : 0),
+      code: codeFor(rain),
+      rainMm: rain,
+      chance: rain > 0 ? Math.min(95, 40 + rain * 6) : 20,
+      isDay: h >= 6 && h < 18,
+    };
+  });
+
+  const days: WeatherDay[] = Array.from({ length: 7 }, (_, d) => {
+    const noon = start - (localHour(start) - 12) * hour + d * 24 * hour;
+    const rain = Math.round(Math.max(0, 38 - d * 6) * 10) / 10;
+    return {
+      date: new Date(noon).toISOString().slice(0, 10),
+      at: new Date(noon).toISOString(),
+      code: codeFor(rain / 6),
+      maxC: 30 - d * 0.5,
+      minC: 24,
+      rainMm: rain,
+      chance: Math.max(20, 95 - d * 9),
+    };
+  });
+
+  return {
+    lat: 6.88,
+    lon: 101.27,
+    timezone: "Asia/Bangkok",
+    at: new Date(EXAMPLE_NOW).toISOString(),
+    tempC: 27.4,
+    feelsC: 32.1,
+    humidity: 88,
+    rainMm: 2.6,
+    windKmh: 14,
+    windFrom: "ne",
+    isDay: true,
+    code: 65,
+    hours,
+    days,
+  };
+}
+
+export const EXAMPLE_WEATHER = exampleWeather();
+
+/** The place the weather example is for: the same tambon as the home examples. */
+export const EXAMPLE_WEATHER_PLACE: WeatherPlace = {
+  name: BANA.nameTh,
+  area: BANA.provinceTh,
+  country: null,
+  countryCode: "TH",
+  lat: BANA.lat,
+  lon: BANA.lon,
+  from: "area",
+};

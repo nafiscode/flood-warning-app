@@ -143,3 +143,139 @@ export function MapIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/*
+ * Weather icons (A-track, 9 Oct 2026). Same grid and stroke as the rest. No umbrella: that
+ * belongs to the logo alone (docs/brand.md). Each one sits beside the condition in words.
+ */
+
+/** Clear sky by day: a sun. */
+export function SunIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5 5l1.8 1.8M17.2 17.2L19 19M19 5l-1.8 1.8M6.8 17.2L5 19" />
+    </Icon>
+  );
+}
+
+/** Clear sky at night: a crescent moon. */
+export function MoonIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+    </Icon>
+  );
+}
+
+/** Mainly clear or part cloud: a cloud with the sun behind it. */
+export function CloudSunIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 5V3.5M4.5 6.5L3.4 5.4M4 10H2.5M11.5 6.5l1.1-1.1" />
+      <circle cx="8" cy="10" r="2.5" />
+      <path d="M9 19h8a3 3 0 0 0 .3-6A4.5 4.5 0 0 0 9 13.4 2.8 2.8 0 0 0 9 19z" />
+    </Icon>
+  );
+}
+
+/** Cloud or overcast: a cloud. */
+export function CloudIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 19h10a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.6A3 3 0 0 0 7 19z" />
+    </Icon>
+  );
+}
+
+/** Fog or mist: a cloud over flat lines. */
+export function FogIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 13h10a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.6A3 3 0 0 0 7 13z" />
+      <path d="M4 17h16M6 21h12" />
+    </Icon>
+  );
+}
+
+/** Drizzle or light rain: a cloud with two short drops. */
+export function DrizzleIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 13h10a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.6A3 3 0 0 0 7 13z" />
+      <path d="M9.5 16.5v1.5M14.5 16.5v1.5" />
+    </Icon>
+  );
+}
+
+/** Rain: a cloud with falling drops. */
+export function RainIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 13h10a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.6A3 3 0 0 0 7 13z" />
+      <path d="M8.5 16l-1 4M12 16l-1 4M15.5 16l-1 4" />
+    </Icon>
+  );
+}
+
+/** Heavy rain: a cloud with long drops and a line of water. */
+export function HeavyRainIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 12h10a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.6A3 3 0 0 0 7 12z" />
+      <path d="M7.5 15l-1.5 5M11.5 15l-1.5 5M15.5 15l-1.5 5" />
+      <path d="M4 21.5c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0" />
+    </Icon>
+  );
+}
+
+/** Snow (only for places outside the tropics): a cloud with flakes. */
+export function SnowIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 13h10a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.6A3 3 0 0 0 7 13z" />
+      <path d="M9 17.5h1M14 17.5h1M11.5 20.5h1" />
+      <path d="M9.5 16.5v2M14.5 16.5v2M12 19.5v2" />
+    </Icon>
+  );
+}
+
+/** Thunderstorm: a cloud with a bolt. */
+export function ThunderIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 13h10a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1.6A3 3 0 0 0 7 13z" />
+      <path d="M13 15.5l-3 3h2.5l-1 3 3.5-4h-2.5z" />
+    </Icon>
+  );
+}
+
+/** Wind speed: lines blowing. */
+export function WindIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5" />
+      <path d="M3 12h13a3 3 0 1 1-3 3" />
+      <path d="M3 16h6" />
+    </Icon>
+  );
+}
+
+/** Humidity, and rain in millimetres: a drop. */
+export function DropIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.5s5.5 6 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 9.5 12 3.5 12 3.5z" />
+    </Icon>
+  );
+}
+
+/** Temperature: a thermometer. */
+export function ThermometerIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M10 14.8V5a2 2 0 1 1 4 0v9.8a4 4 0 1 1-4 0z" />
+      <path d="M12 18.5v-6" />
+    </Icon>
+  );
+}

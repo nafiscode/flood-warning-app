@@ -728,6 +728,12 @@
       "return": "Safe to return",
       "watched": "A watched place worse than home",
       "unavailable": "Status couldn't load"
+    },
+    "weather": {
+      "title": "The weather page, as an example",
+      "forecast": "Forecast",
+      "choose": "No place chosen yet",
+      "offline": "Offline"
     }
   },
   "report": {
@@ -793,6 +799,92 @@
       "car": "Passable by car",
       "motorbike_only": "Motorbike only",
       "impassable": "Not passable"
+    }
+  },
+  "weather": {
+    "title": "Weather",
+    "backHome": "Back to the home screen",
+    "loading": "Loading the weather…",
+    "unavailable": "Couldn't load the weather. Try again when you have a connection.",
+    "retry": "Try again",
+    "offline": "No connection. Showing what this phone last received, for {time}.",
+    "modelTime": "Model data for {time}",
+    "checked": "Loaded {time}",
+    "old": "This reading is more than 3 hours old. Connect to the internet for a new one.",
+    "notAnAlert": "A forecast from a global weather model. It can change. It is not a Jaga flood alert.",
+    "coverage": "Jaga's flood alerts cover Pattani, Yala, Narathiwat and Songkhla only.",
+    "now": "Now",
+    "feels": "Feels like",
+    "rainNow": "Rain this hour",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "windFrom": "{speed} km/h from the {from}",
+    "kmh": "{value} km/h",
+    "mm": "{value} mm",
+    "chip": {
+      "label": "Weather",
+      "reading": "Weather in {place}: {degrees} degrees, {condition}",
+      "readingAt": "Weather in {place}: {degrees} degrees, {condition} (data for {time})",
+      "readingNoTemp": "Weather in {place}: {condition}"
+    },
+    "place": {
+      "title": "Choose a place",
+      "body": "To see the weather there.",
+      "change": "Change place",
+      "useGps": "Use my current location",
+      "locating": "Finding your location…",
+      "gpsFailed": "Couldn't find your location. Turn on GPS and try again, or type a place name.",
+      "searchLabel": "Type a city or place name",
+      "searchPlaceholder": "For example Pattani",
+      "search": "Search",
+      "searching": "Searching…",
+      "noResults": "That place wasn't found. Try another name.",
+      "searchFailed": "The search didn't work. Try again.",
+      "cancel": "Cancel",
+      "privacy": "The place you choose is kept on this phone only.",
+      "yourLocation": "Your location"
+    },
+    "rain": {
+      "title": "Rain expected, next 48 hours",
+      "total": "{value} mm in total",
+      "chart": "Hourly rain for the next {hours} hours, {value} millimetres in total",
+      "scale": "Tallest bar = {value} mm in one hour"
+    },
+    "hours": {
+      "title": "Next 24 hours",
+      "chance": "The number underneath is the chance of rain"
+    },
+    "days": {
+      "title": "Next 7 days",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "rain": "{value} mm rain · {chance}% chance"
+    },
+    "codes": {
+      "clear": "Clear sky",
+      "mainlyClear": "Mainly clear",
+      "partlyCloudy": "Partly cloudy",
+      "overcast": "Cloudy",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rainLight": "Light rain",
+      "rain": "Rain",
+      "rainHeavy": "Heavy rain",
+      "showers": "Showers",
+      "showersHeavy": "Heavy showers",
+      "snow": "Snow",
+      "thunder": "Thunderstorm",
+      "thunderHail": "Thunderstorm with hail"
+    },
+    "compass": {
+      "n": "north",
+      "ne": "north-east",
+      "e": "east",
+      "se": "south-east",
+      "s": "south",
+      "sw": "south-west",
+      "w": "west",
+      "nw": "north-west"
     }
   }
 }
