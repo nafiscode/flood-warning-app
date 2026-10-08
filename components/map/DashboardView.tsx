@@ -9,12 +9,13 @@ import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/H
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
-import { pickName, type AreaDirectory } from "@/lib/area";
+import { areaName, pickName, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
 import { PROVINCE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
+import { HOME_COLOR, mineColor } from "@/lib/mine-colors";
 import { localName } from "@/lib/places";
 import { hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
@@ -89,17 +90,26 @@ export function DashboardView(props: DashboardViewProps) {
                 lat: props.me.home.lat,
                 lon: props.me.home.lon,
                 home: true,
+                color: HOME_COLOR,
+                lines: [areaName(locale, props.me.home)],
               },
             ]
           : []),
         ...props.me.places
           .filter((place) => place.area)
-          .map((place) => ({
+          .map((place, index) => ({
             id: place.id,
             label: place.label,
             lat: place.area!.lat,
             lon: place.area!.lon,
             home: false,
+            // In the order they were added, so a pin keeps its colour while the list does.
+            color: mineColor(index),
+            // What the pin says on hover or on tap: the person there, then the address.
+            lines: [
+              ...(place.contactName ? [t("mine.person", { name: place.contactName })] : []),
+              areaName(locale, place.area!),
+            ],
           })),
       ];
 
@@ -355,15 +365,29 @@ export function DashboardView(props: DashboardViewProps) {
                   </div>
                 )}
                 {showMine && mine.length > 0 && (
-                  <ul className="flex flex-col gap-1">
-                    <li className="flex items-center gap-2" data-layer="mine">
-                      <span
-                        aria-hidden="true"
-                        className="size-4 shrink-0 rounded-full border-4 border-jaga-teal bg-jaga-teal"
-                      />
-                      {t("layers.mine")}
-                    </li>
-                  </ul>
+                  /* Each place with its own colour, so the pins can be told apart without
+                     hovering over every one of them, and so the colours mean something to
+                     someone who cannot tell these hues apart. */
+                  <div className="flex flex-col gap-1" data-layer="mine">
+                    <p className="font-medium">{t("layers.mine")}</p>
+                    <ul className="flex flex-col gap-1">
+                      {mine.map((place) => (
+                        <li
+                          key={place.id}
+                          className="flex items-center gap-2"
+                          data-mine-legend={place.id}
+                        >
+                          <span
+                            aria-hidden="true"
+                            style={{ backgroundColor: place.color }}
+                            className="size-4 shrink-0 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,.15)]"
+                          />
+                          <span>{place.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className={hint}>{t("mine.hint")}</p>
+                  </div>
                 )}
                 {drawn.length > 0 && (
                   <ul className="flex flex-col gap-1">

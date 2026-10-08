@@ -364,7 +364,9 @@
       "toggle": "Show my places on the map ({count})",
       "home": "My home",
       "note": "Only you see this point; it is not shown to anyone else.",
-      "manage": "Manage the places I watch"
+      "manage": "Manage the places I watch",
+      "person": "Contact: {name}",
+      "hint": "Point at a dot, or tap it, to see its name and address."
     }
   },
   "attribution": {

@@ -364,7 +364,9 @@
       "toggle": "Tunjukkan tempat saya pada peta ({count})",
       "home": "Rumah saya",
       "note": "Hanya anda yang nampak titik ini; ia tidak ditunjukkan kepada orang lain.",
-      "manage": "Urus tempat yang saya pantau"
+      "manage": "Urus tempat yang saya pantau",
+      "person": "Hubungi: {name}",
+      "hint": "Tuding atau ketik titik untuk melihat nama dan alamatnya."
     }
   },
   "attribution": {

@@ -2,7 +2,9 @@ import { fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardView, type DashboardViewProps } from "@/components/map/DashboardView";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
-import { alert as alertColors } from "@/lib/brand/tokens";
+import { alert as alertColors_ } from "@/lib/brand/tokens";
+import { MINE_COLORS, mineColor } from "@/lib/mine-colors";
+import { mineLabel } from "@/lib/mine-label";
 import {
   BANA,
   EXAMPLE_DIRECTORY,
@@ -27,13 +29,15 @@ vi.mock("@/components/map/MapView", () => ({
     showMine = false,
   }: {
     layers: string[];
-    mine?: { id: string; label: string; home: boolean }[];
+    mine?: { id: string; label: string; home: boolean; color: string; lines: string[] }[];
     showMine?: boolean;
   }) => (
     <div
       data-map="true"
       data-mine={showMine ? mine.map((p) => p.id).join(",") : ""}
       data-mine-count={mine.length}
+      data-mine-colors={mine.map((p) => p.color).join(",")}
+      data-mine-labels={mine.map((p) => [p.label, ...p.lines].join(" | ")).join(" / ")}
     >
       {layers.join(",")}
     </div>
@@ -116,7 +120,7 @@ describe("tambon colors on the map", () => {
     );
     expect(withAlert).not.toMatch(green);
     expect(withAlert).toContain("198, 40, 40");
-    expect(alertColors.normal.bg).toBe("#2F7A25");
+    expect(alertColors_.normal.bg).toBe("#2F7A25");
   });
 
   it("in service, a tambon without an alert is light green and one with an alert has its level's color", () => {
@@ -208,5 +212,86 @@ describe("the places I watch, on the map", () => {
     // places arrive separately, from their own session.
     expect(JSON.stringify(EXAMPLE_MAP)).not.toContain("w1");
     expect(JSON.stringify(EXAMPLE_MAP)).not.toContain("บ้านแม่");
+  });
+});
+
+describe("telling the watched places apart", () => {
+  it("every place has its own colour, none of them an alert colour", () => {
+    const withHome = EXAMPLE_ME.signedIn ? { ...EXAMPLE_ME, home: BANA } : EXAMPLE_ME;
+    const colors = dashboard({ me: withHome })
+      .querySelector("[data-map]")!
+      .getAttribute("data-mine-colors")!
+      .split(",");
+    expect(colors).toHaveLength(3);
+    expect(new Set(colors).size).toBe(3);
+    // The alert palette belongs to alert levels alone (docs/brand.md).
+    const alertColors = Object.values(alertColors_).map((c) => c.bg.toLowerCase());
+    for (const color of colors) expect(alertColors).not.toContain(color.toLowerCase());
+  });
+
+  it("the legend names each place beside its colour", () => {
+    const c = dashboard({ me: EXAMPLE_ME });
+    const rows = [...c.querySelectorAll("[data-mine-legend]")];
+    expect(rows.map((r) => r.textContent)).toEqual(["บ้านแม่", "ร้านที่ตลาด"]);
+    // The browser gives the colour back as rgb(), so compare it that way.
+    const rgb = (hex: string) =>
+      `rgb(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)})`;
+    expect(c.querySelector('[data-mine-legend="w1"] span')?.getAttribute("style")).toContain(
+      rgb(MINE_COLORS[0]),
+    );
+  });
+
+  it("a pin's label carries the name, the person there and the address", () => {
+    const labels = dashboard({ me: EXAMPLE_ME })
+      .querySelector("[data-map]")!
+      .getAttribute("data-mine-labels")!;
+    // "Mum's house", the person there, then tambon, district and province in Thai.
+    expect(labels).toContain("บ้านแม่");
+    expect(labels).toContain("ติดต่อ: แม่");
+    expect(labels).toContain("ต.ตะลุโบะ อ.เมืองปัตตานี จ.ปัตตานี");
+    // A place with nobody stored shows only its name and address.
+    expect(labels).toContain("ร้านที่ตลาด | ต.สะบารัง");
+    // The phone number of the person there never goes onto the map.
+    expect(labels).not.toContain("0800000000");
+  });
+
+  it("ten places get ten different colours", () => {
+    expect(new Set(MINE_COLORS).size).toBe(10);
+    expect(MINE_COLORS.map((_, i) => mineColor(i))).toEqual([...MINE_COLORS]);
+    // An eleventh would start again from the top rather than have no colour at all.
+    expect(mineColor(10)).toBe(MINE_COLORS[0]);
+  });
+});
+
+describe("the label on a pin", () => {
+  const place = {
+    id: "w1",
+    label: "บ้านแม่",
+    lat: 6.87,
+    lon: 101.27,
+    home: false,
+    color: "#7FD1C9",
+    lines: ["ติดต่อ: แม่", "ต.ตะลุโบะ อ.เมืองปัตตานี จ.ปัตตานี"],
+  };
+
+  it("shows the name, the person there and the address", () => {
+    const box = mineLabel(place);
+    expect(box.querySelector("b")?.textContent).toBe("บ้านแม่");
+    expect([...box.querySelectorAll("span")].map((s) => s.textContent)).toEqual([
+      "ติดต่อ: แม่",
+      "ต.ตะลุโบะ อ.เมืองปัตตานี จ.ปัตตานี",
+    ]);
+  });
+
+  it("puts what the person typed on the map as text, never as HTML", () => {
+    const box = mineLabel({
+      ...place,
+      label: "<img src=x onerror=alert(1)>",
+      lines: ["<b>not bold</b>"],
+    });
+    expect(box.querySelector("img")).toBeNull();
+    expect(box.querySelectorAll("b")).toHaveLength(1); // only the name's own <b>
+    expect(box.textContent).toContain("<img src=x onerror=alert(1)>");
+    expect(box.textContent).toContain("<b>not bold</b>");
   });
 });

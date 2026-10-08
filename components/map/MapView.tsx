@@ -1,9 +1,10 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
+import type { GeoJSONSource, Map as MapLibreMap, Popup } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import type { MapLayer } from "@/lib/hazards";
+import { mineLabel } from "@/lib/mine-label";
 import {
   createServiceAreaMap,
   SERVICE_BOUNDS,
@@ -27,7 +28,22 @@ export type MapSelection =
  * drawn only in their own browser, from their own session (/api/me/places); nothing personal
  * reaches the public map data (safety rule 6).
  */
-export type MinePlace = { id: string; label: string; lat: number; lon: number; home: boolean };
+export type MinePlace = {
+  id: string;
+  label: string;
+  lat: number;
+  lon: number;
+  home: boolean;
+  /** Its own colour, so ten pins can be told apart at a glance (lib/mine-colors.ts). */
+  color: string;
+  /**
+   * What the pin says on hover (a laptop) or on tap (a phone or tablet): the name it was given,
+   * the person there, and the tambon, district and province. Already in the person's language;
+   * the map does no translating. Every line is put into the page as text, never as HTML: these
+   * are words the person typed.
+   */
+  lines: string[];
+};
 
 type Props = {
   /** What may be drawn. Empty: nothing of ours but the tambon outlines. */
@@ -53,9 +69,6 @@ const REPORTS_LINE = "jaga-reports-line";
 const PLACES = "jaga-places";
 const GAUGES = "jaga-gauges";
 const MINE = "jaga-mine";
-// Brand teal for the person's own places: it marks whose they are, never a status
-// (docs/brand.md; the level is in the card and in the tambon's colour underneath).
-const TEAL = "#2f9c95";
 
 type Collection = GeoJSON.FeatureCollection;
 const collection = (features: GeoJSON.Feature[]): Collection => ({
@@ -69,7 +82,7 @@ function toCollections(data: MapData | null, mine: MinePlace[]): Record<string, 
       mine.map((place) => ({
         type: "Feature",
         geometry: { type: "Point", coordinates: [place.lon, place.lat] },
-        properties: { id: place.id, home: place.home ? 1 : 0 },
+        properties: { id: place.id, home: place.home ? 1 : 0, color: place.color },
       })),
     ),
     [REPORTS]: collection(
@@ -120,10 +133,20 @@ export function MapView({
   const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
   const select = useRef(onSelect);
   const draw = useRef<() => void>(() => {});
+  // The places as the handlers below need them, without rebuilding the map when they change.
+  const minePlaces = useRef<MinePlace[]>(mine);
+  const popup = useRef<Popup | null>(null);
+  // When a label was opened by a tap. Phones send a mouse move of their own right after a tap,
+  // which would otherwise close the label in the same instant it appeared.
+  const tappedAt = useRef(0);
 
   useEffect(() => {
     select.current = onSelect;
   }, [onSelect]);
+
+  useEffect(() => {
+    minePlaces.current = mine;
+  }, [mine]);
 
   useEffect(() => {
     const collections = toCollections(data, mine);
@@ -204,9 +227,10 @@ export function MapView({
             type: "circle",
             source: MINE,
             paint: {
-              "circle-radius": ["case", ["==", ["get", "home"], 1], 9, 8],
-              "circle-color": ["case", ["==", ["get", "home"], 1], TEAL, "#ffffff"],
-              "circle-stroke-color": TEAL,
+              "circle-radius": ["case", ["==", ["get", "home"], 1], 10, 8],
+              "circle-color": ["get", "color"],
+              // A white ring keeps every shade readable on the basemap and on a coloured tambon.
+              "circle-stroke-color": "#ffffff",
               "circle-stroke-width": 3,
             },
           });
@@ -246,7 +270,46 @@ export function MapView({
         created.on("style.load", () => held.current.clear());
         created.on("styledata", redraw);
         created.on("idle", redraw);
+        /*
+         * The label of one of the person's own places: on hover with a mouse, and on tap on a
+         * phone or tablet, where the tap also opens the card below the map. MapLibre is already
+         * loaded by now, so this import is the cached module.
+         */
+        const showLabel = (place: MinePlace) => {
+          void import("maplibre-gl").then(({ Popup }) => {
+            if (map.current !== created) return;
+            popup.current?.remove();
+            popup.current = new Popup({ closeButton: false, offset: 14, maxWidth: "260px" })
+              .setLngLat([place.lon, place.lat])
+              .setDOMContent(mineLabel(place))
+              .addTo(created);
+          });
+        };
+        const hideLabel = () => {
+          if (Date.now() - tappedAt.current < 600) return;
+          popup.current?.remove();
+          popup.current = null;
+        };
+        const placeAt = (point: Parameters<typeof created.queryRenderedFeatures>[0]) => {
+          if (!created.getLayer(MINE)) return null;
+          const hit = created.queryRenderedFeatures(point, { layers: [MINE] })[0];
+          const id = hit?.properties?.id;
+          return id ? (minePlaces.current.find((p) => p.id === String(id)) ?? null) : null;
+        };
+        created.on("mousemove", (event) => {
+          const place = placeAt(event.point);
+          created.getCanvas().style.cursor = place ? "pointer" : "";
+          if (place) showLabel(place);
+          else hideLabel();
+        });
+        created.on("mouseout", hideLabel);
+
         created.on("click", (event) => {
+          const own = placeAt(event.point);
+          if (own) {
+            tappedAt.current = Date.now();
+            showLabel(own);
+          }
           const ids = [MINE, GAUGES, PLACES, REPORTS, TAMBON_FILL_LAYER].filter((id) =>
             created.getLayer(id),
           );
