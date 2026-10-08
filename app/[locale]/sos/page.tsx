@@ -9,6 +9,14 @@ import { projectLine } from "@/lib/hotlines";
 import { sosMessages } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Rendered per request, not at build time. The launch switch and the "not in service yet" page it
+ * controls are read here, and a prerendered page would freeze whichever answer the build saw: on
+ * launch day the switch would do nothing until someone rebuilt the site. The page is small and
+ * fetches nothing, and the service worker keeps the last visited copy for offline.
+ */
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: PageProps<"/[locale]/sos">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "sos" });

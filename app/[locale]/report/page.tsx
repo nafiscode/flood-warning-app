@@ -9,6 +9,14 @@ import { sosSendingEnabled } from "@/lib/features";
 import { reportMessages } from "@/lib/messages";
 import { buttonPrimary, buttonSecondary, notice } from "@/lib/ui";
 
+/**
+ * Rendered per request, not at build time. The launch switch and the "not in service yet" page it
+ * controls are read here, and a prerendered page would freeze whichever answer the build saw: on
+ * launch day the switch would do nothing until someone rebuilt the site. The page is small and
+ * fetches nothing, and the service worker keeps the last visited copy for offline.
+ */
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/report">): Promise<Metadata> {
