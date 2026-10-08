@@ -60,17 +60,6 @@
       "appHint": "Jika LINE meminta e-mel dan kata laluan, tekan pautan log masuk dengan aplikasi LINE di bahagian bawah halaman itu.",
       "unavailable": "Log masuk dengan LINE belum dibuka."
     },
-    "inApp": {
-      "title": "Buka Jaga dalam pelayar dahulu",
-      "body": "Anda membuka Jaga dari dalam aplikasi lain, seperti Messenger. Selepas log masuk dengan LINE, anda akan meneruskan dalam pelayar telefon anda.",
-      "open": {
-        "android": "Buka dalam pelayar",
-        "ios": "Buka dalam Safari"
-      },
-      "manual": "Jika butang tidak berfungsi, tekan menu (⋯) di sudut skrin dan pilih \"Buka dalam pelayar\".",
-      "manualOnly": "Tekan menu (⋯) di sudut skrin dan pilih \"Buka dalam pelayar\", kemudian log masuk di sana.",
-      "stay": "Atau terus log masuk dengan LINE dari sini."
-    },
     "phone": {
       "title": "Log masuk dengan nombor telefon",
       "label": "Nombor telefon bimbit",

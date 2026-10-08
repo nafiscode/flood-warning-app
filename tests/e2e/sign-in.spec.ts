@@ -69,48 +69,6 @@ test("sign-out only accepts a form post", async ({ request }) => {
   expect(response.status()).toBe(405);
 });
 
-test("inside Messenger's browser the page offers to open the phone's own browser first", async ({
-  browser,
-}) => {
-  const context = await browser.newContext({
-    viewport: { width: 360, height: 640 },
-    userAgent:
-      "Mozilla/5.0 (Linux; Android 13; SM-A146P Build/TP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/140.0.0.0 Mobile Safari/537.36 [FB_IAB/Orca-Android;FBAV/480.0.0.50.109;]",
-  });
-  const page = await context.newPage();
-  await page.goto("/en/sign-in?next=/account");
-  // The notice belongs to the LINE button, which CI (no LINE channel) does not show.
-  test.skip((await page.locator('a[href^="/api/auth/line"]').count()) === 0, "LINE not configured");
-  const open = page.locator('a[href^="intent://"]');
-  await expect(open).toBeVisible();
-  const href = (await open.getAttribute("href")) ?? "";
-  expect(href).toContain("/en/sign-in?next=%2Faccount#Intent;scheme=http");
-  expect((await open.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(48);
-  // Signing in here stays possible, and the page still fits a 360 px screen.
-  await expect(page.locator('a[href^="/api/auth/line"]')).toBeVisible();
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow).toBeLessThanOrEqual(0);
-  await context.close();
-});
-
-test("on an older iPhone inside Messenger the page gives written steps, not a dead button", async ({
-  browser,
-}) => {
-  const context = await browser.newContext({
-    viewport: { width: 360, height: 640 },
-    userAgent:
-      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_7_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/MessengerLiteForiOS;FBAV/480.0.0.30.106;FBBV/1;FBDV/iPhone10,4;FBMD/iPhone;FBSN/iOS;FBSV/16.7.2]",
-  });
-  const page = await context.newPage();
-  await page.goto("/en/sign-in");
-  test.skip((await page.locator('a[href^="/api/auth/line"]').count()) === 0, "LINE not configured");
-  await expect(page.locator('a[href^="x-safari-"]')).toHaveCount(0);
-  await expect(page.getByText('choose "Open in browser", then sign in there')).toBeVisible();
-  await context.close();
-});
-
 test("a sign-in that failed at Supabase and landed on the home page says so", async ({ page }) => {
   await page.goto(
     "/?error=server_error&error_code=oauth_client_state_not_found&error_description=OAuth+state+not+found",

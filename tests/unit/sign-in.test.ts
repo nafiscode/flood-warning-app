@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canOpenBrowser, inAppBrowser, isPhoneBrowser, openInBrowserHref } from "@/lib/features";
+import { isPhoneBrowser } from "@/lib/features";
 import { normalizePhone } from "@/lib/phone";
 import {
   isFlowId,
@@ -63,58 +63,6 @@ describe("isPhoneBrowser", () => {
     ]) {
       expect(isPhoneBrowser(ua)).toBe(false);
     }
-  });
-});
-
-describe("inAppBrowser", () => {
-  const MESSENGER_ANDROID =
-    "Mozilla/5.0 (Linux; Android 13; SM-A146P Build/TP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/140.0.0.0 Mobile Safari/537.36 [FB_IAB/Orca-Android;FBAV/480.0.0.50.109;]";
-  const MESSENGER_IPHONE =
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/MessengerLiteForiOS;FBAV/480.0.0.30.106;FBBV/1;FBDV/iPhone15,2;FBMD/iPhone;FBSN/iOS;FBSV/18.5]";
-
-  it("names the phone system inside Messenger, Facebook, Instagram and TikTok", () => {
-    expect(inAppBrowser(MESSENGER_ANDROID)).toBe("android");
-    expect(inAppBrowser(MESSENGER_IPHONE)).toBe("ios");
-    expect(
-      inAppBrowser(
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 390.0.0.20.70 (iPhone15,2; iOS 18_5; th_TH)",
-      ),
-    ).toBe("ios");
-    expect(
-      inAppBrowser(
-        "Mozilla/5.0 (Linux; Android 12; vivo 1906 Build/SP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/140.0.0.0 Mobile Safari/537.36 musical_ly_2024 BytedanceWebview/d8a21c6",
-      ),
-    ).toBe("android");
-  });
-
-  it("is null in a phone's own browser, in LINE's browser and on a computer", () => {
-    for (const ua of [
-      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
-      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/140.0.0.0 Mobile/15E148 Safari/604.1",
-      "Mozilla/5.0 (Linux; Android 13; SM-A146P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36",
-      "Mozilla/5.0 (Linux; Android 12; vivo 1906) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36 Line/15.14.0",
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-      "",
-      null,
-      undefined,
-    ]) {
-      expect(inAppBrowser(ua)).toBeNull();
-    }
-  });
-
-  it("offers the button on Android and on iOS 17 or later, written steps on older iPhones", () => {
-    expect(canOpenBrowser("android", MESSENGER_ANDROID)).toBe(true);
-    expect(canOpenBrowser("ios", MESSENGER_IPHONE)).toBe(true);
-    expect(canOpenBrowser("ios", MESSENGER_IPHONE.replace("OS 18_5", "OS 16_7_2"))).toBe(false);
-    expect(canOpenBrowser("ios", "iPhone")).toBe(false);
-  });
-
-  it("builds a link that opens the page in the phone's own browser", () => {
-    const url = "https://jaga.example/en/sign-in?next=%2Faccount";
-    expect(openInBrowserHref("ios", url)).toBe(`x-safari-${url}`);
-    expect(openInBrowserHref("android", url)).toBe(
-      `intent://jaga.example/en/sign-in?next=%2Faccount#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(url)};end`,
-    );
   });
 });
 
