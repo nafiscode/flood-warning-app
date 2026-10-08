@@ -26,10 +26,10 @@ type Props = {
   label: string;
 };
 
-// Lightning is white with a thin dark edge, never yellow: yellow is the Watch level (docs/brand.md).
+// Lightning is white (teal on a light background), never yellow: yellow is the Watch level (docs/brand.md).
 const COLORS = {
-  light: { ink: "#1D3B53", canopy: "#2F9C95", mark: "#FFFFFF", ray: "#2F9C95", edge: "#1F7A74" },
-  reverse: { ink: "#FFFFFF", canopy: "#7FD1C9", mark: "#1D3B53", ray: "#7FD1C9", edge: "#1D3B53" },
+  light: { ink: "#1D3B53", canopy: "#2F9C95", mark: "#FFFFFF", ray: "#2F9C95", bolt: "#1F7A74" },
+  reverse: { ink: "#FFFFFF", canopy: "#7FD1C9", mark: "#1D3B53", ray: "#7FD1C9", bolt: "#FFFFFF" },
 } as const;
 
 /** About 30 pictures a second is plenty for a slow turn and half the work for a cheap phone. */
@@ -38,7 +38,7 @@ const FRAME_MS = 32;
 /**
  * TRIAL (9 Oct 2026, owner's request). The canopy, the dot and the j turn three times together
  * about the upright of the j, the dot sending out a ray like a radar while they do; then all rest
- * as the static mark for three seconds, and it starts again. Lightning flashes on the canopy every five seconds, in
+ * as the static mark for three seconds, and it starts again. Lightning strikes the top of the canopy from the empty space above it every five seconds, in
  * three shapes (timed in app/globals.css). Nothing moves for people who ask their device for
  * reduced motion, and before the script runs, or without it, this is the static mark.
  */
@@ -101,6 +101,7 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
 
   const rest = dotMark(spec, 0);
   const { x0, x1, top } = spec.canopy;
+  // The bolts strike from above the mark, so the picture may draw a little outside its own box.
   // The bolts are drawn for the small mark's canopy (x 20–100, y 4–34); the full mark's is smaller.
   const fit = small
     ? undefined
@@ -111,7 +112,7 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
       viewBox={MARK_VIEWBOX}
       width={width}
       height={height}
-      className="shrink-0"
+      className="shrink-0 overflow-visible"
       role={label ? "img" : undefined}
       aria-label={label || undefined}
       aria-hidden={label ? undefined : true}
@@ -119,9 +120,6 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
       <defs>
         <clipPath id={`${id}dot`}>
           <circle cx={spec.dot.cx} cy={spec.dot.cy} r={spec.dot.r} />
-        </clipPath>
-        <clipPath id={`${id}dome`}>
-          <path d={canopyPath(spec)} />
         </clipPath>
         <linearGradient
           ref={fade}
@@ -137,7 +135,7 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
         </linearGradient>
       </defs>
       <path ref={canopy} d={canopyPath(spec)} fill={colors.canopy} />
-      <g clipPath={`url(#${id}dome)`} transform={fit}>
+      <g transform={fit}>
         {BOLTS.map((bolt, i) => (
           <g
             key={bolt.d}
@@ -147,12 +145,9 @@ export function SpinningMark({ width, height, small, tone, label }: Props) {
             strokeLinejoin="round"
           >
             {bolt.kind === "fill" ? (
-              <path d={bolt.d} fill="#FFFFFF" stroke={colors.edge} strokeWidth="1.4" />
+              <path d={bolt.d} fill={colors.bolt} />
             ) : (
-              <>
-                <path d={bolt.d} fill="none" stroke={colors.edge} strokeWidth="5.6" />
-                <path d={bolt.d} fill="none" stroke="#FFFFFF" strokeWidth="3.2" />
-              </>
+              <path d={bolt.d} fill="none" stroke={colors.bolt} strokeWidth="3.2" />
             )}
           </g>
         ))}

@@ -135,13 +135,16 @@ export const TURN_MS = 9000;
 export const REST_MS = 3000;
 
 /**
- * Lightning on the canopy: three shapes, drawn for the small mark (the full mark scales them).
+ * Lightning striking the canopy from the empty space above it: three shapes, drawn for the small
+ * mark (the full mark scales them). The header leaves only about 5 px above the logo, so the two
+ * tall ones come down over the canopy's shoulders, where there is room, and a small pair over
+ * the middle; none is drawn inside the canopy, and none rises more than 14 units above the box.
  * They flash in turn, one every 5 seconds (the timing is in app/globals.css).
  */
 export const BOLTS = [
-  { kind: "fill", d: "M63 6 L50 21 H58 L52 33 L71 16 H62 L67 6 Z" },
-  { kind: "line", d: "M75 10 L68 18 L75 20 L69 31 M72 19 L81 27" },
-  { kind: "line", d: "M40 12 L34 20 L41 21 L35 31 M49 8 L45 15 L50 16 L46 23" },
+  { kind: "fill", d: "M38 -13 L24 4 H31 L25 18 L43 0 H35 L41 -13 Z" },
+  { kind: "line", d: "M92 -13 L86 -3 L93 -1 L88 11 M90 -2 L99 5" },
+  { kind: "line", d: "M56 -13 L52 -6 L57 -5 L54 2 M67 -14 L63 -8 L68 -7 L65 1" },
 ] as const;
 
 /** Rest, a gentle start, a steady turn, a gentle stop: 0 to 1 over 0 to 1, flat at both ends. */
