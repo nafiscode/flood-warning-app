@@ -20,7 +20,7 @@ FLOOD_RULES = ("vv", "vh", "vv_or_vh", "vv_and_vh")
 # Sections that change pixel values. Their hash goes into every file name, so rasters made with
 # different parameters never share a name. Seasons, the Drive folder and local paths are left out.
 HASHED_KEYS = ("provinces", "sentinel1", "reference", "speckle", "threshold", "flood_rule",
-               "min_connected_pixels", "masks")
+               "min_connected_area_m2", "masks")
 # The counts in the per-event raster are 8-bit and 250+ are status codes (see naming.CODES).
 MAX_PASSES_PER_EVENT = 249
 
@@ -90,7 +90,7 @@ def _pair(value, name: str) -> tuple[float, float]:
 def validate(cfg: dict) -> dict:
     """Check the values that would otherwise fail late (inside an Earth Engine task) or silently."""
     for key in ("provinces", "sentinel1", "seasons", "priority_events", "reference", "speckle",
-                "threshold", "flood_rule", "min_connected_pixels", "masks", "export", "output_dir"):
+                "threshold", "flood_rule", "min_connected_area_m2", "masks", "export", "output_dir"):
         _need(key in cfg, f"config.yaml: missing section '{key}'.")
 
     _need(all(isinstance(c, str) and len(c) == 2 and c.isdigit() for c in cfg["provinces"]),
@@ -156,12 +156,14 @@ def validate(cfg: dict) -> dict:
     _need(cfg["flood_rule"] in FLOOD_RULES, "flood_rule must be one of: " + ", ".join(FLOOD_RULES) + ".")
     needed = {"vv": {"VV"}, "vh": {"VH"}}.get(cfg["flood_rule"], {"VV", "VH"})
     _need(needed <= set(pols), f"flood_rule '{cfg['flood_rule']}' needs polarisations {sorted(needed)}.")
-    _need(isinstance(cfg["min_connected_pixels"], int) and 0 <= cfg["min_connected_pixels"] <= 1024,
-          "min_connected_pixels must be a whole number from 0 to 1024.")
+    _need(isinstance(cfg["min_connected_area_m2"], (int, float)) and 0 <= cfg["min_connected_area_m2"] <= 1_000_000,
+          "min_connected_area_m2 must be an area from 0 to 1,000,000 m2.")
 
     m = cfg["masks"]
     _need(0 <= m["permanent_water"]["min_occurrence_pct"] < 100, "masks.permanent_water: 0 <= percent < 100.")
     _need(0 < m["slope"]["max_deg"] < 90 and m["hand"]["max_m"] > 0, "masks: slope and HAND limits must be positive.")
+    _need(0 <= m["slope"]["min_hand_m"] <= m["hand"]["max_m"],
+          "masks.slope.min_hand_m must lie between 0 and masks.hand.max_m (0 = the slope rule applies everywhere).")
     _need(isinstance(m["slope"]["dem_is_collection"], bool), "masks.slope.dem_is_collection must be true or false.")
     _need(m["layover_shadow"]["buffer_m"] >= 0, "masks.layover_shadow.buffer_m cannot be negative.")
 
@@ -187,6 +189,13 @@ def load_config(path: Path = CONFIG_PATH, scale_m: int | None = None) -> dict:
     if scale_m is not None:
         cfg["export"]["scale_m"] = scale_m
     return validate(cfg)
+
+
+def min_connected_pixels(cfg: dict) -> int:
+    """The small-patch filter in pixels at the export scale: 800 m2 is 8 pixels at 10 m and 2 at 20 m.
+    0 when the filter is off; never less than 1 pixel otherwise."""
+    area = cfg["min_connected_area_m2"]
+    return max(1, round(area / cfg["export"]["scale_m"] ** 2)) if area > 0 else 0
 
 
 def histogram_bins(cfg: dict) -> int:

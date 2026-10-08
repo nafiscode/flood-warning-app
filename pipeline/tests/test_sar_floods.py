@@ -226,6 +226,12 @@ def test_windows_are_bangkok_days_expressed_in_utc():
 def test_shipped_config_is_valid_and_matches_the_brief(cfg):
     assert cfg["masks"]["permanent_water"]["min_occurrence_pct"] == 80
     assert cfg["masks"]["slope"]["max_deg"] == 5 and cfg["masks"]["hand"]["max_m"] == 15
+    assert cfg["masks"]["slope"]["min_hand_m"] == 5 and cfg["min_connected_area_m2"] == 800
+    # The patch filter is an area: the same 800 m2 at both pixel sizes.
+    assert settings.min_connected_pixels(cfg) == 8
+    assert settings.min_connected_pixels(settings.load_config(scale_m=20)) == 2
+    assert settings.min_connected_pixels({**cfg, "min_connected_area_m2": 0}) == 0
+    assert settings.min_connected_pixels({**cfg, "min_connected_area_m2": 30}) == 1
     assert cfg["sentinel1"]["collection"] == "COPERNICUS/S1_GRD"
     assert set(cfg["provinces"]) == {"90", "94", "95", "96"}
     assert settings.histogram_bins(cfg) == 150
@@ -254,7 +260,8 @@ def _set(cfg, dotted, value):
     ("threshold.bimodality.smooth_bins", 4, "odd"),
     ("threshold.bimodality.max_valley_ratio", 1.5, "max_valley_ratio"),
     ("threshold.histogram.bin_db", 5.0, "at least 20 bins"),
-    ("min_connected_pixels", -1, "min_connected_pixels"),
+    ("min_connected_area_m2", -1, "min_connected_area_m2"),
+    ("masks.slope.min_hand_m", 20.0, "min_hand_m"),
     ("export.scale_m", 12.5, "whole number"),
     ("export.drive_folder", "a/b", "one folder name"),
     ("output_dir", "/tmp/sar", "relative"),

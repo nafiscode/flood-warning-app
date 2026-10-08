@@ -41,9 +41,9 @@ var P = {
   otsuRangeDb: [-12, -2],
   fallbackDropDb: {VV: -3, VH: -3},
   floodRule: 'vv',
-  minConnectedPixels: 8,
+  minConnectedPixels: 8,          // min_connected_area_m2 800 at the 10 m this script shows
   water: {asset: 'JRC/GSW1_4/GlobalSurfaceWater', band: 'occurrence', minOccurrencePct: 80},
-  slope: {demAsset: 'projects/sat-io/open-datasets/FABDEM', demBand: 'b1', demIsCollection: true, maxDeg: 5},
+  slope: {demAsset: 'projects/sat-io/open-datasets/FABDEM', demBand: 'b1', demIsCollection: true, maxDeg: 5, minHandM: 5},
   hand: {asset: 'MERIT/Hydro/v1_0_1', band: 'hnd', maxM: 15},
   layoverShadow: {enabled: true, shadowLiaDeg: 85, bufferM: 100},
   crs: 'EPSG:32647'
@@ -256,8 +256,10 @@ function staticMasks() {
   // Forced onto the DEM's own grid; otherwise slope is computed on the map's pixels (see ee_ops.py).
   var slope = ee.Terrain.slope(dem).reproject(demProjection);
   var aspect = ee.Terrain.aspect(dem).reproject(demProjection);
-  var steep = slope.unmask(0).gt(P.slope.maxDeg);
-  var high = ee.Image(P.hand.asset).select(P.hand.band).unmask(0).gt(P.hand.maxM);
+  var hand = ee.Image(P.hand.asset).select(P.hand.band).unmask(0);
+  // Steep ground counts only above minHandM: in the floodplain the slope rule cut out banks and levees.
+  var steep = slope.unmask(0).gt(P.slope.maxDeg).and(hand.gt(P.slope.minHandM));
+  var high = hand.gt(P.hand.maxM);
   return {water: water, terrain: steep.or(high), steep: steep, high: high, slope: slope, aspect: aspect};
 }
 

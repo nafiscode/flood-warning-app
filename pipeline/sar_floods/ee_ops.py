@@ -16,7 +16,7 @@ import math
 from . import naming
 from .grid import Grid, TileLattice
 from .plan import Export, Pass
-from .settings import histogram_bins
+from .settings import histogram_bins, min_connected_pixels
 
 _ee = None
 
@@ -122,8 +122,10 @@ def static_masks(cfg: dict) -> dict:
     slope = ee().Terrain.slope(dem).reproject(dem_projection)
     aspect = ee().Terrain.aspect(dem).reproject(dem_projection)
 
-    steep = slope.unmask(0).gt(m["slope"]["max_deg"])
-    high = ee().Image(m["hand"]["asset"]).select(m["hand"]["band"]).unmask(0).gt(m["hand"]["max_m"])
+    hand = ee().Image(m["hand"]["asset"]).select(m["hand"]["band"]).unmask(0)
+    # Steep ground counts only above min_hand_m: in the floodplain the slope rule cut out banks and levees.
+    steep = slope.unmask(0).gt(m["slope"]["max_deg"]).And(hand.gt(m["slope"]["min_hand_m"]))
+    high = hand.gt(m["hand"]["max_m"])
     return {"water": water, "terrain": steep.Or(high), "slope": slope, "aspect": aspect}
 
 
@@ -328,8 +330,8 @@ def threshold_image(cfg: dict, tile_index, decisions: dict, pol: str):
 
 
 def _remove_small(flood, cfg: dict):
-    """Drop flood patches smaller than min_connected_pixels (8-connected, at the output scale)."""
-    n = cfg["min_connected_pixels"]
+    """Drop flood patches smaller than min_connected_area_m2 (8-connected, counted at the output scale)."""
+    n = min_connected_pixels(cfg)
     if n <= 1:
         return flood
     size = flood.selfMask().connectedPixelCount(n + 1, True)

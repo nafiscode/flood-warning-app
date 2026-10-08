@@ -1,8 +1,9 @@
 # Sentinel-1 flood extents (S2). Every value here is written into the run log; the ones that change
 # pixel values also go into the 7-character parameter hash in each file name (see settings.HASHED_KEYS).
 # Reasons and known issues: METHODS.md. Nothing here has been tuned against real scenes yet.
-# Confirmed by the owner on 2026-10-05 (docs/decisions.md): fallback_drop_db, flood_rule,
-# min_connected_pixels, the reference window, and 10 m for the two priority events.
+# Confirmed by the owner on 2026-10-05 (docs/decisions.md): fallback_drop_db, flood_rule, the
+# small-patch filter, the reference window, and 10 m for the two priority events. Changed by the owner
+# on 2026-10-08 after looking at the 2024 maps: masks.slope.min_hand_m and min_connected_area_m2.
 
 # DOPA province codes in scope. The processing area is aoi.geojson, built from these (`sar_floods aoi`).
 provinces:
@@ -73,10 +74,11 @@ threshold:
 # The extent rasters keep both as bits (1 = VV, 2 = VH), so this can be revisited without re-running.
 flood_rule: vv
 
-# Flood patches smaller than this many 8-connected pixels (at the export scale) are dropped, per scene
-# and per polarisation, before anything is combined. 0 = off. A maximum over many scenes otherwise
-# collects every scene's leftover speckle.
-min_connected_pixels: 8
+# Flood patches (8-connected) smaller than this area are dropped, per scene and per polarisation,
+# before anything is combined. 0 = off. A maximum over many scenes otherwise collects every scene's
+# leftover speckle. An area, not a pixel count, so that 10 m and 20 m rasters mean the same:
+# 800 m2 = 8 pixels at 10 m, 2 pixels at 20 m.
+min_connected_area_m2: 800
 
 masks:
   permanent_water:
@@ -89,7 +91,10 @@ masks:
     dem_asset: projects/sat-io/open-datasets/FABDEM
     dem_band: b1
     dem_is_collection: true
-    max_deg: 5.0                      # masked where slope > 5 deg
+    max_deg: 5.0                      # masked where slope > 5 deg ...
+    # ... and the land is more than this far above the nearest drainage (the hand layer below). Along
+    # the rivers the slope rule alone masked banks and levees inside the floodplain (owner, 2026-10-08).
+    min_hand_m: 5.0
   hand:
     asset: MERIT/Hydro/v1_0_1
     band: hnd
