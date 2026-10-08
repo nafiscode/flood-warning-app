@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import rasterio
 
-from hazard import compare, hand, sources
+from hazard import classes, compare, hand, sources
 from hazard.__main__ import load_config
 
 
@@ -21,6 +21,52 @@ def test_shipped_config_is_valid_and_names_follow_the_box():
     # FABDEM's cell centres lie on whole arc-seconds: the first cell is centred on 99 E, 9 N.
     assert transform[2] + transform[0] / 2 == pytest.approx(99) and transform[5] + transform[4] / 2 == pytest.approx(9)
     assert "CC BY-NC-SA" in cfg["dem"]["attribution"]
+
+
+RULES = {"high": {"min_seasons": 4, "all_events": True}, "medium": {"min_seasons": 2, "min_frequency": 0.02, "any_event": True},
+         "low": {"max_hand_m": 2.0}, "radar_blind": {"medium_max_hand_m": 2.0, "low_max_hand_m": 5.0}}
+
+
+def test_hazard_classes_follow_the_approved_rules():
+    #                 0     1     2     3     4     5     6     7     8     9
+    hand_m = np.array([[9.0, 1.0, 9.0, 9.0, 9.0, 1.5, 4.0, 6.0, 1.0, np.nan]])
+    seasons = np.array([[0, 0, 2, 5, 1, 0, 0, 0, 0, 3]], dtype="uint8")
+    freq = np.array([[0, 0, 0.01, 0.2, 0.05, 0, 0, 0, 0, 0.1]], dtype="float32")
+    events = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype="uint8")
+    observed = np.array([[1, 1, 1, 1, 1, 1, 1, 1, 0, 1]], dtype=bool)
+    built = np.array([[0, 0, 0, 0, 0, 1, 1, 1, 0, 0]], dtype=bool)
+    land = np.ones((1, 10), dtype=bool)
+    cls, basis = classes.classify(hand_m, land, seasons, freq, events, observed, built, RULES, 2)
+    #      high ground, low ground, 2 seasons, 5 seasons, 5% of passes, built 1.5 m, built 4 m, built 6 m, unseen 1 m, no HAND but 3 seasons
+    assert cls.tolist() == [[1, 2, 3, 4, 3, 3, 2, 1, 3, 3]]
+    assert basis.tolist() == [[1, 1, 1, 1, 1, 2, 2, 2, 3, 1]]
+    # Both priority events flooded: high. One: medium. A radar flag in built-up land still counts.
+    events = np.array([[2, 1, 0, 0, 0, 0, 0, 2, 0, 0]], dtype="uint8")
+    cls, _ = classes.classify(hand_m, land, np.zeros_like(seasons), np.zeros_like(freq), events, observed, built, RULES, 2)
+    assert cls[0, :2].tolist() == [4, 3] and cls[0, 7] == 4
+    # With one event left (the hold-out run) "all events" cannot make a cell high.
+    cls, _ = classes.classify(hand_m, land, np.zeros_like(seasons), np.zeros_like(freq), np.minimum(events, 1), observed, built, RULES, 1)
+    assert cls[0, 0] == 3
+    # Outside the land nothing is classed.
+    land[0, 0] = False
+    cls, basis = classes.classify(hand_m, land, seasons, freq, events, observed, built, RULES, 2)
+    assert cls[0, 0] == 0 and basis[0, 0] == 0
+
+
+def test_class_areas_scores_and_the_built_up_window():
+    cls = np.array([[4, 4, 3, 2, 1, 1, 0, 0]], dtype="uint8")
+    basis = np.array([[1, 1, 2, 3, 1, 1, 0, 0]], dtype="uint8")
+    a = classes.areas(cls, basis, 1.0, np.array([[1, 0, 5, 2, 0, 1, 9, 9]], dtype="float32"))
+    assert a["land_km2"] == 6.0 and a["buildings"] == 9
+    assert a["classes"]["high"]["buildings"] == 1 and a["classes"]["medium"]["buildings"] == 5
+    assert a["by_basis"]["medium"]["elevation only: built-up"] == 1.0
+    flood = np.array([[1, 0, 1, 0, 1, 0, 1, 0]], dtype=bool)
+    seen = np.array([[1, 1, 1, 1, 1, 0, 1, 1]], dtype=bool)
+    s = classes.score(cls, flood, seen)
+    assert s["flooded_cells"] == 3 and s["classes"]["high"]["share_of_flood_pct"] == pytest.approx(33.3)
+    assert s["medium_or_high"] == {"hit_rate_pct": pytest.approx(66.7), "csi": pytest.approx(0.5)}
+    m = classes.box_mean(np.array([[0, 0, 0], [0, 9, 0], [0, 0, 0]], dtype="float32"), 3)
+    assert m[1, 1] == pytest.approx(1.0) and m[0, 0] == pytest.approx(1.0) and m.shape == (3, 3)
 
 
 def test_stream_scores_count_mapped_water_found_and_streams_explained():

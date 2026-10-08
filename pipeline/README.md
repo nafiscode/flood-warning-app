@@ -57,6 +57,8 @@ uv run python -m hazard sources-export      # FABDEM and JRC water occurrence fo
 uv run python -m hazard sources-download    # -> out\hazard\sources
 uv run python -m hazard hand                # local, about 10 minutes -> out\hazard\work (finished steps are skipped)
 uv run python -m hazard hand-burned         # the decided HAND: rivers burned in, 0.9 km2 streams, coastal rule -> out/hazard/burned/hand.tif
+uv run python -m hazard buildings-fetch     # Open Buildings presence and counts on the hazard grid -> out/hazard/buildings
+uv run python -m hazard classes             # hazard classes (add --hold-out 2025 for the check) -> out/hazard/classes
 uv run python -m hazard streams-compare     # OpenStreetMap waterways (Overpass, cached) and JRC water -> out\hazard\streams_compare.json
 ```
 

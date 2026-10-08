@@ -1,6 +1,6 @@
 # Hazard baseline: methods note (S3)
 
-Status, 8 Oct 2026: **the HAND layer is decided and built** (see "The decided HAND"): streams from 0.9 km², mapped rivers burned in for the routing, height above sea level on coastal land without a stream. The hazard classes, the aggregation and the tiles are not started. Nothing here is tuned or validated. All parameters are in `config.yaml`.
+Status, 9 Oct 2026: **the HAND layer is decided and built** (see "The decided HAND"): streams from 0.9 km², mapped rivers burned in for the routing, height above sea level on coastal land without a stream. **The hazard classes have had a first trial** on the first radar run (see "Hazard classes: first trial"); the final classes wait for the second radar run. The tambon table and the tiles are not started. Nothing here is tuned or validated. All parameters are in `config.yaml`.
 
 FABDEM stays (owner, 8 Oct 2026): what is derived from it is published under CC BY-NC-SA 4.0 with its credit line; Jaga is non-profit and the donation feature is off (`docs/decisions.md`, `docs/attributions.md`).
 
@@ -93,6 +93,46 @@ What the data say for the city centre (100.455–100.485° E, 6.995–7.020° N,
 - **HAND: low throughout.** Median 1.1 m; 45 % of the centre under 1 m, 69 % under 2 m, 78 % under 3 m, 96 % under 5 m. Ground elevation 7–11 m.
 
 So in the one town where a heavy flood is known, the radar maps are blind and HAND is not: a class limit of 2 m on HAND would cover about two thirds of the flooded centre, 5 m nearly all of it. The exact flooded outline is not known here; "the city centre" is the owner's description, not a mapped extent.
+
+## Hazard classes: first trial (9 Oct 2026, on the first radar run, not final)
+
+Plan approved by the owner on 9 Oct (`docs/decisions.md`); rules and limits in `config.yaml` under `classes`, code in `classes.py`, run with `hazard classes`. The trial uses the radar rasters of the first run (`cd222f1`); the final classes are made from the second run (`c97e0bf`).
+
+How the inputs reach the 30 m grid: a cell counts as flooded in a season or event if any radar pixel in it is flooded by the VV rule (maximum resampling), and as observed if any pixel in it is valid. The frequency is the largest per-pixel count of flooded passes over the largest count of valid passes in the cell. This leans towards more flood per cell than the 10 m and 20 m rasters show. Built-up land: mean building presence of at least 0.10 over a 150 m window (Open Buildings 2.5D Temporal, 2023): 692 km².
+
+Result inside the four provinces (18,772 km², 2.26 million buildings):
+
+| Class | km² | Share of land | Buildings | Of which from elevation only: built-up / not seen by radar (km²) |
+|---|---|---|---|---|
+| High | 916 | 4.9 % | 20,725 | 6 / 0 |
+| Medium | 1,399 | 7.5 % | 599,632 | 282 / 154 |
+| Low | 3,451 | 18.4 % | 810,532 | 236 / 155 |
+| Minimal | 13,007 | 69.3 % | 826,381 | 168 / 8,772 |
+
+The two towns the owner knows flooded:
+
+| | High | Medium | Low | Minimal |
+|---|---|---|---|---|
+| Hat Yai city centre (flooded 19–21 Nov 2025) | 0.5 % | 70.5 % | 25.0 % | 4.0 % |
+| Pattani town (flooded Nov 2024) | 5.0 % | 59.2 % | 32.9 % | 2.9 % |
+
+Hold-out check: the classes built without season 2025 and without the Nov–Dec 2025 event, scored against that event on the land it observed:
+
+| Class (without 2025) | Share of the 2025 flood that fell in it | Share of the class that flooded in 2025 |
+|---|---|---|
+| High | 45.8 % | 78.6 % |
+| Medium | 27.0 % | 27.9 % |
+| Low | 16.5 % | 5.6 % |
+| Minimal | 10.7 % | 3.0 % |
+
+Medium and High together caught 72.8 % of the 2025 flood (critical success index 0.40).
+
+Reading it:
+- The classes order the land correctly: the flooded share falls from 79 % to 3 % down the classes. A tenth of the 2025 flood fell on land classed Minimal.
+- **High is close to "wet every year".** Four in five of its cells flooded again in 2025, and it holds under 1 % of the buildings. Much of it is probably paddy and other seasonal water, which is a hazard for a house but not news to the people who farm it.
+- **Most buildings in Medium are there because of the built-up rule, not because the radar saw water.** 600,000 buildings are Medium, and built-up land contributes 282 km² of that class from elevation alone. That is the rule doing what was decided after Pattani and Hat Yai; it also means the building counts depend on the 2 m and 5 m limits more than on anything measured.
+- The check is radar against radar. It says the classes predict where the same instrument sees water again, not that people were flooded there. It cannot test the built-up rule at all, because the radar does not see flood in towns.
+- 8,772 km² is Minimal on elevation alone: hill land the radar masks, with HAND above 5 m.
 
 ## Known issues and open points
 

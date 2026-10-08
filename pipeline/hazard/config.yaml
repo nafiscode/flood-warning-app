@@ -51,5 +51,34 @@ compare:
   jrc_min_occurrence_pct: 50
   tolerance_cells: 2                  # a mapped cell counts as found with a modelled stream within 60 m
 
+# Buildings on the hazard grid (buildings.py): the built-up mask and the building counts per class.
+buildings:
+  asset: GOOGLE/Research/open-buildings-temporal/v1
+  year: 2023                          # the newest year in the dataset
+  presence_band: building_presence
+  count_band: building_fractional_count
+  native_scale_m: 0.5
+  attribution: "Open Buildings 2.5D Temporal Dataset, Google Research (Sirko et al. 2023), CC BY 4.0"
+
+# Hazard classes (classes.py). Plan approved by the owner on 2026-10-09; every number is a starting value.
+classes:
+  radar_hash: cd222f1                 # which radar run feeds the classes; c97e0bf when the second run is in
+  seasons: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  season_scale_m: 20
+  events: [2024-nov-dec, 2025-nov-dec]
+  event_scale_m: 10
+  high: {min_seasons: 4, all_events: true}
+  medium: {min_seasons: 2, min_frequency: 0.02, any_event: true}     # the frequency floor of 2026-10-08
+  low: {max_hand_m: 2.0}
+  radar_blind:                        # built-up land, and land the radar masks or never observed
+    built_min_presence: 0.10          # mean building presence over the window below
+    built_window_cells: 5             # 150 m: flooding between buildings is hidden well beyond one cell
+    medium_max_hand_m: 2.0
+    low_max_hand_m: 5.0
+  # Places to read the result at: [west, south, east, north].
+  benchmarks:
+    "Hat Yai city centre (heavily flooded 19-21 Nov 2025, owner)": [100.455, 6.995, 100.485, 7.020]
+    "Pattani town (flooded Nov 2024, owner)": [101.235, 6.855, 101.275, 6.885]
+
 # Local outputs, relative to pipeline/ (ignored by git through the root rule "out/").
 output_dir: out/hazard
