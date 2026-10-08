@@ -56,6 +56,43 @@ def test_downslope_paths_follow_the_pointer_until_it_ends():
     assert paths.sum() == 4 + 4 + 1 and not paths[0, :2].any()
 
 
+def test_hand_follows_the_flow_to_the_stream_and_uses_sea_level_on_the_coast():
+    # 1 x 7 strip flowing east: land, land, stream, | land, land flowing east to the sea (nodata) | sea
+    surface = np.array([[12.0, 9.0, 5.0, hand.NODATA, 3.0, 1.0, hand.NODATA]], dtype="float32")
+    pointer = np.array([[2, 2, 0, hand.NODATA, 2, 2, hand.NODATA]], dtype="float32")
+    streams = np.array([[0, 0, 1, 0, 0, 0, 0]], dtype=bool)
+    sea = np.array([[0, 0, 0, 0, 0, 0, 1]], dtype=bool)
+    h = hand.hand_from_flow(pointer, streams, surface, sea)
+    assert h[0, :3].tolist() == [7.0, 4.0, 0.0]                  # height above the stream cell they drain to
+    assert h[0, 4:6].tolist() == [3.0, 1.0]                      # no stream on the way: height above sea level
+    assert h[0, 3] == hand.NODATA and h[0, 6] == hand.NODATA
+    # The same coastal cells with no sea beside the end of their path (the edge of the window): no value.
+    assert (hand.hand_from_flow(pointer, streams, surface, np.zeros_like(sea))[0, 4:6] == hand.NODATA).all()
+    # A stream cell higher than the land draining to it (burned routing over an unburned surface): 0, not negative.
+    surface[0, 1] = 4.0
+    assert hand.hand_from_flow(pointer, streams, surface, sea)[0, 1] == 0.0
+    # A path that would step off the east edge of the grid does not wrap to the next row.
+    wrap = hand.hand_from_flow(np.array([[2, 2], [0, 0]], dtype="float32"), np.array([[0, 0], [1, 0]], dtype=bool),
+                               np.array([[5.0, 4.0], [1.0, 1.0]], dtype="float32"), np.zeros((2, 2), dtype=bool))
+    assert wrap[0, 1] == hand.NODATA and wrap[1, 0] == 0.0
+
+
+def test_rivers_are_burned_into_the_dem_for_routing_only(tmp_path):
+    dem = np.full((20, 20), 50.0)
+    dem[0, 0] = hand.NODATA
+    write_dem(tmp_path / "dem.tif", dem)
+    with rasterio.open(tmp_path / "dem.tif") as src:
+        x0, y0 = src.transform * (0.5, 10.5)
+        x1, y1 = src.transform * (19.5, 10.5)
+        from pyproj import Transformer
+        lon, lat = Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True).transform([x0, x1], [y0, y1])
+    river = {"type": "LineString", "coordinates": list(zip(lon, lat))}
+    cells = hand.burn_rivers(tmp_path / "dem.tif", tmp_path / "burned" / "dem_utm.tif", [river], 10)
+    with rasterio.open(tmp_path / "burned" / "dem_utm.tif") as src:
+        burned = src.read(1)
+    assert 18 <= cells <= 22 and (burned[10, 1:19] == 40).all() and (burned[5] == 50).all() and burned[0, 0] == hand.NODATA
+
+
 def write_dem(path, data, crs="EPSG:32647", scale=30, west=700020.0, north=700020.0, nodata=hand.NODATA):
     profile = dict(driver="GTiff", dtype="float32", count=1, width=data.shape[1], height=data.shape[0], crs=crs,
                    transform=rasterio.Affine(scale, 0, west, 0, -scale, north), nodata=nodata)

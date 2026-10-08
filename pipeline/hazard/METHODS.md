@@ -1,8 +1,8 @@
 # Hazard baseline: methods note (S3)
 
-Status, 6 Oct 2026: the source rasters are exported and downloaded, and HAND has run once for four candidate stream thresholds. The stream threshold is **not chosen**; the hazard classes, the aggregation and the tiles are not started. Nothing here is tuned or validated. All parameters are in `config.yaml`.
+Status, 8 Oct 2026: **the HAND layer is decided and built** (see "The decided HAND"): streams from 0.9 km², mapped rivers burned in for the routing, height above sea level on coastal land without a stream. The hazard classes, the aggregation and the tiles are not started. Nothing here is tuned or validated. All parameters are in `config.yaml`.
 
-Nothing derived from FABDEM (CC BY-NC-SA 4.0) is published until the owner has decided on the licence (`docs/decisions.md`, 6 Oct 2026).
+FABDEM stays (owner, 8 Oct 2026): what is derived from it is published under CC BY-NC-SA 4.0 with its credit line; Jaga is non-profit and the donation feature is off (`docs/decisions.md`, `docs/attributions.md`).
 
 ## Sources
 
@@ -58,11 +58,36 @@ What this says:
 - The larger problem is position in the plain. Below 20 m, about four in ten mapped river cells have no modelled stream within 60 m at any threshold: D8 on a 30 m bare-earth model does not follow the real channels in flat land. The threshold cannot fix that. Options: burn the mapped rivers into the DEM before breaching; in the plain, measure height above mapped water (OSM, JRC) instead of the modelled streams; or accept it and rely on the radar extents there.
 - Canals and drains are mostly not followed, as expected.
 
+## The decided HAND (8 Oct 2026, not validated)
+
+Owner's decision of 8 Oct (`docs/decisions.md`), built by `hazard hand-burned` into `out/hazard/burned/`:
+1. OpenStreetMap ways tagged `waterway=river` are rasterised and the DEM is lowered by 10 m along them. Streams and canals are not burned: they are mapped too unevenly.
+2. Breaching, filling, D8 directions and accumulation as before, on the burned DEM. Streams from 1,000 cells (0.9 km²).
+3. HAND is measured on the **unburned** surface along the flow directions of the burned one (`hand.hand_from_flow`): each cell's height above the stream cell it drains to; negative results (a stream cell higher than the land draining to it) are set to 0.
+4. Coastal rule: a cell whose flow path ends beside the sea or Songkhla Lake without meeting a stream gets its height above sea level. A path that ends at the edge of the window gets no value.
+
+Against the first HAND at the same threshold, inside the four provinces:
+
+| | First (no burn) | Decided |
+|---|---|---|
+| Land without a HAND value | 294 km² | 0 km² |
+| OSM river cells with a stream within 60 m | 65 % | 90 % |
+| the same, below 20 m | 57 % | 86 % |
+| OSM streams (not burned) with a stream within 60 m | 50 % | 50 % |
+| JRC water over 50 % with a stream within 60 m | 41 % | 40 % |
+| Land under 1 m / 2 m / 5 m | 18.1 / 24.9 / 37.0 % | 19.2 / 26.2 / 38.7 % |
+| 2024 radar flood under 1 m / 2 m / 5 m | 76.8 / 85.8 / 92.2 % | 75.6 / 86.9 / 95.4 % |
+
+Reading it honestly:
+- The river figures improve because the rivers were burned in; that is the method working, not an independent test. The 10 % still not matched are mostly mapped rivers with less than 0.9 km² draining to them.
+- The independent check is the 2024 radar flood, and there the change is small: slightly less of the flood under 1 m, slightly more under 2 m, and 95 % against 92 % under 5 m. Burning moves streams onto the real channels but does not sharpen HAND much as a predictor of where the radar saw water.
+- The coastal rule gives every land cell a value. It treats a storm-tide or river-mouth flood as "sea at 0 m", which is a simplification.
+- The 2024 flood used here is from the first radar run (`cd222f1`); the figures will be recomputed with the second run.
+
 ## Known issues and open points
 
-- **Stream threshold: to be chosen by the owner.** A provisional 1000 cells (0.9 km²) is a common middle value; the data above do not decide it.
-- **Lowland stream position** (above): decide whether to burn mapped rivers in.
-- **Coastal land without HAND**: cells that drain to the sea or the lake without meeting a stream get no value (210–641 km² in the provinces, by threshold). They are low coastal land and need a rule, for example height above sea level.
+- Stream threshold, river burning and the coastal rule were decided on 8 Oct 2026 (above). The burn depth (10 m) and the choice of rivers only are first values.
+- Built-up land: the radar under-reports flooding in towns (owner, 8 Oct: Pattani town flooded where the map shows little), so the hazard classes must lean on HAND there, not on the radar frequency.
 - Songkhla Lake is treated like the sea (level 0). Its level in a flood is not.
 - The breaching distance and the missing cost limit are first guesses; dams (Bang Lang) and road embankments were not looked at one by one.
 - The window is a workaround for memory; a larger machine can run the whole box.

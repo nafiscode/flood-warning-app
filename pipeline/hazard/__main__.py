@@ -7,6 +7,8 @@ Commands
   hand [--force]               DEM on the working grid, depressions breached, flow direction and
                                accumulation, then streams and HAND for every candidate threshold, into
                                <output_dir>/work/ (local, WhiteboxTools; finished steps are skipped)
+  hand-burned [--force]        the decided HAND (decision 2026-10-08): rivers burned in for the routing,
+                               one stream threshold, coastal rule; into <output_dir>/burned/
   streams-compare              score every candidate stream network against OpenStreetMap waterways
                                (fetched once from Overpass, cached in <output_dir>/osm/) and JRC water;
                                writes <output_dir>/streams_compare.json
@@ -85,6 +87,51 @@ def run_hand(cfg: dict, force: bool) -> None:
               f"WARNING: flow from the window edge crosses {cut} cells of the provinces; widen hand.bbox_deg")
 
 
+def _user_agent(cfg: dict) -> str:
+    contact = env_value("CONTACT_EMAIL")
+    agent = cfg["compare"]["user_agent"]
+    return agent.format(contact=contact) if contact else agent.replace("; {contact}", "")
+
+
+def run_hand_burned(cfg: dict, force: bool) -> None:
+    import numpy as np
+    import rasterio
+
+    root = output_dir(cfg)
+    work = root / "burned"
+    h, c = cfg["hand"], cfg["compare"]
+    surface = root / "work" / "dem_utm.tif"
+    if not surface.exists():
+        raise sar_settings.ConfigError("out/hazard/work/dem_utm.tif is missing: run `hazard hand` first.")
+    n = h["stream_threshold_cells"]
+    if force or not (work / "dem_utm.tif").exists():
+        ways = compare.fetch_waterways(h.get("bbox_deg") or cfg["bbox_deg"], c["waterway_classes"], c["overpass_url"],
+                                       _user_agent(cfg), root / "osm")
+        rivers = [w["geometry"] for w in ways if w["class"] in h["burn"]["waterway_classes"]]
+        cells = hand.burn_rivers(surface, work / "dem_utm.tif", rivers, h["burn"]["depth_m"])
+        print(f"burned {len(rivers)} mapped rivers into {cells} cells, {h['burn']['depth_m']} m deep")
+    hand.condition(work, h["breach_dist_cells"], h["breach_max_cost"], force)
+    wbt = hand._wbt(work)
+    streams_path = work / f"streams_{n}.tif"
+    if force or not streams_path.exists():
+        hand._run(f"streams, {n} cells", wbt.extract_streams("d8_accum.tif", streams_path.name, threshold=n,
+                                                             zero_background=False), streams_path)
+    with rasterio.open(surface) as src:
+        z, profile = src.read(1), src.profile
+    with rasterio.open(work / "d8_pointer.tif") as src:
+        pointer = src.read(1)
+    with rasterio.open(streams_path) as src:
+        s = src.read(1)
+        streams = (s > 0) & (s != src.nodata) if src.nodata is not None else s > 0
+    del s
+    result = hand.hand_from_flow(pointer, streams, z, hand.window_sea(surface, h.get("bbox_deg") or cfg["bbox_deg"]))
+    with rasterio.open(work / "hand.tif", "w", **profile) as dst:
+        dst.write(result, 1)
+    land = z != hand.NODATA
+    known = result != hand.NODATA
+    print(f"hand.tif: {int(streams.sum())} stream cells; HAND for {known.sum() / land.sum():.1%} of the land cells")
+
+
 def run_compare(cfg: dict) -> None:
     root = output_dir(cfg)
     c, h = cfg["compare"], cfg["hand"]
@@ -110,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     for name in ("sources-export", "sources-download"):
         sub.add_parser(name).add_argument("--dry-run", action="store_true")
     sub.add_parser("hand").add_argument("--force", action="store_true")
+    sub.add_parser("hand-burned").add_argument("--force", action="store_true")
     sub.add_parser("streams-compare")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -117,6 +165,9 @@ def main(argv: list[str] | None = None) -> int:
         cfg = load_config()
         if args.command == "hand":
             run_hand(cfg, args.force)
+            return 0
+        if args.command == "hand-burned":
+            run_hand_burned(cfg, args.force)
             return 0
         if args.command == "streams-compare":
             run_compare(cfg)

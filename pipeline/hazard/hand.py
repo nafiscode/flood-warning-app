@@ -11,6 +11,10 @@ Chain, one GeoTIFF per step in <output_dir>/work/:
 
 The stream threshold n is not fixed here: `run` makes one streams/HAND pair per candidate and
 `compare.py` scores each network against mapped rivers.
+
+The decided product (decision 2026-10-08) is built in <output_dir>/burned/: mapped rivers are burned into
+the DEM for the routing, the threshold is one value, HAND is measured on the unburned surface, and
+coastal land without a stream gets its height above sea level (burn_rivers, hand_from_flow).
 """
 
 from __future__ import annotations
@@ -166,3 +170,87 @@ def hand_for_threshold(work: Path, threshold_cells: int, force: bool = False) ->
         _run(f"HAND, {threshold_cells} cells",
              wbt.elevation_above_stream("dem_breached.tif", streams.name, hand.name), hand)
     return streams, hand
+
+
+# ---------------------------------------------------------------- the decided product (decision 2026-10-08)
+
+def burn_rivers(dem_path: Path, out_path: Path, river_geometries: list[dict], depth_m: float) -> int:
+    """Lower the DEM by `depth_m` along mapped rivers (GeoJSON lines in EPSG:4326), so that flow routing
+    follows the real channels in flat land. Returns the number of cells lowered. Used for routing only:
+    HAND is measured on the unburned surface (hand_from_flow)."""
+    with rasterio.open(dem_path) as src:
+        dem, profile = src.read(1), src.profile
+        crs = src.crs.to_string()
+    lines = [transform_geom("EPSG:4326", crs, g) for g in river_geometries]
+    river = features.rasterize(lines, out_shape=dem.shape, transform=profile["transform"], fill=0, default_value=1,
+                               dtype="uint8").astype(bool) & (dem != NODATA)
+    dem[river] -= depth_m
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with rasterio.open(out_path, "w", **profile) as dst:
+        dst.write(dem, 1)
+    return int(river.sum())
+
+
+def window_sea(dem_path: Path, bbox_deg: list[float]) -> np.ndarray:
+    """True where the working DEM has no data inside the lon/lat window: sea and Songkhla Lake. Cells
+    without data outside the window are the edge of the computation, not water."""
+    with rasterio.open(dem_path) as src:
+        nodata = src.read(1) == NODATA
+        inside = np.zeros(nodata.shape, dtype="uint8")
+        w, s, e, n = bbox_deg
+        step = 0.01
+        ones = np.ones((int(round((n - s) / step)), int(round((e - w) / step))), dtype="uint8")
+        reproject(ones, inside, src_transform=rasterio.Affine(step, 0, w, 0, -step, n), src_crs="EPSG:4326",
+                  dst_transform=src.transform, dst_crs=src.crs, dst_nodata=0, resampling=Resampling.nearest)
+    return nodata & (inside == 1)
+
+
+def hand_from_flow(pointer: np.ndarray, streams: np.ndarray, surface: np.ndarray, sea: np.ndarray) -> np.ndarray:
+    """HAND on `surface` (the unburned DEM) along the D8 directions in `pointer` (from the burned DEM).
+
+    Every cell is followed down to the first stream cell; HAND is its height above that cell. A cell
+    whose path ends beside the sea or the lake without meeting a stream gets its height above sea
+    level (the coastal rule). A path that ends anywhere else (the edge of the window, an unfilled
+    pit) gives no value. Negative heights (a levee between the cell and its stream is not a negative
+    height; a stream cell higher than the land that drains to it is a DEM artefact) are set to 0."""
+    valid = surface != NODATA
+    shape = surface.shape
+    index = np.full(surface.size, -1, dtype="int32")
+    flat_valid = np.flatnonzero(valid.ravel())
+    index[flat_valid] = np.arange(flat_valid.size, dtype="int32")          # cell -> position among the valid cells
+    code = np.where((pointer > 0) & (pointer < 256), pointer, 0).astype("uint8").ravel()[flat_valid]
+    step = np.zeros(256, dtype="int64")
+    for value, (dr, dc) in D8_STEPS.items():
+        step[value] = dr * shape[1] + dc
+    target_cell = flat_valid + step[code]
+    col = flat_valid % shape[1]
+    wraps = ((code == 2) | (code == 1) | (code == 4)) & (col == shape[1] - 1) | ((code == 32) | (code == 16) | (code == 64)) & (col == 0)
+    ok = (code > 0) & ~wraps & (target_cell >= 0) & (target_cell < surface.size)
+    down = np.arange(flat_valid.size, dtype="int32")                       # a cell with nowhere to go points at itself
+    nxt = index[np.where(ok, target_cell, flat_valid)]
+    moving = ok & (nxt >= 0)
+    down[moving] = nxt[moving]
+    del target_cell, nxt, index, col, wraps, ok, moving
+    is_stream = (streams.ravel()[flat_valid]).astype(bool)
+    down[is_stream] = np.flatnonzero(is_stream).astype("int32")            # streams absorb
+    for _ in range(40):                                                    # pointer jumping: path length doubles each round
+        further = down[down]
+        if np.array_equal(further, down):
+            break
+        down = further
+    z = surface.ravel()[flat_valid]
+    base = np.full(flat_valid.size, np.nan, dtype="float32")
+    ends_on_stream = is_stream[down]
+    base[ends_on_stream] = z[down[ends_on_stream]]
+    beside_sea = np.zeros(shape, dtype=bool)                               # 8-neighbours of the sea
+    beside_sea[1:, :] |= sea[:-1, :]
+    beside_sea[:-1, :] |= sea[1:, :]
+    grown = beside_sea | sea
+    beside_sea[:, 1:] |= grown[:, :-1]
+    beside_sea[:, :-1] |= grown[:, 1:]
+    coastal = ~ends_on_stream & beside_sea.ravel()[flat_valid][down]
+    base[coastal] = 0.0
+    hand = np.full(surface.size, NODATA, dtype="float32")
+    known = ~np.isnan(base)
+    hand[flat_valid[known]] = np.maximum(z[known] - base[known], 0.0)
+    return hand.reshape(shape)

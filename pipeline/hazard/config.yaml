@@ -36,6 +36,12 @@ hand:
   # Candidate stream thresholds in 30 m cells (0.45, 0.9, 1.8 and 4.5 km2); one is chosen after the
   # comparison with mapped rivers.
   stream_thresholds_cells: [500, 1000, 2000, 5000]
+  # Decided 2026-10-08 (docs/decisions.md): the product in <output_dir>/burned/.
+  stream_threshold_cells: 1000        # 0.9 km2
+  burn:
+    waterway_classes: [river]         # OpenStreetMap; streams and canals are mapped too unevenly to trust
+    depth_m: 10                       # routing only; HAND is measured on the unburned surface
+  coastal_rule: sea_level             # land draining to the sea or the lake without a stream: height above sea level
 
 # Mapped water the candidate stream networks are scored against (compare.py).
 compare:

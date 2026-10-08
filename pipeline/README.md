@@ -56,6 +56,7 @@ HAND and the hazard baseline. So far: the source rasters, HAND for four candidat
 uv run python -m hazard sources-export      # FABDEM and JRC water occurrence for 99-103 E, 5-9 N -> Google Drive (a few EECU-minutes)
 uv run python -m hazard sources-download    # -> out\hazard\sources
 uv run python -m hazard hand                # local, about 10 minutes -> out\hazard\work (finished steps are skipped)
+uv run python -m hazard hand-burned         # the decided HAND: rivers burned in, 0.9 km2 streams, coastal rule -> out\hazardurned\hand.tif
 uv run python -m hazard streams-compare     # OpenStreetMap waterways (Overpass, cached) and JRC water -> out\hazard\streams_compare.json
 ```
 
