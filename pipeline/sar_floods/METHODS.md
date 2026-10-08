@@ -1,6 +1,6 @@
 # Sentinel-1 flood extents: methods note (S2)
 
-Status, 6 Oct 2026: **both priority events are exported, checked and stored**: November–December 2025 (19 passes and the event maximum, with stored references, 129.5 EECU-hours including the references; see "Stored references") and November–December 2024. **The 21 exports for November–December 2024 completed on Earth Engine** (20 passes and the event maximum, 10 m, parameters `cd222f1`); downloaded, checked and uploaded to the private bucket on 6 Oct (see "First results, Nov–Dec 2024"). They used 232 EECU-hours (see "Compute used"); the project moved to the Contributor tier on 6 Oct. The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; the frequency step has not run. The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
+Status, 8 Oct 2026: **the nine seasons 2017–2025 and the flood frequency are made at 20 m, checked and stored** (see "Nine seasons and the flood frequency"). **Both priority events are exported, checked and stored**: November–December 2025 (19 passes and the event maximum, with stored references, 129.5 EECU-hours including the references; see "Stored references") and November–December 2024. **The 21 exports for November–December 2024 completed on Earth Engine** (20 passes and the event maximum, 10 m, parameters `cd222f1`); downloaded, checked and uploaded to the private bucket on 6 Oct (see "First results, Nov–Dec 2024"). They used 232 EECU-hours (see "Compute used"); the project moved to the Contributor tier on 6 Oct. The connection check, the scene listing, the look direction, the per-tile histograms and the classification ran against Earth Engine; The offline tests cover the pure-Python parts (thresholds, dates, grid, names, run log, frequency arithmetic). The owner confirmed the five method choices on 5 Oct (fixed drop −3 dB, VV counts, 8-pixel filter, Feb–Apr reference, 10 m for the priority events; `docs/decisions.md`). No parameter below has been tuned or validated against observed floods. Treat every number as a starting value.
 
 First result: the per-tile Otsu threshold was accepted on 3 of about 1,100 tile checks (two VV tiles at −4.8 and −5.2 dB and one VH tile at −3.6 dB, all on the 29 Nov 2024 pass of orbit 172). Everywhere else the fixed −3 dB drop applies, so that value in practice decides the maps.
 
@@ -172,6 +172,46 @@ Event maximum inside the four provinces (19,865 km²):
 | VH only (code 2) | 337 | 1.7 % |
 
 The wettest passes: 24 Nov (orbit A172, 7.9 % of the observed land by the VV rule) and 29 Nov (A070, 6.4 %). Orbit D062 observes only about 80 km² of unmasked land in the provinces, so its high percentages (44 % on 28 Nov) describe a small strip. Six passes on orbit D164 were left out: it has no February–April 2025 images for a reference.
+
+## Nine seasons and the flood frequency, 20 m (7–8 Oct 2026, not validated)
+
+Owner's decision of 6 Oct: the seasons (1 Oct to 31 Jan, 2017–2025) at 20 m. Every pass is exported on its own; the season raster and the frequency are combined locally (`sar_floods maximum all-seasons`, `sar_floods frequency`).
+
+Compute: 39 dry references 46.0 EECU-hours (about 1.2 each; 9.5 each at 10 m), 358 passes 123.8 (0.35 each on average); 169.8 in total, where the estimate for 10 m was 700–1,100. The per-tile Otsu threshold was accepted somewhere on 14 of 716 pass-and-polarisation checks.
+
+All nine season rasters and the frequency are on the 20 m master grid (origin 615180, 879840; 11,427 × 13,011), hold only the documented codes, and satisfy n_flooded ≤ n_valid. Uploaded to the private bucket; the 358 per-pass files (642 MB) stay local.
+
+| Season | Passes used | Left out | Median valid passes per pixel | Flooded, VV rule (km²) | VH only (km²) |
+|---|---|---|---|---|---|
+| 2017 | 49 | 0 | 21 | 1,048 | 318 |
+| 2018 | 51 | 0 | 21 | 606 | 333 |
+| 2019 | 40 | 6 | 11 | 461 | 263 |
+| 2020 | 29 | 0 | 11 | 468 | 240 |
+| 2021 | 29 | 20 | 10 | 448 | 278 |
+| 2022 | 39 | 0 | 11 | 701 | 253 |
+| 2023 | 41 | 0 | 10 | 520 | 281 |
+| 2024 | 40 | 0 | 10 | 677 | 257 |
+| 2025 | 40 | 10 | 10 | 808 | 301 |
+
+Passes are left out when their orbit has fewer than four dry-season passes that year (orbit D164 in 2019, 2021 and 2025; orbit D062 in 2021).
+
+Frequency over the nine seasons (flooded passes / valid passes, VV rule), on the 8,798 km² of observed land (median 113 valid passes per pixel):
+
+| | km² | Share of observed land |
+|---|---|---|
+| Never flooded | 6,928 | 78.8 % |
+| Flooded at least once | 1,869 | 21.2 % |
+| of which on a single pass in nine seasons | 560 | 6.4 % |
+| Frequency above 0.10 | 408 | 4.6 % |
+| Frequency above 0.25 | 139 | 1.6 % |
+| Flooded in at least one pass of every season | 101 | 1.1 % |
+
+What to keep in mind when using these:
+- **The seasons are not comparable in sampling.** 2017 and 2018 have about twice the valid passes of later years (two satellites), so a short flood is more likely to be caught, and more one-pass false alarms accumulate. A season's "flooded at least once" area grows with its number of passes; the frequency (a ratio) is the fairer measure.
+- **A fifth of the observed land is flagged at least once**, and 30 % of that on one pass only. With a fixed −3 dB drop on up to 200 passes that is expected of noise, wet soil, harvest and ploughing as well as real floods. The hazard classes should use a frequency or a count threshold, not "ever flooded".
+- **The 101 km² flooded in every season** are probably paddy and other seasonal water, not flood hazard in the sense of the app.
+- **20 m against 10 m.** `min_connected_pixels` is counted in pixels at the export size: 8 pixels are 800 m² at 10 m and 3,200 m² at 20 m, so the season rasters drop larger patches than the priority events do. Measured on the two years that have both: season 2024 (40 passes, 20 m) shows 677 km² against 693 km² for the Nov–Dec 2024 event alone (20 of those passes, 10 m), and covers 83 % of the event's flooded area; 2025: 808 against 832 km², 82 %. About 40 and 55 km² lie in 20 m cells whose four 10 m pixels are all flooded in the event and that the season leaves dry. A filter of 2 pixels at 20 m (800 m²) would match the events; it changes the parameter hash, so the 358 passes would be exported again (about 124 EECU-hours; the references can be copied). Not done: the owner's choice.
+- Everything listed under "Known issues" applies: the terrain mask covers half the provinces, and nothing is validated against observed floods.
 
 ## To check by eye in the Code Editor
 
