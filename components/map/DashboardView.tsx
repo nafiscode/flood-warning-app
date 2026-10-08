@@ -8,6 +8,7 @@ import { AlertHero } from "@/components/home/AlertHero";
 import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/HomeView";
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
+import { PhoneIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { areaName, pickName, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
@@ -19,7 +20,7 @@ import { HOME_COLOR, mineColor } from "@/lib/mine-colors";
 import { localName } from "@/lib/places";
 import { hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
-import { card, hint, notice } from "@/lib/ui";
+import { buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
 import { HazardPlaceholder } from "./HazardPlaceholder";
 import { Link } from "@/i18n/navigation";
@@ -101,6 +102,7 @@ export function DashboardView(props: DashboardViewProps) {
                 home: true,
                 color: HOME_COLOR,
                 lines: [areaName(locale, props.me.home)],
+                call: null,
               },
             ]
           : []),
@@ -119,6 +121,18 @@ export function DashboardView(props: DashboardViewProps) {
               ...(place.contactName ? [t("mine.person", { name: place.contactName })] : []),
               areaName(locale, place.area!),
             ],
+            /*
+             * The number of the person there, when one is stored: the label and the card both
+             * carry a button that dials it, as the home screen does. It is in memory only - the
+             * phone's storage never keeps it (lib/me.ts) - so after an offline start the button
+             * appears once the places have been read again.
+             */
+            call: place.contactPhone
+              ? {
+                  tel: place.contactPhone,
+                  label: tHome("watched.call", { name: place.contactName ?? place.label }),
+                }
+              : null,
           })),
       ];
 
@@ -198,6 +212,12 @@ export function DashboardView(props: DashboardViewProps) {
           status={area ? heroStatusFor(status, area.code, fresh) : { kind: "outside" }}
           now={now}
         />
+        {place.call && (
+          <a href={`tel:${place.call.tel}`} className={`${buttonSecondary} gap-2`}>
+            <PhoneIcon size={22} />
+            {place.call.label} · {place.call.tel}
+          </a>
+        )}
         <p className={hint}>{t("mine.note")}</p>
         <Link href="/account/places" prefetch={false} className="min-h-tap underline">
           {t("mine.manage")}

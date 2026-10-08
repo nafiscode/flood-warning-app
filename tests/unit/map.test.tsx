@@ -27,9 +27,18 @@ vi.mock("@/components/map/MapView", () => ({
     layers,
     mine = [],
     showMine = false,
+    onSelect,
   }: {
+    onSelect?: (s: { kind: "mine"; id: string }) => void;
     layers: string[];
-    mine?: { id: string; label: string; home: boolean; color: string; lines: string[] }[];
+    mine?: {
+      id: string;
+      label: string;
+      home: boolean;
+      color: string;
+      lines: string[];
+      call: { tel: string; label: string } | null;
+    }[];
     showMine?: boolean;
   }) => (
     <div
@@ -38,8 +47,17 @@ vi.mock("@/components/map/MapView", () => ({
       data-mine-count={mine.length}
       data-mine-colors={mine.map((p) => p.color).join(",")}
       data-mine-labels={mine.map((p) => [p.label, ...p.lines].join(" | ")).join(" / ")}
+      data-mine-calls={mine.map((p) => `${p.id}:${p.call ? p.call.tel : "-"}`).join(",")}
     >
       {layers.join(",")}
+      {/* Stands in for tapping the first pin, which the real map answers with onSelect. */}
+      {mine[0] && (
+        <button
+          type="button"
+          data-select-mine="true"
+          onClick={() => onSelect?.({ kind: "mine", id: mine[0]!.id })}
+        />
+      )}
     </div>
   ),
 }));
@@ -251,7 +269,7 @@ describe("telling the watched places apart", () => {
     expect(labels).toContain("ต.ตะลุโบะ อ.เมืองปัตตานี จ.ปัตตานี");
     // A place with nobody stored shows only its name and address.
     expect(labels).toContain("ร้านที่ตลาด | ต.สะบารัง");
-    // The phone number of the person there never goes onto the map.
+    // The address and the person are in the label; the number travels separately, as a button.
     expect(labels).not.toContain("0800000000");
   });
 
@@ -272,6 +290,7 @@ describe("the label on a pin", () => {
     home: false,
     color: "#7FD1C9",
     lines: ["ติดต่อ: แม่", "ต.ตะลุโบะ อ.เมืองปัตตานี จ.ปัตตานี"],
+    call: { tel: "0800000000", label: "โทรหา แม่" },
   };
 
   it("shows the name, the person there and the address", () => {
@@ -283,14 +302,30 @@ describe("the label on a pin", () => {
     ]);
   });
 
+  it("carries a button that dials the person there, with the number written out", () => {
+    const call = mineLabel(place).querySelector("a")!;
+    expect(call.getAttribute("href")).toBe("tel:0800000000");
+    expect(call.textContent).toContain("โทรหา แม่");
+    expect(call.textContent).toContain("0800000000");
+    // Big enough to hit, like every other call button (CLAUDE.md).
+    expect(call.className).toContain("min-h-tap");
+  });
+
+  it("a place with no number stored has no call button", () => {
+    const box = mineLabel({ ...place, call: null, lines: ["ต.สะบารัง"] });
+    expect(box.querySelector("a")).toBeNull();
+  });
+
   it("the name travels with the feature, so the map can write it beside the pin", () => {
     const f = minePlaceFeature(place);
     expect(f.properties.label).toBe("บ้านแม่");
     expect(f.properties.color).toBe("#7FD1C9");
     expect(f.properties.home).toBe(0);
     expect(f.geometry.coordinates).toEqual([101.27, 6.87]);
-    // The person there and the address stay off the map face; they are in the label on hover.
+    // The person, their number and the address stay off the map face itself: they are in the
+    // label that hover or a tap opens.
     expect(JSON.stringify(f)).not.toContain("ติดต่อ");
+    expect(JSON.stringify(f)).not.toContain("0800000000");
   });
 
   it("puts what the person typed on the map as text, never as HTML", () => {
@@ -298,6 +333,7 @@ describe("the label on a pin", () => {
       ...place,
       label: "<img src=x onerror=alert(1)>",
       lines: ["<b>not bold</b>"],
+      call: null,
     });
     expect(box.querySelector("img")).toBeNull();
     expect(box.querySelectorAll("b")).toHaveLength(1); // only the name's own <b>
@@ -339,5 +375,34 @@ describe("the hazard switcher on a small screen", () => {
     expect(c.querySelector('[data-hazard="fire"]')?.textContent).toContain(
       th.map.hazard.comingSoon,
     );
+  });
+});
+
+describe("calling the person at a watched place, from the map", () => {
+  it("a place with a number stored gets one to dial; one without does not", () => {
+    // The owner asked for this on 9 Oct; before that the number was kept off the map entirely.
+    const calls = dashboard({ me: EXAMPLE_ME })
+      .querySelector("[data-map]")!
+      .getAttribute("data-mine-calls");
+    // บ้านแม่ has แม่ and her number; ร้านที่ตลาด has nobody stored.
+    expect(calls).toBe("w1:0800000000,w2:-");
+  });
+
+  it("a home saved in the account has nobody to call", () => {
+    const withHome = EXAMPLE_ME.signedIn ? { ...EXAMPLE_ME, home: BANA } : EXAMPLE_ME;
+    const calls = dashboard({ me: withHome })
+      .querySelector("[data-map]")!
+      .getAttribute("data-mine-calls");
+    expect(calls?.startsWith("home:-")).toBe(true);
+  });
+
+  it("the card under the map dials the same number", () => {
+    const c = dashboard({ me: EXAMPLE_ME });
+    fireEvent.click(c.querySelector("[data-select-mine]")!);
+    const card = c.querySelector('[data-selected="mine"]')!;
+    expect(card.textContent).toContain("บ้านแม่");
+    const call = card.querySelector('a[href^="tel:"]')!;
+    expect(call.getAttribute("href")).toBe("tel:0800000000");
+    expect(call.textContent).toContain("โทรหา แม่");
   });
 });

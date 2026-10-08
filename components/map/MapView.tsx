@@ -43,6 +43,13 @@ export type MinePlace = {
    * are words the person typed.
    */
   lines: string[];
+  /**
+   * The person at the place, when their number is stored: the label carries a button that dials
+   * it, like every other call button in the app. It is the person's own note about their own
+   * place, read with their own session and shown to nobody else; it is never written into the
+   * phone's storage either (lib/me.ts, withoutPhones).
+   */
+  call: { tel: string; label: string } | null;
 };
 
 type Props = {

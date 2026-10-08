@@ -16,6 +16,16 @@ export function mineLabel(place: MinePlace): HTMLElement {
     p.textContent = line;
     box.append(p);
   }
+  if (place.call) {
+    // A plain tel: link, as everywhere else in the app, with the number written out so it can
+    // be dialled by hand if the phone ignores the link (as the hotline bar does).
+    const call = document.createElement("a");
+    call.href = `tel:${place.call.tel}`;
+    call.className =
+      "mt-1 inline-flex min-h-tap items-center justify-center gap-2 rounded-xl border-2 border-jaga-slate px-3 py-1 font-medium text-jaga-slate";
+    call.textContent = `${place.call.label} · ${place.call.tel}`;
+    box.append(call);
+  }
   return box;
 }
 
