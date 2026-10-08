@@ -214,6 +214,7 @@ Sign-in settings live in the LINE and Supabase dashboards, not in migrations, so
    - Scopes `openid, profile`
    - **Allow users without email: on.** LINE gives no email; with it off, sign-in ends in "Error getting user email from external provider".
 5. *Authentication → URL Configuration → Redirect URLs*: `http://localhost:3000/**` and the deployed address.
+6. Same page, **Site URL**: the deployed address (for `jaga-dev`: `https://jaga-neon.vercel.app`), not Supabase's default `http://localhost:3000`. Supabase sends a sign-in it cannot place there (for one, a LINE sign-in whose state is unknown or already used); the app then shows "sign-in didn't work" instead of a dead page.
 6. While the LINE Login channel is in **Developing** status, only LINE accounts with a role on it can sign in ("User need to have developer role" otherwise): *Roles → Invite by email*, role **Tester**, and accept the invitation while logged in as that person's own LINE account. Publishing the channel is a launch step.
 
 ## One-time: email for admin sign-in links
