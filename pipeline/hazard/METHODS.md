@@ -84,6 +84,16 @@ Reading it honestly:
 - The coastal rule gives every land cell a value. It treats a storm-tide or river-mouth flood as "sea at 0 m", which is a simplification.
 - The 2024 flood used here is from the first radar run (`cd222f1`); the figures will be recomputed with the second run.
 
+## Benchmark: Hat Yai city centre, 19–21 November 2025
+
+The owner (9 Oct 2026): the centre of Hat Yai was heavily flooded on 19–21 November 2025. This is the first known flood in built-up land in the area, and the hazard classes are checked against it.
+
+What the data say for the city centre (100.455–100.485° E, 6.995–7.020° N, 9.1 km²):
+- **Radar: nothing usable.** No pass saw Hat Yai during the flood. Orbit A070 passed on 5 and 29 November (its 17 November acquisition does not exist); the 29 November pass, eight days later, flags 0.03 km² of the 9 km². Orbit D164 passed on 24 November at 06:02 Bangkok time, three days after, but it was left out of the 2025 event because it has no February–April 2025 images for a dry reference (it has eight for 2026).
+- **HAND: low throughout.** Median 1.1 m; 45 % of the centre under 1 m, 69 % under 2 m, 78 % under 3 m, 96 % under 5 m. Ground elevation 7–11 m.
+
+So in the one town where a heavy flood is known, the radar maps are blind and HAND is not: a class limit of 2 m on HAND would cover about two thirds of the flooded centre, 5 m nearly all of it. The exact flooded outline is not known here; "the city centre" is the owner's description, not a mapped extent.
+
 ## Known issues and open points
 
 - Stream threshold, river burning and the coastal rule were decided on 8 Oct 2026 (above). The burn depth (10 m) and the choice of rivers only are first values.
