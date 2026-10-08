@@ -1,12 +1,16 @@
 /* eslint-disable @next/next/no-img-element -- small static SVGs; next/image adds nothing here */
 import { useTranslations } from "next-intl";
 
+import { SpinningMark } from "./SpinningMark";
+
 type Props = {
   /** Mark height in px. Below 64 px the simplified mark is used (docs/brand.md). */
   size?: number;
   layout?: "horizontal" | "stacked" | "mark";
   /** "light" on light backgrounds, "reverse" on the brand slate. */
   tone?: "light" | "reverse";
+  /** Trial (9 Oct 2026): the mark turns three times when the page opens, then rests. */
+  animated?: boolean;
 };
 
 export const SMALL_MARK_BELOW = 64;
@@ -24,9 +28,22 @@ export function markSrc(size: number, tone: "light" | "reverse"): string {
  * about 35% of the wordmark size. Horizontal: the mark is about 1.7× the wordmark cap height.
  * Clear space: about 12% of the mark height on every side. Never recolored (docs/brand.md).
  */
-export function Logo({ size = 48, layout = "horizontal", tone = "light" }: Props) {
+export function Logo({
+  size = 48,
+  layout = "horizontal",
+  tone = "light",
+  animated = false,
+}: Props) {
   const t = useTranslations("app");
-  const mark = (
+  const mark = animated ? (
+    <SpinningMark
+      width={Math.round(size * MARK_ASPECT)}
+      height={size}
+      small={size < SMALL_MARK_BELOW}
+      tone={tone}
+      label={layout === "mark" ? t("name") : ""}
+    />
+  ) : (
     <img
       src={markSrc(size, tone)}
       width={Math.round(size * MARK_ASPECT)}

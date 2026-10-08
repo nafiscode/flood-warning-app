@@ -46,7 +46,7 @@ export default async function BrandReview({ params }: PageProps<"/[locale]/dev/b
           <Logo size={64} layout="stacked" />
           <Logo size={48} />
           <div className="flex items-end gap-3">
-            <Logo size={120} layout="mark" />
+            <Logo size={120} layout="mark" animated />
             <Logo size={64} layout="mark" />
             <Logo size={32} layout="mark" />
             <Logo size={16} layout="mark" />
@@ -56,7 +56,7 @@ export default async function BrandReview({ params }: PageProps<"/[locale]/dev/b
           <Logo size={96} tone="reverse" />
           <Logo size={40} tone="reverse" />
           <div className="flex items-end gap-3">
-            <Logo size={64} layout="mark" tone="reverse" />
+            <Logo size={64} layout="mark" tone="reverse" animated />
             <Logo size={32} layout="mark" tone="reverse" />
           </div>
         </div>
