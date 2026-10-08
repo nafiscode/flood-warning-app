@@ -149,6 +149,22 @@ test.describe("home", () => {
     await noSidewaysScroll(page);
   });
 
+  test("the header stays put while the page scrolls, and so does the hotline bar", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [alert("warning")] });
+    await page.goto("/");
+    const header = page.locator("header");
+    const before = (await header.boundingBox())!;
+    await page.evaluate(() => window.scrollBy(0, 600));
+    await page.waitForFunction(() => window.scrollY > 0);
+    const after = (await header.boundingBox())!;
+    // Still at the top of the screen, not scrolled away with the page.
+    expect(after.y).toBeCloseTo(before.y, 0);
+    await expect(header.getByRole("link", { name: th.nav.home })).toBeInViewport();
+    await expect(page.locator("footer a[href='tel:1784']")).toBeInViewport();
+  });
+
   test("at Evacuate, SOS sits under the hero and leads to the numbers to call", async ({
     page,
   }) => {

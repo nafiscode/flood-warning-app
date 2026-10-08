@@ -59,7 +59,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const clientMessages = { language: messages.language };
 
   return (
-    <html lang={locale} dir="ltr" className={plex.variable}>
+    // scroll-pt-28: an anchor such as #main scrolls to just below the frozen header.
+    <html lang={locale} dir="ltr" className={`${plex.variable} scroll-pt-28`}>
       <body className="flex min-h-dvh flex-col">
         {/*
           reloadOnOnline is off: Serwist reloads the page by default when the connection returns,
@@ -79,7 +80,13 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             >
               {t("skipToContent")}
             </a>
-            <header className="bg-jaga-slate">
+            {/*
+              The header stays put while the page scrolls (the owner's request, 8 Oct): the logo,
+              Home, Map, Account and the languages are reachable from anywhere on a long page,
+              as the hotline bar already is at the bottom. It sits above the page but below the
+              skip link.
+            */}
+            <header className="sticky top-0 z-20 bg-jaga-slate">
               <div className="mx-auto flex max-w-screen-sm flex-wrap items-center justify-between gap-x-2 px-2">
                 <Link href="/" prefetch={false} className="inline-flex min-h-tap items-center">
                   <Logo size={40} tone="reverse" />
