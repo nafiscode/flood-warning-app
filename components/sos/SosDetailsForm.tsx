@@ -27,7 +27,9 @@ export function SosDetailsForm({ id, token }: Props) {
   const [injuries, setInjuries] = useState("");
   const [text, setText] = useState("");
   const [photos, setPhotos] = useState<Blob[]>([]);
-  const [voice, setVoice] = useState<{ blob: Blob; extension: string; seconds: number } | null>(null);
+  const [voice, setVoice] = useState<{ blob: Blob; extension: string; seconds: number } | null>(
+    null,
+  );
   const [state, setState] = useState<"ready" | "saving" | "saved" | "failed">("ready");
   const [mediaFailed, setMediaFailed] = useState(0);
 
@@ -180,12 +182,19 @@ export function SosDetailsForm({ id, token }: Props) {
 
       <MediaFields photos={photos} onPhotos={setPhotos} voice={voice} onVoice={setVoice} />
 
-      <button type="button" onClick={() => void save()} disabled={state === "saving"} className={buttonPrimary}>
+      <button
+        type="button"
+        onClick={() => void save()}
+        disabled={state === "saving"}
+        className={buttonPrimary}
+      >
         {state === "saving" ? t("details.saving") : t("details.save")}
       </button>
       {state === "saved" && <p className={hint}>{t("details.saved")}</p>}
       {state === "failed" && <p className={notice}>{t("details.saveFailed")}</p>}
-      {mediaFailed > 0 && <p className={notice}>{t("details.mediaFailed", { count: mediaFailed })}</p>}
+      {mediaFailed > 0 && (
+        <p className={notice}>{t("details.mediaFailed", { count: mediaFailed })}</p>
+      )}
     </div>
   );
 }

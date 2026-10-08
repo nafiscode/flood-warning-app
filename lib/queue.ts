@@ -53,7 +53,11 @@ function open(): Promise<IDBDatabase> {
   });
 }
 
-function run<T>(store: string, mode: IDBTransactionMode, work: (s: IDBObjectStore) => IDBRequest): Promise<T> {
+function run<T>(
+  store: string,
+  mode: IDBTransactionMode,
+  work: (s: IDBObjectStore) => IDBRequest,
+): Promise<T> {
   return open().then(
     (db) =>
       new Promise<T>((resolve, reject) => {
@@ -77,7 +81,14 @@ export async function enqueue(
   url: string,
   body: Record<string, unknown>,
 ): Promise<string | null> {
-  const item: Queued = { key: newKey(), kind, url, body, createdAt: new Date().toISOString(), tries: 0 };
+  const item: Queued = {
+    key: newKey(),
+    kind,
+    url,
+    body,
+    createdAt: new Date().toISOString(),
+    tries: 0,
+  };
   try {
     await run(PENDING, "readwrite", (s) => s.put(item));
   } catch {
@@ -118,9 +129,11 @@ async function askForSync(): Promise<void> {
       navigator.serviceWorker.ready,
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 5_000)),
     ]);
-    const registration = ready as (ServiceWorkerRegistration & {
-      sync?: { register: (tag: string) => Promise<void> };
-    }) | null;
+    const registration = ready as
+      | (ServiceWorkerRegistration & {
+          sync?: { register: (tag: string) => Promise<void> };
+        })
+      | null;
     await registration?.sync?.register(SYNC_TAG);
   } catch {
     // No Background Sync (Safari) or permission refused: the page's own retries cover it.
@@ -181,7 +194,12 @@ async function run_(): Promise<FlushResult> {
         result = {};
       }
       await run(DELIVERED, "readwrite", (s) =>
-        s.put({ key: item.key, kind: item.kind, at: new Date().toISOString(), result } as Delivered),
+        s.put({
+          key: item.key,
+          kind: item.kind,
+          at: new Date().toISOString(),
+          result,
+        } as Delivered),
       );
       await run(PENDING, "readwrite", (s) => s.delete(item.key));
       sent += 1;

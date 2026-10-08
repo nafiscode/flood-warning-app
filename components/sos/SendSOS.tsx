@@ -135,11 +135,12 @@ export function SendSOS({ projectLine, place }: Props) {
     }
   }, [point, place, gps.accuracy, locationText, phone, sitePhone, note, battery, cases, router]);
 
-  const smsHref = projectLine && point
-    ? `sms:${projectLine}?&body=${encodeURIComponent(
-        `SOS Jaga ${point.lat.toFixed(5)},${point.lon.toFixed(5)} ${locationText.trim()}`.trim(),
-      )}`
-    : null;
+  const smsHref =
+    projectLine && point
+      ? `sms:${projectLine}?&body=${encodeURIComponent(
+          `SOS Jaga ${point.lat.toFixed(5)},${point.lon.toFixed(5)} ${locationText.trim()}`.trim(),
+        )}`
+      : null;
 
   if (phase === "queued" || phase === "failed") {
     const failed = phase === "failed";

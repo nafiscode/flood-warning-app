@@ -125,7 +125,9 @@ export function rememberedCases(): RememberedCase[] {
 }
 
 export function rememberCase(next: RememberedCase): void {
-  const rest = rememberedCases().filter((c) => c.id !== next.id && (!next.queueKey || c.queueKey !== next.queueKey));
+  const rest = rememberedCases().filter(
+    (c) => c.id !== next.id && (!next.queueKey || c.queueKey !== next.queueKey),
+  );
   writeStored(KEY, [next, ...rest].slice(0, LIMIT));
 }
 

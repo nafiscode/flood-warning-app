@@ -289,7 +289,7 @@ describe("a sender reaches only their own case", () => {
     expect(tried.rowCount).toBe(0);
   });
 
-  it("\"I'm safe now\" and \"Confirm I was rescued\" close the case", async () => {
+  it('"I\'m safe now" and "Confirm I was rescued" close the case', async () => {
     await as(db, "anon");
     const safe = await send({ device: "safe-now" });
     const left = await one<{ sos_close: string }>("select sos_close($1, $2, false) as sos_close", [
@@ -325,7 +325,10 @@ describe("a sender reaches only their own case", () => {
         "select sos_add_media($1::uuid, $2::text, p_photos => $3::text[], p_voice_url => $4::text)",
         [sent.sos_id, sent.token, photos, voice],
       );
-    await add([`${sent.sos_id}/photo-1.jpg`, `${sent.sos_id}/photo-2.jpg`], `${sent.sos_id}/voice.m4a`);
+    await add(
+      [`${sent.sos_id}/photo-1.jpg`, `${sent.sos_id}/photo-2.jpg`],
+      `${sent.sos_id}/voice.m4a`,
+    );
     // A fourth picture doesn't break the case: the first three are kept.
     await add([`${sent.sos_id}/photo-3.jpg`, `${sent.sos_id}/photo-4.jpg`], null);
     await asOwner(db);
@@ -363,6 +366,94 @@ describe("a sender reaches only their own case", () => {
     // A visitor cannot read the row at all, so the hash never leaves the database either.
     await as(db, "anon");
     expect(await rows(db, "select * from sos_requests where id = $1", [sent.sos_id])).toEqual([]);
+  });
+});
+
+describe("who may write and read media (the storage policies)", () => {
+  it("a visitor may write under their own young case, and nowhere else", async () => {
+    await as(db, "anon");
+    const sent = await send({ device: "media-policy" });
+    // The policies ask these functions, because a policy's own subquery runs as the caller and a
+    // visitor cannot read sos_requests at all - which silently refused every upload once.
+    const mine = await one<{ ok: boolean }>("select sos_media_writable($1) as ok", [
+      `${sent.sos_id}/photo-1.jpg`,
+    ]);
+    expect(mine.ok).toBe(true);
+    const made_up = await one<{ ok: boolean }>("select sos_media_writable($1) as ok", [
+      "00000000-0000-4000-8000-000000000000/photo-1.jpg",
+    ]);
+    expect(made_up.ok).toBe(false);
+    const nonsense = await one<{ ok: boolean }>("select sos_media_writable($1) as ok", [
+      "photo-1.jpg",
+    ]);
+    expect(nonsense.ok).toBe(false);
+
+    await asOwner(db);
+    await db.query("update sos_requests set created_at = now() - interval '2 days' where id = $1", [
+      sent.sos_id,
+    ]);
+    await as(db, "anon");
+    const old = await one<{ ok: boolean }>("select sos_media_writable($1) as ok", [
+      `${sent.sos_id}/photo-1.jpg`,
+    ]);
+    expect(old.ok).toBe(false);
+  });
+
+  it("an SOS photo is readable only by a covering authority or an admin", async () => {
+    const path = `${w.yalaSos}/photo-1.jpg`;
+    await as(db, { uid: w.yalaRescue.user });
+    expect((await one<{ ok: boolean }>("select sos_media_readable($1) as ok", [path])).ok).toBe(
+      true,
+    );
+    await as(db, { uid: w.songkhlaRescue.user });
+    expect((await one<{ ok: boolean }>("select sos_media_readable($1) as ok", [path])).ok).toBe(
+      false,
+    );
+    await as(db, { uid: w.yalaPending.user });
+    expect((await one<{ ok: boolean }>("select sos_media_readable($1) as ok", [path])).ok).toBe(
+      false,
+    );
+    await as(db, { uid: w.admin });
+    expect((await one<{ ok: boolean }>("select sos_media_readable($1) as ok", [path])).ok).toBe(
+      true,
+    );
+    await as(db, { uid: w.requester });
+    expect((await one<{ ok: boolean }>("select sos_media_readable($1) as ok", [path])).ok).toBe(
+      false,
+    );
+    // A visitor is not even allowed to ask.
+    await as(db, "anon");
+    expect(await expectDenied(db, "select sos_media_readable($1)", [path])).toBe("42501");
+  });
+
+  it("report media belongs to its reporter, a covering authority and admins", async () => {
+    await as(db, { uid: w.otherUser });
+    const sent = await one<{ report_id: string }>(
+      `select * from submit_report(
+         p_lat => extensions.st_y(extensions.st_geomfromtext($1, 4326)),
+         p_lon => extensions.st_x(extensions.st_geomfromtext($1, 4326)), p_depth_ref => 'knee')`,
+      [w.yalaPoint],
+    );
+    const path = `${sent.report_id}/photo-1.jpg`;
+    expect((await one<{ ok: boolean }>("select report_media_writable($1) as ok", [path])).ok).toBe(
+      true,
+    );
+    expect((await one<{ ok: boolean }>("select report_media_readable($1) as ok", [path])).ok).toBe(
+      true,
+    );
+    await as(db, { uid: w.requester });
+    expect((await one<{ ok: boolean }>("select report_media_writable($1) as ok", [path])).ok).toBe(
+      false,
+    );
+    expect((await one<{ ok: boolean }>("select report_media_readable($1) as ok", [path])).ok).toBe(
+      false,
+    );
+    await as(db, { uid: w.yalaRescue.user });
+    expect((await one<{ ok: boolean }>("select report_media_readable($1) as ok", [path])).ok).toBe(
+      true,
+    );
+    await as(db, "anon");
+    expect(await expectDenied(db, "select report_media_writable($1)", [path])).toBe("42501");
   });
 });
 

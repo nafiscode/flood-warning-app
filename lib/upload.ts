@@ -34,23 +34,38 @@ export async function uploadMedia(
   for (const [index, photo] of photos.slice(0, MAX_PHOTOS).entries()) {
     const small = await compressImage(photo);
     const path = `${id}/photo-${index + 1}.jpg`;
-    const { error } = await storage.upload(path, small.blob, {
-      contentType: small.type,
-      upsert: true,
-    });
-    if (error) failed += 1;
-    else done.push(path);
+    if (await put(storage, path, small.blob, small.type)) done.push(path);
+    else failed += 1;
   }
 
   let voicePath: string | null = null;
   if (voice) {
     const path = `${id}/voice.${voice.extension}`;
-    const { error } = await storage.upload(path, voice.blob, {
-      contentType: voice.blob.type || undefined,
-      upsert: true,
-    });
-    if (error) failed += 1;
-    else voicePath = path;
+    if (await put(storage, path, voice.blob, voice.blob.type || undefined)) voicePath = path;
+    else failed += 1;
   }
   return { photos: done, voice: voicePath, failed };
+}
+
+type Bucket = ReturnType<ReturnType<typeof createClient>["storage"]["from"]>;
+
+/**
+ * One file. Not an upsert: Storage's overwrite path needs rights a visitor sending an anonymous
+ * SOS does not have (tried against jaga-dev: "new row violates row-level security policy"), and
+ * the paths are fixed, so a second attempt means the file is already there - which is a success,
+ * not a failure.
+ */
+async function put(
+  storage: Bucket,
+  path: string,
+  blob: Blob,
+  contentType?: string,
+): Promise<boolean> {
+  const { error } = await storage.upload(path, blob, { contentType, upsert: false });
+  if (!error) return true;
+  const already =
+    (error as { statusCode?: string | number }).statusCode === 409 ||
+    (error as { statusCode?: string | number }).statusCode === "409" ||
+    /exists/i.test(error.message);
+  return already;
 }

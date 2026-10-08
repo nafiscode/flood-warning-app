@@ -17,7 +17,10 @@ export async function generateMetadata({
  * read in the browser with the token kept on the phone, so an anonymous sender can follow their
  * own case and nobody else's, and so the page can be cached like any other.
  */
-export default async function SosCasePage({ params, searchParams }: PageProps<"/[locale]/sos/[id]">) {
+export default async function SosCasePage({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/sos/[id]">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const { merged } = await searchParams;

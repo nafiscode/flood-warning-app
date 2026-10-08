@@ -56,7 +56,14 @@ export async function GET(request: Request, context: RouteContext<"/api/sos/[id]
 
 type Action =
   | { action: "details"; token?: string | null; [key: string]: unknown }
-  | { action: "location"; token?: string | null; lat: number; lon: number; accuracy?: number | null; battery?: number | null }
+  | {
+      action: "location";
+      token?: string | null;
+      lat: number;
+      lon: number;
+      accuracy?: number | null;
+      battery?: number | null;
+    }
   | { action: "close"; token?: string | null; rescued?: boolean; note?: string | null }
   | { action: "media"; token?: string | null; photos?: string[]; voice?: string | null };
 
@@ -98,7 +105,8 @@ export async function POST(request: Request, context: RouteContext<"/api/sos/[id
   if (input.action === "location") {
     const lat = Number(input.lat);
     const lon = Number(input.lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return answer({ error: "no_location" }, 400);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon))
+      return answer({ error: "no_location" }, 400);
     const { error } = await supabase.rpc("sos_add_location", {
       p_sos_id: id,
       p_token: token,
@@ -124,9 +132,12 @@ export async function POST(request: Request, context: RouteContext<"/api/sos/[id
 
   if (input.action === "media") {
     const photos = Array.isArray(input.photos)
-      ? input.photos.filter((p): p is string => typeof p === "string" && p.startsWith(`${id}/`)).slice(0, 3)
+      ? input.photos
+          .filter((p): p is string => typeof p === "string" && p.startsWith(`${id}/`))
+          .slice(0, 3)
       : null;
-    const voice = typeof input.voice === "string" && input.voice.startsWith(`${id}/`) ? input.voice : null;
+    const voice =
+      typeof input.voice === "string" && input.voice.startsWith(`${id}/`) ? input.voice : null;
     const { error } = await supabase.rpc("sos_add_media", {
       p_sos_id: id,
       p_token: token,

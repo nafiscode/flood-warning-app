@@ -91,7 +91,9 @@ export function ReportForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ photos: uploaded.photos, voice: uploaded.voice }),
           cache: "no-store",
-        }).catch(() => setMediaFailed((n) => n + uploaded.photos.length + (uploaded.voice ? 1 : 0)));
+        }).catch(() =>
+          setMediaFailed((n) => n + uploaded.photos.length + (uploaded.voice ? 1 : 0)),
+        );
       }
     }
     setState("sent");
@@ -107,7 +109,9 @@ export function ReportForm() {
           </h1>
           <p className="mt-2">{queued ? t("queuedBody") : t("sentBody")}</p>
         </div>
-        {mediaFailed > 0 && <p className={errorNotice}>{t("mediaFailed", { count: mediaFailed })}</p>}
+        {mediaFailed > 0 && (
+          <p className={errorNotice}>{t("mediaFailed", { count: mediaFailed })}</p>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -148,7 +152,11 @@ export function ReportForm() {
           {showMap ? t("hideMap") : t("useMap")}
         </button>
         {showMap && (
-          <PinOnMap text={{ hint: t("mapHint"), failed: t("mapFailed") }} picked={pin} onPick={setPin} />
+          <PinOnMap
+            text={{ hint: t("mapHint"), failed: t("mapFailed") }}
+            picked={pin}
+            onPick={setPin}
+          />
         )}
         <p role="status" className={hint} data-report-location={point ? "ok" : gps.state}>
           {point
@@ -179,7 +187,11 @@ export function ReportForm() {
         </label>
         <label className="flex flex-col gap-2">
           <span className={label}>{t("trend")}</span>
-          <select value={trend} onChange={(event) => setTrend(event.target.value)} className={input}>
+          <select
+            value={trend}
+            onChange={(event) => setTrend(event.target.value)}
+            className={input}
+          >
             <option value="">—</option>
             {TRENDS.map((choice) => (
               <option key={choice} value={choice}>

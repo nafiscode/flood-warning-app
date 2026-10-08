@@ -137,10 +137,7 @@ describe("the SOS confirmation screen", () => {
   });
 
   it("queues the request and offers SMS and the hotlines when it cannot be sent", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
-    );
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
     await act(async () => {
       renderWithIntl(<SendSOS projectLine="0812345678" place={null} />);
     });
@@ -206,7 +203,9 @@ describe("the requester's view of a case", () => {
   function serve(answer: SosTimeline | { status: number }) {
     const fetchMock = vi.fn().mockImplementation((_url: string, options?: RequestInit) => {
       if (options?.method === "POST") {
-        return Promise.resolve(new Response(JSON.stringify({ ok: true, status: "safe_cancelled" })));
+        return Promise.resolve(
+          new Response(JSON.stringify({ ok: true, status: "safe_cancelled" })),
+        );
       }
       if ("status" in answer && typeof answer.status === "number") {
         return Promise.resolve(new Response("{}", { status: answer.status }));
@@ -233,7 +232,9 @@ describe("the requester's view of a case", () => {
         "หน่วยกู้ภัยยะลา",
       ),
     );
-    expect(document.querySelector("[data-case-safe]")?.textContent).toContain(th.sos.status.safeNow);
+    expect(document.querySelector("[data-case-safe]")?.textContent).toContain(
+      th.sos.status.safeNow,
+    );
     expect(document.querySelector("[data-case-rescued]")?.textContent).toContain(
       th.sos.status.rescuedNow,
     );
@@ -309,9 +310,19 @@ describe("the phone's small helpers", () => {
   });
 
   it("openCase finds only a case that is still open", () => {
-    rememberCase({ id: "closed", token: null, status: "rescued", createdAt: "2026-10-01T00:00:00Z" });
+    rememberCase({
+      id: "closed",
+      token: null,
+      status: "rescued",
+      createdAt: "2026-10-01T00:00:00Z",
+    });
     expect(openCase()).toBeNull();
-    rememberCase({ id: "open", token: null, status: "en_route", createdAt: "2026-10-02T00:00:00Z" });
+    rememberCase({
+      id: "open",
+      token: null,
+      status: "en_route",
+      createdAt: "2026-10-02T00:00:00Z",
+    });
     expect(openCase()?.id).toBe("open");
   });
 
@@ -350,12 +361,7 @@ describe("before launch", () => {
 
   it("the page shown instead says nobody receives requests, and offers the hotlines", () => {
     renderWithIntl(
-      <NotYet
-        title={th.sos.soonTitle}
-        body={th.sos.soonBody}
-        back={th.sos.back}
-        backHref="/"
-      />,
+      <NotYet title={th.sos.soonTitle} body={th.sos.soonBody} back={th.sos.back} backHref="/" />,
     );
     const panel = document.querySelector("[data-sos-soon]")!;
     expect(panel.textContent).toContain(th.sos.soonTitle);

@@ -54,7 +54,10 @@ export async function POST(request: Request) {
     return answer({ error: "unavailable" }, 503);
   }
   if (!row) return answer({ error: "unavailable" }, 503);
-  return answer({ id: row.report_id as string, tambon: (row.tambon_code as string | null) ?? null });
+  return answer({
+    id: row.report_id as string,
+    tambon: (row.tambon_code as string | null) ?? null,
+  });
 }
 
 function choice(value: unknown, allowed: string[]): string | null {
