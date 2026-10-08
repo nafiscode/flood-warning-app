@@ -24,6 +24,21 @@ waterlevel:
   floor_year: 2008            # walk back one calendar year at a time, never before this
   stop_after_empty_years: 3   # stop walking back after this many consecutive empty years
 
+# Reservoirs (S7, docs/science-plan.md Module 7). ThaiWater lists the same dam under two ids: the
+# operator's hourly feed and the Royal Irrigation Department's daily report.
+dams:
+  floor_year: 2008                    # hourly history exists from at least 2012, with whole years missing
+  list:
+    - name: Bang Lang
+      operator: EGAT
+      hourly_id: 50
+      daily_id: 26
+  # API data type -> variable in the archive. Units as ThaiWater's own pages label them; the hourly
+  # flows are volumes per hour (million m3), NOT m3/s: 1 million m3 per hour = 277.8 m3/s.
+  hourly_types: {dam_storage: dam_storage, dam_level: dam_level, dam_inflow: dam_inflow_1h,
+                 dam_released: dam_released_1h, dam_spilled: dam_spilled_1h}
+  daily_types: {dam_storage: dam_storage_daily, dam_inflow: dam_inflow_daily, dam_released: dam_released_daily}
+
 rain_daily:
   default_since: "2023-10-01" # regular runs
   backfill_since: "2017-10-01" # time-boxed backfill target (SAR era, matches the hindcast window)

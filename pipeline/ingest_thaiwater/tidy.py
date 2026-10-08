@@ -2,10 +2,11 @@
 
 Tidy schema (one row per station, variable and timestamp):
     station_id  int64     ThaiWater station id (see stations.csv for codes and names)
-    variable    string    water_level_msl | discharge | rain_daily | rain_1h
+    variable    string    water_level_msl | discharge | rain_daily | rain_1h | dam_* (station_id is then
+                          ThaiWater's dam id, which is a different numbering from the stations)
     ts          UTC       timestamp as labelled by ThaiWater, converted from Bangkok time
     value       float64
-    unit        string    m | m3/s | mm
+    unit        string    m | m3/s | mm | Mm3 (million cubic metres)
     source      string    thaiwater
 """
 
@@ -19,7 +20,9 @@ from .settings import BANGKOK
 
 COLUMNS = ["station_id", "variable", "ts", "value", "unit", "source"]
 KEY = ["station_id", "variable", "ts"]
-UNITS = {"water_level_msl": "m", "discharge": "m3/s", "rain_daily": "mm", "rain_1h": "mm"}
+UNITS = {"water_level_msl": "m", "discharge": "m3/s", "rain_daily": "mm", "rain_1h": "mm",
+         "dam_storage": "Mm3", "dam_level": "m", "dam_inflow_1h": "Mm3", "dam_released_1h": "Mm3",
+         "dam_spilled_1h": "Mm3", "dam_storage_daily": "Mm3", "dam_inflow_daily": "Mm3", "dam_released_daily": "Mm3"}
 
 
 def empty_frame() -> pd.DataFrame:
@@ -78,6 +81,18 @@ def rain_frame(station_id: int, payload: dict, variable: str) -> pd.DataFrame:
         [r.get("rainfall_datetime") for r in rows],
         [r.get("rainfall_value") for r in rows],
     )
+
+
+def dam_frame(dam_id: int, payload: dict, variable: str) -> pd.DataFrame:
+    """One dam series from /analyst/dam_hourly_graph or dam_yearly_graph. The timestamps carry a "Z"
+    or "+07:00" suffix but are Bangkok clock times either way (checked 2026-10-09 against the live
+    hourly record), so the suffix is dropped and the time is read as Bangkok."""
+    data = (payload or {}).get("data")
+    rows = []
+    for graph in (data.get("graph_data") or []) if isinstance(data, dict) else []:
+        rows += graph.get("data") or []
+    return _frame(dam_id, variable, [str(r.get("date"))[:19] if r.get("date") else None for r in rows],
+                  [r.get("value") for r in rows])
 
 
 def merge_into_partitions(df: pd.DataFrame, tidy_root: Path) -> int:

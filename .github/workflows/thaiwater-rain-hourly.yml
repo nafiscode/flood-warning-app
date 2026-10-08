@@ -28,6 +28,10 @@ jobs:
       - name: Collect hourly rain
         working-directory: pipeline
         run: uv run python -m ingest_thaiwater rain-hourly
+      # Reservoir release and spill by the hour (Bang Lang): the same 12-hourly rhythm.
+      - name: Collect dam data
+        working-directory: pipeline
+        run: uv run python -m ingest_thaiwater dams --max-minutes 10
       - name: Push to jaga-data
         if: always()
         run: bash .github/actions/thaiwater-setup/push.sh "Hourly rain $(date -u +%Y-%m-%dT%H:%MZ)"

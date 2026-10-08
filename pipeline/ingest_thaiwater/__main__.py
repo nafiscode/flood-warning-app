@@ -6,6 +6,8 @@ Commands
   waterlevel           water-level history (walks back year by year)
   rain-daily [--since] daily rain history from --since (default from config.yaml)
   rain-hourly          hourly rain, last ~42 h (run at least every 36 h; CI runs it every 12 h)
+  dams                 reservoir storage, level, inflow, release and spill (hourly and daily), with
+                       history on the first run; CI runs it with the hourly rain
   backfill             daily rain back to rain_daily.backfill_since, time-boxed by --max-minutes
   coverage             rewrite reports/coverage.md
   snapshot             zip the archive into snapshots/
@@ -63,7 +65,7 @@ def _load_stations(client, cfg, paths):
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="ingest_thaiwater", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["refresh", "stations", "waterlevel", "rain-daily", "rain-hourly",
+    ap.add_argument("command", choices=["refresh", "stations", "waterlevel", "rain-daily", "rain-hourly", "dams",
                                         "backfill", "coverage", "snapshot"])
     ap.add_argument("--since", type=date.fromisoformat, help="rain-daily start date (YYYY-MM-DD)")
     ap.add_argument("--max-minutes", type=float, default=None, help="stop cleanly after this many minutes")
@@ -93,6 +95,9 @@ def main(argv: list[str] | None = None) -> int:
             download.run_waterlevel(ctx, download.station_ids(st, "wl_candidate"), deadline)
             download.run_rain_daily(ctx, download.station_ids(st, "rain_candidate"), since, deadline)
             download.run_rain_hourly(ctx, download.station_ids(st, "rain_reporting"), deadline)
+            download.run_dams(ctx, deadline)
+        elif args.command == "dams":
+            download.run_dams(ctx, deadline)
         elif args.command == "waterlevel":
             download.run_waterlevel(ctx, download.station_ids(_load_stations(client, cfg, paths), "wl_candidate"), deadline)
         elif args.command == "rain-daily":

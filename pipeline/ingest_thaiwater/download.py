@@ -6,6 +6,9 @@ Endpoint facts (verified 2026-09-28):
 - /public/rain_yearly_graph gives per-month day counts, used to skip months without data.
 - /provinces/rain7d_graph returns daily rain for windows of 31 days or less.
 - /public/rain_24h_graph returns only the last ~42 h of hourly rain (no history exists).
+- /analyst/dam_hourly_graph (dam_id, data_type, start_date, end_date) returns a dam's hourly series for
+  a whole year in one request, back to at least 2012; /analyst/dam_yearly_graph (dam_id, data_type,
+  year) the daily series. Verified 2026-10-09 for Bang Lang.
 """
 
 from __future__ import annotations
@@ -43,6 +46,40 @@ class Ctx:
     today: date
     wl_state: State
     rain_state: State
+
+
+def run_dams(ctx: Ctx, deadline: Deadline) -> bool:
+    """Hourly and daily series of every configured dam. A past year is fetched once (even when empty);
+    the current year is fetched again on every run. Returns False if the deadline stopped it."""
+    d = ctx.cfg["dams"]
+    state = State(ctx.paths.state("dams"))
+    rows = 0
+    for dam in d["list"]:
+        jobs = [(dam["hourly_id"], "/analyst/dam_hourly_graph", t, v) for t, v in d["hourly_types"].items()]
+        jobs += [(dam["daily_id"], "/analyst/dam_yearly_graph", t, v) for t, v in d["daily_types"].items()]
+        for dam_id, path, data_type, variable in jobs:
+            years = state.station(dam_id)["years"].setdefault(variable, {})
+            for year in range(ctx.today.year, int(d["floor_year"]) - 1, -1):
+                if year < ctx.today.year and str(year) in years:
+                    continue
+                if deadline.passed():
+                    state.save()
+                    return False
+                if path.endswith("hourly_graph"):
+                    params = {"dam_id": dam_id, "data_type": data_type, "start_date": f"{year}-01-01",
+                              "end_date": min(date(year, 12, 31), ctx.today).isoformat()}
+                else:
+                    params = {"dam_id": dam_id, "data_type": data_type, "year": year}
+                payload = _get(ctx, path, params, f"dam/{dam_id}/{variable}_{year}")
+                if payload is None:
+                    continue                      # not marked: the next run asks again
+                df = tidy.dam_frame(dam_id, payload, variable)
+                tidy.merge_into_partitions(df, ctx.paths.tidy)
+                years[str(year)] = len(df)
+                rows += len(df)
+        state.save()
+    log.info("dams: %d values read for %d dam(s)", rows, len(d["list"]))
+    return True
 
 
 def make_ctx(client: ThaiWaterClient, paths: Paths, cfg: dict) -> Ctx:

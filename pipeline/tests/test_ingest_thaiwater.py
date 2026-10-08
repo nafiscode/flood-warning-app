@@ -181,6 +181,40 @@ def test_waterlevel_probes_years_downloads_only_years_with_data_and_resumes(tmp_
     assert (paths.raw / "waterlevel" / "901").is_dir()
 
 
+def test_dam_series_are_read_as_bangkok_time_and_past_years_are_fetched_once(tmp_path, cfg):
+    payload = {"result": "OK", "data": {"graph_data": [{"year": 2021, "data": [
+        {"date": "2021-01-07T06:00:00Z", "value": 2.2237}, {"date": "2021-01-07T07:00:00Z", "value": None},
+        {"date": "2021-01-07T08:00:00+07:00", "value": 0}]}]}}
+    df = tidy.dam_frame(50, payload, "dam_spilled_1h")
+    assert len(df) == 2 and df["unit"].iloc[0] == "Mm3" and df["station_id"].iloc[0] == 50
+    assert df["ts"].iloc[0] == pd.Timestamp("2021-01-06T23:00:00Z")          # 06:00 Bangkok
+    assert df["ts"].iloc[1] == pd.Timestamp("2021-01-07T01:00:00Z") and df["value"].iloc[1] == 0
+
+    cfg["dams"]["floor_year"] = 2025
+    from ingest_thaiwater.settings import Paths
+
+    class DamClient:
+        calls, last_raw = [], b"{}"
+
+        def get(self, path, params):
+            self.calls.append((path, params))
+            return payload
+
+    client = DamClient()
+    ctx = download.make_ctx(client, Paths(tmp_path), cfg)
+    ctx.today = date(2026, 10, 9)
+    assert download.run_dams(ctx, download.Deadline(None)) is True
+    first = len(client.calls)
+    assert first == 8 * 2                                                    # 5 hourly + 3 daily types, two years
+    hourly = [p for path, p in client.calls if path.endswith("hourly_graph")]
+    assert hourly[0] == {"dam_id": 50, "data_type": "dam_storage", "start_date": "2026-01-01", "end_date": "2026-10-09"}
+    assert hourly[1]["end_date"] == "2025-12-31"
+    assert (tmp_path / "tidy" / "dam_spilled_1h" / "50" / "2021-01.parquet").exists()
+    assert (tmp_path / "raw" / "dam" / "26" / "dam_released_daily_2025.json.gz").exists()
+    assert download.run_dams(ctx, download.Deadline(None)) is True
+    assert len(client.calls) == first + 8                                    # only the current year again
+
+
 def test_long_silent_station_gets_only_a_cheap_probe(tmp_path, cfg):
     from ingest_thaiwater.settings import Paths
 
