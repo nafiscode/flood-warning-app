@@ -12,8 +12,11 @@ test("home opens in Thai at 360 px, without horizontal scroll", async ({ page })
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
-test("placeholder home shows no alert level (never implies 'no risk')", async ({ page }) => {
+test("home shows no alert level before an area is chosen (never implies 'no risk')", async ({
+  page,
+}) => {
   await page.goto("/");
+  await expect(page.locator('[data-hero]:not([data-hero="loading"])')).toBeVisible();
   await expect(page.locator("[data-level]")).toHaveCount(0);
 });
 

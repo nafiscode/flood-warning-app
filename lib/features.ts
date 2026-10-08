@@ -18,3 +18,16 @@ export function lineSignInConfigured(): boolean {
 export function isPhoneBrowser(userAgent: string | null | undefined): boolean {
   return /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(userAgent ?? "");
 }
+
+/**
+ * The launch switch (decision 2026-10-08). Until JAGA_IN_SERVICE=1, nobody is issuing alerts, so
+ * a tambon without an alert shows "not in service yet" and never Normal (safety rule 10).
+ */
+export function inService(): boolean {
+  return process.env.JAGA_IN_SERVICE === "1";
+}
+
+/** Donations and the Transparency tab stay off until the owner turns them on (safety rule 9). */
+export function donationsEnabled(): boolean {
+  return process.env.JAGA_DONATIONS === "1";
+}

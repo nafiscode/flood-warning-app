@@ -44,7 +44,16 @@ const START_STYLE: StyleSpecification = {
   ],
 };
 
+/** Roughly each covered province, for the map's province selector: [west, south, east, north]. */
+export const PROVINCE_BOUNDS: Record<string, [number, number, number, number]> = {
+  "90": [100.05, 6.29, 101.11, 7.94],
+  "94": [101.02, 6.55, 101.72, 6.95],
+  "95": [100.83, 5.61, 101.61, 6.68],
+  "96": [101.37, 5.73, 102.09, 6.64],
+};
+
 export const TAMBON_FILL_LAYER = "jaga-tambon-fill";
+export const TAMBON_LINE_LAYER = "jaga-tambon-line";
 export const TAMBON_SELECTED_LAYER = "jaga-tambon-selected";
 
 /**
@@ -73,6 +82,10 @@ export async function createServiceAreaMap(container: HTMLElement): Promise<MapL
   map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
 
   map.once("load", () => {
+    // The credits start folded behind their (i) button: opened, they cover a third of a phone map.
+    const credits = container.querySelector(".maplibregl-ctrl-attrib");
+    credits?.classList.remove("maplibregl-compact-show");
+    credits?.removeAttribute("open");
     // Put the basemap under our layers, keeping whatever is selected at that moment.
     map.setStyle(BASEMAP_STYLE, {
       transformStyle: (previous, next) => {
@@ -80,9 +93,13 @@ export async function createServiceAreaMap(container: HTMLElement): Promise<MapL
         const own = previous.layers.filter(
           (l) => l.id.startsWith("jaga-") && l.id !== "jaga-ground",
         );
+        // Every source of ours comes along, with whatever data it holds by now.
+        const ownSources = Object.fromEntries(
+          Object.entries(previous.sources).filter(([id]) => id.startsWith("jaga-")),
+        );
         return {
           ...next,
-          sources: { ...next.sources, [TAMBON_SOURCE]: previous.sources[TAMBON_SOURCE]! },
+          sources: { ...next.sources, ...ownSources },
           layers: [...next.layers, ...own],
         };
       },

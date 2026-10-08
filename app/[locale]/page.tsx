@@ -1,19 +1,22 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
+import { HomeScreen } from "@/components/home/HomeScreen";
+import { projectLine } from "@/lib/hotlines";
+import { homeMessages } from "@/lib/messages";
+import { EARLY_STATUS_SCRIPT } from "@/lib/public-status";
 
 /**
- * A0 placeholder home. It deliberately shows no alert level: a placeholder must never look like
- * "no risk" (safety rule 10). It points to official warnings and the hotlines instead.
- * The real home (alert hero, safe places, SOS) arrives in A3.
+ * Home (spec 4.1): the alert for the person's tambon, what to do, SOS, Report and safe places.
+ * It never loads the map. The page is the same static HTML for everyone; the phone fills in the
+ * area and the alert status (components/home/HomeScreen). The hotlines are in the shell below.
  */
 export default async function Home({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("home");
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-jaga-line bg-jaga-surface p-5">
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("title")}</h1>
-      <p>{t("body")}</p>
-      <p className="font-medium">{t("emergency")}</p>
-    </section>
+    <NextIntlClientProvider messages={homeMessages(await getMessages())}>
+      <script dangerouslySetInnerHTML={{ __html: EARLY_STATUS_SCRIPT }} />
+      <HomeScreen projectLine={projectLine()} />
+    </NextIntlClientProvider>
   );
 }

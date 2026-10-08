@@ -70,11 +70,17 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             </a>
             <header className="bg-jaga-slate">
               <div className="mx-auto flex max-w-screen-sm flex-wrap items-center justify-between gap-x-2 px-2">
-                <Link href="/" className="inline-flex min-h-tap items-center">
+                <Link href="/" prefetch={false} className="inline-flex min-h-tap items-center">
                   <Logo size={40} tone="reverse" />
                 </Link>
-                <div className="flex flex-wrap items-center">
-                  <LanguageSwitcher />
+                <div className="flex items-center">
+                  <Link
+                    href="/map"
+                    prefetch={false}
+                    className="inline-flex min-h-tap items-center rounded px-2 text-small font-medium text-white underline"
+                  >
+                    {tNav("map")}
+                  </Link>
                   <Link
                     href="/account"
                     prefetch={false}
@@ -82,6 +88,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   >
                     {tNav("account")}
                   </Link>
+                </div>
+                {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
+                <div className="w-full">
+                  <LanguageSwitcher />
                 </div>
               </div>
             </header>

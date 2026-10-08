@@ -112,3 +112,34 @@ export function LifebuoyIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Navigate, and safe places on lists: a map pin. */
+export function PinIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </Icon>
+  );
+}
+
+/** Report flooding: water with waves. */
+export function WaveIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
+      <path d="M3 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
+      <path d="M3 19c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
+    </Icon>
+  );
+}
+
+/** The map page: a folded map. */
+export function MapIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" />
+      <path d="M9 4v14M15 6v14" />
+    </Icon>
+  );
+}

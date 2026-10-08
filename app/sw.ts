@@ -2,7 +2,9 @@
 /**
  * Jaga's service worker (bundled by app/serwist/[path]/route.ts).
  * A0: precaches the app shell and falls back to /offline for pages that can't load.
- * A3 adds the user's alert status, top-3 safe places and the SOS queue (safety rule 7).
+ * The last alert status and top-3 safe places are kept by the home screen itself, in the phone's
+ * storage (lib/phone-store.ts), so they show offline with the cached page (safety rule 7).
+ * A4 adds the SOS and report queue.
  */
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";

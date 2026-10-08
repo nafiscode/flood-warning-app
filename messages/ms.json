@@ -8,9 +8,66 @@
     "skipToContent": "Langkau ke kandungan"
   },
   "home": {
-    "title": "Jaga sedang bersedia untuk musim banjir",
-    "body": "Aplikasi ini belum mengeluarkan amaran. Ikuti amaran rasmi daripada DDPM dan pihak berkuasa tempatan.",
-    "emergency": "Kecemasan: telefon 1784 atau 1669 terus dari butang di bawah"
+    "title": "Jaga: status amaran di kawasan anda",
+    "loading": "Sedang memuat status amaran…",
+    "notInService": {
+      "title": "Jaga belum beroperasi",
+      "body": "Jaga mula beroperasi pada 25 Oktober 2026. Sekarang belum ada sesiapa yang mengeluarkan amaran dalam aplikasi ini. Tiada amaran tidak bermakna tiada risiko. Ikuti amaran rasmi daripada DDPM dan pihak berkuasa tempatan.",
+      "emergency": "Kecemasan: telefon 1784 atau 1669",
+      "short": "Belum beroperasi"
+    },
+    "area": {
+      "label": "Kawasan anda",
+      "change": "Tukar kawasan",
+      "chooseTitle": "Pilih kawasan anda",
+      "chooseBody": "Untuk melihat amaran tambon anda dan tempat selamat berhampiran.",
+      "useGps": "Guna lokasi sekarang",
+      "locating": "Sedang mencari lokasi…",
+      "gpsFailed": "Lokasi tidak dijumpai. Hidupkan GPS dan cuba lagi, atau pilih daripada senarai.",
+      "locateFailed": "Kawasan tidak dapat disemak. Cuba lagi, atau pilih daripada senarai.",
+      "fromList": "Pilih daripada senarai",
+      "province": "Wilayah",
+      "district": "Daerah",
+      "tambon": "Tambon",
+      "select": "Pilih…",
+      "use": "Guna kawasan ini",
+      "cancel": "Batal",
+      "notCovered": "Jaga belum meliputi wilayah {province}. Kecemasan: telefon 1784 atau 1669.",
+      "outside": "Lokasi ini di luar kawasan liputan Jaga. Kecemasan: telefon 1784 atau 1669.",
+      "listFailed": "Senarai kawasan tidak dapat dimuat. Cuba lagi.",
+      "privacy": "Kawasan yang dipilih disimpan dalam telefon ini sahaja.",
+      "fromAccount": "Rumah yang disimpan dalam akaun anda"
+    },
+    "status": {
+      "unavailableTitle": "Status amaran tidak dapat dimuat",
+      "unavailableBody": "Status kawasan ini belum diketahui. Ikuti amaran rasmi. Kecemasan: telefon 1784.",
+      "checked": "Semakan terakhir {time}",
+      "offline": "Tiada sambungan. Menunjukkan maklumat terakhir yang diterima pada {time}.",
+      "retry": "Cuba lagi"
+    },
+    "normalBody": "Sekarang tiada amaran banjir untuk kawasan ini.",
+    "reason": "Sebab",
+    "issuedBy": "Dikeluarkan oleh",
+    "issuer": "Admin Jaga",
+    "source": "Sumber",
+    "issued": "Dikeluarkan pada",
+    "nextUpdate": "Kemas kini seterusnya",
+    "onset": "Banjir dijangka antara",
+    "returnWindow": "Dijangka boleh balik antara",
+    "range": "{from} hingga {to}",
+    "estimate": "Anggaran, boleh berubah",
+    "checklistTitle": "Apa yang perlu dibuat sekarang",
+    "checklistNote": "Tanda disimpan dalam telefon ini sahaja.",
+    "report": "Lapor banjir",
+    "watched": {
+      "title": "Tempat yang anda jaga",
+      "call": "Telefon {name}",
+      "sosFor": "SOS untuk {label}",
+      "outside": "Di luar kawasan liputan Jaga",
+      "unknown": "Status belum diketahui"
+    },
+    "mapLink": "Buka peta",
+    "projectLine": "Talian bantuan Jaga"
   },
   "alert": {
     "level": {
@@ -20,7 +77,46 @@
       "evacuate": "Pindah",
       "return": "Boleh balik rumah"
     },
-    "stale": "Tidak dikemas kini sejak {time}"
+    "stale": "Tidak dikemas kini sejak {time}",
+    "summary": {
+      "normal": "Tiada apa perlu dibuat sekarang. Kenali tempat selamat berhampiran rumah.",
+      "watch": "Bersedia: siapkan beg kecemasan dan rancang laluan.",
+      "warning": "Banjir dijangka di sini dalam kira-kira 24–48 jam. Pindahkan orang yang lemah dan kereta ke tempat selamat sekarang.",
+      "evacuate": "Banjir hampir tiba atau sudah bermula. Pergi ke tempat selamat sekarang. Jika terperangkap, tekan SOS.",
+      "return": "Air sudah surut di kawasan ini. Balik dengan berhati-hati."
+    },
+    "checklist": {
+      "flood": {
+        "normal": {
+          "a": "Kenali tempat selamat berhampiran rumah. Lihat senarai di bawah.",
+          "b": "Ingat talian kecemasan 1784 dan 1669."
+        },
+        "watch": {
+          "a": "Cas telefon dan power bank sehingga penuh.",
+          "b": "Masukkan dokumen penting dan ubat ke dalam beg kecemasan.",
+          "c": "Rancang laluan ke tempat selamat.",
+          "d": "Tanya khabar jiran yang tua, sakit atau ada anak kecil."
+        },
+        "warning": {
+          "a": "Bawa orang tua, pesakit terlantar dan anak kecil ke tempat selamat sekarang.",
+          "b": "Pindahkan kereta ke tempat tinggi sekarang.",
+          "c": "Angkat barang berharga dan plag elektrik ke tempat tinggi.",
+          "d": "Siapkan beg kecemasan untuk keluar rumah."
+        },
+        "evacuate": {
+          "a": "Pergi ke tempat selamat sekarang.",
+          "b": "Tutup suis utama elektrik sebelum keluar, jika selamat untuk dibuat.",
+          "c": "Jangan berjalan atau memandu meredah air deras.",
+          "d": "Jika tidak dapat keluar rumah, tekan SOS."
+        },
+        "return": {
+          "a": "Balik dengan berhati-hati. Jalan dan jambatan mungkin rosak.",
+          "b": "Jangan hidupkan elektrik sehingga pasti plag dan wayar sudah kering.",
+          "c": "Awas binatang berbisa dan air kotor.",
+          "d": "Ambil gambar kerosakan sebelum membersihkan rumah."
+        }
+      }
+    }
   },
   "sos": {
     "label": "SOS",
@@ -33,6 +129,132 @@
     "medical": "Perubatan kecemasan",
     "police": "Polis",
     "fire": "Bomba"
+  },
+  "places": {
+    "title": "Tempat selamat berhampiran anda",
+    "parkingTitle": "Tempat tinggi untuk letak kereta",
+    "none": "Belum ada senarai tempat selamat berhampiran kawasan ini dalam aplikasi. Tanya ketua kampung atau pejabat tambon, atau telefon 1784.",
+    "unavailable": "Senarai tempat selamat tidak dapat dimuat.",
+    "loading": "Sedang memuat tempat selamat…",
+    "navigate": "Tunjuk arah",
+    "type": {
+      "shelter": "Pusat pemindahan",
+      "school": "Sekolah",
+      "mosque": "Masjid",
+      "temple": "Wat",
+      "government": "Bangunan kerajaan",
+      "high_ground_parking": "Tempat tinggi untuk kereta",
+      "other": "Tempat lain"
+    },
+    "status": {
+      "open": "Dibuka",
+      "full": "Penuh",
+      "closed": "Ditutup",
+      "unknown": "Belum diketahui sama ada dibuka"
+    },
+    "verified": "Sudah disahkan",
+    "unverified": "Belum disahkan",
+    "km": "{value} km",
+    "m": "{value} m",
+    "straight": "jarak garis lurus",
+    "walk": "kira-kira {minutes} minit berjalan kaki",
+    "drive": "kira-kira {minutes} minit memandu",
+    "freeboard": "Kira-kira {value} m lebih tinggi daripada banjir tertinggi yang lalu",
+    "floodedBoth": "Pernah banjir pada 2024 dan 2025",
+    "flooded2024": "Pernah banjir pada 2024",
+    "flooded2025": "Pernah banjir pada 2025",
+    "notFlooded": "Tiada banjir dikesan pada 2024 dan 2025",
+    "capacity": "Muat kira-kira {count} orang",
+    "needs": "Keperluan: {text}"
+  },
+  "map": {
+    "title": "Peta",
+    "tabs": {
+      "label": "Halaman peta",
+      "map": "Peta",
+      "transparency": "Ketelusan"
+    },
+    "province": {
+      "label": "Wilayah",
+      "all": "Keempat-empat wilayah",
+      "comingSoon": "Akan datang (Jaga belum meliputi)",
+      "othersNote": "Jaga belum meliputi wilayah lain. Kecemasan: telefon 1784 atau 1669.",
+      "failed": "Senarai wilayah tidak dapat dimuat."
+    },
+    "hazard": {
+      "label": "Jenis bencana",
+      "comingSoon": "Akan datang",
+      "willDo": "Apa yang akan ada nanti",
+      "call": "Telefon {number}",
+      "failed": "Senarai jenis bencana tidak dapat dimuat. Peta menunjukkan banjir sahaja.",
+      "flood": "Banjir"
+    },
+    "mode": {
+      "label": "Paparan",
+      "risk": "Risiko",
+      "live": "Keadaan sekarang"
+    },
+    "layers": {
+      "title": "Apa yang ditunjukkan pada peta",
+      "alerts": "Tahap amaran setiap tambon",
+      "hazard": "Kawasan berisiko banjir",
+      "places": "Tempat selamat",
+      "reports": "Laporan banjir daripada orang ramai (72 jam)",
+      "gauges": "Stesen paras air"
+    },
+    "pending": {
+      "hazard": "Peta kawasan berisiko sedang disediakan dan belum ditunjukkan. Ini tidak bermakna tiada risiko.",
+      "places": "Belum ada senarai tempat selamat dalam aplikasi.",
+      "reports": "Belum ada laporan dalam aplikasi. Ini tidak bermakna tiada banjir.",
+      "gauges": "Belum ada data stesen paras air dalam aplikasi.",
+      "alerts": "Jaga belum beroperasi, jadi tambon tanpa amaran tidak menunjukkan sebarang tahap.",
+      "title": "Belum ada pada peta"
+    },
+    "noAlert": "Tiada amaran",
+    "loading": "Sedang memuat peta…",
+    "failed": "Peta tidak dapat dimuat. Senarai di bawah masih boleh digunakan.",
+    "dataFailed": "Sebahagian data peta tidak dapat dimuat.",
+    "tapHint": "Ketik pada peta untuk melihat butiran.",
+    "close": "Tutup",
+    "alertsList": {
+      "title": "Tambon yang ada amaran sekarang",
+      "none": "Tiada amaran yang berkuat kuasa sekarang.",
+      "unknown": "Status amaran tidak dapat dimuat. Ikuti amaran rasmi.",
+      "areas": "Kawasan",
+      "nextUpdate": "Kemas kini seterusnya {time}"
+    },
+    "reports": {
+      "count": "{count} laporan dalam 72 jam yang lalu",
+      "deepest": "Air paling dalam yang dilaporkan: {depth}",
+      "latest": "Laporan terakhir kira-kira {time}",
+      "note": "Ditunjukkan sebagai bilangan laporan dalam kawasan kira-kira 1 km². Lokasi dan nama pelapor tidak ditunjukkan."
+    },
+    "depth": {
+      "dry": "kering",
+      "ankle": "buku lali",
+      "knee": "lutut",
+      "waist": "pinggang",
+      "chest": "dada",
+      "above_head": "melebihi kepala",
+      "roof": "sampai bumbung"
+    },
+    "gauge": {
+      "normal": "Di bawah paras berjaga-jaga",
+      "above_watch": "Melebihi paras berjaga-jaga",
+      "above_warning": "Melebihi paras amaran",
+      "no_levels": "Stesen ini belum ada paras rujukan",
+      "no_recent_data": "Tiada data dalam 6 jam yang lalu",
+      "level": "Paras air {value} m MSL",
+      "at": "Diukur pada {time}"
+    },
+    "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya"
+  },
+  "soon": {
+    "sosTitle": "Butang SOS belum berfungsi",
+    "sosBody": "Permintaan bantuan melalui Jaga akan dibuka sebelum musim banjir. Sekarang tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera.",
+    "reportTitle": "Laporan banjir belum berfungsi",
+    "reportBody": "Akan dibuka sebelum musim banjir. Jika kecemasan, telefon segera.",
+    "back": "Kembali ke halaman utama"
   },
   "attribution": {
     "openMeteo": "Data cuaca daripada Open-Meteo.com (CC BY 4.0)"
@@ -48,7 +270,8 @@
     "en": "English"
   },
   "nav": {
-    "account": "Akaun"
+    "account": "Akaun",
+    "map": "Peta"
   },
   "signIn": {
     "title": "Log masuk",
@@ -325,5 +548,23 @@
     "attribution": "Attribution",
     "tokens": "Color tokens",
     "sampleTime": "Sample time"
+  },
+  "devHome": {
+    "title": "Contoh halaman utama",
+    "mapTitle": "Contoh peta",
+    "note": "Contoh rekaan untuk semakan skrin. Bukan amaran sebenar; tiada dalam pangkalan data.",
+    "example": "Contoh, bukan amaran sebenar",
+    "scenario": {
+      "choose": "Kawasan belum dipilih",
+      "notInService": "Belum beroperasi",
+      "normal": "Biasa",
+      "watch": "Berjaga-jaga",
+      "warning": "Amaran, dengan tempoh jangkaan",
+      "evacuate": "Pindah",
+      "stale": "Amaran yang tidak dikemas kini",
+      "return": "Boleh balik rumah",
+      "watched": "Tempat yang dijaga lebih teruk daripada rumah",
+      "unavailable": "Status tidak dapat dimuat"
+    }
   }
 }

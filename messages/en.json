@@ -8,9 +8,66 @@
     "skipToContent": "Skip to content"
   },
   "home": {
-    "title": "Jaga is getting ready for the flood season",
-    "body": "This app doesn't issue alerts yet. Follow official warnings from DDPM and local authorities.",
-    "emergency": "In an emergency, call 1784 or 1669 straight from the buttons below"
+    "title": "Jaga: alert status for your area",
+    "loading": "Loading the alert status…",
+    "notInService": {
+      "title": "Jaga is not in service yet",
+      "body": "Jaga starts on 25 October 2026. Nobody is issuing alerts in this app yet. No alert here does not mean there is no risk. Follow official warnings from DDPM and local authorities.",
+      "emergency": "In an emergency, call 1784 or 1669",
+      "short": "Not in service yet"
+    },
+    "area": {
+      "label": "Your area",
+      "change": "Change area",
+      "chooseTitle": "Choose your area",
+      "chooseBody": "To see your tambon's alerts and the safe places near you.",
+      "useGps": "Use my current location",
+      "locating": "Finding your location…",
+      "gpsFailed": "Couldn't find your location. Turn on GPS and try again, or choose from the list.",
+      "locateFailed": "Couldn't check the area. Try again, or choose from the list.",
+      "fromList": "Choose from a list",
+      "province": "Province",
+      "district": "District",
+      "tambon": "Tambon",
+      "select": "Choose…",
+      "use": "Use this area",
+      "cancel": "Cancel",
+      "notCovered": "Jaga doesn't cover {province} province yet. In an emergency call 1784 or 1669.",
+      "outside": "This location is outside the area Jaga covers. In an emergency call 1784 or 1669.",
+      "listFailed": "Couldn't load the list of areas. Try again.",
+      "privacy": "The area you choose is kept on this phone only.",
+      "fromAccount": "The home saved in your account"
+    },
+    "status": {
+      "unavailableTitle": "Couldn't load the alert status",
+      "unavailableBody": "The status of this area isn't known yet. Follow official warnings. In an emergency call 1784.",
+      "checked": "Last checked {time}",
+      "offline": "No connection. Showing what this phone last received at {time}.",
+      "retry": "Try again"
+    },
+    "normalBody": "There is no flood alert for this area now.",
+    "reason": "Why",
+    "issuedBy": "Issued by",
+    "issuer": "Jaga admin",
+    "source": "Source",
+    "issued": "Issued",
+    "nextUpdate": "Next update",
+    "onset": "Flooding expected between",
+    "returnWindow": "Return expected between",
+    "range": "{from} and {to}",
+    "estimate": "An estimate; it may change",
+    "checklistTitle": "What to do now",
+    "checklistNote": "Ticks are kept on this phone only.",
+    "report": "Report flooding",
+    "watched": {
+      "title": "Places you watch",
+      "call": "Call {name}",
+      "sosFor": "SOS for {label}",
+      "outside": "Outside the area Jaga covers",
+      "unknown": "Status not known yet"
+    },
+    "mapLink": "Open the map",
+    "projectLine": "Jaga help line"
   },
   "alert": {
     "level": {
@@ -20,7 +77,46 @@
       "evacuate": "Evacuate",
       "return": "Safe to return"
     },
-    "stale": "Not updated since {time}"
+    "stale": "Not updated since {time}",
+    "summary": {
+      "normal": "Nothing to do now. Know your safe places.",
+      "watch": "Get ready: pack your go-bag and plan your route.",
+      "warning": "Flooding is likely here within about 24–48 hours. Move vulnerable people and cars to safe places now.",
+      "evacuate": "Flooding is imminent or has started. Go to your safe place now. If you are trapped, press SOS.",
+      "return": "Water has receded in this area. Return carefully."
+    },
+    "checklist": {
+      "flood": {
+        "normal": {
+          "a": "Know the safe places near your home. See the list below.",
+          "b": "Remember the hotlines 1784 and 1669."
+        },
+        "watch": {
+          "a": "Charge your phones and power banks.",
+          "b": "Pack important documents and medicine in a go-bag.",
+          "c": "Plan your route to a safe place.",
+          "d": "Check on neighbours who are elderly, ill or have small children."
+        },
+        "warning": {
+          "a": "Take elderly people, bedridden patients and small children to a safe place now.",
+          "b": "Move your car to high ground now.",
+          "c": "Lift valuables and electrical plugs off the floor.",
+          "d": "Have your go-bag ready to leave the house."
+        },
+        "evacuate": {
+          "a": "Go to your safe place now.",
+          "b": "Switch off the main breaker before you leave, if it is safe to do so.",
+          "c": "Don't walk or drive through fast-moving water.",
+          "d": "If you can't leave the house, press SOS."
+        },
+        "return": {
+          "a": "Return carefully. Roads and bridges may be damaged.",
+          "b": "Don't switch the power on until you are sure plugs and wires are dry.",
+          "c": "Watch out for snakes and other venomous animals, and for dirty water.",
+          "d": "Photograph the damage before you clean up."
+        }
+      }
+    }
   },
   "sos": {
     "label": "SOS",
@@ -33,6 +129,132 @@
     "medical": "Medical emergency",
     "police": "Police",
     "fire": "Fire"
+  },
+  "places": {
+    "title": "Safe places near you",
+    "parkingTitle": "High ground for parking cars",
+    "none": "No safe places are listed near this area in the app yet. Ask your village head or tambon office, or call 1784.",
+    "unavailable": "Couldn't load the safe places.",
+    "loading": "Loading safe places…",
+    "navigate": "Navigate",
+    "type": {
+      "shelter": "Shelter",
+      "school": "School",
+      "mosque": "Mosque",
+      "temple": "Temple",
+      "government": "Government building",
+      "high_ground_parking": "High ground for cars",
+      "other": "Other place"
+    },
+    "status": {
+      "open": "Open",
+      "full": "Full",
+      "closed": "Closed",
+      "unknown": "Not known whether it is open"
+    },
+    "verified": "Verified",
+    "unverified": "Not verified yet",
+    "km": "{value} km",
+    "m": "{value} m",
+    "straight": "in a straight line",
+    "walk": "about {minutes} min on foot",
+    "drive": "about {minutes} min by car",
+    "freeboard": "About {value} m above the highest recent flood",
+    "floodedBoth": "Flooded in 2024 and 2025",
+    "flooded2024": "Flooded in 2024",
+    "flooded2025": "Flooded in 2025",
+    "notFlooded": "No flooding found in 2024 or 2025",
+    "capacity": "Room for about {count} people",
+    "needs": "Needs: {text}"
+  },
+  "map": {
+    "title": "Map",
+    "tabs": {
+      "label": "Map pages",
+      "map": "Map",
+      "transparency": "Transparency"
+    },
+    "province": {
+      "label": "Province",
+      "all": "All four provinces",
+      "comingSoon": "Coming soon (not covered by Jaga yet)",
+      "othersNote": "Jaga doesn't cover other provinces yet. In an emergency call 1784 or 1669.",
+      "failed": "Couldn't load the list of provinces."
+    },
+    "hazard": {
+      "label": "Hazard",
+      "comingSoon": "Coming soon",
+      "willDo": "What this will offer later",
+      "call": "Call {number}",
+      "failed": "Couldn't load the list of hazards. The map shows floods only.",
+      "flood": "Flood"
+    },
+    "mode": {
+      "label": "View",
+      "risk": "Risk",
+      "live": "Now"
+    },
+    "layers": {
+      "title": "What the map shows",
+      "alerts": "Alert level per tambon",
+      "hazard": "Flood-risk areas",
+      "places": "Safe places",
+      "reports": "Flood reports from residents (72 hours)",
+      "gauges": "River gauges"
+    },
+    "pending": {
+      "hazard": "The flood-risk map is being prepared and isn't shown yet. This does not mean there is no risk.",
+      "places": "No safe places are listed in the app yet.",
+      "reports": "No reports in the app yet. This does not mean there is no flooding.",
+      "gauges": "No river-gauge data in the app yet.",
+      "alerts": "Jaga is not in service yet, so a tambon without an alert shows no level at all.",
+      "title": "Not on the map yet"
+    },
+    "noAlert": "No alert",
+    "loading": "Loading the map…",
+    "failed": "Couldn't load the map. The lists below still work.",
+    "dataFailed": "Couldn't load some of the map's data.",
+    "tapHint": "Tap the map for details.",
+    "close": "Close",
+    "alertsList": {
+      "title": "Tambons with an alert now",
+      "none": "No alerts are in force now.",
+      "unknown": "Couldn't load the alert status. Follow official warnings.",
+      "areas": "Areas",
+      "nextUpdate": "Next update {time}"
+    },
+    "reports": {
+      "count": "{count} reports in the last 72 hours",
+      "deepest": "Deepest water reported: {depth}",
+      "latest": "Latest report at about {time}",
+      "note": "Shown as the number of reports in an area of about 1 km². Reporters' locations and names are not shown."
+    },
+    "depth": {
+      "dry": "dry",
+      "ankle": "ankle",
+      "knee": "knee",
+      "waist": "waist",
+      "chest": "chest",
+      "above_head": "above head",
+      "roof": "up to the roof"
+    },
+    "gauge": {
+      "normal": "Below the watch level",
+      "above_watch": "Above the watch level",
+      "above_warning": "Above the warning level",
+      "no_levels": "No reference levels for this station yet",
+      "no_recent_data": "No data in the last 6 hours",
+      "level": "Water level {value} m MSL",
+      "at": "Measured {time}"
+    },
+    "legendStale": "Grey dashed outline: an alert that was not updated on time"
+  },
+  "soon": {
+    "sosTitle": "The SOS button isn't working yet",
+    "sosBody": "Asking for help through Jaga opens before the flood season. Nobody receives requests from this app yet. If you need help, call now.",
+    "reportTitle": "Flood reports aren't open yet",
+    "reportBody": "They open before the flood season. In an emergency, call now.",
+    "back": "Back to home"
   },
   "attribution": {
     "openMeteo": "Weather data by Open-Meteo.com (CC BY 4.0)"
@@ -48,7 +270,8 @@
     "en": "English"
   },
   "nav": {
-    "account": "Account"
+    "account": "Account",
+    "map": "Map"
   },
   "signIn": {
     "title": "Sign in",
@@ -325,5 +548,23 @@
     "attribution": "Attribution",
     "tokens": "Color tokens",
     "sampleTime": "Sample time"
+  },
+  "devHome": {
+    "title": "Home examples",
+    "mapTitle": "Map example",
+    "note": "Made-up examples for reviewing the screens. Not real alerts; none of this is in the database.",
+    "example": "Example, not a real alert",
+    "scenario": {
+      "choose": "No area chosen yet",
+      "notInService": "Not in service yet",
+      "normal": "Normal",
+      "watch": "Watch",
+      "warning": "Warning, with expected windows",
+      "evacuate": "Evacuate",
+      "stale": "A warning that wasn't updated",
+      "return": "Safe to return",
+      "watched": "A watched place worse than home",
+      "unavailable": "Status couldn't load"
+    }
   }
 }
