@@ -4,7 +4,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { GeoJSONSource, Map as MapLibreMap, Popup } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import type { MapLayer } from "@/lib/hazards";
-import { mineLabel } from "@/lib/mine-label";
+import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
 import {
   createServiceAreaMap,
   SERVICE_BOUNDS,
@@ -69,6 +69,7 @@ const REPORTS_LINE = "jaga-reports-line";
 const PLACES = "jaga-places";
 const GAUGES = "jaga-gauges";
 const MINE = "jaga-mine";
+const MINE_LABEL = "jaga-mine-label";
 
 type Collection = GeoJSON.FeatureCollection;
 const collection = (features: GeoJSON.Feature[]): Collection => ({
@@ -78,13 +79,7 @@ const collection = (features: GeoJSON.Feature[]): Collection => ({
 
 function toCollections(data: MapData | null, mine: MinePlace[]): Record<string, Collection> {
   return {
-    [MINE]: collection(
-      mine.map((place) => ({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [place.lon, place.lat] },
-        properties: { id: place.id, home: place.home ? 1 : 0, color: place.color },
-      })),
-    ),
+    [MINE]: collection(mine.map(minePlaceFeature)),
     [REPORTS]: collection(
       (data?.reports ?? []).map((bin, index) => ({
         type: "Feature",
@@ -235,6 +230,41 @@ export function MapView({
             },
           });
         }
+        if (!m.getLayer(MINE_LABEL)) {
+          /*
+           * The name of each place, written on the map itself, so they can be read at a glance
+           * without pointing at every pin. Hover or tap still gives the person there and the
+           * address. It needs the style's font server (lib/map.ts).
+           */
+          m.addLayer({
+            id: MINE_LABEL,
+            type: "symbol",
+            source: MINE,
+            layout: {
+              "text-field": ["get", "label"],
+              "text-font": ["Noto Sans Regular"],
+              "text-size": 13,
+              "text-anchor": "top",
+              "text-offset": [0, 0.8],
+              "text-max-width": 9,
+              /*
+               * Always drawn. Our layer is added after the basemap's, so MapLibre would give the
+               * basemap's own place names priority and hide these instead - and someone's own
+               * places matter more to them than the name of a neighbouring village. A person has
+               * at most ten, and they can zoom in if two sit on top of each other.
+               */
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+            },
+            paint: {
+              "text-color": SLATE,
+              // A white outline keeps the name readable over the basemap and over a coloured
+              // tambon, without a box that would cover the map.
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 1.8,
+            },
+          });
+        }
         m.setPaintProperty(ALERT_FILL, "fill-color", alertFillColor(status));
         m.setFilter(ALERT_STALE, ["in", ["get", "code"], ["literal", staleTambons(status, now)]]);
         m.setLayoutProperty(ALERT_FILL, "visibility", show("alerts"));
@@ -243,7 +273,9 @@ export function MapView({
         m.setLayoutProperty(REPORTS_LINE, "visibility", show("reports"));
         m.setLayoutProperty(PLACES, "visibility", show("places"));
         m.setLayoutProperty(GAUGES, "visibility", show("gauges"));
-        m.setLayoutProperty(MINE, "visibility", showMine && mine.length > 0 ? "visible" : "none");
+        const mineOn = showMine && mine.length > 0 ? "visible" : "none";
+        m.setLayoutProperty(MINE, "visibility", mineOn);
+        m.setLayoutProperty(MINE_LABEL, "visibility", mineOn);
       } catch {
         // The style is being replaced: the next "styledata" or "idle" draws again.
       }

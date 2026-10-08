@@ -18,3 +18,21 @@ export function mineLabel(place: MinePlace): HTMLElement {
   }
   return box;
 }
+
+/**
+ * One of the person's places as the map's source holds it. The name travels in the properties
+ * because the symbol layer writes it on the map from there; leaving it out once meant the pins
+ * were drawn with no names at all, which nothing but a screenshot would have caught.
+ */
+export function minePlaceFeature(place: MinePlace) {
+  return {
+    type: "Feature" as const,
+    geometry: { type: "Point" as const, coordinates: [place.lon, place.lat] },
+    properties: {
+      id: place.id,
+      home: place.home ? 1 : 0,
+      color: place.color,
+      label: place.label,
+    },
+  };
+}

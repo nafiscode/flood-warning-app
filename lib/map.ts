@@ -17,6 +17,9 @@ const GROUND = "#f0f2ee";
 
 const START_STYLE: StyleSpecification = {
   version: 8,
+  // The same free font server the basemap uses, so our own labels can be drawn before (and
+  // without) the basemap. No key, same host as the tiles.
+  glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
   sources: {
     [TAMBON_SOURCE]: { type: "geojson", data: TAMBONS_URL, attribution: BOUNDARY_CREDIT },
   },

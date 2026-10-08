@@ -4,7 +4,7 @@ import { DashboardView, type DashboardViewProps } from "@/components/map/Dashboa
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { alert as alertColors_ } from "@/lib/brand/tokens";
 import { MINE_COLORS, mineColor } from "@/lib/mine-colors";
-import { mineLabel } from "@/lib/mine-label";
+import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
 import {
   BANA,
   EXAMPLE_DIRECTORY,
@@ -281,6 +281,16 @@ describe("the label on a pin", () => {
       "ติดต่อ: แม่",
       "ต.ตะลุโบะ อ.เมืองปัตตานี จ.ปัตตานี",
     ]);
+  });
+
+  it("the name travels with the feature, so the map can write it beside the pin", () => {
+    const f = minePlaceFeature(place);
+    expect(f.properties.label).toBe("บ้านแม่");
+    expect(f.properties.color).toBe("#7FD1C9");
+    expect(f.properties.home).toBe(0);
+    expect(f.geometry.coordinates).toEqual([101.27, 6.87]);
+    // The person there and the address stay off the map face; they are in the label on hover.
+    expect(JSON.stringify(f)).not.toContain("ติดต่อ");
   });
 
   it("puts what the person typed on the map as text, never as HTML", () => {
