@@ -15,7 +15,7 @@ All parameters are in `config.yaml`; every run writes them, the scenes and every
 5. **Change.** `change = event − reference` in dB, per polarisation. Flood = strong drop.
 6. **Masks** (pixel is not classified):
    - permanent water: JRC Global Surface Water v1.4 occurrence > 80 %
-   - slope > 5° from FABDEM (bare earth; a surface model puts false steps at plantation edges), computed on the DEM's own 30 m grid
+   - slope > 5° where the land is also more than 5 m above the nearest drainage (since 8 Oct 2026; before, slope alone), from FABDEM (bare earth; a surface model puts false steps at plantation edges), computed on the DEM's own 30 m grid
    - MERIT Hydro `hnd` (HAND) > 15 m (90 m data, first pass; S3 replaces it with FABDEM HAND)
    - radar layover and shadow per orbit (below)
 7. **Threshold per tile.** The area is cut into 0.1° tiles (215 touch the provinces). For every pass, polarisation and tile, a histogram of the change (−20 to +10 dB, 0.2 dB bins, valid pixels only) is fetched and Otsu's threshold is computed locally (`threshold.py`). It is **used only if the histogram is bimodal enough**:
@@ -26,7 +26,7 @@ All parameters are in `config.yaml`; every run writes them, the scenes and every
    - the threshold lies between −12 and −2 dB
 
    Otherwise the tile gets the **fixed drop of −3 dB** (power halved). The log records, per tile, the method, the threshold, the reason and the statistics. Tiles without data get the fixed drop.
-8. **Clean-up.** Flood patches smaller than 8 connected pixels are removed per pass and polarisation. (Not in the original brief; added because a maximum over 20–100 passes otherwise keeps every pass's leftover speckle. `min_connected_pixels: 0` turns it off.)
+8. **Clean-up.** Flood patches smaller than 800 m² (8 connected pixels at 10 m, 2 at 20 m; before 8 Oct 2026: 8 pixels at any size) are removed per pass and polarisation. (Not in the original brief; added because a maximum over 20–100 passes otherwise keeps every pass's leftover speckle. `min_connected_area_m2: 0` turns it off.)
 9. **Polarisations.** VV and VH are thresholded separately and both are kept as bits in the extent rasters. `flood_rule: vv` decides what counts as flooded in `n_flooded` and the frequency (VV is the usual choice for open-water flooding; VH is noisier and close to the noise floor over water).
 
 ## Outputs
@@ -212,6 +212,39 @@ What to keep in mind when using these:
 - **The 101 km² flooded in every season** are probably paddy and other seasonal water, not flood hazard in the sense of the app.
 - **20 m against 10 m.** `min_connected_pixels` is counted in pixels at the export size: 8 pixels are 800 m² at 10 m and 3,200 m² at 20 m, so the season rasters drop larger patches than the priority events do. Measured on the two years that have both: season 2024 (40 passes, 20 m) shows 677 km² against 693 km² for the Nov–Dec 2024 event alone (20 of those passes, 10 m), and covers 83 % of the event's flooded area; 2025: 808 against 832 km², 82 %. About 40 and 55 km² lie in 20 m cells whose four 10 m pixels are all flooded in the event and that the season leaves dry. A filter of 2 pixels at 20 m (800 m²) would match the events; it changes the parameter hash, so the 358 passes would be exported again (about 124 EECU-hours; the references can be copied). Not done: the owner's choice.
 - Everything listed under "Known issues" applies: the terrain mask covers half the provinces, and nothing is validated against observed floods.
+
+## The owner's look and the second parameter set (8 Oct 2026)
+
+The owner (who knows the area) looked at seven 8 × 8 km views of the 29 Nov 2024 pass, exported from ArcGIS Pro with the places chosen by pixel counts (`sar_floods/arcgis/flood_look.py` sets up the same layers). This is the first check against local knowledge; it is one person's judgement of one pass, not a validation.
+
+| View | What the owner said |
+|---|---|
+| Tak Bai and the Kolok plain (22.8 km² flagged in the frame) | The flood shown is real |
+| Pattani town and the fields south of it | The fields were flooded. **The town was flooded too**, where the map shows almost nothing |
+| Sai Buri valley near Raman | The low land between the meanders should be flagged too |
+| The same, with the mask rules | The ground the slope rule masks along the banks is floodplain |
+| Land masked by HAND alone, south-west Songkhla and inland of Chana | Not sure |
+| VH-only fields south of Pattani town | Probably paddy; not sure |
+
+What followed (decision of 8 Oct, parameter hash `c97e0bf`; the rasters made before carry `cd222f1` and are kept):
+- **Slope mask only above 5 m.** Land steeper than 5° is masked only where MERIT HAND is above `masks.slope.min_hand_m` (5 m). Before, the slope rule alone masked 1,866 km² of land below the 15 m HAND limit, 873 km² of it within 5 m of drainage: river banks, levees and elevation-model artefacts inside the floodplain. On a 2.6 km block in the Sai Buri meander belt (24 Nov 2025 pass) the change unmasks 40 % of the masked pixels, and 21 % of the unmasked ones are flooded by the VV rule.
+- **Patch filter as an area.** `min_connected_area_m2: 800` replaces the 8-pixel count: 8 pixels at 10 m, 2 at 20 m.
+- **VV alone still counts.** The VH-only fields were not identified with confidence; both bits stay in the files.
+- **Built-up land.** Radar does not show flooding between buildings (strong returns from walls and roofs). The maps under-report towns, and S3 must not read "no radar flood" in built-up land as "does not flood".
+- Still unjudged: the HAND-only mask (4.2 % of the provinces) and the fixed −3 dB drop outside the two confirmed plains.
+
+Land in the four provinces by slope and MERIT HAND (km², 30 m, from Earth Engine), the table behind the slope decision:
+
+| HAND \ slope | ≤ 3° | 3–5° | 5–7.5° | 7.5–10° | 10–15° | > 15° |
+|---|---|---|---|---|---|---|
+| ≤ 2 m | 5,198 | 275 | 190 | 111 | 125 | 179 |
+| 2–5 m | 1,894 | 214 | 134 | 65 | 47 | 22 |
+| 5–10 m | 1,308 | 285 | 208 | 117 | 105 | 69 |
+| 10–15 m | 530 | 196 | 161 | 104 | 116 | 113 |
+| 15–30 m | 390 | 219 | 229 | 190 | 296 | 502 |
+| > 30 m | 105 | 117 | 216 | 299 | 858 | 4,676 |
+
+Both priority events and the nine seasons are being exported again with `c97e0bf` (started 8 Oct; the 43 stored references were copied to the new names, since neither change touches them; the 2024 event gets stored references for the first time). Results replace the figures in the sections above when they are in.
 
 ## To check by eye in the Code Editor
 
