@@ -28,8 +28,10 @@ vi.mock("@/components/map/MapView", () => ({
     mine = [],
     showMine = false,
     onSelect,
+    bounds,
   }: {
     onSelect?: (s: { kind: "mine"; id: string }) => void;
+    bounds?: [number, number, number, number];
     layers: string[];
     mine?: {
       id: string;
@@ -48,6 +50,7 @@ vi.mock("@/components/map/MapView", () => ({
       data-mine-colors={mine.map((p) => p.color).join(",")}
       data-mine-labels={mine.map((p) => [p.label, ...p.lines].join(" | ")).join(" / ")}
       data-mine-calls={mine.map((p) => `${p.id}:${p.call ? p.call.tel : "-"}`).join(",")}
+      data-bounds={bounds ? bounds.map((n) => n.toFixed(2)).join(",") : ""}
     >
       {layers.join(",")}
       {/* Stands in for tapping the first pin, which the real map answers with onSelect. */}
@@ -404,5 +407,46 @@ describe("calling the person at a watched place, from the map", () => {
     const call = card.querySelector('a[href^="tel:"]')!;
     expect(call.getAttribute("href")).toBe("tel:0800000000");
     expect(call.textContent).toContain("โทรหา แม่");
+  });
+});
+
+describe("the map opens where the person already is", () => {
+  it("their area decides the province, where the map looks, and the alert shown first", () => {
+    const c = dashboard({ area: BANA });
+    // The province selector is already on theirs (Pattani, 94), not "all four".
+    expect((c.querySelector("#map-province") as HTMLSelectElement).value).toBe("94");
+    // The map looks at a box around their tambon, not the whole province.
+    const bounds = c
+      .querySelector("[data-map]")!
+      .getAttribute("data-bounds")!
+      .split(",")
+      .map(Number);
+    expect(bounds[0]).toBeCloseTo(BANA.lon - 0.1, 2);
+    expect(bounds[3]).toBeCloseTo(BANA.lat + 0.08, 2);
+    // And their tambon's alert is the one shown, without tapping anything.
+    expect(c.querySelector("[data-selected-panel]")?.textContent).toContain("บานา");
+  });
+
+  it("a visitor with no area chosen still sees all four provinces", () => {
+    const c = dashboard();
+    expect((c.querySelector("#map-province") as HTMLSelectElement).value).toBe("");
+    expect(c.querySelector("[data-map]")?.getAttribute("data-bounds")).toBe("");
+    expect(c.querySelector("[data-selected-panel]")).toBeNull();
+  });
+
+  it("choosing another province takes over from the area", () => {
+    const c = dashboard({ area: BANA });
+    fireEvent.change(c.querySelector("#map-province")!, { target: { value: "95" } });
+    expect((c.querySelector("#map-province") as HTMLSelectElement).value).toBe("95");
+    // Now the whole of that province, not a box around the old tambon.
+    expect(c.querySelector("[data-map]")?.getAttribute("data-bounds")).not.toBe("");
+    expect(c.querySelector("[data-selected-panel]")).toBeNull();
+  });
+
+  it("closing the first card leaves it closed", () => {
+    const c = dashboard({ area: BANA });
+    expect(c.querySelector("[data-selected-panel]")).not.toBeNull();
+    fireEvent.click(c.querySelector("[data-selected-panel] button")!);
+    expect(c.querySelector("[data-selected-panel]")).toBeNull();
   });
 });

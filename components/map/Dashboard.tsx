@@ -1,9 +1,9 @@
 "use client";
 
-import type { AreaDirectory } from "@/lib/area";
+import type { Area, AreaDirectory } from "@/lib/area";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
-import { useOnPhone } from "@/lib/phone-store";
+import { useOnPhone, useStored } from "@/lib/phone-store";
 import { useFetched, useMyPlaces, useNow, usePublicStatus } from "@/lib/use-public";
 import { DashboardView } from "./DashboardView";
 
@@ -20,6 +20,10 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   const directory = useFetched<AreaDirectory>("/api/geo/areas");
   const data = useFetched<MapData>("/api/public/map");
   const me = useMyPlaces();
+  // Where the person said they are on the home screen: their saved home first, else the area
+  // they chose on this phone. The map opens there (the owner's note, 9 Oct).
+  const chosen = useStored<Area>("area");
+  const area = me?.signedIn && me.home ? me.home : chosen;
   const now = useNow();
   return (
     <DashboardView
@@ -33,6 +37,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       data={data.data}
       dataState={data.state}
       me={me}
+      area={area}
       now={now}
       transparency={transparency}
       userAgent={ready ? navigator.userAgent : ""}

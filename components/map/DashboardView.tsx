@@ -10,7 +10,7 @@ import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { PhoneIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
-import { areaName, pickName, type AreaDirectory } from "@/lib/area";
+import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
 import { PROVINCE_BOUNDS } from "@/lib/map";
@@ -44,6 +44,8 @@ export type DashboardViewProps = {
   transparency: boolean;
   /** The signed-in person's home and watched places, or null for a visitor. */
   me?: MyPlaces | null;
+  /** The area the person chose on the home screen: where the map opens (the owner's note). */
+  area?: Area | null;
   /** The province the map opens on; all four when left out. */
   initialProvince?: string;
   userAgent?: string;
@@ -79,8 +81,36 @@ export function DashboardView(props: DashboardViewProps) {
   const [tab, setTab] = useState<"map" | "transparency">("map");
   const [hazardCode, setHazardCode] = useState("flood");
   const [chosenMode, setChosenMode] = useState<MapMode | null>(null);
-  const [province, setProvince] = useState(props.initialProvince ?? "");
-  const [selection, setSelection] = useState<MapSelection | null>(null);
+  /*
+   * The map opens where the person already said they are: the area chosen on the home screen
+   * (their home if they have one saved) decides the province in the selector, where the map
+   * looks, and which tambon's alert is shown first (the owner's note, 9 Oct). Everything stays
+   * theirs to change: once they pick a province or tap the map, their choice holds.
+   */
+  const areaProvince = props.area ? props.area.code.slice(0, 2) : "";
+  const [chosenProvince, setChosenProvince] = useState<string | null>(
+    props.initialProvince ?? null,
+  );
+  const province = chosenProvince ?? areaProvince;
+  const setProvince = (code: string) => {
+    setChosenProvince(code);
+    setTouched(true);
+  };
+  const [picked, setPicked] = useState<MapSelection | null>(null);
+  const [touched, setTouched] = useState(false);
+  const areaSelection: MapSelection | null = props.area
+    ? {
+        kind: "tambon",
+        code: props.area.code,
+        nameTh: props.area.nameTh,
+        nameEn: props.area.nameEn,
+      }
+    : null;
+  const selection = touched ? picked : areaSelection;
+  const setSelection = (next: MapSelection | null) => {
+    setTouched(true);
+    setPicked(next);
+  };
   const [showMine, setShowMine] = useState(true);
 
   /*
@@ -172,6 +202,16 @@ export function DashboardView(props: DashboardViewProps) {
     ...(layers.includes("gauges") && data && data.gauges.length === 0 ? (["gauges"] as const) : []),
   ];
   const drawn = layers.filter((l) => l !== "alerts" && !pending.includes(l));
+
+  /*
+   * Where the map looks: close around the person's own area while that is what is chosen, the
+   * whole province once they pick one from the list, and all four when they clear it. The box is
+   * about 22 by 17 km, which holds a tambon and its neighbours.
+   */
+  const mapBounds: [number, number, number, number] | undefined =
+    chosenProvince === null && props.area
+      ? [props.area.lon - 0.1, props.area.lat - 0.08, props.area.lon + 0.1, props.area.lat + 0.08]
+      : PROVINCE_BOUNDS[province];
 
   let selected: React.ReactNode = null;
   if (selection?.kind === "tambon" && layers.includes("alerts")) {
@@ -339,7 +379,7 @@ export function DashboardView(props: DashboardViewProps) {
                 status={fresh ? status : null}
                 data={data}
                 now={now}
-                bounds={PROVINCE_BOUNDS[province]}
+                bounds={mapBounds}
                 onSelect={setSelection}
                 text={{ loading: t("loading"), failed: t("failed") }}
                 mine={mine}
