@@ -465,6 +465,24 @@ Both parts send the **dam release sound** of spec 4.8 and docs/brand.md: its own
 
 Part 2, after someone at the dam has agreed to use it: the dam operator role and its one screen (spec section 15). RLS tests for the role: it can send a dam release notice to the fixed zone and nothing else.
 
+### A13: Impact record and public transparency (after launch)
+```text
+Read docs/spec.md sections 16 and 9, and CLAUDE.md safety rules 5, 6 and 9.
+
+Build on the first season's real data. An empty page showing zeros is honest; invented figures are not.
+
+1. Nightly aggregation (Edge Function on Cron): fill impact_daily (per province per day) and impact_unit_totals from sos_requests, sos_offers, sos_claims, rescue_confirmations, alerts, alert_deliveries, reports and the usage counters. Idempotent: running it twice for the same day changes nothing. Drop the raw usage_events rows for a day once it is counted.
+2. Usage counting in Jaga's own code, never a third-party analytics service. The device hash is salted per day, so the same phone cannot be linked across days. Count app openings, alerts delivered, SOS sent, reports and safe-place lookups.
+3. Waiting times per province: median and spread for sent to first offer, to accepted, to on site, to confirmed. Never per case or per unit in public.
+4. /impact, public, no account, prerendered and cached like the other public pages: what Jaga carried, what the teams confirmed, and the failures beside them (cases no team accepted, cases that reached the admins, longest waits, cases closed unconfirmed). Every unit listed by province and name with the volume of its help; no ranking anywhere; no person named. The sentence that Jaga carried requests and the teams did the rescues. The sentence that most help in a flood happens outside the app.
+5. Suppression: province and day are the finest grain published, and a figure that could point at one household is not published. A test asserts it.
+6. CSV and JSON export of exactly the published aggregates.
+7. Links from About and the footer only. Nothing from the home screen, the dashboard, SOS, report or alert screens; no notification, no badge.
+8. Charts: load the dataviz skill before writing any of them.
+
+Acceptance: no published figure identifies a person or a household (test); re-running the nightly job changes nothing; /impact loads without an account and appears nowhere in the SOS, report or alert flows (test); the exports match the page.
+```
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.

@@ -445,6 +445,9 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 - `admin_invitations`: `email_or_phone`, `role`, `invited_by`, `status`.
 - `audit_log`: `actor`, `action`, `entity`, `entity_id`, `ts`, `details`.
 - `handover_notes`: shift log entries.
+- `impact_daily` (A13): one row per province per day — app openings, alerts delivered, SOS sent and their outcomes, reports, safe-place lookups, waiting-time medians and spreads. Written by a nightly job; the raw rows it counts are dropped.
+- `impact_unit_totals` (A13): per verified unit — cases accepted, confirmed rescues, people reached, seasons active. Volume of help only; no score and no per-unit times.
+- `usage_events` (A13): the short-lived raw counter rows, with a device hash that is salted per day so a phone cannot be followed across days. Deleted once the day is aggregated.
 
 ### Donations, transparency and admin stipends
 These tables are created in phase A11 only, not with the initial schema.
@@ -631,7 +634,7 @@ These tables are created in phase A11 only, not with the initial schema.
 1. Script for Patani Malay: Rumi (Latin), Jawi (Arabic script, RTL), or Thai-script Malay.
 2. The project SOS phone line for SMS and call fallback, and who staffs it.
 3. SMS provider (a Thai local provider is preferred for cost). Deferred until after launch (30 Sep); phone sign-in goes live once it is chosen. Decided fallback: LINE Login for authorities, with the POC phone verified by an admin call.
-4. Hero score weights, and whether the leaderboard is public.
+4. Hero score weights. Decided 9 Oct 2026: the hero score and its leaderboard stay inside the authority and admin consoles; the public impact page of section 16 shows every unit's volume of help without any ranking.
 5. Retention periods (section 9).
 6. Decided: the app is named Jaga (จากา). Still open: confirm the Thai spelling, the trademark and app-store search, and the domain (see docs/brand.md).
 7. Whether to require a second admin for Evacuate alerts, beyond the confirmation step.
@@ -658,3 +661,30 @@ Added 9 Oct 2026 (decision of that date). Releases from Bang Lang dam flood land
 - **Safety rules.** A person publishes every notice (rule 2). The estimate is always a range with its source and time (rule 8). The notice never replaces an alert level; the level for the zone is set by the template and can be raised by an admin.
 
 Open: who at the dam will use it (the owner makes the contact); the alert level a release notice carries by default; whether the operator may also send the "release has ended" message.
+
+## 16. Impact record and public transparency
+
+Added 9 Oct 2026 (decision of that date), built after launch (A13) on the first season's real data. Jaga keeps a record of what it carried and what the teams did with it, and publishes it so that anyone — the people in the four provinces, the teams themselves, funders, press — can see what the app achieved and who did the work.
+
+**The honesty rules come first.** This page is a transparency page, not marketing.
+- **Jaga never rescued anyone.** It carried a request to a team; people on the ground did the rescue. The wording is "requests Jaga carried to a team" and "rescues the teams confirmed", never "lives saved by Jaga".
+- **The failures are published beside the successes:** cases no team accepted, cases that reached the admins, median and longest wait before a team accepted, cases closed without the requester confirming, alerts issued late. A page with only good numbers is not transparency.
+- **Jaga does not know what happened outside the app.** The page says so: most people in a flood are helped by neighbours, and none of that is in these figures.
+- Every figure carries its period, the moment it was computed, and a plain note on how it was counted.
+
+**What is recorded** (a nightly job aggregates and then drops the raw rows):
+- **Requests and outcomes:** cases by status and outcome; people reached; cases involving vulnerable people (counts only); cases no team accepted; cases closed without confirmation. Waiting times — sent to first offer, to accepted, to on site, to confirmed — as the median and the spread **per province**, never per case and never per unit in public.
+- **Who helped:** per verified unit, the volume of its help: cases accepted, confirmed rescues, people reached, seasons active. **No ranking, no league table, no per-unit response times in public** (those stay in the authority and admin consoles, where they are management information, not a scoreboard). Units are listed by province and name. A unit with few cases is not last in a table; it is simply listed with what it did.
+- **No individual is ever named.** Credit goes to the unit and its organisation. A volunteer did not sign up to be a public figure, and a name beside rescue places and times is a safety matter in these provinces.
+- **Alerts:** how many were issued per level, the tambons covered, how many people were notified, how much was delivered, and the lead time before the water where that can be measured.
+- **Usage, per province per day:** devices that opened the app, alerts delivered, SOS sent, reports filed, safe-place lookups. Counted by Jaga's own code, never by a third-party analytics service: no cost, no visitor's address leaving us. A device is counted through a **salted hash that changes every day**, so the same phone cannot be followed from one day to the next; the raw rows are dropped once the day is counted.
+
+**Privacy (on top of section 9):**
+- Aggregates only. Never a point, a name, a phone number or an exact time.
+- Province and day are the finest grain published. Anything finer is only for the admin console, and a figure that could point at one household is not published at all.
+- The published aggregates survive the 180-day masking of personal fields in section 9; they contain nothing personal to mask.
+
+**Where it lives:** its own public page, `/impact`, open without an account, linked from About and the footer. It is **not** on the home screen, **not** a tab on the map dashboard, and it never sends a notification or shows a badge. Nothing links to it from an SOS, report or alert screen. The same discipline as the donation rules (safety rule 9): nothing competes with a request for help.
+
+**Export:** the published aggregates can be downloaded as CSV and JSON, so anyone can check the arithmetic and a funder can reuse it without asking.
+
