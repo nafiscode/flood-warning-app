@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PhoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { pickName } from "@/lib/area";
-import { getSessionProfile, localePath } from "@/lib/auth";
+import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
 
@@ -40,6 +40,8 @@ export default async function WatchedPlaces({
   const query = await searchParams;
   const session = await getSessionProfile();
   if (!session) redirect(localePath(locale, "/sign-in"));
+  // A name first (spec section 3): these are the person's own details, kept under their name.
+  if (needsName(session)) redirect(setupPath(locale, "/account/places"));
   const t = await getTranslations("watched");
 
   const supabase = await createClient();

@@ -39,6 +39,7 @@ const emails = {
   superAdmin: `e2e-super-${run}@test.invalid`,
   invited: `e2e-admin-${run}@test.invalid`,
   authority: `e2e-unit-${run}@test.invalid`,
+  nameless: `e2e-noname-${run}@test.invalid`,
 };
 
 test.describe.configure({ mode: "serial" });
@@ -85,6 +86,7 @@ async function finishSetup(page: Page, name: string) {
 test.beforeAll(async () => {
   const id = await createAccount(emails.superAdmin);
   await createAccount(emails.authority);
+  await createAccount(emails.nameless);
   // The first super admin is set in the database (scripts/admin.mjs does the same for the owner).
   await sql(
     "update public.profiles set role = 'super_admin', display_name = $2 where user_id = $1",
@@ -110,6 +112,19 @@ test("first sign-in asks for a name, then shows the account as a plain user", as
   // Not an admin: the admin console doesn't exist for this person.
   const response = await page.goto("/admin");
   expect(response?.status()).toBe(404);
+});
+
+test("without a name, the pages of a person's own details ask for one first", async ({ page }) => {
+  await signIn(page, emails.nameless);
+  await page.goto("/account/places");
+  await expect(page).toHaveURL(/\/account\/setup\?next=%2Faccount%2Fplaces$/);
+  await expect(page.getByText(th.account.setup.nameFirst)).toBeVisible();
+  await page.locator("#displayName").fill(`E2E noname ${run}`);
+  await page.locator('button[type="submit"]').click();
+  // The name is kept and the person lands where they were going.
+  await expect(page).toHaveURL(/\/account\/places$/);
+  await page.goto("/account/places");
+  await expect(page).toHaveURL(/\/account\/places$/);
 });
 
 test("the home location can be set with a pin on the map", async ({ page }) => {

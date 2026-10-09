@@ -1,4 +1,6 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { needsName, setupPath } from "@/lib/auth";
 import { isPhoneBrowser } from "@/lib/features";
 import { normalizePhone } from "@/lib/phone";
 import {
@@ -115,5 +117,50 @@ describe("sign-in flow kept for another browser", () => {
       "/ms/account/signed-in?next=%2Fms%2Faccount%2Fsetup%3Fnext%3D%252Fx",
     );
     expect(signedInNoticePath("/english")).toBe("/account/signed-in?next=%2Fenglish");
+  });
+});
+
+describe("a display name is required (spec section 3)", () => {
+  const session = (displayName: string) => ({
+    userId: "u",
+    role: "user" as const,
+    displayName,
+    locale: "th" as const,
+  });
+
+  it("a name of nothing, or of spaces, is no name", () => {
+    expect(needsName(session(""))).toBe(true);
+    expect(needsName(session("   "))).toBe(true);
+    expect(needsName(session("Aminah"))).toBe(false);
+    // A visitor is sent to sign-in instead, so there is nothing to ask of them.
+    expect(needsName(null)).toBe(false);
+  });
+
+  it("the way to setup keeps the locale and comes back", () => {
+    expect(setupPath("th", "/account/places")).toBe("/account/setup?next=%2Faccount%2Fplaces");
+    expect(setupPath("ms", "/account/places")).toBe(
+      "/ms/account/setup?next=%2Fms%2Faccount%2Fplaces",
+    );
+  });
+
+  it("the pages that keep someone's own details ask for it", () => {
+    for (const page of [
+      "app/[locale]/account/page.tsx",
+      "app/[locale]/account/places/page.tsx",
+      "app/[locale]/account/places/[id]/page.tsx",
+      "app/[locale]/authority/register/page.tsx",
+    ]) {
+      expect(readFileSync(page, "utf8")).toContain("needsName(session)");
+    }
+  });
+
+  it("nothing stands between a person and help: not SOS, not a report (safety rule 1)", () => {
+    for (const page of [
+      "app/[locale]/sos/page.tsx",
+      "app/[locale]/sos/[id]/page.tsx",
+      "app/[locale]/report/page.tsx",
+    ]) {
+      expect(readFileSync(page, "utf8")).not.toContain("needsName");
+    }
   });
 });

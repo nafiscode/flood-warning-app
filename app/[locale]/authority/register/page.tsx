@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CoverageMap } from "@/components/authority/CoverageMap";
-import { getSessionProfile, localePath } from "@/lib/auth";
+import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   buttonPrimary,
@@ -57,6 +57,8 @@ export default async function AuthorityRegister({
   if (!session) {
     redirect(`${localePath(locale, "/sign-in")}?next=${localePath(locale, "/authority/register")}`);
   }
+  // A unit is registered under a person's name, so the name comes first (spec section 3).
+  if (needsName(session)) redirect(setupPath(locale, "/authority/register"));
   const t = await getTranslations("authorityRegister");
   const error = ERRORS.find((e) => e === query.error);
 

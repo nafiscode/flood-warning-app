@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getSessionProfile, isAdminRole, localePath } from "@/lib/auth";
+import { getSessionProfile, isAdminRole, localePath, needsName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { buttonSecondary, card, hint, notice } from "@/lib/ui";
 
@@ -21,7 +21,7 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
   setRequestLocale(locale);
   const session = await getSessionProfile();
   if (!session) redirect(localePath(locale, "/sign-in"));
-  if (session.displayName === "") redirect(localePath(locale, "/account/setup"));
+  if (needsName(session)) redirect(localePath(locale, "/account/setup"));
   const t = await getTranslations("account");
   const tWatched = await getTranslations("watched");
 

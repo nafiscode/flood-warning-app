@@ -101,6 +101,27 @@ describe("user", () => {
     expect(p).toEqual({ role: "user", display_name: "Aminah" });
   });
 
+  it("cannot empty their display name, and spaces around it are dropped", async () => {
+    await as(db, { uid: w.otherUser });
+    await db.query("update profiles set display_name = '  Aminah  ' where user_id = $1", [
+      w.otherUser,
+    ]);
+    expect(
+      await rows(db, "select display_name from profiles where user_id = $1", [w.otherUser]),
+    ).toEqual([{ display_name: "Aminah" }]);
+    // A name is required of every account (spec section 3), so it may not be taken back.
+    for (const attempt of ["''", "'   '"]) {
+      expect(
+        await expectDenied(db, `update profiles set display_name = ${attempt} where user_id = $1`, [
+          w.otherUser,
+        ]),
+      ).toBe("23514");
+    }
+    expect(
+      await rows(db, "select display_name from profiles where user_id = $1", [w.otherUser]),
+    ).toEqual([{ display_name: "Aminah" }]);
+  });
+
   it("reads only their own profile, phone and household", async () => {
     await as(db, { uid: w.requester });
     expect(await count("select 1 from profiles")).toBe(1);

@@ -41,6 +41,21 @@ export async function getSessionProfile(): Promise<SessionProfile | null> {
   };
 }
 
+/**
+ * Where to send someone who has signed in but has no display name yet: the setup page, and back
+ * to where they were going. A display name is required of every account (spec section 3), and
+ * the pages that keep someone's own details should not be filled in by a nameless profile.
+ * Nothing in the way of an SOS or a report ever calls this: asking for help waits for nobody.
+ */
+export function needsName(session: SessionProfile | null): boolean {
+  return session !== null && session.displayName.trim() === "";
+}
+
+export function setupPath(locale: string, back: string): string {
+  const next = localePath(locale, back);
+  return `${localePath(locale, "/account/setup")}?${new URLSearchParams({ next })}`;
+}
+
 export function isAdminRole(role: Role): boolean {
   return role === "admin" || role === "super_admin";
 }
@@ -81,7 +96,7 @@ export async function finishSignIn(supabase: SupabaseClient, next: string | null
         .maybeSingle()
     : { data: null };
   const locale = (profile?.preferred_locale as string | undefined) ?? routing.defaultLocale;
-  if (!profile || profile.display_name === "") {
+  if (!profile || ((profile.display_name as string) ?? "").trim() === "") {
     const setup = localePath(locale, "/account/setup");
     return next ? `${setup}?next=${encodeURIComponent(next)}` : setup;
   }

@@ -3,9 +3,19 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HomeLocationField } from "@/components/account/HomeLocationField";
 import { routing } from "@/i18n/routing";
-import { getSessionProfile, localePath, safeNextPath } from "@/lib/auth";
+import { getSessionProfile, localePath, needsName, safeNextPath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { buttonPrimary, card, checkBox, checkRow, errorNotice, hint, input, label } from "@/lib/ui";
+import {
+  buttonPrimary,
+  card,
+  checkBox,
+  checkRow,
+  errorNotice,
+  hint,
+  input,
+  label,
+  notice,
+} from "@/lib/ui";
 import { saveProfile } from "../actions";
 
 const ERRORS = ["name", "phone", "location", "consent", "save"] as const;
@@ -45,6 +55,11 @@ export default async function AccountSetup({
       <input type="hidden" name="next" value={next} />
       <h1 className="text-h3 font-bold text-jaga-ink">{t("setup.title")}</h1>
       <p>{t("setup.intro")}</p>
+      {next !== "" && needsName(session) && (
+        <p role="status" className={notice}>
+          {t("setup.nameFirst")}
+        </p>
+      )}
       {error && (
         <p role="alert" className={errorNotice}>
           {t(`error.${error}`)}
@@ -53,7 +68,7 @@ export default async function AccountSetup({
 
       <section className={card}>
         <label htmlFor="displayName" className={label}>
-          {t("name.label")}
+          {t("name.label")} <span className={hint}>({t("name.required")})</span>
         </label>
         <input
           id="displayName"
@@ -91,7 +106,7 @@ export default async function AccountSetup({
                 type="radio"
                 name="language"
                 value={code}
-                defaultChecked={code === (session.displayName === "" ? locale : session.locale)}
+                defaultChecked={code === (needsName(session) ? locale : session.locale)}
                 className={checkBox}
               />
               {tLanguage(code)}

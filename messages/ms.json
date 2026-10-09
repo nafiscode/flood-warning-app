@@ -430,11 +430,13 @@
     "title": "Akaun saya",
     "setup": {
       "title": "Maklumat anda",
-      "intro": "Isi nama sahaja sudah boleh mula. Yang lain tidak wajib."
+      "intro": "Isi nama sahaja sudah boleh mula. Yang lain tidak wajib.",
+      "nameFirst": "Nama diperlukan sebelum halaman itu. Isi nama dan anda akan dibawa balik."
     },
     "name": {
       "label": "Nama paparan",
-      "hint": "Nama panggilan pun boleh. Petugas nampak nama ini bila anda minta tolong."
+      "hint": "Nama panggilan pun boleh. Petugas nampak nama ini bila anda minta tolong.",
+      "required": "Wajib"
     },
     "phone": {
       "label": "Nombor telefon (tidak wajib)",

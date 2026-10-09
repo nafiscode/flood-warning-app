@@ -430,11 +430,13 @@
     "title": "My account",
     "setup": {
       "title": "About you",
-      "intro": "Only your name is needed to start. Everything else is optional."
+      "intro": "Only your name is needed to start. Everything else is optional.",
+      "nameFirst": "A name is needed before that page. Enter it and you will be taken back."
     },
     "name": {
       "label": "Display name",
-      "hint": "A nickname is fine. Responders see this name when you ask for help."
+      "hint": "A nickname is fine. Responders see this name when you ask for help.",
+      "required": "Required"
     },
     "phone": {
       "label": "Phone number (optional)",

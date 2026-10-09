@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HomeLocationField } from "@/components/account/HomeLocationField";
 import { Link } from "@/i18n/navigation";
-import { getSessionProfile, localePath } from "@/lib/auth";
+import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { buttonPrimary, card, checkBox, checkRow, errorNotice, hint, input, label } from "@/lib/ui";
 import { deletePlace, savePlace } from "../actions";
@@ -39,6 +39,8 @@ export default async function WatchedPlace({
   const query = await searchParams;
   const session = await getSessionProfile();
   if (!session) redirect(localePath(locale, "/sign-in"));
+  // A name first (spec section 3): these are the person's own details, kept under their name.
+  if (needsName(session)) redirect(setupPath(locale, "/account/places"));
   const t = await getTranslations("watched");
   const tHome = await getTranslations("account.home");
 
