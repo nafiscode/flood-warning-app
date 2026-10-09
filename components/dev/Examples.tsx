@@ -2,6 +2,8 @@
 
 import { HomeView } from "@/components/home/HomeView";
 import { DashboardView } from "@/components/map/DashboardView";
+import { WeatherMapCanvas } from "@/components/weather/WeatherMapCanvas";
+import { WeatherMapsView } from "@/components/weather/WeatherMapsView";
 import { WeatherView } from "@/components/weather/WeatherView";
 import { useState } from "react";
 import { areaName } from "@/lib/area";
@@ -15,6 +17,8 @@ import {
   EXAMPLE_PLACES,
   exampleAlert,
   exampleStatus,
+  EXAMPLE_GRID,
+  EXAMPLE_PINS,
   EXAMPLE_WEATHER,
   EXAMPLE_WEATHER_PLACE,
   homeExample,
@@ -22,6 +26,7 @@ import {
   type WeatherScenario,
 } from "@/lib/dev-examples";
 import type { WeatherPlace } from "@/lib/weather";
+import type { WeatherField } from "@/lib/weather-grid";
 
 /** One home-screen example, fed with made-up data instead of the live status. */
 export function HomeExample({ scenario }: { scenario: HomeScenario }) {
@@ -91,6 +96,35 @@ export function WeatherExample({ scenario }: { scenario: WeatherScenario }) {
       onChoose={setPlace}
       onCancelPick={() => {}}
       onRetry={() => {}}
+      maps={place ? <MapsExample /> : null}
+    />
+  );
+}
+
+/** The weather maps with the made-up grid: the real screen, no network behind it but the basemap. */
+function MapsExample() {
+  const [field, setField] = useState<WeatherField>("rain");
+  const [hour, setHour] = useState(0);
+  return (
+    <WeatherMapsView
+      grid={EXAMPLE_GRID}
+      state="ok"
+      field={field}
+      onField={setField}
+      hour={hour}
+      onHour={setHour}
+      places={EXAMPLE_PINS}
+      canvas={
+        <WeatherMapCanvas
+          grid={EXAMPLE_GRID}
+          field={field}
+          hour={hour}
+          places={EXAMPLE_PINS}
+          centre={{ lat: EXAMPLE_GRID.lat, lon: EXAMPLE_GRID.lon }}
+          onViewSpan={() => {}}
+          text={{ loading: "…", failed: "—" }}
+        />
+      }
     />
   );
 }

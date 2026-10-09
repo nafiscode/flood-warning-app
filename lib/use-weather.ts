@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { areaName, pickName, type Area } from "@/lib/area";
+import type { MinePlace } from "@/components/map/MapView";
 import type { MyPlaces } from "@/lib/me";
+import { HOME_COLOR, mineColor } from "@/lib/mine-colors";
 import { readStored, useStored, writeStored } from "@/lib/phone-store";
 import { roundCoord, type Weather, type WeatherPlace } from "@/lib/weather";
+import type { WeatherGrid } from "@/lib/weather-grid";
 
 /** The forecast is refreshed every 15 minutes, the same period the edge keeps one answer for. */
 const POLL_MS = 15 * 60_000;
@@ -152,4 +155,105 @@ export function useWeather(
     failed,
     refresh,
   };
+}
+
+/** Grids are bigger than a forecast and only one is looked at; they stay in memory, not storage. */
+const grids = new Map<string, Promise<WeatherGrid>>();
+
+function loadGrid(lat: number, lon: number, span: number): Promise<WeatherGrid> {
+  const key = `${roundCoord(lat)},${roundCoord(lon)},${span}`;
+  const running = grids.get(key);
+  if (running) return running;
+  const request = fetch(
+    `/api/public/weather/grid?lat=${roundCoord(lat)}&lon=${roundCoord(lon)}&span=${span}`,
+    { cache: "no-store" },
+  ).then((response) => {
+    if (!response.ok) throw new Error(String(response.status));
+    return response.json() as Promise<WeatherGrid>;
+  });
+  grids.set(key, request);
+  // A failed grid is not remembered, so the map can try again.
+  void request.catch(() => grids.delete(key));
+  return request;
+}
+
+/**
+ * The grid of rain, temperature, humidity and wind behind the weather maps. It is asked for
+ * only once the map is actually on screen (`enabled`), because it is the heaviest thing the app
+ * downloads and most people never scroll that far.
+ */
+export function useWeatherGrid(
+  place: WeatherPlace | null,
+  span: number,
+  enabled: boolean,
+): { grid: WeatherGrid | null; state: "loading" | "ok" | "unavailable" } {
+  const [result, setResult] = useState<{ key: string; grid: WeatherGrid | null } | null>(null);
+  const key = place ? `${placeKey(place)},${span}` : null;
+  useEffect(() => {
+    if (!key || !place || !enabled) return;
+    let cancelled = false;
+    loadGrid(place.lat, place.lon, span).then(
+      (grid) => {
+        if (!cancelled) setResult({ key, grid });
+      },
+      () => {
+        if (!cancelled) setResult({ key, grid: null });
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [key, place, span, enabled]);
+  if (!key || result?.key !== key) return { grid: null, state: "loading" };
+  return { grid: result.grid, state: result.grid ? "ok" : "unavailable" };
+}
+
+/**
+ * The pins on the weather map: the place the page is about, then the person's home and the
+ * places they watch, in the colours the public map already gives them (lib/mine-colors.ts).
+ * A watched place pinned outside the covered tambons has no coordinates stored, so it cannot
+ * be drawn; the weather of a place is only ever read from the grid, never sent anywhere.
+ */
+export function weatherPins(
+  place: WeatherPlace | null,
+  me: MyPlaces | null,
+  locale: string,
+  labels: { home: string },
+): MinePlace[] {
+  const pins: MinePlace[] = [];
+  const pin = (
+    id: string,
+    label: string,
+    lat: number,
+    lon: number,
+    color: string,
+    home: boolean,
+  ): MinePlace => ({ id, label, lat, lon, home, color, lines: [], call: null });
+
+  if (place) pins.push(pin("here", place.name, place.lat, place.lon, HOME_COLOR, true));
+  if (!me?.signedIn) return pins;
+  // The home is not pinned twice when the page is already showing it.
+  const samePlace =
+    place &&
+    me.home &&
+    Math.abs(me.home.lat - place.lat) < 0.01 &&
+    Math.abs(me.home.lon - place.lon) < 0.01;
+  if (me.home && !samePlace) {
+    pins.push(pin("home", labels.home, me.home.lat, me.home.lon, HOME_COLOR, true));
+  }
+  me.places
+    .filter((watched) => watched.area)
+    .forEach((watched, index) => {
+      pins.push(
+        pin(
+          watched.id,
+          watched.label,
+          watched.area!.lat,
+          watched.area!.lon,
+          mineColor(index),
+          false,
+        ),
+      );
+    });
+  return pins;
 }

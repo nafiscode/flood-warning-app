@@ -9,7 +9,9 @@ import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces, SafePlace } from "@/lib/places";
 import type { PublicAlert, PublicStatus } from "@/lib/public-status";
+import { HOME_COLOR, mineColor } from "@/lib/mine-colors";
 import type { Weather, WeatherDay, WeatherHour, WeatherPlace } from "@/lib/weather";
+import type { WeatherGrid } from "@/lib/weather-grid";
 import type { AlertLevel } from "@/lib/brand/tokens";
 
 /** The examples are seen at 16:30 Bangkok time on 20 November 2026. */
@@ -379,3 +381,83 @@ export const EXAMPLE_WEATHER_PLACE: WeatherPlace = {
   lon: BANA.lon,
   from: "area",
 };
+
+/**
+ * A made-up grid for the weather-map example: a rain band crossing from the west, warmer
+ * towards the coast, wind from the north-east. Shaped exactly as /api/public/weather/grid
+ * answers, so the example and the real thing go through the same screen.
+ */
+function exampleGrid(): WeatherGrid {
+  const span = 1.2;
+  const n = 9;
+  const step = span / (n - 1);
+  const hour = 3_600_000;
+  const start = Math.floor(EXAMPLE_NOW / hour) * hour;
+  const hours = Array.from({ length: 24 }, (_, h) => new Date(start + h * hour).toISOString());
+  const grid: WeatherGrid = {
+    lat: 6.9,
+    lon: 101.25,
+    span,
+    n,
+    step,
+    timezone: "Asia/Bangkok",
+    hours,
+    temp: [],
+    humidity: [],
+    rain: [],
+    wind: [],
+    windDir: [],
+  };
+  for (let row = 0; row < n; row += 1) {
+    for (let col = 0; col < n; col += 1) {
+      for (let h = 0; h < hours.length; h += 1) {
+        // The band sits over one column at a time and walks east, fading as it goes.
+        const front = ((h / 2.5) % (n + 4)) - 2;
+        const distance = Math.abs(col - front);
+        const rain = distance < 1.6 ? Math.round((9 - distance * 5) * 10) / 10 : 0;
+        grid.rain.push(Math.max(0, rain));
+        grid.temp.push(Math.round((31 - row * 0.4 - (rain > 0 ? 3 : 0)) * 10) / 10);
+        grid.humidity.push(Math.min(99, 72 + Math.round(rain * 2) + row));
+        grid.wind.push(8 + ((col + h) % 5) * 3);
+        grid.windDir.push(45 + ((row + h) % 4) * 10);
+      }
+    }
+  }
+  return grid;
+}
+
+export const EXAMPLE_GRID = exampleGrid();
+
+/** The pins on the example map: the place the page is about, and two places watched nearby. */
+export const EXAMPLE_PINS = [
+  {
+    id: "here",
+    label: BANA.nameTh,
+    lat: BANA.lat,
+    lon: BANA.lon,
+    home: true,
+    color: HOME_COLOR,
+    lines: [],
+    call: null,
+  },
+  {
+    id: "p1",
+    label: "บ้านแม่",
+    lat: 6.72,
+    lon: 101.48,
+    home: false,
+    color: mineColor(0),
+    lines: [],
+    call: null,
+  },
+  {
+    id: "p2",
+    label: "โรงเรียนน้อง",
+    lat: 7.05,
+    lon: 101.12,
+    home: false,
+    color: mineColor(1),
+    lines: [],
+    call: null,
+  },
+];

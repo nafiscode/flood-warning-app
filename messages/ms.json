@@ -1102,6 +1102,34 @@
       "sw": "barat daya",
       "w": "barat",
       "nw": "barat laut"
+    },
+    "map": {
+      "title": "Peta cuaca",
+      "fieldLabel": "Pilih apa yang hendak dilihat pada peta",
+      "fields": {
+        "rain": "Hujan",
+        "temp": "Suhu",
+        "humidity": "Kelembapan",
+        "wind": "Angin"
+      },
+      "legend": {
+        "rain": "Hujan dalam sejam",
+        "temp": "Suhu",
+        "humidity": "Kelembapan relatif",
+        "wind": "Kelajuan angin"
+      },
+      "showing": "Peta untuk {when}",
+      "now": "Sekarang",
+      "inHours": "{hours} jam lagi",
+      "loading": "Sedang memuat peta…",
+      "unavailable": "Peta cuaca tidak dapat dimuat. Cuba lagi apabila ada sambungan.",
+      "windNote": "Anak panah menunjukkan ke mana angin bertiup",
+      "myPlaces": "Tempat anda",
+      "home": "Rumah saya",
+      "offGrid": "Di luar peta",
+      "cellSize": "Setiap petak lebih kurang {km} km. Nilai model, bukan ukuran sebenar.",
+      "under": "Bawah {value}",
+      "over": "{value} ke atas"
     }
   }
 }

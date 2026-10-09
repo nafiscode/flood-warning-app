@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import { ClockIcon, DropIcon, HouseIcon, ThermometerIcon, WindIcon } from "@/components/icons";
 import { OpenMeteoAttribution } from "@/components/OpenMeteoAttribution";
 import { Link } from "@/i18n/navigation";
@@ -34,6 +35,8 @@ export type WeatherViewProps = {
   onChoose: (place: WeatherPlace) => void;
   onCancelPick: () => void;
   onRetry: () => void;
+  /** The weather maps, put in by the live screen; the examples and tests pass their own. */
+  maps?: ReactNode;
 };
 
 /**
@@ -108,6 +111,7 @@ export function WeatherView(props: WeatherViewProps) {
               </p>
             )}
             <RainBars weather={weather} />
+            {props.maps}
             <Hours weather={weather} />
             <Days weather={weather} />
           </div>

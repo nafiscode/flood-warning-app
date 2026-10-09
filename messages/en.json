@@ -1102,6 +1102,34 @@
       "sw": "south-west",
       "w": "west",
       "nw": "north-west"
+    },
+    "map": {
+      "title": "Weather maps",
+      "fieldLabel": "Choose what the map shows",
+      "fields": {
+        "rain": "Rain",
+        "temp": "Temperature",
+        "humidity": "Humidity",
+        "wind": "Wind"
+      },
+      "legend": {
+        "rain": "Rain in one hour",
+        "temp": "Temperature",
+        "humidity": "Relative humidity",
+        "wind": "Wind speed"
+      },
+      "showing": "The map at {when}",
+      "now": "Now",
+      "inHours": "In {hours} hours",
+      "loading": "Loading the map…",
+      "unavailable": "Couldn't load the weather map. Try again when you have a connection.",
+      "windNote": "The arrows show where the wind is going",
+      "myPlaces": "Your places",
+      "home": "My home",
+      "offGrid": "Off this map",
+      "cellSize": "Each square is about {km} km across. Model values, not measurements.",
+      "under": "Under {value}",
+      "over": "{value} and over"
     }
   }
 }

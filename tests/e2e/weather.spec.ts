@@ -56,6 +56,39 @@ function weather(at = Date.now()) {
   };
 }
 
+const SPAN = 1.2;
+const GRID_N = 9;
+
+function grid(span = SPAN) {
+  const n = span === SPAN ? GRID_N : 13;
+  const start = Math.floor(Date.now() / HOUR) * HOUR;
+  const hours = Array.from({ length: 24 }, (_, h) => new Date(start + h * HOUR).toISOString());
+  const out = {
+    lat: 6.9,
+    lon: 101.25,
+    span,
+    n,
+    step: span / (n - 1),
+    timezone: "Asia/Bangkok",
+    hours,
+    temp: [] as number[],
+    humidity: [] as number[],
+    rain: [] as number[],
+    wind: [] as number[],
+    windDir: [] as number[],
+  };
+  for (let point = 0; point < n * n; point += 1) {
+    for (let h = 0; h < hours.length; h += 1) {
+      out.temp.push(28 + (point % 5));
+      out.humidity.push(70 + (point % 20));
+      out.rain.push(h === 0 && point % 3 === 0 ? 3.4 : 0);
+      out.wind.push(12 + (point % 7));
+      out.windDir.push((point * 23) % 360);
+    }
+  }
+  return out;
+}
+
 const KUALA = {
   name: "ปัตตานี",
   area: "จังหวัดปัตตานี",
@@ -70,12 +103,17 @@ type Options = { area?: boolean; stored?: boolean; weatherFails?: boolean };
 
 /** Everything the public endpoints would answer, so no test ever reaches the internet. */
 async function serve(page: Page, options: Options = {}) {
-  const calls = { weather: 0, geocode: 0 };
+  const calls = { weather: 0, geocode: 0, grid: 0 };
   await page.route("**/api/public/weather**", (route) => {
     calls.weather += 1;
     return options.weatherFails
       ? route.fulfill({ status: 503, json: { error: "unavailable" } })
       : route.fulfill({ json: weather() });
+  });
+  await page.route("**/api/public/weather/grid**", (route) => {
+    calls.grid += 1;
+    const span = Number(new URL(route.request().url()).searchParams.get("span") ?? SPAN);
+    return route.fulfill({ json: grid(span) });
   });
   await page.route("**/api/public/geocode**", (route) => {
     calls.geocode += 1;
@@ -192,6 +230,50 @@ test.describe("weather", () => {
     await page.goto("/weather");
     await expect(page.locator('[data-weather-now="true"]')).toContainText("27°C");
     await expect(page.locator('[data-weather-page="true"]')).toContainText("เชื่อมต่อไม่ได้");
+  });
+
+  test("the maps show rain, temperature, humidity and wind around the place", async ({ page }) => {
+    const calls = await serve(page, { area: true });
+    await page.goto("/weather");
+    const maps = page.locator('[data-weather-maps="true"]');
+    await maps.scrollIntoViewIfNeeded();
+    // The grid is only asked for once the section is on screen.
+    await expect.poll(() => calls.grid).toBeGreaterThan(0);
+    await expect(page.locator('[data-weather-map="true"]')).toBeVisible();
+    await expect(maps.locator('[data-weather-legend="rain"]')).toBeVisible();
+    await expect(maps.locator('[data-weather-field="rain"]')).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+
+    await maps.locator('[data-weather-field="temp"]').click();
+    await expect(maps.locator('[data-weather-legend="temp"]')).toBeVisible();
+    await expect(maps.locator('[data-weather-field="temp"]')).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    // The value at the person's own place is written out, not only coloured on the map.
+    await expect(maps.locator("[data-weather-map-values] li").first()).toContainText("°C");
+
+    await maps.locator('[data-weather-field="wind"]').click();
+    await expect(maps).toContainText(th.weather.map.windNote);
+    await noSidewaysScroll(page);
+  });
+
+  test("the hour slider says which hour and which day the map is drawing", async ({ page }) => {
+    await serve(page, { area: true });
+    await page.goto("/weather");
+    const maps = page.locator('[data-weather-maps="true"]');
+    await maps.scrollIntoViewIfNeeded();
+    const label = maps.locator("label[for='weather-map-hour']");
+    await expect(label).toContainText(th.weather.days.today);
+    const slider = maps.locator("#weather-map-hour");
+    await slider.fill("23");
+    await expect(maps.locator("[data-weather-hour='23']")).toHaveCount(1);
+    // 23 hours past now is either later today or tomorrow, never neither.
+    await expect(label).toContainText(
+      new RegExp(`${th.weather.days.today}|${th.weather.days.tomorrow}`),
+    );
   });
 
   test("nothing is fetched for the weather on the SOS screen (safety rule 1)", async ({ page }) => {

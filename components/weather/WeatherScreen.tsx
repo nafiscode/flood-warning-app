@@ -1,11 +1,12 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type { MyPlaces } from "@/lib/me";
 import { useOnPhone, useStored } from "@/lib/phone-store";
 import { useNow } from "@/lib/use-public";
-import { areaPlaceDetail, useWeather, useWeatherPlace } from "@/lib/use-weather";
+import { areaPlaceDetail, useWeather, useWeatherPlace, weatherPins } from "@/lib/use-weather";
+import { WeatherMaps } from "./WeatherMaps";
 import type { WeatherPlace } from "@/lib/weather";
 import { WeatherView } from "./WeatherView";
 
@@ -23,6 +24,7 @@ export function WeatherScreen() {
   const { place, fromArea, setPlace } = useWeatherPlace(me, locale);
   const { weather, fetchedAt, failed, refresh } = useWeather(place);
   const now = useNow();
+  const t = useTranslations("weather");
   const [picking, setPicking] = useState(false);
 
   function choose(chosen: WeatherPlace) {
@@ -44,6 +46,12 @@ export function WeatherScreen() {
       onChoose={choose}
       onCancelPick={() => setPicking(false)}
       onRetry={refresh}
+      maps={
+        <WeatherMaps
+          place={place}
+          places={weatherPins(place, me, locale, { home: t("map.home") })}
+        />
+      }
     />
   );
 }
