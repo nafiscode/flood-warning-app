@@ -1269,6 +1269,8 @@
       },
       "showing": "Peta untuk {when}",
       "now": "Sekarang",
+      "play": "Main",
+      "pause": "Henti",
       "inHours": "{hours} jam lagi",
       "loading": "Sedang memuat peta…",
       "unavailable": "Peta cuaca tidak dapat dimuat. Cuba lagi apabila ada sambungan.",
@@ -1276,7 +1278,7 @@
       "myPlaces": "Tempat anda",
       "home": "Rumah saya",
       "offGrid": "Di luar peta",
-      "cellSize": "Setiap petak lebih kurang {km} km. Nilai model, bukan ukuran sebenar.",
+      "cellSize": "Nilai model pada titik lebih kurang {km} km jaraknya, dilorekkan antara titik. Bukan ukuran sebenar.",
       "under": "Bawah {value}",
       "over": "{value} ke atas"
     }

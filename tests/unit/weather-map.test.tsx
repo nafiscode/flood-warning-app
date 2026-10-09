@@ -4,7 +4,10 @@ import { alert as alertPalette } from "@/lib/brand/tokens";
 import { EXAMPLE_GRID, EXAMPLE_PINS } from "@/lib/dev-examples";
 import th from "@/messages/th.json";
 import {
+  bilinear,
   cellRing,
+  fieldPixels,
+  rampAt,
   fieldColor,
   GRIDS,
   gridPoints,
@@ -138,12 +141,85 @@ function maps(more: Partial<Parameters<typeof WeatherMapsView>[0]> = {}) {
       onField={() => {}}
       hour={0}
       onHour={() => {}}
+      playing={false}
+      onPlaying={() => {}}
       places={EXAMPLE_PINS}
       canvas={<div data-canvas="stub" />}
       {...more}
     />,
   ).container;
 }
+
+describe("the smooth field", () => {
+  it("blends between the scale's stops instead of stepping", () => {
+    const [r1] = rampAt("temp", 20);
+    const [r2] = rampAt("temp", 22);
+    const [r3] = rampAt("temp", 24);
+    // Halfway between two stops is halfway between their colours.
+    expect(r2).toBeGreaterThan(Math.min(r1!, r3!) - 1);
+    expect(r2).toBeLessThan(Math.max(r1!, r3!) + 1);
+    expect(r2).not.toBe(r1);
+  });
+
+  it("shows the ground where no rain falls, and fades the lightest rain in", () => {
+    expect(rampAt("rain", 0)[3]).toBe(0);
+    expect(rampAt("rain", null)[3]).toBe(0);
+    const light = rampAt("rain", 0.2)[3];
+    const heavy = rampAt("rain", 8)[3];
+    expect(light).toBeGreaterThan(0);
+    expect(light).toBeLessThan(heavy);
+    expect(heavy).toBe(255);
+  });
+
+  it("fills in the values between the model's points", () => {
+    const a = bilinear(EXAMPLE_GRID, "temp", 0, 0, 0)!;
+    const b = bilinear(EXAMPLE_GRID, "temp", 0, 0, 1)!;
+    const middle = bilinear(EXAMPLE_GRID, "temp", 0, 0, 0.5)!;
+    expect(middle).toBeCloseTo((a + b) / 2, 6);
+    // At a point itself the answer is that point's own value.
+    expect(bilinear(EXAMPLE_GRID, "temp", 0, 3, 2)).toBe(
+      valueAt(EXAMPLE_GRID, "temp", 2 * EXAMPLE_GRID.n + 3, 0),
+    );
+  });
+
+  it("paints a picture of the field, north at the top", () => {
+    const size = 16;
+    const pixels = fieldPixels(EXAMPLE_GRID, "temp", 0, size);
+    expect(pixels).toHaveLength(size * size * 4);
+    // The example is warmer towards the south, so the bottom row is warmer than the top one.
+    const north = bilinear(EXAMPLE_GRID, "temp", 0, 8, EXAMPLE_GRID.n - 1)!;
+    const south = bilinear(EXAMPLE_GRID, "temp", 0, 8, 0)!;
+    expect(south).toBeGreaterThan(north);
+    const topRed = pixels[(0 * size + 8) * 4]!;
+    const bottomRed = pixels[((size - 1) * size + 8) * 4]!;
+    expect(topRed).not.toBe(bottomRed);
+    // Every pixel of a field that is always there is drawn.
+    for (let i = 3; i < pixels.length; i += 4) expect(pixels[i]).toBe(255);
+  });
+
+  it("leaves a dry hour's picture see-through", () => {
+    const dryHour = EXAMPLE_GRID.hours.length - 1;
+    const rain = Array.from({ length: EXAMPLE_GRID.n * EXAMPLE_GRID.n }, (_, p) =>
+      valueAt(EXAMPLE_GRID, "rain", p, dryHour),
+    );
+    if (rain.every((v) => (v ?? 0) === 0)) {
+      const pixels = fieldPixels(EXAMPLE_GRID, "rain", dryHour, 8);
+      for (let i = 3; i < pixels.length; i += 4) expect(pixels[i]).toBe(0);
+    }
+  });
+});
+
+describe("the hours playing by themselves", () => {
+  it("offers a pause while they play, and a play while they are stopped", () => {
+    const playing = maps({ playing: true }).querySelector("[data-weather-play]")!;
+    expect(playing.getAttribute("data-weather-play")).toBe("on");
+    expect(playing.getAttribute("aria-pressed")).toBe("true");
+    expect(playing.textContent).toContain(th.weather.map.pause);
+    const stopped = maps({ playing: false }).querySelector("[data-weather-play]")!;
+    expect(stopped.getAttribute("aria-pressed")).toBe("false");
+    expect(stopped.textContent).toContain(th.weather.map.play);
+  });
+});
 
 describe("the weather maps section", () => {
   it("offers rain, temperature, humidity and wind, one at a time", () => {

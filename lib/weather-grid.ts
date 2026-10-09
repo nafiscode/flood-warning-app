@@ -235,3 +235,116 @@ export function windArrow(
   const barbRight = move(head, towards - Math.PI * 0.8, length * 0.35);
   return [tail, head, barbLeft, head, barbRight];
 }
+
+const hexParts = (hex: string): [number, number, number] => [
+  Number.parseInt(hex.slice(1, 3), 16),
+  Number.parseInt(hex.slice(3, 5), 16),
+  Number.parseInt(hex.slice(5, 7), 16),
+];
+
+/**
+ * The colour for a value, blended between the scale's stops rather than stepped (the owner,
+ * 10 Oct: the map should look like a weather app's, not like a chessboard).
+ *
+ * The numbers behind it do not change: the forecast is still only known at points about 17 km
+ * apart, which is why every map says so and why the value at a place is also written out.
+ */
+export function rampAt(
+  field: WeatherField,
+  value: number | null,
+): [number, number, number, number] {
+  if (value === null || !Number.isFinite(value)) return [0, 0, 0, 0];
+  const stops = RAMPS[field];
+  const first = stops[0]!;
+  const last = stops[stops.length - 1]!;
+  if (value <= first[0]) {
+    // Rain starts from nothing: below the first drop the map simply shows the ground.
+    if (field === "rain") return [0, 0, 0, 0];
+    const [r, g, b] = hexParts(first[1]);
+    return [r, g, b, 255];
+  }
+  if (value >= last[0]) {
+    const [r, g, b] = hexParts(last[1]);
+    return [r, g, b, 255];
+  }
+  for (let i = 0; i < stops.length - 1; i += 1) {
+    const [from, fromHex] = stops[i]!;
+    const [to, toHex] = stops[i + 1]!;
+    if (value >= from && value <= to) {
+      const t = to === from ? 0 : (value - from) / (to - from);
+      const a = hexParts(fromHex);
+      const b = hexParts(toHex);
+      const mix = (i2: number) => Math.round(a[i2]! + (b[i2]! - a[i2]!) * t);
+      // The lightest rain fades in, so a drizzle does not put a hard edge across the map.
+      const alpha = field === "rain" && i === 0 ? Math.round(80 + 175 * t) : 255;
+      return [mix(0), mix(1), mix(2), alpha];
+    }
+  }
+  return [0, 0, 0, 0];
+}
+
+/**
+ * The value between the grid's points, weighted by how near each of the four around it is
+ * (bilinear). A point the model has nothing for is left out of the weighting, so one gap does
+ * not punch a hole in the picture.
+ */
+export function bilinear(
+  grid: WeatherGrid,
+  field: WeatherField,
+  hour: number,
+  col: number,
+  row: number,
+): number | null {
+  const last = grid.n - 1;
+  const c = Math.min(last, Math.max(0, col));
+  const r = Math.min(last, Math.max(0, row));
+  const c0 = Math.min(last, Math.floor(c));
+  const r0 = Math.min(last, Math.floor(r));
+  const c1 = Math.min(last, c0 + 1);
+  const r1 = Math.min(last, r0 + 1);
+  const fc = c - c0;
+  const fr = r - r0;
+  let sum = 0;
+  let weight = 0;
+  for (const [cc, rr, w] of [
+    [c0, r0, (1 - fc) * (1 - fr)],
+    [c1, r0, fc * (1 - fr)],
+    [c0, r1, (1 - fc) * fr],
+    [c1, r1, fc * fr],
+  ] as const) {
+    if (w <= 0) continue;
+    const value = valueAt(grid, field, rr * grid.n + cc, hour);
+    if (value === null) continue;
+    sum += value * w;
+    weight += w;
+  }
+  return weight === 0 ? null : sum / weight;
+}
+
+/**
+ * The whole field as pixels, for the image laid over the map: row 0 is the top (north), as a
+ * picture is drawn, where the grid counts rows from the south.
+ */
+export function fieldPixels(
+  grid: WeatherGrid,
+  field: WeatherField,
+  hour: number,
+  size: number,
+): Uint8ClampedArray {
+  const pixels = new Uint8ClampedArray(size * size * 4);
+  const last = grid.n - 1;
+  for (let y = 0; y < size; y += 1) {
+    // Half a pixel in, so the edge of the image sits on the outermost points.
+    const row = last * (1 - (y + 0.5) / size);
+    for (let x = 0; x < size; x += 1) {
+      const col = last * ((x + 0.5) / size);
+      const [r, g, b, a] = rampAt(field, bilinear(grid, field, hour, col, row));
+      const at = (y * size + x) * 4;
+      pixels[at] = r;
+      pixels[at + 1] = g;
+      pixels[at + 2] = b;
+      pixels[at + 3] = a;
+    }
+  }
+  return pixels;
+}

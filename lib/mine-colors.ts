@@ -32,7 +32,41 @@ export const MINE_COLORS = [
 /** The person's own home, kept apart from the watched places by its own colour and a larger pin. */
 export const HOME_COLOR = "#143044";
 
-/** The colour of the nth watched place; it starts again from the top beyond the tenth. */
-export function mineColor(index: number): string {
-  return MINE_COLORS[index % MINE_COLORS.length]!;
+/**
+ * The colour of the nth watched place; it starts again from the top beyond the tenth. On the
+ * dark map the lighter twin of the same colour is used, or the darkest pins disappear into it.
+ */
+export function mineColor(index: number, dark = false): string {
+  const palette = dark ? MINE_COLORS_DARK : MINE_COLORS;
+  return palette[index % palette.length]!;
+}
+
+/**
+ * The same ten colours for the dark map (the owner, 10 Oct: their own pin was too dark to see
+ * after sunset). Each is its light-theme colour mixed towards white, so a pin keeps its place
+ * in the list and its hue, and still carries on a dark basemap. None of these is an alert hue
+ * either; tests/unit/weather-pins.test.ts holds both palettes to that.
+ */
+export const MINE_COLORS_DARK = [
+  "#AEE2DD",
+  "#8099A8",
+  "#92D1C9",
+  "#9E8CBF",
+  "#85C6C1",
+  "#8D8FB4",
+  "#CBB9E6",
+  "#76A8B0",
+  "#AF8DC4",
+  "#7FB2AE",
+] as const;
+
+/**
+ * The person's own home on the dark map. Not one of the ten, and not the near-black of the day
+ * colour, which vanished into the night basemap.
+ */
+export const HOME_COLOR_DARK = "#A7D8F5";
+
+/** The home's colour for the map as it is drawn now. */
+export function homeColor(dark: boolean): string {
+  return dark ? HOME_COLOR_DARK : HOME_COLOR;
 }

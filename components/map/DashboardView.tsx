@@ -13,10 +13,10 @@ import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { PROVINCE_BOUNDS } from "@/lib/map";
+import { darkNow, PROVINCE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
-import { HOME_COLOR, mineColor } from "@/lib/mine-colors";
+import { homeColor, mineColor } from "@/lib/mine-colors";
 import { localName } from "@/lib/places";
 import { hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
@@ -112,6 +112,13 @@ export function DashboardView(props: DashboardViewProps) {
     setPicked(next);
   };
   const [showMine, setShowMine] = useState(true);
+  /*
+   * The pins take their light colours once the app has turned dark for the night (the owner,
+   * 10 Oct: their own pin was too dark to see on the night map). `now` moves on every 30 s, so
+   * the colours change over with the theme; on the server it is 0 and the day colours are used,
+   * which is what the first paint in the browser draws too.
+   */
+  const dark = props.now > 0 && darkNow();
 
   /*
    * The person's own places on the map (spec 4.9, the owner's request on 8 Oct): their home and
@@ -130,7 +137,7 @@ export function DashboardView(props: DashboardViewProps) {
                 lat: props.me.home.lat,
                 lon: props.me.home.lon,
                 home: true,
-                color: HOME_COLOR,
+                color: homeColor(dark),
                 lines: [areaName(locale, props.me.home)],
                 call: null,
               },
@@ -145,7 +152,7 @@ export function DashboardView(props: DashboardViewProps) {
             lon: place.area!.lon,
             home: false,
             // In the order they were added, so a pin keeps its colour while the list does.
-            color: mineColor(index),
+            color: mineColor(index, dark),
             // What the pin says on hover or on tap: the person there, then the address.
             lines: [
               ...(place.contactName ? [t("mine.person", { name: place.contactName })] : []),

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { areaName, pickName, type Area } from "@/lib/area";
 import type { MinePlace } from "@/components/map/MapView";
 import type { MyPlaces } from "@/lib/me";
-import { HOME_COLOR, mineColor } from "@/lib/mine-colors";
+import { homeColor, mineColor } from "@/lib/mine-colors";
 import { readStored, useStored, writeStored } from "@/lib/phone-store";
 import { roundCoord, type Weather, type WeatherPlace } from "@/lib/weather";
 import type { WeatherGrid } from "@/lib/weather-grid";
@@ -219,6 +219,8 @@ export function weatherPins(
   me: MyPlaces | null,
   locale: string,
   labels: { home: string },
+  /** True once the app has turned dark for the night: the pins take their light colours. */
+  dark = false,
 ): MinePlace[] {
   const pins: MinePlace[] = [];
   const pin = (
@@ -230,7 +232,7 @@ export function weatherPins(
     home: boolean,
   ): MinePlace => ({ id, label, lat, lon, home, color, lines: [], call: null });
 
-  if (place) pins.push(pin("here", place.name, place.lat, place.lon, HOME_COLOR, true));
+  if (place) pins.push(pin("here", place.name, place.lat, place.lon, homeColor(dark), true));
   if (!me?.signedIn) return pins;
   // The home is not pinned twice when the page is already showing it.
   const samePlace =
@@ -239,7 +241,7 @@ export function weatherPins(
     Math.abs(me.home.lat - place.lat) < 0.01 &&
     Math.abs(me.home.lon - place.lon) < 0.01;
   if (me.home && !samePlace) {
-    pins.push(pin("home", labels.home, me.home.lat, me.home.lon, HOME_COLOR, true));
+    pins.push(pin("home", labels.home, me.home.lat, me.home.lon, homeColor(dark), true));
   }
   me.places
     .filter((watched) => watched.area)
@@ -250,7 +252,7 @@ export function weatherPins(
           watched.label,
           watched.area!.lat,
           watched.area!.lon,
-          mineColor(index),
+          mineColor(index, dark),
           false,
         ),
       );

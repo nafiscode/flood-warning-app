@@ -267,6 +267,10 @@ test.describe("weather", () => {
     await maps.scrollIntoViewIfNeeded();
     const label = maps.locator("label[for='weather-map-hour']");
     await expect(label).toContainText(th.weather.days.today);
+    // The hours run on their own by default; stop them before taking the slider by hand.
+    await expect(maps.locator('[data-weather-play="on"]')).toBeVisible();
+    await maps.locator("[data-weather-play]").click();
+    await expect(maps.locator('[data-weather-play="off"]')).toBeVisible();
     const slider = maps.locator("#weather-map-hour");
     await slider.fill("23");
     await expect(maps.locator("[data-weather-hour='23']")).toHaveCount(1);
@@ -274,6 +278,22 @@ test.describe("weather", () => {
     await expect(label).toContainText(
       new RegExp(`${th.weather.days.today}|${th.weather.days.tomorrow}`),
     );
+  });
+
+  test("the hours play round by themselves, and the button stops them", async ({ page }) => {
+    await serve(page, { area: true });
+    await page.goto("/weather");
+    const maps = page.locator('[data-weather-maps="true"]');
+    await maps.scrollIntoViewIfNeeded();
+    const slider = maps.locator("#weather-map-hour");
+    await expect(slider).toBeEnabled();
+    const started = await slider.inputValue();
+    // It moves on without anyone touching it.
+    await expect.poll(async () => slider.inputValue(), { timeout: 8_000 }).not.toBe(started);
+    await maps.locator("[data-weather-play]").click();
+    const held = await slider.inputValue();
+    await page.waitForTimeout(3_000);
+    expect(await slider.inputValue()).toBe(held);
   });
 
   test("nothing is fetched for the weather on the SOS screen (safety rule 1)", async ({ page }) => {

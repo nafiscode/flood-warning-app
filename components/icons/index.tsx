@@ -279,3 +279,21 @@ export function ThermometerIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** The weather map's hours play by themselves: pause them. */
+export function PauseIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9 5v14M15 5v14" />
+    </Icon>
+  );
+}
+
+/** And start them again. */
+export function PlayIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 4.8v14.4l12-7.2z" />
+    </Icon>
+  );
+}

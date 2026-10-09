@@ -157,6 +157,8 @@ function MapsExample() {
       onField={setField}
       hour={hour}
       onHour={setHour}
+      playing={false}
+      onPlaying={() => {}}
       places={EXAMPLE_PINS}
       canvas={
         <WeatherMapCanvas

@@ -1269,6 +1269,8 @@
       },
       "showing": "The map at {when}",
       "now": "Now",
+      "play": "Play",
+      "pause": "Pause",
       "inHours": "In {hours} hours",
       "loading": "Loading the map…",
       "unavailable": "Couldn't load the weather map. Try again when you have a connection.",
@@ -1276,7 +1278,7 @@
       "myPlaces": "Your places",
       "home": "My home",
       "offGrid": "Off this map",
-      "cellSize": "Each square is about {km} km across. Model values, not measurements.",
+      "cellSize": "Model values at points about {km} km apart, shaded between them. Not measurements.",
       "under": "Under {value}",
       "over": "{value} and over"
     }

@@ -2,7 +2,14 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { DropIcon, RainIcon, ThermometerIcon, WindIcon } from "@/components/icons";
+import {
+  DropIcon,
+  PauseIcon,
+  PlayIcon,
+  RainIcon,
+  ThermometerIcon,
+  WindIcon,
+} from "@/components/icons";
 import type { MinePlace } from "@/components/map/MapView";
 import { card, hint, notice } from "@/lib/ui";
 import { dayOffset } from "@/lib/weather";
@@ -23,6 +30,9 @@ export type WeatherMapsViewProps = {
   onField: (field: WeatherField) => void;
   hour: number;
   onHour: (hour: number) => void;
+  /** The hours play round on their own until someone stops them. */
+  playing: boolean;
+  onPlaying: (playing: boolean) => void;
   /** The person's own places, with the place the page is about first. */
   places: MinePlace[];
   /** The map itself; a test or an example can put something else here. */
@@ -114,11 +124,23 @@ export function WeatherMapsView(props: WeatherMapsViewProps) {
             </p>
           )}
 
-          {/* The hour on the map. It opens on now; the label says which hour and which day. */}
+          {/* The hour on the map. It plays round on its own; the label says which hour. */}
           <div className="flex flex-col gap-1">
-            <label htmlFor="weather-map-hour" className="font-medium">
-              {at ? t("map.showing", { when: hourLabel(at) }) : t("map.loading")}
-            </label>
+            <div className="flex items-center justify-between gap-2">
+              <label htmlFor="weather-map-hour" className="font-medium">
+                {at ? t("map.showing", { when: hourLabel(at) }) : t("map.loading")}
+              </label>
+              <button
+                type="button"
+                data-weather-play={props.playing ? "on" : "off"}
+                aria-pressed={props.playing}
+                onClick={() => props.onPlaying(!props.playing)}
+                className="inline-flex min-h-tap min-w-tap items-center justify-center gap-2 rounded-xl border-2 border-jaga-line px-3 text-small font-medium"
+              >
+                {props.playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
+                {t(props.playing ? "map.pause" : "map.play")}
+              </button>
+            </div>
             <input
               id="weather-map-hour"
               type="range"

@@ -1,15 +1,14 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
+import type { GeoJSONSource, ImageSource, Map as MapLibreMap } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { mapHalo, mapInk } from "@/lib/map";
 import type { MinePlace } from "@/components/map/MapView";
 import { minePlaceFeature } from "@/lib/mine-label";
 import {
-  cellRing,
+  fieldPixels,
   GRIDS,
-  fieldColor,
   gridPoints,
   valueAt,
   windArrow,
@@ -19,7 +18,7 @@ import {
 } from "@/lib/weather-grid";
 import { createWeatherMap } from "@/lib/weather-map";
 
-const CELLS = "jaga-wx-cells";
+const FIELD = "jaga-wx-field";
 const WIND = "jaga-wx-wind";
 const MINE = "jaga-wx-mine";
 const MINE_LABEL = "jaga-wx-mine-label";
@@ -44,22 +43,41 @@ const collection = (features: GeoJSON.Feature[]): Collection => ({
   features,
 });
 
-/** The coloured squares for one field and hour; a cell with no colour is simply not drawn. */
-function cells(grid: WeatherGrid | null, field: WeatherField, hour: number): Collection {
-  if (!grid) return collection([]);
-  const points = gridPoints({ lat: grid.lat, lon: grid.lon }, { span: grid.span, n: grid.n });
-  const features: GeoJSON.Feature[] = [];
-  points.forEach((point, index) => {
-    const value = valueAt(grid, field, index, hour);
-    const color = fieldColor(field, value);
-    if (color === null) return;
-    features.push({
-      type: "Feature",
-      geometry: { type: "Polygon", coordinates: [cellRing(point.lat, point.lon, grid.step)] },
-      properties: { color, value },
-    });
-  });
-  return collection(features);
+/**
+ * The field as a picture: the values between the model's points are filled in (bilinear) and
+ * the browser smooths what is left, which is how a weather app's map looks. The numbers behind
+ * it are unchanged — the model still only knows the weather about 17 km apart, which is why
+ * the map says so underneath and why each place's value is written out as a number too.
+ */
+const PAINT = 192;
+
+function fieldImage(grid: WeatherGrid, field: WeatherField, hour: number): string | null {
+  const canvas = document.createElement("canvas");
+  canvas.width = PAINT;
+  canvas.height = PAINT;
+  const context = canvas.getContext("2d");
+  if (!context) return null;
+  const image = context.createImageData(PAINT, PAINT);
+  image.data.set(fieldPixels(grid, field, hour, PAINT));
+  context.putImageData(image, 0, 0);
+  return canvas.toDataURL("image/png");
+}
+
+/** The ground the picture is laid on: the corners of the grid, clockwise from the north-west. */
+function cornerCoordinates(
+  grid: WeatherGrid,
+): [[number, number], [number, number], [number, number], [number, number]] {
+  const half = grid.span / 2;
+  const west = grid.lon - half;
+  const east = grid.lon + half;
+  const south = grid.lat - half;
+  const north = grid.lat + half;
+  return [
+    [west, north],
+    [east, north],
+    [east, south],
+    [west, south],
+  ];
 }
 
 /** Arrows showing where the wind is going, one per grid point. */
@@ -99,6 +117,9 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
   const moved = useRef(false);
   /** The square to fit, kept so a map that changes shape (phone to laptop) can fit it again. */
   const fitTo = useRef<(() => void) | null>(null);
+  /** The pictures already painted, by place, field and hour, and the one on the map now. */
+  const painted = useRef(new Map<string, string>());
+  const shown = useRef("");
 
   useEffect(() => {
     span.current = onViewSpan;
@@ -112,7 +133,6 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
       if (!m || !m.isStyleLoaded()) return;
       try {
         const data: Record<string, Collection> = {
-          [CELLS]: cells(grid, field, hour),
           [WIND]: winds(grid, field, hour),
           [MINE]: collection(places.map(minePlaceFeature)),
         };
@@ -121,16 +141,33 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
           if (!source) m.addSource(id, { type: "geojson", data: value });
           else source.setData(value);
         }
-        if (!m.getLayer(CELLS)) {
+        if (grid) {
+          // The painted hours are kept: stepping through the day again costs nothing, and the
+          // slider can run on its own without painting the same picture over and over.
+          const key = `${grid.lat},${grid.lon},${grid.span},${field},${hour}`;
+          let url = painted.current.get(key);
+          if (url === undefined) {
+            url = fieldImage(grid, field, hour) ?? "";
+            if (painted.current.size > 120) painted.current.clear();
+            painted.current.set(key, url);
+          }
+          const coordinates = cornerCoordinates(grid);
+          const source = m.getSource(FIELD) as ImageSource | undefined;
+          if (!source) m.addSource(FIELD, { type: "image", url, coordinates });
+          else if (url !== shown.current) source.updateImage({ url, coordinates });
+          shown.current = url;
+        }
+        if (!m.getLayer(FIELD) && m.getSource(FIELD)) {
           m.addLayer({
-            id: CELLS,
-            type: "fill",
-            source: CELLS,
+            id: FIELD,
+            type: "raster",
+            source: FIELD,
             paint: {
-              "fill-color": ["get", "color"],
-              // See-through, so the roads and rivers under a cell stay readable.
-              "fill-opacity": 0.5,
-              "fill-outline-color": ["get", "color"],
+              // See-through, so the roads and rivers under the weather stay readable, and
+              // smoothed between the model's points rather than drawn as boxes.
+              "raster-opacity": 0.62,
+              "raster-resampling": "linear",
+              "raster-fade-duration": 0,
             },
           });
         }
@@ -153,8 +190,16 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
             source: MINE,
             paint: {
               "circle-radius": ["case", ["==", ["get", "home"], 1], 8, 6],
+              // Home is a filled dot ringed with the background; a watched place is a ring
+              // with the background inside it. Either way one of the two is the ground
+              // colour, so a pin stands out by day and by night.
               "circle-color": ["case", ["==", ["get", "home"], 1], ["get", "color"], mapHalo()],
-              "circle-stroke-color": ["get", "color"],
+              "circle-stroke-color": [
+                "case",
+                ["==", ["get", "home"], 1],
+                mapHalo(),
+                ["get", "color"],
+              ],
               "circle-stroke-width": 3,
             },
           });

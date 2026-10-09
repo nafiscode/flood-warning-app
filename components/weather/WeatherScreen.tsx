@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type { MyPlaces } from "@/lib/me";
 import { useOnPhone, useStored } from "@/lib/phone-store";
+import { darkNow } from "@/lib/map";
 import { useNow } from "@/lib/use-public";
 import { areaPlaceDetail, useWeather, useWeatherPlace, weatherPins } from "@/lib/use-weather";
 import { WeatherMaps } from "./WeatherMaps";
@@ -49,7 +50,9 @@ export function WeatherScreen() {
       maps={
         <WeatherMaps
           place={place}
-          places={weatherPins(place, me, locale, { home: t("map.home") })}
+          // `ready` keeps the server's HTML and the phone's first paint the same; after that
+          // the clock of useNow() brings the night colours in when the app turns dark.
+          places={weatherPins(place, me, locale, { home: t("map.home") }, ready && darkNow())}
         />
       }
     />
