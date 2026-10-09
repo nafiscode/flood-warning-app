@@ -1,0 +1,76 @@
+# S7, docs/science-plan.md Module 7: the path water takes when Bang Lang releases, and the
+# criteria the app grades the dam's live figures by.
+#
+# The geometry here is OpenStreetMap's, decided on 10 Oct 2026 as the interim source: it says
+# where the river runs, not how far the water spreads. Steps 2-3 of S7 (travel times, and the
+# zone from HAND and the radar extents) will produce a second version to compare against, which
+# is why every reach carries a `source` and both can sit in the database at once.
+
+output_dir: out/dam_release
+user_agent: "jaga-pipeline/0.1 (+https://github.com/nafiscode/flood-warning-app; {contact})"
+overpass_url: https://overpass-api.de/api/interpreter
+# The waterway cache the hazard module already filled, so no new Overpass request is needed for
+# the river itself (hazard/config.yaml output_dir + /osm).
+waterway_cache: out/hazard/osm
+
+# How much detail survives into the database. 10 m is finer than anything the map draws at and
+# keeps the seed small.
+simplify_m: 10
+
+dams:
+  - code: bang_lang
+    name: {th: "เขื่อนบางลาง", ms: "Empangan Bang Lang", en: "Bang Lang Dam"}
+    river: {th: "แม่น้ำปัตตานี", ms: "Sungai Patani", en: "Pattani River"}
+    operator: EGAT
+    province: "95"
+    # ThaiWater lists the same dam twice: EGAT's hourly feed and the RID's daily report.
+    thaiwater: {hourly_id: 50, daily_id: 26}
+    # Positions given by the owner, 9 Oct 2026.
+    dam_point: [101.2721, 6.1551]
+    spillway_point: [101.2764, 6.1501]
+    # The reservoir as OpenStreetMap maps it: a multipolygon relation, 33 outer ways and 14
+    # islands (checked 10 Oct 2026). Its own name:en tag is wrong ("Mae Wat Bypass Road"), so the
+    # names above are ours, not OSM's.
+    reservoir_relation: 3224558
+    # The mapped channel that carries water away from the dam. The walk downstream starts here
+    # and follows the digitised direction, which for waterways is the direction of flow.
+    outlet_way: 1336823769
+    storage:
+      max_mcm: 1589.8       # the reservoir full
+      normal_mcm: 1454.4    # normal high water, above which the spillway comes into use
+    tributaries:
+      # A tributary whose whole mapped network is shorter than this is left out: it cannot back
+      # up enough water to be worth drawing.
+      min_network_km: 5
+      # How far up from the junction counts as the "lower reach" that a rising main stem backs
+      # water into (spec section 15).
+      lower_reach_km: 5
+
+# The named criteria the app grades the live figures by (decision 10 Oct 2026). Starting values
+# only: they are written into system_settings, which admins own, and `thresholds` prints what the
+# archive says about each one. Flows are cubic metres per second.
+#
+# Two tiers, as the owner asked on 10 Oct: `watchful` is shown by the app itself with its
+# disclaimer and no sound; `releasing` raises a notice for the admins, who review it and send the
+# real alarm. Code never publishes an alert (safety rule 2).
+grades:
+  # Above this, more water is leaving than the turbines alone can pass, so a gate is open.
+  turbine_max_cms: 160
+  # Inflow this high fills the reservoir fast whatever the gates are doing.
+  inflow_high_cms: 500
+  # Storage climbing this fast (million m3 per hour, averaged over the window below).
+  rise_mcm_per_h: 4.0
+  rise_window_h: 6
+  # A reading older than this is reported as stale rather than graded (safety rule 3's habit).
+  stale_after_h: 6
+  # How many readings in a row must meet a rule before it counts.
+  #
+  # The archive holds plainly impossible single hours: an outflow of 1,944 m3/s with no spill
+  # (26 Jun 2015, against a record spill peak of 648), an inflow of 6,241 m3/s, a six-hour
+  # storage rise of 141 Mm3/h. One of those must not wake the admins or put a notice on anyone's
+  # screen. So a rule has to hold for two readings, an hour apart, before it grades.
+  #
+  # Nothing is thrown away and no value is called too big to be true: a lone reading is still
+  # shown, labelled as waiting for the next one, and a release that is really happening confirms
+  # itself within the hour.
+  min_consecutive_h: 2
