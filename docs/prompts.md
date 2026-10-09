@@ -310,16 +310,18 @@ Read docs/spec.md section 5.
 
 Build:
 1. Case board (list and map) for the unit's coverage area, sorted by priority and waiting time, with realtime updates. Suspected-spam cases show their flag and are never hidden.
-2. Atomic claim: a unique active claim per SOS, enforced by the database. Release requires a reason.
-3. Status workflow exactly as in section 5.2.
-4. "Show phone" through the logged function, plus a tap-to-call link.
-5. Completion with required photo upload; requester confirmation in the app and through a LINE postback button (the LINE part lands in A7).
-6. 12 h fallback confirmation by a second authority or an admin, with photo and note.
-7. Hero points ledger with configurable rules, and a leaderboard per province.
-8. Responsibility map with gap highlighting (tambons with no verified rescue-capable unit).
-9. Reports feed and vulnerable-household list, restricted and logged as specified.
+2. Active dispatch exactly as in section 5.2: `sos_offers`, the relay through rescue units, then coordination units, then the admins' monitor; windows from `system_settings` (60 s and 90 s defaults); the countdown; decline with a reason; the on-duty switch per unit. Who holds the offer is computed from elapsed time on every read, so there is no server timer to fail; a one-minute cron only fires the notifications. The case stays on every covering unit's board throughout, and any of them can accept at any second.
+3. Atomic claim: accepting takes the unique active claim, enforced by the database. Release requires a reason and returns the case to the relay. Status workflow and dispatch state exactly as in section 5.2.
+4. Arrival estimate: asked straight after accepting, never before, in the bands of 5.2; the card keeps asking until it is given; changeable at any time; shown to the requester as a band with the time it was given.
+5. "Show phone" through the logged function, plus a tap-to-call link. The requester's screen shows the accepting unit's POC phone under the rules of 5.3 (the unit's tick, on by default; logged; masked on close). "Navigate" opens Google Maps with the case as destination, with the warning that road directions do not know which roads are flooded.
+6. Sounds and vibration as in 4.8, synthesized in the app with no audio files: the looping offer alarm in the console (with a one-tap arm, since browsers block audio until then), the accept chime and the rescued resolve on the requester's screen. Silent for Watch and Normal; every sound paired with a vibration pattern and with words on screen.
+7. Completion with required photo upload; requester confirmation in the app and through a LINE postback button (the LINE part lands in A7).
+8. 12 h fallback confirmation by a second authority or an admin, with photo and note.
+9. Hero points ledger with configurable rules, and a leaderboard per province.
+10. Responsibility map with gap highlighting (tambons with no verified rescue-capable unit).
+11. Reports feed and vulnerable-household list, restricted and logged as specified.
 
-Acceptance: race-condition test on claiming; points only after confirmation; all phone reveals appear in audit_log.
+Acceptance: race-condition test on claiming; a case offered to a unit that does not answer reaches the next unit and finally the admins' monitor, and is never removed from a covering unit's board; points only after confirmation; all phone reveals appear in audit_log, including the requester seeing the accepting unit's POC phone.
 ```
 
 ### A6: Admin console
@@ -355,6 +357,7 @@ Read docs/spec.md sections 4.8 and 6.2, and CLAUDE.md budget guardrails.
    - VAPID keys and a subscription flow, with the iOS Add-to-Home-Screen guide
    - sends on alert publish (users whose home or saved places are in the affected tambons)
    - sends on SOS status changes (to the requester) and on assignment (to the unit)
+   - sends the dispatch offer of A5 to the unit being asked, so the alarm reaches a phone with the console closed; the push carries the time the offer expires, and the system notification sound (a web push cannot carry its own)
 2. LINE Messaging API (Edge Functions):
    - webhook for follow/unfollow and postbacks (rescue confirmation)
    - multicast in batches (at most 500 IDs per call) only to affected users
@@ -457,6 +460,8 @@ Acceptance:
 Added 9 Oct 2026. Read `docs/spec.md` section 15 and the decision of 2026-10-09. Two parts.
 
 Part 1, before launch (with A6 and A8): a "dam release" alert template that admins send, with the affected tambons and the arrival ranges from S7 filled in, and the dam's state on the admin signal dashboard.
+
+Both parts send the **dam release sound** of spec 4.8 and docs/brand.md: its own repeating sound, used for nothing else, to everyone in the zone — the tambons along the river below the dam and the lower reaches of the streams joining it.
 
 Part 2, after someone at the dam has agreed to use it: the dam operator role and its one screen (spec section 15). RLS tests for the role: it can send a dam release notice to the fixed zone and nothing else.
 

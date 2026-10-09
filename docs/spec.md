@@ -182,7 +182,10 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 - Location updates every 5 minutes while the SOS is open and the app is open.
 
 **Requester view:**
-- Status timeline: received → assigned to [unit] → on the way → rescued.
+- **Where help is needed.** The request is sent with the phone's position and nothing is asked first (safety rule 1). The status screen then shows "Help is needed at: [place]", with one tap to change it to a place the sender watches or to a pin on the map. An SOS started from a watched place already carries that place and asks nothing.
+- Status timeline: received → looking for a team → [unit] accepted → on the way → on site → rescued.
+- **Once a unit accepts:** the unit and organisation name, the arrival estimate as a band with the time it was given, and a call button (5.3).
+- **While no unit has accepted:** "still looking for a team" with the time waited, and the 1784 and 1669 call buttons repeated. Never a promise that someone is coming.
 - Buttons: "I'm safe now" (cancel) and "Confirm I was rescued".
 
 **Offline fallback:**
@@ -216,6 +219,14 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
   - alerts for their home tambon and every watched place with notifications on. One notification per alert, listing all affected places, e.g. "Warning: your home (Bana) and Mum's house (Taluboh)". LINE is billed per recipient, so watching more places costs nothing extra.
   - status updates on their own SOS
   - rescue-confirmation requests
+- **Sounds and vibration.** Every notification shown while the app is open carries a short sound and a vibration pattern, generated in the app itself (no audio files to download, so they work offline). Five sounds only:
+  - an urgent repeating two-tone alarm for an authority being offered a case, looping until it is answered or passed on
+  - a single rising chime for the requester when a team accepts their case
+  - a soft three-note resolve for "rescued" and "I'm safe now"
+  - one low double-tone for a new alert at Warning or Evacuate
+  - a **dam release** sound of its own: a rising figure repeated, unmistakably different from the alert double-tone, for everyone in the release zone of section 15. It is the one public alert that repeats, because the water is already on its way.
+
+  Watch and Normal are silent. A browser plays nothing until the person has tapped once, so the authority console asks once to arm the alarm and stays armed; a web push arriving with the app closed plays the system notification sound, which no web app can replace. Sound is never the only channel: each one also has its vibration pattern and its own icon and words on screen (accessibility rule).
 
 ### 4.9 Watching places for others
 Many people at risk are elderly and have no smartphone. Their children or relatives, often living elsewhere, watch their place for them and call them when there is a warning.
@@ -234,18 +245,30 @@ Many people at risk are elderly and have no smartphone. Their children or relati
 - Shows which unit has claimed each case.
 - Updates in real time.
 
-### 5.2 Claim workflow
-- **A unit must claim a case before it can update it.**
-  - Claiming is atomic: only one active claim per case, enforced by a database constraint.
-  - The claim is visible to all authorities and admins.
-- **Releasing a claim** requires a reason.
+### 5.2 Dispatch, offers and claim
+A case does not wait to be noticed. It is offered to the teams covering its tambon, one after another, until one accepts.
+
+- **Order of offers:** verified units covering the tambon with the `rescue` capability first (on duty before off duty, then nearest, then fewest open cases), then units with `coordination`, then the admins' SOS monitor (6.4).
+- **One offer at a time, but nothing is hidden.** The unit currently offered the case gets the alarm (4.8) and a countdown. The case sits on the board of **every** covering unit the whole time, marked "being offered to [unit]", and any of them can accept at any second. A unit the relay has passed is never locked out.
+- **The window is a setting** (`system_settings`), one per tier: default 60 s for a rescue unit, 90 s for a coordination unit. Admins change it, for instance to tighten it during the flood peak. The time left is shown as a countdown; running out is not a refusal.
+- **Declining** takes one tap plus a reason (too far, no boat, already out, cannot) and moves the case on immediately.
+- **When the rescue units are exhausted**, the same relay runs through the coordination units. A coordinator who accepts gets the case as a task to find a team, not as a rescue of their own. If that round also ends empty, the case is assigned to the admins' monitor and stays open, with every covering unit still able to accept.
+- **No unit covers the tambon:** the case goes straight to the admins' monitor. The responsibility map (5.6) already shows that gap.
+- **Accepting is the claim.** Accepting takes the atomic claim: one active claim per case, enforced by a database constraint, so the second tap is told the case is already taken. The claim is visible to all authorities and admins.
+- **Estimated arrival.** Immediately after accepting, the unit is asked for an estimate in bands: under 15 min, 15–30, 30–60, over 60, or "cannot say yet". It is never asked before accepting and never holds the acceptance up; the case card keeps asking until it is given, and it can be changed at any time. The requester sees the band and when it was last given, always as an estimate, never as a clock time (safety rule 8).
+- **Releasing a claim** requires a reason and puts the case back into the relay at the next tier.
+- **On duty.** Each unit has an on-duty switch, so an alarm is not spent on a phone nobody is holding. An off-duty unit still sees the board and can still accept; it is only offered last.
 - **Statuses:**
   - Main path: `new` → `claimed` → `en_route` → `on_site` → `rescued_pending_confirmation` → `closed`.
   - Side exits: `cancelled_by_requester`, `duplicate`, `unable_to_reach`, `transferred`.
+  - While a case is `new`, a separate dispatch state records how far the relay has got: `searching_rescue`, `searching_coordination`, `with_admins`.
 
-### 5.3 Contacting the requester
+### 5.3 Contacting the requester, and reaching the team
 - A "Show phone" button reveals the number and writes to the audit log. A tap-to-call link follows.
+- **Navigation.** The case shows the exact point, a copy-coordinates button, and a "Navigate" button that opens Google Maps on the responder's phone with that destination. The card says plainly that road directions do not know which roads are flooded or closed; Jaga's own map with the flood layer is one tap away.
 - Authorities can also reveal other units' POC phones within shared coverage, for coordination. Each reveal is logged.
+- **The requester can call the team that is coming.** Once a unit accepts a case, the sender of that case sees that unit's POC phone, so they reach the person actually on the way. This is the one exception to "personal phone numbers are never public" (safety rule 5), and it is fenced in: only the sender of that case, only while the case is open and claimed by that unit, every reveal written to `audit_log`, and masked with the other personal fields when the case closes.
+  - Each unit has a tick in its settings, **on by default**, worded "When you accept an SOS, the person you are rescuing can see this number." A unit that turns it off shows the organisation's official phone instead.
 - LINE users can also be messaged through the Official Account.
 
 ### 5.4 Completion and confirmation
@@ -396,7 +419,8 @@ Admins decide. The system never auto-publishes. Every data source shows its last
   - `device_id`, `suspected_spam` (default false), `spam_dismissed_by`, `spam_dismissed_at`
   - `created_at`, `last_location_at`
 - `sos_locations`: location history.
-- `sos_claims`: `sos_id`, `unit_id`, `claimed_at`, `released_at`, `release_reason`. Unique active claim per SOS.
+- `sos_claims`: `sos_id`, `unit_id`, `claimed_at`, `released_at`, `release_reason`, `eta_band`, `eta_given_at`. Unique active claim per SOS.
+- `sos_offers`: `sos_id`, `unit_id`, `tier` (`rescue` / `coordination`), `round`, `offered_at`, `expires_at`, `responded_at`, `response` (`accepted` / `declined` / `timed_out`), `decline_reason`. Who was asked, when, and what they answered.
 - `sos_events`: every status change, actor, note, photos.
 - `rescue_confirmations`: `sos_id`, `method` (`requester` / `second_authority` / `admin`), `confirmed_by`, `photos[]`, `note`.
 - `hero_points`: ledger with `unit_id`, `sos_id`, `points`, `reason`, `revoked_at`.
@@ -457,7 +481,7 @@ These tables are created in phase A11 only, not with the initial schema.
 | SOS suspected-spam flag | none | none | read | read/write (bulk dismiss, logged) |
 | Watched places and the stored person's name and phone | none | own (read/write/delete) | none | none |
 | Households and vulnerable data | none | own (read/write/delete) | read only with rescue or coordination capability (logged) | read (logged) |
-| Authority POC phones | none | none | read within shared coverage (each reveal logged) | read (logged) |
+| Authority POC phones | none | the POC of the unit that accepted their own open SOS (logged, 5.3) | read within shared coverage (each reveal logged) | read (logged) |
 | Authority org name and official phone | read only if `public_contact_opt_in` | same | read | read |
 | Any personal phone number | never | own | as above, logged | as above, logged |
 | Coverage / responsibility map | none | none | read | read |
@@ -626,7 +650,8 @@ Added 9 Oct 2026 (decision of that date). Releases from Bang Lang dam flood land
 
 - **Role.** A dam operator is an authority unit of its own kind, verified by an admin like any other unit. It has one power the other units lack: it can send a dam release notice.
 - **The notice.** The operator enters when the gates open (or opened), the release in cubic metres per second, and optionally when it is expected to end. Nothing else is free text: the message comes from a reviewed template in Thai, Malay and English.
-- **Where it goes.** To a fixed zone, the tambons along the river below the dam (from S7). The operator cannot widen it. Everyone whose home or watched place is in the zone is notified at once, each with the arrival range for their own tambon; reminders follow as that time comes closer.
+- **Where it goes.** To a fixed zone (from S7): the tambons along the river below the dam, **and the lower reaches of the streams that join it**, where a rising main stem backs water up into the tributary instead of letting it drain. The operator cannot widen it. Everyone whose home or watched place is in the zone is notified at once, each with the arrival range for their own tambon; reminders follow as that time comes closer.
+- **Sound.** The notice carries the dam release sound of 4.8, its own and used for nothing else, with its own vibration pattern. It repeats, unlike every other alert sound: this is water released upstream minutes or hours before it arrives, and the first notification is the warning.
 - **What people see.** The alert names the dam, the release, the issuer, the time, and for their place "water is expected between [earliest] and [latest]", with the note that this is an estimate from past releases. The earliest time already has the safety margin taken off. Then the same actions as any alert: the nearest safe places, high ground for cars, SOS, hotlines.
 - **Admins.** Told at the same moment. They can extend, supersede or cancel the notice, and they see the dam's state (storage, level, release, spill) on the signal dashboard at all times.
 - **Until an operator has joined**, admins send the same notice from the same template.

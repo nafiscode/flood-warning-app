@@ -32,6 +32,7 @@ Read the relevant doc before starting a task. Don't load all of them every time.
    - Covered data: exact locations of SOS requesters, households and reporters; every personal phone number; authority POC phones; vulnerable-household data.
    - Only verified authorities covering that tambon, and admins, can read it. Vulnerable-household data additionally needs rescue or coordination capability.
    - Personal phone numbers are never public. An organization's official phone is public only if the org opts in (`organizations.public_contact_opt_in`, default false).
+   - One exception, and only this one: the POC phone of the unit that has **accepted** an SOS is shown to the sender of that case while it is open, so they can reach the team on its way (`docs/spec.md` 5.3). The unit can turn it off, and every reveal is logged like any other.
    - Authorities may read other units' POC phones only within shared coverage.
    - Every reveal of a phone number (including POC phones) or vulnerable-household record is written to `audit_log`.
 6. The public map shows only aggregated or moderated data. Never show exact SOS points, rescue-team positions, or reporter identities.

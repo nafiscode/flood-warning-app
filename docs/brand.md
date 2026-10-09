@@ -107,6 +107,25 @@ The dark values are in `lib/brand/tokens.ts` (`darkBrand`) and mirrored in `app/
   - Say "ย้ายรถไปที่สูงตอนนี้" (move your car to high ground now), not "ระดับความเสี่ยงของท่านอยู่ในเกณฑ์สูง" (your risk level is in the high range).
   - Say "ส่งคำขอแล้ว ทีมช่วยเหลือเห็นคำขอของคุณ" (request sent, the rescue team can see it), not "Request submitted successfully".
 
+## Sound
+
+Jaga makes five sounds and no others. They are generated in the app with the Web Audio API, so there is no audio file to download, nothing to cache and nothing to licence, and they work offline. Short, plain tones; nothing cinematic, no siren samples, no music.
+
+| Sound | When | Shape |
+|---|---|---|
+| Offer alarm | an authority is being offered an SOS case | two alternating tones, repeating until the offer is answered or passes on. The only insistent sound in Jaga. |
+| Accepted | a team accepts the requester's case | one short rising pair. Relief, not celebration. |
+| Rescued / safe | "rescued" and "I'm safe now" | three soft notes resolving downward |
+| Alert | a new alert at Warning or Evacuate | one low double-tone |
+| Dam release | a release notice from Bang Lang (spec 15) reaches someone in the zone downstream | a rising figure, repeated; the only public alert sound that repeats. Never mistakable for the alert double-tone. |
+
+Rules:
+- **Watch and Normal are silent.** A level that means "get ready" does not deserve a noise at 3 a.m.
+- **Never sound alone.** Every sound has a vibration pattern and its own icon and words on screen (the accessibility rule: a level is never carried by one channel).
+- **Audio needs a tap first.** Browsers refuse to play until the person has interacted, so the authority console asks once to arm the alarm and then stays armed. Never assume a sound was heard.
+- **A push with the app closed plays the phone's own notification sound.** No web app can replace it; do not design as if it could.
+- Nothing in the app plays a sound the person cannot turn off, except the offer alarm for an authority who has armed it.
+
 ## Open brand checks (owner)
 - Confirm the Thai spelling จากา with local speakers.
 - Search the app stores and the Thai trademark register for "Jaga"; check domain availability.
