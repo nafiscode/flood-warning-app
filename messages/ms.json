@@ -1085,7 +1085,17 @@
       "offline": "Luar talian"
     },
     "warRoomTitle": "Contoh: bilik gerakan",
-    "impactTitle": "Contoh: rekod bantuan"
+    "impactTitle": "Contoh: rekod bantuan",
+    "damTitle": "Empangan Bang Lang",
+    "damNote": "Laluan sungai yang sebenar dengan angka rekaan. Pilih keadaan untuk melihat setiap mesej.",
+    "damScenario": {
+      "quiet": "Biasa",
+      "watch": "Perlu dipantau",
+      "releasing": "Melepaskan banyak air",
+      "awaiting": "Menunggu pengesahan",
+      "stale": "Data lama",
+      "none": "Tiada data"
+    }
   },
   "report": {
     "title": "Lapor banjir",
@@ -1281,6 +1291,84 @@
       "cellSize": "Nilai model pada titik lebih kurang {km} km jaraknya, dilorekkan antara titik. Bukan ukuran sebenar.",
       "under": "Bawah {value}",
       "over": "{value} ke atas"
+    }
+  },
+  "dam": {
+    "mark": {
+      "dam": "Empangan Bang Lang",
+      "spillway": "Saluran limpah",
+      "outlet": "Hilir rumah janakuasa"
+    },
+    "panel": {
+      "operator": "Pengurus empangan: {operator}",
+      "river": "Sungai: {river}"
+    },
+    "grade": {
+      "quiet": "Air yang dilepaskan sekarang dalam julat biasa",
+      "watchful": "Perlu dipantau: air dalam takungan tinggi atau naik cepat",
+      "releasing": "Empangan sedang melepaskan air lebih daripada julat biasa",
+      "unknown": "Belum ada data daripada empangan"
+    },
+    "reason": {
+      "spilling": "Air melimpah melalui saluran limpah",
+      "above_turbines": "Air yang keluar lebih banyak daripada yang boleh melalui janakuasa, bermakna pintu dibuka",
+      "above_normal_high": "Air dalam takungan melebihi paras simpanan biasa",
+      "inflow_high": "Air masuk ke takungan pada kadar tinggi",
+      "rising_fast": "Air dalam takungan naik cepat dalam {hours} jam lepas"
+    },
+    "awaiting": {
+      "release_unconfirmed": "Satu bacaan terakhir sahaja menunjukkan pelepasan besar. Menunggu bacaan berikut untuk mengesahkan, kerana dalam rekod lalu ada jam yang bacaannya jelas salah.",
+      "watch_unconfirmed": "Satu bacaan terakhir sahaja melebihi paras. Menunggu bacaan berikut untuk mengesahkan."
+    },
+    "figures": {
+      "none": "Belum ada data daripada empangan",
+      "outflow": "Air keluar dari empangan {cms, number} meter padu sesaat",
+      "spilled": "termasuk {cms, number} melalui saluran limpah",
+      "storage": "Air dalam takungan {mcm, number} juta meter padu ({percent}% daripada penuh)",
+      "level": "Paras air takungan {m} meter",
+      "trend": {
+        "rising": "Air dalam takungan sedang naik (berbanding {hours} jam lepas)",
+        "falling": "Air dalam takungan sedang turun (berbanding {hours} jam lepas)",
+        "steady": "Air dalam takungan tidak banyak berubah (berbanding {hours} jam lepas)",
+        "unknown": "Data belum cukup untuk mengatakan air naik atau turun"
+      },
+      "observed": "Data bagi jam {time}",
+      "age": "kira-kira {hours} jam lepas",
+      "stale": "Data lebih lama daripada biasa. Empangan mungkin belum menerbitkan bacaan baharu."
+    },
+    "notice": {
+      "awaiting": {
+        "title": "Satu bacaan dari {dam} menunggu pengesahan",
+        "body": "Satu bacaan terakhir sahaja menunjukkan pelepasan lebih besar daripada biasa. Belum disahkan sampai bacaan berikut tiba. Ini pemberitahuan awal sahaja."
+      },
+      "watch": {
+        "title": "Pantau {dam}",
+        "body": "Air dalam takungan tinggi atau naik cepat. Belum ada pelepasan melebihi julat biasa. Ikuti berita dan bersiap sedia."
+      },
+      "releasing": {
+        "title": "{dam} sedang melepaskan air lebih daripada julat biasa",
+        "body": "Menurut angka yang diterbitkan oleh empangan sendiri, air yang dilepaskan melebihi julat biasa. Air itu mengalir ke {river}. Pantau paras air dekat rumah, alihkan kereta ke tempat tinggi, dan siapkan barang penting."
+      },
+      "where": "{tambon} terletak di tebing {river} di bawah empangan",
+      "whereTributary": "{tambon} terletak di anak sungai yang masuk ke sungai ini. Apabila paras sungai naik, air anak sungai mungkin tidak dapat mengalir keluar.",
+      "openMap": "Lihat peta laluan air"
+    },
+    "disclaimer": {
+      "notAnAlert": "Ini bukan amaran Jaga. Ia angka yang diterbitkan oleh empangan sendiri. Jika amaran diperlukan, pihak berkuasa yang akan mengeluarkannya.",
+      "noArrivalTime": "Masa air sampai ke setiap tempat belum boleh diberitahu, kerana masa perjalanan air dari empangan belum diukur."
+    },
+    "source": "Sumber: {operator}, diterbitkan melalui ThaiWater",
+    "path": {
+      "title": "Laluan air yang dilepaskan dari empangan",
+      "tambons": "Melalui {count} mukim di sepanjang sungai, dan {tributary} mukim lagi di bahagian bawah anak sungai",
+      "limits": "Garis di peta ialah laluan sungai, bukan sempadan banjir. Tempat di luar garis pun boleh banjir.",
+      "spillwayNotMapped": "Saluran dari limpah belum ada dalam peta, jadi ia ditunjukkan sebagai titik bukan garis.",
+      "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Hanya anak sungai yang sudah dipetakan ditunjukkan."
+    },
+    "legend": {
+      "reservoir": "Takungan {dam}",
+      "river": "{river} di bawah empangan",
+      "tributary": "Bahagian bawah anak sungai yang masuk ke sungai"
     }
   }
 }

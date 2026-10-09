@@ -2,12 +2,17 @@
 
 import { HomeView } from "@/components/home/HomeView";
 import { DashboardView } from "@/components/map/DashboardView";
+import { DamCard, DamNotice } from "@/components/map/Dam";
+import { MapView } from "@/components/map/MapView";
 import { WeatherScene } from "@/components/weather/WeatherScene";
 import { SCENE_INK, SCENE_LOOKS, SCENES, scrim } from "@/lib/weather-scene";
 import { WeatherMapCanvas } from "@/components/weather/WeatherMapCanvas";
 import { WeatherMapsView } from "@/components/weather/WeatherMapsView";
 import { WeatherView } from "@/components/weather/WeatherView";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { DAM_URL, type Dam, type DamData } from "@/lib/dam";
+import { useFetched } from "@/lib/use-public";
 import { areaName } from "@/lib/area";
 import {
   BANA,
@@ -23,6 +28,9 @@ import {
   EXAMPLE_PINS,
   EXAMPLE_WEATHER,
   EXAMPLE_WEATHER_PLACE,
+  DAM_SCENARIOS,
+  exampleDamSignal,
+  type DamScenario,
   homeExample,
   type HomeScenario,
   type WeatherScenario,
@@ -172,5 +180,62 @@ function MapsExample() {
         />
       }
     />
+  );
+}
+
+/**
+ * The dam in each state it can be in. The river, the reservoir and the tambon list are the real
+ * ones, read from /api/public/dam; only the figures are made up, because a release happens in a
+ * handful of hours a year and the quiet notice would otherwise never be seen before it matters.
+ */
+export function DamExample() {
+  const t = useTranslations("devHome");
+  const [scenario, setScenario] = useState<DamScenario>("releasing");
+  const { data, state } = useFetched<DamData>(DAM_URL);
+  const tDam = useTranslations("dam");
+  const base = data?.dams[0] ?? null;
+  const dam: Dam | null = base ? { ...base, signal: exampleDamSignal(scenario) } : null;
+  return (
+    <div className="flex flex-col gap-4">
+      <div role="group" aria-label={t("scenario")} className="flex flex-wrap gap-2">
+        {DAM_SCENARIOS.map((name) => (
+          <button
+            key={name}
+            type="button"
+            aria-pressed={scenario === name}
+            data-dam-scenario={name}
+            onClick={() => setScenario(name)}
+            className={`inline-flex min-h-tap items-center rounded-full border-2 px-4 py-1 font-medium ${
+              scenario === name
+                ? "border-jaga-edge bg-jaga-slate text-white"
+                : "border-jaga-edge bg-jaga-surface text-jaga-ink"
+            }`}
+          >
+            {t(`damScenario.${name}`)}
+          </button>
+        ))}
+      </div>
+      {state === "unavailable" && <p>{tDam("figures.none")}</p>}
+      {dam && (
+        <>
+          <DamNotice dam={dam} via="main" tambonName={BANA.nameTh} />
+          <MapView
+            layers={[]}
+            status={null}
+            data={null}
+            now={EXAMPLE_NOW}
+            onSelect={() => {}}
+            text={{ loading: "…", failed: "—" }}
+            dams={[dam]}
+            damText={{
+              dam: tDam("mark.dam"),
+              spillway: tDam("mark.spillway"),
+              outlet: tDam("mark.outlet"),
+            }}
+          />
+          <DamCard dam={dam} />
+        </>
+      )}
+    </div>
   );
 }

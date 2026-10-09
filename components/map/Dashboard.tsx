@@ -1,6 +1,7 @@
 "use client";
 
 import type { Area, AreaDirectory } from "@/lib/area";
+import { DAM_URL, type DamData } from "@/lib/dam";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
@@ -19,6 +20,9 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   const hazards = useFetched<{ hazards: Hazard[] }>("/api/public/hazards");
   const directory = useFetched<AreaDirectory>("/api/geo/areas");
   const data = useFetched<MapData>("/api/public/map");
+  // The dam, the reservoir and the path released water takes: public, edge-cached, and asked
+  // for in every view because the river is always drawn (spec section 15).
+  const dam = useFetched<DamData>(DAM_URL);
   const me = useMyPlaces();
   // Where the person said they are on the home screen: their saved home first, else the area
   // they chose on this phone. The map opens there (the owner's note, 9 Oct).
@@ -36,6 +40,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       directoryState={directory.state}
       data={data.data}
       dataState={data.state}
+      dams={dam.data?.dams ?? null}
       me={me}
       area={area}
       now={now}

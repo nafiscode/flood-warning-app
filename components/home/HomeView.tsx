@@ -13,6 +13,8 @@ import { areaStatus, severity, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
+import { DamNotice } from "@/components/map/Dam";
+import { onPath, type Dam } from "@/lib/dam";
 import { AlertHero, type HeroStatus } from "./AlertHero";
 import { AreaChooser } from "./AreaChooser";
 import { Checklist } from "./Checklist";
@@ -40,6 +42,8 @@ export type HomeViewProps = {
   onChooseArea: (area: Area) => void;
   onRetry: () => void;
   projectLine: string | null;
+  /** The dams, for the quiet dam notice. Null while loading or if it can't be had. */
+  dams?: Dam[] | null;
   userAgent?: string;
 };
 
@@ -84,6 +88,26 @@ export function HomeView(props: HomeViewProps) {
   const worse = watched
     .filter((w) => rank(w.status) > homeRank)
     .sort((a, b) => rank(b.status) - rank(a.status));
+
+  /*
+   * The dam's quiet notice goes only to someone whose own area or watched place is on the river
+   * below the dam (spec section 15). The names come from their own places, so the notice says
+   * "Bana" rather than a tambon code; a place with no area is skipped, as it is everywhere else.
+   */
+  const myAreas = [home, ...watched.map((w) => w.place.area)].filter((a): a is Area => !!a);
+  const damsOnMyPath = (props.dams ?? [])
+    .map((dam) => ({
+      dam,
+      hit: onPath(
+        dam,
+        myAreas.map((a) => a.code),
+      ),
+    }))
+    .filter((x): x is { dam: Dam; hit: NonNullable<ReturnType<typeof onPath>> } => x.hit !== null);
+  const areaNameOf = (code: string) => {
+    const found = myAreas.find((a) => a.code === code);
+    return found ? areaName(locale, found) : code;
+  };
 
   const evacuate = hero?.kind === "alert" && hero.alert.level === "evacuate";
   const sos = <SOSButton href={getPathname({ href: "/sos", locale })} />;
@@ -133,6 +157,15 @@ export function HomeView(props: HomeViewProps) {
       <div className="flex flex-col gap-5">
         {worse.map((item) => (
           <WorseBanner key={item.place.id} item={item} now={now} />
+        ))}
+
+        {/*
+         * The quiet dam notice, for someone whose own area or watched place is on the river
+         * below the dam (spec section 15). It is not an alert and carries no alert colour: the
+         * hero below it is still what says what level their tambon is at.
+         */}
+        {damsOnMyPath.map(({ dam, hit }) => (
+          <DamNotice key={dam.code} dam={dam} via={hit.via} tambonName={areaNameOf(hit.code)} />
         ))}
 
         {loading ? (

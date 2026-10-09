@@ -12,6 +12,8 @@ import { PhoneIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
+import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
+import { onPath, type Dam } from "@/lib/dam";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
 import { darkNow, PROVINCE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
@@ -39,6 +41,8 @@ export type DashboardViewProps = {
   directoryState: LoadState;
   data: MapData | null;
   dataState: LoadState;
+  /** The dams and their release path. Null while loading, or if the answer can't be had. */
+  dams?: Dam[] | null;
   now: number;
   /** The Transparency tab exists only once donations are switched on (A11, safety rule 9). */
   transparency: boolean;
@@ -72,8 +76,10 @@ const chipQuiet =
  */
 export function DashboardView(props: DashboardViewProps) {
   const { status, checkedAt, failed, directory, data, now } = props;
+  const dams = props.dams ?? [];
   const t = useTranslations("map");
   const tHome = useTranslations("home");
+  const tDam = useTranslations("dam");
   const locale = useLocale();
   const format = useFormatter();
   const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
@@ -199,6 +205,22 @@ export function DashboardView(props: DashboardViewProps) {
     .map((a) => ({ alert: a, tambons: a.tambons.filter((c) => c.startsWith(province)) }))
     .filter((a) => a.tambons.length > 0);
 
+  /*
+   * The quiet dam notice goes only to someone whose own area or watched place is on the river
+   * below the dam (spec section 15). Everyone else can read every figure by tapping the dam;
+   * they are simply not told water is heading their way, because it is not.
+   */
+  const myTambons = [
+    ...(props.area ? [props.area.code] : []),
+    ...(props.me?.signedIn && props.me.home ? [props.me.home.code] : []),
+    ...(props.me?.signedIn
+      ? props.me.places.map((place) => place.area?.code).filter((c): c is string => !!c)
+      : []),
+  ];
+  const damsOnMyPath = dams
+    .map((dam) => ({ dam, hit: onPath(dam, myTambons) }))
+    .filter((x): x is { dam: Dam; hit: NonNullable<ReturnType<typeof onPath>> } => x.hit !== null);
+
   const pending: MapLayer[] = [
     ...(layers.includes("hazard") ? (["hazard"] as const) : []),
     ...(layers.includes("alerts") && status && !status.inService ? (["alerts"] as const) : []),
@@ -271,6 +293,9 @@ export function DashboardView(props: DashboardViewProps) {
         </Link>
       </section>
     ) : null;
+  } else if (selection?.kind === "dam") {
+    const dam = dams.find((d) => d.code === selection.code);
+    selected = dam ? <DamCard dam={dam} /> : null;
   } else if (selection?.kind === "gauge") {
     const gauge = data?.gauges.find((g) => g.id === selection.id);
     selected = gauge ? (
@@ -381,6 +406,15 @@ export function DashboardView(props: DashboardViewProps) {
                 </div>
               </div>
 
+              {damsOnMyPath.map(({ dam, hit }) => (
+                <DamNotice
+                  key={dam.code}
+                  dam={dam}
+                  via={hit.via}
+                  tambonName={tambonName(hit.code)}
+                />
+              ))}
+
               <MapView
                 layers={layers}
                 status={fresh ? status : null}
@@ -391,6 +425,12 @@ export function DashboardView(props: DashboardViewProps) {
                 text={{ loading: t("loading"), failed: t("failed") }}
                 mine={mine}
                 showMine={showMine}
+                dams={dams}
+                damText={{
+                  dam: tDam("mark.dam"),
+                  spillway: tDam("mark.spillway"),
+                  outlet: tDam("mark.outlet"),
+                }}
               />
               {mine.length > 0 && (
                 <label className={checkRow} data-mine-toggle="true">
@@ -483,6 +523,17 @@ export function DashboardView(props: DashboardViewProps) {
                       </li>
                     ))}
                   </ul>
+                )}
+                {dams.length > 0 && (
+                  <div className="flex flex-col gap-1" data-dam-legend="true">
+                    <p className="font-medium">{tDam("path.title")}</p>
+                    <ul className="flex flex-col gap-1">
+                      {dams.map((dam) => (
+                        <DamLegend key={dam.code} dam={dam} />
+                      ))}
+                    </ul>
+                    <p className={hint}>{tDam("path.limits")}</p>
+                  </div>
                 )}
                 {pending.length > 0 && (
                   <div className="flex flex-col gap-1" data-pending="true">

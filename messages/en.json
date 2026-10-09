@@ -1085,7 +1085,17 @@
       "offline": "Offline"
     },
     "warRoomTitle": "Example: the war room",
-    "impactTitle": "Example: the impact record"
+    "impactTitle": "Example: the impact record",
+    "damTitle": "Bang Lang Dam",
+    "damNote": "The real river path with made-up figures. Pick a state to see each message.",
+    "damScenario": {
+      "quiet": "Quiet",
+      "watch": "Worth watching",
+      "releasing": "Releasing a lot",
+      "awaiting": "Awaiting confirmation",
+      "stale": "Old figures",
+      "none": "No figures"
+    }
   },
   "report": {
     "title": "Report flooding",
@@ -1281,6 +1291,84 @@
       "cellSize": "Model values at points about {km} km apart, shaded between them. Not measurements.",
       "under": "Under {value}",
       "over": "{value} and over"
+    }
+  },
+  "dam": {
+    "mark": {
+      "dam": "Bang Lang Dam",
+      "spillway": "Spillway",
+      "outlet": "Powerhouse tailwater"
+    },
+    "panel": {
+      "operator": "Operated by {operator}",
+      "river": "River: {river}"
+    },
+    "grade": {
+      "quiet": "The water leaving the dam is in its usual range",
+      "watchful": "Worth watching: the reservoir is high or filling fast",
+      "releasing": "The dam is releasing more water than its usual range",
+      "unknown": "No figures from the dam yet"
+    },
+    "reason": {
+      "spilling": "Water is going over the spillway",
+      "above_turbines": "More water is leaving than the turbines alone can pass, so a gate is open",
+      "above_normal_high": "The reservoir is above its normal high water",
+      "inflow_high": "Water is coming into the reservoir fast",
+      "rising_fast": "The reservoir has risen quickly over the last {hours} hours"
+    },
+    "awaiting": {
+      "release_unconfirmed": "One reading alone shows a large release. Waiting for the next reading to confirm it, because the record holds single hours that are plainly wrong.",
+      "watch_unconfirmed": "One reading alone is above the mark. Waiting for the next reading to confirm it."
+    },
+    "figures": {
+      "none": "No figures from the dam yet",
+      "outflow": "{cms, number} cubic metres a second leaving the dam",
+      "spilled": "{cms, number} of it over the spillway",
+      "storage": "{mcm, number} million cubic metres stored ({percent}% of full)",
+      "level": "Reservoir level {m} m",
+      "trend": {
+        "rising": "The reservoir is rising (against {hours} hours ago)",
+        "falling": "The reservoir is falling (against {hours} hours ago)",
+        "steady": "The reservoir is holding steady (against {hours} hours ago)",
+        "unknown": "Not enough readings yet to say whether the reservoir is rising or falling"
+      },
+      "observed": "Figures for {time}",
+      "age": "about {hours, plural, one {# hour} other {# hours}} ago",
+      "stale": "These figures are older than usual. The dam may not have published a newer reading."
+    },
+    "notice": {
+      "awaiting": {
+        "title": "One reading from {dam} is waiting to be confirmed",
+        "body": "One reading alone shows more water leaving than usual. It is not confirmed until the next reading arrives. This is an early note, nothing more."
+      },
+      "watch": {
+        "title": "Worth watching: {dam}",
+        "body": "The reservoir is high or filling fast. Nothing is being released beyond the usual range. This is so you can follow the news and get ready."
+      },
+      "releasing": {
+        "title": "{dam} is releasing more water than its usual range",
+        "body": "By the dam's own published figures, more water is leaving than usual. It flows down the {river}. Watch the water near your home, move a car to higher ground, and put your important things together."
+      },
+      "where": "{tambon} is on the {river} below the dam",
+      "whereTributary": "{tambon} is on a stream that joins this river. When the river rises, the stream can stop draining.",
+      "openMap": "See the map of the water's path"
+    },
+    "disclaimer": {
+      "notAnAlert": "This is not an alert from Jaga. These are figures the dam publishes itself. If an alert is needed, the authorities issue it.",
+      "noArrivalTime": "Nobody can yet say when the water reaches each place: the travel time down from the dam has not been measured."
+    },
+    "source": "Source: {operator}, published through ThaiWater",
+    "path": {
+      "title": "The path water takes when the dam releases",
+      "tambons": "Through {count, plural, one {# tambon} other {# tambons}} along the river, and {tributary, plural, one {# more} other {# more}} on the lower reaches of the streams that join it",
+      "limits": "The line on the map is the course of the river, not the edge of a flood. Somewhere off the line can still flood.",
+      "spillwayNotMapped": "The channel from the spillway is not in the map, so it is shown as a point rather than a line.",
+      "credit": "River and reservoir from OpenStreetMap. Only the tributaries somebody has already mapped are shown."
+    },
+    "legend": {
+      "reservoir": "{dam} reservoir",
+      "river": "{river} below the dam",
+      "tributary": "Lower reaches of the streams that join the river"
     }
   }
 }

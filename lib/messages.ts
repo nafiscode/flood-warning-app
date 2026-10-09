@@ -36,7 +36,8 @@ export function reportMessages(messages: AbstractIntlMessages): AbstractIntlMess
 }
 
 export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
-  return pick(messages, ["map", "home", "alert", "sos", "places", "hotlines"]);
+  // "dam" comes with the map because the dam is drawn in every view (spec section 15).
+  return pick(messages, ["map", "home", "alert", "sos", "places", "hotlines", "dam"]);
 }
 
 /** The weather page: its own text, plus the attribution line Open-Meteo requires. */

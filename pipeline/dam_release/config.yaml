@@ -61,8 +61,13 @@ grades:
   # Storage climbing this fast (million m3 per hour, averaged over the window below).
   rise_mcm_per_h: 4.0
   rise_window_h: 6
-  # A reading older than this is reported as stale rather than graded (safety rule 3's habit).
-  stale_after_h: 6
+  # A reading older than this is called out as stale rather than graded (safety rule 3's habit).
+  #
+  # Twelve hours, not six, because the feed itself lags: checked on 10 Oct 2026 at 06:00 Bangkok,
+  # the newest hour ThaiWater published for this dam was 00:00, and the hours between were not
+  # there yet. The app therefore always shows the reading's own time and age; "stale" is kept for
+  # a lag that is abnormal even for this feed.
+  stale_after_h: 12
   # How many readings in a row must meet a rule before it counts.
   #
   # The archive holds plainly impossible single hours: an outflow of 1,944 m3/s with no spill

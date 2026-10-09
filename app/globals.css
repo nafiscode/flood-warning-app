@@ -13,6 +13,13 @@
   --jaga-text: #1a3040;
   --jaga-text-2: #4a5e68;
   --jaga-line: #d5dcd8;
+  /*
+   * The water of the dam, its reservoir and the river below it (lib/dam-map.ts, which
+   * holds the same value for the map layers - MapLibre cannot read a CSS variable). It is
+   * not an alert hue and it never changes with what the dam is doing: only the alert
+   * palette shows a status. A unit test keeps the two copies equal.
+   */
+  --jaga-dam: #1b6e8c;
 
   --alert-normal: #2f7a25;
   --alert-normal-fg: #ffffff;
@@ -50,6 +57,8 @@
   --jaga-text: #e6edf1;
   --jaga-text-2: #a8bcc6;
   --jaga-line: #2c4150;
+  /* The daytime water colour disappears into the dark basemap. */
+  --jaga-dam: #7ec8e3;
 }
 
 @theme inline {
@@ -64,6 +73,7 @@
   --color-jaga-text: var(--jaga-text);
   --color-jaga-text-2: var(--jaga-text-2);
   --color-jaga-line: var(--jaga-line);
+  --color-jaga-dam: var(--jaga-dam);
 
   --color-alert-normal: var(--alert-normal);
   --color-alert-normal-fg: var(--alert-normal-fg);

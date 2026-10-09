@@ -6,6 +6,7 @@
 import type { Area, AreaDirectory } from "@/lib/area";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
+import type { DamSignal } from "@/lib/dam";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces, SafePlace } from "@/lib/places";
 import type { PublicAlert, PublicStatus } from "@/lib/public-status";
@@ -461,3 +462,94 @@ export const EXAMPLE_PINS = [
     call: null,
   },
 ];
+
+/*
+ * The dam's figures in each state it can be in (spec section 15). A release happens in a handful
+ * of hours a year, so these are the only way to look at the quiet notice and the card before one
+ * does. The geometry is not made up: the example page reads the real river from
+ * /api/public/dam and swaps only the figures, so what is on screen is the real path.
+ *
+ * Every number is in the range the archive actually holds (pipeline/dam_release/METHODS.md):
+ * storage up to 1,504 Mm3, the January 2021 spill peak of 648 m3/s, turbine releases near 100.
+ */
+export type DamScenario = "quiet" | "watch" | "releasing" | "awaiting" | "stale" | "none";
+
+export const DAM_SCENARIOS: DamScenario[] = [
+  "quiet",
+  "watch",
+  "releasing",
+  "awaiting",
+  "stale",
+  "none",
+];
+
+const damSignal = (over: Partial<DamSignal>): DamSignal => ({
+  observedAt: new Date(EXAMPLE_NOW - 3 * 3_600_000).toISOString(),
+  fetchedAt: new Date(EXAMPLE_NOW - 20 * 60_000).toISOString(),
+  storageMcm: 745,
+  percentFull: 46.9,
+  levelM: 99.53,
+  inflowCms: 103,
+  releasedCms: 103,
+  spilledCms: 0,
+  outflowCms: 103,
+  riseMcmPerH: -0.1,
+  riseWindowH: 6,
+  grade: "quiet",
+  reasons: [],
+  awaiting: [],
+  readings: 10,
+  stale: false,
+  confirmedOver: 2,
+  ...over,
+});
+
+export function exampleDamSignal(scenario: DamScenario): DamSignal | null {
+  switch (scenario) {
+    case "none":
+      return null;
+    case "watch":
+      // Above normal high water and filling: the 2021 event looked like this first.
+      return damSignal({
+        grade: "watchful",
+        reasons: ["above_normal_high", "rising_fast"],
+        storageMcm: 1460,
+        percentFull: 91.8,
+        levelM: 114.2,
+        inflowCms: 520,
+        riseMcmPerH: 5.2,
+      });
+    case "releasing":
+      // January 2021: storage at 103.5% and a spill peak near 648 m3/s.
+      return damSignal({
+        grade: "releasing",
+        reasons: ["spilling", "above_turbines", "above_normal_high"],
+        storageMcm: 1504,
+        percentFull: 94.6,
+        levelM: 115.8,
+        inflowCms: 780,
+        releasedCms: 140,
+        spilledCms: 648,
+        outflowCms: 788,
+        riseMcmPerH: 2.1,
+      });
+    case "awaiting":
+      // The impossible hour of 26 June 2015: shown, never graded on.
+      return damSignal({
+        grade: "quiet",
+        awaiting: ["release_unconfirmed"],
+        releasedCms: 1944,
+        outflowCms: 1944,
+        readings: 10,
+      });
+    case "stale":
+      return damSignal({
+        observedAt: new Date(EXAMPLE_NOW - 26 * 3_600_000).toISOString(),
+        stale: true,
+        riseMcmPerH: null,
+        readings: 2,
+      });
+    default:
+      return damSignal({});
+  }
+}
