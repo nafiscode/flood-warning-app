@@ -315,6 +315,21 @@ describe("the weather page", () => {
     expect(axis).toContain(th.weather.days.dayAfter);
   });
 
+  it("pairs the cards on a laptop, with the maps across both columns (the owner, 10 Oct)", () => {
+    const c = view({ maps: <div data-maps="stub" /> });
+    const grid = c.querySelector('[class*="lg:grid-cols-2"]')!;
+    expect(grid).not.toBeNull();
+    // Five children: now, the rain chart, the maps across both columns, the hours, the week.
+    // An even number of half-width cards, so none is ever left with an empty column beside it.
+    const children = [...grid.children];
+    expect(children).toHaveLength(5);
+    const wide = children.filter((el) => el.className.includes("lg:col-span-2"));
+    expect(wide).toHaveLength(1);
+    expect(wide[0]!.querySelector("[data-maps]")).not.toBeNull();
+    // Heights are not set anywhere: a pair matches because the grid stretches them.
+    expect(grid.className).not.toContain("items-start");
+  });
+
   it("writes every condition out in words, never the icon alone", () => {
     const hours = view().querySelector('[data-weather-hours="true"]')!;
     for (const cell of hours.querySelectorAll("li")) {

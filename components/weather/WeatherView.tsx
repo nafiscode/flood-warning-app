@@ -103,15 +103,22 @@ export function WeatherView(props: WeatherViewProps) {
 
       {weather && (
         <>
-          <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:items-start">
+          {failed && (
+            <p className={notice} role="status">
+              {t("offline", { time: time(weather.at) })}
+            </p>
+          )}
+          {/*
+            On a laptop the page is two columns of equal width, in pairs of a similar size:
+            now beside the rain of the next two days, the hours beside the week. The maps take
+            the full width, because a map squeezed into half of it is no use. The cards of a
+            pair stretch to the same height, so the page reads as two tidy columns, and nothing
+            is ever left with an empty column beside it. A phone keeps one column, in this order.
+          */}
+          <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2">
             <Now weather={weather} />
-            {failed && (
-              <p className={notice} role="status">
-                {t("offline", { time: time(weather.at) })}
-              </p>
-            )}
             <RainBars weather={weather} />
-            {props.maps}
+            <div className="lg:col-span-2">{props.maps}</div>
             <Hours weather={weather} />
             <Days weather={weather} />
           </div>

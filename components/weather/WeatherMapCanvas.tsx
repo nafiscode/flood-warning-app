@@ -97,6 +97,8 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
   /** The grid the map was last fitted to, and whether the person has moved it since. */
   const fitted = useRef("");
   const moved = useRef(false);
+  /** The square to fit, kept so a map that changes shape (phone to laptop) can fit it again. */
+  const fitTo = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     span.current = onViewSpan;
@@ -216,6 +218,11 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
         created.on("movestart", (event) => {
           if ((event as { originalEvent?: unknown }).originalEvent) moved.current = true;
         });
+        // The map changes shape between a phone's column and a laptop's two columns, and when
+        // the window is resized; the grid should still fill it, unless the person has moved it.
+        created.on("resize", () => {
+          if (!moved.current) fitTo.current?.();
+        });
         // Zoomed out past the grid: ask the page for a wider, coarser one.
         created.on("moveend", () => {
           if (!moved.current) return;
@@ -244,13 +251,15 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
     if (fitted.current === key) return;
     fitted.current = key;
     const half = grid.span / 2;
-    map.current?.fitBounds(
-      [
-        [grid.lon - half, grid.lat - half],
-        [grid.lon + half, grid.lat + half],
-      ],
-      { padding: 8, duration: 0 },
-    );
+    fitTo.current = () =>
+      map.current?.fitBounds(
+        [
+          [grid.lon - half, grid.lat - half],
+          [grid.lon + half, grid.lat + half],
+        ],
+        { padding: 8, duration: 0 },
+      );
+    fitTo.current();
   }, [grid, state]);
 
   if (state === "failed") {
@@ -261,12 +270,12 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
     );
   }
   return (
-    <div className="relative">
+    <div className="relative lg:h-full">
       <div
         ref={container}
         data-weather-map="true"
         data-map-ready={state === "ready"}
-        className="h-[52vh] min-h-72 w-full overflow-hidden rounded-xl border border-jaga-line"
+        className="h-[52vh] min-h-72 w-full overflow-hidden rounded-xl border border-jaga-line lg:h-full lg:min-h-[460px]"
       />
       {state === "loading" && (
         <p className="absolute inset-x-0 top-3 text-center text-small text-jaga-text-2">

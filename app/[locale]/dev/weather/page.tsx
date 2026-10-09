@@ -29,7 +29,9 @@ export default async function WeatherExamples({
     : "forecast";
 
   return (
-    <div className="mx-auto flex w-full max-w-[360px] flex-col gap-5">
+    // Phone width to read the wording, the full window on a laptop: the weather page has a
+    // two-column layout up there, and a 360 px box would show it squeezed into nothing.
+    <div className="mx-auto flex w-full max-w-[360px] flex-col gap-5 lg:max-w-6xl">
       <header className="flex flex-col gap-2">
         <h1 className="text-h3 font-bold">{t("weather.title")}</h1>
         <p className={hint}>{t("note")}</p>

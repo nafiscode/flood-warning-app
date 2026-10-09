@@ -74,7 +74,7 @@ export function WeatherMaps({ place, places }: Props) {
           ) : (
             <div
               aria-hidden="true"
-              className="h-[52vh] min-h-72 w-full rounded-xl border border-jaga-line bg-jaga-ground"
+              className="h-[52vh] min-h-72 w-full rounded-xl border border-jaga-line bg-jaga-ground lg:h-full lg:min-h-[460px]"
             />
           )
         }

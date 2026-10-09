@@ -49,10 +49,14 @@ export async function createWeatherMap(container: HTMLElement, box: Box): Promis
   // replaced: opened, they cover the bottom third of a phone's map.
   const foldCredits = () => {
     const credits = container.querySelector(".maplibregl-ctrl-attrib");
-    credits?.classList.remove("maplibregl-compact-show");
-    credits?.removeAttribute("open");
+    if (!credits?.classList.contains("maplibregl-compact-show")) return;
+    credits.classList.remove("maplibregl-compact-show");
+    credits.removeAttribute("open");
   };
+  // Every one of these: the basemap re-opens the panel when it swaps the style in, and waiting
+  // for "idle" left it covering the map for the few seconds the tiles take.
   map.on("style.load", foldCredits);
+  map.on("sourcedata", foldCredits);
   map.on("idle", foldCredits);
 
   map.once("load", () => {
