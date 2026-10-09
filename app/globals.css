@@ -167,3 +167,34 @@ body {
     transition: none !important;
   }
 }
+
+/* The label on one of the person's places (components/map/MapView.tsx) is a MapLibre popup, and
+   MapLibre paints it white from its own stylesheet. After sunset the text inside is light, so
+   the box has to be dark too; by day MapLibre's own white is kept. */
+:root[data-theme="dark"] .maplibregl-popup-content {
+  background: var(--jaga-surface);
+  border: 1px solid var(--jaga-line);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.5);
+}
+
+/* The little arrow pointing at the pin is a CSS triangle: only the side facing the box is
+   coloured, and which side that is depends on where the popup sits. */
+:root[data-theme="dark"] .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+:root[data-theme="dark"] .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+:root[data-theme="dark"] .maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--jaga-surface);
+}
+
+:root[data-theme="dark"] .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+:root[data-theme="dark"] .maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+:root[data-theme="dark"] .maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--jaga-surface);
+}
+
+:root[data-theme="dark"] .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--jaga-surface);
+}
+
+:root[data-theme="dark"] .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--jaga-surface);
+}

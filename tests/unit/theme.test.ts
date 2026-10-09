@@ -123,6 +123,26 @@ describe("the dark colours", () => {
     expect(block).toContain("color-scheme: dark");
   });
 
+  it("the label on a map pin is dark too, and only after sunset", () => {
+    // MapLibre paints its popup white from its own stylesheet, which left the label's light
+    // text on a white box at night (the owner saw it, 9 Oct).
+    const css = readFileSync("app/globals.css", "utf8");
+    const selectors = css
+      .split("*/")
+      .map((part) => (part.includes("/*") ? part.slice(0, part.indexOf("/*")) : part))
+      .join(" ")
+      .split("}")
+      .map((block) => block.slice(0, block.indexOf("{")).trim())
+      .filter((selector) => selector.includes("maplibregl-popup"));
+    expect(selectors.length).toBeGreaterThan(0);
+    for (const selector of selectors) {
+      for (const one of selector.split(",")) {
+        expect(one.trim().startsWith(':root[data-theme="dark"]')).toBe(true);
+      }
+    }
+    expect(css).toContain("background: var(--jaga-surface)");
+  });
+
   it("nobody can switch the theme by hand: there is no control for it", () => {
     const files = [
       "components/DaylightTheme.tsx",
