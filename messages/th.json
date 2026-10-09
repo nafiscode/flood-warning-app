@@ -858,6 +858,7 @@
       "title": "7 วันข้างหน้า",
       "today": "วันนี้",
       "tomorrow": "พรุ่งนี้",
+      "dayAfter": "มะรืนนี้",
       "rain": "ฝน {value} มม. · โอกาส {chance}%"
     },
     "codes": {

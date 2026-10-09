@@ -4,6 +4,8 @@ import { BANA, EXAMPLE_NOW, EXAMPLE_WEATHER, EXAMPLE_WEATHER_PLACE } from "@/lib
 import th from "@/messages/th.json";
 import {
   compass,
+  dayOffset,
+  localDate,
   forecastUrl,
   geocodeUrl,
   isStale,
@@ -219,6 +221,37 @@ describe("old readings", () => {
   });
 });
 
+describe("the day a time falls on at the place", () => {
+  it("reads the calendar date in the place's own zone, not the reader's", () => {
+    // 23:30 UTC on 8 October is already 06:30 on the 9th in Bangkok.
+    expect(localDate("2026-10-08T23:30:00.000Z", "Asia/Bangkok")).toBe("2026-10-09");
+    expect(localDate("2026-10-08T23:30:00.000Z", "UTC")).toBe("2026-10-08");
+  });
+
+  it("counts whole days, so the chart's axis can say today, tomorrow or the day after", () => {
+    const start = "2026-10-08T23:30:00.000Z"; // 06:30 in Bangkok
+    const hours = (n: number) => new Date(Date.parse(start) + n * 3_600_000).toISOString();
+    expect(dayOffset(hours(0), start, "Asia/Bangkok")).toBe(0);
+    expect(dayOffset(hours(17), start, "Asia/Bangkok")).toBe(0);
+    expect(dayOffset(hours(18), start, "Asia/Bangkok")).toBe(1); // past local midnight
+    expect(dayOffset(hours(24), start, "Asia/Bangkok")).toBe(1);
+    expect(dayOffset(hours(47), start, "Asia/Bangkok")).toBe(2);
+  });
+
+  it("counts calendar days, not 24-hour blocks", () => {
+    // 23:00 local plus two hours is the next day, an hour later, not a day later.
+    const late = "2026-10-09T16:00:00.000Z"; // 23:00 in Bangkok
+    const after = "2026-10-09T18:00:00.000Z"; // 01:00 the next day
+    expect(dayOffset(after, late, "Asia/Bangkok")).toBe(1);
+    expect(dayOffset(late, late, "Asia/Bangkok")).toBe(0);
+  });
+
+  it("says nothing rather than something wrong when a time cannot be read", () => {
+    expect(dayOffset("rubbish", "2026-10-09T00:00:00.000Z", "Asia/Bangkok")).toBeNull();
+    expect(localDate("rubbish", "Asia/Bangkok")).toBe("");
+  });
+});
+
 function view(more: Partial<Parameters<typeof WeatherView>[0]> = {}) {
   return renderWithIntl(
     <WeatherView
@@ -273,6 +306,13 @@ describe("the weather page", () => {
     expect(c.querySelector('[data-weather-days="true"]')!.textContent).toContain(
       th.weather.days.today,
     );
+  });
+
+  it("names the day under each time on the 48-hour axis", () => {
+    const axis = view().querySelector('[data-weather-rain="true"]')!.textContent!;
+    expect(axis).toContain(th.weather.days.today);
+    expect(axis).toContain(th.weather.days.tomorrow);
+    expect(axis).toContain(th.weather.days.dayAfter);
   });
 
   it("writes every condition out in words, never the icon alone", () => {

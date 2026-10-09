@@ -858,6 +858,7 @@
       "title": "Next 7 days",
       "today": "Today",
       "tomorrow": "Tomorrow",
+      "dayAfter": "The day after",
       "rain": "{value} mm rain · {chance}% chance"
     },
     "codes": {

@@ -306,3 +306,32 @@ export function isStale(at: string | null, now: number): boolean {
   const ms = Date.parse(at);
   return !Number.isFinite(ms) || now - ms > STALE_MS;
 }
+
+/** The calendar date an instant falls on at the place, as YYYY-MM-DD. */
+export function localDate(iso: string, timezone: string): string {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return "";
+  try {
+    // en-CA writes the date as 2026-10-09, which also sorts and subtracts correctly.
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(ms));
+  } catch {
+    return new Date(ms).toISOString().slice(0, 10);
+  }
+}
+
+/**
+ * How many days later than `base` an instant falls at the place: 0 today, 1 tomorrow, 2 the day
+ * after. The 48-hour chart's axis says the day as well, because three bare clock times
+ * ("17:00, 17:00, 16:00") read as nonsense (the owner, 9 Oct 2026).
+ */
+export function dayOffset(iso: string, base: string, timezone: string): number | null {
+  const a = Date.parse(`${localDate(base, timezone)}T00:00:00Z`);
+  const b = Date.parse(`${localDate(iso, timezone)}T00:00:00Z`);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  return Math.round((b - a) / 86_400_000);
+}

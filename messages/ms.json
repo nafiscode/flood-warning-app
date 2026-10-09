@@ -858,6 +858,7 @@
       "title": "7 hari akan datang",
       "today": "Hari ini",
       "tomorrow": "Esok",
+      "dayAfter": "Lusa",
       "rain": "Hujan {value} mm · kemungkinan {chance}%"
     },
     "codes": {

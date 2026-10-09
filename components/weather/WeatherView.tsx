@@ -6,6 +6,7 @@ import { OpenMeteoAttribution } from "@/components/OpenMeteoAttribution";
 import { Link } from "@/i18n/navigation";
 import { buttonSecondary, card, errorNotice, hint, notice } from "@/lib/ui";
 import {
+  dayOffset,
   HOURS_LISTED,
   isStale,
   peakRain,
@@ -239,6 +240,18 @@ function RainBars({ weather }: { weather: Weather }) {
       hourCycle: "h23",
       timeZone: weather.timezone,
     });
+  /** "today", "tomorrow", "the day after"; any further out is named by its date. */
+  const dayWord = (iso: string) => {
+    const offset = dayOffset(iso, hours[0]!.at, weather.timezone);
+    if (offset === 0) return t("days.today");
+    if (offset === 1) return t("days.tomorrow");
+    if (offset === 2) return t("days.dayAfter");
+    return format.dateTime(new Date(iso), {
+      day: "numeric",
+      month: "short",
+      timeZone: weather.timezone,
+    });
+  };
 
   return (
     <section className={card} data-weather-rain="true">
@@ -259,10 +272,23 @@ function RainBars({ weather }: { weather: Weather }) {
           />
         ))}
       </div>
-      <div className="flex justify-between text-small tabular-nums text-jaga-text-2">
-        <span>{hour(hours[0]!.at)}</span>
-        <span>{hour(hours[Math.floor(hours.length / 2)]!.at)}</span>
-        <span>{hour(hours[hours.length - 1]!.at)}</span>
+      {/*
+        The day under each time: three bare clock times across 48 hours ("17:00, 17:00, 16:00")
+        read as nonsense (the owner, 9 Oct).
+      */}
+      <div className="flex justify-between gap-2 text-small text-jaga-text-2">
+        {[0, Math.floor(hours.length / 2), hours.length - 1].map((index, place) => {
+          const at = hours[index]!.at;
+          return (
+            <span
+              key={at}
+              className={`flex flex-col ${place === 1 ? "items-center" : place === 2 ? "items-end" : "items-start"}`}
+            >
+              <span className="tabular-nums">{hour(at)}</span>
+              <span>{dayWord(at)}</span>
+            </span>
+          );
+        })}
       </div>
       <p className={hint}>{t("rain.scale", { value: n(peak) })}</p>
     </section>
