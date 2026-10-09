@@ -253,13 +253,30 @@ export function rampAt(
   field: WeatherField,
   value: number | null,
 ): [number, number, number, number] {
-  if (value === null || !Number.isFinite(value)) return [0, 0, 0, 0];
   const stops = RAMPS[field];
   const first = stops[0]!;
   const last = stops[stops.length - 1]!;
+  /*
+   * A see-through pixel still carries the colour of the scale, never black. The map blends
+   * neighbouring pixels as it stretches the picture over the ground, and transparent black
+   * drags a dirty edge into everything beside it — which is what the first rain map did
+   * around every dry patch.
+   */
+  const clear = (): [number, number, number, number] => {
+    const [r, g, b] = hexParts(first[1]);
+    return [r, g, b, 0];
+  };
+  if (value === null || !Number.isFinite(value)) return clear();
   if (value <= first[0]) {
-    // Rain starts from nothing: below the first drop the map simply shows the ground.
-    if (field === "rain") return [0, 0, 0, 0];
+    /*
+     * Rain starts from nothing, and it has to start smoothly: a step from see-through to a
+     * colour draws a hard line around every dry patch, which looked like a shape on the map
+     * rather than like weather. Below the first drop the colour fades in from nothing.
+     */
+    if (field === "rain") {
+      const [r, g, b] = hexParts(first[1]);
+      return [r, g, b, Math.round(Math.max(0, Math.min(1, value / first[0])) * 60)];
+    }
     const [r, g, b] = hexParts(first[1]);
     return [r, g, b, 255];
   }
@@ -275,12 +292,12 @@ export function rampAt(
       const a = hexParts(fromHex);
       const b = hexParts(toHex);
       const mix = (i2: number) => Math.round(a[i2]! + (b[i2]! - a[i2]!) * t);
-      // The lightest rain fades in, so a drizzle does not put a hard edge across the map.
-      const alpha = field === "rain" && i === 0 ? Math.round(80 + 175 * t) : 255;
+      // The lightest rain keeps fading in across the first band, from where it started.
+      const alpha = field === "rain" && i === 0 ? Math.round(60 + 195 * t) : 255;
       return [mix(0), mix(1), mix(2), alpha];
     }
   }
-  return [0, 0, 0, 0];
+  return clear();
 }
 
 /**
@@ -302,8 +319,14 @@ export function bilinear(
   const r0 = Math.min(last, Math.floor(r));
   const c1 = Math.min(last, c0 + 1);
   const r1 = Math.min(last, r0 + 1);
-  const fc = c - c0;
-  const fr = r - r0;
+  /*
+   * Hermite easing on the way between two points, not a straight line: a straight blend leaves
+   * a crease along every row and column of the grid, which showed up as faint diamonds across
+   * the map. The values at the points themselves are untouched.
+   */
+  const ease = (t: number) => t * t * (3 - 2 * t);
+  const fc = ease(c - c0);
+  const fr = ease(r - r0);
   let sum = 0;
   let weight = 0;
   for (const [cc, rr, w] of [
