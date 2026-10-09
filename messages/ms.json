@@ -910,7 +910,9 @@
       "released": "Sudah dipulangkan ke barisan.",
       "noted": "Sudah disimpan.",
       "spam": "Bendera sudah diberi.",
-      "spamDismissed": "Bendera sudah dibuang."
+      "spamDismissed": "Bendera sudah dibuang.",
+      "damSent": "Dicatat: amaran dihantar",
+      "damDismissed": "Dicatat: tiada amaran dihantar"
     },
     "error": {
       "save": "Tak jadi. Cuba lagi.",
@@ -920,6 +922,50 @@
       "unverified": "Unit ini belum disahkan.",
       "reason": "Sebab wajib diisi.",
       "forbidden": "Halaman ini untuk admin sahaja."
+    },
+    "dam": {
+      "toReview": "Menunggu keputusan",
+      "grade": {
+        "quiet": "Air yang dilepaskan dalam julat biasa",
+        "watchful": "Perlu dipantau: takungan tinggi atau naik cepat",
+        "releasing": "Disahkan melepaskan air melebihi julat biasa",
+        "unknown": "Belum ada data daripada empangan"
+      },
+      "reason": {
+        "spilling": "Air melimpah melalui saluran limpah",
+        "above_turbines": "Air keluar melebihi keupayaan janakuasa",
+        "above_normal_high": "Takungan melebihi paras simpanan biasa",
+        "inflow_high": "Air masuk pada kadar tinggi",
+        "rising_fast": "Takungan naik cepat"
+      },
+      "outflow": "Keluar {cms, number} m3/s",
+      "spilled": "limpah {cms, number}",
+      "storage": "Takungan {mcm, number} juta m3 ({percent}%)",
+      "trend": {
+        "rising": "sedang naik",
+        "falling": "sedang turun",
+        "steady": "tidak berubah",
+        "unknown": "arah belum diketahui"
+      },
+      "observed": "Data bagi jam {time}",
+      "age": "{hours} jam lepas",
+      "stale": "Data lebih lama daripada biasa. Periksa sama ada empangan masih menerbitkan data.",
+      "awaiting": "Satu bacaan sahaja memenuhi paras; {readings} bacaan berturut-turut diperlukan.",
+      "noFigures": "Belum ada data daripada empangan",
+      "tambons": "Laluan air melalui {main} mukim di sepanjang sungai dan {tributary} mukim di anak sungai",
+      "reviewTitle": "Tiada amaran dihantar kepada sesiapa",
+      "reviewBody": "Sistem mengesan pelepasan yang disahkan dan memberitahu pentadbir sahaja. Orang di tebing sungai hanya melihat satu nota dengan penafian bahawa ia bukan amaran. Mengeluarkan amaran adalah tugas manusia.",
+      "raisedAt": "Dibangkitkan pada {time}",
+      "noteLabel": "Catat apa yang dilakukan (pilihan)",
+      "sent": "Amaran telah dihantar",
+      "dismiss": "Belum dihantar",
+      "reviewed": {
+        "sent": "{who} mencatat amaran dihantar pada {time}",
+        "dismissed": "{who} mencatat tiada amaran dihantar pada {time}",
+        "ended": "Pelepasan sudah berakhir",
+        "open": ""
+      },
+      "feedFailed": "Gagal membaca data empangan; cubaan terakhir pada {time}. Angka mungkin bukan yang terbaharu."
     }
   },
   "impact": {

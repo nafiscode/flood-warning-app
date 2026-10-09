@@ -1,3 +1,4 @@
+import type { DamSignal } from "@/lib/dam";
 /**
  * The admins' war room: the shapes the screen reads, and the arithmetic behind the triage. Pure
  * functions only, so the rules that decide "nobody has answered this for 23 minutes" are tested
@@ -82,6 +83,36 @@ export type WarRoomBoard = {
   now: number;
   overview: Overview;
   cases: SosCase[];
+  /** The dams and whether one of them is waiting for an admin to judge it (spec section 15). */
+  dams: DamBoardRow[];
+};
+
+/**
+ * One dam as the admins see it: the figures, what the code made of them, and - the only thing
+ * here that asks anything of a person - whether a confirmed release is waiting to be reviewed.
+ *
+ * Code raised the notice; it did not send anything and could not (safety rule 2). What is sent
+ * afterwards is the dam release notice of spec section 15, by a person.
+ */
+export type DamBoardRow = {
+  code: string;
+  name: Record<string, string>;
+  river: Record<string, string>;
+  operator: string;
+  signal: DamSignal | null;
+  notice: {
+    id: string;
+    status: "open" | "sent" | "dismissed" | "ended";
+    raisedAt: string;
+    reasons: string[];
+    reviewedAt: string | null;
+    reviewedByName: string | null;
+    note: string | null;
+  } | null;
+  tambonsMain: number;
+  tambonsTributary: number;
+  /** How the last hourly fetch went, so a silent feed is visible rather than looking calm. */
+  feed: { ok: boolean | null; ranAt: string | null; error: string | null };
 };
 
 /** Counts per tambon: how many people live there, how many places are watched there. */

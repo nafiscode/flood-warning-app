@@ -8,6 +8,7 @@
  *   4. The map's water colour is not an alert hue and does not change with the dam's state.
  */
 import { describe, expect, it } from "vitest";
+import { DamBoard } from "@/components/admin/DamBoard";
 import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
 import { alert as alertColors } from "@/lib/brand/tokens";
 import {
@@ -33,6 +34,7 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { exampleDamSignal, EXAMPLE_NOW } from "@/lib/dev-examples";
+import { EXAMPLE_DAMS } from "@/lib/war-room-examples";
 import { readFileSync } from "node:fs";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
@@ -461,5 +463,113 @@ describe("the copy says the same thing in all three languages", () => {
       const dam = (files[locale] as { dam: { disclaimer: { notAnAlert: string } } }).dam;
       expect(dam.disclaimer.notAnAlert.length).toBeGreaterThan(20);
     }
+  });
+});
+
+describe("the dam on the admins' war room", () => {
+  const row = EXAMPLE_DAMS[0]!;
+  const render = (
+    over: Partial<typeof row> = {},
+    review: ((f: FormData) => void) | null = () => {},
+  ) => renderWithIntl(<DamBoard dams={[{ ...row, ...over }]} now={EXAMPLE_NOW} review={review} />);
+
+  it("says plainly that nothing has been sent to anybody", () => {
+    const { getByText } = render();
+    expect(getByText(th.warRoom.dam.reviewTitle)).toBeTruthy();
+    expect(getByText(th.warRoom.dam.reviewBody)).toBeTruthy();
+  });
+
+  it("offers the two answers, and only those two", () => {
+    const { getByText, container } = render();
+    expect(getByText(th.warRoom.dam.sent)).toBeTruthy();
+    expect(getByText(th.warRoom.dam.dismiss)).toBeTruthy();
+    const values = [...container.querySelectorAll("button[name='status']")].map((b) =>
+      b.getAttribute("value"),
+    );
+    expect(values.sort()).toEqual(["dismissed", "sent"]);
+  });
+
+  it("carries the notice's own id, so a second dam cannot be reviewed by mistake", () => {
+    const { container } = render();
+    expect(container.querySelector("input[name='notice']")?.getAttribute("value")).toBe(
+      row.notice!.id,
+    );
+  });
+
+  it("is not an alert either: no alert or SOS colour on the panel", () => {
+    // The war room paints an unanswered SOS with border-sos. A dam release is not a level and
+    // must not borrow that weight (docs/brand.md).
+    const { container } = render();
+    expect(container.innerHTML).not.toMatch(
+      /bg-alert-|text-alert-|border-alert-|bg-sos|border-sos/,
+    );
+  });
+
+  it("names every rule that fired", () => {
+    const { container } = render();
+    expect(container.textContent).toContain(th.warRoom.dam.reason.spilling);
+    expect(container.textContent).toContain(th.warRoom.dam.reason.above_normal_high);
+  });
+
+  it("asks for nothing when the dam is quiet", () => {
+    const { container, queryByText } = render({
+      signal: exampleDamSignal("quiet"),
+      notice: null,
+    });
+    expect(queryByText(th.warRoom.dam.reviewTitle)).toBeNull();
+    expect(container.querySelector("[data-dam-notice='none']")).toBeTruthy();
+  });
+
+  it("shows who judged it once somebody has", () => {
+    const { container } = render({
+      notice: {
+        ...row.notice!,
+        status: "sent",
+        reviewedAt: new Date(EXAMPLE_NOW - 60_000).toISOString(),
+        reviewedByName: "นาฟิส",
+      },
+    });
+    expect(container.textContent).toContain("นาฟิส");
+    // Judged, so it no longer asks.
+    expect(container.querySelector("button[name='status']")).toBeNull();
+  });
+
+  it("calls out a feed that stopped answering, which otherwise looks like calm", () => {
+    const { getByRole } = render({
+      feed: {
+        ok: false,
+        ranAt: new Date(EXAMPLE_NOW - 3_600_000).toISOString(),
+        error: "http 504",
+      },
+    });
+    expect(getByRole("alert").textContent).toContain("ดึงข้อมูลเขื่อนไม่สำเร็จ");
+  });
+
+  it("calls out figures that are older than usual", () => {
+    const { container } = render({ signal: exampleDamSignal("stale") });
+    expect(container.textContent).toContain(th.warRoom.dam.stale);
+  });
+
+  it("explains an unconfirmed reading rather than grading on it", () => {
+    const { container } = render({ signal: exampleDamSignal("awaiting"), notice: null });
+    expect(container.textContent).toContain("ต้องตรงกัน");
+  });
+
+  it("counts the tambons on the river and on its tributaries", () => {
+    const { container } = render();
+    expect(container.textContent).toContain("36");
+    expect(container.textContent).toContain("3");
+  });
+
+  it("draws nothing at all when there is no dam", () => {
+    const { container } = renderWithIntl(<DamBoard dams={[]} now={EXAMPLE_NOW} review={null} />);
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("shows no form on the example page, which records nothing", () => {
+    const { container } = render({}, null);
+    expect(container.querySelector("form")).toBeNull();
+    // It still says a release is waiting, so the example shows the real state of the screen.
+    expect(container.querySelector("[data-dam-notice='open']")).toBeTruthy();
   });
 });

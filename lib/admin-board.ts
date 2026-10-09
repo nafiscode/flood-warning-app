@@ -6,8 +6,10 @@
  * No phone number is in any of these reads. A number is fetched one at a time by `revealSosPhone`
  * and `revealPersonPhone`, which call the logged reveal functions.
  */
+import type { DamSignal } from "@/lib/dam";
 import { createClient } from "@/lib/supabase/server";
 import type {
+  DamBoardRow,
   HistoryRow,
   Overview,
   PeoplePage,
@@ -99,12 +101,69 @@ function toOverview(r: Row): Overview {
 
 const EMPTY_OVERVIEW: Overview = toOverview({ unclaimed_minutes: 15 });
 
+/**
+ * One dam row. The figures arrive as the JSON the database built from dam_signal(), so the
+ * names are its names; everything else is already shaped for the screen.
+ */
+function toDam(r: Row): DamBoardRow {
+  const s = (r.signal ?? null) as Row | null;
+  const n = (key: string) => (s && typeof s[key] === "number" ? (s[key] as number) : null);
+  return {
+    code: String(r.dam_code),
+    name: (r.dam_name ?? {}) as Record<string, string>,
+    river: (r.river ?? {}) as Record<string, string>,
+    operator: String(r.operator ?? ""),
+    signal: s
+      ? {
+          observedAt: String(s.observed_at),
+          fetchedAt: String(s.fetched_at),
+          storageMcm: n("storage_mcm"),
+          percentFull: n("percent_full"),
+          levelM: n("level_m"),
+          inflowCms: n("inflow_cms"),
+          releasedCms: n("released_cms"),
+          spilledCms: n("spilled_cms"),
+          outflowCms: n("outflow_cms"),
+          riseMcmPerH: n("rise_mcm_per_h"),
+          riseWindowH: Number(s.rise_window_h ?? 6),
+          grade: s.grade as DamSignal["grade"],
+          reasons: (s.reasons ?? []) as DamSignal["reasons"],
+          awaiting: (s.awaiting ?? []) as DamSignal["awaiting"],
+          readings: Number(s.readings ?? 0),
+          stale: Boolean(s.stale),
+          confirmedOver: Number(s.confirmed_over ?? 2),
+        }
+      : null,
+    notice: r.notice_id
+      ? {
+          id: String(r.notice_id),
+          status: String(r.notice_status) as "open" | "sent" | "dismissed" | "ended",
+          raisedAt: String(r.notice_raised_at),
+          reasons: ((r.notice_reasons ?? []) as string[]) ?? [],
+          reviewedAt: text(r.notice_reviewed_at),
+          reviewedByName: text(r.notice_reviewed_by_name),
+          note: text(r.notice_note),
+        }
+      : null,
+    tambonsMain: int(r.tambons_main),
+    tambonsTributary: int(r.tambons_tributary),
+    feed: {
+      ok: r.feed_ok === null || r.feed_ok === undefined ? null : Boolean(r.feed_ok),
+      ranAt: text(r.feed_ran_at),
+      error: text(r.feed_error),
+    },
+  };
+}
+
 /** The board and the counters: the one read that is polled while the war room is open. */
 export async function readBoard(hours = 72): Promise<WarRoomBoard> {
   const supabase = await createClient();
-  const [overview, board] = await Promise.all([
+  const [overview, board, dams] = await Promise.all([
     supabase.rpc("admin_overview"),
     supabase.rpc("admin_sos_board", { p_hours: hours }),
+    // Polled with the rest: a release waiting for a person to judge it is the one thing on this
+    // screen that gets worse by being seen late.
+    supabase.rpc("admin_dam_board"),
   ]);
   return {
     now: Date.now(),
@@ -113,6 +172,7 @@ export async function readBoard(hours = 72): Promise<WarRoomBoard> {
         ? toOverview((overview.data as Row[])[0]!)
         : EMPTY_OVERVIEW,
     cases: ((board.data as Row[] | null) ?? []).map(toCase),
+    dams: ((dams.data as Row[] | null) ?? []).map(toDam),
   };
 }
 

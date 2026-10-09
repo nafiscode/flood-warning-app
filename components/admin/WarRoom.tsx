@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { DamBoard } from "@/components/admin/DamBoard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DualTime } from "@/components/admin/DualTime";
 import { Tile } from "@/components/admin/WarRoomBits";
@@ -44,6 +45,8 @@ type Props = {
   /** The example page has no address of its own: it switches the tabs in the browser instead. */
   onView?: (view: WarRoomView) => void;
   actions: CaseActions | null;
+  /** Records what an admin did about a dam release notice. Null on the example page. */
+  reviewDam?: ((form: FormData) => void) | null;
   done: string | null;
   error: string | null;
 };
@@ -62,6 +65,7 @@ export function WarRoom({
   pollUrl,
   onView,
   actions,
+  reviewDam = null,
   done,
   error,
 }: Props) {
@@ -269,6 +273,13 @@ export function WarRoom({
           note={t("tile.unitsNote", { pending: o.unitsPending, gaps: o.tambonsUncovered })}
         />
       </section>
+
+      {/*
+       * A confirmed dam release waiting for a person to judge it. Below the unanswered cases and
+       * above everything else: somebody waiting for rescue outranks it, but it is the only other
+       * thing on this screen that gets worse by being seen late (spec section 15).
+       */}
+      <DamBoard dams={board.dams} now={now} review={reviewDam} />
 
       <nav aria-label={t("tabs")} className="flex flex-wrap gap-2">
         {tab("cases", t("tab.cases", { count: open }))}

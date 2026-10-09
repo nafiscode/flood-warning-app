@@ -910,7 +910,9 @@
       "released": "Handed back to the queue.",
       "noted": "Saved.",
       "spam": "Flagged.",
-      "spamDismissed": "Flag removed."
+      "spamDismissed": "Flag removed.",
+      "damSent": "Recorded: the notice was sent",
+      "damDismissed": "Recorded: no notice sent"
     },
     "error": {
       "save": "That didn't work. Try again.",
@@ -920,6 +922,50 @@
       "unverified": "That unit isn't verified.",
       "reason": "A reason is needed.",
       "forbidden": "This page is for admins only."
+    },
+    "dam": {
+      "toReview": "Waiting on you",
+      "grade": {
+        "quiet": "The water leaving the dam is in its usual range",
+        "watchful": "Worth watching: the reservoir is high or filling fast",
+        "releasing": "A release above the usual range, confirmed",
+        "unknown": "No figures from the dam yet"
+      },
+      "reason": {
+        "spilling": "Water is going over the spillway",
+        "above_turbines": "More is leaving than the turbines can pass",
+        "above_normal_high": "The reservoir is above normal high water",
+        "inflow_high": "Water is coming in fast",
+        "rising_fast": "The reservoir is rising quickly"
+      },
+      "outflow": "{cms, number} m3/s leaving",
+      "spilled": "{cms, number} over the spillway",
+      "storage": "{mcm, number} million m3 stored ({percent}%)",
+      "trend": {
+        "rising": "rising",
+        "falling": "falling",
+        "steady": "steady",
+        "unknown": "direction not known yet"
+      },
+      "observed": "Figures for {time}",
+      "age": "{hours, plural, one {# hour} other {# hours}} ago",
+      "stale": "These figures are older than usual. Check the dam is still publishing.",
+      "awaiting": "One reading alone meets a rule; {readings} in a row are needed before it counts.",
+      "noFigures": "No figures from the dam yet",
+      "tambons": "The path runs through {main} tambons along the river and {tributary} on its tributaries",
+      "reviewTitle": "Nothing has been sent to anybody",
+      "reviewBody": "The code confirmed a release and told you. The people on the river see only a quiet note that says it is not an alert. Issuing one is a person's job.",
+      "raisedAt": "Raised at {time}",
+      "noteLabel": "Write down what you did (optional)",
+      "sent": "I sent the notice",
+      "dismiss": "Not sending one",
+      "reviewed": {
+        "sent": "{who} recorded that the notice was sent, at {time}",
+        "dismissed": "{who} recorded that no notice was sent, at {time}",
+        "ended": "The release is over",
+        "open": ""
+      },
+      "feedFailed": "The dam's figures could not be read; last tried at {time}. What is shown may not be the newest."
     }
   },
   "impact": {

@@ -13,7 +13,7 @@ import {
   revealSosPhone,
 } from "@/lib/admin-board";
 import { warRoomMessages } from "@/lib/messages";
-import { assignCase, judgeSpam, noteCase, releaseCase } from "./actions";
+import { assignCase, judgeSpam, noteCase, releaseCase, reviewDamNotice } from "./actions";
 
 export async function generateMetadata({
   params,
@@ -115,6 +115,7 @@ export default async function WarRoomPage({
           note: noteCase.bind(null, locale),
           spam: judgeSpam.bind(null, locale),
         }}
+        reviewDam={reviewDamNotice.bind(null, locale)}
         done={one(query.done) || null}
         error={one(query.error) || null}
       />

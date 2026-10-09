@@ -88,3 +88,25 @@ export async function judgeSpam(locale: string, form: FormData) {
   if (error) back(locale, { error: why(error), spam: sos });
   back(locale, { done: spam ? "spam" : "spamDismissed" });
 }
+
+/**
+ * What an admin did about a dam release notice (spec section 15). It records the judgement and
+ * nothing else: sending the notice itself is the rest of A12, and code never sends one at all
+ * (safety rule 2). Both answers are kept, dismissals included, because the record of what was
+ * decided is the point (spec section 16).
+ */
+export async function reviewDamNotice(locale: string, form: FormData) {
+  const notice = field(form, "notice");
+  const status = field(form, "status");
+  if (!UUID.test(notice) || (status !== "sent" && status !== "dismissed")) {
+    back(locale, { error: "save" });
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_dam_notice_review", {
+    p_notice: notice,
+    p_status: status,
+    p_note: field(form, "note") || null,
+  });
+  if (error) back(locale, { error: why(error) });
+  back(locale, { done: status === "sent" ? "damSent" : "damDismissed" });
+}

@@ -1,3 +1,5 @@
+import type { DamBoardRow } from "@/lib/war-room";
+import { exampleDamSignal } from "@/lib/dev-examples";
 /**
  * Made-up data for /dev/war-room, the review page for the admin war room (same rule as
  * lib/dev-examples.ts: nothing here is in the database and the page is not available in
@@ -417,9 +419,37 @@ const REPORTS = Object.values(AREAS).flatMap((a, i) =>
   })),
 );
 
+/*
+ * A dam with a confirmed release waiting to be judged: the one state of this panel that asks
+ * anything of an admin, and the one that cannot be seen on a quiet day. The figures are January
+ * 2021's - storage at 94.6% and a spill peak near 648 m3/s.
+ */
+export const EXAMPLE_DAMS: DamBoardRow[] = [
+  {
+    code: "bang_lang",
+    name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
+    river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
+    operator: "EGAT",
+    signal: exampleDamSignal("releasing"),
+    notice: {
+      id: "00000000-0000-4000-8000-00000000da01",
+      status: "open",
+      raisedAt: new Date(EXAMPLE_NOW - 35 * 60_000).toISOString(),
+      reasons: ["spilling", "above_turbines", "above_normal_high"],
+      reviewedAt: null,
+      reviewedByName: null,
+      note: null,
+    },
+    tambonsMain: 36,
+    tambonsTributary: 3,
+    feed: { ok: true, ranAt: new Date(EXAMPLE_NOW - 12 * 60_000).toISOString(), error: null },
+  },
+];
+
 export const EXAMPLE_BOARD: WarRoomBoard = {
   now: EXAMPLE_NOW,
   cases: CASES,
+  dams: EXAMPLE_DAMS,
   overview: {
     people: 1842,
     peopleNew7d: 213,
