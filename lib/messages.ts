@@ -12,10 +12,22 @@ function pick(messages: AbstractIntlMessages, namespaces: string[]): AbstractInt
 
 export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   const all = messages as Messages;
+  const dam = all.dam as Messages;
   return {
     ...pick(messages, ["home", "alert", "sos", "places", "hotlines"]),
     // The area chooser's province list.
     map: { province: all.map!.province! },
+    /*
+     * The quiet dam notice, for someone on the river below the dam (spec section 15). Only the
+     * four groups that notice uses: its card, its legend and the names on the map marks stay
+     * with the map page, because the home screen is the one screen with a slow-3G budget.
+     */
+    dam: {
+      notice: dam.notice!,
+      figures: dam.figures!,
+      disclaimer: dam.disclaimer!,
+      source: dam.source!,
+    },
   };
 }
 
