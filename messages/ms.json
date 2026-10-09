@@ -386,7 +386,8 @@
   "nav": {
     "home": "Utama",
     "account": "Akaun",
-    "map": "Peta"
+    "map": "Peta",
+    "admin": "Admin"
   },
   "signIn": {
     "title": "Log masuk",

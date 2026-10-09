@@ -386,7 +386,8 @@
   "nav": {
     "home": "Home",
     "account": "Account",
-    "map": "Map"
+    "map": "Map",
+    "admin": "Admin"
   },
   "signIn": {
     "title": "Sign in",

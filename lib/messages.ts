@@ -72,6 +72,8 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
   const weather = all.weather as { chip: AbstractIntlMessages; codes: AbstractIntlMessages };
   return {
     language: all.language!,
+    // The Admin link is drawn in the browser, so the header's labels go with it: four words.
+    nav: all.nav!,
     weather: { chip: weather.chip, codes: weather.codes },
   };
 }

@@ -104,6 +104,40 @@ export function useMyPlaces(): MyPlaces | null {
   return live ?? stored;
 }
 
+/**
+ * The signed-in person's role, for the Admin link in the header. Asked once when the app opens
+ * and only when this browser holds a session, so visitors never call the server for it; the
+ * answer is kept on the phone, so the link is there at once on the next page and offline. It is
+ * forgotten as soon as nobody is signed in.
+ *
+ * It only decides whether a link is drawn. The admin pages and row-level security decide what an
+ * admin can actually do (safety rule 5), so a stale "admin" here opens nothing.
+ */
+export function useMyRole(ask = true): string | null {
+  const stored = useStored<string>("role");
+  const [live, setLive] = useState<string | null>(null);
+  useEffect(() => {
+    if (!hasSession()) {
+      if (readStored("role") !== null) writeStored("role", null);
+      return;
+    }
+    if (!ask) return;
+    let cancelled = false;
+    getJson<{ role: string | null }>("/api/me/role").then(
+      (me) => {
+        if (cancelled) return;
+        writeStored("role", me.role);
+        setLive(me.role);
+      },
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [ask]);
+  return live ?? stored;
+}
+
 type StoredPlaces = { key: string; places: NearbyPlaces };
 
 /** The top safe places from a point, sent rounded to about 100 m. Kept on the phone for offline. */

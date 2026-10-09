@@ -4,6 +4,7 @@ import { IBM_Plex_Sans_Thai } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { AdminLink } from "@/components/AdminLink";
 import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
 import { DaylightTheme } from "@/components/DaylightTheme";
@@ -132,6 +133,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   >
                     {tNav("account")}
                   </Link>
+                  {/* Only an admin ever sees this one, and only in their own browser. */}
+                  <AdminLink />
                 </div>
                 {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
                 <div className="flex w-full items-center justify-between gap-x-1">

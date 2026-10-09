@@ -2,10 +2,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 import { hasLocale } from "next-intl";
 import { routing, type Locale } from "@/i18n/routing";
+import { isAdminRole, type Role } from "@/lib/roles";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
-export type Role = "user" | "authority" | "admin" | "super_admin";
+// Defined in lib/roles.ts, which a client component can import; re-exported here so the
+// pages and actions that already read the session keep one place to import from.
+export { isAdminRole, type Role };
 
 export type SessionProfile = {
   userId: string;
@@ -54,10 +57,6 @@ export function needsName(session: SessionProfile | null): boolean {
 export function setupPath(locale: string, back: string): string {
   const next = localePath(locale, back);
   return `${localePath(locale, "/account/setup")}?${new URLSearchParams({ next })}`;
-}
-
-export function isAdminRole(role: Role): boolean {
-  return role === "admin" || role === "super_admin";
 }
 
 /** Only same-site paths are followed after sign-in. */

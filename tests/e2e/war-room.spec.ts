@@ -134,6 +134,24 @@ test.describe("the board", () => {
   });
 
   /*
+   * The owner asked for "Admin" in the bar beside Home, Map and Account (10 Oct). It is drawn in
+   * the browser from the role, so it needs a real sign-in to appear at all.
+   */
+  test("an admin has Admin in the bar on every page, and a visitor has none", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-admin-link]")).toHaveCount(0);
+
+    await signIn(page);
+    for (const path of ["/", "/map", "/account"]) {
+      await page.goto(path);
+      await expect(page.locator("[data-admin-link]")).toHaveCount(1);
+    }
+    await page.locator("[data-admin-link]").click();
+    await expect(page).toHaveURL(/\/admin$/);
+    await expect(page.locator("main h1")).toHaveText(th.admin.title);
+  });
+
+  /*
    * In English the address carries the language, and next-intl's <Link> adds it: a path that
    * already had it gave /en/en/... and "page not found" on every tab but the one you were on
    * (the owner, 9 Oct). Tapping the tabs is the only thing that catches it.
