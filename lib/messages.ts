@@ -57,6 +57,11 @@ export function warRoomMessages(messages: AbstractIntlMessages): AbstractIntlMes
   };
 }
 
+/** The impact dashboard (spec 16): its own text only. */
+export function impactMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  return pick(messages, ["impact"]);
+}
+
 /**
  * The layout, on every page: the language switcher's text and the few lines the weather chip in
  * the header needs. The weather page's own text is not sent with it, so a page that nobody opens

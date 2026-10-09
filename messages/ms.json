@@ -633,7 +633,8 @@
       "home": "Utama",
       "authorities": "Semak pasukan",
       "invitations": "Pentadbir",
-      "warRoom": "Bilik gerakan"
+      "warRoom": "Bilik gerakan",
+      "impact": "Rekod bantuan"
     },
     "role": {
       "admin": "Pentadbir",
@@ -706,6 +707,11 @@
       "title": "Bilik gerakan",
       "note": "Gambaran kejadian, kes yang belum diambil, dan orang yang mendaftar",
       "open": "Buka bilik gerakan"
+    },
+    "impact": {
+      "title": "Rekod bantuan (contoh)",
+      "note": "Ringkasan bantuan yang Jaga sampaikan dan pasukan yang membantu. Angkanya masih rekaan.",
+      "open": "Buka rekod bantuan"
     }
   },
   "warRoom": {
@@ -915,6 +921,132 @@
       "forbidden": "Halaman ini untuk admin sahaja."
     }
   },
+  "impact": {
+    "title": "Rekod bantuan yang Jaga sampaikan",
+    "period": "Tempoh {from} – {to}",
+    "computed": "Dikira pada",
+    "bangkok": "(waktu Thai)",
+    "carriedNotSaved": "Jaga menyampaikan permintaan kepada pasukan; penyelamatan dilakukan oleh orang di lapangan. Angka di halaman ini ialah kerja pasukan dan organisasi itu.",
+    "casesWithPercent": "{count} kes ({percent}%)",
+    "example": {
+      "tag": "Contoh",
+      "title": "Halaman ini contoh sahaja. Semua angka adalah rekaan.",
+      "body": "Belum ada musim banjir yang Jaga lalui. Semua angka, pasukan dan nama organisasi di sini direka supaya reka bentuk halaman boleh dinilai dahulu. Tiada data daripada pangkalan data, dan halaman ini hanya untuk pentadbir."
+    },
+    "headline": {
+      "title": "Apa yang Jaga sampaikan musim ini",
+      "requests": "Permintaan yang sampai ke pasukan",
+      "requestsNote": "Permintaan yang sampai kepada sekurang-kurangnya satu pasukan penyelamat",
+      "rescues": "Penyelamatan yang disahkan pasukan",
+      "rescuesNote": "{percent}% daripada semua permintaan",
+      "people": "Orang yang dibantu",
+      "peopleNote": "{count} kes melibatkan orang yang memerlukan bantuan khas",
+      "teams": "Pasukan yang menerima kes",
+      "teamsNote": "Pasukan yang disahkan dan menerima sekurang-kurangnya satu kes"
+    },
+    "outcomes": {
+      "title": "Apa yang berlaku kepada setiap permintaan",
+      "note": "Yang berjaya dan yang tidak, dalam saiz yang sama",
+      "confirmed": "Pasukan sahkan penyelamatan",
+      "confirmedNote": "Ditutup dengan gambar dan pengesahan",
+      "unconfirmed": "Ditutup tanpa pengesahan",
+      "unconfirmedNote": "Pasukan kata sudah selamat, tetapi tiada pengesahan balas",
+      "cancelled": "Pemohon kata dia sudah selamat",
+      "cancelledNote": "Pemohon sendiri menekan “Saya sudah selamat”",
+      "noTeam": "Tiada pasukan menerima",
+      "noTeamNote": "Diserahkan kepada pentadbir untuk mencari pasukan sendiri",
+      "unanswered": "{percent}% permintaan tidak diterima sesiapa. Inilah angka yang perlu turun dahulu."
+    },
+    "waits": {
+      "title": "Berapa lama sebelum sebuah pasukan menerima",
+      "note": "Dikira seluruh wilayah, bukan mengikut pasukan, supaya ia tidak menjadi pertandingan kelajuan",
+      "under1": "Bawah 1 minit",
+      "to5": "1–5 minit",
+      "to15": "5–15 minit",
+      "to60": "15–60 minit",
+      "over60": "Lebih sejam",
+      "medianLongest": "Median {median} minit · paling lama {longest} minit"
+    },
+    "season": {
+      "title": "Sepanjang musim",
+      "note": "Setiap batang satu minggu; bahagian berwarna ialah kes yang pasukan sahkan",
+      "week": "Minggu mula",
+      "requests": "Permintaan",
+      "confirmed": "Disahkan",
+      "weekTip": "Minggu {week}: {requests} permintaan, {confirmed} disahkan",
+      "legendConfirmed": "Penyelamatan disahkan",
+      "legendRest": "Permintaan lain minggu itu",
+      "tableCaption": "Lihat sebagai jadual"
+    },
+    "provinces": {
+      "title": "Mengikut wilayah",
+      "note": "Permintaan, penyelamatan, bilangan pasukan dan kali aplikasi dibuka",
+      "value": "{requests} permintaan · {confirmed} disahkan",
+      "rowNote": "{teams} pasukan · aplikasi dibuka {opened} kali",
+      "tableCaption": "Lihat sebagai jadual",
+      "province": "Wilayah",
+      "teams": "Pasukan",
+      "opened": "Dibuka",
+      "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri dan menukar kod peranti setiap hari, jadi satu telefon tidak boleh diikut dari hari ke hari; tiada perkhidmatan analitik syarikat lain digunakan."
+    },
+    "province": {
+      "90": "Songkhla",
+      "94": "Patani",
+      "95": "Jala",
+      "96": "Menara"
+    },
+    "honours": {
+      "title": "Terima kasih kepada pasukan ini bulan ini",
+      "note": "Mengikut penyelamatan yang disahkan bulan ini. Hanya yang teratas; tiada senarai terbawah.",
+      "count": "{count} disahkan bulan ini"
+    },
+    "teams": {
+      "title": "Semua pasukan dan organisasi",
+      "note": "Mengikut wilayah dan nama, bukan mengikut pencapaian. Setiap kad dibandingkan dengan musim lalu pasukan itu sendiri, bukan dengan pasukan lain.",
+      "seasons": "{count} musim bersama",
+      "accepted": "Kes diterima",
+      "confirmed": "Disahkan",
+      "people": "Orang dibantu",
+      "upOnLast": "{count} lebih daripada musim lalu (+{percent}%)",
+      "downOnLast": "{count} kurang daripada musim lalu",
+      "firstSeason": "Musim pertama pasukan ini. Terima kasih kerana menyertai."
+    },
+    "capability": {
+      "rescue": "Penyelamatan",
+      "coordination": "Penyelarasan",
+      "planning": "Perancangan",
+      "support": "Sokongan"
+    },
+    "milestone": {
+      "firstAccepted": "Kes pertama diterima",
+      "firstRescue": "Penyelamatan pertama",
+      "accepted10": "10 kes diterima",
+      "people50": "50 orang dibantu",
+      "accepted25": "25 kes diterima",
+      "rescues25": "25 penyelamatan",
+      "accepted50": "50 kes diterima",
+      "people100": "100 orang dibantu",
+      "seasons2": "2 musim bersama Jaga",
+      "seasons3": "3 musim bersama Jaga"
+    },
+    "next": {
+      "accepted": "{count} lagi untuk mencapai {target} kes",
+      "confirmed": "{count} lagi untuk mencapai {target} penyelamatan",
+      "peopleReached": "{count} lagi untuk mencapai {target} orang"
+    },
+    "gaps": {
+      "title": "Mukim tanpa pasukan penyelamat",
+      "note": "Jika organisasi anda boleh meluaskan liputan ke sini, permintaan dari mukim ini akan terus ada yang menerima."
+    },
+    "limits": {
+      "title": "Apa yang halaman ini tidak tahu, dan peraturannya",
+      "outside": "Kebanyakan bantuan dalam banjir datang daripada jiran dan orang tempatan, dan itu sama sekali tidak ada dalam angka ini.",
+      "noRanking": "Tiada kedudukan pasukan dan tiada masa sambutan setiap pasukan didedahkan: pasukan yang jauh memang lebih lambat dan tidak patut kelihatan buruk.",
+      "noNames": "Kredit diberi kepada unit dan organisasi, bukan kepada individu.",
+      "grain": "Yang paling halus boleh diterbitkan ialah wilayah dan hari. Angka yang boleh menunjuk kepada satu rumah tidak diterbitkan.",
+      "later": "Selepas pelancaran, halaman umum berada di /impact (spesifikasi bahagian 16). Sekarang hanya pentadbir melihatnya."
+    }
+  },
   "devBrand": {
     "title": "Brand review",
     "note": "Development and preview only. Not available in production.",
@@ -950,7 +1082,8 @@
       "choose": "Belum pilih tempat",
       "offline": "Luar talian"
     },
-    "warRoomTitle": "Contoh: bilik gerakan"
+    "warRoomTitle": "Contoh: bilik gerakan",
+    "impactTitle": "Contoh: rekod bantuan"
   },
   "report": {
     "title": "Lapor banjir",

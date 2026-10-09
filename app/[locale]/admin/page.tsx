@@ -37,6 +37,13 @@ export default async function AdminHome({ params }: PageProps<"/[locale]/admin">
         </Link>
       </section>
       <section className={card}>
+        <h2 className="text-body font-bold">{t("impact.title")}</h2>
+        <p className={hint}>{t("impact.note")}</p>
+        <Link href="/admin/impact" className={buttonSecondary}>
+          {t("impact.open")}
+        </Link>
+      </section>
+      <section className={card}>
         <h2 className="text-body font-bold">{t("authorities.title")}</h2>
         <p>{t("authorities.pendingCount", { count: count ?? 0 })}</p>
         <Link href="/admin/authorities" className={buttonSecondary}>

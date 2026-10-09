@@ -633,7 +633,8 @@
       "home": "Home",
       "authorities": "Verify units",
       "invitations": "Admins",
-      "warRoom": "War room"
+      "warRoom": "War room",
+      "impact": "Impact"
     },
     "role": {
       "admin": "Admin",
@@ -706,6 +707,11 @@
       "title": "War room",
       "note": "What is happening, cases nobody has answered, and who has registered",
       "open": "Open the war room"
+    },
+    "impact": {
+      "title": "Impact record (example)",
+      "note": "What Jaga carried and which teams helped. The figures are still made up.",
+      "open": "Open the impact record"
     }
   },
   "warRoom": {
@@ -915,6 +921,132 @@
       "forbidden": "This page is for admins only."
     }
   },
+  "impact": {
+    "title": "The help Jaga carried",
+    "period": "{from} – {to}",
+    "computed": "Computed",
+    "bangkok": "(Bangkok)",
+    "carriedNotSaved": "Jaga carried requests to a team; the people on the ground did the rescues. Every figure on this page is their work.",
+    "casesWithPercent": "{count, plural, one {# case} other {# cases}} ({percent}%)",
+    "example": {
+      "tag": "Example",
+      "title": "This page is an example. Every figure is invented.",
+      "body": "Jaga has not been through a flood season yet. The numbers, the teams and the organisation names here are all made up so the design can be judged first. Nothing comes from the database, and only admins can see this page."
+    },
+    "headline": {
+      "title": "What Jaga carried this season",
+      "requests": "Requests carried to a team",
+      "requestsNote": "Requests that reached at least one rescue team",
+      "rescues": "Rescues the teams confirmed",
+      "rescuesNote": "{percent}% of all requests",
+      "people": "People reached",
+      "peopleNote": "{count, plural, one {# case} other {# cases}} involved someone needing special help",
+      "teams": "Teams that accepted",
+      "teamsNote": "Verified teams that accepted at least one case"
+    },
+    "outcomes": {
+      "title": "What became of every request",
+      "note": "The successes and the failures, in the same size type",
+      "confirmed": "The team confirmed a rescue",
+      "confirmedNote": "Closed with a photo and a confirmation",
+      "unconfirmed": "Closed without confirmation",
+      "unconfirmedNote": "The team said it was done, but nobody confirmed back",
+      "cancelled": "The requester said they were safe",
+      "cancelledNote": "They pressed “I'm safe now” themselves",
+      "noTeam": "No team accepted",
+      "noTeamNote": "Handed to the admins to find a team by phone",
+      "unanswered": "{percent}% of requests were accepted by nobody. That is the figure to bring down before any other."
+    },
+    "waits": {
+      "title": "How long until a team accepted",
+      "note": "Counted province-wide, never per team, so it cannot become a race",
+      "under1": "Under 1 minute",
+      "to5": "1–5 minutes",
+      "to15": "5–15 minutes",
+      "to60": "15–60 minutes",
+      "over60": "Over an hour",
+      "medianLongest": "Median {median} min · longest {longest} min"
+    },
+    "season": {
+      "title": "Through the season",
+      "note": "One bar per week; the coloured part is the cases a team confirmed",
+      "week": "Week of",
+      "requests": "Requests",
+      "confirmed": "Confirmed",
+      "weekTip": "Week of {week}: {requests} requests, {confirmed} confirmed",
+      "legendConfirmed": "Rescues confirmed",
+      "legendRest": "Other requests that week",
+      "tableCaption": "See the numbers"
+    },
+    "provinces": {
+      "title": "Province by province",
+      "note": "Requests, rescues, teams, and how often the app was opened",
+      "value": "{requests} requests · {confirmed} confirmed",
+      "rowNote": "{teams, plural, one {# team} other {# teams}} · app opened {opened} times",
+      "tableCaption": "See the numbers",
+      "province": "Province",
+      "teams": "Teams",
+      "opened": "Openings",
+      "usageNote": "Usage is counted per province per day. Jaga counts it with its own code and changes the device code every day, so one phone cannot be followed from day to day, and no outside analytics service is used."
+    },
+    "province": {
+      "90": "Songkhla",
+      "94": "Pattani",
+      "95": "Yala",
+      "96": "Narathiwat"
+    },
+    "honours": {
+      "title": "Teams to thank this month",
+      "note": "By rescues confirmed this month. A top only; there is no bottom of the list.",
+      "count": "{count} confirmed this month"
+    },
+    "teams": {
+      "title": "Every team and organisation",
+      "note": "By province and name, not by performance. Each card is compared with that team's own last season, never with another team.",
+      "seasons": "{count, plural, one {# season} other {# seasons}} in",
+      "accepted": "Cases accepted",
+      "confirmed": "Confirmed",
+      "people": "People reached",
+      "upOnLast": "{count} more than last season (+{percent}%)",
+      "downOnLast": "{count} fewer than last season",
+      "firstSeason": "This team's first season. Thank you for joining."
+    },
+    "capability": {
+      "rescue": "Rescue",
+      "coordination": "Coordination",
+      "planning": "Planning",
+      "support": "Support"
+    },
+    "milestone": {
+      "firstAccepted": "First case accepted",
+      "firstRescue": "First rescue",
+      "accepted10": "10 cases accepted",
+      "people50": "50 people reached",
+      "accepted25": "25 cases accepted",
+      "rescues25": "25 rescues",
+      "accepted50": "50 cases accepted",
+      "people100": "100 people reached",
+      "seasons2": "2 seasons with Jaga",
+      "seasons3": "3 seasons with Jaga"
+    },
+    "next": {
+      "accepted": "{count} more to reach {target} cases",
+      "confirmed": "{count} more to reach {target} rescues",
+      "peopleReached": "{count} more to reach {target} people"
+    },
+    "gaps": {
+      "title": "Tambons with no rescue team",
+      "note": "If your organisation can extend its coverage here, requests from these tambons would have someone to accept them."
+    },
+    "limits": {
+      "title": "What this page does not know, and the rules it follows",
+      "outside": "Most help in a flood comes from neighbours and local people, and none of that is in these figures.",
+      "noRanking": "No team is ranked and no team's response time is published: a team that is far away is slower, and should not be made to look worse for it.",
+      "noNames": "Credit goes to units and organisations, never to a named person.",
+      "grain": "Province and day are the finest grain published. A figure that could point at one household is not published.",
+      "later": "After launch the public version lives at /impact (spec section 16). For now only admins see it."
+    }
+  },
   "devBrand": {
     "title": "Brand review",
     "note": "Development and preview only. Not available in production.",
@@ -950,7 +1082,8 @@
       "choose": "No place chosen yet",
       "offline": "Offline"
     },
-    "warRoomTitle": "Example: the war room"
+    "warRoomTitle": "Example: the war room",
+    "impactTitle": "Example: the impact record"
   },
   "report": {
     "title": "Report flooding",
