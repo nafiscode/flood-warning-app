@@ -12,6 +12,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { Client } from "pg";
+import en from "../../messages/en.json";
 import th from "../../messages/th.json";
 
 function envValue(key: string): string | undefined {
@@ -130,6 +131,26 @@ test.describe("the board", () => {
     await page.goto("/admin/war-room?view=map");
     await expect(page.locator("[data-map]")).toBeVisible();
     await expect(page.getByText(th.warRoom.map.privacy)).toBeVisible();
+  });
+
+  /*
+   * In English the address carries the language, and next-intl's <Link> adds it: a path that
+   * already had it gave /en/en/... and "page not found" on every tab but the one you were on
+   * (the owner, 9 Oct). Tapping the tabs is the only thing that catches it.
+   */
+  test("every tab opens in English, with the language in the address exactly once", async ({
+    page,
+  }) => {
+    await signIn(page);
+    await page.goto("/en/admin/war-room");
+    for (const view of ["people", "map", "cases"]) {
+      await page.locator(`a[href*="view=${view}"]`).first().click();
+      // Exact, not a glob: "**/en/admin/war-room" would happily match /en/en/admin/war-room.
+      await page.waitForURL(
+        (url) => url.pathname === "/en/admin/war-room" && url.search === `?view=${view}`,
+      );
+      await expect(page.locator("main h1")).toHaveText(en.warRoom.title);
+    }
   });
 });
 

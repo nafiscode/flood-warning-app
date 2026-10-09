@@ -3,7 +3,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { WarRoom, type WarRoomView } from "@/components/admin/WarRoom";
 import type { CasePanels } from "@/components/admin/WarRoomCases";
-import { localePath } from "@/lib/auth";
 import {
   readBoard,
   readHistory,
@@ -36,6 +35,13 @@ export async function generateMetadata({
 export const dynamic = "force-dynamic";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * The route without a language prefix: the links in the war room are next-intl <Link>s, which
+ * add the language themselves. Giving them an already-prefixed path produced /en/en/... and a
+ * "page not found" in every language but Thai, where the default locale has no prefix at all.
+ */
+const PATH = "/admin/war-room";
 
 const one = (value: string | string[] | undefined): string =>
   typeof value === "string" ? value : "";
@@ -101,7 +107,7 @@ export default async function WarRoomPage({
           form,
         }}
         personReveal={person ? { userId: person, phone: personPhone } : null}
-        path={localePath(locale, "/admin/war-room")}
+        path={PATH}
         pollUrl="/api/admin/war-room"
         actions={{
           assign: assignCase.bind(null, locale),

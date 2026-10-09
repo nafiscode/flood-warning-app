@@ -283,3 +283,50 @@ describe("the war room on screen", () => {
     expect(container.querySelectorAll('[aria-disabled="true"]').length).toBeGreaterThan(5);
   });
 });
+
+describe("the links out of the war room", () => {
+  /*
+   * The page passes the route without a language prefix, because next-intl's <Link> adds it.
+   * Giving it an already-prefixed path produced /en/en/... and "page not found" in every
+   * language but Thai, where the default locale has no prefix (seen by the owner, 9 Oct).
+   */
+  const withPath = (locale: "th" | "en") =>
+    renderWithIntl(
+      <WarRoom
+        initial={EXAMPLE_BOARD}
+        view="cases"
+        people={EXAMPLE_PEOPLE}
+        mapData={EXAMPLE_MAP_DATA}
+        panels={{ reveal: null, assign: null, history: null, form: null }}
+        personReveal={null}
+        path="/admin/war-room"
+        pollUrl={null}
+        actions={null}
+        done={null}
+        error={null}
+      />,
+      locale,
+    );
+
+  const ownLinks = (container: HTMLElement) =>
+    [...container.querySelectorAll("a")]
+      .map((a) => a.getAttribute("href") ?? "")
+      .filter((href) => href.includes("/admin/war-room"));
+
+  it("carry the language exactly once, in English", () => {
+    const { container } = withPath("en");
+    const links = ownLinks(container);
+    expect(links.length).toBeGreaterThan(3);
+    for (const href of links) {
+      expect(href, href).toMatch(/^\/en\/admin\/war-room(\?|$)/);
+      expect(href, href).not.toContain("/en/en/");
+    }
+  });
+
+  it("carry no prefix at all in Thai, the language without one", () => {
+    const { container } = withPath("th");
+    const links = ownLinks(container);
+    expect(links.length).toBeGreaterThan(3);
+    for (const href of links) expect(href, href).toMatch(/^\/admin\/war-room(\?|$)/);
+  });
+});

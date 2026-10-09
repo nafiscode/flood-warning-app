@@ -43,7 +43,9 @@ export function WarRoomPeople({ page, watched, reveal, path }: Props) {
   return (
     <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start lg:gap-6">
       <div className="flex flex-col gap-4">
-        <form action={path ?? undefined} className="flex flex-col gap-2 sm:flex-row">
+        {/* No action: a GET form submits to the address it is on, which already has the
+            language in it. The hidden field keeps the tab. */}
+        <form className="flex flex-col gap-2 sm:flex-row">
           <input type="hidden" name="view" value="people" />
           <label className="sr-only" htmlFor="people-search">
             {t("people.search")}
