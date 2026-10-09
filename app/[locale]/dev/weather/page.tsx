@@ -52,7 +52,7 @@ export default async function WeatherExamples({
           </li>
         </ul>
       </header>
-      <p className="rounded-xl border-2 border-dashed border-jaga-slate px-4 py-2 text-center font-bold">
+      <p className="rounded-xl border-2 border-dashed border-jaga-edge px-4 py-2 text-center font-bold">
         {t("example")}
       </p>
       <NextIntlClientProvider messages={weatherMessages(await getMessages())}>

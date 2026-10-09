@@ -50,7 +50,7 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={notice}>{t("visitorNote")}</p>
       {error && (
         <p role="alert" className={errorNotice}>

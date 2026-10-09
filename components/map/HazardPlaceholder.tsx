@@ -17,7 +17,7 @@ export function HazardPlaceholder({ hazard }: { hazard: Hazard }) {
   const locale = useLocale();
   return (
     <section className={card} data-hazard-placeholder={hazard.code}>
-      <h2 className="text-h3 font-bold text-jaga-slate">
+      <h2 className="text-h3 font-bold text-jaga-ink">
         {localName(hazard.name, locale)}
         <span className={`block font-normal ${hint}`}>{t("comingSoon")}</span>
       </h2>

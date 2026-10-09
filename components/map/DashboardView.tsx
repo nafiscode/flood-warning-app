@@ -53,8 +53,8 @@ export type DashboardViewProps = {
 
 const chip =
   "inline-flex min-h-tap items-center gap-2 rounded-full border-2 px-4 py-1 font-medium active:translate-y-px";
-const chipOn = "border-jaga-slate bg-jaga-slate text-white";
-const chipOff = "border-jaga-slate bg-jaga-surface text-jaga-slate";
+const chipOn = "border-jaga-edge bg-jaga-slate text-white";
+const chipOff = "border-jaga-edge bg-jaga-surface text-jaga-ink";
 /*
  * A hazard that is not the chosen one takes less room on a phone or tablet (the owner's note, 9
  * Oct): every hazard but floods is still "coming soon", and the switcher was eating the top of
@@ -280,7 +280,7 @@ export function DashboardView(props: DashboardViewProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
 
       {props.transparency && (
         <div role="tablist" aria-label={t("tabs.label")} className="flex gap-2">
@@ -466,9 +466,9 @@ export function DashboardView(props: DashboardViewProps) {
                           aria-hidden="true"
                           className={
                             layer === "gauges"
-                              ? "size-4 shrink-0 rounded-full border-4 border-jaga-slate bg-white"
+                              ? "size-4 shrink-0 rounded-full border-4 border-jaga-edge bg-white"
                               : layer === "reports"
-                                ? "size-4 shrink-0 border-2 border-jaga-slate bg-jaga-slate/40"
+                                ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
                                 : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
                           }
                         />

@@ -104,7 +104,7 @@ export function ReportForm() {
     return (
       <section className="flex flex-col gap-4" data-report-state={state}>
         <div className={notice}>
-          <h1 className="text-h3 font-bold text-jaga-slate">
+          <h1 className="text-h3 font-bold text-jaga-ink">
             {queued ? t("queuedTitle") : t("sentTitle")}
           </h1>
           <p className="mt-2">{queued ? t("queuedBody") : t("sentBody")}</p>
@@ -133,7 +133,7 @@ export function ReportForm() {
 
   return (
     <section className="flex flex-col gap-4" data-report-state={state}>
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p>{t("intro")}</p>
       <p className={notice}>
         {t("notEmergency")}{" "}

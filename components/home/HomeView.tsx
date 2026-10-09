@@ -141,7 +141,7 @@ export function HomeView(props: HomeViewProps) {
           </section>
         ) : !home || choosing ? (
           <section data-hero="choose" className={card}>
-            <h2 className="text-h3 font-bold text-jaga-slate">{t("area.chooseTitle")}</h2>
+            <h2 className="text-h3 font-bold text-jaga-ink">{t("area.chooseTitle")}</h2>
             <p>{t("area.chooseBody")}</p>
             <AreaChooser
               onChoose={(area) => {

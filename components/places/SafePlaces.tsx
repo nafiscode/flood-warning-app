@@ -14,7 +14,7 @@ export function SafePlaces({ places, state, userAgent }: Props) {
   const t = useTranslations("places");
   return (
     <section className="flex flex-col gap-3" data-safe-places={state}>
-      <h2 className="text-h3 font-bold text-jaga-slate">{t("title")}</h2>
+      <h2 className="text-h3 font-bold text-jaga-ink">{t("title")}</h2>
       {!places && <p className={hint}>{t(state === "unavailable" ? "unavailable" : "loading")}</p>}
       {places && places.people.length === 0 && <p className={notice}>{t("none")}</p>}
       {places?.people.map((place) => (
@@ -22,7 +22,7 @@ export function SafePlaces({ places, state, userAgent }: Props) {
       ))}
       {places && places.parking.length > 0 && (
         <>
-          <h2 className="text-h3 font-bold text-jaga-slate">{t("parkingTitle")}</h2>
+          <h2 className="text-h3 font-bold text-jaga-ink">{t("parkingTitle")}</h2>
           {places.parking.map((place) => (
             <SafePlaceCard key={place.id} place={place} userAgent={userAgent} />
           ))}

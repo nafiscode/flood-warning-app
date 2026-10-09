@@ -56,7 +56,7 @@ export function WorseBanner({ item, now }: { item: WatchedStatus; now: number })
   return (
     <section
       data-worse-place={place.id}
-      className="flex flex-col gap-3 rounded-2xl border-4 border-jaga-slate bg-jaga-surface p-4"
+      className="flex flex-col gap-3 rounded-2xl border-4 border-jaga-edge bg-jaga-surface p-4"
     >
       <h2 className="text-body font-bold">
         {place.label}

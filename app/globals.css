@@ -3,6 +3,8 @@
 /* Jaga tokens (docs/brand.md). Keep in sync with lib/brand/tokens.ts; a unit test checks it. */
 :root {
   --jaga-slate: #1d3b53;
+  --jaga-ink: #1d3b53;
+  --jaga-edge: #1d3b53;
   --jaga-teal: #2f9c95;
   --jaga-teal-ink: #1f7a74;
   --jaga-teal-light: #7fd1c9;
@@ -28,8 +30,32 @@
   --sos-fg: #ffffff;
 }
 
+/*
+ * After sunset (the owner's note, 9 Oct). Set by the clock, never by a switch: see lib/sun.ts
+ * and components/DaylightTheme.tsx. Only the brand tokens move; the alert palette keeps exactly
+ * the colours it has by day, because those mean a level (docs/brand.md) and every badge brings
+ * its own background with it.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --jaga-slate: #1f3c56;
+  --jaga-ink: #eaf1f4;
+  --jaga-edge: #7fa3b5;
+  --jaga-teal: #35b3aa;
+  --jaga-teal-ink: #7fd1c9;
+  --jaga-teal-light: #a9e3dc;
+  --jaga-ground: #0f1c26;
+  --jaga-surface: #16242f;
+  --jaga-text: #e6edf1;
+  --jaga-text-2: #a8bcc6;
+  --jaga-line: #2c4150;
+}
+
 @theme inline {
   --color-jaga-slate: var(--jaga-slate);
+  --color-jaga-ink: var(--jaga-ink);
+  --color-jaga-edge: var(--jaga-edge);
   --color-jaga-teal: var(--jaga-teal);
   --color-jaga-teal-ink: var(--jaga-teal-ink);
   --color-jaga-teal-light: var(--jaga-teal-light);
@@ -75,7 +101,8 @@
 }
 
 html {
-  /* Light theme only in the MVP: more readable outdoors in bright sun (docs/brand.md). */
+  /* Light by day, dark after sunset (the owner's note, 9 Oct, superseding "light only" in
+     docs/brand.md). The clock decides: components/DaylightTheme.tsx sets data-theme. */
   color-scheme: light;
   -webkit-text-size-adjust: 100%;
 }

@@ -57,7 +57,7 @@ export default async function AdminInvitations({
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("invitations.title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("invitations.title")}</h1>
       {error && (
         <p role="alert" className={errorNotice}>
           {t(`invitations.error.${error}`)}

@@ -83,7 +83,7 @@ export default async function AuthorityRegister({
   return (
     <form action={registerAuthority} className="flex flex-col gap-5">
       <input type="hidden" name="locale" value={locale} />
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={notice}>{t("intro")}</p>
       {error && (
         <p role="alert" className={errorNotice}>

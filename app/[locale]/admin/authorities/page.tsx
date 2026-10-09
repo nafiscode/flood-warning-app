@@ -107,7 +107,7 @@ export default async function AdminAuthorities({
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("authorities.title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("authorities.title")}</h1>
       {query.error === "call" && (
         <p role="alert" className={errorNotice}>
           {t("authorities.error.call")}

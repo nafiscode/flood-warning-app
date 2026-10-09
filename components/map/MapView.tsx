@@ -7,6 +7,8 @@ import type { MapLayer } from "@/lib/hazards";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
 import {
   createServiceAreaMap,
+  mapHalo,
+  mapInk,
   SERVICE_BOUNDS,
   TAMBON_FILL_LAYER,
   TAMBON_LINE_LAYER,
@@ -67,8 +69,12 @@ type Props = {
   text: { loading: string; failed: string };
 };
 
-// Brand slate (docs/brand.md): places, reports and gauges carry no status color.
-const SLATE = "#1d3b53";
+/*
+ * Brand slate by day (docs/brand.md): places, reports and gauges carry no status colour. After
+ * sunset the same marks are drawn light, against the dark basemap (lib/map.ts).
+ */
+const ink = () => mapInk();
+const halo = () => mapHalo();
 const ALERT_FILL = "jaga-alert-fill";
 const ALERT_STALE = "jaga-alert-stale";
 const REPORTS = "jaga-reports";
@@ -174,7 +180,7 @@ export function MapView({
               type: "fill",
               source: REPORTS,
               paint: {
-                "fill-color": SLATE,
+                "fill-color": ink(),
                 "fill-opacity": ["interpolate", ["linear"], ["get", "count"], 1, 0.3, 10, 0.7],
               },
             },
@@ -184,7 +190,7 @@ export function MapView({
             id: REPORTS_LINE,
             type: "line",
             source: REPORTS,
-            paint: { "line-color": SLATE, "line-width": 1.5 },
+            paint: { "line-color": ink(), "line-width": 1.5 },
           });
         }
         if (!m.getLayer(ALERT_STALE)) {
@@ -203,8 +209,8 @@ export function MapView({
             source: PLACES,
             paint: {
               "circle-radius": 7,
-              "circle-color": SLATE,
-              "circle-stroke-color": "#ffffff",
+              "circle-color": ink(),
+              "circle-stroke-color": halo(),
               "circle-stroke-width": 2,
             },
           });
@@ -216,8 +222,8 @@ export function MapView({
             source: GAUGES,
             paint: {
               "circle-radius": 6,
-              "circle-color": "#ffffff",
-              "circle-stroke-color": SLATE,
+              "circle-color": halo(),
+              "circle-stroke-color": ink(),
               "circle-stroke-width": 3,
             },
           });
@@ -264,10 +270,10 @@ export function MapView({
               "text-ignore-placement": true,
             },
             paint: {
-              "text-color": SLATE,
+              "text-color": ink(),
               // A white outline keeps the name readable over the basemap and over a coloured
               // tambon, without a box that would cover the map.
-              "text-halo-color": "#ffffff",
+              "text-halo-color": halo(),
               "text-halo-width": 1.8,
             },
           });

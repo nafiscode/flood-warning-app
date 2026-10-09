@@ -147,7 +147,7 @@ export function SendSOS({ projectLine, place }: Props) {
     return (
       <section className="flex flex-col gap-4" data-sos-state={phase}>
         <div className={notice}>
-          <h1 className="text-h3 font-bold text-jaga-slate">
+          <h1 className="text-h3 font-bold text-jaga-ink">
             {failed ? t("sent.failedTitle") : t("sent.queuedTitle")}
           </h1>
           <p className="mt-2">{failed ? t("sent.failedBody") : t("sent.queuedBody")}</p>
@@ -170,7 +170,7 @@ export function SendSOS({ projectLine, place }: Props) {
 
   return (
     <section className="flex flex-col gap-4" data-sos-state="ready" data-sos-live={live}>
-      <h1 className="text-h3 font-bold text-jaga-slate">
+      <h1 className="text-h3 font-bold text-jaga-ink">
         {place ? t("forPlace.title", { place: place.label }) : t("title")}
       </h1>
       <p>{t("intro")}</p>
@@ -249,7 +249,7 @@ export function SendSOS({ projectLine, place }: Props) {
             onChange={(event) => setPhone(event.target.value)}
             className={input}
           />
-          <span className="font-medium text-jaga-slate">{t("phoneHint")}</span>
+          <span className="font-medium text-jaga-ink">{t("phoneHint")}</span>
         </label>
         {place && (
           <>

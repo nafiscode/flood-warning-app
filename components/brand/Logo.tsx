@@ -56,7 +56,7 @@ export function Logo({
 
   // Cap height of IBM Plex Sans Thai is about 0.7 em, so 1.7 × cap height ≈ 1.19 em.
   const wordmarkPx = layout === "horizontal" ? size / 1.19 : size * 0.55;
-  const textColor = tone === "reverse" ? "text-white" : "text-jaga-slate";
+  const textColor = tone === "reverse" ? "text-white" : "text-jaga-ink";
 
   return (
     <span

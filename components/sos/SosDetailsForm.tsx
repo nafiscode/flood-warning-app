@@ -92,7 +92,7 @@ export function SosDetailsForm({ id, token }: Props) {
 
   return (
     <div className={card} data-sos-details={state}>
-      <h2 className="text-h3 font-bold text-jaga-slate">{t("details.title")}</h2>
+      <h2 className="text-h3 font-bold text-jaga-ink">{t("details.title")}</h2>
       <p>{t("details.intro")}</p>
 
       <label className="flex flex-col gap-2">

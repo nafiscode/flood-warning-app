@@ -153,7 +153,7 @@ export function CaseStatus({ id, merged }: Props) {
     const others = (cases ?? []).filter((c) => c.id !== id);
     return (
       <section className="flex flex-col gap-4" data-case-state="unknown">
-        <h1 className="text-h3 font-bold text-jaga-slate">{t("status.title")}</h1>
+        <h1 className="text-h3 font-bold text-jaga-ink">{t("status.title")}</h1>
         <p className={notice}>{t("status.notFound")}</p>
         {others.length > 0 && (
           <Link href={`/sos/${others[0]!.id}`} className={buttonSecondary}>
@@ -170,13 +170,13 @@ export function CaseStatus({ id, merged }: Props) {
 
   return (
     <section className="flex flex-col gap-4" data-case-state={timeline?.status ?? "unknown"}>
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("status.title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("status.title")}</h1>
       {merged && <p className={notice}>{t("sent.merged")}</p>}
       {!merged && <p>{t("sent.body")}</p>}
 
       {timeline && (
         <div className={card}>
-          <p className="text-h3 font-bold text-jaga-slate" data-case-status={timeline.status}>
+          <p className="text-h3 font-bold text-jaga-ink" data-case-status={timeline.status}>
             {timeline.status === "assigned" && timeline.unitName
               ? t("status.assigned", { unit: timeline.unitName })
               : t(`status.${timeline.status}`)}

@@ -62,7 +62,7 @@ export default async function WatchedPlace({
       <form action={savePlace} className="flex flex-col gap-5">
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="id" value={place?.id ?? ""} />
-        <h1 className="text-h3 font-bold text-jaga-slate">{t(place ? "editTitle" : "addTitle")}</h1>
+        <h1 className="text-h3 font-bold text-jaga-ink">{t(place ? "editTitle" : "addTitle")}</h1>
         {error && (
           <p role="alert" className={errorNotice}>
             {t(`error.${error}`)}
@@ -168,7 +168,7 @@ export default async function WatchedPlace({
             <input type="hidden" name="id" value={place.id} />
             <button
               type="submit"
-              className="inline-flex min-h-tap w-full items-center justify-center rounded-xl border-2 border-jaga-slate bg-jaga-surface px-5 py-2 font-bold text-jaga-slate"
+              className="inline-flex min-h-tap w-full items-center justify-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-5 py-2 font-bold text-jaga-ink"
             >
               {t("deleteConfirm")}
             </button>

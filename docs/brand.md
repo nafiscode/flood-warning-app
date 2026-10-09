@@ -88,7 +88,11 @@ Implement these as CSS variables and a Tailwind theme. The brand colors must nev
 
 No eye icons anywhere in the UI, and no umbrella icons: the umbrella appears only in the logo.
 
-The MVP ships a light theme only, because it is more readable outdoors in bright sun. Dark mode comes later.
+**Light by day, dark after sunset** (owner, 9 October 2026; this supersedes "light theme only" in the MVP). The clock decides and there is nothing to switch: the app works out sunrise and sunset for the area the person chose (`lib/sun.ts`) and sets a dark palette between them. Daylight keeps the light theme, which is what reads outdoors in bright sun; after dark a lit white screen is the wrong thing to hold in a flood at night.
+
+The dark values are in `lib/brand/tokens.ts` (`darkBrand`) and mirrored in `app/globals.css` under `:root[data-theme="dark"]`; a test checks the two agree and that every pair passes contrast. Two roles the slate used to play alone are now separate tokens, equal in the light theme and different after dark: `--jaga-ink` for headings and strong words, `--jaga-edge` for the outline of a button or chip, while `--jaga-slate` stays the filled navy of the header and the primary button.
+
+**The alert palette does not change between the themes.** Those colours mean a level, each badge carries its own background, and both pairs already pass contrast on either page colour.
 
 ## Typography
 - **Family:** IBM Plex Sans Thai, weights 400, 500 and 700. It covers Thai and Latin, which is enough for Thai, Rumi Malay and English.

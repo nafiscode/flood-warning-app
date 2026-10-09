@@ -22,7 +22,7 @@ export function mineLabel(place: MinePlace): HTMLElement {
     const call = document.createElement("a");
     call.href = `tel:${place.call.tel}`;
     call.className =
-      "mt-1 inline-flex min-h-tap items-center justify-center gap-2 rounded-xl border-2 border-jaga-slate px-3 py-1 font-medium text-jaga-slate";
+      "mt-1 inline-flex min-h-tap items-center justify-center gap-2 rounded-xl border-2 border-jaga-edge px-3 py-1 font-medium text-jaga-ink";
     call.textContent = `${place.call.label} · ${place.call.tel}`;
     box.append(call);
   }

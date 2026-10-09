@@ -6,11 +6,13 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
+import { DaylightTheme } from "@/components/DaylightTheme";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { QueueRunner } from "@/components/QueueRunner";
 import { WeatherChip } from "@/components/weather/WeatherChip";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { DAYLIGHT_SCRIPT } from "@/lib/theme-script";
 import { layoutMessages } from "@/lib/messages";
 import "../globals.css";
 
@@ -45,7 +47,12 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
 }
 
 export const viewport: Viewport = {
-  themeColor: "#1D3B53",
+  // The phone's own bars follow the app: brand slate by day, the night slate after sunset.
+  // The browser picks by the colour scheme the page declares (app/globals.css).
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#1D3B53" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F1C26" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
@@ -63,6 +70,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     // scroll-pt-28: an anchor such as #main scrolls to just below the frozen header.
     <html lang={locale} dir="ltr" className={`${plex.variable} scroll-pt-28`}>
       <body className="flex min-h-dvh flex-col">
+        {/* Before anything is painted: the colours of the app follow the sun, not a switch. */}
+        <script dangerouslySetInnerHTML={{ __html: DAYLIGHT_SCRIPT }} />
         {/*
           reloadOnOnline is off: Serwist reloads the page by default when the connection returns,
           which on the SOS screens would throw away what someone is in the middle of (a typed
@@ -148,6 +157,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               <HotlineBar />
             </footer>
             <QueueRunner />
+            <DaylightTheme />
           </NextIntlClientProvider>
         </SerwistProvider>
       </body>

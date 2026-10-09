@@ -27,7 +27,7 @@ export default async function AdminHome({ params }: PageProps<"/[locale]/admin">
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={hint}>{t("signedInAs", { name: session?.displayName ?? "" })}</p>
       <section className={card}>
         <h2 className="text-body font-bold">{t("authorities.title")}</h2>

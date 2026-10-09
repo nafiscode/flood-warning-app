@@ -53,7 +53,7 @@ export default async function WatchedPlaces({
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p>{t("intro")}</p>
       {done && (
         <p role="status" className={notice}>

@@ -50,7 +50,7 @@ export default async function ReportPage({ params }: PageProps<"/[locale]/report
   if (!profile) {
     return (
       <section className="flex flex-col gap-4" data-report-state="signIn">
-        <h1 className="text-h3 font-bold text-jaga-slate">{t("signInTitle")}</h1>
+        <h1 className="text-h3 font-bold text-jaga-ink">{t("signInTitle")}</h1>
         <p>{t("signInBody")}</p>
         <Link href="/sign-in" className={buttonPrimary}>
           {t("signIn")}

@@ -3,8 +3,21 @@ import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
 /** The four covered provinces, with a little margin: [west, south, east, north]. */
 export const SERVICE_BOUNDS: [number, number, number, number] = [99.95, 5.55, 102.25, 8.0];
 
-/** OpenFreeMap: free, no API key (CLAUDE.md, Maps). */
+/** OpenFreeMap: free, no API key (CLAUDE.md, Maps). Positron by day, its dark twin at night. */
 const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+const BASEMAP_STYLE_DARK = "https://tiles.openfreemap.org/styles/dark";
+
+/** True once the page has turned dark for the night (components/DaylightTheme.tsx). */
+export function darkNow(): boolean {
+  return typeof document !== "undefined" && document.documentElement.dataset.theme === "dark";
+}
+
+/**
+ * The colours our own layers draw with. At night the outlines and dots turn light, or they
+ * would disappear into the dark basemap; the alert colours of the tambons never change.
+ */
+export const mapInk = () => (darkNow() ? "#cfe0e8" : "#1d3b53");
+export const mapHalo = () => (darkNow() ? "#0f1c26" : "#ffffff");
 
 export const TAMBON_SOURCE = "jaga-tambons";
 export const TAMBONS_URL = "/api/geo/tambons";
@@ -14,8 +27,9 @@ const BOUNDARY_CREDIT = "Boundaries: Royal Thai Survey Department via OCHA (CC B
 const SLATE = "#1d3b53";
 const TEAL = "#2f9c95";
 const GROUND = "#f0f2ee";
+const GROUND_DARK = "#0f1c26";
 
-const START_STYLE: StyleSpecification = {
+const startStyle = (dark: boolean): StyleSpecification => ({
   version: 8,
   // The same free font server the basemap uses, so our own labels can be drawn before (and
   // without) the basemap. No key, same host as the tiles.
@@ -24,7 +38,11 @@ const START_STYLE: StyleSpecification = {
     [TAMBON_SOURCE]: { type: "geojson", data: TAMBONS_URL, attribution: BOUNDARY_CREDIT },
   },
   layers: [
-    { id: "jaga-ground", type: "background", paint: { "background-color": GROUND } },
+    {
+      id: "jaga-ground",
+      type: "background",
+      paint: { "background-color": dark ? GROUND_DARK : GROUND },
+    },
     {
       id: "jaga-tambon-fill",
       type: "fill",
@@ -42,10 +60,14 @@ const START_STYLE: StyleSpecification = {
       id: "jaga-tambon-line",
       type: "line",
       source: TAMBON_SOURCE,
-      paint: { "line-color": SLATE, "line-width": 0.8, "line-opacity": 0.6 },
+      paint: {
+        "line-color": dark ? "#cfe0e8" : SLATE,
+        "line-width": 0.8,
+        "line-opacity": dark ? 0.5 : 0.6,
+      },
     },
   ],
-};
+});
 
 /** Roughly each covered province, for the map's province selector: [west, south, east, north]. */
 export const PROVINCE_BOUNDS: Record<string, [number, number, number, number]> = {
@@ -70,7 +92,7 @@ export async function createServiceAreaMap(container: HTMLElement): Promise<MapL
   maplibre.setWorkerUrl(`/vendor/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`);
   const map = new maplibre.Map({
     container,
-    style: START_STYLE,
+    style: startStyle(darkNow()),
     bounds: SERVICE_BOUNDS,
     fitBoundsOptions: { padding: 8 },
     maxBounds: [
@@ -90,7 +112,7 @@ export async function createServiceAreaMap(container: HTMLElement): Promise<MapL
     credits?.classList.remove("maplibregl-compact-show");
     credits?.removeAttribute("open");
     // Put the basemap under our layers, keeping whatever is selected at that moment.
-    map.setStyle(BASEMAP_STYLE, {
+    map.setStyle(darkNow() ? BASEMAP_STYLE_DARK : BASEMAP_STYLE, {
       transformStyle: (previous, next) => {
         if (!previous) return next;
         const own = previous.layers.filter(

@@ -43,7 +43,7 @@ export default async function AccountSetup({
     <form action={saveProfile} className="flex flex-col gap-5">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="next" value={next} />
-      <h1 className="text-h3 font-bold text-jaga-slate">{t("setup.title")}</h1>
+      <h1 className="text-h3 font-bold text-jaga-ink">{t("setup.title")}</h1>
       <p>{t("setup.intro")}</p>
       {error && (
         <p role="alert" className={errorNotice}>

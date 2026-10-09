@@ -16,7 +16,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-h3 font-bold text-jaga-slate">{title}</h2>
+      <h2 className="text-h3 font-bold text-jaga-ink">{title}</h2>
       {children}
     </section>
   );
