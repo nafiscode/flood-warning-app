@@ -1095,7 +1095,8 @@
       "awaiting": "Awaiting confirmation",
       "stale": "Old figures",
       "none": "No figures"
-    }
+    },
+    "damScenarioLabel": "The dam's state"
   },
   "report": {
     "title": "Report flooding",
@@ -1334,7 +1335,8 @@
       },
       "observed": "Figures for {time}",
       "age": "about {hours, plural, one {# hour} other {# hours}} ago",
-      "stale": "These figures are older than usual. The dam may not have published a newer reading."
+      "stale": "These figures are older than usual. The dam may not have published a newer reading.",
+      "ageRecent": "less than an hour ago"
     },
     "notice": {
       "awaiting": {

@@ -20,6 +20,7 @@ export default async function DamExamplePage({ params }: PageProps<"/[locale]/de
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("devHome");
+  const messages = await getMessages();
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
@@ -32,7 +33,8 @@ export default async function DamExamplePage({ params }: PageProps<"/[locale]/de
       <p className="rounded-xl border-2 border-dashed border-jaga-edge px-4 py-2 text-center font-bold">
         {t("example")}
       </p>
-      <NextIntlClientProvider messages={mapMessages(await getMessages())}>
+      {/* The scenario switcher is drawn in the browser, so its own words go with it. */}
+      <NextIntlClientProvider messages={{ ...mapMessages(messages), devHome: messages.devHome }}>
         <DamExample />
       </NextIntlClientProvider>
     </div>

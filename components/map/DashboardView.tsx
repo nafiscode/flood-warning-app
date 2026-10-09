@@ -295,7 +295,7 @@ export function DashboardView(props: DashboardViewProps) {
     ) : null;
   } else if (selection?.kind === "dam") {
     const dam = dams.find((d) => d.code === selection.code);
-    selected = dam ? <DamCard dam={dam} /> : null;
+    selected = dam ? <DamCard dam={dam} now={now} /> : null;
   } else if (selection?.kind === "gauge") {
     const gauge = data?.gauges.find((g) => g.id === selection.id);
     selected = gauge ? (
@@ -412,6 +412,7 @@ export function DashboardView(props: DashboardViewProps) {
                   dam={dam}
                   via={hit.via}
                   tambonName={tambonName(hit.code)}
+                  now={now}
                 />
               ))}
 

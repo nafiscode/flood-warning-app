@@ -165,7 +165,13 @@ export function HomeView(props: HomeViewProps) {
          * hero below it is still what says what level their tambon is at.
          */}
         {damsOnMyPath.map(({ dam, hit }) => (
-          <DamNotice key={dam.code} dam={dam} via={hit.via} tambonName={areaNameOf(hit.code)} />
+          <DamNotice
+            key={dam.code}
+            dam={dam}
+            via={hit.via}
+            tambonName={areaNameOf(hit.code)}
+            now={now}
+          />
         ))}
 
         {loading ? (

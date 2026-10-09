@@ -197,7 +197,7 @@ export function DamExample() {
   const dam: Dam | null = base ? { ...base, signal: exampleDamSignal(scenario) } : null;
   return (
     <div className="flex flex-col gap-4">
-      <div role="group" aria-label={t("scenario")} className="flex flex-wrap gap-2">
+      <div role="group" aria-label={t("damScenarioLabel")} className="flex flex-wrap gap-2">
         {DAM_SCENARIOS.map((name) => (
           <button
             key={name}
@@ -218,7 +218,7 @@ export function DamExample() {
       {state === "unavailable" && <p>{tDam("figures.none")}</p>}
       {dam && (
         <>
-          <DamNotice dam={dam} via="main" tambonName={BANA.nameTh} />
+          <DamNotice dam={dam} via="main" tambonName={BANA.nameTh} now={EXAMPLE_NOW} />
           <MapView
             layers={[]}
             status={null}
@@ -233,7 +233,7 @@ export function DamExample() {
               outlet: tDam("mark.outlet"),
             }}
           />
-          <DamCard dam={dam} />
+          <DamCard dam={dam} now={EXAMPLE_NOW} />
         </>
       )}
     </div>

@@ -151,14 +151,24 @@ describe("what the app says of its own accord", () => {
 describe("the notice is not an alert", () => {
   it("says in words that it is not an alert from Jaga", () => {
     const { getByText } = renderWithIntl(
-      <DamNotice dam={withSignal(exampleDamSignal("releasing"))} via="main" tambonName="บานา" />,
+      <DamNotice
+        dam={withSignal(exampleDamSignal("releasing"))}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
     );
     expect(getByText(th.dam.disclaimer.notAnAlert)).toBeTruthy();
   });
 
   it("carries no alert or SOS colour anywhere", () => {
     const { container } = renderWithIntl(
-      <DamNotice dam={withSignal(exampleDamSignal("releasing"))} via="main" tambonName="บานา" />,
+      <DamNotice
+        dam={withSignal(exampleDamSignal("releasing"))}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
     );
     const html = container.innerHTML;
     // Only the alert palette may show a level (docs/brand.md), and this is not a level.
@@ -171,7 +181,12 @@ describe("the notice is not an alert", () => {
   it("never shows an arrival time, in any state", () => {
     for (const state of ["watch", "releasing", "awaiting"] as const) {
       const { getByText, unmount } = renderWithIntl(
-        <DamNotice dam={withSignal(exampleDamSignal(state))} via="main" tambonName="บานา" />,
+        <DamNotice
+          dam={withSignal(exampleDamSignal(state))}
+          via="main"
+          tambonName="บานา"
+          now={EXAMPLE_NOW}
+        />,
       );
       // The one thing it says about timing is that nobody knows it yet.
       expect(getByText(th.dam.disclaimer.noArrivalTime)).toBeTruthy();
@@ -181,7 +196,12 @@ describe("the notice is not an alert", () => {
 
   it("names the hour the figures are for, and how old they are", () => {
     const { container } = renderWithIntl(
-      <DamNotice dam={withSignal(exampleDamSignal("releasing"))} via="main" tambonName="บานา" />,
+      <DamNotice
+        dam={withSignal(exampleDamSignal("releasing"))}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
     );
     expect(container.textContent).toContain("ข้อมูลของเวลา");
     expect(container.textContent).toMatch(/ชั่วโมงที่แล้ว/);
@@ -189,7 +209,12 @@ describe("the notice is not an alert", () => {
 
   it("says where the person is, and differently for a tributary", () => {
     const river = renderWithIntl(
-      <DamNotice dam={withSignal(exampleDamSignal("releasing"))} via="main" tambonName="บานา" />,
+      <DamNotice
+        dam={withSignal(exampleDamSignal("releasing"))}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
     );
     expect(river.container.textContent).toContain("อยู่ริม");
     river.unmount();
@@ -198,6 +223,7 @@ describe("the notice is not an alert", () => {
         dam={withSignal(exampleDamSignal("releasing"))}
         via="tributary"
         tambonName="ลำพะยา"
+        now={EXAMPLE_NOW}
       />,
     );
     expect(trib.container.textContent).toContain("ลำน้ำสาขา");
@@ -205,14 +231,24 @@ describe("the notice is not an alert", () => {
 
   it("is nothing at all when the dam is quiet", () => {
     const { container } = renderWithIntl(
-      <DamNotice dam={withSignal(exampleDamSignal("quiet"))} via="main" tambonName="บานา" />,
+      <DamNotice
+        dam={withSignal(exampleDamSignal("quiet"))}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
     );
     expect(container.querySelector("[data-dam-notice]")).toBeNull();
   });
 
   it("names the source, so nobody takes the figures for ours", () => {
     const { container } = renderWithIntl(
-      <DamNotice dam={withSignal(exampleDamSignal("releasing"))} via="main" tambonName="บานา" />,
+      <DamNotice
+        dam={withSignal(exampleDamSignal("releasing"))}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
     );
     expect(container.textContent).toContain("EGAT");
     expect(container.textContent).toContain("ThaiWater");
@@ -275,30 +311,30 @@ describe("the figures", () => {
   });
 
   it("the card says so plainly when there are no figures", () => {
-    const { container } = renderWithIntl(<DamCard dam={withSignal(null)} />);
+    const { container } = renderWithIntl(<DamCard dam={withSignal(null)} now={EXAMPLE_NOW} />);
     expect(container.textContent).toContain(th.dam.figures.none);
   });
 });
 
 describe("the card carries the limits of the lines", () => {
   it("says the line is the river's course, not the edge of a flood", () => {
-    const { getByText } = renderWithIntl(<DamCard dam={DAM} />);
+    const { getByText } = renderWithIntl(<DamCard dam={DAM} now={EXAMPLE_NOW} />);
     expect(getByText(th.dam.path.limits)).toBeTruthy();
   });
 
   it("says the spillway's own channel is not mapped", () => {
-    const { getByText } = renderWithIntl(<DamCard dam={DAM} />);
+    const { getByText } = renderWithIntl(<DamCard dam={DAM} now={EXAMPLE_NOW} />);
     expect(getByText(th.dam.path.spillwayNotMapped)).toBeTruthy();
   });
 
   it("credits OpenStreetMap", () => {
-    const { container } = renderWithIntl(<DamCard dam={DAM} />);
+    const { container } = renderWithIntl(<DamCard dam={DAM} now={EXAMPLE_NOW} />);
     expect(container.textContent).toContain("OpenStreetMap");
   });
 
   it("names every rule that fired, in words", () => {
     const { container } = renderWithIntl(
-      <DamCard dam={withSignal(exampleDamSignal("releasing"))} />,
+      <DamCard dam={withSignal(exampleDamSignal("releasing"))} now={EXAMPLE_NOW} />,
     );
     expect(container.textContent).toContain(th.dam.reason.spilling);
     expect(container.textContent).toContain(th.dam.reason.above_turbines);
@@ -306,7 +342,7 @@ describe("the card carries the limits of the lines", () => {
 
   it("explains an unconfirmed reading instead of hiding it", () => {
     const { container } = renderWithIntl(
-      <DamCard dam={withSignal(exampleDamSignal("awaiting"))} />,
+      <DamCard dam={withSignal(exampleDamSignal("awaiting"))} now={EXAMPLE_NOW} />,
     );
     expect(container.textContent).toContain("รอค่าถัดไป");
     // The figure itself is still on screen: 1,944 m3/s, the archive's impossible hour.
@@ -314,7 +350,7 @@ describe("the card carries the limits of the lines", () => {
   });
 
   it("counts the tambons on the river and on the tributaries separately", () => {
-    const { container } = renderWithIntl(<DamCard dam={DAM} />);
+    const { container } = renderWithIntl(<DamCard dam={DAM} now={EXAMPLE_NOW} />);
     expect(container.textContent).toContain("2");
     expect(container.textContent).toContain("1");
   });

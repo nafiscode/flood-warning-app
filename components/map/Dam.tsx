@@ -25,12 +25,12 @@ import { card, hint, notice } from "@/lib/ui";
  *   * It makes no sound and sends nothing. The loud one is raised for the admins to review.
  */
 
-function Figures({ dam }: { dam: Dam }) {
+function Figures({ dam, now }: { dam: Dam; now: number }) {
   const t = useTranslations("dam");
   const format = useFormatter();
   const signal = dam.signal;
   if (!signal) return <p className={hint}>{t("figures.none")}</p>;
-  const age = ageHours(signal, Date.now());
+  const age = ageHours(signal, now);
   const outflow = flow(signal.outflowCms);
   const spilled = flow(signal.spilledCms);
   return (
@@ -56,7 +56,8 @@ function Figures({ dam }: { dam: Dam }) {
         {t("figures.observed", {
           time: format.dateTime(new Date(signal.observedAt), BANGKOK_DATE_TIME),
         })}{" "}
-        · {t("figures.age", { hours: Math.max(0, Math.round(age)) })}
+        {/* "0 hours ago" is not something anybody says. */}·{" "}
+        {age < 1 ? t("figures.ageRecent") : t("figures.age", { hours: Math.round(age) })}
       </p>
       {signal.stale && (
         <p role="status" className={hint}>
@@ -75,11 +76,14 @@ export function DamNotice({
   dam,
   via,
   tambonName,
+  now,
 }: {
   dam: Dam;
   /** Whether the river itself runs through their area, or only a stream that joins it. */
   via: "main" | "tributary" | "outlet";
   tambonName: string;
+  /** Passed in, never read from the clock here: this renders on the server first. */
+  now: number;
 }) {
   const t = useTranslations("dam");
   const locale = useLocale();
@@ -100,7 +104,7 @@ export function DamNotice({
             river: localName(dam.river, locale),
           })}
         </p>
-        <Figures dam={dam} />
+        <Figures dam={dam} now={now} />
         {/*
          * The disclaimer is not small print. It says the two things a person could otherwise get
          * wrong: this is not Jaga telling them to do something, and nobody knows when the water
@@ -118,7 +122,7 @@ export function DamNotice({
 }
 
 /** The dam's card: what it is, what its figures say, and what the lines on the map do not say. */
-export function DamCard({ dam }: { dam: Dam }) {
+export function DamCard({ dam, now }: { dam: Dam; now: number }) {
   const t = useTranslations("dam");
   const locale = useLocale();
   const state = attention(dam.signal);
@@ -147,7 +151,7 @@ export function DamCard({ dam }: { dam: Dam }) {
         </p>
       ))}
 
-      <Figures dam={dam} />
+      <Figures dam={dam} now={now} />
 
       <div className="flex flex-col gap-1">
         <p className="font-medium">{t("path.title")}</p>

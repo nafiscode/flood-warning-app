@@ -1095,7 +1095,8 @@
       "awaiting": "Menunggu pengesahan",
       "stale": "Data lama",
       "none": "Tiada data"
-    }
+    },
+    "damScenarioLabel": "Keadaan empangan"
   },
   "report": {
     "title": "Lapor banjir",
@@ -1334,7 +1335,8 @@
       },
       "observed": "Data bagi jam {time}",
       "age": "kira-kira {hours} jam lepas",
-      "stale": "Data lebih lama daripada biasa. Empangan mungkin belum menerbitkan bacaan baharu."
+      "stale": "Data lebih lama daripada biasa. Empangan mungkin belum menerbitkan bacaan baharu.",
+      "ageRecent": "kurang daripada sejam lepas"
     },
     "notice": {
       "awaiting": {
