@@ -19,6 +19,7 @@ import {
   windArrow,
   wrapLon,
 } from "@/lib/weather-grid";
+import { coverCamera } from "@/lib/weather-map";
 import { renderWithIntl } from "./render";
 
 describe("the grid asked for", () => {
@@ -149,6 +150,37 @@ function maps(more: Partial<Parameters<typeof WeatherMapsView>[0]> = {}) {
     />,
   ).container;
 }
+
+describe("where the camera goes", () => {
+  // A square of ground, 1.2 degrees across, about where the app is used.
+  const box: [number, number, number, number] = [100.65, 6.3, 101.85, 7.5];
+
+  const widthOnScreen = (zoom: number) => 512 * 2 ** zoom * ((101.85 - 100.65) / 360);
+
+  it("fills the window rather than fitting inside it", () => {
+    // A window wider than it is tall: the height is what has to be filled, so the grid runs
+    // off the left and right rather than leaving bands there.
+    const wide = coverCamera(box, 900, 400);
+    expect(widthOnScreen(wide.zoom)).toBeGreaterThanOrEqual(900 - 1);
+    // And the other way round on a phone.
+    const tall = coverCamera(box, 360, 600);
+    expect(widthOnScreen(tall.zoom)).toBeGreaterThanOrEqual(360 - 1);
+    expect(tall.zoom).toBeGreaterThan(coverCamera(box, 360, 200).zoom);
+  });
+
+  it("looks at the middle of the square", () => {
+    const { center } = coverCamera(box, 600, 600);
+    expect(center[0]).toBeCloseTo(101.25, 6);
+    // The middle in Mercator, which is a shade north of the middle in degrees.
+    expect(center[1]).toBeGreaterThan(6.9);
+    expect(center[1]).toBeLessThan(6.91);
+  });
+
+  it("stays within the zooms a weather grid is worth showing at", () => {
+    expect(coverCamera(box, 20, 20).zoom).toBeGreaterThanOrEqual(2);
+    expect(coverCamera([101.2, 6.8, 101.21, 6.81], 2000, 2000).zoom).toBeLessThanOrEqual(12);
+  });
+});
 
 describe("the smooth field", () => {
   it("blends between the scale's stops instead of stepping", () => {

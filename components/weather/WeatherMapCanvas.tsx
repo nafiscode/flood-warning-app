@@ -16,7 +16,7 @@ import {
   type WeatherField,
   type WeatherGrid,
 } from "@/lib/weather-grid";
-import { createWeatherMap } from "@/lib/weather-map";
+import { coverCamera, createWeatherMap } from "@/lib/weather-map";
 
 const FIELD = "jaga-wx-field";
 const WIND = "jaga-wx-wind";
@@ -296,14 +296,19 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
     if (fitted.current === key) return;
     fitted.current = key;
     const half = grid.span / 2;
-    fitTo.current = () =>
-      map.current?.fitBounds(
-        [
-          [grid.lon - half, grid.lat - half],
-          [grid.lon + half, grid.lat + half],
-        ],
-        { padding: 8, duration: 0 },
+    fitTo.current = () => {
+      const m = map.current;
+      if (!m) return;
+      const canvas = m.getCanvas();
+      // Cover, not contain: the weather fills the window and runs off the edges, instead of
+      // sitting in the middle of it with dark bands on two sides.
+      const camera = coverCamera(
+        [grid.lon - half, grid.lat - half, grid.lon + half, grid.lat + half],
+        canvas.clientWidth || 360,
+        canvas.clientHeight || 300,
       );
+      m.jumpTo({ center: camera.center, zoom: camera.zoom });
+    };
     fitTo.current();
   }, [grid, state]);
 
@@ -320,7 +325,7 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
         ref={container}
         data-weather-map="true"
         data-map-ready={state === "ready"}
-        className="h-[52vh] min-h-72 w-full overflow-hidden rounded-xl border border-jaga-line lg:h-full lg:min-h-[460px]"
+        className="h-[58vh] min-h-80 w-full overflow-hidden rounded-xl border border-jaga-line lg:h-full lg:min-h-[520px]"
       />
       {state === "loading" && (
         <p className="absolute inset-x-0 top-3 text-center text-small text-jaga-text-2">

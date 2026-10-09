@@ -83,3 +83,37 @@ export async function createWeatherMap(container: HTMLElement, box: Box): Promis
   map.on("error", () => {});
   return map;
 }
+
+/**
+ * Where to put the camera so a square of ground **fills** the map window instead of sitting
+ * inside it (the owner, 10 Oct: the weather was a small square with dark margins round it).
+ *
+ * Fitting a square grid into a window that is not square leaves a band on two sides; covering
+ * it means zooming until the shorter side of the window is full and letting the rest of the
+ * grid run off the edges. The maths is Web Mercator, which is what the map draws in: a tile is
+ * 512 px, and the world is one tile at zoom 0.
+ */
+export function coverCamera(
+  box: Box,
+  width: number,
+  height: number,
+  limits: { min: number; max: number } = { min: 2, max: 12 },
+): { center: [number, number]; zoom: number } {
+  const [west, south, east, north] = box;
+  const x = (lon: number) => (lon + 180) / 360;
+  const y = (lat: number) => {
+    const clamped = Math.max(-85.05, Math.min(85.05, lat));
+    const rad = (clamped * Math.PI) / 180;
+    return (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2;
+  };
+  const dx = Math.max(1e-9, Math.abs(x(east) - x(west)));
+  const dy = Math.max(1e-9, Math.abs(y(south) - y(north)));
+  const zoom = Math.log2(Math.max(width / (512 * dx), height / (512 * dy)));
+  const midY = (y(north) + y(south)) / 2;
+  // Back from Mercator to a latitude, so the middle of the picture is the middle of the window.
+  const lat = (Math.atan(Math.sinh(Math.PI * (1 - 2 * midY))) * 180) / Math.PI;
+  return {
+    center: [(west + east) / 2, lat],
+    zoom: Math.max(limits.min, Math.min(limits.max, zoom)),
+  };
+}
