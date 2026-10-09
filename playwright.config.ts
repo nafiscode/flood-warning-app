@@ -32,6 +32,8 @@ export default defineConfig({
       ? `npm run start -- -p ${PORT}`
       : `npm run build && npm run start -- -p ${PORT}`,
     // The SOS and report flows are off in a production build until launch; the tests need them.
+    // JAGA_DEV_PAGES is deliberately not set: shell.spec.ts checks that the /dev review pages
+    // are not in a production build, and that guard matters more than testing the examples.
     env: { JAGA_SOS_SENDING_FOR_TESTS: "1" },
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,

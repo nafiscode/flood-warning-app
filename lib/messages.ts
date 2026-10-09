@@ -45,6 +45,19 @@ export function weatherMessages(messages: AbstractIntlMessages): AbstractIntlMes
 }
 
 /**
+ * The war room: its own text, plus two sets of words that already exist and must keep saying the
+ * same thing on every screen - the vulnerability flags of the SOS form and its depth labels.
+ */
+export function warRoomMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  return {
+    ...pick(messages, ["warRoom"]),
+    sos: { vulnerable: (all.sos as Messages).vulnerable! },
+    report: { depths: (all.report as Messages).depths! },
+  };
+}
+
+/**
  * The layout, on every page: the language switcher's text and the few lines the weather chip in
  * the header needs. The weather page's own text is not sent with it, so a page that nobody opens
  * the weather from stays as small as it was.

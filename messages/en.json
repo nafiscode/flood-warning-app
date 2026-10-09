@@ -630,7 +630,8 @@
       "label": "Admin menu",
       "home": "Home",
       "authorities": "Verify units",
-      "invitations": "Admins"
+      "invitations": "Admins",
+      "warRoom": "War room"
     },
     "role": {
       "admin": "Admin",
@@ -698,6 +699,218 @@
         "revoked": "Invitation withdrawn.",
         "removed": "Admin role removed."
       }
+    },
+    "warRoom": {
+      "title": "War room",
+      "note": "What is happening, cases nobody has answered, and who has registered",
+      "open": "Open the war room"
+    }
+  },
+  "warRoom": {
+    "title": "War room",
+    "subtitle": "What is happening, who is waiting for help, and who has registered where",
+    "bangkok": "(Bangkok)",
+    "updated": "Data from",
+    "liveOn": "Refreshing itself",
+    "liveOff": "Paused",
+    "refresh": "Refresh now",
+    "pollFailed": "The refresh didn't get through. These numbers are the last ones that arrived.",
+    "loading": "Loading…",
+    "tabs": "View",
+    "time": {
+      "hm": "{hours} h {minutes} min",
+      "m": "{minutes} min"
+    },
+    "state": {
+      "overdue": "No answer for {time}",
+      "waiting": "Waiting {time}",
+      "working": "{unit} has it",
+      "closed": "Closed"
+    },
+    "gate": {
+      "badge": "Do this now",
+      "count": "{count} cases no unit has taken, longer than {minutes} minutes",
+      "oldest": "Longest wait: {time}",
+      "what": "Call a unit covering that tambon, then assign the case from its card below."
+    },
+    "tile": {
+      "open": "Open cases",
+      "openNote": "{count} in the last 24 h",
+      "overdue": "No answer yet",
+      "overdueNote": "Longer than {minutes} min",
+      "working": "A unit has it",
+      "workingNote": "{count} closed in 24 h",
+      "people": "Registered",
+      "peopleNote": "+{count} in 7 days",
+      "watched": "Watched places",
+      "watchedNote": "{count} want alerts",
+      "units": "Verified units",
+      "unitsNote": "{pending} waiting · {gaps} tambons with no unit"
+    },
+    "tab": {
+      "cases": "Help requests ({count})",
+      "people": "Registered people ({count})",
+      "map": "Map"
+    },
+    "perHour": "Cases arriving each hour (24 h)",
+    "perHourBar": "{hour}:00 — {count} cases",
+    "now": "{hour}:00 (latest)",
+    "band": {
+      "needAnswer": "Needs an answer ({count})",
+      "needAnswerNote": "Longest wait first. Over {minutes} minutes counts as late.",
+      "noneWaiting": "Every case has a unit.",
+      "working": "A unit is on it ({count})",
+      "workingNote": "Watch whether they got there.",
+      "noneWorking": "No case has been taken yet.",
+      "closed": "Closed ({count})",
+      "closedNote": "Rescued, the sender said they are safe, or the case was stopped.",
+      "noneClosed": "No closed cases yet."
+    },
+    "case": {
+      "noArea": "Tambon unknown",
+      "typedPlace": "The sender typed their place: {text}",
+      "sentAt": "Sent",
+      "accuracy": "Accuracy ±{m} m",
+      "people": "{count} people",
+      "onBehalf": "Sent for someone else",
+      "hasPhone": "Has a phone number",
+      "noPhone": "No phone number",
+      "photos": "{count} photos",
+      "voice": "Voice note",
+      "battery": "Battery {pct}%",
+      "merged": "{count} repeat sends merged in",
+      "injuries": "Injuries: {text}",
+      "said": "The sender said: {text}",
+      "noUnit": "No verified unit covers this tambon. You have to call someone yourself.",
+      "spamFlag": "The system suspects a nuisance send. The case keeps its place in the queue.",
+      "possibleDuplicate": "May be the same as case #{id}",
+      "showPhone": "Show the phone number",
+      "handBack": "Hand back to the queue",
+      "assign": "Assign a unit",
+      "addNote": "Note what you did",
+      "directions": "Directions",
+      "judgeSpam": "Judge the flag",
+      "history": "Case history",
+      "phoneLogged": "Every look at this number is written to the access log.",
+      "phoneNone": "The sender gave no phone number.",
+      "noHistory": "Nothing has happened yet.",
+      "directionsWarning": "Road directions don't know which roads are flooded."
+    },
+    "capability": {
+      "coordination": "Coordination",
+      "rescue": "Rescue",
+      "planning": "Planning",
+      "support": "Support"
+    },
+    "role": {
+      "user": "User",
+      "authority": "Response unit",
+      "admin": "Admin",
+      "super_admin": "Super admin"
+    },
+    "event": {
+      "received": "Received",
+      "merged_update": "Repeat send, merged into this case",
+      "claimed": "A unit took the case",
+      "en_route": "On the way",
+      "rescued": "Rescued",
+      "safe_cancelled": "The sender said they are safe",
+      "assigned_by_admin": "An admin assigned a unit",
+      "released_by_admin": "An admin handed it back to the queue",
+      "admin_note": "Admin note",
+      "flagged_spam": "Flagged as suspected",
+      "spam_dismissed": "Flag removed",
+      "details_added": "Details added",
+      "media_added": "Photo or voice added",
+      "location_added": "Location updated"
+    },
+    "assign": {
+      "title": "Which unit takes it",
+      "note": "Nothing is sent to the unit yet (notifications land in A7). After assigning, call them yourself.",
+      "noUnits": "No verified unit covers this tambon.",
+      "what": "Short note (optional)",
+      "openCases": "{count} open cases",
+      "confirm": "Assign to {unit}"
+    },
+    "release": {
+      "why": "Why it goes back to the queue",
+      "note": "The case becomes “no answer yet” again, and stays on the board of every unit covering that tambon.",
+      "confirm": "Hand back to the queue"
+    },
+    "note": {
+      "what": "Note what you did",
+      "note": "It goes into the case history: who you called, what they said.",
+      "confirm": "Save"
+    },
+    "spam": {
+      "dismissTitle": "Say this case is real",
+      "flagTitle": "Flag as suspected",
+      "note": "The flag is the admins' opinion. It never takes a case out of the queue, and it can be undone at any time.",
+      "why": "Reason (optional)",
+      "dismissConfirm": "Remove the flag, this case is real",
+      "flagConfirm": "Flag as suspected"
+    },
+    "people": {
+      "search": "Find a person",
+      "searchHint": "A name, or a tambon name",
+      "searchDo": "Search",
+      "count": "Showing {shown} of {total} people",
+      "searching": "Searching “{q}”",
+      "name": "Name",
+      "area": "Area",
+      "watching": "Watching",
+      "sosSent": "SOS sent",
+      "joined": "Registered",
+      "phone": "Phone",
+      "noName": "(no name yet)",
+      "noArea": "No area given",
+      "hasHomePin": "Home pin saved",
+      "showPhone": "Show number",
+      "hasPhone": "Has a number",
+      "noPhone": "No number",
+      "none": "Nobody found.",
+      "more": "Show more",
+      "areasTitle": "Tambons with the most people",
+      "areasNote": "Registered homes and watched places counted together. It never says whose.",
+      "areaCounts": "Homes {homes} · watched {places}",
+      "noAreas": "No data yet."
+    },
+    "map": {
+      "loading": "Loading the map…",
+      "failed": "The map couldn't be opened.",
+      "layers": "Layers",
+      "layer": {
+        "cases": "Help requests",
+        "homes": "Registered homes",
+        "density": "People per tambon",
+        "reports": "Flood reports, 72 h"
+      },
+      "legend": "What the marks mean",
+      "privacy": "This map never shows a watched place as a point, and never a name or a number. Only counts per tambon."
+    },
+    "legend": {
+      "waiting": "No answer yet",
+      "working": "A unit has it",
+      "closed": "Closed",
+      "homes": "Registered homes",
+      "reports": "Flood reports",
+      "density": "People per tambon (few → many)"
+    },
+    "done": {
+      "assigned": "Assigned. Remember to call the unit.",
+      "released": "Handed back to the queue.",
+      "noted": "Saved.",
+      "spam": "Flagged.",
+      "spamDismissed": "Flag removed."
+    },
+    "error": {
+      "save": "That didn't work. Try again.",
+      "closed": "This case is closed.",
+      "held": "Another unit holds this case. Hand it back to the queue first.",
+      "notCovered": "That unit doesn't cover this case's tambon.",
+      "unverified": "That unit isn't verified.",
+      "reason": "A reason is needed.",
+      "forbidden": "This page is for admins only."
     }
   },
   "devBrand": {
@@ -734,7 +947,8 @@
       "forecast": "Forecast",
       "choose": "No place chosen yet",
       "offline": "Offline"
-    }
+    },
+    "warRoomTitle": "Example: the war room"
   },
   "report": {
     "title": "Report flooding",

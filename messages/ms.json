@@ -630,7 +630,8 @@
       "label": "Menu pentadbir",
       "home": "Utama",
       "authorities": "Semak pasukan",
-      "invitations": "Pentadbir"
+      "invitations": "Pentadbir",
+      "warRoom": "Bilik gerakan"
     },
     "role": {
       "admin": "Pentadbir",
@@ -698,6 +699,218 @@
         "revoked": "Jemputan sudah dibatal.",
         "removed": "Peranan sudah ditarik balik."
       }
+    },
+    "warRoom": {
+      "title": "Bilik gerakan",
+      "note": "Gambaran kejadian, kes yang belum diambil, dan orang yang mendaftar",
+      "open": "Buka bilik gerakan"
+    }
+  },
+  "warRoom": {
+    "title": "Bilik gerakan",
+    "subtitle": "Gambaran kejadian, permintaan tolong, dan orang yang mendaftar",
+    "bangkok": "(Bangkok)",
+    "updated": "Data pada",
+    "liveOn": "Kemas kini sendiri",
+    "liveOff": "Berhenti sebentar",
+    "refresh": "Kemas kini sekarang",
+    "pollFailed": "Kemas kini tak jadi. Nombor di halaman ini ialah data terakhir yang sampai.",
+    "loading": "Sedang buka…",
+    "tabs": "Paparan",
+    "time": {
+      "hm": "{hours} jam {minutes} minit",
+      "m": "{minutes} minit"
+    },
+    "state": {
+      "overdue": "Belum ada sesiapa ambil, {time}",
+      "waiting": "Menunggu diambil, {time}",
+      "working": "{unit} sudah ambil",
+      "closed": "Sudah ditutup"
+    },
+    "gate": {
+      "badge": "Buat sekarang",
+      "count": "{count} kes belum diambil mana-mana unit, lebih {minutes} minit",
+      "oldest": "Kes paling lama menunggu: {time}",
+      "what": "Telefon unit yang menjaga tambon itu, kemudian serahkan kes dari kad di bawah."
+    },
+    "tile": {
+      "open": "Kes terbuka",
+      "openNote": "{count} kes dalam 24 jam",
+      "overdue": "Belum diambil",
+      "overdueNote": "Lebih {minutes} minit",
+      "working": "Unit sudah ambil",
+      "workingNote": "{count} kes ditutup dalam 24 jam",
+      "people": "Orang mendaftar",
+      "peopleNote": "+{count} dalam 7 hari",
+      "watched": "Tempat dijaga untuk orang lain",
+      "watchedNote": "{count} minta amaran",
+      "units": "Unit disahkan",
+      "unitsNote": "{pending} menunggu sahan · {gaps} tambon tiada unit"
+    },
+    "tab": {
+      "cases": "Permintaan tolong ({count})",
+      "people": "Orang mendaftar ({count})",
+      "map": "Peta"
+    },
+    "perHour": "Kes masuk setiap jam (24 jam)",
+    "perHourBar": "{hour}:00 — {count} kes",
+    "now": "{hour}:00 (terkini)",
+    "band": {
+      "needAnswer": "Perlu diambil ({count})",
+      "needAnswerNote": "Yang paling lama menunggu di atas. Lebih {minutes} minit dikira lambat.",
+      "noneWaiting": "Semua kes sudah ada unit.",
+      "working": "Unit sedang buat ({count})",
+      "workingNote": "Pantau sama ada sudah sampai.",
+      "noneWorking": "Belum ada kes yang diambil unit.",
+      "closed": "Sudah ditutup ({count})",
+      "closedNote": "Sudah ditolong, pengirim kata sudah selamat, atau kes dihentikan.",
+      "noneClosed": "Belum ada kes ditutup."
+    },
+    "case": {
+      "noArea": "Tambon tak diketahui",
+      "typedPlace": "Pengirim menulis tempatnya: {text}",
+      "sentAt": "Dihantar",
+      "accuracy": "Ketepatan ±{m} m",
+      "people": "{count} orang",
+      "onBehalf": "Dihantar untuk orang lain",
+      "hasPhone": "Ada nombor telefon",
+      "noPhone": "Tiada nombor telefon",
+      "photos": "{count} gambar",
+      "voice": "Ada rakaman suara",
+      "battery": "Bateri {pct}%",
+      "merged": "{count} hantaran berulang digabung ke sini",
+      "injuries": "Cedera: {text}",
+      "said": "Pengirim kata: {text}",
+      "noUnit": "Tiada unit disahkan yang menjaga tambon ini. Kena telefon sendiri.",
+      "spamFlag": "Sistem syak hantaran mengganggu. Kes ini tetap dalam barisan seperti biasa.",
+      "possibleDuplicate": "Mungkin sama dengan kes #{id}",
+      "showPhone": "Lihat nombor telefon",
+      "handBack": "Pulangkan ke barisan",
+      "assign": "Serah kepada unit",
+      "addNote": "Catat kerja",
+      "directions": "Arah jalan",
+      "judgeSpam": "Nilai bendera syak",
+      "history": "Sejarah kes",
+      "phoneLogged": "Setiap kali nombor ini dibuka, ia dicatat dalam log capaian.",
+      "phoneNone": "Pengirim tidak beri nombor telefon.",
+      "noHistory": "Belum ada sejarah.",
+      "directionsWarning": "Arah jalan tidak tahu jalan mana yang banjir."
+    },
+    "capability": {
+      "coordination": "Penyelarasan",
+      "rescue": "Penyelamat",
+      "planning": "Perancangan",
+      "support": "Sokongan"
+    },
+    "role": {
+      "user": "Pengguna",
+      "authority": "Unit rasmi",
+      "admin": "Admin",
+      "super_admin": "Admin utama"
+    },
+    "event": {
+      "received": "Diterima",
+      "merged_update": "Hantaran berulang, digabung ke sini",
+      "claimed": "Unit ambil kes",
+      "en_route": "Sedang dalam perjalanan",
+      "rescued": "Sudah ditolong",
+      "safe_cancelled": "Pengirim kata sudah selamat",
+      "assigned_by_admin": "Admin serah kepada unit",
+      "released_by_admin": "Admin pulangkan ke barisan",
+      "admin_note": "Catatan admin",
+      "flagged_spam": "Diberi bendera syak",
+      "spam_dismissed": "Bendera dibuang",
+      "details_added": "Butiran ditambah",
+      "media_added": "Gambar atau suara ditambah",
+      "location_added": "Lokasi dikemas kini"
+    },
+    "assign": {
+      "title": "Serah kepada unit mana",
+      "note": "Sistem belum hantar amaran kepada unit sendiri (akan datang di A7). Selepas serah, telefon unit itu sendiri.",
+      "noUnits": "Tiada unit disahkan yang menjaga tambon ini.",
+      "what": "Catatan pendek (tidak wajib)",
+      "openCases": "Sedang jaga {count} kes",
+      "confirm": "Serah kepada {unit}"
+    },
+    "release": {
+      "why": "Sebab dipulangkan ke barisan",
+      "note": "Kes akan jadi “belum diambil” semula, dan tetap ada pada papan setiap unit yang menjaga tambon itu.",
+      "confirm": "Pulangkan ke barisan"
+    },
+    "note": {
+      "what": "Catat kerja",
+      "note": "Catatan ini masuk ke sejarah kes: siapa ditelefon, apa jawapannya.",
+      "confirm": "Simpan"
+    },
+    "spam": {
+      "dismissTitle": "Sahkan kes ini betul",
+      "flagTitle": "Beri bendera syak",
+      "note": "Bendera ini pendapat admin. Ia tidak mengeluarkan kes dari barisan, dan boleh ditarik balik bila-bila masa.",
+      "why": "Sebab (tidak wajib)",
+      "dismissConfirm": "Buang bendera, kes ini betul",
+      "flagConfirm": "Beri bendera syak"
+    },
+    "people": {
+      "search": "Cari orang",
+      "searchHint": "Nama, atau nama tambon",
+      "searchDo": "Cari",
+      "count": "Tunjuk {shown} daripada {total} orang",
+      "searching": "Cari “{q}”",
+      "name": "Nama",
+      "area": "Tempat",
+      "watching": "Tempat dijaga",
+      "sosSent": "SOS dihantar",
+      "joined": "Mendaftar",
+      "phone": "Telefon",
+      "noName": "(belum ada nama)",
+      "noArea": "Tempat belum diisi",
+      "hasHomePin": "Rumah sudah ditanda",
+      "showPhone": "Lihat nombor",
+      "hasPhone": "Ada nombor",
+      "noPhone": "Tiada nombor",
+      "none": "Tiada sesiapa dijumpai.",
+      "more": "Lihat lagi",
+      "areasTitle": "Tambon dengan orang paling banyak",
+      "areasNote": "Rumah orang mendaftar dicampur dengan tempat yang dijaga. Tidak menyebut milik siapa.",
+      "areaCounts": "Rumah {homes} · dijaga {places}",
+      "noAreas": "Belum ada data."
+    },
+    "map": {
+      "loading": "Sedang buka peta…",
+      "failed": "Peta tak dapat dibuka.",
+      "layers": "Lapisan",
+      "layer": {
+        "cases": "Permintaan tolong",
+        "homes": "Rumah orang mendaftar",
+        "density": "Kepadatan per tambon",
+        "reports": "Laporan banjir 72 jam"
+      },
+      "legend": "Tanda pada peta",
+      "privacy": "Peta ini tidak menunjuk tempat yang dijaga sebagai titik, dan tidak menunjuk nama atau nombor sesiapa. Hanya jumlah per tambon."
+    },
+    "legend": {
+      "waiting": "Belum diambil",
+      "working": "Unit sudah ambil",
+      "closed": "Sudah ditutup",
+      "homes": "Rumah orang mendaftar",
+      "reports": "Laporan banjir",
+      "density": "Orang per tambon (sedikit → banyak)"
+    },
+    "done": {
+      "assigned": "Sudah diserah. Jangan lupa telefon unit itu.",
+      "released": "Sudah dipulangkan ke barisan.",
+      "noted": "Sudah disimpan.",
+      "spam": "Bendera sudah diberi.",
+      "spamDismissed": "Bendera sudah dibuang."
+    },
+    "error": {
+      "save": "Tak jadi. Cuba lagi.",
+      "closed": "Kes ini sudah ditutup.",
+      "held": "Unit lain sudah ambil kes ini. Pulangkan ke barisan dahulu.",
+      "notCovered": "Unit ini tidak menjaga tambon kes ini.",
+      "unverified": "Unit ini belum disahkan.",
+      "reason": "Sebab wajib diisi.",
+      "forbidden": "Halaman ini untuk admin sahaja."
     }
   },
   "devBrand": {
@@ -734,7 +947,8 @@
       "forecast": "Ramalan",
       "choose": "Belum pilih tempat",
       "offline": "Luar talian"
-    }
+    },
+    "warRoomTitle": "Contoh: bilik gerakan"
   },
   "report": {
     "title": "Lapor banjir",
