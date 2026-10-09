@@ -5,7 +5,9 @@ import { alert as alertPalette, brand } from "@/lib/brand/tokens";
 import { moonAt, moonPath, MOON_PHASES, NEW_MOON, phaseOf, SYNODIC_DAYS } from "@/lib/moon";
 import th from "@/messages/th.json";
 import { WEATHER_GROUPS } from "@/lib/weather";
+import { sunTimes } from "@/lib/sun";
 import {
+  isDaylight,
   SCENE_INK,
   SCENE_LOOKS,
   SCENES,
@@ -71,6 +73,40 @@ describe("the sky behind the temperature", () => {
   it("writes the veil as a colour a browser understands", () => {
     expect(scrim("light")).toBe("rgba(9, 20, 30, 0.45)");
     expect(scrim("dark")).toBe("rgba(247, 250, 252, 0.45)");
+  });
+});
+
+describe("day or night in the card", () => {
+  // Bana, in Pattani: the sun is up from about 06:00 to about 18:00 all year.
+  const lat = 6.878;
+  const lon = 101.272;
+  const bangkok = (h: number, day = 10) => Date.UTC(2026, 9, day, h - 7, 0);
+
+  it("follows the sun at that place, not the flag in a reading that may be hours old", () => {
+    // A reading taken in the afternoon, still on the phone at midnight with no signal.
+    expect(isDaylight(bangkok(0), lat, lon, true, sunTimes)).toBe(false);
+    expect(isDaylight(bangkok(23), lat, lon, true, sunTimes)).toBe(false);
+    // And the other way: a reading from the night, looked at the next afternoon.
+    expect(isDaylight(bangkok(14), lat, lon, false, sunTimes)).toBe(true);
+  });
+
+  it("is day between sunrise and sunset and night outside them", () => {
+    expect(isDaylight(bangkok(5), lat, lon, true, sunTimes)).toBe(false);
+    expect(isDaylight(bangkok(7), lat, lon, false, sunTimes)).toBe(true);
+    expect(isDaylight(bangkok(17), lat, lon, false, sunTimes)).toBe(true);
+    expect(isDaylight(bangkok(19), lat, lon, true, sunTimes)).toBe(false);
+  });
+
+  it("keeps the reading's own answer where the sun neither rises nor sets", () => {
+    // Longyearbyen in January: no sunrise at all, so there is nothing to work out.
+    const polarNight = Date.UTC(2026, 0, 10, 12, 0);
+    expect(isDaylight(polarNight, 78.2, 15.6, false, sunTimes)).toBe(false);
+    expect(isDaylight(polarNight, 78.2, 15.6, true, sunTimes)).toBe(true);
+  });
+
+  it("picks a night sky at night even for a sunny reading", () => {
+    expect(sceneFor("clear", isDaylight(bangkok(2), lat, lon, true, sunTimes))).toBe("clearNight");
+    expect(sceneFor("clear", isDaylight(bangkok(12), lat, lon, true, sunTimes))).toBe("clearDay");
   });
 });
 

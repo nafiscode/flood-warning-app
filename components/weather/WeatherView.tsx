@@ -26,7 +26,7 @@ import {
 } from "@/lib/weather";
 import { moonAt } from "@/lib/moon";
 import { sunTimes } from "@/lib/sun";
-import { SCENE_INK, SCENE_LOOKS, sceneFor, scrim } from "@/lib/weather-scene";
+import { isDaylight, SCENE_INK, SCENE_LOOKS, sceneFor, scrim } from "@/lib/weather-scene";
 import { PlacePicker } from "./PlacePicker";
 import { WeatherScene } from "./WeatherScene";
 import { WeatherIcon } from "./WeatherIcon";
@@ -194,12 +194,15 @@ function Now({ weather, now }: { weather: Weather; now: number }) {
    * for, so the server's picture and the phone's first paint are the same.
    */
   const at = now || Date.parse(weather.at);
-  const scene = sceneFor(group, weather.isDay);
-  const look = SCENE_LOOKS[scene];
-  const ink = SCENE_INK[look.ink];
   // Sunrise and sunset are worked out from the date and the place (lib/sun.ts), not asked for:
   // no request, and they are right for whatever place the person is looking at.
   const sun = sunTimes(at, weather.lat, weather.lon);
+  // Day or night by the sun at that place and this moment, not by the reading's own flag,
+  // which on a phone with no signal can be hours old (lib/weather-scene.ts).
+  const isDay = isDaylight(at, weather.lat, weather.lon, weather.isDay, sunTimes);
+  const scene = sceneFor(group, isDay);
+  const look = SCENE_LOOKS[scene];
+  const ink = SCENE_INK[look.ink];
   const moon = moonAt(at);
 
   return (
@@ -218,7 +221,7 @@ function Now({ weather, now }: { weather: Weather; now: number }) {
         <div className="relative flex flex-col gap-1" style={{ color: ink }}>
           <h2 className="text-h3 font-bold">{t("now")}</h2>
           <div className="flex items-center gap-4">
-            <WeatherIcon group={group} isDay={weather.isDay} size={56} className="shrink-0" />
+            <WeatherIcon group={group} isDay={isDay} size={56} className="shrink-0" />
             <div className="flex flex-col">
               <p className="text-[40px] font-bold leading-none tabular-nums">
                 {weather.tempC === null ? "–" : `${n(weather.tempC)}°C`}
@@ -264,7 +267,7 @@ function Now({ weather, now }: { weather: Weather; now: number }) {
           </Fact>
         )}
         {/* The moon is worth the room at night, when it is the thing in the sky above. */}
-        {!weather.isDay && (
+        {!isDay && (
           <Fact icon={<MoonIcon size={20} />} label={t("moon")}>
             <span data-weather-moon={moon.phase}>
               {t(`moons.${moon.phase}`)} · {t("moonLit", { percent: Math.round(moon.lit * 100) })}

@@ -107,3 +107,24 @@ export function scrim(ink: SceneLook["ink"]): string {
   const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
   return `rgba(${r}, ${g}, ${b}, ${SCRIM_ALPHA})`;
 }
+
+/**
+ * Day or night where the person is looking, at the moment they are looking.
+ *
+ * Not the `is_day` flag of the reading: that is the model's answer for the hour the forecast
+ * was made for, and a phone with no signal can be holding a reading from hours ago — which
+ * would paint a sunny sky at midnight. The sun's own times for that place decide it instead
+ * (lib/sun.ts, the same equation that turns the app dark at night), and the flag is kept only
+ * for the far north and south, where the sun may not rise or set that day at all.
+ */
+export function isDaylight(
+  at: number,
+  lat: number,
+  lon: number,
+  fallback: boolean,
+  times: (now: number, lat: number, lon: number) => { sunrise: number; sunset: number } | null,
+): boolean {
+  const sun = times(at, lat, lon);
+  if (!sun) return fallback;
+  return at >= sun.sunrise && at < sun.sunset;
+}

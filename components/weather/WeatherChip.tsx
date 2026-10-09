@@ -8,6 +8,8 @@ import { useStored } from "@/lib/phone-store";
 import { useNow } from "@/lib/use-public";
 import { useWeather, useWeatherPlace } from "@/lib/use-weather";
 import { isStale, weatherGroup } from "@/lib/weather";
+import { sunTimes } from "@/lib/sun";
+import { isDaylight } from "@/lib/weather-scene";
 import { WeatherIcon } from "./WeatherIcon";
 
 /** Nothing is fetched on the SOS screens: there, only the request matters (safety rule 1). */
@@ -90,7 +92,13 @@ export function WeatherChip({
     >
       <WeatherIcon
         group={group}
-        isDay={weather.isDay}
+        isDay={isDaylight(
+          now || Date.parse(weather.at),
+          weather.lat,
+          weather.lon,
+          weather.isDay,
+          sunTimes,
+        )}
         size={20}
         className="shrink-0 text-jaga-teal-light"
       />
