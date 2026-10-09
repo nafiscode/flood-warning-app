@@ -300,7 +300,7 @@ export function homeExample(scenario: HomeScenario): {
   }
 }
 
-export const WEATHER_SCENARIOS = ["forecast", "choose", "offline"] as const;
+export const WEATHER_SCENARIOS = ["forecast", "skies", "choose", "offline"] as const;
 export type WeatherScenario = (typeof WEATHER_SCENARIOS)[number];
 
 /**

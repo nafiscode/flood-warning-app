@@ -2,6 +2,8 @@
 
 import { HomeView } from "@/components/home/HomeView";
 import { DashboardView } from "@/components/map/DashboardView";
+import { WeatherScene } from "@/components/weather/WeatherScene";
+import { SCENE_INK, SCENE_LOOKS, SCENES, scrim } from "@/lib/weather-scene";
 import { WeatherMapCanvas } from "@/components/weather/WeatherMapCanvas";
 import { WeatherMapsView } from "@/components/weather/WeatherMapsView";
 import { WeatherView } from "@/components/weather/WeatherView";
@@ -96,8 +98,50 @@ export function WeatherExample({ scenario }: { scenario: WeatherScenario }) {
       onChoose={setPlace}
       onCancelPick={() => {}}
       onRetry={() => {}}
-      maps={place ? <MapsExample /> : null}
+      maps={scenario === "skies" ? <SkiesExample /> : place ? <MapsExample /> : null}
     />
+  );
+}
+
+/**
+ * Every sky, side by side: the one place to judge the moving skies without waiting for the
+ * weather to do it. The moon is drawn four times, a week apart, so its shapes can be seen too.
+ */
+function SkiesExample() {
+  const week = 7 * 24 * 60 * 60_000;
+  return (
+    <div className="flex flex-col gap-4">
+      <ul className="grid grid-cols-2 gap-3">
+        {SCENES.map((scene) => (
+          <li
+            key={scene}
+            className="relative isolate h-32 overflow-hidden rounded-xl border border-jaga-line"
+          >
+            <WeatherScene scene={scene} now={EXAMPLE_NOW} />
+            <span
+              className="absolute inset-0"
+              style={{ background: scrim(SCENE_LOOKS[scene].ink) }}
+            />
+            <span
+              className="absolute bottom-2 start-2 text-small font-medium"
+              style={{ color: SCENE_INK[SCENE_LOOKS[scene].ink] }}
+            >
+              {scene}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <ul className="grid grid-cols-4 gap-3">
+        {[0, 1, 2, 3].map((n) => (
+          <li
+            key={n}
+            className="relative isolate h-24 overflow-hidden rounded-xl border border-jaga-line"
+          >
+            <WeatherScene scene="clearNight" now={EXAMPLE_NOW + n * week} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

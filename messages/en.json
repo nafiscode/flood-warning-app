@@ -1080,6 +1080,7 @@
     "weather": {
       "title": "The weather page, as an example",
       "forecast": "Forecast",
+      "skies": "Every sky",
       "choose": "No place chosen yet",
       "offline": "Offline"
     },
@@ -1171,6 +1172,20 @@
     "windFrom": "{speed} km/h from the {from}",
     "kmh": "{value} km/h",
     "mm": "{value} mm",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "moon": "Moon",
+    "moonLit": "{percent}% lit",
+    "moons": {
+      "new": "New moon",
+      "waxingCrescent": "Waxing crescent",
+      "firstQuarter": "First quarter",
+      "waxingGibbous": "Waxing gibbous",
+      "full": "Full moon",
+      "waningGibbous": "Waning gibbous",
+      "lastQuarter": "Last quarter",
+      "waningCrescent": "Waning crescent"
+    },
     "chip": {
       "label": "Weather",
       "reading": "Weather in {place}: {degrees} degrees, {condition}",

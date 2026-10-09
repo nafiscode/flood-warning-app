@@ -1080,6 +1080,7 @@
     "weather": {
       "title": "Contoh halaman cuaca",
       "forecast": "Ramalan",
+      "skies": "Semua langit",
       "choose": "Belum pilih tempat",
       "offline": "Luar talian"
     },
@@ -1171,6 +1172,20 @@
     "windFrom": "{speed} km/j dari {from}",
     "kmh": "{value} km/j",
     "mm": "{value} mm",
+    "sunrise": "Matahari terbit",
+    "sunset": "Matahari terbenam",
+    "moon": "Bulan",
+    "moonLit": "{percent}% bercahaya",
+    "moons": {
+      "new": "Bulan baru",
+      "waxingCrescent": "Sabit membesar",
+      "firstQuarter": "Suku pertama",
+      "waxingGibbous": "Cembung membesar",
+      "full": "Bulan purnama",
+      "waningGibbous": "Cembung mengecil",
+      "lastQuarter": "Suku terakhir",
+      "waningCrescent": "Sabit mengecil"
+    },
     "chip": {
       "label": "Cuaca",
       "reading": "Cuaca di {place}: {degrees} darjah, {condition}",

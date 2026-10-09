@@ -1,0 +1,264 @@
+/*
+ * The moving sky behind the "now" card. Only transform and opacity are animated, so a cheap
+ * phone draws it on the GPU without touching layout; there are no images and nothing is
+ * downloaded. Everything here stops for anyone who has asked for less motion.
+ */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* The sky itself is set from the scene's own two colours (lib/weather-scene.ts). */
+  background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+}
+
+.scene > * {
+  position: absolute;
+}
+
+/* The sun: a soft disc with a halo that breathes. Pale, never the yellow of a Watch badge. */
+.sun {
+  top: 14%;
+  inset-inline-end: 12%;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8e6 0%, #ffeec4 55%, rgba(255, 238, 196, 0) 72%);
+  box-shadow: 0 0 36px 16px rgba(255, 240, 205, 0.45);
+  animation: breathe 7s ease-in-out infinite;
+}
+
+/* The moon keeps its own shape (an SVG drawn from the phase); here it only glows. */
+.moon {
+  top: 16%;
+  inset-inline-end: 13%;
+  width: 44px;
+  height: 44px;
+  filter: drop-shadow(0 0 10px rgba(226, 238, 248, 0.5));
+  animation: breathe 9s ease-in-out infinite;
+}
+
+.star {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #e8f1f8;
+  opacity: 0.85;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+/*
+ * Clouds: a body with two lumps on top, blurred into one soft shape, drifting across and round
+ * again. Flat colour rather than a gradient, because the blur does the softening.
+ */
+.cloud {
+  width: 128px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  filter: blur(5px);
+  animation: drift 46s linear infinite;
+}
+
+.cloud::before,
+.cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.cloud::before {
+  width: 56px;
+  height: 56px;
+  inset-inline-start: 20px;
+  bottom: 9px;
+}
+
+.cloud::after {
+  width: 40px;
+  height: 40px;
+  inset-inline-end: 26px;
+  bottom: 12px;
+}
+
+/* On a dark sky the same shapes, dimmer, or they glare. */
+.cloudDark {
+  background: rgba(224, 234, 241, 0.42);
+}
+
+.mist {
+  inset-inline: -10%;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0)
+  );
+  animation: drift 32s linear infinite;
+}
+
+/* Rain. Fine drops for drizzle and showers, longer streaks when it is coming down. */
+.drop {
+  width: 1.5px;
+  height: 9px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, rgba(226, 240, 248, 0), rgba(226, 240, 248, 0.85));
+  animation: fall 1.1s linear infinite;
+}
+
+.streak {
+  width: 1.5px;
+  height: 22px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, rgba(226, 240, 248, 0), rgba(226, 240, 248, 0.9));
+  animation: fall 0.7s linear infinite;
+}
+
+/*
+ * Drops sitting on the glass in a passing shower: they hang still, then one slides down and
+ * the next takes its place.
+ */
+.bead {
+  border-radius: 50% 50% 55% 55%;
+  background: radial-gradient(
+    40% 35% at 35% 30%,
+    rgba(255, 255, 255, 0.85),
+    rgba(214, 231, 240, 0.45) 60%,
+    rgba(214, 231, 240, 0.18) 100%
+  );
+  box-shadow: inset 0 -1px 2px rgba(255, 255, 255, 0.6);
+  animation: slide 9s ease-in infinite;
+}
+
+.flake {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  animation: flutter 7s linear infinite;
+}
+
+/*
+ * Lightning: one short brightening of the whole sky, a long way apart. Never yellow, because
+ * yellow is the Watch level, and never a hard flash: this sits behind a number someone reads.
+ */
+.flash {
+  inset: 0;
+  background: rgba(233, 243, 250, 0.55);
+  opacity: 0;
+  animation: strike 12s ease-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(110%, 0, 0);
+  }
+  to {
+    transform: translate3d(-130%, 0, 0);
+  }
+}
+
+@keyframes fall {
+  from {
+    transform: translate3d(0, -20px, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(-6px, 190px, 0);
+    opacity: 0.9;
+  }
+}
+
+@keyframes slide {
+  0%,
+  62% {
+    transform: translate3d(0, 0, 0) scaleY(1);
+    opacity: 0.9;
+  }
+  78% {
+    transform: translate3d(0, 34px, 0) scaleY(1.25);
+    opacity: 0.75;
+  }
+  86%,
+  100% {
+    transform: translate3d(0, 76px, 0) scaleY(1);
+    opacity: 0;
+  }
+}
+
+@keyframes flutter {
+  from {
+    transform: translate3d(0, -12px, 0);
+  }
+  50% {
+    transform: translate3d(10px, 90px, 0);
+  }
+  to {
+    transform: translate3d(0, 190px, 0);
+  }
+}
+
+@keyframes strike {
+  0%,
+  92%,
+  100% {
+    opacity: 0;
+  }
+  93% {
+    opacity: 0.8;
+  }
+  94% {
+    opacity: 0.1;
+  }
+  95% {
+    opacity: 0.55;
+  }
+  97% {
+    opacity: 0;
+  }
+}
+
+/*
+ * Asked for less motion: the sky, the sun, the moon and the stars stay, and nothing moves.
+ * The rain and the lightning go altogether rather than freeze mid-fall.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .scene > * {
+    animation: none !important;
+  }
+  .drop,
+  .streak,
+  .flake,
+  .flash,
+  .bead {
+    display: none;
+  }
+}

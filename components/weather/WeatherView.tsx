@@ -2,7 +2,15 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { ClockIcon, DropIcon, HouseIcon, ThermometerIcon, WindIcon } from "@/components/icons";
+import {
+  ClockIcon,
+  DropIcon,
+  HouseIcon,
+  MoonIcon,
+  SunIcon,
+  ThermometerIcon,
+  WindIcon,
+} from "@/components/icons";
 import { OpenMeteoAttribution } from "@/components/OpenMeteoAttribution";
 import { Link } from "@/i18n/navigation";
 import { buttonSecondary, card, errorNotice, hint, notice } from "@/lib/ui";
@@ -16,7 +24,11 @@ import {
   type Weather,
   type WeatherPlace,
 } from "@/lib/weather";
+import { moonAt } from "@/lib/moon";
+import { sunTimes } from "@/lib/sun";
+import { SCENE_INK, SCENE_LOOKS, sceneFor, scrim } from "@/lib/weather-scene";
 import { PlacePicker } from "./PlacePicker";
+import { WeatherScene } from "./WeatherScene";
 import { WeatherIcon } from "./WeatherIcon";
 
 export type WeatherViewProps = {
@@ -116,7 +128,7 @@ export function WeatherView(props: WeatherViewProps) {
             is ever left with an empty column beside it. A phone keeps one column, in this order.
           */}
           <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2">
-            <Now weather={weather} />
+            <Now weather={weather} now={now} />
             <RainBars weather={weather} />
             <div className="lg:col-span-2">{props.maps}</div>
             <Hours weather={weather} />
@@ -162,31 +174,62 @@ function BackHome({ label }: { label: string }) {
   );
 }
 
-function Now({ weather }: { weather: Weather }) {
+function Now({ weather, now }: { weather: Weather; now: number }) {
   const t = useTranslations("weather");
   const format = useFormatter();
   const group = weatherGroup(weather.code);
   const n = (value: number, digits = 0) =>
     format.number(value, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+  const clock = (ms: number) =>
+    format.dateTime(new Date(ms), {
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+      timeZone: weather.timezone,
+    });
+
+  /*
+   * The sky behind the temperature (the owner's request, 10 Oct): what it looks like outside
+   * right now. Before the phone's clock is readable it is drawn for the hour the model data is
+   * for, so the server's picture and the phone's first paint are the same.
+   */
+  const at = now || Date.parse(weather.at);
+  const scene = sceneFor(group, weather.isDay);
+  const look = SCENE_LOOKS[scene];
+  const ink = SCENE_INK[look.ink];
+  // Sunrise and sunset are worked out from the date and the place (lib/sun.ts), not asked for:
+  // no request, and they are right for whatever place the person is looking at.
+  const sun = sunTimes(at, weather.lat, weather.lon);
+  const moon = moonAt(at);
 
   return (
-    <section className={card} data-weather-now="true">
-      <h2 className="text-h3 font-bold">{t("now")}</h2>
-      <div className="flex items-center gap-4">
-        <WeatherIcon
-          group={group}
-          isDay={weather.isDay}
-          size={56}
-          className="shrink-0 text-jaga-teal-ink"
+    <section
+      className="flex flex-col overflow-hidden rounded-2xl border border-jaga-line bg-jaga-surface"
+      data-weather-now="true"
+    >
+      <div className="relative isolate px-5 pb-5 pt-4" data-weather-sky={scene}>
+        <WeatherScene scene={scene} now={at} />
+        {/* The veil that keeps the writing readable whatever the sky is doing. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{ background: scrim(look.ink) }}
         />
-        <div className="flex flex-col">
-          <p className="text-[40px] font-bold leading-none tabular-nums">
-            {weather.tempC === null ? "–" : `${n(weather.tempC)}°C`}
-          </p>
-          <p className="font-medium">{t(`codes.${group}`)}</p>
+        <div className="relative flex flex-col gap-1" style={{ color: ink }}>
+          <h2 className="text-h3 font-bold">{t("now")}</h2>
+          <div className="flex items-center gap-4">
+            <WeatherIcon group={group} isDay={weather.isDay} size={56} className="shrink-0" />
+            <div className="flex flex-col">
+              <p className="text-[40px] font-bold leading-none tabular-nums">
+                {weather.tempC === null ? "–" : `${n(weather.tempC)}°C`}
+              </p>
+              <p className="font-medium">{t(`codes.${group}`)}</p>
+            </div>
+          </div>
         </div>
       </div>
-      <dl className="grid grid-cols-2 gap-3">
+
+      <dl className="grid grid-cols-2 gap-3 p-5">
         {weather.feelsC !== null && (
           <Fact icon={<ThermometerIcon size={20} />} label={t("feels")}>
             {`${n(weather.feelsC)}°C`}
@@ -208,6 +251,24 @@ function Now({ weather }: { weather: Weather }) {
                   from: t(`compass.${weather.windFrom}`),
                 })
               : t("kmh", { value: n(weather.windKmh) })}
+          </Fact>
+        )}
+        {sun && (
+          <Fact icon={<SunIcon size={20} />} label={t("sunrise")}>
+            {clock(sun.sunrise)}
+          </Fact>
+        )}
+        {sun && (
+          <Fact icon={<SunIcon size={20} />} label={t("sunset")}>
+            {clock(sun.sunset)}
+          </Fact>
+        )}
+        {/* The moon is worth the room at night, when it is the thing in the sky above. */}
+        {!weather.isDay && (
+          <Fact icon={<MoonIcon size={20} />} label={t("moon")}>
+            <span data-weather-moon={moon.phase}>
+              {t(`moons.${moon.phase}`)} · {t("moonLit", { percent: Math.round(moon.lit * 100) })}
+            </span>
           </Fact>
         )}
       </dl>

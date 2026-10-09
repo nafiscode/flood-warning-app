@@ -1080,6 +1080,7 @@
     "weather": {
       "title": "ตัวอย่างหน้าสภาพอากาศ",
       "forecast": "พยากรณ์",
+      "skies": "ท้องฟ้าทุกแบบ",
       "choose": "ยังไม่เลือกสถานที่",
       "offline": "ออฟไลน์"
     },
@@ -1171,6 +1172,20 @@
     "windFrom": "{speed} กม./ชม. จากทิศ{from}",
     "kmh": "{value} กม./ชม.",
     "mm": "{value} มม.",
+    "sunrise": "พระอาทิตย์ขึ้น",
+    "sunset": "พระอาทิตย์ตก",
+    "moon": "ดวงจันทร์",
+    "moonLit": "สว่าง {percent}%",
+    "moons": {
+      "new": "จันทร์ดับ",
+      "waxingCrescent": "ข้างขึ้นเสี้ยว",
+      "firstQuarter": "ข้างขึ้นครึ่งดวง",
+      "waxingGibbous": "ข้างขึ้นค่อนดวง",
+      "full": "จันทร์เพ็ญ",
+      "waningGibbous": "ข้างแรมค่อนดวง",
+      "lastQuarter": "ข้างแรมครึ่งดวง",
+      "waningCrescent": "ข้างแรมเสี้ยว"
+    },
     "chip": {
       "label": "สภาพอากาศ",
       "reading": "สภาพอากาศที่ {place}: {degrees} องศา {condition}",
