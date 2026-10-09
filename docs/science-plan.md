@@ -155,6 +155,23 @@ Steps:
 
 Limits to state wherever this is shown: a few past events, hourly gauges, no hydraulic model, and rain below the dam adds water the dam's figures do not include. The estimate is a range from past releases, not a forecast.
 
+**Done, 10 Oct 2026** (`pipeline/dam_release`, METHODS.md there): step 1 (the archive), step 4 (the
+signal, as named criteria measured against 108,597 hourly readings) and an **interim** step 3 — the
+path from OpenStreetMap rather than from HAND and the radar, so the app has something to draw
+while the analysis is done. It gives the reservoir (43.0 km²), the channel leaving the dam, 134.3 km
+of river to the sea and the lower 5 km of ten tributaries, which cross 39 tambons (36 on the stem).
+It says where the river runs, **not how far the water spreads**, and it is not a flood zone.
+
+**Still to do: steps 2 and 5, and step 3 properly.** The travel times from the 2014, 2015 and
+January 2021 releases to the EGAT (BLGTD01–05) and RID (X.77, X.40A, X.275, X.10A) gauges, then
+the zone from HAND and the radar extents, then the arrival ranges per tambon. Until those exist
+the app shows no arrival time at all. The two versions of the geometry are kept side by side under
+different `source` values for the owner to compare before one replaces the other (decision 10 Oct).
+
+One thing the data showed that matters for the design: ThaiWater's feed for this dam **lags by
+hours** (at 06:00 Bangkok only the 00:00 hour was published), so it is a record that trails
+reality, not a warning in time. The operator's own screen is what would give warning.
+
 ## 4. Validation metrics
 
 - **Extents:** CSI, hit rate, false-alarm rate against held-out SAR.

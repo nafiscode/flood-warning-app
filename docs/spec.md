@@ -449,6 +449,23 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 - `impact_unit_totals` (A13): per verified unit — cases accepted, confirmed rescues, people reached, seasons active. Volume of help only; no score and no per-unit times.
 - `usage_events` (A13): the short-lived raw counter rows, with a device hash that is salted per day so a phone cannot be followed across days. Deleted once the day is aggregated.
 
+### Dam release (section 15)
+All public to read and written only by the hourly job and the seed; the one exception is the
+review queue, which is admins only.
+- `dams`: `code`, `name`, `river`, `operator`, `province_code`, the ThaiWater ids, `point`,
+  `spillway_point`, `outlet_point`, `reservoir`, `storage_max_mcm`, `storage_normal_mcm`,
+  `geometry_source`, `geometry_note` (what the lines do and do not say, shown with them).
+- `dam_reaches`: `dam_code`, `kind` (`outlet` / `main` / `tributary`), `source`, `seq`, `name`,
+  `km_from_dam`, `length_km`, `line`. `source` is part of the key, so OpenStreetMap's geometry and
+  S7's can sit here at once and be compared before one replaces the other.
+- `dam_tambons`: which tambons each source's reaches run through, and whether by the river itself
+  or only by a tributary. A geometric list, **not** a flood zone and not an arrival estimate.
+- `dam_readings`: one row per dam per hour as the operator published it — storage, level, inflow,
+  release, spill — plus when it was fetched.
+- `dam_notices`: a confirmed release waiting for an admin to judge it, with the figures frozen as
+  they were. `status` is `open`, `sent`, `dismissed` or `ended`; a dismissal is kept.
+- `dam_feed_log`: how each hourly fetch went, so a silent feed is visible rather than looking calm.
+
 ### Donations, transparency and admin stipends
 These tables are created in phase A11 only, not with the initial schema.
 - `donation_settings`: single row.
@@ -660,7 +677,33 @@ Added 9 Oct 2026 (decision of that date). Releases from Bang Lang dam flood land
 - **Until an operator has joined**, admins send the same notice from the same template.
 - **Safety rules.** A person publishes every notice (rule 2). The estimate is always a range with its source and time (rule 8). The notice never replaces an alert level; the level for the zone is set by the template and can be raised by an admin.
 
-Open: who at the dam will use it (the owner makes the contact); the alert level a release notice carries by default; whether the operator may also send the "release has ended" message.
+### Built so far (10 Oct 2026)
+
+The map, the figures and the two tiers are built; the notice the operator sends is not.
+
+- **On the public map, always.** The dam, its main spillway and its outlet are marked and
+  labelled, the reservoir is drawn faintly enough to read the tambon alert colours through, the
+  river below the dam is drawn wider than any other line of ours, and the lower reach of each
+  mapped tributary is drawn dashed. The water colour never changes with the dam's state: only the
+  alert palette shows a level. Light and dark both.
+- **The figures.** `pg_cron` reads ThaiWater's hourly series into `dam_readings` once an hour, and
+  `dam_signal()` grades the newest reading by named criteria in `system_settings.dam_grades`.
+  Tapping the dam opens a card with storage, level, outflow, spill and the rate of rise, each with
+  the hour it is for and how old it is.
+- **The quiet tier** (`watchful`, or a release the app has not confirmed yet): a notice on the home
+  screen and the map for anyone whose area or watched place is on the river below the dam. No
+  alert level, no alert colour, no sound, no notification. It says it is not an alert from Jaga
+  and that nobody can yet say when the water arrives.
+- **The loud tier** (`releasing`, confirmed over two readings): one row in `dam_notices` for the
+  admins, on the war room below the unanswered-SOS gate. They record whether they sent the notice.
+  Sending it is still a person's act and is the rest of this section.
+- **No arrival time anywhere**, because S7 steps 2-3 have not measured the travel times.
+- **A rule must hold for two readings** before it grades: the archive holds impossible single
+  hours, and one of them must not wake an admin. The lone reading is shown, waiting for the next.
+- **The feed lags by hours.** It is a record that trails reality, not a real-time warning, which
+  is why the operator's own screen below matters.
+
+Open: who at the dam will use it (the owner makes the contact); the alert level a release notice carries by default; whether the operator may also send the "release has ended" message; whether to keep OpenStreetMap's river or replace it with S7's zone once both can be compared.
 
 ## 16. Impact record and public transparency
 

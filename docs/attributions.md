@@ -23,3 +23,5 @@ Jaga is non-profit. Several sources below allow non-commercial use only. The don
 | Esri World Imagery | Background in screenshots on the private tracker only; not in the app | Esri terms | Esri, Maxar, Earthstar Geographics | Not for publication |
 
 What the FABDEM licence means in practice: the code in this repository stays Apache-2.0. The data layers derived from FABDEM (HAND, the hazard classes and the tiles made from them) are published under CC BY-NC-SA 4.0 with the credit line above, and the app says so wherever they are shown.
+- **OpenStreetMap** — the Bang Lang reservoir outline (relation 3224558), the Pattani River below the dam and its tributaries, used for the release path on the public map (`pipeline/dam_release`, seeded into `dams` and `dam_reaches`). © OpenStreetMap contributors, ODbL. Credited on the dam's card in the app. Added 10 Oct 2026.
+- **ThaiWater / EGAT** — Bang Lang dam's hourly storage, level, inflow, release and spill (`analyst/dam_hourly_graph`, dam id 50), read hourly and shown with its source and its time wherever it appears. Free, no key. Added 10 Oct 2026.

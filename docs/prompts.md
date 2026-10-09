@@ -158,6 +158,12 @@ Before launch:
 
 Acceptance: the collector fills the archive without gaps it does not report; every arrival time is a range with the events behind it; a place the analysis cannot speak for says so.
 
+**Step 1 done** (9 Oct) and **step 4 done with an interim step 3** (10 Oct): `pipeline/dam_release`
+builds the release path from OpenStreetMap and measures the grade criteria against the archive;
+see its METHODS.md. **Steps 2 and 5 are still open**, and step 3 is still to be done properly from
+HAND and the radar extents — when it is, load it under `source = 's7'` beside the OSM version and
+show the owner both before replacing anything (decision 10 Oct).
+
 ## App track
 
 ### A0: Scaffold and Jaga brand setup
@@ -460,6 +466,13 @@ Acceptance:
 Added 9 Oct 2026. Read `docs/spec.md` section 15 and the decision of 2026-10-09. Two parts.
 
 Part 1, before launch (with A6 and A8): a "dam release" alert template that admins send, with the affected tambons and the arrival ranges from S7 filled in, and the dam's state on the admin signal dashboard.
+
+**Built 10 Oct 2026** (the owner asked for it with the map work): the dam, its reservoir and the
+release path on the public map; the hourly feed and the grading (`dam_fetch`, `dam_signal`); the
+quiet notice on the home screen and the map for people on the path; and the review row on the war
+room. **Not built:** the alert template itself and the sending of it, the arrival ranges (they need
+S7 steps 2-3), and the sound — a notice today makes none, because nothing is pushed. So part 1 is
+finished once the template exists and S7 can fill in the arrival ranges.
 
 Both parts send the **dam release sound** of spec 4.8 and docs/brand.md: its own repeating sound, used for nothing else, to everyone in the zone — the tambons along the river below the dam and the lower reaches of the streams joining it.
 
