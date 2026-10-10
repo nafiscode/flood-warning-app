@@ -703,7 +703,7 @@ The map, the figures and the two tiers are built; the notice the operator sends 
 - **The feed lags by hours.** It is a record that trails reality, not a real-time warning, which
   is why the operator's own screen below matters.
 
-Open: who at the dam will use it (the owner makes the contact); the alert level a release notice carries by default; whether the operator may also send the "release has ended" message; whether to keep OpenStreetMap's river or replace it with S7's zone once both can be compared.
+Open: who at the dam will use it (the owner makes the contact); the alert level a release notice carries by default; whether the operator may also send the "release has ended" message; which geometry to keep once S7 steps 2–3 can be compared with OpenStreetMap's (the owner decided on 10 Oct that OSM's stays until then, and that both are to be shown side by side before anything is replaced).
 
 ## 16. Impact record and public transparency
 
