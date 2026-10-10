@@ -27,6 +27,7 @@ import {
   CASING_EXTRA,
   DAM_WATER,
   DAM_WATER_DARK,
+  damMarks,
   damPaint,
   emphasis,
   MAIN_WIDTH,
@@ -571,5 +572,42 @@ describe("the dam on the admins' war room", () => {
     expect(container.querySelector("form")).toBeNull();
     // It still says a release is waiting, so the example shows the real state of the screen.
     expect(container.querySelector("[data-dam-notice='open']")).toBeTruthy();
+  });
+});
+
+describe("the labels on the map marks", () => {
+  /*
+   * The dam's mark is labelled with its name alone. It used to be the word "dam" plus the name,
+   * and since the Thai word for the dam *is* its name, the map read "เขื่อนบางลาง เขื่อนบางลาง"
+   * wrapped over two lines. Only a screenshot caught it, so it is pinned here.
+   */
+  const text = (locale: string) => ({ spillway: "ทางระบายน้ำล้น", outlet: "ท้ายน้ำ", locale });
+  const labelOf = (locale: string, kind: string) =>
+    damMarks(DAM, text(locale)).find((m) => m.kind === kind)!.label;
+
+  it("the dam's label is its name, once", () => {
+    const label = labelOf("th", "dam");
+    expect(label).toBe("เขื่อนบางลาง");
+    // Twice over would split into three pieces, which is what the map drew before.
+    expect(label.split("เขื่อนบางลาง")).toHaveLength(2);
+  });
+
+  it("the name follows the reader's language", () => {
+    expect(labelOf("en", "dam")).toBe("Bang Lang Dam");
+  });
+
+  it("falls back to a name it has when the reader's language has none", () => {
+    expect(labelOf("ms", "dam")).toBe("เขื่อนบางลาง");
+  });
+
+  it("the spillway and the outlet keep their own words", () => {
+    expect(labelOf("th", "spillway")).toBe("ทางระบายน้ำล้น");
+    expect(labelOf("th", "outlet")).toBe("ท้ายน้ำ");
+  });
+
+  it("a dam with no spillway pinned still gets its own mark", () => {
+    const marks = damMarks({ ...DAM, spillwayPoint: null }, text("th"));
+    expect(marks.map((m) => m.kind)).toEqual(["dam", "spillway", "outlet"]);
+    expect(marks.find((m) => m.kind === "spillway")!.point).toBeNull();
   });
 });

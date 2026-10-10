@@ -428,9 +428,9 @@ export function DashboardView(props: DashboardViewProps) {
                 showMine={showMine}
                 dams={dams}
                 damText={{
-                  dam: tDam("mark.dam"),
                   spillway: tDam("mark.spillway"),
                   outlet: tDam("mark.outlet"),
+                  locale,
                 }}
               />
               {mine.length > 0 && (

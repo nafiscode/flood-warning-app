@@ -10,7 +10,7 @@ import { WeatherMapCanvas } from "@/components/weather/WeatherMapCanvas";
 import { WeatherMapsView } from "@/components/weather/WeatherMapsView";
 import { WeatherView } from "@/components/weather/WeatherView";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { DAM_URL, type Dam, type DamData } from "@/lib/dam";
 import { useFetched } from "@/lib/use-public";
 import { areaName } from "@/lib/area";
@@ -191,6 +191,7 @@ function MapsExample() {
 export function DamExample() {
   const t = useTranslations("devHome");
   const [scenario, setScenario] = useState<DamScenario>("releasing");
+  const locale = useLocale();
   const { data, state } = useFetched<DamData>(DAM_URL);
   const tDam = useTranslations("dam");
   const base = data?.dams[0] ?? null;
@@ -228,9 +229,9 @@ export function DamExample() {
             text={{ loading: "…", failed: "—" }}
             dams={[dam]}
             damText={{
-              dam: tDam("mark.dam"),
               spillway: tDam("mark.spillway"),
               outlet: tDam("mark.outlet"),
+              locale,
             }}
           />
           <DamCard dam={dam} now={EXAMPLE_NOW} />

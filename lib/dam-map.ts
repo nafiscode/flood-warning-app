@@ -93,3 +93,35 @@ export function emphasis(grade: string | null | undefined): boolean {
 
 /** The dashes on a tributary's lower reach, so it is never mistaken for the river itself. */
 export const TRIBUTARY_DASH = [3, 1.5];
+
+/**
+ * The three marks a dam puts on the map, in drawing order, with the words on each.
+ *
+ * The dam's own mark carries its **name and nothing else**: it used to be the word "dam" plus
+ * the name, and since the Thai name *is* "Bang Lang Dam" the map read it twice, wrapped over two
+ * lines. The map calls this, so a test of it is a test of what is drawn.
+ */
+export type DamMark = {
+  kind: "dam" | "spillway" | "outlet";
+  point: { type: "Point"; coordinates: [number, number] } | null;
+  label: string;
+};
+
+export function damMarks(
+  dam: {
+    code: string;
+    name: Record<string, string>;
+    point: DamMark["point"];
+    spillwayPoint: DamMark["point"];
+    outletPoint: DamMark["point"];
+  },
+  text: { spillway: string; outlet: string; locale: string },
+): DamMark[] {
+  const name =
+    dam.name[text.locale] ?? dam.name.th ?? dam.name.en ?? Object.values(dam.name)[0] ?? dam.code;
+  return [
+    { kind: "dam", point: dam.point, label: name },
+    { kind: "spillway", point: dam.spillwayPoint, label: text.spillway },
+    { kind: "outlet", point: dam.outletPoint, label: text.outlet },
+  ];
+}

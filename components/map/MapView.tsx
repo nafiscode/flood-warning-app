@@ -8,6 +8,7 @@ import { type Dam, reachesInOrder } from "@/lib/dam";
 import {
   byZoom,
   CASING_EXTRA,
+  damMarks,
   damPaint,
   emphasis,
   MAIN_WIDTH,
@@ -17,6 +18,7 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
+import { localName } from "@/lib/places";
 import {
   createServiceAreaMap,
   darkNow,
@@ -80,8 +82,12 @@ type Props = {
    * depend on today's weather, and someone who lives along it should be able to find it.
    */
   dams?: Dam[];
-  /** What the labels on the dam marks say, already in the person's language. */
-  damText?: { dam: string; spillway: string; outlet: string };
+  /**
+   * The words on the dam's other two marks, and the language to name the dam itself in. The
+   * dam's own mark is labelled with its name alone: prefixing it with the word "dam" wrote the
+   * name twice on the map.
+   */
+  damText?: { spillway: string; outlet: string; locale: string };
   status: PublicStatus | null;
   data: MapData | null;
   now: number;
@@ -128,13 +134,13 @@ const collection = (features: GeoJSON.Feature[]): Collection => ({
  */
 function damCollections(
   dams: Dam[],
-  text: { dam: string; spillway: string; outlet: string },
+  text: { spillway: string; outlet: string; locale: string },
 ): Record<string, Collection> {
   const water: GeoJSON.Feature[] = [];
   const reaches: GeoJSON.Feature[] = [];
   const marks: GeoJSON.Feature[] = [];
   for (const dam of dams) {
-    const name = dam.name.th ?? dam.name.en ?? dam.code;
+    const name = localName(dam.name, text.locale) || dam.code;
     if (dam.reservoir) {
       water.push({
         type: "Feature",
@@ -155,17 +161,14 @@ function damCollections(
         },
       });
     }
-    const mark = (point: Dam["point"], kind: string, label: string) => {
-      if (!point) return;
+    for (const { kind, point, label } of damMarks(dam, text)) {
+      if (!point) continue;
       marks.push({
         type: "Feature",
         geometry: point,
         properties: { code: dam.code, kind, label },
       });
-    };
-    mark(dam.point, "dam", `${text.dam} ${name}`.trim());
-    mark(dam.spillwayPoint, "spillway", text.spillway);
-    mark(dam.outletPoint, "outlet", text.outlet);
+    }
   }
   return {
     [DAM_WATER_SOURCE]: collection(water),
@@ -178,7 +181,7 @@ function toCollections(
   data: MapData | null,
   mine: MinePlace[],
   dams: Dam[],
-  damText: { dam: string; spillway: string; outlet: string },
+  damText: { spillway: string; outlet: string; locale: string },
 ): Record<string, Collection> {
   return {
     ...damCollections(dams, damText),
@@ -224,14 +227,14 @@ export function MapView({
   mine = [],
   showMine = false,
   dams = [],
-  damText = { dam: "", spillway: "", outlet: "" },
+  damText = { spillway: "", outlet: "", locale: "th" },
 }: Props) {
   /*
    * The three labels are taken apart here because the caller builds damText fresh on every
    * render: the object's identity would restart the drawing effect each time, while the
    * strings themselves hardly ever change.
    */
-  const { dam: damLabel, spillway: spillwayLabel, outlet: outletLabel } = damText;
+  const { spillway: spillwayLabel, outlet: outletLabel, locale: damLocale } = damText;
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   // Which data object each source holds, so data is sent again only when it changed.
@@ -256,9 +259,9 @@ export function MapView({
 
   useEffect(() => {
     const collections = toCollections(data, mine, dams, {
-      dam: damLabel,
       spillway: spillwayLabel,
       outlet: outletLabel,
+      locale: damLocale,
     });
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
     const paint = damPaint(darkNow());
@@ -546,7 +549,7 @@ export function MapView({
       }
     };
     draw.current();
-  }, [layers, status, data, now, mine, showMine, dams, damLabel, spillwayLabel, outletLabel]);
+  }, [layers, status, data, now, mine, showMine, dams, spillwayLabel, outletLabel, damLocale]);
 
   useEffect(() => {
     if (!container.current) return;
