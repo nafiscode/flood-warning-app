@@ -926,33 +926,33 @@
     "dam": {
       "toReview": "Waiting on you",
       "grade": {
-        "quiet": "The water leaving the dam is in its usual range",
-        "watchful": "Worth watching: the reservoir is high or filling fast",
-        "releasing": "A release above the usual range, confirmed",
+        "quiet": "Outflow is within the normal operating range",
+        "watchful": "Worth watching: storage is high or rising quickly",
+        "releasing": "A release above the normal operating range, confirmed",
         "unknown": "No figures from the dam yet"
       },
       "reason": {
-        "spilling": "Water is going over the spillway",
-        "above_turbines": "More is leaving than the turbines can pass",
-        "above_normal_high": "The reservoir is above normal high water",
-        "inflow_high": "Water is coming in fast",
-        "rising_fast": "The reservoir is rising quickly"
+        "spilling": "Water is discharging over the spillway",
+        "above_turbines": "Total outflow exceeds turbine discharge capacity",
+        "above_normal_high": "Storage is above the capacity at normal high water level",
+        "inflow_high": "Inflow to the reservoir is high",
+        "rising_fast": "Reservoir storage is rising sharply"
       },
-      "outflow": "{cms, number} m3/s leaving",
+      "outflow": "Total outflow {cms, number} m³/s",
       "spilled": "{cms, number} over the spillway",
-      "storage": "{mcm, number} million m3 stored ({percent}%)",
+      "storage": "Storage {mcm, number} million m³ ({percent}%)",
       "trend": {
         "rising": "rising",
         "falling": "falling",
         "steady": "steady",
         "unknown": "direction not known yet"
       },
-      "observed": "Figures for {time}",
+      "observed": "Figures as at {time}",
       "age": "{hours, plural, one {# hour} other {# hours}} ago",
-      "stale": "These figures are older than usual. Check the dam is still publishing.",
+      "stale": "These figures are later than usual. Check the dam is still publishing.",
       "awaiting": "One reading alone meets a rule; {readings} in a row are needed before it counts.",
       "noFigures": "No figures from the dam yet",
-      "tambons": "The path runs through {main} tambons along the river and {tributary} on its tributaries",
+      "tambons": "The path runs through {main} tambons along the main river and {tributary} on its tributaries",
       "reviewTitle": "Nothing has been sent to anybody",
       "reviewBody": "The code confirmed a release and told you. The people on the river see only a quiet note that says it is not an alert. Issuing one is a person's job.",
       "raisedAt": "Raised at {time}",
@@ -962,7 +962,7 @@
       "reviewed": {
         "sent": "{who} recorded that the notice was sent, at {time}",
         "dismissed": "{who} recorded that no notice was sent, at {time}",
-        "ended": "The release is over",
+        "ended": "The release has ended",
         "open": ""
       },
       "feedFailed": "The dam's figures could not be read; last tried at {time}. What is shown may not be the newest."
@@ -1347,75 +1347,75 @@
     },
     "panel": {
       "operator": "Operated by {operator}",
-      "river": "River: {river}"
+      "river": "Downstream river: {river}"
     },
     "grade": {
-      "quiet": "The water leaving the dam is in its usual range",
-      "watchful": "Worth watching: the reservoir is high or filling fast",
-      "releasing": "The dam is releasing more water than its usual range",
+      "quiet": "Outflow is within the normal operating range",
+      "watchful": "Worth watching: reservoir storage is high or rising quickly",
+      "releasing": "The dam is releasing above its normal operating range",
       "unknown": "No figures from the dam yet"
     },
     "reason": {
-      "spilling": "Water is going over the spillway",
-      "above_turbines": "More water is leaving than the turbines alone can pass, so a gate is open",
-      "above_normal_high": "The reservoir is above its normal high water",
-      "inflow_high": "Water is coming into the reservoir fast",
-      "rising_fast": "The reservoir has risen quickly over the last {hours} hours"
+      "spilling": "Water is discharging over the spillway",
+      "above_turbines": "Total outflow exceeds turbine discharge capacity, so a spillway gate is open",
+      "above_normal_high": "Storage is above the capacity at normal high water level",
+      "inflow_high": "Inflow to the reservoir is high",
+      "rising_fast": "Reservoir storage has risen sharply over the last {hours} hours"
     },
     "awaiting": {
-      "release_unconfirmed": "One reading alone shows a large release. Waiting for the next reading to confirm it, because the record holds single hours that are plainly wrong.",
-      "watch_unconfirmed": "One reading alone is above the mark. Waiting for the next reading to confirm it."
+      "release_unconfirmed": "A single reading indicates a high release rate. Waiting for the next hourly reading to confirm it, because the record contains clearly erroneous hourly values.",
+      "watch_unconfirmed": "A single reading is above the threshold. Waiting for the next hourly reading to confirm it."
     },
     "figures": {
       "none": "No figures from the dam yet",
-      "outflow": "{cms, number} cubic metres a second leaving the dam",
-      "spilled": "{cms, number} of it over the spillway",
-      "storage": "{mcm, number} million cubic metres stored ({percent}% of full)",
-      "level": "Reservoir level {m} m",
+      "outflow": "Total outflow {cms, number} m³/s",
+      "spilled": "of which {cms, number} m³/s over the spillway",
+      "storage": "Storage {mcm, number} million m³ ({percent}% of maximum capacity)",
+      "level": "Reservoir level {m} m MSL",
       "trend": {
-        "rising": "The reservoir is rising (against {hours} hours ago)",
-        "falling": "The reservoir is falling (against {hours} hours ago)",
-        "steady": "The reservoir is holding steady (against {hours} hours ago)",
-        "unknown": "Not enough readings yet to say whether the reservoir is rising or falling"
+        "rising": "Storage is rising (against {hours} hours ago)",
+        "falling": "Storage is falling (against {hours} hours ago)",
+        "steady": "Storage is holding steady (against {hours} hours ago)",
+        "unknown": "Not enough readings yet to assess the storage trend"
       },
-      "observed": "Figures for {time}",
+      "observed": "Figures as at {time}",
       "age": "about {hours, plural, one {# hour} other {# hours}} ago",
-      "stale": "These figures are older than usual. The dam may not have published a newer reading.",
+      "stale": "These figures are later than usual. The dam may not have published the latest hourly reading.",
       "ageRecent": "less than an hour ago"
     },
     "notice": {
       "awaiting": {
-        "title": "One reading from {dam} is waiting to be confirmed",
-        "body": "One reading alone shows more water leaving than usual. It is not confirmed until the next reading arrives. This is an early note, nothing more."
+        "title": "A reading from {dam} is awaiting confirmation",
+        "body": "A single reading indicates the dam is releasing above its normal range. It is not confirmed until the next hourly reading arrives. This is an early note, nothing more."
       },
       "watch": {
         "title": "Worth watching: {dam}",
-        "body": "The reservoir is high or filling fast. Nothing is being released beyond the usual range. This is so you can follow the news and get ready."
+        "body": "Reservoir storage is high or rising quickly. Nothing is being released beyond the normal operating range. This is so you can follow the news and get ready."
       },
       "releasing": {
-        "title": "{dam} is releasing more water than its usual range",
-        "body": "By the dam's own published figures, more water is leaving than usual. It flows down the {river}. Watch the water near your home, move a car to higher ground, and put your important things together."
+        "title": "{dam} is releasing above its normal operating range",
+        "body": "By the dam's own published figures, outflow is above the normal operating range. The water flows down the {river}. Watch the water near your home, move a car to higher ground, and put your important things together."
       },
-      "where": "{tambon} is on the {river} below the dam",
-      "whereTributary": "{tambon} is on a stream that joins this river. When the river rises, the stream can stop draining.",
+      "where": "{tambon} is on the {river} downstream of the dam",
+      "whereTributary": "{tambon} is on a tributary flowing into this river. When the main river rises, the tributary drains slowly and can back up.",
       "openMap": "See the map of the water's path"
     },
     "disclaimer": {
       "notAnAlert": "This is not an alert from Jaga. These are figures the dam publishes itself. If an alert is needed, the authorities issue it.",
-      "noArrivalTime": "Nobody can yet say when the water reaches each place: the travel time down from the dam has not been measured."
+      "noArrivalTime": "Nobody can yet say when the water reaches each place: the travel time from the dam downstream has not been analysed."
     },
     "source": "Source: {operator}, published through ThaiWater",
     "path": {
       "title": "The path water takes when the dam releases",
-      "tambons": "Through {count, plural, one {# tambon} other {# tambons}} along the river, and {tributary, plural, one {# more} other {# more}} on the lower reaches of the streams that join it",
-      "limits": "The line on the map is the course of the river, not the edge of a flood. Somewhere off the line can still flood.",
-      "spillwayNotMapped": "The channel from the spillway is not in the map, so it is shown as a point rather than a line.",
+      "tambons": "Through {count, plural, one {# tambon} other {# tambons}} along the main river, and {tributary, plural, one {# more} other {# more}} on the lower reaches of the tributaries that join it",
+      "limits": "The line on the map is the course of the river, not a flood extent. Areas off the line can still flood.",
+      "spillwayNotMapped": "The spillway discharge channel is not in the map data, so it is shown as a point rather than a line.",
       "credit": "River and reservoir from OpenStreetMap. Only the tributaries somebody has already mapped are shown."
     },
     "legend": {
       "reservoir": "{dam} reservoir",
-      "river": "{river} below the dam",
-      "tributary": "Lower reaches of the streams that join the river"
+      "river": "{river} downstream of the dam",
+      "tributary": "Lower reaches of the tributaries joining the main river"
     }
   }
 }

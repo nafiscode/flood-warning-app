@@ -206,7 +206,7 @@ describe("the notice is not an alert", () => {
         now={EXAMPLE_NOW}
       />,
     );
-    expect(container.textContent).toContain("ข้อมูลของเวลา");
+    expect(container.textContent).toContain(th.dam.figures.observed.split(" {")[0]);
     expect(container.textContent).toMatch(/ชั่วโมงที่แล้ว/);
   });
 
@@ -347,7 +347,7 @@ describe("the card carries the limits of the lines", () => {
     const { container } = renderWithIntl(
       <DamCard dam={withSignal(exampleDamSignal("awaiting"))} now={EXAMPLE_NOW} />,
     );
-    expect(container.textContent).toContain("รอค่าถัดไป");
+    expect(container.textContent).toContain("รอข้อมูลชั่วโมงถัดไป");
     // The figure itself is still on screen: 1,944 m3/s, the archive's impossible hour.
     expect(container.textContent).toContain("1,944");
   });
