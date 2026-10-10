@@ -134,6 +134,21 @@ Reading it:
 - The check is radar against radar. It says the classes predict where the same instrument sees water again, not that people were flooded there. It cannot test the built-up rule at all, because the radar does not see flood in towns.
 - 8,772 km² is Minimal on elevation alone: hill land the radar masks, with HAND above 5 m.
 
+## Hazard classes on the second radar run (10 Oct 2026, not final)
+
+Same rules, radar run `c97e0bf` (`classes.radar_hash`).
+
+| Class | First radar run | Second radar run | Buildings (second run) |
+|---|---|---|---|
+| High | 916 km² | 1,238 km² (6.6 %) | 114,168 |
+| Medium | 1,399 km² | 2,042 km² (10.9 %) | 769,566 |
+| Low | 3,451 km² | 2,963 km² (15.8 %) | 653,762 |
+| Minimal | 13,007 km² | 12,529 km² (66.7 %) | 719,774 |
+
+- Hat Yai centre: 9 % High, 73 % Medium, 16 % Low. Pattani town: 13 % High, 60 % Medium, 25 % Low.
+- Hold-out without 2025: Medium and High catch 73.9 % of the 2025 radar flood (72.8 % before), CSI 0.36 (0.40 before). The held-out flood is larger now (six more passes and the smaller patch filter), and the classes are larger too.
+- Buildings in High went from 20,725 to 114,168. The smaller patch filter keeps small flagged patches between houses; whether these are water or radar noise next to buildings is not known. Open for the owner with the earlier question on buildings in Medium.
+
 ## Known issues and open points
 
 - Stream threshold, river burning and the coastal rule were decided on 8 Oct 2026 (above). The burn depth (10 m) and the choice of rivers only are first values.

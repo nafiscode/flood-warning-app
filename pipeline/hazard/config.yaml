@@ -62,7 +62,7 @@ buildings:
 
 # Hazard classes (classes.py). Plan approved by the owner on 2026-10-09; every number is a starting value.
 classes:
-  radar_hash: cd222f1                 # which radar run feeds the classes; c97e0bf when the second run is in
+  radar_hash: c97e0bf                 # which radar run feeds the classes; c97e0bf when the second run is in
   seasons: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
   season_scale_m: 20
   events: [2024-nov-dec, 2025-nov-dec]

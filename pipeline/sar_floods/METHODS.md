@@ -246,6 +246,23 @@ Land in the four provinces by slope and MERIT HAND (km², 30 m, from Earth Engin
 
 Both priority events and the nine seasons are being exported again with `c97e0bf` (started 8 Oct; the 43 stored references were copied to the new names, since neither change touches them; the 2024 event gets stored references for the first time). Results replace the figures in the sections above when they are in.
 
+## Results of the second parameter set (10 Oct 2026, not validated)
+
+Run `c97e0bf`: both events at 10 m, the nine seasons at 20 m, and orbit D164 for 2025 against a dry reference from Feb–Apr 2026 (`reference_exceptions`; a reference from after the event, recorded as an exception on 9 Oct). 401 exports in 234.7 EECU-hours, plus 2 references and 16 passes for D164 in about 56. One export stayed in the state RUNNING for 18 hours after its compute had ended; it was cancelled and run again. The figures are in `out/sar_floods/check-second-run.json`.
+
+| | First run (`cd222f1`) | Second run (`c97e0bf`) |
+|---|---|---|
+| Land masked as terrain | 53.1 % | 48.5 % |
+| Event 2024, VV flood at least once | 693 km² | 719 km² |
+| Event 2025, VV flood at least once | 832 km² (19 passes) | 1,058 km² (25 passes, with D164) |
+| Seasons at 20 m, VV flood | 448–1,048 km² | 638–1,365 km² |
+| Seasons at 20 m, VH only | 240–333 km² | 373–706 km² |
+| Flooded at least once in nine seasons | 21 % of observed land | 3,202 km², 33 % |
+
+- At 10 m the change is small (2024: +4 %), and it comes from the land the slope rule no longer masks.
+- At 20 m every season rose by 26 to 64 %. The patch filter went from 8 pixels (3,200 m²) to 2 pixels (800 m²), so seasons and events now mean the same area; it also lets two-pixel speckle through. VH-only nearly doubled, which points the same way. A single season's extent at 20 m is therefore noisier than before; the frequency with its floor (at least 2 of 9 seasons, or over 2 % of valid passes) is what the hazard classes use.
+- Hat Yai city centre: the D164 pass of 23 Nov 2025, 23:02 UTC (24 Nov, 06:02 in Bangkok) flags 0.04 of 9.2 km². The radar still does not show the flood of 19–21 Nov there: built-up land, and the water may have gone down.
+
 ## To check by eye in the Code Editor
 
 `code_editor/sar_floods.js` runs the same chain for one pass. For at least one pass per orbit of each priority event:
