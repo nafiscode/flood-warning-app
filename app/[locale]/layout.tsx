@@ -10,6 +10,7 @@ import { HotlineBar } from "@/components/HotlineBar";
 import { DaylightTheme } from "@/components/DaylightTheme";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { QueueRunner } from "@/components/QueueRunner";
+import { NoticeBell } from "@/components/notices/NoticeBell";
 import { WeatherChip } from "@/components/weather/WeatherChip";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -110,7 +111,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   */}
                   <WeatherChip where="header" className="hidden lg:inline-flex" />
                 </div>
+
                 <div className="flex items-center">
+                  {/*
+                    The bell: what they missed while the app was closed (the owner's request,
+                    10 Oct). In the same row as the three links — on its own it wrapped the links
+                    onto a line of their own and made the frozen header 96 px taller at 360 px.
+                  */}
+                  <NoticeBell />
                   {/* Home as a word, not only the logo: people don't tap a logo to go back. */}
                   <Link
                     href="/"

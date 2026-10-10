@@ -389,6 +389,34 @@
     "map": "Peta",
     "admin": "Admin"
   },
+  "notices": {
+    "title": "Pemberitahuan",
+    "sub": "14 hari lepas",
+    "open": "Buka pemberitahuan",
+    "openWithCount": "Buka pemberitahuan, {count} baharu",
+    "close": "Tutup",
+    "none": "Tiada pemberitahuan dalam 14 hari lepas.",
+    "noneHint": "Amaran untuk kawasan anda dan tempat yang anda jaga akan muncul di sini.",
+    "noArea": "Pilih kawasan anda di halaman utama dahulu, kemudian amarannya akan muncul di sini.",
+    "new": "Baharu",
+    "markAllRead": "Tandakan semua dibaca",
+    "checked": "Disemak {time}",
+    "home": "Rumah saya",
+    "yourArea": "Kawasan anda",
+    "see": "Lihat butiran",
+    "ended": "Amaran sudah tamat",
+    "announcement": "Pengumuman daripada Jaga",
+    "announcementNote": "Bukan amaran bahaya",
+    "sos": {
+      "title": "Permintaan bantuan anda",
+      "accepted": "Satu pasukan telah menerima permintaan anda.",
+      "assigned_by_admin": "Pentadbir telah menyerahkan permintaan anda kepada satu pasukan.",
+      "en_route": "Pasukan penyelamat sedang dalam perjalanan kepada anda.",
+      "rescued": "Direkodkan bahawa anda telah diselamatkan.",
+      "by": "Oleh {unit}",
+      "see": "Lihat permintaan anda"
+    }
+  },
   "signIn": {
     "title": "Log masuk",
     "visitorNote": "Tak perlu log masuk untuk minta tolong (SOS), tengok amaran atau telefon talian kecemasan.",

@@ -27,6 +27,26 @@ function Icon({ size = 24, children, ...rest }: IconProps & { children: React.Re
   );
 }
 
+/** The bell in the header: what you missed while you were away. */
+export function BellIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6 9a6 6 0 0 1 12 0c0 4 1.2 5.6 2 6.5H4c.8-.9 2-2.5 2-6.5z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </Icon>
+  );
+}
+
+/** A word from the admins, which is never a hazard alert. */
+export function MegaphoneIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 10v4a1 1 0 0 0 1 1h3l8 4V5l-8 4H5a1 1 0 0 0-1 1z" />
+      <path d="M19 9.5a3.5 3.5 0 0 1 0 5" />
+    </Icon>
+  );
+}
+
 /** Normal: a check in a circle. */
 export function CheckIcon(props: IconProps) {
   return (

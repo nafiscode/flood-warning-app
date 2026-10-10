@@ -389,6 +389,34 @@
     "map": "Map",
     "admin": "Admin"
   },
+  "notices": {
+    "title": "Notifications",
+    "sub": "The last 14 days",
+    "open": "Open notifications",
+    "openWithCount": "Open notifications, {count} new",
+    "close": "Close",
+    "none": "Nothing in the last 14 days.",
+    "noneHint": "Alerts for your area and the places you watch appear here.",
+    "noArea": "Choose your area on the home screen, and its alerts will appear here.",
+    "new": "New",
+    "markAllRead": "Mark all read",
+    "checked": "Checked at {time}",
+    "home": "My home",
+    "yourArea": "Your area",
+    "see": "See the details",
+    "ended": "This alert has ended",
+    "announcement": "A message from Jaga",
+    "announcementNote": "Not a hazard alert",
+    "sos": {
+      "title": "Your request for help",
+      "accepted": "A team accepted your request.",
+      "assigned_by_admin": "An admin handed your request to a team.",
+      "en_route": "A rescue team is on the way to you.",
+      "rescued": "You were recorded as rescued.",
+      "by": "By {unit}",
+      "see": "See your request"
+    }
+  },
   "signIn": {
     "title": "Sign in",
     "visitorNote": "You don't need to sign in to send an SOS, see alerts or call the hotlines.",

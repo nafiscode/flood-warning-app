@@ -76,9 +76,10 @@ export function impactMessages(messages: AbstractIntlMessages): AbstractIntlMess
 }
 
 /**
- * The layout, on every page: the language switcher's text and the few lines the weather chip in
- * the header needs. The weather page's own text is not sent with it, so a page that nobody opens
- * the weather from stays as small as it was.
+ * The layout, on every page: the language switcher's text, the few lines the weather chip in the
+ * header needs, and the bell's list. The weather page's own text is not sent with it, so a page
+ * that nobody opens the weather from stays as small as it was. Of the alert namespace only the
+ * five level names travel: the bell shows a level badge, not a checklist.
  */
 export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   const all = messages as Messages;
@@ -88,5 +89,7 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     // The Admin link is drawn in the browser, so the header's labels go with it: four words.
     nav: all.nav!,
     weather: { chip: weather.chip, codes: weather.codes },
+    notices: all.notices!,
+    alert: { level: (all.alert as Messages).level! },
   };
 }
