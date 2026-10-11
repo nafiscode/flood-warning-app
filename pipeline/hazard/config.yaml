@@ -62,7 +62,7 @@ buildings:
 
 # Hazard classes (classes.py). Plan approved by the owner on 2026-10-09; every number is a starting value.
 classes:
-  radar_hash: c97e0bf                 # which radar run feeds the classes; c97e0bf when the second run is in
+  radar_hash: c97e0bf                 # which radar run feeds the classes (the second run, 8 Oct settings)
   seasons: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
   season_scale_m: 20
   events: [2024-nov-dec, 2025-nov-dec]
@@ -75,10 +75,23 @@ classes:
     built_window_cells: 5             # 150 m: flooding between buildings is hidden well beyond one cell
     medium_max_hand_m: 2.0
     low_max_hand_m: 5.0
+    built_high_min_seasons: 6         # High in built-up land needs this many flooded seasons; events alone do not count
   # Places to read the result at: [west, south, east, north].
   benchmarks:
     "Hat Yai city centre (heavily flooded 19-21 Nov 2025, owner)": [100.455, 6.995, 100.485, 7.020]
     "Pattani town (flooded Nov 2024, owner)": [101.235, 6.855, 101.275, 6.885]
+
+# Vector tiles of the classes (tiles.py). At max_zoom a tile pixel is about 38 m, the raster's own detail;
+# MapLibre stretches the deepest tiles when someone zooms in further.
+tiles:
+  min_zoom: 6
+  max_zoom: 11
+  tile_px: 512
+  buffer_px: 4
+  coarse_min_share: 0.25              # a coarse cell takes the highest class filling at least this much of it
+  description: "Flood hazard classes for Pattani, Yala, Narathiwat and Songkhla from height above the nearest stream and nine seasons of Sentinel-1 radar. Not validated against observed floods; not a forecast."
+  attribution: "Jaga; FABDEM (Hawker et al. 2022); Copernicus Sentinel-1; OpenStreetMap contributors; Google Open Buildings"
+  licence: "CC BY-NC-SA 4.0"
 
 # Local outputs, relative to pipeline/ (ignored by git through the root rule "out/").
 output_dir: out/hazard

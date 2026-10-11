@@ -15,6 +15,10 @@ Commands
                                the hazard classes from HAND, the radar seasons and events, and buildings
                                -> <output_dir>/classes/. --hold-out leaves a year's season and event out
                                and scores the classes against that event.
+  tambons [--radar-hash HASH]  area and buildings per class in every tambon, from the class raster
+                               -> <output_dir>/tambons/hazard_by_tambon_<hash>.csv
+  tiles [--radar-hash HASH]    the classes as vector tiles in one PMTiles file for the map
+                               -> <output_dir>/tiles/hazard_classes_<hash>.pmtiles
   streams-compare              score every candidate stream network against OpenStreetMap waterways
                                (fetched once from Overpass, cached in <output_dir>/osm/) and JRC water;
                                writes <output_dir>/streams_compare.json
@@ -37,7 +41,7 @@ from ingest_thaiwater.settings import PIPELINE_DIR, env_value
 from sar_floods import aoi as aoi_module
 from sar_floods import ee_ops, settings as sar_settings
 
-from . import buildings, classes, compare, hand, sources
+from . import buildings, classes, compare, hand, sources, tambons, tiles
 
 CONFIG_PATH = Path(__file__).resolve().parent / "config.yaml"
 
@@ -246,6 +250,46 @@ def run_classes(cfg: dict, hold_out: int | None, radar_hash: str | None) -> None
     print(json.dumps(stats, indent=1, ensure_ascii=False))
 
 
+def _class_raster(cfg: dict, radar_hash: str | None) -> tuple[Path, str]:
+    h = radar_hash or cfg["classes"]["radar_hash"]
+    path = output_dir(cfg) / "classes" / f"hazard_classes_{h}.tif"
+    if not path.exists():
+        raise sar_settings.ConfigError(f"{path.name} is missing: run `hazard classes` first.")
+    return path, h
+
+
+def run_tambons(cfg: dict, radar_hash: str | None) -> None:
+    import rasterio
+
+    path, h = _class_raster(cfg, radar_hash)
+    root = output_dir(cfg)
+    with rasterio.open(path) as src:
+        cls, basis, transform, crs = src.read(1), src.read(2), src.transform, src.crs.to_string()
+    with rasterio.open(root / "buildings" / f"buildings_{cfg['buildings']['year']}_{cfg['export']['scale_m']}m.tif") as src:
+        building_count = src.read(2)
+    places = tambons.tambon_geometries()
+    index = tambons.index_raster(places, crs, transform, cls.shape)
+    rows = tambons.summarise(index, cls, basis, building_count, len(places), transform.a ** 2 / 1e6)
+    dest = root / "tambons" / f"hazard_by_tambon_{h}.csv"
+    tambons.write_csv(dest, places, rows, h)
+    empty = [t["code"] for t, r in zip(places, rows) if r["land_km2"] == 0]
+    print(f"{dest.name}: {len(rows)} tambons, {sum(r['land_km2'] for r in rows):.0f} km2, "
+          f"{sum(r['buildings'] for r in rows)} buildings; without any classed cell: {empty or 'none'}")
+
+
+def run_tiles(cfg: dict, radar_hash: str | None) -> None:
+    path, h = _class_raster(cfg, radar_hash)
+    t = cfg["tiles"]
+    west, south, east, north = aoi_module.bounds(aoi_module.load())
+    meta = {"name": "Jaga flood hazard classes", "version": h, "type": "overlay",
+            "description": t["description"], "attribution": t["attribution"], "licence": t["licence"],
+            "classes": "2 low, 3 medium, 4 high; minimal (1) is not drawn"}
+    dest = output_dir(cfg) / "tiles" / f"hazard_classes_{h}.pmtiles"
+    print(json.dumps(tiles.build(path, dest, (west, south, east, north), min_zoom=t["min_zoom"], max_zoom=t["max_zoom"],
+                                 tile_px=t["tile_px"], buffer_px=t["buffer_px"], min_share=t["coarse_min_share"],
+                                 metadata=meta), indent=1))
+
+
 def run_compare(cfg: dict) -> None:
     root = output_dir(cfg)
     c, h = cfg["compare"], cfg["hand"]
@@ -277,6 +321,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("classes")
     p.add_argument("--hold-out", type=int, default=None)
     p.add_argument("--radar-hash", default=None)
+    for name in ("tambons", "tiles"):
+        sub.add_parser(name).add_argument("--radar-hash", default=None)
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     try:
@@ -295,6 +341,12 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "streams-compare":
             run_compare(cfg)
+            return 0
+        if args.command == "tambons":
+            run_tambons(cfg, args.radar_hash)
+            return 0
+        if args.command == "tiles":
+            run_tiles(cfg, args.radar_hash)
             return 0
         project = sar_settings.ee_project()
         if args.command == "sources-export":

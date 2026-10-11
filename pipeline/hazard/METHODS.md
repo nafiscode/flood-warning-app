@@ -149,6 +149,23 @@ Same rules, radar run `c97e0bf` (`classes.radar_hash`).
 - Hold-out without 2025: Medium and High catch 73.9 % of the 2025 radar flood (72.8 % before), CSI 0.36 (0.40 before). The held-out flood is larger now (six more passes and the smaller patch filter), and the classes are larger too.
 - Buildings in High went from 20,725 to 114,168. The smaller patch filter keeps small flagged patches between houses; whether these are water or radar noise next to buildings is not known. Open for the owner with the earlier question on buildings in Medium.
 
+## High in built-up land, the tambon table and the tiles (12 Oct 2026, not validated)
+
+**High needs more seasons in built-up land.** On the second radar run 114,168 buildings were High, five times the first run, because the smaller patch filter keeps small flagged patches between houses and the radar cannot say whether those are water or reflections off walls. In built-up cells High now needs flood in at least 6 of the 9 seasons (`radar_blind.built_high_min_seasons`), and the two priority events alone no longer make a built-up cell High. Open land is unchanged. A cell that loses High stays Medium.
+
+| Class | Before | After | Buildings after |
+|---|---|---|---|
+| High | 1,238 km² | 1,208 km² | 57,513 |
+| Medium | 2,042 km² | 2,072 km² | 826,222 |
+| Low | 2,963 km² | 2,963 km² | 653,762 |
+| Minimal | 12,529 km² | 12,529 km² | 719,774 |
+
+Hat Yai centre: 2 % High, 80 % Medium. Pattani town: 8 % High, 65 % Medium. The hold-out score does not move (73.9 %, CSI 0.36), because it counts Medium and High together. The limit of 6 is a starting value, not a measured one.
+
+**Tambon table** (`hazard tambons` -> `out/hazard/tambons/hazard_by_tambon_<run>.csv`): for each of the 377 tambons the area and the buildings in every class, the share of its buildings that are Medium or High, and how much of its Medium and High land rests on elevation alone. 45 tambons have more than half of their buildings in Medium or High; the largest counts are in Hat Yai, Sateng (Yala town) and Kho Hong, and there the class comes from elevation for 73 to 96 % of the land, not from the radar. The table says how much of a tambon is in each class; it does not give a tambon one class.
+
+**Tiles** (`hazard tiles` -> `out/hazard/tiles/hazard_classes_<run>.pmtiles`): one vector layer `hazard` with Low, Medium and High as polygons (`class` 2, 3, 4), zoom 6 to 11, 4.2 MB. Written in Python without tippecanoe: each tile is the class raster on the tile's own 512-pixel grid, and the pixel edges are the polygons, so at zoom 11 a pixel is about 38 m and nothing is smoothed. Coarser zooms take, per coarse cell, the highest class that fills at least a quarter of it. Check: the class areas summed from the zoom-11 tiles are within 0.6 % of the raster's, and no geometry is invalid. Minimal is not drawn, so the app has to say in words what an empty place means. Not yet looked at in MapLibre itself.
+
 ## Known issues and open points
 
 - Stream threshold, river burning and the coastal rule were decided on 8 Oct 2026 (above). The burn depth (10 m) and the choice of rivers only are first values.

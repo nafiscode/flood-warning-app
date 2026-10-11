@@ -44,6 +44,14 @@ def test_hazard_classes_follow_the_approved_rules():
     events = np.array([[2, 1, 0, 0, 0, 0, 0, 2, 0, 0]], dtype="uint8")
     cls, _ = classes.classify(hand_m, land, np.zeros_like(seasons), np.zeros_like(freq), events, observed, built, RULES, 2)
     assert cls[0, :2].tolist() == [4, 3] and cls[0, 7] == 4
+    # With the stricter rule for built-up land, the events alone no longer make it high there, and it
+    # takes more flooded seasons; open land is unchanged.
+    strict = {**RULES, "radar_blind": {**RULES["radar_blind"], "built_high_min_seasons": 6}}
+    cls, _ = classes.classify(hand_m, land, np.zeros_like(seasons), np.zeros_like(freq), events, observed, built, strict, 2)
+    assert cls[0, 7] == 3 and cls[0, 0] == 4
+    many = np.array([[0, 0, 0, 5, 0, 5, 6, 0, 0, 0]], dtype="uint8")
+    cls, _ = classes.classify(hand_m, land, many, np.zeros_like(freq), np.zeros_like(events), observed, built, strict, 2)
+    assert cls[0, 3] == 4 and cls[0, 5] == 3 and cls[0, 6] == 4
     # With one event left (the hold-out run) "all events" cannot make a cell high.
     cls, _ = classes.classify(hand_m, land, np.zeros_like(seasons), np.zeros_like(freq), np.minimum(events, 1), observed, built, RULES, 1)
     assert cls[0, 0] == 3
@@ -204,3 +212,60 @@ def test_hand_is_zero_on_the_stream_and_rises_up_the_valley_sides(tmp_path):
     seeds[10, mid + 10] = True
     paths = hand.downslope_paths(pointer, seeds)
     assert paths[50:56, mid].all() and not paths[:10].any() and not paths[:, :mid].any()
+
+
+def test_tambon_rows_add_up_and_say_what_rests_on_elevation():
+    from hazard import tambons
+
+    index = np.array([[1, 1, 1, 2, 2, 0]], dtype="uint16")
+    cls = np.array([[4, 3, 1, 3, 0, 4]], dtype="uint8")
+    basis = np.array([[1, 2, 1, 3, 0, 1]], dtype="uint8")
+    b = np.array([[2.0, 6.0, 2.0, 0.2, 9.0, 9.0]], dtype="float32")
+    one, two = tambons.summarise(index, cls, basis, b, 2, 0.5)
+    assert one["land_km2"] == 1.5 and one["high_km2"] == 0.5 and one["medium_pct"] == pytest.approx(33.3)
+    assert one["buildings"] == 10 and one["high_buildings"] == 2 and one["buildings_medium_or_high_pct"] == 80.0
+    assert one["medium_or_high_by_elevation_only_pct"] == 50.0
+    # A cell without a class (sea, no elevation) counts for nothing; too few buildings give no share.
+    assert two["land_km2"] == 0.5 and two["buildings"] == 0 and two["buildings_medium_or_high_pct"] is None
+    assert two["medium_or_high_by_elevation_only_pct"] == 100.0
+    row = "  ('900101', '9001', '90', 'x', 'Bo''s', extensions.st_geomfromtext('MULTIPOLYGON (((0 0, 1 0, 1 1, 0 0)))', 4326), x)"
+    m = tambons._ROW.match(row)
+    assert m and m[1] == "900101" and m[3] == "Bo''s"
+
+
+def test_tiles_coarsen_by_share_and_keep_cell_edges(tmp_path):
+    import rasterio
+    from rasterio.transform import from_origin
+
+    from hazard import tiles
+
+    block = np.array([[4, 1, 1, 1], [1, 1, 1, 1], [3, 3, 1, 1], [3, 3, 2, 2]], dtype="uint8")
+    assert tiles.coarsen(block, 4, 0.25).tolist() == [[3]]          # one High cell in 16 is not a quarter
+    assert tiles.coarsen(block, 2, 0.25).tolist() == [[4, 1], [3, 2]]
+    assert tiles.coarsen(np.zeros((3, 3), dtype="uint8"), 2, 0.25).tolist() == [[0, 0], [0, 0]]
+    w, s, e, n = tiles.tile_bounds(1, 1, 0)
+    assert (w, s) == (0.0, 0.0) and e == pytest.approx(tiles.WORLD) and n == pytest.approx(tiles.WORLD)
+    assert set(tiles.tiles_for((100.0, 6.0, 101.9, 7.9), 6)) == {(6, 49, 30), (6, 50, 30)}
+    px = np.zeros((6, 6), dtype="uint8")
+    px[1:3, 1:3] = 4                                                  # 2 x 2 pixels, one pixel of buffer
+    px[4, 4] = 1                                                      # Minimal is not drawn
+    polys = tiles.tile_polygons(px, 1, 4)
+    assert list(polys) == [4] and polys[4].bounds == (0.0, 0.0, 2048.0, 2048.0)
+    # End to end on a small raster near Pattani: the file opens and a tile decodes with its classes.
+    cls = np.ones((200, 200), dtype="uint8")
+    cls[50:120, 40:160] = 3
+    cls[60:80, 60:90] = 4
+    path = tmp_path / "cls.tif"
+    with rasterio.open(path, "w", driver="GTiff", dtype="uint8", count=1, width=200, height=200, crs="EPSG:32647",
+                       transform=from_origin(745000, 762000, 30, 30), nodata=0) as dst:
+        dst.write(cls, 1)
+    out = tiles.build(path, tmp_path / "t.pmtiles", (101.2, 6.82, 101.28, 6.9), min_zoom=9, max_zoom=11, tile_px=512,
+                      buffer_px=4, min_share=0.25, metadata={"name": "test"})
+    assert out["tiles"] >= 3 and out["zooms"][11]["tiles"] >= 1
+    with rasterio.open(path) as src:
+        from rasterio.warp import transform as warp_xy
+        lon, lat = warp_xy(src.crs, "EPSG:4326", [745000 + 75 * 30], [762000 - 70 * 30])
+    z, x, y = tiles.tiles_for((lon[0], lat[0], lon[0], lat[0]), 11)[0]
+    layer = tiles.read_tile(tmp_path / "t.pmtiles", z, x, y)["hazard"]
+    assert layer["extent"] == 4096 and {f["properties"]["class"] for f in layer["features"]} == {3, 4}
+    assert tiles.read_tile(tmp_path / "t.pmtiles", 11, 0, 0) is None

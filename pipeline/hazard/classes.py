@@ -8,7 +8,8 @@
 
 Where the radar cannot see (built-up land, land under the radar's terrain mask) the class comes from
 HAND alone: under `radar_blind.medium_max_hand_m` at least medium, under `radar_blind.low_max_hand_m` at
-least low. A radar flag is still used where there is one. The second band says what a cell's class rests on:
+least low. A radar flag is still used where there is one; in built-up land High asks for more flooded seasons
+(`radar_blind.built_high_min_seasons`, owner 2026-10-11). The second band says what a cell's class rests on:
 
   1 radar and elevation   2 elevation only: built-up   3 elevation only: masked for the radar or never observed
 
@@ -65,6 +66,11 @@ def classify(hand: np.ndarray, land: np.ndarray, seasons_flooded: np.ndarray, fr
     cls[by_elevation & (known < blind["low_max_hand_m"])] = LOW
     cls[by_elevation & (known < blind["medium_max_hand_m"])] = MEDIUM
     cls[radar_medium] = np.maximum(cls[radar_medium], MEDIUM)
+    # Between buildings a radar flag is less sure (corner reflections, small patches), so built-up land
+    # needs more flooded seasons before it is High, and the events alone do not make it High.
+    built_min = blind.get("built_high_min_seasons")
+    if built_min:
+        radar_high = np.where(built, seasons_flooded >= built_min, radar_high)
     cls[radar_high] = HIGH
     basis = np.full(hand.shape, RADAR, dtype="uint8")
     basis[unseen] = UNSEEN
