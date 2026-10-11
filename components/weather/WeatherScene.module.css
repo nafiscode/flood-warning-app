@@ -100,6 +100,16 @@
   animation: drift 32s linear infinite;
 }
 
+/* At night the mist is a faint band, not a white bar across a dark sky. */
+.mistDark {
+  background: linear-gradient(
+    90deg,
+    rgba(200, 214, 224, 0),
+    rgba(200, 214, 224, 0.2),
+    rgba(200, 214, 224, 0)
+  );
+}
+
 /* Rain. Fine drops for drizzle and showers, longer streaks when it is coming down. */
 .drop {
   width: 1.5px;

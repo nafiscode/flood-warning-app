@@ -1154,6 +1154,7 @@
     "weather": {
       "title": "The weather page, as an example",
       "forecast": "Forecast",
+      "night": "At night",
       "skies": "Every sky",
       "choose": "No place chosen yet",
       "offline": "Offline"

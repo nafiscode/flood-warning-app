@@ -11,6 +11,13 @@ import { hint } from "@/lib/ui";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
+/*
+ * Rendered per request: the scenario is in the address (?s=night, ?s=skies), and a prerendered
+ * page serves the same HTML whatever the query, so every scenario would show the first one.
+ * That is how the night example looked like day in a build (and would on a preview deployment).
+ */
+export const dynamic = "force-dynamic";
+
 /**
  * The weather page with a made-up forecast, for reading the wording without waiting for real
  * weather (decision 2026-10-08: examples live only on /dev). Development and preview only.

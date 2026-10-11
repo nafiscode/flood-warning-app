@@ -25,6 +25,7 @@ import {
   exampleAlert,
   exampleStatus,
   EXAMPLE_GRID,
+  EXAMPLE_NIGHT,
   EXAMPLE_PINS,
   EXAMPLE_WEATHER,
   EXAMPLE_WEATHER_PLACE,
@@ -99,9 +100,10 @@ export function WeatherExample({ scenario }: { scenario: WeatherScenario }) {
       place={place}
       detail={place?.from === "area" ? areaName("th", BANA) : null}
       weather={place ? EXAMPLE_WEATHER : null}
-      fetchedAt={EXAMPLE_NOW - 4 * 60_000}
+      fetchedAt={(scenario === "night" ? EXAMPLE_NIGHT : EXAMPLE_NOW) - 4 * 60_000}
       failed={scenario === "offline"}
-      now={EXAMPLE_NOW}
+      // The night example is the same card at 23:00, so the dark skies can be judged by day.
+      now={scenario === "night" ? EXAMPLE_NIGHT : EXAMPLE_NOW}
       picking={false}
       onPick={() => setPlace(null)}
       onChoose={setPlace}

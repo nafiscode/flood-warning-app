@@ -17,6 +17,8 @@ import type { AlertLevel } from "@/lib/brand/tokens";
 
 /** The examples are seen at 16:30 Bangkok time on 20 November 2026. */
 export const EXAMPLE_NOW = Date.parse("2026-11-20T09:30:00Z");
+/** The same day at 23:00 in Bangkok, for looking at the night skies without waiting for dusk. */
+export const EXAMPLE_NIGHT = EXAMPLE_NOW + 6.5 * 60 * 60_000;
 const ago = (minutes: number) => new Date(EXAMPLE_NOW - minutes * 60_000).toISOString();
 const ahead = (minutes: number) => ago(-minutes);
 
@@ -301,7 +303,7 @@ export function homeExample(scenario: HomeScenario): {
   }
 }
 
-export const WEATHER_SCENARIOS = ["forecast", "skies", "choose", "offline"] as const;
+export const WEATHER_SCENARIOS = ["forecast", "night", "skies", "choose", "offline"] as const;
 export type WeatherScenario = (typeof WEATHER_SCENARIOS)[number];
 
 /**

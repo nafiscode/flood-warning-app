@@ -1154,6 +1154,7 @@
     "weather": {
       "title": "Contoh halaman cuaca",
       "forecast": "Ramalan",
+      "night": "Malam",
       "skies": "Semua langit",
       "choose": "Belum pilih tempat",
       "offline": "Luar talian"

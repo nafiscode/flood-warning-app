@@ -73,7 +73,7 @@ export function WeatherScene({ scene, now }: Props) {
         MIST.map(([top, duration, delay], i) => (
           <span
             key={i}
-            className={styles.mist}
+            className={`${styles.mist} ${look.ink === "light" ? styles.mistDark : ""}`}
             style={{
               top: `${top}%`,
               animationDuration: `${duration}s`,

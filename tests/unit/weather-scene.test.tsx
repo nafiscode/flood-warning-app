@@ -41,7 +41,36 @@ describe("the sky behind the temperature", () => {
     expect(sceneFor("clear", true)).toBe("clearDay");
     expect(sceneFor("clear", false)).toBe("clearNight");
     expect(sceneFor("rainHeavy", true)).toBe("rain");
-    expect(sceneFor("showers", false)).toBe("showers");
+    expect(sceneFor("showers", false)).toBe("showersNight");
+    expect(sceneFor("rainHeavy", false)).toBe("rainNight");
+  });
+
+  it("has a dark sky for every condition at night, not only for a clear one", () => {
+    // The owner, 12 Oct: in the rainy season the card looked like daytime all night, because
+    // only clear and part-cloud skies had a night of their own.
+    const brightness = (hex: string) =>
+      [1, 3, 5].reduce((sum, i) => sum + Number.parseInt(hex.slice(i, i + 2), 16), 0) / 3;
+    for (const group of WEATHER_GROUPS) {
+      const day = SCENE_LOOKS[sceneFor(group, true)];
+      const night = SCENE_LOOKS[sceneFor(group, false)];
+      expect(sceneFor(group, false)).not.toBe(sceneFor(group, true));
+      expect(night.ink).toBe("light");
+      for (const i of [0, 1]) {
+        expect(brightness(night.sky[i]!)).toBeLessThan(brightness(day.sky[i]!));
+        // Dark enough to read as night, not merely a shade duller than the day.
+        expect(brightness(night.sky[i]!)).toBeLessThan(100);
+      }
+    }
+  });
+
+  it("puts no moon or stars in a sky the cloud has covered", () => {
+    for (const scene of SCENES) {
+      const look = SCENE_LOOKS[scene];
+      if (look.clouds === 3 || look.mist || look.flakes) {
+        expect(look.stars ?? false).toBe(false);
+        expect(look.moon ?? false).toBe(false);
+      }
+    }
   });
 
   it("keeps the writing readable on every sky (4.5:1 after the veil)", () => {

@@ -19,12 +19,19 @@ export const SCENES = [
   "partlyDay",
   "partlyNight",
   "overcast",
+  "overcastNight",
   "fog",
+  "fogNight",
   "drizzle",
+  "drizzleNight",
   "rain",
+  "rainNight",
   "showers",
+  "showersNight",
   "thunder",
+  "thunderNight",
   "snow",
+  "snowNight",
 ] as const;
 export type Scene = (typeof SCENES)[number];
 
@@ -59,9 +66,34 @@ export const SCENE_LOOKS: Record<Scene, SceneLook> = {
   showers: { sky: ["#637C8B", "#9DB0B9"], ink: "light", clouds: 3, drops: "fine", glass: true },
   thunder: { sky: ["#2F4350", "#5C7382"], ink: "light", clouds: 3, drops: "streaks", flash: true },
   snow: { sky: ["#8DA2B5", "#DCE5EC"], ink: "dark", clouds: 2, flakes: true },
+  /*
+   * Night in weather that hides the sky. There is no moon and there are no stars in any of
+   * these: the cloud is in the way, and drawing stars through an overcast night would be a
+   * picture of weather that is not happening. Only the sky itself goes dark, and the rain,
+   * mist and snow keep falling through it.
+   */
+  overcastNight: { sky: ["#1A2631", "#303F4B"], ink: "light", clouds: 3 },
+  fogNight: { sky: ["#1F2B34", "#3A4850"], ink: "light", mist: true, clouds: 2 },
+  drizzleNight: { sky: ["#17232D", "#2C3B47"], ink: "light", clouds: 3, drops: "fine" },
+  rainNight: { sky: ["#111B24", "#273743"], ink: "light", clouds: 3, drops: "streaks" },
+  showersNight: {
+    sky: ["#152129", "#2A3A46"],
+    ink: "light",
+    clouds: 3,
+    drops: "fine",
+    glass: true,
+  },
+  thunderNight: {
+    sky: ["#0C141B", "#1E2C37"],
+    ink: "light",
+    clouds: 3,
+    drops: "streaks",
+    flash: true,
+  },
+  snowNight: { sky: ["#1B2733", "#36475A"], ink: "light", clouds: 2, flakes: true },
 };
 
-/** The sky for a condition at this hour of the day. */
+/** The sky for a condition, by day and by night. Every condition has both. */
 export function sceneFor(group: WeatherGroup, isDay: boolean): Scene {
   switch (group) {
     case "clear":
@@ -70,23 +102,23 @@ export function sceneFor(group: WeatherGroup, isDay: boolean): Scene {
     case "partlyCloudy":
       return isDay ? "partlyDay" : "partlyNight";
     case "overcast":
-      return "overcast";
+      return isDay ? "overcast" : "overcastNight";
     case "fog":
-      return "fog";
+      return isDay ? "fog" : "fogNight";
     case "drizzle":
     case "rainLight":
-      return "drizzle";
+      return isDay ? "drizzle" : "drizzleNight";
     case "rain":
     case "rainHeavy":
-      return "rain";
+      return isDay ? "rain" : "rainNight";
     case "showers":
     case "showersHeavy":
-      return "showers";
+      return isDay ? "showers" : "showersNight";
     case "thunder":
     case "thunderHail":
-      return "thunder";
+      return isDay ? "thunder" : "thunderNight";
     case "snow":
-      return "snow";
+      return isDay ? "snow" : "snowNight";
   }
 }
 
