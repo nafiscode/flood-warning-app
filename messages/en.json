@@ -1409,7 +1409,13 @@
       "observed": "Figures as at {time}",
       "age": "about {hours, plural, one {# hour} other {# hours}} ago",
       "stale": "These figures are later than usual. The dam may not have published the latest hourly reading.",
-      "ageRecent": "less than an hour ago"
+      "ageRecent": "less than an hour ago",
+      "daily": {
+        "title": "Over the last {window} hours",
+        "outflow": "Mean outflow {cms, number} m³/s · volume released {mcm, number} million m³ (from {hours, plural, one {# hourly reading} other {# hourly readings}})",
+        "spilled": "of which {mcm, number} million m³ over the spillway",
+        "inflow": "Mean inflow to the reservoir {cms, number} m³/s · volume {mcm, number} million m³ (from {hours, plural, one {# hourly reading} other {# hourly readings}})"
+      }
     },
     "notice": {
       "awaiting": {

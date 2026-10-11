@@ -3,7 +3,16 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ClockIcon, WaveIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
-import { ageHours, attention, flow, trend, type Dam, type DamAttention } from "@/lib/dam";
+import {
+  ageHours,
+  attention,
+  dailyPart,
+  flow,
+  trend,
+  volume,
+  type Dam,
+  type DamAttention,
+} from "@/lib/dam";
 import { localName } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { card, hint, notice } from "@/lib/ui";
@@ -25,7 +34,21 @@ import { card, hint, notice } from "@/lib/ui";
  *   * It makes no sound and sends nothing. The loud one is raised for the admins to review.
  */
 
-function Figures({ dam, now }: { dam: Dam; now: number }) {
+function Figures({
+  dam,
+  now,
+  brief = false,
+}: {
+  dam: Dam;
+  now: number;
+  /**
+   * The notice is read on the home screen, where the day's second line would push the SOS button
+   * further down the page, so it keeps only the figure a person downstream needs: how much water
+   * has been coming down the river. What arrives in the reservoir is the dam's own business and
+   * stays on the dam's card, one tap away.
+   */
+  brief?: boolean;
+}) {
   const t = useTranslations("dam");
   const format = useFormatter();
   const signal = dam.signal;
@@ -33,6 +56,17 @@ function Figures({ dam, now }: { dam: Dam; now: number }) {
   const age = ageHours(signal, now);
   const outflow = flow(signal.outflowCms);
   const spilled = flow(signal.spilledCms);
+  /*
+   * The day behind the newest reading (the owner asked for it on 11 Oct). The hourly figure and
+   * the day's mean answer different questions, and the hour alone can say the opposite of what
+   * the day did: on 11 Oct the newest hour had the dam releasing nothing while the day behind it
+   * had passed 3.98 million m3 downstream. Each mean says how many hours it rests on, because
+   * the feed has gaps (safety rule 8).
+   */
+  const daily = dam.daily;
+  const dailyOut = dailyPart(daily, "outflow");
+  const dailyIn = brief ? null : dailyPart(daily, "inflow");
+  const dailySpill = volume(daily?.spilledMcm ?? null);
   return (
     <div className="flex flex-col gap-1">
       {outflow !== null && (
@@ -51,6 +85,32 @@ function Figures({ dam, now }: { dam: Dam; now: number }) {
       )}
       {signal.levelM !== null && <p>{t("figures.level", { m: signal.levelM.toFixed(2) })}</p>}
       <p>{t(`figures.trend.${trend(signal)}`, { hours: signal.riseWindowH })}</p>
+      {daily && (dailyOut || dailyIn) && (
+        <div className="flex flex-col gap-1">
+          <p className="font-medium">{t("figures.daily.title", { window: daily.windowH })}</p>
+          {dailyOut && (
+            <p>
+              {t("figures.daily.outflow", {
+                cms: dailyOut.cms,
+                mcm: dailyOut.mcm,
+                hours: dailyOut.hours,
+              })}
+              {dailySpill !== null && dailySpill > 0 && (
+                <> {t("figures.daily.spilled", { mcm: dailySpill })}</>
+              )}
+            </p>
+          )}
+          {dailyIn && (
+            <p>
+              {t("figures.daily.inflow", {
+                cms: dailyIn.cms,
+                mcm: dailyIn.mcm,
+                hours: dailyIn.hours,
+              })}
+            </p>
+          )}
+        </div>
+      )}
       <p className={`${hint} flex items-center gap-1.5`}>
         <ClockIcon size={18} aria-hidden="true" />
         {t("figures.observed", {
@@ -104,7 +164,7 @@ export function DamNotice({
             river: localName(dam.river, locale),
           })}
         </p>
-        <Figures dam={dam} now={now} />
+        <Figures dam={dam} now={now} brief />
         {/*
          * The disclaimer is not small print. It says the two things a person could otherwise get
          * wrong: this is not Jaga telling them to do something, and nobody knows when the water

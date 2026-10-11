@@ -1409,7 +1409,13 @@
       "observed": "Data pada jam {time}",
       "age": "kira-kira {hours} jam lepas",
       "stale": "Data lebih lewat daripada biasa. Empangan mungkin belum menerbitkan bacaan jam terkini.",
-      "ageRecent": "kurang daripada sejam lepas"
+      "ageRecent": "kurang daripada sejam lepas",
+      "daily": {
+        "title": "Dalam {window} jam lepas",
+        "outflow": "Kadar pelepasan air purata {cms, number} m³/s · isipadu air dilepaskan {mcm, number} juta m³ (daripada {hours} bacaan sejam)",
+        "spilled": "termasuk {mcm, number} juta m³ melalui alur limpah",
+        "inflow": "Kadar alir masuk purata ke takungan {cms, number} m³/s · isipadu {mcm, number} juta m³ (daripada {hours} bacaan sejam)"
+      }
     },
     "notice": {
       "awaiting": {

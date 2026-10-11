@@ -347,3 +347,105 @@ describe("reviewing a notice", () => {
     expect((await all("select * from dam_feed_log")).length).toBeGreaterThan(0);
   });
 });
+
+/*
+ * The day behind the newest reading (the owner's request of 11 Oct). 0.36 million m3 in an hour
+ * is exactly 100 m3/s, which is what makes these sums readable.
+ */
+describe("the day's mean flow and volume", () => {
+  type Daily = {
+    window_h: number;
+    until: string;
+    inflow_hours: number;
+    inflow_mean_cms: number | null;
+    inflow_mcm: number | null;
+    outflow_hours: number;
+    outflow_mean_cms: number | null;
+    outflow_mcm: number | null;
+    spilled_mcm: number | null;
+  };
+  const daily = (hours?: number) =>
+    one<Daily>(
+      hours === undefined
+        ? "select * from dam_daily('bang_lang')"
+        : `select * from dam_daily('bang_lang', ${hours})`,
+    );
+
+  it("a visitor reads it, like the readings it is made of", async () => {
+    await readings([quiet, quiet, quiet], true);
+    await as(db, "anon");
+    const d = await daily();
+    expect(d.window_h).toBe(24);
+    expect(Number(d.outflow_mcm)).toBeCloseTo(1.11, 5);
+  });
+
+  it("the mean is the volume over the hours that exist, and says how many", async () => {
+    await readings([{ released: 0.36 }, { released: 0.36 }, { released: 0.36 }], true);
+    await as(db, "anon");
+    const d = await daily();
+    expect(d.outflow_hours).toBe(3);
+    // 0.36 Mm3 in an hour is 100 m3/s, whatever the window is called.
+    expect(Number(d.outflow_mean_cms)).toBeCloseTo(100, 6);
+    expect(Number(d.outflow_mcm)).toBeCloseTo(1.08, 6);
+  });
+
+  it("the spillway's share of the day is reported on its own", async () => {
+    await readings(
+      [
+        { released: 0.36, spilled: 0.72 },
+        { released: 0.36, spilled: 0.72 },
+      ],
+      true,
+    );
+    await as(db, "anon");
+    const d = await daily();
+    expect(Number(d.spilled_mcm)).toBeCloseTo(1.44, 6);
+    // The spill is part of what left the dam, not something beside it.
+    expect(Number(d.outflow_mcm)).toBeCloseTo(2.16, 6);
+  });
+
+  it("an hour where the inflow came out negative is kept, not clipped", async () => {
+    // Inflow is a residual of the storage balance, so single hours do come out below zero.
+    // Clipping them would make a day's inflow larger than the water that arrived.
+    await readings([{ inflow: 0.72 }, { inflow: -0.36 }, { inflow: 0.36 }], true);
+    await as(db, "anon");
+    const d = await daily();
+    expect(d.inflow_hours).toBe(3);
+    expect(Number(d.inflow_mcm)).toBeCloseTo(0.72, 6);
+  });
+
+  it("only the hours inside the window count", async () => {
+    await readings([quiet, quiet], true);
+    await asOwner(db);
+    // A big release two days before the window: it must not reach into this day's mean.
+    await db.query(
+      `insert into dam_readings (dam_code, observed_at, storage_mcm, released_mcm_h, spilled_mcm_h)
+       values ('bang_lang', now() - interval '48 hours', 1504, 0.5, 2.3)`,
+    );
+    await as(db, "anon");
+    const d = await daily();
+    expect(d.outflow_hours).toBe(2);
+    expect(Number(d.spilled_mcm)).toBe(0);
+    // A shorter window is the same arithmetic over fewer hours.
+    await readings([quiet, quiet, quiet, quiet]);
+    expect((await daily(2)).outflow_hours).toBe(2);
+  });
+
+  it("a dam with no readings has no day, rather than a day of noughts", async () => {
+    await asOwner(db);
+    await db.query("delete from dam_readings where dam_code = 'bang_lang'");
+    await as(db, "anon");
+    expect(await all("select * from dam_daily('bang_lang')")).toHaveLength(0);
+    expect(await all("select * from dam_daily('no_such_dam')")).toHaveLength(0);
+  });
+
+  it("the app's one read carries the day beside the hour", async () => {
+    await readings([quiet, quiet], true);
+    await as(db, "anon");
+    const state = await one<{ signal: Record<string, unknown>; daily: Record<string, unknown> }>(
+      "select signal, daily from dam_state()",
+    );
+    expect(state.signal.observed_at).toBe(state.daily.until);
+    expect(Number(state.daily.outflow_mean_cms)).toBeGreaterThan(0);
+  });
+});

@@ -14,12 +14,15 @@ import { alert as alertColors } from "@/lib/brand/tokens";
 import {
   ageHours,
   attention,
+  dailyPart,
   flow,
   fullness,
   onPath,
   reachesInOrder,
   trend,
+  volume,
   type Dam,
+  type DamDaily,
   type DamSignal,
 } from "@/lib/dam";
 import {
@@ -34,7 +37,7 @@ import {
   RESERVOIR_FILL_OPACITY,
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
-import { exampleDamSignal, EXAMPLE_NOW } from "@/lib/dev-examples";
+import { exampleDamDaily, exampleDamSignal, EXAMPLE_NOW } from "@/lib/dev-examples";
 import { EXAMPLE_DAMS } from "@/lib/war-room-examples";
 import { readFileSync } from "node:fs";
 import th from "@/messages/th.json";
@@ -125,9 +128,17 @@ const DAM: Dam = {
     { code: "950802", via: "tributary", kmFromDam: 14.7 },
   ],
   signal: exampleDamSignal("quiet"),
+  daily: exampleDamDaily("quiet"),
 };
 
 const withSignal = (signal: DamSignal | null): Dam => ({ ...DAM, signal });
+const withFigures = (signal: DamSignal | null, daily: DamDaily | null): Dam => ({
+  ...DAM,
+  signal,
+  daily,
+});
+/** The words of a message before its first placeholder: enough to find it on the screen. */
+const words = (message: string) => message.split("{")[0]!.trim();
 
 describe("what the app says of its own accord", () => {
   it("says nothing while the dam is quiet", () => {
@@ -316,6 +327,93 @@ describe("the figures", () => {
   it("the card says so plainly when there are no figures", () => {
     const { container } = renderWithIntl(<DamCard dam={withSignal(null)} now={EXAMPLE_NOW} />);
     expect(container.textContent).toContain(th.dam.figures.none);
+  });
+});
+
+describe("the day behind the newest reading", () => {
+  it("a volume is two decimals of a million cubic metres", () => {
+    expect(volume(3.9797)).toBe(3.98);
+    expect(volume(69.04321)).toBe(69.04);
+    expect(volume(null)).toBeNull();
+  });
+
+  it("one hour is not an average: it would only repeat the reading already shown", () => {
+    const daily = exampleDamDaily("quiet")!;
+    expect(dailyPart({ ...daily, outflowHours: 1 }, "outflow")).toBeNull();
+    expect(dailyPart({ ...daily, outflowHours: 2 }, "outflow")).not.toBeNull();
+    expect(dailyPart(null, "outflow")).toBeNull();
+  });
+
+  it("a mean with no figure behind it is not printed", () => {
+    const daily = exampleDamDaily("quiet")!;
+    expect(dailyPart({ ...daily, inflowMeanCms: null }, "inflow")).toBeNull();
+    expect(dailyPart({ ...daily, inflowMcm: null }, "inflow")).toBeNull();
+  });
+
+  it("the hours each mean rests on travel with it", () => {
+    const part = dailyPart(exampleDamDaily("stale"), "outflow");
+    expect(part).toEqual({ hours: 3, cms: 46, mcm: 0.5 });
+  });
+
+  /*
+   * The case the owner asked for this over: at 17:00 on 11 Oct the dam's newest hour said it was
+   * releasing nothing, while the day behind it had passed 3.98 million m3 downstream, a mean of
+   * 46 m3/s. Both have to be on the screen, or the card says the opposite of what the day did.
+   */
+  it("the card shows the day's mean beside an hour that disagrees with it", () => {
+    const quiet = exampleDamSignal("quiet")!;
+    const { container } = renderWithIntl(
+      <DamCard
+        dam={withFigures(
+          { ...quiet, releasedCms: 0, spilledCms: 0, outflowCms: 0 },
+          exampleDamDaily("quiet"),
+        )}
+        now={EXAMPLE_NOW}
+      />,
+    );
+    const text = container.textContent ?? "";
+    expect(text).toContain(words(th.dam.figures.daily.title));
+    expect(text).toContain(words(th.dam.figures.daily.outflow));
+    expect(text).toContain(words(th.dam.figures.daily.inflow));
+    // The day's own numbers, and the hour's nought still beside them.
+    expect(text).toContain("46");
+    expect(text).toContain("3.98");
+    expect(text).toContain("0");
+  });
+
+  it("names the spillway's share of the day only when there was one", () => {
+    const spilling = renderWithIntl(
+      <DamCard
+        dam={withFigures(exampleDamSignal("releasing"), exampleDamDaily("releasing"))}
+        now={EXAMPLE_NOW}
+      />,
+    );
+    expect(spilling.container.textContent).toContain(words(th.dam.figures.daily.spilled));
+    const quiet = renderWithIntl(<DamCard dam={DAM} now={EXAMPLE_NOW} />);
+    expect(quiet.container.textContent).not.toContain(words(th.dam.figures.daily.spilled));
+  });
+
+  /*
+   * The notice is read on the home screen, so it carries the day's release and not the day's
+   * inflow: what matters to someone downstream is how much water has been coming down the river.
+   */
+  it("the notice keeps the day's release and leaves the reservoir's inflow to the card", () => {
+    const dam = withFigures(exampleDamSignal("releasing"), exampleDamDaily("releasing"));
+    const { container } = renderWithIntl(
+      <DamNotice dam={dam} via="main" tambonName="บานา" now={EXAMPLE_NOW} />,
+    );
+    const text = container.textContent ?? "";
+    expect(text).toContain(words(th.dam.figures.daily.outflow));
+    expect(text).not.toContain(words(th.dam.figures.daily.inflow));
+    const card = renderWithIntl(<DamCard dam={dam} now={EXAMPLE_NOW} />);
+    expect(card.container.textContent).toContain(words(th.dam.figures.daily.inflow));
+  });
+
+  it("says nothing of a day the feed has not published", () => {
+    const { container } = renderWithIntl(
+      <DamCard dam={withFigures(exampleDamSignal("quiet"), null)} now={EXAMPLE_NOW} />,
+    );
+    expect(container.textContent).not.toContain(words(th.dam.figures.daily.title));
   });
 });
 

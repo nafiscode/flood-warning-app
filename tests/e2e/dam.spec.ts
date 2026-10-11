@@ -1,3 +1,4 @@
+import th from "../../messages/th.json";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -31,6 +32,9 @@ const OFF_PATH = {
   nameEn: "Bo Yang",
   provinceCode: "90",
 };
+
+/** The words of a message before its first placeholder. */
+const words = (message: string) => message.split("{")[0]!.trim();
 
 const line = (coords: number[][]) => ({ type: "LineString", coordinates: coords });
 
@@ -82,6 +86,21 @@ function damAnswer(grade: "quiet" | "watchful" | "releasing") {
           readings: 10,
           stale: false,
           confirmedOver: 2,
+        },
+        /*
+         * The day behind that hour. A releasing day passes about 69 million m3 downstream; a
+         * quiet one about 4, which is the day that was really there on 11 Oct 2026.
+         */
+        daily: {
+          windowH: 24,
+          until: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+          inflowHours: 24,
+          inflowMeanCms: grade === "releasing" ? 742 : 51.5,
+          inflowMcm: grade === "releasing" ? 64.1 : 4.45,
+          outflowHours: 24,
+          outflowMeanCms: grade === "releasing" ? 799 : 46.1,
+          outflowMcm: grade === "releasing" ? 69.0 : 3.98,
+          spilledMcm: grade === "releasing" ? 56.1 : 0,
         },
       },
     ],
@@ -166,8 +185,27 @@ test.describe("the dam's quiet notice", () => {
     await serve(page);
     await page.goto("/");
     const notice = page.locator("[data-dam-notice]").first();
-    await expect(notice).toContainText("ข้อมูลของเวลา");
-    await expect(notice).toContainText("ชั่วโมงที่แล้ว");
+    await expect(notice).toContainText(words(th.dam.figures.observed));
+    await expect(notice).toContainText(words(th.dam.figures.age.split("{hours}")[1]!));
+  });
+
+  /*
+   * The owner asked for the day's figures on 11 Oct: the hour on its own can say the opposite of
+   * what the day did. The notice carries the day's release; the reservoir's own inflow stays on
+   * the dam's card, where the rest of the dam's figures are.
+   */
+  test("carries the day's mean release, and leaves the inflow to the dam's card", async ({
+    page,
+  }) => {
+    await serve(page);
+    await page.goto("/map");
+    const notice = page.locator("[data-dam-notice]").first();
+    await expect(notice).toContainText(th.dam.figures.daily.title.replace("{window}", "24"));
+    await expect(notice).toContainText(words(th.dam.figures.daily.outflow));
+    // The day's own numbers: a mean of 799 m3/s and the 69 million m3 behind it.
+    await expect(notice).toContainText("799");
+    await expect(notice).toContainText("69");
+    await expect(notice).not.toContainText(words(th.dam.figures.daily.inflow));
   });
 
   test("is on the map page too, with the path's limits in the legend", async ({ page }) => {
@@ -177,7 +215,7 @@ test.describe("the dam's quiet notice", () => {
     const legend = page.locator("[data-dam-legend]");
     await expect(legend).toBeVisible();
     // Safety rule 8: the line never travels without what it does not say.
-    await expect(legend).toContainText("ไม่ใช่ขอบเขตน้ำท่วม");
+    await expect(legend).toContainText(th.dam.path.limits);
   });
 });
 

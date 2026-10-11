@@ -6,7 +6,7 @@
 import type { Area, AreaDirectory } from "@/lib/area";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
-import type { DamSignal } from "@/lib/dam";
+import type { DamDaily, DamSignal } from "@/lib/dam";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces, SafePlace } from "@/lib/places";
 import type { PublicAlert, PublicStatus } from "@/lib/public-status";
@@ -503,6 +503,61 @@ const damSignal = (over: Partial<DamSignal>): DamSignal => ({
   confirmedOver: 2,
   ...over,
 });
+
+/*
+ * The day behind the newest reading, for each scenario. The figures are the archive's own: a
+ * quiet day moves about 4 Mm3 either way (11 Oct 2026 measured 4.45 in and 3.98 out), while the
+ * January 2021 release passed about 69 Mm3 downstream in a day.
+ */
+const damDaily = (over: Partial<DamDaily>): DamDaily => ({
+  windowH: 24,
+  until: new Date(EXAMPLE_NOW - 3 * 3_600_000).toISOString(),
+  inflowHours: 24,
+  inflowMeanCms: 51.5,
+  inflowMcm: 4.45,
+  outflowHours: 24,
+  outflowMeanCms: 46.1,
+  outflowMcm: 3.98,
+  spilledMcm: 0,
+  ...over,
+});
+
+export function exampleDamDaily(scenario: DamScenario): DamDaily | null {
+  switch (scenario) {
+    case "none":
+      return null;
+    case "watch":
+      // Filling fast: much more coming in than going out.
+      return damDaily({
+        inflowMeanCms: 494,
+        inflowMcm: 42.7,
+        outflowMeanCms: 101,
+        outflowMcm: 8.73,
+      });
+    case "releasing":
+      // January 2021: about 69 Mm3 past the dam in a day, most of it over the spillway.
+      return damDaily({
+        inflowMeanCms: 742,
+        inflowMcm: 64.1,
+        outflowMeanCms: 799,
+        outflowMcm: 69.0,
+        spilledMcm: 56.1,
+      });
+    case "stale":
+      // The feed has published only a few hours: a mean, and it says so.
+      return damDaily({
+        until: new Date(EXAMPLE_NOW - 26 * 3_600_000).toISOString(),
+        inflowHours: 3,
+        inflowMcm: 0.56,
+        inflowMeanCms: 51.9,
+        outflowHours: 3,
+        outflowMcm: 0.5,
+        outflowMeanCms: 46.3,
+      });
+    default:
+      return damDaily({});
+  }
+}
 
 export function exampleDamSignal(scenario: DamScenario): DamSignal | null {
   switch (scenario) {

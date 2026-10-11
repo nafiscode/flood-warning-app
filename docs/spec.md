@@ -690,6 +690,14 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   `dam_signal()` grades the newest reading by named criteria in `system_settings.dam_grades`.
   Tapping the dam opens a card with storage, level, outflow, spill and the rate of rise, each with
   the hour it is for and how old it is.
+- **The day behind that hour** (added 11 Oct 2026, the owner's request). Beside the hourly figures,
+  `dam_daily()` sums the last 24 hours of readings into the mean outflow and the mean inflow in
+  m³/s and the volume each amounts to in million m³, with the spillway's share named when there
+  was one. The window ends at the newest reading, not at the clock, because the feed lags; each
+  mean says how many hourly readings it rests on, since the feed has gaps. The hourly figure on its
+  own can say the opposite of what the day did: on 11 Oct the newest hour had the dam releasing
+  nothing while the day behind it had passed 3.98 million m³ downstream. The card carries both
+  flows; the quiet notice carries only the day's release, because it is read on the home screen.
 - **The quiet tier** (`watchful`, or a release the app has not confirmed yet): a notice on the home
   screen and the map for anyone whose area or watched place is on the river below the dam. No
   alert level, no alert colour, no sound, no notification. It says it is not an alert from Jaga

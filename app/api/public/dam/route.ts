@@ -1,4 +1,4 @@
-import type { Dam, DamData, DamReach, DamSignal, DamTambon } from "@/lib/dam";
+import type { Dam, DamData, DamDaily, DamReach, DamSignal, DamTambon } from "@/lib/dam";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/public";
 
@@ -26,6 +26,23 @@ function toSignal(row: Row | null | undefined): DamSignal | null {
     readings: Number(row.readings ?? 0),
     stale: Boolean(row.stale),
     confirmedOver: Number(row.confirmed_over ?? 2),
+  };
+}
+
+/** The day behind the newest reading, as the database names it (lib/dam.ts, DamDaily). */
+function toDaily(row: Row | null | undefined): DamDaily | null {
+  if (!row) return null;
+  const number = (key: string) => (typeof row[key] === "number" ? (row[key] as number) : null);
+  return {
+    windowH: Number(row.window_h ?? 24),
+    until: String(row.until),
+    inflowHours: Number(row.inflow_hours ?? 0),
+    inflowMeanCms: number("inflow_mean_cms"),
+    inflowMcm: number("inflow_mcm"),
+    outflowHours: Number(row.outflow_hours ?? 0),
+    outflowMeanCms: number("outflow_mean_cms"),
+    outflowMcm: number("outflow_mcm"),
+    spilledMcm: number("spilled_mcm"),
   };
 }
 
@@ -57,6 +74,12 @@ export async function GET() {
     ((state.data ?? []) as Row[]).map((row) => [
       String(row.code),
       toSignal(row.signal as Row | null),
+    ]),
+  );
+  const dailies = new Map<string, DamDaily | null>(
+    ((state.data ?? []) as Row[]).map((row) => [
+      String(row.code),
+      toDaily(row.daily as Row | null),
     ]),
   );
   const byDam = new Map<string, DamTambon[]>();
@@ -99,6 +122,7 @@ export async function GET() {
         ),
         tambons: byDam.get(code) ?? [],
         signal: signals.get(code) ?? null,
+        daily: dailies.get(code) ?? null,
       };
     }),
   };

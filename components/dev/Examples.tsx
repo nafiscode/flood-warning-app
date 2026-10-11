@@ -29,6 +29,7 @@ import {
   EXAMPLE_WEATHER,
   EXAMPLE_WEATHER_PLACE,
   DAM_SCENARIOS,
+  exampleDamDaily,
   exampleDamSignal,
   type DamScenario,
   homeExample,
@@ -195,7 +196,9 @@ export function DamExample() {
   const { data, state } = useFetched<DamData>(DAM_URL);
   const tDam = useTranslations("dam");
   const base = data?.dams[0] ?? null;
-  const dam: Dam | null = base ? { ...base, signal: exampleDamSignal(scenario) } : null;
+  const dam: Dam | null = base
+    ? { ...base, signal: exampleDamSignal(scenario), daily: exampleDamDaily(scenario) }
+    : null;
   return (
     <div className="flex flex-col gap-4">
       <div role="group" aria-label={t("damScenarioLabel")} className="flex flex-wrap gap-2">

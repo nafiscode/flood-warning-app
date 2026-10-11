@@ -53,6 +53,31 @@ export type DamSignal = {
   confirmedOver: number;
 };
 
+/**
+ * The day behind the newest reading: the mean flow over it and the volume that amounts to.
+ *
+ * The hourly figure and this one answer different questions, and the hourly one alone can say the
+ * opposite of what the day did: on 11 Oct the newest hour had the dam releasing nothing, while the
+ * day behind it had passed 3.98 million m3 downstream, a mean of 46 m3/s. Inflow is a residual of
+ * the storage balance, so single hours even come out negative; a day's sum is the figure the
+ * operator's own bulletins use.
+ *
+ * The hour count travels with each mean, because the feed has gaps and a "daily mean" resting on
+ * three hours has to say so (safety rule 8).
+ */
+export type DamDaily = {
+  windowH: number;
+  /** The newest reading the window ends at - the feed lags, so the window does not end now. */
+  until: string;
+  inflowHours: number;
+  inflowMeanCms: number | null;
+  inflowMcm: number | null;
+  outflowHours: number;
+  outflowMeanCms: number | null;
+  outflowMcm: number | null;
+  spilledMcm: number | null;
+};
+
 export type DamReachKind = "outlet" | "main" | "tributary";
 
 export type DamReach = {
@@ -94,6 +119,7 @@ export type Dam = {
   reaches: DamReach[];
   tambons: DamTambon[];
   signal: DamSignal | null;
+  daily: DamDaily | null;
 };
 
 /** Answer of /api/public/dam. */
@@ -153,6 +179,35 @@ export function reachesInOrder(dam: Dam): DamReach[] {
 /** A flow for display: whole m3/s, since the feed's own precision does not justify decimals. */
 export function flow(cms: number | null): number | null {
   return cms === null || Number.isNaN(cms) ? null : Math.round(cms);
+}
+
+/** A volume for display in million m3. Two decimals: a quiet day moves a fraction of one. */
+export function volume(mcm: number | null | undefined): number | null {
+  return mcm === null || mcm === undefined || Number.isNaN(mcm)
+    ? null
+    : Math.round(mcm * 100) / 100;
+}
+
+/**
+ * Fewer than two hours is not an average of anything: one hour would only repeat the reading
+ * already on the screen under a word ("mean over the day") that would not be true of it.
+ */
+export const DAILY_MIN_HOURS = 2;
+
+/**
+ * One of the day's two flows, ready to print, or null when there is not enough of a day to call
+ * it a mean. The hours are returned so they can be said out loud beside the figure.
+ */
+export function dailyPart(
+  daily: DamDaily | null | undefined,
+  which: "inflow" | "outflow",
+): { hours: number; cms: number; mcm: number } | null {
+  if (!daily) return null;
+  const hours = which === "inflow" ? daily.inflowHours : daily.outflowHours;
+  const cms = flow(which === "inflow" ? daily.inflowMeanCms : daily.outflowMeanCms);
+  const mcm = volume(which === "inflow" ? daily.inflowMcm : daily.outflowMcm);
+  if (hours < DAILY_MIN_HOURS || cms === null || mcm === null) return null;
+  return { hours, cms, mcm };
 }
 
 /** Storage as a share of the full reservoir, to one decimal, or null when it cannot be worked out. */
