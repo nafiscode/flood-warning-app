@@ -6,7 +6,7 @@
  * No phone number comes back from the board. A requester's number is fetched one at a time
  * through the logged reveal_sos_phone(), exactly as the war room does it.
  */
-import type { BoardCase, DeclineReason, EtaBand } from "@/lib/dispatch";
+import type { AuthorityBoard, BoardCase, DeclineReason, EtaBand, MyUnit } from "@/lib/dispatch";
 import { createClient } from "@/lib/supabase/server";
 
 type Row = Record<string, unknown>;
@@ -44,6 +44,7 @@ function toCase(r: Row): BoardCase {
     etaBand: (text(r.eta_band) as EtaBand | null) ?? null,
     etaGivenAt: text(r.eta_given_at),
     offeredTo: text(r.offered_to),
+    offeredToName: null,
     offeredIsMine: Boolean(r.offered_is_mine),
     offerExpiresAt: text(r.offer_expires_at),
     offerExhausted: Boolean(r.offer_exhausted),
@@ -51,33 +52,43 @@ function toCase(r: Row): BoardCase {
   };
 }
 
-export type Board = { cases: BoardCase[]; readAt: string };
-
-export async function readAuthorityBoard(hours = 72): Promise<Board> {
+/**
+ * The board and the caller's own units in one read. The name of the unit the relay is asking is
+ * looked up beside it: a verified authority may read unit names (the responsibility map), and the
+ * board function itself returns only the id.
+ */
+export async function readAuthorityBoard(userId: string, hours = 72): Promise<AuthorityBoard> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("authority_board", { p_hours: hours });
+  const [{ data, error }, units] = await Promise.all([
+    supabase.rpc("authority_board", { p_hours: hours }),
+    readMyUnits(userId),
+  ]);
   if (error) throw new Error(error.message);
-  return {
-    cases: ((data as Row[]) ?? []).map(toCase),
-    readAt: new Date().toISOString(),
-  };
+  const cases = ((data as Row[]) ?? []).map(toCase);
+  const asked = [...new Set(cases.map((c) => c.offeredTo).filter((id): id is string => !!id))];
+  if (asked.length > 0) {
+    const { data: names } = await supabase
+      .from("authority_units")
+      .select("id, unit_name")
+      .in("id", asked);
+    const byId = new Map(((names as Row[]) ?? []).map((r) => [String(r.id), String(r.unit_name)]));
+    for (const c of cases) c.offeredToName = c.offeredTo ? (byId.get(c.offeredTo) ?? null) : null;
+  }
+  return { cases, units, readAt: new Date().toISOString() };
 }
 
-/** The units this person runs, so the console can show the on-duty switch for each. */
-export type MyUnit = {
-  id: string;
-  name: string;
-  orgName: string;
-  onDuty: boolean;
-  sharesPocPhone: boolean;
-};
-
-export async function readMyUnits(): Promise<MyUnit[]> {
+/**
+ * The verified units this person runs. The filter on user_id matters: row-level security lets a
+ * verified authority read every unit, so without it the console would offer other teams' switches.
+ */
+export async function readMyUnits(userId: string): Promise<MyUnit[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("authority_units")
     .select("id, unit_name, on_duty, poc_phone_to_requester, status, organizations(name)")
-    .eq("status", "verified");
+    .eq("user_id", userId)
+    .eq("status", "verified")
+    .order("created_at");
   if (error) throw new Error(error.message);
   return ((data as Row[]) ?? []).map((r) => ({
     id: String(r.id),

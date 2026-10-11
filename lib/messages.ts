@@ -70,6 +70,20 @@ export function warRoomMessages(messages: AbstractIntlMessages): AbstractIntlMes
   };
 }
 
+/**
+ * The authority console: its own text, plus the words that must say the same thing as on the
+ * sender's own form - the vulnerability flags, what is happening, and the depth labels.
+ */
+export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  const sos = all.sos as Messages;
+  return {
+    ...pick(messages, ["authority"]),
+    sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard! },
+    report: { depths: (all.report as Messages).depths! },
+  };
+}
+
 /** The impact dashboard (spec 16): its own text only. */
 export function impactMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   return pick(messages, ["impact"]);

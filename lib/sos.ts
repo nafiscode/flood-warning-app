@@ -40,13 +40,16 @@ export const SOS_STATUSES = [
   "received",
   "assigned",
   "en_route",
+  "on_site",
   "rescued",
   "safe_cancelled",
   "dismissed",
 ] as const;
 export type SosStatus = (typeof SOS_STATUSES)[number];
 
-export const OPEN_STATUSES: SosStatus[] = ["received", "assigned", "en_route"];
+// "on_site" belongs here: a team standing at the door has not closed the case, and a sender whose
+// screen called it closed would lose the buttons only they can press.
+export const OPEN_STATUSES: SosStatus[] = ["received", "assigned", "en_route", "on_site"];
 
 export type SendSos = {
   lat: number;
@@ -80,6 +83,45 @@ export type TimelineEntry = {
   unit: string | null;
 };
 
+/** The bands a team gives its arrival estimate in (spec 5.2). Never a clock time. */
+export type SosEtaBand = "under15" | "to30" | "to60" | "over60" | "unknown";
+
+/**
+ * Who is coming, as the sender sees it (spec 4.6). No phone number is in here: the sender asks
+ * for it with one tap, and that look is written to the access log (safety rule 5).
+ */
+export type SosTeam = {
+  /** Nobody holds the case yet. */
+  searching: boolean;
+  /** The relay has asked every team it had; the case is with the admins. */
+  exhausted: boolean;
+  unitName: string | null;
+  orgName: string | null;
+  etaBand: SosEtaBand | null;
+  etaGivenAt: string | null;
+  acceptedAt: string | null;
+  phoneAvailable: boolean;
+};
+
+/** The number the sender may call while a team holds their case. */
+export type SosTeamPhone = { phone: string | null; isPoc: boolean; unitName: string | null };
+
+/**
+ * What the sender's screen should sound, comparing what it showed before with what it shows now:
+ * a chime when a team accepts, a soft resolve when it is over. Null the first time a case is
+ * read, so opening an old case makes no noise.
+ */
+export function soundForChange(
+  before: { status: SosStatus; hasTeam: boolean } | null,
+  after: { status: SosStatus; hasTeam: boolean },
+): "accepted" | "rescued" | null {
+  if (!before) return null;
+  const over = (s: SosStatus) => s === "rescued" || s === "safe_cancelled";
+  if (over(after.status) && !over(before.status)) return "rescued";
+  if (after.hasTeam && !before.hasTeam && OPEN_STATUSES.includes(after.status)) return "accepted";
+  return null;
+}
+
 export type SosTimeline = {
   status: SosStatus;
   createdAt: string;
@@ -93,6 +135,8 @@ export type SosTimeline = {
   photos: number;
   hasVoice: boolean;
   events: TimelineEntry[];
+  /** Null when the question could not be asked; the screen then says only what the status says. */
+  team: SosTeam | null;
 };
 
 export type SosDetails = {

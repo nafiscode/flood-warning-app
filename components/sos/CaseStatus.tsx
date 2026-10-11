@@ -4,20 +4,28 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
 import { SosDetailsForm } from "@/components/sos/SosDetailsForm";
+import { TeamStatus } from "@/components/sos/TeamStatus";
 import { Link } from "@/i18n/navigation";
 import { enqueue } from "@/lib/queue";
 import { useOnPhone, useStored } from "@/lib/phone-store";
 import {
   OPEN_STATUSES,
   rememberCase,
+  soundForChange,
   type RememberedCase,
   type SosStatus,
+  type SosTeamPhone,
   type SosTimeline,
 } from "@/lib/sos";
+import { arm, play } from "@/lib/sounds";
+import { useNow } from "@/lib/use-public";
 import { useBattery, useLocation, useQueue } from "@/lib/use-sending";
 import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
 
 const FIVE_MINUTES = 5 * 60 * 1000;
+// An open request is looked at often: the moment a team accepts is the news this screen is for.
+const OPEN_POLL_MS = 20_000;
+const CLOSED_POLL_MS = 60_000;
 
 type Props = { id: string; merged: boolean };
 
@@ -29,6 +37,10 @@ type Props = { id: string; merged: boolean };
  * While the case is open and this page is open, the location is sent every five minutes, so
  * rescuers follow someone who has moved. Nothing here shows the suspected-spam flag: the
  * database function does not return it.
+ *
+ * Two moments make a sound as well as changing the words (spec 4.8): a team accepting, and the
+ * case ending in "rescued" or "I'm safe now". Both need one earlier tap anywhere on this screen,
+ * because a browser plays nothing before one; without it the words and the vibration still come.
  */
 export function CaseStatus({ id, merged }: Props) {
   const t = useTranslations("sos");
@@ -45,6 +57,11 @@ export function CaseStatus({ id, merged }: Props) {
   const battery = useBattery();
   useQueue();
   const lastPing = useRef(0);
+  const now = useNow();
+  const [teamPhone, setTeamPhone] = useState<SosTeamPhone | "failed" | null>(null);
+  const [askingPhone, setAskingPhone] = useState(false);
+  // What the screen last showed, so a change can be heard once and an old case stays quiet.
+  const shown = useRef<{ status: SosStatus; hasTeam: boolean } | null>(null);
 
   // Not an async function: like the home screen's status (lib/use-public.ts), the state is set
   // in the promise's callbacks, never while the effect below is running.
@@ -65,6 +82,12 @@ export function CaseStatus({ id, merged }: Props) {
             setState("unknown");
             return;
           }
+          const next = { status: answer.status, hasTeam: answer.team?.searching === false };
+          const sound = soundForChange(shown.current, next);
+          shown.current = next;
+          if (sound) play(sound);
+          // A team that gave the case back takes its number with it.
+          if (!next.hasTeam) setTeamPhone(null);
           setTimeline(answer);
           setState("ok");
           setCheckedAt(new Date());
@@ -74,11 +97,12 @@ export function CaseStatus({ id, merged }: Props) {
       );
   }, [id, token, ready]);
 
-  // Follow the case: on opening, every minute while it is open, and when the app comes forward.
+  // Follow the case: on opening, every 20 seconds while it is open, and when the app comes
+  // forward.
   useEffect(() => {
     if (!ready) return;
     load();
-    const timer = window.setInterval(load, 60_000);
+    const timer = window.setInterval(load, open ? OPEN_POLL_MS : CLOSED_POLL_MS);
     const again = () => load();
     document.addEventListener("visibilitychange", again);
     window.addEventListener("online", again);
@@ -87,7 +111,14 @@ export function CaseStatus({ id, merged }: Props) {
       document.removeEventListener("visibilitychange", again);
       window.removeEventListener("online", again);
     };
-  }, [load, ready]);
+  }, [load, ready, open]);
+
+  // The first tap anywhere on this screen lets the later sounds play.
+  useEffect(() => {
+    const once = () => void arm();
+    window.addEventListener("pointerdown", once, { once: true });
+    return () => window.removeEventListener("pointerdown", once);
+  }, []);
 
   // A location update every five minutes while the case is open (spec 4.6).
   useEffect(() => {
@@ -115,6 +146,26 @@ export function CaseStatus({ id, merged }: Props) {
     });
   }, [gps.point, gps.accuracy, open, state, id, token, battery]);
 
+  /** The number of the team that accepted: one tap, and the look is logged (safety rule 5). */
+  function askTeamPhone() {
+    setAskingPhone(true);
+    fetch(`/api/sos/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "x-jaga-sos-token": token } : {}),
+      },
+      body: JSON.stringify({ action: "team_phone", token }),
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return (await response.json()) as SosTeamPhone;
+      })
+      .then(setTeamPhone, () => setTeamPhone("failed"))
+      .finally(() => setAskingPhone(false));
+  }
+
   async function close(rescued: boolean) {
     setClosing(true);
     const body = { action: "close" as const, token, rescued };
@@ -130,6 +181,9 @@ export function CaseStatus({ id, merged }: Props) {
       });
       if (!response.ok) throw new Error(String(response.status));
       const answer = (await response.json()) as { status: SosStatus };
+      const sound = soundForChange(shown.current, { status: answer.status, hasTeam: false });
+      if (shown.current) shown.current = { ...shown.current, status: answer.status };
+      if (sound) play(sound);
       setTimeline((current) => (current ? { ...current, status: answer.status } : current));
       rememberCase({
         id,
@@ -177,12 +231,16 @@ export function CaseStatus({ id, merged }: Props) {
       {timeline && (
         <div className={card}>
           <p className="text-h3 font-bold text-jaga-ink" data-case-status={timeline.status}>
-            {timeline.status === "assigned" && timeline.unitName
-              ? t("status.assigned", { unit: timeline.unitName })
+            {timeline.status === "assigned"
+              ? timeline.unitName
+                ? t("status.assigned", { unit: timeline.unitName })
+                : t("status.accepted")
               : t(`status.${timeline.status}`)}
           </p>
-          {timeline.status === "received" && <p>{t("status.waiting")}</p>}
-          {timeline.unitName && <p>{t("status.unit", { unit: timeline.unitName })}</p>}
+          {timeline.status === "received" && !timeline.team && <p>{t("status.waiting")}</p>}
+          {timeline.unitName && !timeline.team && (
+            <p>{t("status.unit", { unit: timeline.unitName })}</p>
+          )}
           <p className={hint}>
             {t("status.sentAt", { time: time(timeline.createdAt) })}
             {checkedAt ? ` · ${t("status.updated", { time: time(checkedAt.toISOString()) })}` : ""}
@@ -194,8 +252,10 @@ export function CaseStatus({ id, merged }: Props) {
               .map((event, index) => (
                 <li key={`${event.event}-${index}`} className="flex flex-col">
                   <span className="font-medium">
-                    {event.unit
-                      ? t("status.assigned", { unit: event.unit })
+                    {event.event === "assigned" || event.event === "accepted"
+                      ? event.unit
+                        ? t("status.assigned", { unit: event.unit })
+                        : t("status.accepted")
                       : t(`status.${event.event}`)}
                   </span>
                   <span className={hint}>{time(event.at)}</span>
@@ -203,6 +263,17 @@ export function CaseStatus({ id, merged }: Props) {
               ))}
           </ol>
         </div>
+      )}
+
+      {timeline?.team && open && (
+        <TeamStatus
+          team={timeline.team}
+          createdAt={timeline.createdAt}
+          now={now}
+          phone={teamPhone}
+          asking={askingPhone}
+          onAskPhone={askTeamPhone}
+        />
       )}
 
       {state === "failed" && <p className={notice}>{t("status.loadFailed")}</p>}
@@ -270,7 +341,10 @@ function time(iso: string): string {
 const KNOWN_EVENTS = [
   "received",
   "assigned",
+  "accepted",
+  "released",
   "en_route",
+  "on_site",
   "rescued",
   "safe_cancelled",
   "dismissed",

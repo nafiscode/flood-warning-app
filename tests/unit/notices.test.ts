@@ -193,6 +193,7 @@ describe("building the list", () => {
       orgName: null,
       photos: 0,
       hasVoice: false,
+      team: null,
       events: [
         { event: "received", at: daysAgo(2), note: null, unit: null },
         { event: "details_added", at: daysAgo(2), note: null, unit: null },

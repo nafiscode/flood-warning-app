@@ -44,6 +44,7 @@ const base: BoardCase = {
   etaBand: null,
   etaGivenAt: null,
   offeredTo: null,
+  offeredToName: null,
   offeredIsMine: false,
   offerExpiresAt: null,
   offerExhausted: false,
@@ -88,12 +89,22 @@ describe("the order of the board", () => {
   it("puts the case ringing my phone first, and the unanswered ones next", () => {
     const sorted = sortCases([
       make({ sosId: "held", claimedBy: "u2" }),
-      make({ sosId: "mine", claimedBy: "u1", claimedIsMine: true }),
+      make({ sosId: "mine", claimedBy: "u1", claimedIsMine: true, etaBand: "to30" }),
+      make({ sosId: "asking", claimedBy: "u1", claimedIsMine: true }),
       make({ sosId: "none", offerExhausted: true }),
       make({ sosId: "ringing", offeredIsMine: true, offerExpiresAt: inSeconds(30) }),
       make({ sosId: "searching", offeredTo: "u3" }),
     ]);
-    expect(sorted.map((c) => c.sosId)).toEqual(["ringing", "none", "searching", "mine", "held"]);
+    // "asking" was just accepted and has no arrival estimate yet: its card is asking for one, so
+    // it stays in sight instead of sinking with the cases already in hand.
+    expect(sorted.map((c) => c.sosId)).toEqual([
+      "ringing",
+      "asking",
+      "none",
+      "searching",
+      "mine",
+      "held",
+    ]);
   });
 
   it("puts the worse case first, then the longer wait", () => {

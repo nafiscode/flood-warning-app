@@ -197,6 +197,7 @@ describe("the requester's view of a case", () => {
     photos: 0,
     hasVoice: false,
     events: [{ event: "received", at: new Date().toISOString(), note: null, unit: null }],
+    team: null,
     ...more,
   });
 

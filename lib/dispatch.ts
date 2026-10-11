@@ -13,6 +13,10 @@ export const ETA_BANDS: EtaBand[] = ["under15", "to30", "to60", "over60", "unkno
 export const DECLINE_REASONS = ["too_far", "no_boat", "already_out", "cannot"] as const;
 export type DeclineReason = (typeof DECLINE_REASONS)[number];
 
+/** The one-tap reasons for giving a case back. The database only asks that there is one. */
+export const RELEASE_REASONS = ["cannot_reach", "no_boat", "other_emergency", "cannot"] as const;
+export type ReleaseReason = (typeof RELEASE_REASONS)[number];
+
 export type BoardCase = {
   sosId: string;
   createdAt: string;
@@ -43,6 +47,8 @@ export type BoardCase = {
   etaBand: EtaBand | null;
   etaGivenAt: string | null;
   offeredTo: string | null;
+  /** The name of the unit the relay is asking now, for "being offered to [unit]" (spec 5.2). */
+  offeredToName: string | null;
   offeredIsMine: boolean;
   offerExpiresAt: string | null;
   offerExhausted: boolean;
@@ -93,8 +99,12 @@ export function sortCases(cases: BoardCase[]): BoardCase[] {
     held_by_other: 4,
     closed: 5,
   };
+  // A case this team has just accepted and not yet given an estimate for stays right under the
+  // ringing one: the card is asking a question, and it must not drop out of sight to be asked.
+  const place = (c: BoardCase) =>
+    caseState(c) === "mine" && c.etaBand === null ? 0.5 : rank[caseState(c)];
   return [...cases].sort((a, b) => {
-    const byState = rank[caseState(a)] - rank[caseState(b)];
+    const byState = place(a) - place(b);
     if (byState !== 0) return byState;
     if (b.priorityScore !== a.priorityScore) return b.priorityScore - a.priorityScore;
     return b.waitingMinutes - a.waitingMinutes;
@@ -148,3 +158,68 @@ export function shouldAlarm(cases: BoardCase[], now: number): boolean {
 
 /** How stale a reading is allowed to be before the board says so, in milliseconds. */
 export const BOARD_STALE_MS = 90_000;
+
+/** One of the caller's own verified units, for the on-duty switch and the phone tick. */
+export type MyUnit = {
+  id: string;
+  name: string;
+  orgName: string;
+  onDuty: boolean;
+  sharesPocPhone: boolean;
+};
+
+/** Everything the console draws. `readAt` is the server's clock, which the countdown follows. */
+export type AuthorityBoard = { cases: BoardCase[]; units: MyUnit[]; readAt: string };
+
+/**
+ * What the team holding a case reports next: on the way, then arrived. Null when there is nothing
+ * further to report from here (closing a case is the requester's word, or a later step).
+ */
+export function nextStep(c: BoardCase): "en_route" | "on_site" | null {
+  if (!c.claimedIsMine) return null;
+  if (c.status === "assigned") return "en_route";
+  if (c.status === "en_route") return "on_site";
+  return null;
+}
+
+/** The card keeps asking for an arrival estimate until one is given (spec 5.2). */
+export function needsEta(c: BoardCase): boolean {
+  return caseState(c) === "mine" && c.etaBand === null;
+}
+
+/** The countdown as it is drawn: 1:05, 0:42. */
+export function clockText(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+export type BoardScope = "open" | "closed";
+
+/** The board's own filter (spec 5.1): open or closed cases, one tambon, vulnerable people only. */
+export function filterCases(
+  cases: BoardCase[],
+  filter: { scope: BoardScope; tambon: string | null; vulnerableOnly: boolean },
+): BoardCase[] {
+  return cases.filter((c) => {
+    const closed = caseState(c) === "closed";
+    if ((filter.scope === "closed") !== closed) return false;
+    if (filter.tambon && c.tambon !== filter.tambon) return false;
+    if (filter.vulnerableOnly && vulnerableKeys(c.vulnerableFlags).length === 0) return false;
+    return true;
+  });
+}
+
+/** The tambons that have a case on the board, for the filter. Sorted so the list never jumps. */
+export function tambonsOnBoard(cases: BoardCase[]): { code: string; th: string; en: string }[] {
+  const seen = new Map<string, { code: string; th: string; en: string }>();
+  for (const c of cases) {
+    if (c.tambon && !seen.has(c.tambon)) {
+      seen.set(c.tambon, {
+        code: c.tambon,
+        th: c.tambonNameTh ?? c.tambon,
+        en: c.tambonNameEn ?? c.tambon,
+      });
+    }
+  }
+  return [...seen.values()].sort((a, b) => a.code.localeCompare(b.code));
+}

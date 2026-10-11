@@ -186,7 +186,10 @@
       "closing": "Menyimpan…",
       "closed": "Permintaan ditutup. Jika anda perlukan bantuan lagi, hantar SOS baharu.",
       "openCase": "Anda ada permintaan yang masih terbuka.",
-      "openCaseLink": "Lihat status permintaan anda"
+      "openCaseLink": "Lihat status permintaan anda",
+      "on_site": "Pasukan sudah sampai",
+      "accepted": "Ada pasukan terima permintaan",
+      "released": "Pasukan itu tidak dapat teruskan. Sedang mencari pasukan lain."
     },
     "details": {
       "title": "Tambah butiran (pilihan)",
@@ -231,7 +234,31 @@
     },
     "back": "Kembali ke halaman utama",
     "soonTitle": "Butang SOS belum berfungsi",
-    "soonBody": "Permintaan bantuan melalui Jaga akan dibuka sebelum musim banjir. Sekarang tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera."
+    "soonBody": "Permintaan bantuan melalui Jaga akan dibuka sebelum musim banjir. Sekarang tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera.",
+    "team": {
+      "searching": "Sedang mencari pasukan",
+      "searchingBody": "Belum ada pasukan terima permintaan anda. Permintaan sedang ditawarkan kepada pasukan di kawasan anda, satu demi satu.",
+      "exhausted": "Belum ada pasukan terima",
+      "exhaustedBody": "Pasukan di kawasan anda belum terima permintaan ini. Ia sudah sampai kepada pentadbir Jaga, dan pasukan di kawasan anda masih boleh terima bila-bila masa.",
+      "waited": "Sudah menunggu {minutes} minit",
+      "callNow": "Jika cemas, telefon sekarang. Jangan tunggu.",
+      "accepted": "Ada pasukan sudah terima permintaan anda",
+      "eta": {
+        "under15": "Dijangka sampai dalam 15 minit",
+        "to30": "Dijangka sampai dalam 15–30 minit",
+        "to60": "Dijangka sampai dalam 30–60 minit",
+        "over60": "Dijangka ambil masa lebih 60 minit",
+        "unknown": "Pasukan belum boleh kata bila akan sampai"
+      },
+      "etaGiven": "Ini anggaran, diberitahu pasukan pada {time}.",
+      "etaEstimate": "Ini anggaran.",
+      "etaNone": "Pasukan belum beritahu bila dijangka sampai.",
+      "call": "Telefon pasukan yang sedang datang",
+      "phonePoc": "Pasukan yang terima permintaan anda",
+      "phoneOrg": "Nombor rasmi organisasi",
+      "phoneNone": "Pasukan ini tiada nombor telefon dalam sistem. Jika cemas, telefon 1784 atau 1669.",
+      "phoneFailed": "Nombor belum dapat dipaparkan. Cuba lagi."
+    }
   },
   "hotlines": {
     "title": "Talian kecemasan",
@@ -516,7 +543,8 @@
         "pending": "Menunggu semakan pentadbir",
         "verified": "Sudah disahkan",
         "suspended": "Digantung"
-      }
+      },
+      "console": "Buka papan kes"
     },
     "signedIn": {
       "title": "Anda sudah log masuk",
@@ -651,6 +679,139 @@
       "coverage": "Sila pilih sekurang-kurangnya satu kawasan.",
       "limit": "Satu akaun boleh daftar paling banyak 5 unit.",
       "save": "Pendaftaran tidak berjaya. Sila cuba lagi."
+    }
+  },
+  "authority": {
+    "title": "Papan kes bantuan",
+    "subtitle": "Permintaan di kawasan jagaan pasukan anda. Kes yang sedang ditawarkan kepada pasukan anda berada di atas.",
+    "pollFailed": "Tidak dapat dikemas kini. Apa yang dipaparkan mungkin bukan yang terbaru. Periksa sambungan.",
+    "refresh": "Kemas kini",
+    "alarm": {
+      "title": "Bunyi amaran",
+      "off": "Bunyi amaran masih tutup. Sentuh sekali untuk buka bunyi.",
+      "arm": "Buka bunyi amaran",
+      "on": "Bunyi amaran sudah dibuka",
+      "none": "Pelayar ini tidak dapat membunyikan amaran. Biarkan halaman ini di depan mata.",
+      "openOnly": "Amaran hanya berbunyi semasa halaman ini dibuka.",
+      "ringing": "{count} kes sedang ditawarkan kepada pasukan anda"
+    },
+    "unit": {
+      "onDuty": "Bertugas, sedia terima kes",
+      "offDuty": "Tidak bertugas",
+      "dutyHint": "Jika tidak bertugas, anda masih nampak semua kes dan boleh terima. Cuma pasukan anda ditawarkan paling akhir.",
+      "sharing": "Apabila anda terima SOS, orang yang anda selamatkan boleh nampak nombor penyelaras pasukan anda.",
+      "sharingOff": "Mereka akan nampak nombor rasmi organisasi anda."
+    },
+    "filter": {
+      "open": "Masih terbuka ({count})",
+      "closed": "Sudah ditutup ({count})",
+      "tambon": "Tambon",
+      "allTambons": "Semua tambon",
+      "vulnerable": "Hanya kes dengan golongan rentan"
+    },
+    "empty": {
+      "open": "Tiada kes terbuka di kawasan anda.",
+      "closed": "Tiada kes ditutup dalam 3 hari lepas.",
+      "filtered": "Tiada kes yang sepadan dengan tapisan."
+    },
+    "state": {
+      "offered_to_me": "Ditawarkan kepada pasukan anda",
+      "mine": "Pasukan anda ambil kes ini",
+      "held_by_other": "{unit} sudah ambil",
+      "searching": "Sedang ditawarkan kepada {unit}",
+      "searchingNoName": "Sedang ditawarkan kepada pasukan lain",
+      "unanswered": "Belum ada pasukan terima",
+      "closed": "Sudah ditutup"
+    },
+    "countdown": "Masa menjawab tinggal {time}",
+    "countdownHint": "Bila masa habis, kes ditawarkan kepada pasukan seterusnya. Anda masih boleh terima.",
+    "status": {
+      "received": "Menunggu pasukan",
+      "assigned": "Sudah diterima",
+      "en_route": "Dalam perjalanan",
+      "on_site": "Sudah sampai di tempat",
+      "rescued": "Sudah diselamatkan",
+      "safe_cancelled": "Pengirim kata dia selamat",
+      "dismissed": "Kes ditutup"
+    },
+    "case": {
+      "noArea": "Tambon tak diketahui",
+      "typedPlace": "Pengirim menulis tempatnya: {text}",
+      "sentAt": "Dihantar {time}",
+      "waited": "menunggu {time}",
+      "accuracy": "ketepatan ±{m} m",
+      "people": "{count} orang",
+      "hasPhone": "Ada nombor telefon",
+      "noPhone": "Tiada nombor telefon",
+      "photos": "{count} gambar",
+      "voice": "Ada rakaman suara",
+      "injuries": "Cedera: {text}",
+      "said": "Pengirim kata: {text}",
+      "spamFlag": "Sistem syak hantaran mengganggu. Kes ini tetap dalam barisan seperti biasa.",
+      "unansweredNote": "Kes ini sudah sampai kepada pentadbir Jaga. Pasukan yang menjaga kawasan ini masih boleh terima bila-bila masa.",
+      "declined": "Pasukan anda sudah kata tidak dapat. Anda masih boleh terima kes ini.",
+      "timedOut": "Masa tawaran kepada pasukan anda sudah habis. Anda masih boleh terima kes ini.",
+      "coordinates": "Koordinat {coords}",
+      "copy": "Salin koordinat",
+      "copied": "Sudah disalin",
+      "closeNote": "Selepas selesai menyelamat, minta orang itu sahkan pada telefonnya sendiri."
+    },
+    "act": {
+      "accept": "Terima kes ini",
+      "working": "Menyimpan…",
+      "decline": "Tidak dapat terima",
+      "declineWhy": "Kenapa pasukan anda tidak dapat terima?",
+      "enRoute": "Kami dalam perjalanan",
+      "onSite": "Kami sudah sampai",
+      "release": "Pulangkan kes ini",
+      "releaseWhy": "Kenapa kes dipulangkan?",
+      "releaseNote": "Kes terus ditawarkan kepada pasukan seterusnya.",
+      "showPhone": "Lihat nombor telefon",
+      "navigate": "Arah jalan",
+      "directionsWarning": "Arah jalan tidak tahu jalan mana yang banjir atau ditutup.",
+      "jagaMap": "Buka peta Jaga",
+      "phoneLogged": "Setiap kali nombor ini dibuka, ia dicatat dalam log capaian.",
+      "phoneNone": "Pengirim tidak beri nombor telefon."
+    },
+    "decline": {
+      "too_far": "Terlalu jauh",
+      "no_boat": "Tiada bot",
+      "already_out": "Sedang bertugas di luar",
+      "cannot": "Tidak dapat pergi"
+    },
+    "releaseReason": {
+      "cannot_reach": "Tidak dapat sampai ke tempat",
+      "no_boat": "Tiada bot",
+      "other_emergency": "Ada kes yang lebih cemas",
+      "cannot": "Tidak dapat teruskan"
+    },
+    "eta": {
+      "ask": "Bila dijangka sampai?",
+      "askHint": "Ini anggaran. Orang yang menunggu nampak julat masa, bukan janji waktu.",
+      "given": "Dijangka sampai: {band}",
+      "givenAt": "diberitahu {time}",
+      "change": "Tukar anggaran",
+      "under15": "Kurang 15 minit",
+      "to30": "15–30 minit",
+      "to60": "30–60 minit",
+      "over60": "Lebih 60 minit",
+      "unknown": "Belum boleh kata"
+    },
+    "notice": {
+      "taken": "{unit} sudah terima kes ini dahulu.",
+      "takenNoName": "Pasukan lain sudah terima kes ini dahulu.",
+      "accepted": "Sudah diterima. Beritahu bila dijangka sampai.",
+      "refused": "Tidak dapat dibuat. Kes ini mungkin sudah ditutup atau bertukar pasukan.",
+      "failed": "Tiada sambungan. Belum disimpan. Cuba lagi."
+    },
+    "time": {
+      "hm": "{hours} jam {minutes} minit",
+      "m": "{minutes} minit"
+    },
+    "notVerified": {
+      "title": "Pasukan anda belum disahkan",
+      "body": "Papan kes hanya dibuka kepada pasukan yang sudah disahkan oleh pentadbir Jaga. Lihat status pendaftaran di halaman akaun.",
+      "account": "Pergi ke halaman akaun"
     }
   },
   "admin": {
@@ -1171,7 +1332,9 @@
       "stale": "Data lama",
       "none": "Tiada data"
     },
-    "damScenarioLabel": "Keadaan empangan"
+    "damScenarioLabel": "Keadaan empangan",
+    "authorityTitle": "Contoh: papan pasukan bantuan",
+    "authorityNote": "Semua data di sini rekaan. Cuba terima kes, beri anggaran dan pulangkan kes. Buka bunyi amaran untuk dengar bunyi sebenar."
   },
   "report": {
     "title": "Lapor banjir",

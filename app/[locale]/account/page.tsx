@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, isAdminRole, localePath, needsName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { buttonSecondary, card, hint, notice } from "@/lib/ui";
+import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
 
 export async function generateMetadata({
   params,
@@ -62,6 +62,11 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
             </span>
           </p>
         ))}
+        {(units ?? []).some((unit) => unit.status === "verified") && (
+          <Link href="/authority" className={buttonPrimary}>
+            {t("authority.console")}
+          </Link>
+        )}
         {(units ?? []).length === 0 && <p className={hint}>{t("authority.intro")}</p>}
         <Link href="/authority/register" className={buttonSecondary}>
           {t("authority.register")}

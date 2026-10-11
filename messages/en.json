@@ -186,7 +186,10 @@
       "closing": "Saving…",
       "closed": "The request is closed. If you need help again, send a new SOS.",
       "openCase": "You have a request that is still open.",
-      "openCaseLink": "See the status of your request"
+      "openCaseLink": "See the status of your request",
+      "on_site": "The team has arrived",
+      "accepted": "A team accepted the request",
+      "released": "The team couldn't continue. Looking for another team."
     },
     "details": {
       "title": "Add details (optional)",
@@ -231,7 +234,31 @@
     },
     "back": "Back to the home screen",
     "soonTitle": "The SOS button isn't working yet",
-    "soonBody": "Asking for help through Jaga opens before the flood season. Right now nobody receives requests from this app. If you need help, call straight away."
+    "soonBody": "Asking for help through Jaga opens before the flood season. Right now nobody receives requests from this app. If you need help, call straight away.",
+    "team": {
+      "searching": "Looking for a team",
+      "searchingBody": "No team has accepted your request yet. It is being offered to the teams in your area, one after another.",
+      "exhausted": "No team has accepted yet",
+      "exhaustedBody": "The teams in your area have not accepted this request. It is now with Jaga's admins, and any team in your area can still accept it.",
+      "waited": "Waiting {minutes} min",
+      "callNow": "If it is urgent, call now. Don't wait.",
+      "accepted": "A team has accepted your request",
+      "eta": {
+        "under15": "Expected within 15 minutes",
+        "to30": "Expected in 15–30 minutes",
+        "to60": "Expected in 30–60 minutes",
+        "over60": "Expected to take more than 60 minutes",
+        "unknown": "The team can't say yet when it will arrive"
+      },
+      "etaGiven": "An estimate, given by the team at {time}.",
+      "etaEstimate": "An estimate.",
+      "etaNone": "The team has not given an arrival estimate yet.",
+      "call": "Call the team that is coming",
+      "phonePoc": "The team that accepted your request",
+      "phoneOrg": "The organisation's official number",
+      "phoneNone": "This team has no phone number on file. If it is urgent, call 1784 or 1669.",
+      "phoneFailed": "The number couldn't be shown. Try again."
+    }
   },
   "hotlines": {
     "title": "Hotlines",
@@ -516,7 +543,8 @@
         "pending": "Waiting for an admin to verify",
         "verified": "Verified",
         "suspended": "Suspended"
-      }
+      },
+      "console": "Open the case board"
     },
     "signedIn": {
       "title": "You're signed in",
@@ -651,6 +679,139 @@
       "coverage": "Choose at least one area.",
       "limit": "One account can register at most 5 units.",
       "save": "Registration failed. Try again."
+    }
+  },
+  "authority": {
+    "title": "Case board",
+    "subtitle": "Requests in the area your team covers. A case being offered to your team is on top.",
+    "pollFailed": "The board couldn't update. What you see may be out of date. Check your connection.",
+    "refresh": "Update",
+    "alarm": {
+      "title": "Alarm sound",
+      "off": "The alarm is silent. Tap once to turn the sound on.",
+      "arm": "Turn on the alarm sound",
+      "on": "The alarm sound is on",
+      "none": "This browser can't play the alarm. Keep this page where you can see it.",
+      "openOnly": "The alarm only sounds while this page is open.",
+      "ringing": "{count, plural, one {# case is being offered to your team} other {# cases are being offered to your team}}"
+    },
+    "unit": {
+      "onDuty": "On duty, ready for cases",
+      "offDuty": "Off duty",
+      "dutyHint": "Off duty, you still see every case and can accept any of them. Your team is only asked last.",
+      "sharing": "When you accept an SOS, the person you are rescuing can see your team's contact number.",
+      "sharingOff": "They see your organisation's official number instead."
+    },
+    "filter": {
+      "open": "Open ({count})",
+      "closed": "Closed ({count})",
+      "tambon": "Tambon",
+      "allTambons": "All tambons",
+      "vulnerable": "Only cases with vulnerable people"
+    },
+    "empty": {
+      "open": "No open cases in your area.",
+      "closed": "No closed cases in the last 3 days.",
+      "filtered": "No case matches the filter."
+    },
+    "state": {
+      "offered_to_me": "Offered to your team",
+      "mine": "Your team has this case",
+      "held_by_other": "{unit} has this case",
+      "searching": "Being offered to {unit}",
+      "searchingNoName": "Being offered to another team",
+      "unanswered": "No team has accepted",
+      "closed": "Closed"
+    },
+    "countdown": "{time} left to answer",
+    "countdownHint": "When the time runs out the case goes to the next team. You can still accept it.",
+    "status": {
+      "received": "Waiting for a team",
+      "assigned": "Accepted",
+      "en_route": "On the way",
+      "on_site": "On site",
+      "rescued": "Rescued",
+      "safe_cancelled": "The sender said they are safe",
+      "dismissed": "Closed"
+    },
+    "case": {
+      "noArea": "Tambon unknown",
+      "typedPlace": "The sender typed their place: {text}",
+      "sentAt": "Sent {time}",
+      "waited": "waiting {time}",
+      "accuracy": "accuracy ±{m} m",
+      "people": "{count, plural, one {# person} other {# people}}",
+      "hasPhone": "Has a phone number",
+      "noPhone": "No phone number",
+      "photos": "{count, plural, one {# photo} other {# photos}}",
+      "voice": "Voice note",
+      "injuries": "Injuries: {text}",
+      "said": "The sender said: {text}",
+      "spamFlag": "The system suspects a nuisance send. The case keeps its place in the queue.",
+      "unansweredNote": "This case is with Jaga's admins now. Any team covering the area can still accept it.",
+      "declined": "Your team passed on this case. You can still accept it.",
+      "timedOut": "The offer to your team ran out. You can still accept it.",
+      "coordinates": "Coordinates {coords}",
+      "copy": "Copy coordinates",
+      "copied": "Copied",
+      "closeNote": "When the rescue is done, ask the person to confirm it on their own phone."
+    },
+    "act": {
+      "accept": "Accept this case",
+      "working": "Saving…",
+      "decline": "We can't take it",
+      "declineWhy": "Why can't your team take it?",
+      "enRoute": "We are on the way",
+      "onSite": "We have arrived",
+      "release": "Give this case back",
+      "releaseWhy": "Why are you giving it back?",
+      "releaseNote": "The case is offered to the next team at once.",
+      "showPhone": "Show the phone number",
+      "navigate": "Navigate",
+      "directionsWarning": "Road directions don't know which roads are flooded or closed.",
+      "jagaMap": "Open Jaga's map",
+      "phoneLogged": "Every look at this number is written to the access log.",
+      "phoneNone": "The sender gave no phone number."
+    },
+    "decline": {
+      "too_far": "Too far",
+      "no_boat": "No boat",
+      "already_out": "Already out on a case",
+      "cannot": "Can't go"
+    },
+    "releaseReason": {
+      "cannot_reach": "Can't reach the place",
+      "no_boat": "No boat",
+      "other_emergency": "A more urgent case",
+      "cannot": "Can't continue"
+    },
+    "eta": {
+      "ask": "When do you expect to arrive?",
+      "askHint": "An estimate. The person waiting sees it as a range, not as an appointment.",
+      "given": "Expected arrival: {band}",
+      "givenAt": "given {time}",
+      "change": "Change the estimate",
+      "under15": "Under 15 min",
+      "to30": "15–30 min",
+      "to60": "30–60 min",
+      "over60": "Over 60 min",
+      "unknown": "Can't say yet"
+    },
+    "notice": {
+      "taken": "{unit} accepted this case just before you.",
+      "takenNoName": "Another team accepted this case just before you.",
+      "accepted": "Accepted. Now say when you expect to arrive.",
+      "refused": "That couldn't be done. The case may have closed or changed hands.",
+      "failed": "No connection. Nothing was saved. Try again."
+    },
+    "time": {
+      "hm": "{hours} h {minutes} min",
+      "m": "{minutes} min"
+    },
+    "notVerified": {
+      "title": "Your team isn't verified yet",
+      "body": "The case board is open only to teams a Jaga admin has verified. Your registration's status is on the account page.",
+      "account": "Go to the account page"
     }
   },
   "admin": {
@@ -1171,7 +1332,9 @@
       "stale": "Old figures",
       "none": "No figures"
     },
-    "damScenarioLabel": "The dam's state"
+    "damScenarioLabel": "The dam's state",
+    "authorityTitle": "Example: a response team's board",
+    "authorityNote": "Everything here is made up. Try accepting a case, giving an estimate and handing it back. Turn the alarm on to hear the real sound."
   },
   "report": {
     "title": "Report flooding",

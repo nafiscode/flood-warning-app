@@ -1,5 +1,5 @@
 import { sosSendingEnabled } from "@/lib/features";
-import type { SosStatus, SosTimeline } from "@/lib/sos";
+import type { SosEtaBand, SosStatus, SosTeam, SosTimeline } from "@/lib/sos";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -33,9 +33,27 @@ export async function GET(request: Request, context: RouteContext<"/api/sos/[id]
   const token = request.headers.get(TOKEN_HEADER);
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("sos_timeline", { p_sos_id: id, p_token: token });
+  // Who is coming is asked beside the timeline, behind the same gate (the sender or the token).
+  const [{ data, error }, responder] = await Promise.all([
+    supabase.rpc("sos_timeline", { p_sos_id: id, p_token: token }),
+    supabase.rpc("sos_responder", { p_sos_id: id, p_token: token }),
+  ]);
   const row = Array.isArray(data) ? data[0] : data;
   if (error || !row) return refused(error?.code);
+  const who = Array.isArray(responder.data) ? responder.data[0] : responder.data;
+  const team: SosTeam | null =
+    responder.error || !who
+      ? null
+      : {
+          searching: who.searching === true,
+          exhausted: who.exhausted === true,
+          unitName: (who.unit_name as string | null) ?? null,
+          orgName: (who.org_name as string | null) ?? null,
+          etaBand: (who.eta_band as SosEtaBand | null) ?? null,
+          etaGivenAt: (who.eta_given_at as string | null) ?? null,
+          acceptedAt: (who.accepted_at as string | null) ?? null,
+          phoneAvailable: who.phone_available === true,
+        };
 
   const timeline: SosTimeline = {
     status: row.status as SosStatus,
@@ -50,6 +68,7 @@ export async function GET(request: Request, context: RouteContext<"/api/sos/[id]
     photos: Number(row.photos ?? 0),
     hasVoice: row.has_voice === true,
     events: Array.isArray(row.events) ? (row.events as SosTimeline["events"]) : [],
+    team,
   };
   return answer(timeline);
 }
@@ -65,7 +84,8 @@ type Action =
       battery?: number | null;
     }
   | { action: "close"; token?: string | null; rescued?: boolean; note?: string | null }
-  | { action: "media"; token?: string | null; photos?: string[]; voice?: string | null };
+  | { action: "media"; token?: string | null; photos?: string[]; voice?: string | null }
+  | { action: "team_phone"; token?: string | null };
 
 export async function POST(request: Request, context: RouteContext<"/api/sos/[id]">) {
   const { id } = await context.params;
@@ -128,6 +148,22 @@ export async function POST(request: Request, context: RouteContext<"/api/sos/[id
     });
     if (error) return refused(error.code);
     return answer({ ok: true, status: data as SosStatus });
+  }
+
+  if (input.action === "team_phone") {
+    // The one number a sender may see: the team that accepted their case, while it is open
+    // (safety rule 5). The database function checks all of that and logs the look.
+    const { data, error } = await supabase.rpc("reveal_responder_phone", {
+      p_sos_id: id,
+      p_token: token,
+    });
+    if (error) return refused(error.code);
+    const row = Array.isArray(data) ? data[0] : data;
+    return answer({
+      phone: (row?.phone as string | null) ?? null,
+      isPoc: row?.is_poc === true,
+      unitName: (row?.unit_name as string | null) ?? null,
+    });
   }
 
   if (input.action === "media") {
