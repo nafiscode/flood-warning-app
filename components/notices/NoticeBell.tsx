@@ -132,7 +132,14 @@ export function NoticeBell({ className = "" }: { className?: string }) {
               {t("close")}
             </button>
           </div>
-          <NoticeList items={items} read={wasRead} locale={locale} emptyHint={t("noneHint")} />
+          <NoticeList
+            items={items}
+            read={wasRead}
+            locale={locale}
+            // Someone who has not chosen an area yet is told what to do, not that there is
+            // nothing to tell them.
+            emptyHint={area ? t("noneHint") : t("noArea")}
+          />
           {checkedAt !== null && items.length > 0 && (
             <p className="border-t border-jaga-line px-4 py-2 text-small text-jaga-text-2">
               {t("checked", {

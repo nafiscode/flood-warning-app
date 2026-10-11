@@ -163,6 +163,25 @@ test.describe("the bell", () => {
     await expect(bell(page)).toBeVisible();
   });
 
+  test("it sits at the end of the bar, where every other app puts it", async ({ page }) => {
+    await serve(page);
+    await page.goto("/");
+    const header = page.locator("header");
+    const box = (await bell(page).boundingBox())!;
+    const account = (await header.getByRole("link", { name: th.nav.account }).boundingBox())!;
+    // Last of the row (the owner's note, 12 Oct). The end, not literally the right: in a
+    // right-to-left script the whole bar turns round and the bell goes with it.
+    expect(box.x).toBeGreaterThan(account.x);
+    const bar = (await header.boundingBox())!;
+    expect(box.x + box.width).toBeLessThanOrEqual(bar.x + bar.width);
+    // And the badge must not hang off the screen.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
+  });
+
   test("it costs the header no height at 360 px", async ({ page }) => {
     await serve(page);
     await page.goto("/");

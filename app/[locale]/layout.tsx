@@ -113,12 +113,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                 </div>
 
                 <div className="flex items-center">
-                  {/*
-                    The bell: what they missed while the app was closed (the owner's request,
-                    10 Oct). In the same row as the three links — on its own it wrapped the links
-                    onto a line of their own and made the frozen header 96 px taller at 360 px.
-                  */}
-                  <NoticeBell />
                   {/* Home as a word, not only the logo: people don't tap a logo to go back. */}
                   <Link
                     href="/"
@@ -143,6 +137,15 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   </Link>
                   {/* Only an admin ever sees this one, and only in their own browser. */}
                   <AdminLink />
+                  {/*
+                    The bell: what they missed while the app was closed (the owner's request,
+                    10 Oct). Last in the row, so it sits at the far end of the bar where every
+                    other app puts it (the owner's note, 12 Oct) — and at the *inline* end, so it
+                    follows the writing direction if Jawi is ever chosen. It shares the row with
+                    the links rather than standing alone: on its own it wrapped them onto a line
+                    of their own and made the frozen header 96 px taller at 360 px.
+                  */}
+                  <NoticeBell />
                 </div>
                 {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
                 <div className="flex w-full items-center justify-between gap-x-1">
