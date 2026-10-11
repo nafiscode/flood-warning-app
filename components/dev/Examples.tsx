@@ -31,6 +31,7 @@ import {
   EXAMPLE_WEATHER_PLACE,
   DAM_SCENARIOS,
   exampleDamDaily,
+  exampleDamDays,
   exampleDamSignal,
   type DamScenario,
   homeExample,
@@ -199,7 +200,12 @@ export function DamExample() {
   const tDam = useTranslations("dam");
   const base = data?.dams[0] ?? null;
   const dam: Dam | null = base
-    ? { ...base, signal: exampleDamSignal(scenario), daily: exampleDamDaily(scenario) }
+    ? {
+        ...base,
+        signal: exampleDamSignal(scenario),
+        daily: exampleDamDaily(scenario),
+        days: exampleDamDays(scenario),
+      }
     : null;
   return (
     <div className="flex flex-col gap-4">

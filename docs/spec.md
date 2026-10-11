@@ -698,6 +698,14 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   own can say the opposite of what the day did: on 11 Oct the newest hour had the dam releasing
   nothing while the day behind it had passed 3.98 million m³ downstream. The card carries both
   flows; the quiet notice carries only the day's release, because it is read on the home screen.
+- **The fortnight, as two charts** (added 12 Oct 2026, the owner's request). `dam_days()` gives one
+  row per Bangkok day - the mean release, the mean spill, the volumes and where the reservoir
+  ended - and the dam's card draws the last fourteen: the daily mean outflow, and the daily mean
+  discharge over the spillway when there was any, **on the same scale** so their heights can be
+  compared. The run of rising or falling days is also said in a sentence, counted over whole days
+  only, because the feed publishes part of today. A day with no readings is drawn as a gap and a
+  published day of nothing keeps its mark: "released nothing" and "published nothing" are
+  different facts. The charts are the record, never a forecast, and they say so.
 - **The quiet tier** (`watchful`, or a release the app has not confirmed yet): a notice on the home
   screen and the map for anyone whose area or watched place is on the river below the dam. No
   alert level, no alert colour, no sound, no notification. It says it is not an alert from Jaga

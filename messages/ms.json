@@ -1603,6 +1603,29 @@
       "noArrivalTime": "Masa air sampai ke setiap tempat belum boleh diberitahu, kerana masa perjalanan air dari hilir empangan belum dianalisis."
     },
     "source": "Sumber: {operator}, diterbitkan melalui ThaiWater",
+    "history": {
+      "title": "{days} hari lepas",
+      "outflowTitle": "Purata harian jumlah pelepasan air",
+      "spillTitle": "Purata harian pelepasan melalui alur limpah",
+      "noSpill": "Tiada pelepasan melalui alur limpah dalam {days} hari lepas",
+      "scale": "Paksi menegak hingga {cms} m³/s · satu bar satu hari; bar pudar bermakna data hari itu tidak lengkap",
+      "chart": "Carta bar {title} bagi {days} hari lepas, tertinggi {top} m³/s, terkini {latest} m³/s. Semua angka ada dalam jadual di bawah",
+      "value": "{cms, number} m³/s (daripada {hours} bacaan sejam)",
+      "trend": {
+        "rising": "Kadar pelepasan air meningkat {days} hari berturut-turut, daripada {from} kepada {to} m³/s",
+        "falling": "Kadar pelepasan air menurun {days} hari berturut-turut, daripada {from} kepada {to} m³/s"
+      },
+      "numbers": "Lihat angka harian",
+      "columns": {
+        "day": "Tarikh",
+        "outflow": "Purata pelepasan (m³/s)",
+        "spill": "Melalui alur limpah (juta m³)",
+        "hours": "Jam berdata"
+      },
+      "columnsNote": "Purata harian dikira daripada jam yang diterbitkan oleh empangan pada hari itu",
+      "noData": "Tiada data",
+      "note": "Carta menunjukkan rekod lalu, bukan ramalan kadar pelepasan akan datang"
+    },
     "path": {
       "title": "Laluan air yang dilepaskan dari empangan",
       "tambons": "Melalui {count} mukim di sepanjang sungai utama, dan {tributary} mukim lagi di bahagian hilir anak sungai",

@@ -449,3 +449,94 @@ describe("the day's mean flow and volume", () => {
     expect(Number(state.daily.outflow_mean_cms)).toBeGreaterThan(0);
   });
 });
+
+/*
+ * The fortnight behind the charts (the owner, 12 Oct). The window is in days, so these build a
+ * run of hours and then read the days back out of it.
+ */
+describe("the fortnight, day by day", () => {
+  type Day = {
+    day: string;
+    hours: number;
+    released_mean_cms: number | null;
+    spilled_mean_cms: number | null;
+    outflow_mean_cms: number | null;
+    outflow_mcm: number | null;
+    spilled_mcm: number | null;
+    storage_end_mcm: number | null;
+  };
+  const days = (n = 14) => all<Day>(`select * from dam_days('bang_lang', ${n})`);
+
+  it("a visitor reads it, like the readings it is made of", async () => {
+    await readings([quiet, quiet], true);
+    await as(db, "anon");
+    const list = await days(3);
+    expect(list.length).toBe(3);
+    // Oldest first, so a chart can be drawn straight from it.
+    const order = list.map((d) => new Date(d.day).getTime());
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  /*
+   * A day the feed never published must look like a gap. If dam_days only returned the days it
+   * has, a chart would close the gap and show a fortnight that never happened.
+   */
+  it("every day in the window comes back, including the ones with nothing in them", async () => {
+    await readings([quiet, quiet], true);
+    await as(db, "anon");
+    const list = await days(5);
+    expect(list).toHaveLength(5);
+    const empty = list.filter((d) => d.hours === 0);
+    expect(empty.length).toBeGreaterThan(0);
+    for (const d of empty) {
+      expect(d.outflow_mean_cms).toBeNull();
+      expect(d.outflow_mcm).toBeNull();
+    }
+  });
+
+  it("a day's mean is its hours, and the spill is counted into the outflow", async () => {
+    // 0.36 million m3 in an hour is exactly 100 m3/s.
+    await readings(
+      [
+        { released: 0.36, spilled: 0.36 },
+        { released: 0.36, spilled: 0.36 },
+      ],
+      true,
+    );
+    await as(db, "anon");
+    const today = (await days(2)).at(-1)!;
+    expect(today.hours).toBe(2);
+    expect(Number(today.outflow_mean_cms)).toBeCloseTo(200, 6);
+    expect(Number(today.spilled_mean_cms)).toBeCloseTo(100, 6);
+    expect(Number(today.spilled_mcm)).toBeCloseTo(0.72, 6);
+  });
+
+  it("the day carries where the reservoir stood when it ended", async () => {
+    await readings([{ storage: 700 }, { storage: 800 }], true);
+    await as(db, "anon");
+    expect(Number((await days(2)).at(-1)!.storage_end_mcm)).toBe(800);
+  });
+
+  it("the app's one read carries the fortnight beside the hour and the day", async () => {
+    await readings([quiet, quiet], true);
+    await as(db, "anon");
+    const state = await one<{ days: Day[] }>("select days from dam_state()");
+    expect(Array.isArray(state.days)).toBe(true);
+    expect(state.days.length).toBe(14);
+  });
+
+  /*
+   * The backfill talks to the outside world and writes to the archive. It belongs to the
+   * database's own jobs, not to anything a caller can reach.
+   */
+  it("filling the archive is not something a visitor or a signed-in person can set off", async () => {
+    await as(db, "anon");
+    expect(
+      await expectDenied(db, "select dam_fetch_range(current_date, current_date)"),
+    ).toBeTruthy();
+    await as(db, { uid: w.admin });
+    expect(
+      await expectDenied(db, "select dam_fetch_range(current_date, current_date)"),
+    ).toBeTruthy();
+  });
+});

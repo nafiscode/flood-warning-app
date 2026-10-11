@@ -1,4 +1,5 @@
 import type { Dam, DamData, DamDaily, DamReach, DamSignal, DamTambon } from "@/lib/dam";
+import type { DamDay } from "@/lib/dam-chart";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/public";
 
@@ -46,6 +47,26 @@ function toDaily(row: Row | null | undefined): DamDaily | null {
   };
 }
 
+/** The fortnight, a day at a time, as the database names it (lib/dam-chart.ts, DamDay). */
+function toDays(rows: unknown): DamDay[] {
+  if (!Array.isArray(rows)) return [];
+  return rows.map((raw): DamDay => {
+    const row = raw as Row;
+    const number = (key: string) => (typeof row[key] === "number" ? (row[key] as number) : null);
+    return {
+      day: String(row.day),
+      hours: Number(row.hours ?? 0),
+      releasedMeanCms: number("released_mean_cms"),
+      spilledMeanCms: number("spilled_mean_cms"),
+      outflowMeanCms: number("outflow_mean_cms"),
+      outflowMcm: number("outflow_mcm"),
+      spilledMcm: number("spilled_mcm"),
+      storageEndMcm: number("storage_end_mcm"),
+      levelEndM: number("level_end_m"),
+    };
+  });
+}
+
 /**
  * The dam, the reservoir, the path released water takes, and the operator's latest figures
  * (spec section 15). One address for everyone, kept at the edge for 60 s like the rest of the
@@ -75,6 +96,9 @@ export async function GET() {
       String(row.code),
       toSignal(row.signal as Row | null),
     ]),
+  );
+  const fortnights = new Map<string, DamDay[]>(
+    ((state.data ?? []) as Row[]).map((row) => [String(row.code), toDays(row.days)]),
   );
   const dailies = new Map<string, DamDaily | null>(
     ((state.data ?? []) as Row[]).map((row) => [
@@ -123,6 +147,7 @@ export async function GET() {
         tambons: byDam.get(code) ?? [],
         signal: signals.get(code) ?? null,
         daily: dailies.get(code) ?? null,
+        days: fortnights.get(code) ?? [],
       };
     }),
   };

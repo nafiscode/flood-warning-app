@@ -38,6 +38,31 @@ const words = (message: string) => message.split("{")[0]!.trim();
 
 const line = (coords: number[][]) => ({ type: "LineString", coordinates: coords });
 
+/**
+ * A fortnight behind the figures, for the charts. A releasing one rises for a week and then puts
+ * water over the spillway; a quiet one sits where the real dam sat.
+ */
+function fortnight(grade: "quiet" | "watchful" | "releasing") {
+  const shape =
+    grade === "releasing"
+      ? [46, 47, 61, 78, 103, 131, 149, 157, 344, 563, 788]
+      : [46, 47, 46, 44, 45, 46, 46, 47, 46, 47, 46];
+  const spill =
+    grade === "releasing" ? [0, 0, 0, 0, 0, 0, 0, 0, 198, 421, 648] : shape.map(() => 0);
+  const start = Date.now() - (shape.length - 1) * 86_400_000;
+  return shape.map((cms, i) => ({
+    day: new Date(start + i * 86_400_000).toISOString().slice(0, 10),
+    hours: 24,
+    releasedMeanCms: cms - spill[i]!,
+    spilledMeanCms: spill[i],
+    outflowMeanCms: cms,
+    outflowMcm: Math.round(((cms * 86400) / 1_000_000) * 100) / 100,
+    spilledMcm: Math.round(((spill[i]! * 86400) / 1_000_000) * 100) / 100,
+    storageEndMcm: grade === "quiet" ? 745 : 1480,
+    levelEndM: null,
+  }));
+}
+
 function damAnswer(grade: "quiet" | "watchful" | "releasing") {
   return {
     dams: [
@@ -91,6 +116,7 @@ function damAnswer(grade: "quiet" | "watchful" | "releasing") {
          * The day behind that hour. A releasing day passes about 69 million m3 downstream; a
          * quiet one about 4, which is the day that was really there on 11 Oct 2026.
          */
+        days: fortnight(grade),
         daily: {
           windowH: 24,
           until: new Date(Date.now() - 3 * 3_600_000).toISOString(),
@@ -245,6 +271,31 @@ test.describe("what /api/public/dam gives out", () => {
     );
     // Nor is the admins' review queue in it: a signal awaiting judgement is not public.
     expect(all.filter((k) => /notice|review|dismiss/i.test(k))).toEqual([]);
+  });
+
+  /*
+   * The charts the owner asked for on 12 Oct are drawn from this: a day a row, oldest first, with
+   * the hours behind each one. A day the feed never published must come back as a day with no
+   * hours rather than be missing, or a chart would close the gap.
+   */
+  test("carries the fortnight, a day at a time, with the hours behind each day", async ({
+    request,
+  }) => {
+    const response = await request.get("/api/public/dam");
+    test.skip(response.status() === 503, "needs a Supabase project");
+    const body = await response.json();
+    for (const dam of body.dams) {
+      expect(Array.isArray(dam.days)).toBe(true);
+      if (dam.days.length === 0) continue;
+      expect(dam.days.length).toBeGreaterThan(1);
+      const dates = dam.days.map((d: { day: string }) => d.day);
+      expect([...dates].sort()).toEqual(dates);
+      for (const day of dam.days) {
+        // A plain calendar date, never a moment: a browser's own zone must not shift it.
+        expect(day.day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(typeof day.hours).toBe("number");
+      }
+    }
   });
 
   test("every dam says where its lines came from and what they do not say", async ({ request }) => {

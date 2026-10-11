@@ -1603,6 +1603,29 @@
       "noArrivalTime": "Nobody can yet say when the water reaches each place: the travel time from the dam downstream has not been analysed."
     },
     "source": "Source: {operator}, published through ThaiWater",
+    "history": {
+      "title": "The last {days} days",
+      "outflowTitle": "Daily mean total outflow",
+      "spillTitle": "Daily mean discharge over the spillway",
+      "noSpill": "No water went over the spillway in the last {days} days",
+      "scale": "Vertical axis to {cms} m³/s · one bar a day; a faint bar is a day with incomplete data",
+      "chart": "Bar chart, {title}, over {days} days. Highest {top} m³/s, latest {latest} m³/s. Every figure is in the table below",
+      "value": "{cms, number} m³/s (from {hours, plural, one {# hourly reading} other {# hourly readings}})",
+      "trend": {
+        "rising": "Outflow has risen {days, plural, one {# day} other {# days}} in a row, from {from} to {to} m³/s",
+        "falling": "Outflow has fallen {days, plural, one {# day} other {# days}} in a row, from {from} to {to} m³/s"
+      },
+      "numbers": "See the daily figures",
+      "columns": {
+        "day": "Date",
+        "outflow": "Mean outflow (m³/s)",
+        "spill": "Over the spillway (million m³)",
+        "hours": "Hours with data"
+      },
+      "columnsNote": "Each daily mean is over the hours the dam published that day",
+      "noData": "No data",
+      "note": "The charts show the record so far, not a forecast of future releases"
+    },
     "path": {
       "title": "The path water takes when the dam releases",
       "tambons": "Through {count, plural, one {# tambon} other {# tambons}} along the main river, and {tributary, plural, one {# more} other {# more}} on the lower reaches of the tributaries that join it",

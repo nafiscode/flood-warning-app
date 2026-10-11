@@ -13,6 +13,7 @@ import {
   type Dam,
   type DamAttention,
 } from "@/lib/dam";
+import { DamHistory } from "@/components/map/DamHistory";
 import { localName } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { card, hint, notice } from "@/lib/ui";
@@ -203,7 +204,8 @@ export function DamCard({ dam, now }: { dam: Dam; now: number }) {
       {/* The state in words with an icon, never by colour alone (CLAUDE.md, accessibility). */}
       <p className="font-medium">{t(`grade.${dam.signal?.grade ?? "unknown"}`)}</p>
       {(dam.signal?.reasons ?? []).map((reason) => (
-        <p key={reason}>{t(`reason.${reason}`)}</p>
+        /* "rising_fast" names the window it measured over, so every reason is given it. */
+        <p key={reason}>{t(`reason.${reason}`, { hours: dam.signal?.riseWindowH ?? 6 })}</p>
       ))}
       {(dam.signal?.awaiting ?? []).map((awaiting) => (
         <p key={awaiting} className={hint}>
@@ -212,6 +214,12 @@ export function DamCard({ dam, now }: { dam: Dam; now: number }) {
       ))}
 
       <Figures dam={dam} now={now} />
+
+      {/*
+       * The fortnight (the owner, 12 Oct). On the card and not in the notice: the notice is read
+       * on the home screen, and two charts there would push the SOS button off a small phone.
+       */}
+      <DamHistory dam={dam} />
 
       <div className="flex flex-col gap-1">
         <p className="font-medium">{t("path.title")}</p>

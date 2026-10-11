@@ -25,6 +25,7 @@ import {
   type DamDaily,
   type DamSignal,
 } from "@/lib/dam";
+import { bars, hadSpill, run, scaleFor, WHOLE_DAY_HOURS, type DamDay } from "@/lib/dam-chart";
 import {
   byZoom,
   CASING_EXTRA,
@@ -37,7 +38,13 @@ import {
   RESERVOIR_FILL_OPACITY,
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
-import { exampleDamDaily, exampleDamSignal, EXAMPLE_NOW } from "@/lib/dev-examples";
+import {
+  DAM_SCENARIOS,
+  exampleDamDaily,
+  exampleDamDays,
+  exampleDamSignal,
+  EXAMPLE_NOW,
+} from "@/lib/dev-examples";
 import { EXAMPLE_DAMS } from "@/lib/war-room-examples";
 import { readFileSync } from "node:fs";
 import th from "@/messages/th.json";
@@ -129,6 +136,7 @@ const DAM: Dam = {
   ],
   signal: exampleDamSignal("quiet"),
   daily: exampleDamDaily("quiet"),
+  days: exampleDamDays("quiet"),
 };
 
 const withSignal = (signal: DamSignal | null): Dam => ({ ...DAM, signal });
@@ -414,6 +422,201 @@ describe("the day behind the newest reading", () => {
       <DamCard dam={withFigures(exampleDamSignal("quiet"), null)} now={EXAMPLE_NOW} />,
     );
     expect(container.textContent).not.toContain(words(th.dam.figures.daily.title));
+  });
+});
+
+/*
+ * The fortnight charts (the owner, 12 Oct): "people can see if it's continuously increased for
+ * few days or a week". What is tested here is that the picture cannot say something the figures
+ * do not - a gap is not a nought, a half-published day is not a quiet day, and a wobble is not a
+ * trend.
+ */
+describe("the fortnight behind the dam", () => {
+  const day = (over: Partial<DamDay> & { day: string }): DamDay => ({
+    hours: 24,
+    releasedMeanCms: 46,
+    spilledMeanCms: 0,
+    outflowMeanCms: 46,
+    outflowMcm: 3.97,
+    spilledMcm: 0,
+    storageEndMcm: 745,
+    levelEndM: 99.5,
+    ...over,
+  });
+  const series = (values: number[]) =>
+    values.map((v, i) =>
+      day({
+        day: `2026-10-${String(i + 1).padStart(2, "0")}`,
+        releasedMeanCms: v,
+        outflowMeanCms: v,
+      }),
+    );
+
+  it("the scale is a clean number above the tallest day", () => {
+    expect(scaleFor(series([46, 52]))).toBe(100);
+    expect(scaleFor(series([120, 788]))).toBe(1000);
+    expect(scaleFor(series([3, 7]))).toBe(10);
+    // A dam doing nothing still gets an axis rather than a division by zero.
+    expect(scaleFor([])).toBe(1);
+    expect(scaleFor(series([0, 0]))).toBe(1);
+  });
+
+  it("the two charts share one scale, so their heights mean the same thing", () => {
+    const days = [
+      day({ day: "2026-10-01", outflowMeanCms: 800, spilledMeanCms: 400, spilledMcm: 34 }),
+    ];
+    const scale = scaleFor(days);
+    expect(bars(days, "outflow", scale)[0]!.percent).toBe(80);
+    expect(bars(days, "spill", scale)[0]!.percent).toBe(40);
+  });
+
+  it("a day the feed never published is a gap, not a nought", () => {
+    const [gap] = bars([day({ day: "2026-10-01", hours: 0 })], "outflow", 100);
+    expect(gap!.value).toBeNull();
+    expect(gap!.percent).toBe(0);
+  });
+
+  it("a day with water in it is never drawn as nothing", () => {
+    const [tiny] = bars([day({ day: "2026-10-01", outflowMeanCms: 0.2 })], "outflow", 1000);
+    expect(tiny!.percent).toBe(2);
+  });
+
+  /*
+   * "The dam released nothing that day" and "the feed published nothing that day" are different
+   * facts, and only the first is one. A published nought keeps its mark; a gap has none.
+   */
+  it("a published day of nothing still gets a mark, a gap does not", () => {
+    const rows = bars(
+      [
+        day({ day: "2026-10-01", outflowMeanCms: 0, hours: 24 }),
+        day({ day: "2026-10-02", hours: 0 }),
+      ],
+      "outflow",
+      100,
+    );
+    expect(rows[0]!.percent).toBe(2);
+    expect(rows[0]!.value).toBe(0);
+    expect(rows[1]!.percent).toBe(0);
+    expect(rows[1]!.value).toBeNull();
+  });
+
+  it("a half-published day is marked apart from a whole one", () => {
+    const rows = bars(
+      [day({ day: "2026-10-01", hours: WHOLE_DAY_HOURS }), day({ day: "2026-10-02", hours: 6 })],
+      "outflow",
+      100,
+    );
+    expect(rows.map((r) => r.whole)).toEqual([true, false]);
+  });
+
+  it("counts the run of days the release has been rising", () => {
+    const rising = run(series([46, 47, 61, 78, 96, 118]));
+    expect(rising).toMatchObject({ direction: "rising", days: 4, to: 118 });
+    const falling = run(series([200, 180, 120, 90]));
+    expect(falling).toMatchObject({ direction: "falling", days: 3 });
+  });
+
+  /*
+   * The feed publishes a few hours of today and the rest later. Counting that part-day would
+   * report a fall every morning and a rise every evening, which is noise dressed as a trend.
+   */
+  it("the run ignores a day the feed has only half published", () => {
+    const days = [
+      ...series([46, 61, 78, 96]),
+      day({ day: "2026-10-05", outflowMeanCms: 12, hours: 4 }),
+    ];
+    expect(run(days)).toMatchObject({ direction: "rising", days: 3, to: 96 });
+  });
+
+  it("a wobble of a per cent is steady, not a trend", () => {
+    expect(run(series([46.0, 46.1]))).toMatchObject({ direction: "steady" });
+    expect(run(series([46]))).toBeNull();
+    expect(run([])).toBeNull();
+  });
+
+  it("knows whether anything went over the spillway at all", () => {
+    expect(hadSpill(series([46, 47]))).toBe(false);
+    expect(hadSpill([day({ day: "2026-10-01", spilledMcm: 34 })])).toBe(true);
+  });
+
+  it("every example fortnight adds up: the volumes match the means and the hours", () => {
+    for (const scenario of DAM_SCENARIOS) {
+      for (const d of exampleDamDays(scenario)) {
+        if (d.hours === 0) {
+          expect(d.outflowMcm).toBeNull();
+          continue;
+        }
+        const seconds = d.hours * 3600;
+        expect(d.outflowMcm!).toBeCloseTo((d.outflowMeanCms! * seconds) / 1_000_000, 3);
+        expect(d.spilledMcm!).toBeCloseTo((d.spilledMeanCms! * seconds) / 1_000_000, 3);
+      }
+    }
+  });
+
+  /*
+   * Found in a browser, not by reasoning: the card printed an ICU error where it should have said
+   * why the dam is worth watching, because the message names the window it measured over and
+   * nobody passed it.
+   */
+  it("every reason the card prints has the figures its wording needs", () => {
+    const watchful = exampleDamSignal("watch")!;
+    const { container } = renderWithIntl(
+      <DamCard dam={{ ...DAM, signal: watchful }} now={EXAMPLE_NOW} />,
+    );
+    expect(container.textContent).not.toMatch(/\{hours\}|\{cms\}|\{mcm\}|\{days\}/);
+    expect(container.textContent).toContain(String(watchful.riseWindowH));
+  });
+
+  it("the card draws the charts and lists every day underneath", () => {
+    const dam = { ...DAM, days: exampleDamDays("releasing") };
+    const { container } = renderWithIntl(<DamCard dam={dam} now={EXAMPLE_NOW} />);
+    expect(container.querySelector("[data-dam-chart='outflow']")).toBeTruthy();
+    // There was a spill in that fortnight, so it gets its own chart on the same scale.
+    expect(container.querySelector("[data-dam-chart='spill']")).toBeTruthy();
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(dam.days.length);
+    expect(container.textContent).toContain(words(th.dam.history.numbers));
+  });
+
+  it("says in a sentence that the release has been rising, for someone who does not read pictures", () => {
+    const { container } = renderWithIntl(
+      <DamCard dam={{ ...DAM, days: exampleDamDays("watch") }} now={EXAMPLE_NOW} />,
+    );
+    expect(container.textContent).toContain(words(th.dam.history.trend.rising));
+  });
+
+  it("a fortnight with no spill says so in words instead of drawing noughts", () => {
+    const { container } = renderWithIntl(
+      <DamCard dam={{ ...DAM, days: exampleDamDays("quiet") }} now={EXAMPLE_NOW} />,
+    );
+    expect(container.querySelector("[data-dam-chart='spill']")).toBeNull();
+    expect(container.textContent).toContain(words(th.dam.history.noSpill));
+  });
+
+  it("draws nothing at all when there is no record to draw", () => {
+    const { container } = renderWithIntl(<DamCard dam={{ ...DAM, days: [] }} now={EXAMPLE_NOW} />);
+    expect(container.querySelector("[data-dam-history]")).toBeNull();
+  });
+
+  /*
+   * docs/brand.md: only the alert palette shows a level. A chart of how much water is leaving a
+   * dam is not a level, so no alert colour may appear in it - and the two series are told apart
+   * by their titles and the table, never by two steps of one teal.
+   */
+  it("wears no alert colour, and tells the two charts apart in words", () => {
+    const { container } = renderWithIntl(
+      <DamCard dam={{ ...DAM, days: exampleDamDays("releasing") }} now={EXAMPLE_NOW} />,
+    );
+    const history = container.querySelector("[data-dam-history]")!;
+    expect(history.innerHTML).not.toMatch(/bg-alert-|text-alert-|border-alert-|bg-sos|border-sos/);
+    const hues = new Set(
+      [...history.querySelectorAll("[data-dam-chart] span[style]")].map(
+        (el) => [...el.classList].find((c) => c.startsWith("bg-")) ?? "",
+      ),
+    );
+    hues.delete("");
+    expect([...hues]).toEqual(["bg-jaga-dam"]);
+    expect(history.textContent).toContain(words(th.dam.history.outflowTitle));
+    expect(history.textContent).toContain(words(th.dam.history.spillTitle));
   });
 });
 

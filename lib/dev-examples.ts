@@ -7,6 +7,7 @@ import type { Area, AreaDirectory } from "@/lib/area";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
 import type { DamDaily, DamSignal } from "@/lib/dam";
+import type { DamDay } from "@/lib/dam-chart";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces, SafePlace } from "@/lib/places";
 import type { PublicAlert, PublicStatus } from "@/lib/public-status";
@@ -523,6 +524,89 @@ const damDaily = (over: Partial<DamDaily>): DamDaily => ({
   spilledMcm: 0,
   ...over,
 });
+
+/*
+ * The fortnight each scenario would have behind it, for the charts (the owner, 12 Oct). The
+ * shapes are the archive's: a quiet fortnight sits near 46 m3/s with no spill at all, and the
+ * January 2021 release climbed for a week before the gates opened. Volumes are worked out from
+ * the means here, so an example can never say two different things at once.
+ */
+const DAY_MS = 86_400_000;
+
+function damDays(
+  shape: { released: number; spilled?: number; hours?: number; storage?: number }[],
+): DamDay[] {
+  return shape.map((d, i) => {
+    const hours = d.hours ?? 24;
+    const spilled = d.spilled ?? 0;
+    const seconds = hours * 3600;
+    const volume = (cms: number) => Math.round(((cms * seconds) / 1_000_000) * 10000) / 10000;
+    return {
+      day: new Date(EXAMPLE_NOW - (shape.length - 1 - i) * DAY_MS).toISOString().slice(0, 10),
+      hours,
+      releasedMeanCms: hours > 0 ? d.released : null,
+      spilledMeanCms: hours > 0 ? spilled : null,
+      outflowMeanCms: hours > 0 ? d.released + spilled : null,
+      outflowMcm: hours > 0 ? volume(d.released + spilled) : null,
+      spilledMcm: hours > 0 ? volume(spilled) : null,
+      storageEndMcm: d.storage ?? null,
+      levelEndM: null,
+    };
+  });
+}
+
+/** A fortnight of a dam doing its ordinary work: the real one, measured 29 Sep - 12 Oct 2026. */
+const QUIET_FORTNIGHT = [46.6, 46.7, 45.9, 43.8, 44.8, 46.1, 46.0, 47.0, 46.4, 47.1, 46.8, 46.0];
+
+export function exampleDamDays(scenario: DamScenario): DamDay[] {
+  switch (scenario) {
+    case "none":
+      return [];
+    case "watch":
+      // The week before a release: more water arriving every day, the gates still shut.
+      return damDays([
+        ...QUIET_FORTNIGHT.slice(0, 6).map((released) => ({ released, storage: 1180 })),
+        { released: 52, storage: 1240 },
+        { released: 61, storage: 1298 },
+        { released: 78, storage: 1354 },
+        { released: 96, storage: 1399 },
+        { released: 118, storage: 1432 },
+        { released: 139, storage: 1451 },
+        { released: 152, storage: 1460 },
+        { released: 158, hours: 7, storage: 1463 },
+      ]);
+    case "releasing":
+      // January 2021: a week of filling, then three days over the spillway.
+      return damDays([
+        ...QUIET_FORTNIGHT.slice(0, 5).map((released) => ({ released, storage: 1310 })),
+        { released: 74, storage: 1372 },
+        { released: 103, storage: 1421 },
+        { released: 131, storage: 1458 },
+        { released: 149, storage: 1482 },
+        { released: 157, storage: 1496 },
+        { released: 146, spilled: 198, storage: 1504 },
+        { released: 142, spilled: 421, storage: 1502 },
+        { released: 140, spilled: 648, storage: 1496 },
+        { released: 140, spilled: 612, hours: 7, storage: 1489 },
+      ]);
+    case "stale":
+      // The feed stopped two days ago, and had holes before that.
+      return damDays([
+        ...QUIET_FORTNIGHT.slice(0, 4).map((released) => ({ released })),
+        { released: 0, hours: 0 },
+        { released: 0, hours: 0 },
+        ...QUIET_FORTNIGHT.slice(4, 10).map((released) => ({ released })),
+        { released: 46.3, hours: 3 },
+        { released: 0, hours: 0 },
+      ]);
+    default:
+      return damDays([
+        ...QUIET_FORTNIGHT.map((released) => ({ released, storage: 745 })),
+        { released: 46.1, storage: 744 },
+        { released: 46.4, hours: 6, storage: 744 },
+      ]);
+  }
+}
 
 export function exampleDamDaily(scenario: DamScenario): DamDaily | null {
   switch (scenario) {

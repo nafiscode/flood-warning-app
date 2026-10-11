@@ -13,6 +13,8 @@
  *     path says which way the river runs, not when water gets there and not how far it spreads.
  */
 
+import type { DamDay } from "@/lib/dam-chart";
+
 export type DamGrade = "quiet" | "watchful" | "releasing";
 
 /** Every rule the database can name, in the order the app lists them. */
@@ -120,6 +122,8 @@ export type Dam = {
   tambons: DamTambon[];
   signal: DamSignal | null;
   daily: DamDaily | null;
+  /** The last fortnight, a day at a time, oldest first (lib/dam-chart.ts). */
+  days: DamDay[];
 };
 
 /** Answer of /api/public/dam. */
