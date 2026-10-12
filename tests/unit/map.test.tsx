@@ -254,6 +254,12 @@ describe("the dam's card can be opened without hitting a two-pixel mark", () => 
     const c = dashboard({ dams: [EXAMPLE_DAM] });
     const open = c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`) as HTMLButtonElement;
     expect(open).not.toBeNull();
+    // A button to look at and aim for, not an underlined line of text (the owner, 12 Oct).
+    expect(open.tagName).toBe("BUTTON");
+    expect(open.className).toContain("border");
+    expect(open.className).toContain("min-h-tap");
+    expect(open.className).not.toContain("underline");
+    expect(open.querySelector("svg")).toBeTruthy();
     expect(c.querySelector("[data-selected='dam']")).toBeNull();
     fireEvent.click(open);
     const card = c.querySelector("[data-selected='dam']")!;

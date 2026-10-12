@@ -8,7 +8,7 @@ import { AlertHero } from "@/components/home/AlertHero";
 import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/HomeView";
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
-import { PhoneIcon } from "@/components/icons";
+import { PhoneIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
@@ -22,7 +22,7 @@ import { homeColor, mineColor } from "@/lib/mine-colors";
 import { localName } from "@/lib/places";
 import { hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
-import { buttonSecondary, card, hint, notice } from "@/lib/ui";
+import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
 import { HazardPlaceholder } from "./HazardPlaceholder";
 import { Link } from "@/i18n/navigation";
@@ -565,8 +565,9 @@ export function DashboardView(props: DashboardViewProps) {
                           const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
                           if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
                         }}
-                        className="min-h-tap self-start text-start underline"
+                        className={`${buttonQuiet} self-start`}
                       >
+                        <WaveIcon size={20} aria-hidden="true" />
                         {tDam("legend.open", { dam: localName(dam.name, locale) })}
                       </button>
                     ))}

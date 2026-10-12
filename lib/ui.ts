@@ -4,6 +4,12 @@ export const buttonPrimary =
   "inline-flex min-h-tap w-full items-center justify-center rounded-xl bg-jaga-slate px-5 py-2 text-center font-medium text-white active:translate-y-px disabled:opacity-60";
 export const buttonSecondary =
   "inline-flex min-h-tap w-full items-center justify-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-5 py-2 text-center font-medium text-jaga-ink active:translate-y-px disabled:opacity-60";
+/**
+ * A quiet button: an outline and a label, sized for a thumb but not asking for the attention the
+ * primary one does. For an action that sits beside the content rather than at the end of a flow.
+ */
+export const buttonQuiet =
+  "inline-flex min-h-tap items-center gap-2 rounded-xl border border-jaga-edge bg-jaga-surface px-4 py-2 text-start font-medium text-jaga-ink active:translate-y-px";
 export const input =
   "min-h-tap w-full rounded-xl border border-jaga-text-2 bg-jaga-surface px-4 py-2 text-body text-jaga-text";
 export const label = "font-medium";
