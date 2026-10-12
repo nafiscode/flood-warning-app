@@ -658,6 +658,41 @@
       "save": "Tidak dapat disimpan. Cuba lagi."
     }
   },
+  "household": {
+    "title": "Beritahu pasukan penyelamat siapa tinggal di sini",
+    "titlePlace": "Beritahu siapa tinggal di {place}",
+    "intro": "Tidak wajib. Jika anda beritahu siapa di rumah yang perlu dibantu dahulu, pasukan penyelamat yang menjaga tambon anda boleh merancang sebelum air naik. Ini bukan permintaan bantuan: jika cemas, tekan SOS atau telefon 1784.",
+    "who": "Siapa yang nampak maklumat ini: hanya pasukan penyelamat dan penyelaras yang disahkan dan menjaga tambon anda, serta pentadbir Jaga. Setiap kali ia dibuka, ia dicatat. Anda boleh ubah atau padam bila-bila masa.",
+    "size": "Berapa orang tinggal di sini",
+    "vulnerableTitle": "Berapa orang daripadanya…",
+    "vulnerableHint": "Biarkan 0 jika tiada.",
+    "notes": "Apa yang penyelamat patut tahu (tidak wajib)",
+    "notesHint": "Contoh: tidur di tingkat bawah, tidak boleh naik tangga, perlu pengusung.",
+    "phone": "Nombor telefon yang penyelamat boleh hubungi (tidak wajib)",
+    "phoneHint": "Pasukan hanya nampak nombor ini apabila mereka minta, dan setiap kali dicatat.",
+    "location": "Lokasi rumah",
+    "locationHint": "Supaya pasukan penyelamat sampai ke rumah yang betul.",
+    "locationPlace": "Lokasi tempat yang anda pantau ini digunakan.",
+    "consent": "Saya setuju Jaga menyimpan maklumat kesihatan ini dan memaparkannya kepada pasukan penyelamat dan penyelaras yang disahkan dan menjaga tambon ini, supaya mereka boleh merancang bantuan awal.",
+    "agreed": "Orang yang tinggal di situ tahu dan sudah setuju.",
+    "save": "Simpan",
+    "delete": "Padam maklumat ini",
+    "deleteNote": "Ia dipadam serta-merta dan pasukan tidak lagi nampak.",
+    "saved": "Sudah disimpan. Pasukan yang menjaga tambon anda kini boleh nampak.",
+    "deleted": "Sudah dipadam.",
+    "back": "Kembali ke akaun",
+    "link": "Beritahu pasukan penyelamat siapa tinggal di rumah",
+    "linkPlace": "Beritahu pasukan penyelamat siapa tinggal di sini",
+    "error": {
+      "size": "Masukkan bilangan orang di rumah, 1 hingga 50.",
+      "consent": "Ia hanya boleh disimpan dengan persetujuan anda.",
+      "agreed": "Sahkan bahawa orang yang tinggal di situ sudah setuju.",
+      "phone": "Nombor telefon itu tidak sah.",
+      "location": "Lokasi rumah diperlukan. Guna GPS atau letak pin pada peta.",
+      "notes": "Catatan terlalu panjang (paling banyak 500 aksara).",
+      "save": "Tidak dapat disimpan. Cuba lagi."
+    }
+  },
   "authorityRegister": {
     "title": "Daftar pasukan bantuan",
     "intro": "Selepas borang dihantar, pentadbir Jaga akan telefon penyelaras sebelum meluluskan. Sementara menunggu, anda belum boleh nampak data peribadi orang yang minta tolong.",
@@ -916,7 +951,9 @@
       "map": "Kes pada peta",
       "coverage": "Kawasan jagaan",
       "points": "Mata",
-      "loading": "Memuatkan…"
+      "loading": "Memuatkan…",
+      "reports": "Laporan banjir",
+      "households": "Isi rumah rentan"
     },
     "map": {
       "loading": "Memuatkan peta…",
@@ -961,6 +998,25 @@
       "cases": "Kes",
       "points": "Mata",
       "failed": "Mata tidak dapat dimuatkan. Cuba lagi."
+    },
+    "reports": {
+      "intro": "Laporan daripada penduduk di kawasan jagaan pasukan anda, dalam 3 hari lepas, yang terbaru di atas.",
+      "none": "Tiada laporan dalam 3 hari lepas.",
+      "failed": "Laporan tidak dapat dimuatkan. Cuba lagi.",
+      "sentAt": "Dilaporkan {time}",
+      "unchecked": "belum disemak pentadbir",
+      "said": "Pelapor kata: {text}"
+    },
+    "households": {
+      "purpose": "Isi rumah yang memberitahu Jaga lebih awal siapa yang perlu dibantu dahulu, supaya pasukan boleh merancang pemindahan awal. Ini bukan permintaan bantuan.",
+      "logged": "Ini maklumat kesihatan, untuk membantu orang sahaja. Setiap kali halaman ini dibuka dan setiap kali nombor telefon dilihat, ia dicatat.",
+      "none": "Belum ada isi rumah yang mendaftar di kawasan anda.",
+      "failed": "Tidak dapat dipaparkan. Maklumat isi rumah hanya dibuka kepada pasukan yang bertugas menyelamat atau menyelaras.",
+      "count": "{count} isi rumah",
+      "notes": "Catatan: {text}",
+      "onBehalf": "Didaftarkan oleh saudara",
+      "updated": "dikemas kini {date}",
+      "noPhone": "Isi rumah ini tidak beri nombor telefon."
     }
   },
   "admin": {

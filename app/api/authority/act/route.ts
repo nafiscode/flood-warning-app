@@ -6,7 +6,9 @@ import {
   declineCase,
   readAuthorityBoard,
   readCaseMedia,
+  readReportMedia,
   releaseCase,
+  revealHouseholdPhone,
   revealRequesterPhone,
   setDuty,
   setEta,
@@ -48,6 +50,8 @@ type Input = {
   on?: boolean;
   photos?: unknown;
   note?: unknown;
+  /** A household or a report, for the two reads that are not about a case. */
+  id?: string;
 };
 
 /** Evidence paths as the phone uploaded them: under this case's proof folder, three at most. */
@@ -140,6 +144,17 @@ export async function POST(request: Request) {
         if (!sos) return answer({ error: "bad_request" }, 400);
         extra = { media: await readCaseMedia(sos) };
         break;
+      }
+      case "household_phone": {
+        const id = typeof input.id === "string" && UUID.test(input.id) ? input.id : null;
+        if (!id) return answer({ error: "bad_request" }, 400);
+        // Logged by the database function, one line per look (safety rule 5).
+        return answer({ phone: await revealHouseholdPhone(id) });
+      }
+      case "report_media": {
+        const id = typeof input.id === "string" && UUID.test(input.id) ? input.id : null;
+        if (!id) return answer({ error: "bad_request" }, 400);
+        return answer({ media: await readReportMedia(id) });
       }
       case "duty": {
         if (!unit || typeof input.on !== "boolean") return answer({ error: "bad_request" }, 400);

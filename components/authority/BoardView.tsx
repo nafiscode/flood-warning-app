@@ -30,8 +30,15 @@ import { buttonPrimary, card, checkBox, checkRow, hint, input } from "@/lib/ui";
 export type AlarmState = "off" | "on" | "none";
 
 /** The console's views: the case list, the cases on a map, the responsibility map, the points. */
-export type ConsoleView = "cases" | "map" | "coverage" | "points";
-export const CONSOLE_VIEWS: ConsoleView[] = ["cases", "map", "coverage", "points"];
+export type ConsoleView = "cases" | "map" | "coverage" | "reports" | "households" | "points";
+export const CONSOLE_VIEWS: ConsoleView[] = [
+  "cases",
+  "map",
+  "reports",
+  "households",
+  "coverage",
+  "points",
+];
 
 export type UnitActions = {
   duty: (unitId: string, on: boolean) => void;

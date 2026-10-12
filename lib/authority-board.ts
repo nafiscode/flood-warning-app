@@ -14,7 +14,13 @@ import type {
   EtaBand,
   MyUnit,
 } from "@/lib/dispatch";
-import type { CoverageRow, CoverageUnit, PointsRow } from "@/lib/coverage";
+import type {
+  CoverageRow,
+  CoverageUnit,
+  PointsRow,
+  TeamHousehold,
+  TeamReport,
+} from "@/lib/coverage";
 import { createClient } from "@/lib/supabase/server";
 
 type Row = Record<string, unknown>;
@@ -289,4 +295,83 @@ export async function readLeaderboard(): Promise<PointsRow[]> {
     cases: Number(r.cases ?? 0),
     mine: Boolean(r.is_mine),
   }));
+}
+
+/** Flood reports in the caller's coverage, newest first (spec 5.7). */
+export async function readTeamReports(hours = 72): Promise<TeamReport[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("authority_reports", { p_hours: hours });
+  if (error) throw new Error(error.message);
+  return ((data as Row[]) ?? []).map((r) => ({
+    id: String(r.report_id),
+    createdAt: String(r.created_at),
+    hazard: String(r.hazard ?? "flood"),
+    lat: Number(r.lat),
+    lon: Number(r.lon),
+    tambon: text(r.tambon),
+    tambonNameTh: text(r.tambon_name_th),
+    tambonNameEn: text(r.tambon_name_en),
+    depth: text(r.depth_ref),
+    trend: text(r.trend),
+    roadAccess: text(r.road_access),
+    note: text(r.text_note),
+    photoCount: Number(r.photo_count ?? 0),
+    hasVoice: Boolean(r.has_voice),
+    moderation: String(r.moderation ?? "pending"),
+  }));
+}
+
+/**
+ * Households in the caller's coverage. The database refuses a team without rescue or
+ * coordination capability and writes each read to the access log; no phone number comes back.
+ */
+export async function readTeamHouseholds(): Promise<TeamHousehold[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("authority_households");
+  if (error) throw new Error(error.message);
+  return ((data as Row[]) ?? []).map((r) => ({
+    id: String(r.household_id),
+    tambon: text(r.tambon),
+    tambonNameTh: text(r.tambon_name_th),
+    tambonNameEn: text(r.tambon_name_en),
+    lat: Number(r.lat),
+    lon: Number(r.lon),
+    size: num(r.size),
+    vulnerable: (r.vulnerable as Record<string, number>) ?? {},
+    mobilityNotes: text(r.mobility_notes),
+    hasPhone: Boolean(r.has_phone),
+    onBehalf: Boolean(r.on_behalf),
+    updatedAt: String(r.updated_at),
+  }));
+}
+
+/** One household's number, through the function that logs the look. */
+export async function revealHouseholdPhone(householdId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("reveal_household_phone", {
+    p_household_id: householdId,
+  });
+  if (error) throw new Error(error.message);
+  return typeof data === "string" && data !== "" ? data : null;
+}
+
+/** Ten-minute links to a report's photos and voice note; the storage policy decides who gets any. */
+export async function readReportMedia(reportId: string): Promise<CaseMedia> {
+  const supabase = await createClient();
+  const storage = supabase.storage.from("report-media");
+  const { data: listed } = await storage.list(reportId, { limit: 20 });
+  const files = (listed ?? []).filter((f) => f.id).map((f) => `${reportId}/${f.name}`);
+  if (files.length === 0) return { photos: [], voice: null, proof: [] };
+  const { data, error } = await storage.createSignedUrls(files, LINK_SECONDS);
+  if (error) throw new Error(error.message);
+  const link = new Map((data ?? []).map((d) => [d.path ?? "", d.signedUrl]));
+  const voicePath = files.find((p) => /\/voice\./.test(p)) ?? null;
+  return {
+    photos: files
+      .filter((p) => p !== voicePath)
+      .map((p) => link.get(p))
+      .filter((u): u is string => !!u),
+    voice: voicePath ? (link.get(voicePath) ?? null) : null,
+    proof: [],
+  };
 }

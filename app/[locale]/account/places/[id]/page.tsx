@@ -5,7 +5,17 @@ import { HomeLocationField } from "@/components/account/HomeLocationField";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { buttonPrimary, card, checkBox, checkRow, errorNotice, hint, input, label } from "@/lib/ui";
+import {
+  buttonPrimary,
+  buttonSecondary,
+  card,
+  checkBox,
+  checkRow,
+  errorNotice,
+  hint,
+  input,
+  label,
+} from "@/lib/ui";
 import { deletePlace, savePlace } from "../actions";
 
 const ERRORS = ["label", "location", "phone", "name", "consent", "limit", "save"] as const;
@@ -43,6 +53,7 @@ export default async function WatchedPlace({
   if (needsName(session)) redirect(setupPath(locale, "/account/places"));
   const t = await getTranslations("watched");
   const tHome = await getTranslations("account.home");
+  const tHousehold = await getTranslations("household");
 
   let place: Row | null = null;
   if (id !== "new") {
@@ -160,6 +171,16 @@ export default async function WatchedPlace({
           {t("save")}
         </button>
       </form>
+
+      {place && (
+        <Link
+          href={`/account/household/${place.id}`}
+          className={buttonSecondary}
+          data-household-link="place"
+        >
+          {tHousehold("linkPlace")}
+        </Link>
+      )}
 
       {place && (
         <details className={card}>

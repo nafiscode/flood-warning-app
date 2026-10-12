@@ -10,7 +10,13 @@ import {
 } from "@/components/authority/BoardView";
 import type { CaseActions } from "@/components/authority/CaseCard";
 import { OtherView } from "@/components/authority/OtherView";
-import type { CoverageRow, CoverageUnit, PointsRow } from "@/lib/coverage";
+import type {
+  CoverageRow,
+  CoverageUnit,
+  PointsRow,
+  TeamHousehold,
+  TeamReport,
+} from "@/lib/coverage";
 import { shouldAlarm, type AuthorityBoard, type CaseMedia } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
 import { uploadProof } from "@/lib/upload";
@@ -219,8 +225,45 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
       .then(take, fail);
   };
 
+  const [reports, setReports] = useState<TeamReport[] | "failed" | null>(null);
+  const [households, setHouseholds] = useState<TeamHousehold[] | "failed" | null>(null);
+  const [reportMedia, setReportMedia] = useState<Record<string, CaseMedia | "failed">>({});
+  const [householdPhones, setHouseholdPhones] = useState<Record<string, string | null>>({});
+
+  /** One household's number or one report's photos: asked for by a tap, never with the list. */
+  const one = <T,>(body: Record<string, unknown>, take: (answer: T) => void, fail: () => void) => {
+    fetch("/api/authority/act", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return (await response.json()) as T;
+      })
+      .then(take, fail);
+  };
+
   const openView = (next: ConsoleView) => {
     setView(next);
+    // Reports move with the water: read each time the tab is opened.
+    if (next === "reports") {
+      ask<{ reports: TeamReport[] }>(
+        "what=reports",
+        (answer) => setReports(answer.reports),
+        () => setReports("failed"),
+      );
+    }
+    // Every read of the households is written to the access log, so it is read once a sitting
+    // and not again each time the tab is tapped.
+    if (next === "households" && !Array.isArray(households)) {
+      ask<{ households: TeamHousehold[] }>(
+        "what=households",
+        (answer) => setHouseholds(answer.households),
+        () => setHouseholds("failed"),
+      );
+    }
     // Coverage changes when a team is verified, which is rare: read once a sitting.
     if ((next === "map" || next === "coverage") && !Array.isArray(coverage)) {
       ask<{ coverage: CoverageRow[] }>(
@@ -284,6 +327,24 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
             points={points}
             picked={picked}
             onPickTambon={pickTambon}
+            reads={{
+              reports,
+              households,
+              reportMedia,
+              householdPhones,
+              onReportMedia: (id) =>
+                one<{ media: CaseMedia }>(
+                  { action: "report_media", id },
+                  (answer) => setReportMedia((seen) => ({ ...seen, [id]: answer.media })),
+                  () => setReportMedia((seen) => ({ ...seen, [id]: "failed" })),
+                ),
+              onHouseholdPhone: (id) =>
+                one<{ phone: string | null }>(
+                  { action: "household_phone", id },
+                  (answer) => setHouseholdPhones((seen) => ({ ...seen, [id]: answer.phone })),
+                  () => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
+                ),
+            }}
           />
         )
       }

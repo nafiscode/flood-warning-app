@@ -460,4 +460,94 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
       sos = first;
     }
   });
+
+  test("a resident registers their household, and only then does the team see it, phone apart", async ({
+    page,
+    browser,
+  }) => {
+    // The resident: an ordinary account whose saved home is in the team's tambon.
+    const residentEmail = `e2e-resident-${run}@test.invalid`;
+    const { data, error } = await service().auth.admin.createUser({
+      email: residentEmail,
+      email_confirm: true,
+    });
+    if (error || !data.user) throw new Error(`could not create the resident: ${error?.message}`);
+    const resident = data.user.id;
+    let reportId = "";
+    try {
+      await sql(
+        `update public.profiles
+            set display_name = $2,
+                home_point = (select s.point from public.sos_requests s where s.id = $3)
+          where user_id = $1`,
+        [resident, `E2E resident ${run}`, sos!.id],
+      );
+      // One flood report from the same spot, as the report form would leave it.
+      reportId = (
+        await sql(
+          `insert into public.reports (reporter_id, point, depth_ref, trend, road_access, text)
+           select $1, s.point, 'waist', 'rising', 'impassable', $3
+             from public.sos_requests s where s.id = $2
+           returning id`,
+          [resident, sos!.id, `e2e ${run}`],
+        )
+      )[0]!.id as string;
+
+      const home = await browser.newContext({ serviceWorkers: "block" });
+      const theirs = await home.newPage();
+      await signIn(theirs, residentEmail);
+      await theirs.goto("/account");
+      await theirs.locator('[data-household-link="home"]').click();
+      await expect(theirs.locator('[data-household-form="home"]')).toBeVisible();
+      // Nothing is stored without the consent tick: the browser itself will not send the form.
+      await theirs.locator("#size").fill("3");
+      await theirs.locator('input[name="v_elderly"]').fill("1");
+      await theirs.locator("#notes").fill("Sleeps downstairs");
+      await theirs.locator("#phone").fill("0812223344");
+      await theirs.locator('input[name="consent"]').check();
+      await theirs.locator('button[type="submit"]').first().click();
+      await expect(theirs.locator('[data-household-done="saved"]')).toBeVisible();
+      await home.close();
+
+      const [row] = await sql(
+        "select id, size, vulnerable, consent_at, tambon from public.households where owner_id = $1",
+        [resident],
+      );
+      expect(row!.size).toBe(3);
+      expect(row!.vulnerable).toEqual({ elderly: 1 });
+      expect(row!.consent_at).not.toBeNull();
+
+      await signIn(page);
+      await page.goto("/authority");
+      await page.locator('[data-console-view="households"]').click();
+      const card = page.locator(`[data-household="${row!.id}"]`);
+      await expect(card).toBeVisible();
+      await expect(card).toContainText(`${th.sos.vulnerable.elderly} 1`);
+      await expect(card).toContainText("Sleeps downstairs");
+      // The list has no number in it; one is a tap away and that tap is logged.
+      expect(await page.locator('[data-view="households"] a[href^="tel:"]').count()).toBe(0);
+      await card.locator("[data-household-phone]").click();
+      await expect(card.locator('a[href="tel:+66812223344"]')).toBeVisible();
+      const logged = await sql(
+        `select action from public.audit_log
+          where actor = $1 and action in ('read_households', 'reveal_phone')
+            and (entity = 'authority_coverage' or entity_id = $2)`,
+        [userId, row!.id],
+      );
+      expect(logged.map((l) => l.action).sort()).toEqual(["read_households", "reveal_phone"]);
+
+      await page.locator('[data-console-view="reports"]').click();
+      const report = page.locator(`[data-report="${reportId}"]`);
+      await expect(report).toContainText(`e2e ${run}`);
+      await expect(report).toContainText(th.report.depths.waist);
+      await expect(report).toContainText(th.authority.reports.unchecked);
+
+      await page.evaluate(() => window.scrollTo(9999, 0));
+      expect(await page.evaluate(() => window.scrollX)).toBe(0);
+    } finally {
+      if (reportId) await sql("delete from public.reports where id = $1", [reportId]);
+      await sql("delete from public.households where owner_id = $1", [resident]);
+      await service().auth.admin.deleteUser(resident);
+    }
+  });
 });

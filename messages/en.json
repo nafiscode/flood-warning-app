@@ -658,6 +658,41 @@
       "save": "Couldn't save. Try again."
     }
   },
+  "household": {
+    "title": "Tell rescue teams who lives here",
+    "titlePlace": "Tell rescue teams who lives at {place}",
+    "intro": "Optional. If you say who in the home would need help first, the rescue teams covering your tambon can plan before the water comes. This is not a request for help: in an emergency use SOS or call 1784.",
+    "who": "Who sees this: only verified rescue and coordination teams covering your tambon, and Jaga's admins. Every time one of them opens it, that is recorded. You can change or delete it at any time.",
+    "size": "How many people live here",
+    "vulnerableTitle": "How many of them are…",
+    "vulnerableHint": "Leave at 0 if none.",
+    "notes": "Anything a rescuer should know (optional)",
+    "notesHint": "For example: sleeps downstairs, cannot use stairs, needs a stretcher.",
+    "phone": "A phone number rescuers can call (optional)",
+    "phoneHint": "A team sees the number only when it asks, and each time is recorded.",
+    "location": "Where the home is",
+    "locationHint": "So a rescue team arrives at the right house.",
+    "locationPlace": "The location of this watched place is used.",
+    "consent": "I agree that Jaga stores this health information and shows it to verified rescue and coordination teams covering this tambon, so they can plan to help early.",
+    "agreed": "The person who lives there knows and has agreed.",
+    "save": "Save",
+    "delete": "Delete this information",
+    "deleteNote": "It is removed at once and teams no longer see it.",
+    "saved": "Saved. Teams covering your tambon can now see it.",
+    "deleted": "Deleted.",
+    "back": "Back to your account",
+    "link": "Tell rescue teams who lives at home",
+    "linkPlace": "Tell rescue teams who lives here",
+    "error": {
+      "size": "Enter how many people live here, from 1 to 50.",
+      "consent": "It can only be saved with your agreement.",
+      "agreed": "Confirm that the person who lives there has agreed.",
+      "phone": "That phone number isn't valid.",
+      "location": "The home's location is needed. Use GPS or place a pin on the map.",
+      "notes": "The note is too long (500 characters at most).",
+      "save": "It couldn't be saved. Try again."
+    }
+  },
   "authorityRegister": {
     "title": "Register a response unit",
     "intro": "After you send this form, a Jaga admin calls the contact person before approving it. Until then you won't see the personal data of people asking for help.",
@@ -916,7 +951,9 @@
       "map": "Cases on a map",
       "coverage": "Coverage",
       "points": "Points",
-      "loading": "Loading…"
+      "loading": "Loading…",
+      "reports": "Flood reports",
+      "households": "Households"
     },
     "map": {
       "loading": "Loading the map…",
@@ -961,6 +998,25 @@
       "cases": "Cases",
       "points": "Points",
       "failed": "The points couldn't be loaded. Try again."
+    },
+    "reports": {
+      "intro": "Reports from residents in the area your team covers, from the last 3 days, newest first.",
+      "none": "No reports in the last 3 days.",
+      "failed": "The reports couldn't be loaded. Try again.",
+      "sentAt": "Reported {time}",
+      "unchecked": "not yet checked by an admin",
+      "said": "The reporter said: {text}"
+    },
+    "households": {
+      "purpose": "Households that told Jaga in advance who would need help first, so teams can plan an early evacuation. This is not a request for help.",
+      "logged": "This is health information, for helping people only. Every opening of this page and every look at a phone number is recorded.",
+      "none": "No household in your area has registered yet.",
+      "failed": "This can't be shown. Household information is open only to teams with rescue or coordination duties.",
+      "count": "{count, plural, one {# household} other {# households}}",
+      "notes": "Note: {text}",
+      "onBehalf": "Registered by a relative",
+      "updated": "updated {date}",
+      "noPhone": "This household gave no phone number."
     }
   },
   "admin": {

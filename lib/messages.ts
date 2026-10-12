@@ -92,7 +92,11 @@ export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlM
     // The capability names are the war room's, so a team and an admin read the same words.
     warRoom: { capability: (all.warRoom as Messages).capability! },
     sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard! },
-    report: { depths: (all.report as Messages).depths! },
+    report: {
+      depths: (all.report as Messages).depths!,
+      trends: (all.report as Messages).trends!,
+      roads: (all.report as Messages).roads!,
+    },
   };
 }
 

@@ -5,8 +5,15 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type { ConsoleView } from "@/components/authority/BoardView";
 import { CaseCard, type CaseActions } from "@/components/authority/CaseCard";
+import { HouseholdsView, ReportsView } from "@/components/authority/TeamReads";
 import { CaseMapView, CoverageView, PointsView } from "@/components/authority/Views";
-import type { CoverageRow, CoverageUnit, PointsRow } from "@/lib/coverage";
+import type {
+  CoverageRow,
+  CoverageUnit,
+  PointsRow,
+  TeamHousehold,
+  TeamReport,
+} from "@/lib/coverage";
 import type { BoardCase, CaseMedia } from "@/lib/dispatch";
 
 // MapLibre is loaded only when a map view is opened, never with the case list: the list is what
@@ -29,6 +36,17 @@ type Props = {
   points: Loaded<PointsRow[]>;
   picked: { tambon: string; units: Loaded<CoverageUnit[]> } | null;
   onPickTambon: (tambon: string) => void;
+  /** The flood reports and the households, with what was asked for one at a time. */
+  reads: TeamReadsState;
+};
+
+export type TeamReadsState = {
+  reports: Loaded<TeamReport[]>;
+  households: Loaded<TeamHousehold[]>;
+  reportMedia: Record<string, CaseMedia | "failed">;
+  householdPhones: Record<string, string | null>;
+  onReportMedia: (reportId: string) => void;
+  onHouseholdPhone: (householdId: string) => void;
 };
 
 /**
@@ -48,10 +66,29 @@ export function OtherView({
   points,
   picked,
   onPickTambon,
+  reads,
 }: Props) {
   const t = useTranslations("authority");
   const [caseId, setCaseId] = useState<string | null>(null);
   if (view === "points") return <PointsView points={points} />;
+  if (view === "reports") {
+    return (
+      <ReportsView
+        reports={reads.reports}
+        media={reads.reportMedia}
+        onMedia={reads.onReportMedia}
+      />
+    );
+  }
+  if (view === "households") {
+    return (
+      <HouseholdsView
+        households={reads.households}
+        phones={reads.householdPhones}
+        onPhone={reads.onHouseholdPhone}
+      />
+    );
+  }
 
   const map = (
     <BoardMap

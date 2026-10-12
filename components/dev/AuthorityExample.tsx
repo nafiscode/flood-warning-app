@@ -12,8 +12,10 @@ import { OtherView } from "@/components/authority/OtherView";
 import {
   EXAMPLE_AUTHORITY_BOARD,
   EXAMPLE_COVERAGE,
+  EXAMPLE_HOUSEHOLDS,
   EXAMPLE_NOW,
   EXAMPLE_POINTS,
+  EXAMPLE_REPORTS,
   exampleUnits,
   applyExample,
   type ExampleTap,
@@ -62,6 +64,8 @@ export function AuthorityExample() {
 
   const [view, setView] = useState<ConsoleView>("cases");
   const [tambon, setTambon] = useState<string | null>(null);
+  const [reportMedia, setReportMedia] = useState<Record<string, "failed">>({});
+  const [householdPhones, setHouseholdPhones] = useState<Record<string, string | null>>({});
   const actions: CaseActions = {
     accept: (sos) => tap({ action: "accept", sos }),
     decline: (sos, reason) => tap({ action: "decline", sos, reason }),
@@ -109,6 +113,15 @@ export function AuthorityExample() {
             points={EXAMPLE_POINTS}
             picked={tambon ? { tambon, units: exampleUnits(tambon) } : null}
             onPickTambon={setTambon}
+            reads={{
+              reports: EXAMPLE_REPORTS,
+              households: EXAMPLE_HOUSEHOLDS,
+              reportMedia,
+              householdPhones,
+              // The example has no storage and no numbers: it shows what the real screen says then.
+              onReportMedia: (id) => setReportMedia((seen) => ({ ...seen, [id]: "failed" })),
+              onHouseholdPhone: (id) => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
+            }}
           />
         )
       }

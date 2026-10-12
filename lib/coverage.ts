@@ -108,3 +108,103 @@ export type UnconfirmedRescue = {
   /** The person has had their time; an admin may confirm now. */
   due: boolean;
 };
+
+/** A flood report in a team's coverage (spec 5.7). What the water is doing and where; no reporter. */
+export type TeamReport = {
+  id: string;
+  createdAt: string;
+  hazard: string;
+  lat: number;
+  lon: number;
+  tambon: string | null;
+  tambonNameTh: string | null;
+  tambonNameEn: string | null;
+  depth: string | null;
+  trend: string | null;
+  roadAccess: string | null;
+  note: string | null;
+  photoCount: number;
+  hasVoice: boolean;
+  /** "pending" until an admin has looked at it; a hidden report never reaches a team. */
+  moderation: string;
+};
+
+/**
+ * A household that asked to be known about before a flood (spec 4.7), as a team with rescue or
+ * coordination capability reads it. No phone number: that is one more logged tap.
+ */
+export type TeamHousehold = {
+  id: string;
+  tambon: string | null;
+  tambonNameTh: string | null;
+  tambonNameEn: string | null;
+  lat: number;
+  lon: number;
+  size: number | null;
+  vulnerable: Record<string, number>;
+  mobilityNotes: string | null;
+  hasPhone: boolean;
+  /** Registered by a relative for someone at a place they watch. */
+  onBehalf: boolean;
+  updatedAt: string;
+};
+
+/** The vulnerable categories, in the order every screen lists them. */
+export const VULNERABLE_ORDER = [
+  "elderly",
+  "bedridden",
+  "infant_child",
+  "pregnant",
+  "disability",
+  "needs_medicine",
+  "needs_oxygen",
+  "needs_dialysis",
+] as const;
+
+/** The categories a household counted at least one person in, in the fixed order. */
+export function vulnerableCounts(v: Record<string, number> | null | undefined) {
+  return VULNERABLE_ORDER.map((key) => ({ key, count: Number(v?.[key] ?? 0) })).filter(
+    (x) => Number.isFinite(x.count) && x.count > 0,
+  );
+}
+
+/** How many people in a household were counted as vulnerable, for sorting. */
+export function vulnerableTotal(v: Record<string, number> | null | undefined): number {
+  return vulnerableCounts(v).reduce((sum, x) => sum + x.count, 0);
+}
+
+/** Households tambon by tambon; inside one, those with the most vulnerable people first. */
+export function householdsByTambon(rows: TeamHousehold[]) {
+  const groups = new Map<string, TeamHousehold[]>();
+  for (const row of rows) {
+    const key = row.tambon ?? "";
+    groups.set(key, [...(groups.get(key) ?? []), row]);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([tambon, list]) => ({
+      tambon,
+      rows: [...list].sort((a, b) => vulnerableTotal(b.vulnerable) - vulnerableTotal(a.vulnerable)),
+    }));
+}
+
+/** A resident's own household, as their form reads it back. */
+export type MyHousehold = {
+  id: string;
+  size: number | null;
+  vulnerable: Record<string, number>;
+  mobilityNotes: string | null;
+  contactPhone: string | null;
+  lat: number | null;
+  lon: number | null;
+};
+
+/** What a household form may send for the counts: whole numbers 0 to 20, zeroes dropped. */
+export function cleanCounts(input: Record<string, unknown>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const key of VULNERABLE_ORDER) {
+    const n = Math.round(Number(input[key]));
+    if (Number.isFinite(n) && n > 0) out[key] = Math.min(n, 20);
+  }
+  return out;
+}

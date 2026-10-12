@@ -7,7 +7,13 @@
  * The example answers taps by itself (applyExample), so accepting, giving an estimate and handing
  * a case back can all be tried without a database behind them.
  */
-import type { CoverageRow, CoverageUnit, PointsRow } from "@/lib/coverage";
+import type {
+  CoverageRow,
+  CoverageUnit,
+  PointsRow,
+  TeamHousehold,
+  TeamReport,
+} from "@/lib/coverage";
 import type {
   AuthorityBoard,
   BoardCase,
@@ -292,6 +298,90 @@ export const EXAMPLE_POINTS: PointsRow[] = [
     points: 88,
     cases: 5,
     mine: false,
+  },
+];
+
+/** Invented flood reports in the team's two tambons. */
+export const EXAMPLE_REPORTS: TeamReport[] = [
+  {
+    id: "aaaaaaaa-0000-4000-8000-000000000001",
+    createdAt: at(-25),
+    hazard: "flood",
+    lat: 6.8691,
+    lon: 101.2522,
+    tambon: "940104",
+    tambonNameTh: "บานา",
+    tambonNameEn: "Bana",
+    depth: "knee",
+    trend: "rising",
+    roadAccess: "motorbike_only",
+    note: "น้ำข้ามถนนหน้ามัสยิด รถเล็กผ่านไม่ได้",
+    photoCount: 2,
+    hasVoice: false,
+    moderation: "approved",
+  },
+  {
+    id: "aaaaaaaa-0000-4000-8000-000000000002",
+    createdAt: at(-140),
+    hazard: "flood",
+    lat: 6.8402,
+    lon: 101.2903,
+    tambon: "940111",
+    tambonNameTh: "ปูยุด",
+    tambonNameEn: "Puyut",
+    depth: "waist",
+    trend: "steady",
+    roadAccess: "impassable",
+    note: null,
+    photoCount: 0,
+    hasVoice: false,
+    moderation: "pending",
+  },
+];
+
+/** Invented households that asked to be known about. No phone number is in here either. */
+export const EXAMPLE_HOUSEHOLDS: TeamHousehold[] = [
+  {
+    id: "bbbbbbbb-0000-4000-8000-000000000001",
+    tambon: "940104",
+    tambonNameTh: "บานา",
+    tambonNameEn: "Bana",
+    lat: 6.8684,
+    lon: 101.2508,
+    size: 5,
+    vulnerable: { elderly: 2, bedridden: 1 },
+    mobilityNotes: "ยายนอนติดเตียงอยู่ชั้นล่าง ต้องใช้เปลหาม",
+    hasPhone: true,
+    onBehalf: false,
+    updatedAt: at(-60 * 24 * 12),
+  },
+  {
+    id: "bbbbbbbb-0000-4000-8000-000000000002",
+    tambon: "940104",
+    tambonNameTh: "บานา",
+    tambonNameEn: "Bana",
+    lat: 6.8701,
+    lon: 101.2479,
+    size: 3,
+    vulnerable: { infant_child: 2 },
+    mobilityNotes: null,
+    hasPhone: false,
+    onBehalf: false,
+    updatedAt: at(-60 * 24 * 30),
+  },
+  {
+    id: "bbbbbbbb-0000-4000-8000-000000000003",
+    tambon: "940111",
+    tambonNameTh: "ปูยุด",
+    tambonNameEn: "Puyut",
+    lat: 6.8411,
+    lon: 101.2889,
+    size: 1,
+    vulnerable: { elderly: 1, needs_dialysis: 1 },
+    mobilityNotes: "อยู่คนเดียว ต้องฟอกไตสัปดาห์ละสามครั้ง",
+    hasPhone: true,
+    onBehalf: true,
+    updatedAt: at(-60 * 24 * 3),
   },
 ];
 
