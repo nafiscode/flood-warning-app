@@ -30,6 +30,7 @@ const DAM: Dam = {
   signal: null,
   daily: null,
   days: [],
+  arrivals: [],
 };
 
 const withSignal = (scenario: Parameters<typeof exampleDamSignal>[0]): Dam => ({
@@ -127,6 +128,23 @@ describe("every figure says what it shows, without the motion", () => {
       expect(figure.innerHTML).not.toMatch(/flowLine|jet|spill|pulse/);
     });
   }
+
+  /*
+   * In the dam's full report the words sit below the drawing already (the chip, the grade line and
+   * the figures), so the caption is turned off there - but never the description a screen reader
+   * reads, which is the only way that reader has of knowing what moved.
+   */
+  it("can drop its caption where the screen says the state anyway, and keeps its description", () => {
+    const { container } = renderWithIntl(
+      <DamSectionFigure dam={withSignal("releasing")} caption={false} />,
+    );
+    expect(container.querySelector("figcaption")).toBeNull();
+    const alt = container.querySelector("[role='img']")?.getAttribute("aria-label") ?? "";
+    expect(alt).toContain(th.dam.state.releasing);
+    expect(container.querySelector("[data-dam-level]")?.getAttribute("data-dam-level")).toBe(
+      "releasing",
+    );
+  });
 
   it("the stale marker rides along, so an old reading is not drawn as the present", () => {
     const { container } = renderWithIntl(<DamSectionFigure dam={withSignal("stale")} />);

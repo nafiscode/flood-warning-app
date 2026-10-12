@@ -17,6 +17,7 @@ import {
   type DamSignal,
 } from "@/lib/dam";
 import { DamSectionFigure } from "@/components/dam/DamFigures";
+import { DamArrivalLines } from "@/components/map/DamArrival";
 import { DamHistory } from "@/components/map/DamHistory";
 import { localName } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
@@ -74,6 +75,7 @@ export function DamStateChip({ signal }: { signal: DamSignal | null }) {
   return (
     <span className="flex flex-wrap items-center gap-2">
       <span
+        data-dam-chip={level}
         data-dam-level={level}
         className={`inline-flex min-h-tap items-center gap-2 rounded-full px-4 py-1 font-bold ${LEVEL_CLASS[level]}`}
       >
@@ -200,15 +202,21 @@ function Figures({
 export function DamNotice({
   dam,
   via,
+  tambonCode,
   tambonName,
   now,
+  gatesOpenAt = null,
 }: {
   dam: Dam;
   /** Whether the river itself runs through their area, or only a stream that joins it. */
   via: "main" | "tributary" | "outlet";
+  /** The tambon the notice is about: the same one the arrival time is read for. */
+  tambonCode?: string | null;
   tambonName: string;
   /** Passed in, never read from the clock here: this renders on the server first. */
   now: number;
+  /** When a person has sent a release notice saying the gates opened; null on an ordinary day. */
+  gatesOpenAt?: string | null;
 }) {
   const t = useTranslations("dam");
   const locale = useLocale();
@@ -239,7 +247,16 @@ export function DamNotice({
          * arrives.
          */}
         <p className="font-medium">{t("disclaimer.notAnAlert")}</p>
-        <p>{t("disclaimer.noArrivalTime")}</p>
+        {dam.arrivals.length > 0 ? (
+          <DamArrivalLines
+            dam={dam}
+            tambonCodes={tambonCode ? [tambonCode] : []}
+            tambonName={tambonName}
+            gatesOpenAt={gatesOpenAt}
+          />
+        ) : (
+          <p>{t("disclaimer.noArrivalTime")}</p>
+        )}
         <p className={hint}>{t("source", { operator: dam.operator })}</p>
         <Link href="/map" prefetch={false} className="min-h-tap self-start underline">
           {t("notice.openMap")}
@@ -250,7 +267,18 @@ export function DamNotice({
 }
 
 /** The dam's card: what it is, what its figures say, and what the lines on the map do not say. */
-export function DamCard({ dam, now }: { dam: Dam; now: number }) {
+export function DamCard({
+  dam,
+  now,
+  tambonCode = null,
+  tambonName = null,
+}: {
+  dam: Dam;
+  now: number;
+  /** The person's own area, when the screen showing the card knows it. */
+  tambonCode?: string | null;
+  tambonName?: string | null;
+}) {
   const t = useTranslations("dam");
   const locale = useLocale();
   const state = attention(dam.signal);
@@ -267,6 +295,13 @@ export function DamCard({ dam, now }: { dam: Dam; now: number }) {
           {t("panel.river", { river: localName(dam.river, locale) })}
         </p>
       </div>
+
+      {/*
+       * The drawing of what the dam is doing, above the words (the owner, 13 Oct). Without its
+       * own caption here: the chip, the grade line and the figures below already say all of it,
+       * and in a browser the three readings of "normal range" ran one under the other.
+       */}
+      <DamSectionFigure dam={dam} caption={false} />
 
       {/* The state in colour, icon and words, never by colour alone (CLAUDE.md, accessibility). */}
       <DamStateChip signal={dam.signal} />
@@ -314,7 +349,15 @@ export function DamCard({ dam, now }: { dam: Dam; now: number }) {
         <p className={hint}>{t("path.credit")}</p>
       </div>
 
-      <p>{t("disclaimer.noArrivalTime")}</p>
+      {dam.arrivals.length > 0 ? (
+        <DamArrivalLines
+          dam={dam}
+          tambonCodes={tambonCode ? [tambonCode] : []}
+          tambonName={tambonName}
+        />
+      ) : (
+        <p>{t("disclaimer.noArrivalTime")}</p>
+      )}
       <p className={hint}>{t("source", { operator: dam.operator })}</p>
     </section>
   );

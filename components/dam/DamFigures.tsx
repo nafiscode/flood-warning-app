@@ -71,12 +71,19 @@ function Frame({
   alt,
   viewBox,
   name,
+  caption = true,
   children,
 }: {
   figure: DamFigure;
   alt: string;
   viewBox: string;
   name: DamFigureName;
+  /**
+   * False where the screen already says the state in words below the drawing - the dam's full
+   * report does, three lines running (seen in a browser, 13 Oct). The drawing keeps its own
+   * description for a screen reader either way.
+   */
+  caption?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -91,9 +98,11 @@ function Frame({
           {children}
         </svg>
       </div>
-      <figcaption>
-        <Caption figure={figure} />
-      </figcaption>
+      {caption && (
+        <figcaption>
+          <Caption figure={figure} />
+        </figcaption>
+      )}
     </figure>
   );
 }
@@ -104,7 +113,7 @@ function Frame({
  * leaving on the right - through the outlet at the speed it is really leaving, and over the crest
  * when a gate is open. The most literal of the three: cause and effect in one picture.
  */
-export function DamSectionFigure({ dam }: { dam: Dam }) {
+export function DamSectionFigure({ dam, caption = true }: { dam: Dam; caption?: boolean }) {
   const t = useTranslations("dam");
   const f = damFigure(dam);
   // The box is 160 x 90: the bed at y = 78, the crest at y = 16, the wall at x = 96.
@@ -116,7 +125,13 @@ export function DamSectionFigure({ dam }: { dam: Dam }) {
   // The tailwater below the dam rises a little with the release.
   const tail = bed - 4 - f.flow * 8;
   return (
-    <Frame figure={f} name="section" viewBox="0 0 160 90" alt={label(t, f, "section")}>
+    <Frame
+      figure={f}
+      name="section"
+      viewBox="0 0 160 90"
+      alt={label(t, f, "section")}
+      caption={caption}
+    >
       {/* The valley the dam sits in. */}
       <path
         d="M0 90 L0 26 L16 26 L30 78 L126 78 L140 18 L160 18 L160 90 Z"

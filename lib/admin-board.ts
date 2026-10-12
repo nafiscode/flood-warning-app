@@ -362,3 +362,45 @@ export async function readAdminHouseholds(): Promise<TeamHousehold[]> {
     updatedAt: String(r.updated_at),
   }));
 }
+
+/** One dam release notice an admin sent, for the screen that sends them (spec section 15). */
+export type DamReleaseRow = {
+  alertId: string;
+  damCode: string | null;
+  level: string;
+  issuedAt: string;
+  nextUpdateAt: string;
+  issuedBy: string | null;
+  gatesOpenAt: string | null;
+  releaseCms: number | null;
+  onsetFrom: string | null;
+  onsetTo: string | null;
+  tambons: number;
+  cancelledAt: string | null;
+};
+
+/**
+ * The dam releases sent in the last month, newest first, withdrawn ones included. It is the one
+ * place that answers "has somebody already sent this?", which matters most at the moment when two
+ * admins are looking at the same gates opening.
+ */
+export async function readDamReleases(dam?: string): Promise<DamReleaseRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_dam_alerts", { p_dam: dam ?? null });
+  if (error) throw new Error(error.message);
+  return ((data as Record<string, unknown>[]) ?? []).map((r) => ({
+    alertId: String(r.alert_id),
+    damCode: (r.dam_code as string | null) ?? null,
+    level: String(r.level),
+    issuedAt: String(r.issued_at),
+    nextUpdateAt: String(r.next_update_at),
+    issuedBy: (r.issued_by as string | null) ?? null,
+    gatesOpenAt: (r.gates_open_at as string | null) ?? null,
+    releaseCms:
+      r.release_cms === null || r.release_cms === undefined ? null : Number(r.release_cms),
+    onsetFrom: (r.onset_from as string | null) ?? null,
+    onsetTo: (r.onset_to as string | null) ?? null,
+    tambons: Number(r.tambons ?? 0),
+    cancelledAt: (r.cancelled_at as string | null) ?? null,
+  }));
+}

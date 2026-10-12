@@ -16,6 +16,19 @@ export type PublicAlert = {
   /** Where the information came from; the issuer is always shown as "Jaga admin". */
   source: string | null;
   tambons: string[];
+  /**
+   * A dam release notice carries the figures a screen needs to say when the water reaches **this**
+   * place: the dam it came from and the time a person said the gates opened. Null on every other
+   * alert (spec section 15).
+   */
+  release: DamRelease | null;
+};
+
+export type DamRelease = {
+  damCode: string;
+  gatesOpenAt: string;
+  releaseCms: number | null;
+  expectedEndAt: string | null;
 };
 
 export type PublicStatus = {
@@ -126,7 +139,44 @@ export function toPublicAlert(row: Record<string, unknown>): PublicAlert | null 
     returnWindow: range(row.return_from, row.return_to),
     source: typeof row.source === "string" && row.source !== "" ? row.source : null,
     tambons: row.tambons.map(String),
+    release: toRelease(row.details),
   };
+}
+
+/**
+ * The dam release half of an alert, if that is what it is. A notice with no time for the gates is
+ * no use to the arrival sums and is dropped: better no clock than one counted from a guess.
+ */
+function toRelease(details: unknown): DamRelease | null {
+  if (!details || typeof details !== "object") return null;
+  const d = details as Record<string, unknown>;
+  if (d.kind !== "dam_release" || typeof d.damCode !== "string") return null;
+  const gatesOpenAt = isoOrNull(d.gatesOpenAt);
+  if (!gatesOpenAt) return null;
+  const cms = Number(d.releaseCms);
+  return {
+    damCode: d.damCode,
+    gatesOpenAt,
+    releaseCms: Number.isFinite(cms) ? cms : null,
+    expectedEndAt: isoOrNull(d.expectedEndAt),
+  };
+}
+
+/**
+ * When the gates of this dam opened, according to the notice in force for this person's tambon -
+ * and nothing at all when no notice names them. This is the only way a clock time ever reaches
+ * the dam screens; the hourly feed lags by hours and can never stand in for it.
+ */
+export function damReleaseAt(
+  status: PublicStatus | null,
+  damCode: string,
+  tambon: string | null,
+): string | null {
+  if (!status || !tambon) return null;
+  const alert = status.alerts.find(
+    (a) => a.release?.damCode === damCode && a.tambons.includes(tambon),
+  );
+  return alert?.release?.gatesOpenAt ?? null;
 }
 
 export const STATUS_URL = "/api/public/status";

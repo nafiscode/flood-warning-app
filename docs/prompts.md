@@ -470,9 +470,12 @@ Part 1, before launch (with A6 and A8): a "dam release" alert template that admi
 **Built 10 Oct 2026** (the owner asked for it with the map work): the dam, its reservoir and the
 release path on the public map; the hourly feed and the grading (`dam_fetch`, `dam_signal`); the
 quiet notice on the home screen and the map for people on the path; and the review row on the war
-room. **Not built:** the alert template itself and the sending of it, the arrival ranges (they need
-S7 steps 2-3), and the sound — a notice today makes none, because nothing is pushed. So part 1 is
-finished once the template exists and S7 can fill in the arrival ranges.
+room.
+
+**Part 1 finished 13 Oct 2026**: the arrival ranges from S7 on the dam notice and both cards, and
+the template with the screen that sends it (`/admin/dam-release`, `admin_send_dam_release`,
+`admin_cancel_alert`). **Still not built:** the sound, which waits for web push (A7) - a notice
+today makes none, because nothing is pushed.
 
 Both parts send the **dam release sound** of spec 4.8 and docs/brand.md: its own repeating sound, used for nothing else, to everyone in the zone — the tambons along the river below the dam and the lower reaches of the streams joining it.
 

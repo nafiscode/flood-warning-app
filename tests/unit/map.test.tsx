@@ -92,6 +92,7 @@ const EXAMPLE_DAM: Dam = {
   signal: exampleDamSignal("watch"),
   daily: exampleDamDaily("watch"),
   days: exampleDamDays("watch"),
+  arrivals: [],
 };
 
 function dashboard(more: Partial<DashboardViewProps> = {}) {

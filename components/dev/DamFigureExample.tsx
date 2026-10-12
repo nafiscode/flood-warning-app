@@ -44,6 +44,7 @@ const DAM: Dam = {
   signal: null,
   daily: null,
   days: [],
+  arrivals: [],
 };
 
 const FIGURES: { name: DamFigureName; draw: (props: { dam: Dam }) => React.JSX.Element }[] = [
@@ -61,6 +62,7 @@ export function DamFigureExample() {
     signal: exampleDamSignal(scenario),
     daily: exampleDamDaily(scenario),
     days: exampleDamDays(scenario),
+    arrivals: [],
   };
 
   return (

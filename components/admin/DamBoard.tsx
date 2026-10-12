@@ -3,10 +3,11 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ClockIcon, TriangleIcon, WaveIcon } from "@/components/icons";
 import { DamStateChip } from "@/components/map/Dam";
+import { Link } from "@/i18n/navigation";
 import { flow, trend } from "@/lib/dam";
 import { localName } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
-import { hint } from "@/lib/ui";
+import { buttonQuiet, hint } from "@/lib/ui";
 import type { DamBoardRow } from "@/lib/war-room";
 
 /**
@@ -125,6 +126,17 @@ export function DamBoard({ dams, now, review }: Props) {
                  * alarm is this admin's to send.
                  */}
                 <p>{t("dam.reviewBody")}</p>
+                {/*
+                 * Straight to the screen that sends it, with the war-room row's id carried along,
+                 * so the two halves of the decision are not in two different places at the moment
+                 * somebody has to make it.
+                 */}
+                {review && (
+                  <Link href="/admin/dam-release" className={`${buttonQuiet} self-start`}>
+                    <WaveIcon size={20} aria-hidden="true" />
+                    {t("dam.send")}
+                  </Link>
+                )}
                 <p className={hint}>
                   {t("dam.raisedAt", {
                     time: format.dateTime(new Date(dam.notice.raisedAt), BANGKOK_DATE_TIME),

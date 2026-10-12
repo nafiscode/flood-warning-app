@@ -3,7 +3,7 @@
  *
  * What is held here, in order of how much it would matter to get wrong:
  *   1. The quiet notice never becomes an alert: no alert colour, and it says so in words.
- *   2. No arrival time is ever shown, because none has been measured (S7 steps 2-3).
+ *   2. Timing is only ever a measured range, and only where S7 has measured one.
  *   3. Only someone on the river below the dam is told, and nobody else.
  *   4. The map's water colour is not an alert hue and does not change with the dam's state.
  */
@@ -148,6 +148,7 @@ const DAM: Dam = {
   signal: exampleDamSignal("quiet"),
   daily: exampleDamDaily("quiet"),
   days: exampleDamDays("quiet"),
+  arrivals: [],
 };
 
 const withSignal = (signal: DamSignal | null): Dam => ({ ...DAM, signal });
@@ -219,9 +220,10 @@ describe("the notice is not an alert", () => {
     }
   });
 
-  it("never shows an arrival time, in any state", () => {
+  it("says plainly when no travel time has been measured for the dam", () => {
     for (const state of ["watch", "releasing", "awaiting"] as const) {
       const { getByText, unmount } = renderWithIntl(
+        // This fixture has no arrivals: the dam has never been measured.
         <DamNotice
           dam={withSignal(exampleDamSignal(state))}
           via="main"
@@ -229,7 +231,6 @@ describe("the notice is not an alert", () => {
           now={EXAMPLE_NOW}
         />,
       );
-      // The one thing it says about timing is that nobody knows it yet.
       expect(getByText(th.dam.disclaimer.noArrivalTime)).toBeTruthy();
       unmount();
     }
@@ -460,7 +461,8 @@ describe("the day behind the newest reading", () => {
 describe("the dam's state wears a colour", () => {
   const chipOf = (signal: DamSignal | null) =>
     renderWithIntl(<DamCard dam={withSignal(signal)} now={EXAMPLE_NOW} />).container.querySelector(
-      "[data-dam-level]",
+      // The drawing above it carries a level of its own (the owner, 13 Oct), so name the chip.
+      "[data-dam-chip]",
     )!;
 
   it("names the level the figures are at", () => {
@@ -499,7 +501,7 @@ describe("the dam's state wears a colour", () => {
     const { container } = renderWithIntl(
       <DamCard dam={withSignal(exampleDamSignal("releasing"))} now={EXAMPLE_NOW} />,
     );
-    const chip = container.querySelector("[data-dam-level]")!;
+    const chip = container.querySelector("[data-dam-chip]")!;
     expect(chip.className).toContain("rounded-full");
     expect(chip.getAttribute("data-level")).toBeNull();
     expect(container.textContent).toContain(th.dam.disclaimer.notAnAlert);

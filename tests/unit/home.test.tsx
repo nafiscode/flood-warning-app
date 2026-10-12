@@ -65,6 +65,7 @@ describe("the dam's figure on the home screen", () => {
     signal: exampleDamSignal("releasing"),
     daily: null,
     days: [],
+    arrivals: [],
   };
   const area = (code: string) => ({ ...BANA, code, from: "list" as const });
 
@@ -109,12 +110,20 @@ describe("the dam's figure on the home screen", () => {
     );
   });
 
-  it("the card sits directly above the map button, and carries no map link of its own", () => {
+  /*
+   * The owner asked on 13 Oct for a way into the whole report from here, so the card now carries
+   * one button - and it names the dam, so the map arrives with that report already open rather
+   * than leaving somebody to find a mark a few pixels wide.
+   */
+  it("sits directly above the map button and opens the dam's whole report", () => {
     const c = home("normal", { dams: [DAM], area: area("950299") });
     const card = c.querySelector("[data-dam-figure-card]")!;
     const map = c.querySelector("[data-map-link]")!;
     expect(card.nextElementSibling).toBe(map);
-    expect(card.querySelector("a")).toBeNull();
+    const links = [...card.querySelectorAll("a")];
+    expect(links.length).toBe(1);
+    expect(links[0]!.getAttribute("href")).toContain(`dam=${DAM.code}`);
+    expect(links[0]!.textContent).toContain(th.dam.legend.open.replace("{dam}", DAM.name.th!));
   });
 
   it("Songkhla gets neither: the dam's water never reaches it", () => {

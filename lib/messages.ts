@@ -30,6 +30,10 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       // The drawing of the dam's state and the words under it (the owner's choice of 12 Oct).
       state: dam.state!,
       figure: dam.figure!,
+      // When the water reaches their own tambon (S7, 13 Oct).
+      arrival: dam.arrival!,
+      // The card's button into the dam's whole report wears the same words as the map's legend.
+      legend: dam.legend!,
     },
   };
 }
@@ -123,6 +127,23 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     nav: all.nav!,
     weather: { chip: weather.chip, codes: weather.codes },
     notices: all.notices!,
+    alert: { level: (all.alert as Messages).level! },
+  };
+}
+
+/**
+ * The dam release screen (spec section 15): the form's own words, the reviewed template the
+ * preview is built from, and the five level names. The template travels because the sender must
+ * read exactly what will be sent before they send it - it is the one screen where the words
+ * matter more than the screen does.
+ */
+export function damReleaseMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  const admin = all.admin as Messages;
+  const dam = all.dam as Messages;
+  return {
+    admin: { damRelease: admin.damRelease! },
+    dam: { release: dam.release! },
     alert: { level: (all.alert as Messages).level! },
   };
 }

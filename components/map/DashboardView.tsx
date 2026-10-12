@@ -23,7 +23,7 @@ import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
 import { localName } from "@/lib/places";
-import { hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
+import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
@@ -85,6 +85,8 @@ export type DashboardViewProps = {
   area?: Area | null;
   /** The province the map opens on; all four when left out. */
   initialProvince?: string;
+  /** A dam whose whole report to open at once, asked for from the home screen (?dam=<code>). */
+  openDam?: string | null;
   userAgent?: string;
 };
 
@@ -135,8 +137,17 @@ export function DashboardView(props: DashboardViewProps) {
     setChosenProvince(code);
     setTouched(true);
   };
-  const [picked, setPicked] = useState<MapSelection | null>(null);
-  const [touched, setTouched] = useState(false);
+  /*
+   * The dam's whole report can be asked for from the home screen (the owner, 13 Oct: the card
+   * there carries a button into the map). It is the opening selection rather than something set
+   * in an effect, so the report is on screen in the first paint instead of flashing the area
+   * card first.
+   */
+  const asked = props.openDam ?? null;
+  const [picked, setPicked] = useState<MapSelection | null>(
+    asked ? { kind: "dam", code: asked } : null,
+  );
+  const [touched, setTouched] = useState(asked !== null);
   const areaSelection: MapSelection | null = props.area
     ? {
         kind: "tambon",
@@ -301,6 +312,14 @@ export function DashboardView(props: DashboardViewProps) {
     chosenProvince === null && props.area
       ? [props.area.lon - 0.1, props.area.lat - 0.08, props.area.lon + 0.1, props.area.lat + 0.08]
       : PROVINCE_BOUNDS[province];
+
+  /*
+   * ...and the map travels to it, the same view the legend's button gives. Only the dam and its
+   * reservoir: the numbers then never change again, so panning away and toggling anything else
+   * cannot pull the map back (MapView refits on the figures, not on the array).
+   */
+  const askedDam = asked ? dams.find((d) => d.code === asked) : undefined;
+  const askedBox = askedDam ? boundsAround(damFrame(askedDam)) : null;
 
   let selected: React.ReactNode = null;
   if (selection?.kind === "tambon" && layers.includes("alerts")) {
@@ -501,6 +520,7 @@ export function DashboardView(props: DashboardViewProps) {
                   tambonCode={hit.code}
                   tambonName={tambonName(hit.code)}
                   now={now}
+                  gatesOpenAt={damReleaseAt(status, dam.code, hit.code)}
                 />
               ))}
 
@@ -509,8 +529,8 @@ export function DashboardView(props: DashboardViewProps) {
                 status={fresh ? status : null}
                 data={data}
                 now={now}
-                bounds={focus?.box ?? mapBounds}
-                boundsKey={focus?.key ?? 0}
+                bounds={focus?.box ?? askedBox ?? mapBounds}
+                boundsKey={focus?.key ?? (askedBox ? 1 : 0)}
                 onSelect={setSelection}
                 text={{ loading: t("loading"), failed: t("failed") }}
                 mine={mine}

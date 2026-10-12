@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import { hazardSourceUrl, tilesBase, type TileManifest } from "@/lib/hazard-layer";
 import type { Area, AreaDirectory } from "@/lib/area";
 import { DAM_URL, type DamData } from "@/lib/dam";
@@ -17,6 +19,13 @@ import { DashboardView } from "./DashboardView";
  */
 export function Dashboard({ transparency }: { transparency: boolean }) {
   const ready = useOnPhone();
+  /*
+   * "?dam=bang_lang" from the home screen's button: the map opens with that dam's whole report
+   * and travels to it. Read here rather than on the server so the page stays prerendered and is
+   * still served from the cache when the phone is offline (safety rule 7); the page wraps this
+   * component in a Suspense boundary, which is what keeps that true.
+   */
+  const openDam = useSearchParams().get("dam");
   const { status, checkedAt, failed } = usePublicStatus();
   const hazards = useFetched<{ hazards: Hazard[] }>("/api/public/hazards");
   const directory = useFetched<AreaDirectory>("/api/geo/areas");
@@ -50,6 +59,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       area={area}
       now={now}
       transparency={transparency}
+      openDam={openDam}
       userAgent={ready ? navigator.userAgent : ""}
     />
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { Dashboard } from "@/components/map/Dashboard";
@@ -20,7 +21,14 @@ export default async function MapPage({ params }: PageProps<"/[locale]/map">) {
   setRequestLocale(locale);
   return (
     <NextIntlClientProvider messages={mapMessages(await getMessages())}>
-      <Dashboard transparency={donationsEnabled()} />
+      {/*
+       * The dashboard reads "?dam=" from the address (the home screen's button into the dam's
+       * report), and a component that reads the address needs a boundary around it for this page
+       * to stay prerendered - which the offline shell depends on (safety rule 7).
+       */}
+      <Suspense>
+        <Dashboard transparency={donationsEnabled()} />
+      </Suspense>
     </NextIntlClientProvider>
   );
 }

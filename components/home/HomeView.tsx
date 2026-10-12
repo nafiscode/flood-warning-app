@@ -9,7 +9,7 @@ import { getPathname, Link } from "@/i18n/navigation";
 import { areaName, type Area } from "@/lib/area";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces } from "@/lib/places";
-import { areaStatus, severity, type PublicStatus } from "@/lib/public-status";
+import { areaStatus, damReleaseAt, severity, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
@@ -120,7 +120,7 @@ export function HomeView(props: HomeViewProps) {
     .filter(
       (dam) => showsDamFigure(dam, myCodes) && !damsOnMyPath.some((x) => x.dam.code === dam.code),
     )
-    .map((dam) => ({ dam, onRiver: onPath(dam, myCodes) !== null }));
+    .map((dam) => ({ dam, hit: onPath(dam, myCodes) }));
   const areaNameOf = (code: string) => {
     const found = myAreas.find((a) => a.code === code);
     return found ? areaName(locale, found) : code;
@@ -190,8 +190,10 @@ export function HomeView(props: HomeViewProps) {
             key={dam.code}
             dam={dam}
             via={hit.via}
+            tambonCode={hit.code}
             tambonName={areaNameOf(hit.code)}
             now={now}
+            gatesOpenAt={damReleaseAt(props.status, dam.code, hit.code)}
           />
         ))}
 
@@ -276,8 +278,14 @@ export function HomeView(props: HomeViewProps) {
          * column, directly above the map button on every screen size (owner, 13 Oct), which is
          * why the card has no map link of its own.
          */}
-        {damsNearMe.map(({ dam, onRiver }) => (
-          <DamFigureCard key={dam.code} dam={dam} onRiver={onRiver} />
+        {damsNearMe.map(({ dam, hit }) => (
+          <DamFigureCard
+            key={dam.code}
+            dam={dam}
+            onRiver={hit !== null}
+            tambonCode={hit?.code ?? null}
+            tambonName={hit ? areaNameOf(hit.code) : null}
+          />
         ))}
 
         {/* The map comes straight after the person's own places, and the safe places after it,

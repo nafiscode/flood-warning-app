@@ -1,3 +1,4 @@
+import type { DamArrival } from "@/lib/dam-arrival";
 import type { Dam, DamData, DamDaily, DamReach, DamSignal, DamTambon } from "@/lib/dam";
 import type { DamDay } from "@/lib/dam-chart";
 import { supabaseConfigured } from "@/lib/supabase/env";
@@ -72,8 +73,10 @@ function toDays(rows: unknown): DamDay[] {
  * (spec section 15). One address for everyone, kept at the edge for 60 s like the rest of the
  * public map: there is nothing personal in it, so one answer serves all.
  *
- * Three answers are deliberately not here:
- *   * no arrival time, because S7 has not measured the travel times (safety rule 8);
+ * The arrival ranges are here (S7, measured at the gauges): they belong to the river rather than
+ * to any alert, so a person can read them before anybody has sent them anything.
+ *
+ * Two answers are deliberately not here:
  *   * no admin notice, because a signal awaiting a person's judgement is not public (rule 2);
  *   * no claim that the figures are current. Their own hour is in the answer, and the feed is
  *     known to lag by hours, so the screen can say how old they are.
@@ -81,15 +84,21 @@ function toDays(rows: unknown): DamDay[] {
 export async function GET() {
   if (!supabaseConfigured()) return unavailable();
   const supabase = createPublicClient();
-  const [map, state, tambons] = await Promise.all([
+  const [map, state, tambons, arrivals] = await Promise.all([
     supabase.rpc("dam_map"),
     supabase.rpc("dam_state"),
     supabase
       .from("dam_tambons")
       .select("dam_code, source, tambon_code, via, km_from_dam")
       .order("km_from_dam"),
+    supabase
+      .from("dam_arrivals")
+      .select(
+        "dam_code, source, tambon_code, via, km_from_dam, warn_from_h, earliest_h, latest_h, peak_earliest_h, peak_latest_h",
+      )
+      .order("km_from_dam"),
   ]);
-  if (map.error || state.error || tambons.error) return unavailable();
+  if (map.error || state.error || tambons.error || arrivals.error) return unavailable();
 
   const signals = new Map<string, DamSignal | null>(
     ((state.data ?? []) as Row[]).map((row) => [
@@ -106,6 +115,23 @@ export async function GET() {
       toDaily(row.daily as Row | null),
     ]),
   );
+  const arrivalsByDam = new Map<string, DamArrival[]>();
+  for (const row of (arrivals.data ?? []) as Row[]) {
+    const dam = String(row.dam_code);
+    const list = arrivalsByDam.get(dam) ?? [];
+    list.push({
+      tambon: String(row.tambon_code),
+      via: row.via as DamArrival["via"],
+      kmFromDam: Number(row.km_from_dam ?? 0),
+      warnFromH: Number(row.warn_from_h ?? 0),
+      earliestH: Number(row.earliest_h ?? 0),
+      latestH: Number(row.latest_h ?? 0),
+      peakEarliestH: Number(row.peak_earliest_h ?? 0),
+      peakLatestH: Number(row.peak_latest_h ?? 0),
+      source: String(row.source ?? ""),
+    });
+    arrivalsByDam.set(dam, list);
+  }
   const byDam = new Map<string, DamTambon[]>();
   for (const row of (tambons.data ?? []) as Row[]) {
     const list = byDam.get(String(row.dam_code)) ?? [];
@@ -148,6 +174,7 @@ export async function GET() {
         signal: signals.get(code) ?? null,
         daily: dailies.get(code) ?? null,
         days: fortnights.get(code) ?? [],
+        arrivals: arrivalsByDam.get(code) ?? [],
       };
     }),
   };

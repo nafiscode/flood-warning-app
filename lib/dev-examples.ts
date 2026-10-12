@@ -67,6 +67,8 @@ export function exampleAlert(
     returnWindow: null,
     source: "กรมชลประทาน (ตัวอย่าง)",
     tambons,
+    // Only a dam release notice carries one (spec section 15); an example alert is an ordinary one.
+    release: null,
     ...more,
   };
 }

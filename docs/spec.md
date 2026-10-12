@@ -723,6 +723,11 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   alert hues, as a pill rather than the badge a level wears, with an icon and a word, on the card,
   the notice, the war room and the dam's marks on the map. The water keeps its own colour. See
   docs/brand.md; the screen always says these are the dam's figures, not an alert from Jaga.
+- **The drawing in the report** (added 13 Oct 2026, the owner's request): the dam's card on the map
+  opens with the same animated cross-section the home screen carries, above the state chip and
+  without its own caption, because the chip, the grade line and the figures below already say it.
+  The home-screen card carries a button into that whole report (`/map?dam=<code>`), so the report
+  is one tap from the home screen rather than a tap on a mark a few pixels wide.
 - **The drawing of the dam's state on the home screen** (added 13 Oct 2026, the owner's choice of
   three): a cross-section of the dam, animated, where everything that moves is a published figure -
   the reservoir against the capacity at normal high water, and the water leaving at the speed it is
@@ -743,13 +748,30 @@ The map, the figures and the two tiers are built; the notice the operator sends 
 - **The loud tier** (`releasing`, confirmed over two readings): one row in `dam_notices` for the
   admins, on the war room below the unanswered-SOS gate. They record whether they sent the notice.
   Sending it is still a person's act and is the rest of this section.
-- **No arrival time anywhere**, because S7 steps 2-3 have not measured the travel times.
+- **The arrival ranges** (added 13 Oct 2026; measured by S7 on the river gauges, 12 Oct). Every
+  tambon on the path has one range for the first rise and one for the highest water, in **hours
+  after the gates open**, with a safety margin already taken off the early end (`dam_arrivals`).
+  They are shown on the dam notice, on the dam's card and on the home-screen card, always with the
+  sentence saying they come from gauge records and not from a forecast or a hydraulic model. A
+  **clock time** appears only where a person has said when the gates opened, which happens when the
+  release notice is sent - never from the hourly feed, which lags by hours. Someone watching several
+  places is given the nearest one to the dam, because that is when their water comes; a place on a
+  side stream is told its time belongs to the junction.
+- **Sending the notice** (added 13 Oct 2026, phase A12 part 1 complete). `/admin/dam-release`: the
+  admin enters when the gates opened, the release in m3/s, optionally when it is expected to end,
+  the level and the next update, and reads the exact notice before sending it. They write no words:
+  the three languages are built from the template in `messages/*.json` (`dam.release.*`), and the
+  zone is the dam's own tambons with no control to change it. `admin_send_dam_release` stores the
+  alert with the measured onset window and writes the send to `audit_log`; `admin_cancel_alert`
+  withdraws one, also logged. The level is the sender's choice of watch, warning or evacuate - the
+  form starts at **warning**, which settles the open item of 9 Oct, and the figures never choose it.
+  Until an operator at the dam has a screen of their own (part 2), admins send it.
 - **A rule must hold for two readings** before it grades: the archive holds impossible single
   hours, and one of them must not wake an admin. The lone reading is shown, waiting for the next.
 - **The feed lags by hours.** It is a record that trails reality, not a real-time warning, which
   is why the operator's own screen below matters.
 
-Open: who at the dam will use it (the owner makes the contact); the alert level a release notice carries by default; whether the operator may also send the "release has ended" message; which geometry to keep once S7 steps 2–3 can be compared with OpenStreetMap's (the owner decided on 10 Oct that OSM's stays until then, and that both are to be shown side by side before anything is replaced).
+Open: who at the dam will use it (the owner makes the contact); whether the operator may also send the "release has ended" message; which geometry to keep once S7 steps 2–3 can be compared with OpenStreetMap's (the owner decided on 10 Oct that OSM's stays until then, and that both are to be shown side by side before anything is replaced).
 
 ## 16. Impact record and public transparency
 

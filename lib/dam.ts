@@ -9,10 +9,12 @@
  *     hydraulic model cannot give a calibrated percentage (safety rule 8).
  *   * The app's own notice is the quiet one, and it carries its disclaimer. The loud one is
  *     raised for admins to review and send: code never publishes an alert (safety rule 2).
- *   * There is no arrival time anywhere, because S7 has not measured the travel times yet. The
- *     path says which way the river runs, not when water gets there and not how far it spreads.
+ *   * The arrival times (lib/dam-arrival.ts, measured by S7 on the river gauges, 12 Oct 2026) are
+ *     ranges in hours after the gates open, and are the only timing the app ever shows. The path
+ *     says which way the river runs; it still says nothing about how far the water spreads.
  */
 
+import type { DamArrival } from "@/lib/dam-arrival";
 import type { DamDay } from "@/lib/dam-chart";
 
 export type DamGrade = "quiet" | "watchful" | "releasing";
@@ -132,6 +134,8 @@ export type Dam = {
   daily: DamDaily | null;
   /** The last fortnight, a day at a time, oldest first (lib/dam-chart.ts). */
   days: DamDay[];
+  /** When released water reaches each tambon on the path (lib/dam-arrival.ts). */
+  arrivals: DamArrival[];
 };
 
 /** Answer of /api/public/dam. */

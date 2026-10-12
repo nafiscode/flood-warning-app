@@ -118,6 +118,23 @@ function damAnswer(grade: "quiet" | "watchful" | "releasing") {
          * quiet one about 4, which is the day that was really there on 11 Oct 2026.
          */
         days: fortnight(grade),
+        /*
+         * The arrival ranges S7 measured at the gauges (12 Oct 2026): hours after the gates open,
+         * never a time. Bana is 128 river km down, which is half a day to two days of water.
+         */
+        arrivals: [
+          {
+            tambon: BANA.code,
+            via: "main",
+            kmFromDam: 128,
+            warnFromH: 12.8,
+            earliestH: 16,
+            latestH: 44,
+            peakEarliestH: 45,
+            peakLatestH: 90,
+            source: "gauges-2026-10",
+          },
+        ],
         daily: {
           windowH: 24,
           until: new Date(Date.now() - 3 * 3_600_000).toISOString(),
@@ -189,9 +206,11 @@ test.describe("the dam's quiet notice", () => {
     const notice = page.locator("[data-dam-notice]").first();
     await expect(notice).toBeVisible();
     await expect(notice).toHaveAttribute("data-dam-notice", "releasing");
-    // The two things it must always say.
+    // The two things it must always say: that Jaga is not the one warning them, and where the
+    // hours it does give come from (they are measured ranges since 13 Oct, never a clock time).
     await expect(notice).toContainText("ไม่ใช่การแจ้งเตือนของ Jaga");
-    await expect(notice).toContainText("ยังบอกไม่ได้ว่าน้ำจะมาถึง");
+    await expect(notice).toContainText(th.dam.arrival.basis);
+    await expect(notice.locator("[data-dam-arrival]")).toBeVisible();
   });
 
   test("reaches nobody whose area is off the river", async ({ page }) => {
@@ -252,6 +271,31 @@ test.describe("the dam's quiet notice", () => {
     await expect(card.locator("[data-dam-chart='outflow']")).toBeVisible();
   });
 
+  /*
+   * The owner, 13 Oct: the card on the home screen needs a way into the whole report. The dam's
+   * code travels in the address so the map arrives with the report already open.
+   */
+  test("the home screen's card opens the same report on the map", async ({ page }) => {
+    await serve(page, { grade: "quiet" });
+    await page.goto("/");
+    const card = page.locator("[data-dam-figure-card]");
+    await expect(card).toBeVisible();
+    await card.locator("a").click();
+    await expect(page).toHaveURL(/\/map\?dam=bang_lang/);
+    const report = page.locator("[data-selected='dam']");
+    await expect(report).toBeVisible();
+    // The drawing is in it, above the state (the owner's second note of 13 Oct), and so are the
+    // charts the button promises.
+    await expect(report.locator("[data-dam-figure='section']")).toBeVisible();
+    await expect(report.locator("[data-dam-chart='outflow']")).toBeVisible();
+    const order = await report.evaluate((el) => {
+      const kids = [...el.querySelectorAll("[data-dam-figure], [data-dam-chip]")];
+      return kids.map((k) => (k.hasAttribute("data-dam-chip") ? "chip" : "figure"));
+    });
+    expect(order[0]).toBe("figure");
+    expect(order).toContain("chip");
+  });
+
   test("is on the map page too, with the path's limits in the legend", async ({ page }) => {
     await serve(page);
     await page.goto("/map");
@@ -279,11 +323,21 @@ test.describe("what /api/public/dam gives out", () => {
           : [];
     const all = keys(body);
     /*
-     * No arrival estimate anywhere: S7 has not measured the travel times, so a field for one
-     * could only hold a guess (safety rule 8). `point` is allowed here, unlike the other public
+     * The arrival ranges are here since 13 Oct (S7 measured them at the gauges), and they are
+     * **hours**, never a time of day: a clock time can only be built where somebody has said when
+     * the gates opened (safety rule 8). `point` is allowed here, unlike the other public
      * endpoints, because a dam is a place and not a person.
      */
-    expect(all.filter((k) => /eta|arriv|minutes|reach_?at|when/i.test(k))).toEqual([]);
+    const arrivals = (body.dams as { arrivals: Record<string, unknown>[] }[])[0]!.arrivals;
+    expect(arrivals.length).toBeGreaterThan(30);
+    for (const a of arrivals) {
+      for (const key of ["warnFromH", "earliestH", "latestH", "peakEarliestH", "peakLatestH"]) {
+        expect(typeof a[key]).toBe("number");
+      }
+      expect(Number(a.warnFromH)).toBeLessThanOrEqual(Number(a.earliestH));
+      expect(Number(a.earliestH)).toBeLessThanOrEqual(Number(a.latestH));
+    }
+    expect(all.filter((k) => /eta|reach_?at|arrives_?at/i.test(k))).toEqual([]);
     expect(all.filter((k) => /phone|reporter|requester|device|household|contact/i.test(k))).toEqual(
       [],
     );
