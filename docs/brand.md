@@ -22,16 +22,20 @@ The logo is the **Sheltered j**: the letter j of Jaga with its dot under a small
 | `jaga-mark-small.svg` / `-small-reverse.svg` | Heavier mark (wider canopy with three scallops, larger dot, thicker stem) for 16–63 px |
 | `jaga-app-icon.svg` | Rounded app icon, for in-app and marketing use |
 | `jaga-app-icon-square.svg` | Full-bleed icon source; platforms apply their own corner rounding |
-| `jaga-app-icon-maskable.svg` | PWA maskable icon, with the mark inside the 80% safe zone |
+| `jaga-app-icon-shadow.svg` | Laptop and plain PWA icon: the slate square with its shadow, transparent around it |
+| `jaga-app-icon-touch.svg` | iPhone and iPad home-screen icon: the slate square with its shadow on the pale ground |
+| `jaga-app-icon-maskable.svg` | Android home-screen icon (maskable): the slate square with its shadow on the pale ground, all inside the 80% safe zone |
 | `favicon.svg` | Browser tab |
 
 Ready-made PNGs are in `public/icons/`:
-- `icon-192.png` and `icon-512.png`: PWA icons, purpose "any"
+- `icon-192.png` and `icon-512.png`: PWA icons, purpose "any" (from `jaga-app-icon-shadow.svg`)
 - `maskable-512.png`: PWA icon, purpose "maskable"
-- `apple-touch-icon.png`: 180 px iOS home-screen icon
+- `apple-touch-icon.png`: 180 px iOS home-screen icon (from `jaga-app-icon-touch.svg`)
 - `favicon-32.png`: browser tab fallback
 
 After changing a logo SVG, re-render the PNGs with `npm run icons`.
+
+**Home-screen icons.** The icon someone adds to a phone, tablet or laptop carries a soft shadow around the slate square (the owner's request, 12 October 2026), so it stands off the wallpaper. A phone fills and cuts the whole tile itself, so there the square sits a little smaller on the pale ground (`--jaga-ground`) for the shadow to fall on; on a laptop the icon is transparent around the square. The shadow belongs to the square, never to the mark, and is used nowhere else: not in the app header, not on the favicon.
 
 **The mark.** The canopy is teal (`--jaga-teal`; `--jaga-teal-light` on dark backgrounds). The dot and the stem of the j are slate (white on dark backgrounds). The mark files are 84 × 120: taller than wide.
 
@@ -45,7 +49,7 @@ After changing a logo SVG, re-render the PNGs with `npm run icons`.
 - Don't use umbrella icons anywhere else in the UI (including map and weather layers); the umbrella belongs to the logo only.
 - Don't use eye icons anywhere in the UI.
 - Don't use eye or monitoring language about people ("we are watching you"). The copy is about care and looking out for each other.
-- Don't distort it or add effects (shadows, gradients, glows).
+- Don't distort it or add effects (shadows, gradients, glows). The one exception is the shadow around the square of the home-screen icons, above.
 
 ## Color tokens
 Implement these as CSS variables and a Tailwind theme. The brand colors must never be used to show a status.
