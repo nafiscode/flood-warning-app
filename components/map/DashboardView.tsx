@@ -8,6 +8,7 @@ import { AlertHero } from "@/components/home/AlertHero";
 import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/HomeView";
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
+import { HOUSE } from "@/lib/place-icons";
 import { PhoneIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
@@ -28,6 +29,34 @@ import { HazardPlaceholder } from "./HazardPlaceholder";
 import { Link } from "@/i18n/navigation";
 import { checkBox, checkRow } from "@/lib/ui";
 import { MapView, type MapSelection, type MinePlace } from "./MapView";
+
+/** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
+function PlaceMark({ size }: { size: number }) {
+  return (
+    <svg
+      aria-hidden="true"
+      data-place-mark="true"
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      className="shrink-0"
+    >
+      <rect
+        x="6"
+        y="6"
+        width="88"
+        height="88"
+        rx="18"
+        className="fill-jaga-slate stroke-white"
+        strokeWidth="8"
+      />
+      <polygon
+        points={HOUSE.map(([x, y]) => `${x * 100},${y * 100}`).join(" ")}
+        className="fill-white"
+      />
+    </svg>
+  );
+}
 
 export type DashboardViewProps = {
   status: PublicStatus | null;
@@ -118,6 +147,11 @@ export function DashboardView(props: DashboardViewProps) {
     setPicked(next);
   };
   const [showMine, setShowMine] = useState(true);
+  /*
+   * Safe places are drawn only when asked for (the owner, 12 Oct 2026): there are thousands, and
+   * all of them at once bury the map. The switch sits right under the map and says how many.
+   */
+  const [showPlaces, setShowPlaces] = useState(false);
   /*
    * A box the map has been asked to fly to, and a count so that asking for the same box twice
    * still moves it (the owner, 12 Oct: opening the dam's figures should show the dam and the
@@ -239,7 +273,9 @@ export function DashboardView(props: DashboardViewProps) {
       : []),
     ...(layers.includes("gauges") && data && data.gauges.length === 0 ? (["gauges"] as const) : []),
   ];
-  const drawn = layers.filter((l) => l !== "alerts" && !pending.includes(l));
+  const placesOnOffer = layers.includes("places") && !!data && data.places.length > 0;
+  const mapLayers = showPlaces ? layers : layers.filter((l) => l !== "places");
+  const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
 
   /*
    * Where the map looks: close around the person's own area while that is what is chosen, the
@@ -426,7 +462,7 @@ export function DashboardView(props: DashboardViewProps) {
               ))}
 
               <MapView
-                layers={layers}
+                layers={mapLayers}
                 status={fresh ? status : null}
                 data={data}
                 now={now}
@@ -443,6 +479,22 @@ export function DashboardView(props: DashboardViewProps) {
                   locale,
                 }}
               />
+              {placesOnOffer && (
+                <label
+                  data-places-toggle="true"
+                  className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
+                >
+                  <input
+                    type="checkbox"
+                    className={`${checkBox} mt-0`}
+                    checked={showPlaces}
+                    onChange={(event) => setShowPlaces(event.target.checked)}
+                  />
+                  <PlaceMark size={26} />
+                  <span>{t("places.toggle", { count: data ? data.places.length : 0 })}</span>
+                </label>
+              )}
+              {showPlaces && placesOnOffer && <p className={hint}>{t("places.hint")}</p>}
               {mine.length > 0 && (
                 <label className={checkRow} data-mine-toggle="true">
                   <input
@@ -520,16 +572,20 @@ export function DashboardView(props: DashboardViewProps) {
                   <ul className="flex flex-col gap-1">
                     {drawn.map((layer) => (
                       <li key={layer} className="flex items-center gap-2" data-layer={layer}>
-                        <span
-                          aria-hidden="true"
-                          className={
-                            layer === "gauges"
-                              ? "size-4 shrink-0 rounded-full border-4 border-jaga-edge bg-white"
-                              : layer === "reports"
-                                ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
-                                : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
-                          }
-                        />
+                        {layer === "places" ? (
+                          <PlaceMark size={18} />
+                        ) : (
+                          <span
+                            aria-hidden="true"
+                            className={
+                              layer === "gauges"
+                                ? "size-4 shrink-0 rounded-full border-4 border-jaga-edge bg-white"
+                                : layer === "reports"
+                                  ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
+                                  : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
+                            }
+                          />
+                        )}
                         {t(`layers.${layer}`)}
                       </li>
                     ))}

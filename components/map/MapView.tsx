@@ -19,6 +19,7 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
+import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
   createServiceAreaMap,
@@ -209,7 +210,7 @@ function toCollections(
       (data?.places ?? []).map((place) => ({
         type: "Feature",
         geometry: { type: "Point", coordinates: [place.lon, place.lat] },
-        properties: { id: place.id },
+        properties: { id: place.id, parking: place.type === "high_ground_parking" ? 1 : 0 },
       })),
     ),
     [GAUGES]: collection(
@@ -456,19 +457,42 @@ export function MapView({
             },
           });
         }
+        /*
+         * Safe places are squares with a small house or a P, never dots: the person's own pins are
+         * round, and the two must not look alike (lib/place-icons.ts). The pictures are drawn here
+         * and are lost whenever the basemap replaces the style, so they are put back on every draw.
+         */
+        const placeImage = placeIconName("place", ink());
+        const parkingImage = placeIconName("parking", ink());
+        for (const [name, kind] of [
+          [placeImage, "place"],
+          [parkingImage, "parking"],
+        ] as const) {
+          if (!m.hasImage(name)) {
+            const picture = placeIcon(kind, ink(), halo());
+            if (picture) m.addImage(name, picture, { pixelRatio: PLACE_ICON_RATIO });
+          }
+        }
         if (!m.getLayer(PLACES)) {
           m.addLayer({
             id: PLACES,
-            type: "circle",
+            type: "symbol",
             source: PLACES,
-            paint: {
-              "circle-radius": 7,
-              "circle-color": ink(),
-              "circle-stroke-color": halo(),
-              "circle-stroke-width": 2,
+            layout: {
+              "icon-image": placeImage,
+              // Small while the whole province is in view (there are thousands), full size close in.
+              "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 12, 1],
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
             },
           });
         }
+        m.setLayoutProperty(PLACES, "icon-image", [
+          "case",
+          ["==", ["get", "parking"], 1],
+          parkingImage,
+          placeImage,
+        ]);
         if (!m.getLayer(GAUGES)) {
           m.addLayer({
             id: GAUGES,

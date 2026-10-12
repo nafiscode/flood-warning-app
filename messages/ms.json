@@ -463,6 +463,10 @@
       "manage": "Urus tempat yang saya pantau",
       "person": "Hubungi: {name}",
       "hint": "Tuding atau ketik titik untuk melihat nama dan alamatnya."
+    },
+    "places": {
+      "toggle": "Tunjukkan tempat selamat pada peta ({count})",
+      "hint": "Petak bergambar rumah: tempat untuk orang · petak P: tanah tinggi untuk kereta. Ketik satu untuk butiran dan arah."
     }
   },
   "attribution": {

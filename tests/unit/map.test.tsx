@@ -363,8 +363,28 @@ describe("map dashboard (spec 4.2)", () => {
   it("opens on the live view when an alert is in force, and on the risk view when none is", () => {
     expect(dashboard().querySelector("[data-map]")?.textContent).toContain("alerts");
     const quiet = dashboard({ status: exampleStatus([]) });
-    expect(quiet.querySelector("[data-map]")?.textContent).toBe("hazard,places");
+    // Safe places are drawn only once the person asks for them (the owner, 12 Oct).
+    expect(quiet.querySelector("[data-map]")?.textContent).toBe("hazard");
     expect(quiet.querySelector('[data-pending-layer="hazard"]')).not.toBeNull();
+  });
+
+  it("safe places wait behind a switch that says how many there are", () => {
+    const c = dashboard({ status: exampleStatus([]) });
+    const toggle = c.querySelector<HTMLInputElement>("[data-places-toggle] input")!;
+    expect(toggle.checked).toBe(false);
+    expect(c.querySelector("[data-places-toggle]")?.textContent).toContain(
+      String(EXAMPLE_MAP.places.length),
+    );
+    expect(c.querySelector('[data-layer="places"]')).toBeNull();
+    fireEvent.click(toggle);
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,places");
+    expect(c.querySelector('[data-layer="places"]')?.textContent).toContain(th.map.layers.places);
+    expect(c.textContent).toContain(th.map.places.hint);
+    fireEvent.click(toggle);
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard");
+    // With no place to show there is nothing to switch on.
+    const none = dashboard({ status: exampleStatus([]), data: { ...EXAMPLE_MAP, places: [] } });
+    expect(none.querySelector("[data-places-toggle]")).toBeNull();
   });
 
   it("the list of alerts keeps a stale alert's level and adds the marker", () => {

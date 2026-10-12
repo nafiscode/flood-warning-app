@@ -463,6 +463,10 @@
       "manage": "Manage the places I watch",
       "person": "Contact: {name}",
       "hint": "Point at a dot, or tap it, to see its name and address."
+    },
+    "places": {
+      "toggle": "Show safe places on the map ({count})",
+      "hint": "Square with a house: a place for people · square with a P: high ground for cars. Tap one for details and directions."
     }
   },
   "attribution": {
