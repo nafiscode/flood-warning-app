@@ -67,13 +67,29 @@ export function roughTravel(distanceM: number): { by: "walk" | "drive"; minutes:
   return { by: "drive", minutes: Math.max(1, Math.round((roadKm / 30) * 60)) };
 }
 
+export type NavigateApp = "google" | "waze" | "apple" | "other";
+
 /**
- * A link that opens directions in the phone's maps app (spec 4.3: free, no routing API).
- * iPhones open Apple Maps; everything else opens Google Maps, or its web page without the app.
+ * The apps offered for directions to a point (spec 4.3: free, no routing API), in the order
+ * they are shown. The person chooses; nothing opens by itself (owner, 13 Oct).
+ *
+ * A web page cannot ask a phone which apps it has. So Google Maps and Waze are always offered:
+ * their links open the app where it is installed and the app's web page where it is not. Apple
+ * Maps is offered on Apple devices only. On Android a `geo:` link hands the point to the system,
+ * which shows its own list of every installed app that can navigate; iOS has no such link.
  */
-export function navigateHref(lat: number, lon: number, userAgent = ""): string {
+export function navigateChoices(
+  lat: number,
+  lon: number,
+  userAgent = "",
+): { app: NavigateApp; href: string }[] {
   const to = `${lat.toFixed(6)},${lon.toFixed(6)}`;
-  return /iPhone|iPad|iPod/i.test(userAgent)
-    ? `https://maps.apple.com/?daddr=${to}`
-    : `https://www.google.com/maps/dir/?api=1&destination=${to}`;
+  const choices: { app: NavigateApp; href: string }[] = [
+    { app: "google", href: `https://www.google.com/maps/dir/?api=1&destination=${to}` },
+    { app: "waze", href: `https://waze.com/ul?ll=${to}&navigate=yes` },
+  ];
+  if (/iPhone|iPad|iPod|Macintosh/i.test(userAgent))
+    choices.push({ app: "apple", href: `https://maps.apple.com/?daddr=${to}` });
+  if (/Android/i.test(userAgent)) choices.push({ app: "other", href: `geo:${to}?q=${to}` });
+  return choices;
 }

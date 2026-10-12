@@ -344,6 +344,14 @@
     "unavailable": "Couldn't load the safe places.",
     "loading": "Loading safe places…",
     "navigate": "Navigate",
+    "navigateWith": "Open directions in which app?",
+    "navigateApp": {
+      "google": "Google Maps",
+      "waze": "Waze",
+      "apple": "Apple Maps",
+      "other": "Another app on this phone"
+    },
+    "navigateNote": "Map apps do not know which roads are flooded. If there is water on the road, do not drive through it. Take another way.",
     "type": {
       "shelter": "Shelter",
       "school": "School",

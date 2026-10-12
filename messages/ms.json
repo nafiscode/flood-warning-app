@@ -344,6 +344,14 @@
     "unavailable": "Senarai tempat selamat tidak dapat dimuat.",
     "loading": "Sedang memuat tempat selamat…",
     "navigate": "Tunjuk arah",
+    "navigateWith": "Buka arah dengan aplikasi mana?",
+    "navigateApp": {
+      "google": "Google Maps",
+      "waze": "Waze",
+      "apple": "Apple Maps",
+      "other": "Aplikasi lain dalam telefon ini"
+    },
+    "navigateNote": "Aplikasi peta tidak tahu jalan mana yang banjir. Jika ada air di atas jalan, jangan redah. Cari jalan lain.",
     "type": {
       "shelter": "Pusat pemindahan",
       "school": "Sekolah",
