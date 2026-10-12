@@ -123,6 +123,9 @@ def test_freeboard_comes_from_the_flood_edge_and_parking_is_spaced():
     assert picked[:2] == [(0, 0), (5, 0)] or picked[0] == (0, 0)                               # (0, 1) is too close to (0, 0)
     assert (0, 1) not in picked and (9, 9) in picked and (0, 9) in picked
     assert features.pick_parking(np.zeros((3, 3), dtype=bool), np.zeros((3, 3)), np.ones((3, 3), dtype="uint16"), 3, 1) == []
+    # A cell already taken (a highway point) keeps the terrain picks at a distance in its own tambon only.
+    again = features.pick_parking(ok, weight, tambon, 2, 5, taken=[(0, 2)])
+    assert (0, 0) not in again and (0, 1) not in again and (9, 9) in again
 
 
 def test_the_score_leaves_out_what_is_unknown_and_flags_never_remove_a_site():
@@ -140,6 +143,7 @@ def test_the_score_leaves_out_what_is_unknown_and_flags_never_remove_a_site():
     assert score.flags(low, CFG) == ["low_ground", "route_cut", "no_road_mapped", "no_flood_edge_near"]
     assert score.total({k: None for k in CFG["weights"]}, CFG["weights"])[0] is None
     assert score.components({"freeboard_m": 99.0, "capacity": 5000}, CFG, 30)["freeboard"] == 1.0
+    assert score.flags({"fill_m": 2.0, "houses": 10}, CFG) == ["highway_shoulder"]
 
 
 def test_the_table_row_starts_unverified_and_the_seed_only_replaces_its_own_rows():
@@ -152,7 +156,7 @@ def test_the_table_row_starts_unverified_and_the_seed_only_replaces_its_own_rows
     assert row["facilities"] == {"source": "osm", "osm": "node/7"}
     sql = seed_sql([s])
     assert "delete from public.safe_places where verification_status = 'unverified'" in sql
-    assert "facilities->>'source' in ('osm', 'jaga-terrain', 'official-list')" in sql
+    assert "facilities->>'source' in ('osm', 'jaga-terrain', 'jaga-highway', 'official-list')" in sql
     assert "It''s a mosque" in sql and "st_makepoint(101.25, 6.87)" in sql and ", null, " in sql
     assert json.loads(sql.split("'::jsonb")[0].split("('")[-1].replace("''", "'"))["th"] == "มัสยิด"
     assert "insert into" not in seed_sql([])

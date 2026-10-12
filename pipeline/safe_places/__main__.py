@@ -36,7 +36,7 @@ from . import features, osm, roads, score
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 SHELTERS = Path(__file__).with_name("official_shelters.csv")
 log = logging.getLogger("safe_places")
-SOURCES = ("osm", "jaga-terrain", "official-list")
+SOURCES = ("osm", "jaga-terrain", "jaga-highway", "official-list")
 
 
 def load_config(path: Path = CONFIG_PATH) -> dict:
@@ -149,7 +149,8 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
     tiles = sorted((out / "osm").glob("roads_*.npz"))
     if not tiles:
         raise SystemExit("No road tiles in the cache: run `safe_places fetch` first.")
-    g = roads.build(roads.load_tiles(tiles, rc["drop"]), to_xy, rc["no_walking"], rc["no_driving"])
+    ways = roads.load_tiles(tiles, rc["drop"])
+    g = roads.build(ways, to_xy, rc["no_walking"], rc["no_driving"])
     cut = roads.mark_flooded(g, dilate(features.keep_patches(flood_any, rc["min_flood_patch_cells"]),
                                        rc["flood_buffer_cells"]), transform)
     log.info("roads: %d nodes, %d road pieces, %.1f%% of them flooded in 2024 or 2025", g.nodes, len(g.to) // 2,
@@ -181,16 +182,27 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
     road_cell[rr[inside], cc[inside]] = True
     ok = dilate(road_cell, 1) & (np.nan_to_num(r["hand"], nan=-1) > pc["min_hand_m"]) & r["land"] & ~flood_any
     weight = features.box_sum(r["houses"], int(round(pc["houses_within_m"] / transform.a)))
-    picked = features.pick_parking(ok, weight, r["tambon_index"], pc["per_tambon"], int(round(pc["spacing_m"] / transform.a)))
-    numbers: dict[int, int] = {}
-    for row, col in picked:
-        t = r["tambons"][int(r["tambon_index"][row, col]) - 1]
-        numbers[id(t)] = numbers.get(id(t), 0) + 1
-        lon, lat = to_lonlat(transform.c + (col + 0.5) * transform.a, transform.f + (row + 0.5) * transform.e)
-        sites.append({"osm": None, "source": "jaga-terrain", "type": "high_ground_parking", "capacity": None, "parking": True,
-                      "name": {"th": f"ที่สูงริมถนน ต.{t['name_th']} {numbers[id(t)]}",
-                               "en": f"High ground by the road, {t['name_en']} {numbers[id(t)]}"},
-                      "lon": float(lon), "lat": float(lat)})
+    spacing = int(round(pc["spacing_m"] / transform.a))
+    # The highway embankments first: points of the main roads (not their bridges) the radar saw dry.
+    hw = pc["highway"]
+    on_highway = np.isin(ways["kind"], hw["kinds"])[ways["way_of_point"]] & ~ways["bridge"][ways["way_of_point"]]
+    hx, hy = to_xy(ways["lon"][on_highway], ways["lat"][on_highway])
+    hr_, hc_, hin = features.cell(transform, hx, hy, shape)
+    highway_cell = np.zeros(shape, dtype=bool)
+    highway_cell[hr_[hin], hc_[hin]] = True
+    on_fill = features.pick_parking(highway_cell & r["land"] & ~flood_any, weight, r["tambon_index"], hw["per_tambon"], spacing)
+    picked = features.pick_parking(ok, weight, r["tambon_index"], pc["per_tambon"], spacing, taken=on_fill)
+    log.info("parking: %d points on highway embankments, %d on high terrain", len(on_fill), len(picked))
+    for cells, source, th, en in ((on_fill, "jaga-highway", "คันทางหลวง", "Highway embankment"),
+                                  (picked, "jaga-terrain", "ที่สูงริมถนน", "High ground by the road")):
+        numbers: dict[int, int] = {}
+        for row, col in cells:
+            t = r["tambons"][int(r["tambon_index"][row, col]) - 1]
+            numbers[id(t)] = numbers.get(id(t), 0) + 1
+            lon, lat = to_lonlat(transform.c + (col + 0.5) * transform.a, transform.f + (row + 0.5) * transform.e)
+            sites.append({"osm": None, "source": source, "type": "high_ground_parking", "capacity": None, "parking": True,
+                          "name": {"th": f"{th} ต.{t['name_th']} {numbers[id(t)]}", "en": f"{en}, {t['name_en']} {numbers[id(t)]}"},
+                          "lon": float(lon), "lat": float(lat)})
     x, y = to_xy(np.array([s["lon"] for s in sites]), np.array([s["lat"] for s in sites]))
     row, col, inside = features.cell(transform, x, y, shape)
     in_tambon = np.zeros(len(sites), dtype="int64")
@@ -224,9 +236,11 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
         source = int(ids[mode][node[mode][n]]) if node[mode][n] >= 0 else -1
         got = roads.served(g, source, minutes * 60, speed, g.drive if mode == "drive" else g.walk, houses_at[mode])
         t = r["tambons"][int(in_tambon[i]) - 1]
+        fill = float(pc["highway"]["assumed_fill_m"]) if s["source"] == "jaga-highway" else 0.0
         site = {**s, **got, "tambon": t["code"], "tambon_th": t["name_th"], "tambon_en": t["name_en"], "mode": mode,
                 "elevation_m": None if np.isnan(height[n]) else round(float(height[n]), 1),
-                "freeboard_m": None if np.isnan(fb[n]) else round(float(fb[n]), 1), "freeboard_basis": str(basis[n]),
+                "freeboard_m": None if np.isnan(fb[n]) else round(float(fb[n]) + fill, 1), "freeboard_basis": str(basis[n]),
+                "fill_m": fill or None,
                 "flood_freq": None if np.isnan(freq[n]) else round(float(freq[n]), 4),
                 "flooded_2024": bool(in_event.get(2024, np.zeros(len(keep), bool))[n]),
                 "flooded_2025": bool(in_event.get(2025, np.zeros(len(keep), bool))[n]), "radar_blind": bool(blind[n])}
@@ -236,7 +250,8 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
         site["score_components"] = {"parts": parts, "missing": missing, "flags": site["flags"], "travel": mode,
                                     "houses_within_reach": got["houses"], "houses_reaching_on_dry_roads": got["houses_dry"],
                                     "mean_minutes_on_dry_roads": got["mean_minutes_dry"],
-                                    "freeboard_from": site["freeboard_basis"], "radar_run": cfg["radar_hash"]}
+                                    "freeboard_from": site["freeboard_basis"], "radar_run": cfg["radar_hash"],
+                                    **({"embankment_fill_assumed_m": fill} if fill else {})}
         rows.append(site)
         if (n + 1) % 1000 == 0:
             log.info("%d of %d scored", n + 1, len(keep))

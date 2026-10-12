@@ -17,10 +17,12 @@ Science plan Module 2. `uv run python -m safe_places fetch`, then `run`. Nothing
 | Government building | OpenStreetMap | 90 |
 | Other place of worship | OpenStreetMap | 63 |
 | Mosque | OpenStreetMap | 54 |
-| High ground for parking | terrain, this pipeline | 910 |
+| Parking on a highway embankment | main roads, this pipeline | 564 |
+| High ground for parking | terrain, this pipeline | 883 |
 | Official shelter | `official_shelters.csv` | 0: the template is empty until the owner fills it |
 
 - OpenStreetMap objects are taken only when they have a name (a place nobody can name cannot be pointed to). **OpenStreetMap is thin here: 54 named mosques in four provinces that have thousands.** The official list and the volunteers are what will fill this.
+- **Highway embankments** (added 12 Oct 2026 from the owner's knowledge): the main highways are built on fill about 2 m above the original ground, which makes them the real high ground for cars on the plains, and which a 30 m elevation model cannot see. Points of motorway, trunk and primary roads (not their bridges) on cells the radar saw dry in both events are candidates, up to three per tambon, chosen before the terrain ones and by the same rule (most houses within 1 km first, 1 km apart). Their freeboard is what the elevation model gives **plus an assumed 2 m of fill**, and the row says so (`embankment_fill_assumed_m`). Every one carries the flag `highway_shoulder`: whether cars may stand there, and where, is for the highway authority and a visit to say. Their names are generic ("คันทางหลวง ต.… 1"); the road tiles kept no highway numbers.
 - High ground for parking: cells within one cell of a drivable road, more than 8 m above the nearest stream, on land the radar did not see flooded in either event; inside each tambon the cells with the most houses within 1 km come first, up to three, at least 1 km apart. Their names are made here ("ที่สูงริมถนน ต.… 1"), not somebody's name for the place.
 
 ## Features (on the hazard grid, 30 m)
@@ -44,7 +46,7 @@ Roads are OpenStreetMap's, kept as arrays with a search of our own (osmnx, named
 
 Freeboard scores 1 at 5 m or more, 0 at or below the flood's stage. A part nobody knows is left out and the other weights are scaled up; capacity is unknown for every site so far. The weights are in `config.yaml`.
 
-**Flags** (a flag never removes a site): `radar_flood` (66 sites), `low_ground`, freeboard under 0.5 m (581), `floods_often`, over 2 % of valid passes (229), `route_cut`, fewer than half its houses still reach it (243), `no_road_mapped`, `no_flood_edge_near`. 1,098 of 2,029 sites carry no flag. Scores: quartiles 0.55, 0.69, 0.86.
+**Flags** (a flag never removes a site): `radar_flood`, `low_ground` (freeboard under 0.5 m), `floods_often` (over 2 % of valid passes), `route_cut` (fewer than half its houses still reach it), `no_road_mapped`, `no_flood_edge_near`, `highway_shoulder` (all 564 embankment points). With the embankment points the counts are: `radar_flood` 66, `low_ground` 629, `floods_often` 294, `route_cut` 312; 1,073 of 2,566 sites carry no flag. Scores: quartiles 0.55, 0.68, 0.85.
 
 ## Outputs
 
@@ -54,7 +56,7 @@ Freeboard scores 1 at 5 m or more, 0 at or below the flood's stage. A part nobod
 
 ## Not met, and other limits
 
-- **The acceptance line "every populated tambon has at least 3 candidates" is not met: 50 of 377 tambons have fewer, 11 of them none.** They are flat coastal tambons (the Sathing Phra peninsula and Ranot in Songkhla, the Pattani coast around Yaring and Nong Chik) with no ground 8 m above a stream and few named buildings in OpenStreetMap. They need the official shelter list.
+- **The acceptance line "every populated tambon has at least 3 candidates" is not met: 29 of 377 tambons have fewer, 5 of them none** (50 and 11 before the highway embankments were added). They are flat coastal tambons (the Sathing Phra peninsula and Ranot in Songkhla, the Pattani coast around Yaring and Nong Chik) with no main highway, no ground 8 m above a stream and few named buildings in OpenStreetMap. They need the official shelter list; secondary roads, which are often on fill too, are not used yet.
 - Nothing has been checked on the ground. Half the named buildings are flagged low ground, which on these plains is as likely FABDEM's error as the truth.
 - Capacity, facilities and whether a building may be used as a shelter at all are unknown.
 - A parking spot is a cell of terrain beside a road, not a place known to hold cars.

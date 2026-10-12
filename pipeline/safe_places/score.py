@@ -59,4 +59,6 @@ def flags(site: dict, cfg: dict) -> list[str]:
         out.append("no_road_mapped")
     if site.get("freeboard_basis") == "stream":
         out.append("no_flood_edge_near")
+    if site.get("fill_m"):
+        out.append("highway_shoulder")
     return out

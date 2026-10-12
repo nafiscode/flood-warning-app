@@ -89,20 +89,25 @@ def box_sum(a: np.ndarray, radius_cells: int) -> np.ndarray:
 
 
 def pick_parking(ok: np.ndarray, weight: np.ndarray, tambon_index: np.ndarray, per_tambon: int,
-                 spacing_cells: int) -> list[tuple[int, int]]:
+                 spacing_cells: int, taken: list[tuple[int, int]] | None = None) -> list[tuple[int, int]]:
     """Up to `per_tambon` cells in every tambon from the cells where `ok`, heaviest `weight` first,
-    no two closer than `spacing_cells`. Returns (row, col)."""
+    no two closer than `spacing_cells`, and none that close to a cell already `taken`. Returns
+    (row, col)."""
     rows, cols = np.nonzero(ok & (tambon_index > 0))
     if len(rows) == 0:
         return []
     order = np.lexsort((-weight[rows, cols], tambon_index[rows, cols]))
     rows, cols, tambons = rows[order], cols[order], tambon_index[rows, cols][order]
+    taken_by: dict[int, list[tuple[int, int]]] = {}
+    for tr, tc in taken or []:
+        taken_by.setdefault(int(tambon_index[tr, tc]), []).append((tr, tc))
     picked: list[tuple[int, int]] = []
     start = 0
     for end in list(np.nonzero(np.diff(tambons))[0] + 1) + [len(tambons)]:
         mine: list[tuple[int, int]] = []
+        near = taken_by.get(int(tambons[start]), [])
         for r, c in zip(rows[start:end].tolist(), cols[start:end].tolist()):
-            if all(max(abs(r - pr), abs(c - pc)) >= spacing_cells for pr, pc in mine):
+            if all(max(abs(r - pr), abs(c - pc)) >= spacing_cells for pr, pc in mine + near):
                 mine.append((r, c))
                 if len(mine) == per_tambon:
                     break

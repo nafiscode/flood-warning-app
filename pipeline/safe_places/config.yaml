@@ -51,6 +51,13 @@ parking:
   per_tambon: 3
   spacing_m: 1000
   houses_within_m: 1000              # ranks the candidate cells inside a tambon
+  # The main highways are built on fill about 2 m above the original ground (owner, 12 Oct 2026):
+  # the real high ground for cars on the plains, which a 30 m elevation model cannot see. Points on
+  # them where the radar saw no flood are candidates of their own, chosen before the terrain ones.
+  highway:
+    kinds: [motorway, trunk, primary]
+    per_tambon: 3
+    assumed_fill_m: 2.0              # added to the freeboard the elevation model gives, and said so in the row
 
 # S = sum of weight x component. A component nobody knows yet (capacity, or a route for a site off
 # the road network) is left out and the other weights are scaled up, and the row says which.
