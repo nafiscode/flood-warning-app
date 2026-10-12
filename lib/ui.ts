@@ -5,11 +5,23 @@ export const buttonPrimary =
 export const buttonSecondary =
   "inline-flex min-h-tap w-full items-center justify-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-5 py-2 text-center font-medium text-jaga-ink active:translate-y-px disabled:opacity-60";
 /**
- * A quiet button: an outline and a label, sized for a thumb but not asking for the attention the
- * primary one does. For an action that sits beside the content rather than at the end of a flow.
+ * A quiet button: a tint of the brand teal, an outline and a label, sized for a thumb but not
+ * asking for the attention the primary one does. For an action that sits beside the content
+ * rather than at the end of a flow.
+ *
+ * The teal is the colour this app already uses for something to press or follow, and it is never
+ * a status (docs/brand.md): the alert palette is the only thing that shows a level. On a laptop
+ * it answers the pointer - Tailwind only applies `hover:` where a pointer really hovers, so a
+ * phone never gets a colour stuck on after a tap - and `prefers-reduced-motion` turns the fade
+ * off in globals.css while the colours still change.
+ *
+ * **The label is the brand ink, not the teal**: computed against the tint it sits on, teal text
+ * would read at 4.50:1 at rest and **3.89:1 once the pointer deepens the tint**, under the 4.5
+ * that body text needs. The ink reads 10.2:1 and 8.9:1 instead, and the teal is left to do the
+ * colouring where it only has to clear 3:1 - the border and the fill.
  */
 export const buttonQuiet =
-  "inline-flex min-h-tap items-center gap-2 rounded-xl border border-jaga-edge bg-jaga-surface px-4 py-2 text-start font-medium text-jaga-ink active:translate-y-px";
+  "inline-flex min-h-tap items-center gap-2 rounded-xl border border-jaga-teal-ink bg-jaga-teal-ink/10 px-4 py-2 text-start font-medium text-jaga-ink transition-colors hover:bg-jaga-teal-ink/20 hover:shadow-sm active:translate-y-px";
 export const input =
   "min-h-tap w-full rounded-xl border border-jaga-text-2 bg-jaga-surface px-4 py-2 text-body text-jaga-text";
 export const label = "font-medium";

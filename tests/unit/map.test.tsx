@@ -260,6 +260,17 @@ describe("the dam's card can be opened without hitting a two-pixel mark", () => 
     expect(open.className).toContain("min-h-tap");
     expect(open.className).not.toContain("underline");
     expect(open.querySelector("svg")).toBeTruthy();
+    /*
+     * A tint of the brand teal, and an answer to the pointer on a laptop (the owner, 12 Oct).
+     * Tailwind puts `hover:` behind `@media (hover: hover)`, so a phone never keeps the colour
+     * after a tap - checked in the compiled stylesheet, which is where that media query lives.
+     */
+    expect(open.className).toContain("bg-jaga-teal-ink/10");
+    expect(open.className).toContain("hover:bg-jaga-teal-ink/20");
+    // The label is the brand ink: teal text on its own tint falls to 3.89:1 once the pointer
+    // deepens it, under the 4.5 body text needs.
+    expect(open.className).toContain("text-jaga-ink");
+    expect(open.className).not.toContain("text-jaga-teal-ink");
     expect(c.querySelector("[data-selected='dam']")).toBeNull();
     fireEvent.click(open);
     const card = c.querySelector("[data-selected='dam']")!;
