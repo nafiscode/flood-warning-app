@@ -235,6 +235,23 @@ test.describe("the dam's quiet notice", () => {
     await expect(notice).not.toContainText(words(th.dam.figures.daily.inflow));
   });
 
+  /*
+   * The card used to open only by tapping the dam itself, which at the four-province view on a
+   * phone is a mark a few pixels across: measured on the live map, 2 taps in 361 found it, and
+   * the owner could not find the card at all. The legend opens it in one tap.
+   */
+  test("the legend opens the dam's card, with the charts in it", async ({ page }) => {
+    await serve(page);
+    await page.goto("/map");
+    const open = page.locator("[data-open-dam]").first();
+    await expect(open).toBeVisible();
+    await open.click();
+    const card = page.locator("[data-selected='dam']");
+    await expect(card).toBeVisible();
+    await expect(card.locator("[data-dam-history]")).toBeVisible();
+    await expect(card.locator("[data-dam-chart='outflow']")).toBeVisible();
+  });
+
   test("is on the map page too, with the path's limits in the legend", async ({ page }) => {
     await serve(page);
     await page.goto("/map");

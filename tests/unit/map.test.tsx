@@ -13,8 +13,12 @@ import {
   EXAMPLE_ME,
   EXAMPLE_NOW,
   exampleAlert,
+  exampleDamDaily,
+  exampleDamDays,
+  exampleDamSignal,
   exampleStatus,
 } from "@/lib/dev-examples";
+import type { Dam } from "@/lib/dam";
 import { layersFor } from "@/lib/hazards";
 import { alertFillColor, staleTambons } from "@/lib/map-style";
 import th from "@/messages/th.json";
@@ -65,6 +69,27 @@ vi.mock("@/components/map/MapView", () => ({
   ),
 }));
 
+/** The least a dam needs to be drawn and opened: the geometry is the real one in the app. */
+const EXAMPLE_DAM: Dam = {
+  code: "bang_lang",
+  name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
+  river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
+  operator: "EGAT",
+  point: { type: "Point", coordinates: [101.2721, 6.1551] },
+  spillwayPoint: null,
+  outletPoint: null,
+  reservoir: null,
+  storageMaxMcm: 1589.8,
+  storageNormalMcm: 1454.4,
+  geometrySource: "osm",
+  geometryNote: { source: "osm" },
+  reaches: [],
+  tambons: [],
+  signal: exampleDamSignal("watch"),
+  daily: exampleDamDaily("watch"),
+  days: exampleDamDays("watch"),
+};
+
 function dashboard(more: Partial<DashboardViewProps> = {}) {
   return renderWithIntl(
     <DashboardView
@@ -85,6 +110,29 @@ function dashboard(more: Partial<DashboardViewProps> = {}) {
 }
 
 const green = /47, ?122, ?37/; // --alert-normal as rgb
+
+/*
+ * The dam's card opened only by tapping the dam itself, which on a phone at the four-province
+ * view is a mark a few pixels across: measured on the live map, 2 taps in 361 found it, and the
+ * owner could not find it at all. The legend names the dam, so the legend opens it.
+ */
+describe("the dam's card can be opened without hitting a two-pixel mark", () => {
+  it("the legend has a button that opens it, and the card carries the charts", () => {
+    const c = dashboard({ dams: [EXAMPLE_DAM] });
+    const open = c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`) as HTMLButtonElement;
+    expect(open).not.toBeNull();
+    expect(c.querySelector("[data-selected='dam']")).toBeNull();
+    fireEvent.click(open);
+    const card = c.querySelector("[data-selected='dam']")!;
+    expect(card).not.toBeNull();
+    expect(card.querySelector("[data-dam-history]")).not.toBeNull();
+  });
+
+  it("says nothing about a dam when there is none on the map", () => {
+    const c = dashboard();
+    expect(c.querySelector("[data-open-dam]")).toBeNull();
+  });
+});
 
 describe("a placeholder hazard never draws a layer or a normal state (safety rule 10)", () => {
   it("layersFor gives no layers for a hazard that is not active", () => {

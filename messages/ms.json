@@ -1694,6 +1694,7 @@
       "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Hanya anak sungai yang sudah dipetakan ditunjukkan."
     },
     "legend": {
+      "open": "Lihat data {dam} dan carta 14 hari",
       "reservoir": "Takungan {dam}",
       "river": "{river} di hilir empangan",
       "tributary": "Bahagian hilir anak sungai yang mengalir masuk ke sungai utama"

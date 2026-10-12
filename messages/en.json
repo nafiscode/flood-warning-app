@@ -1694,6 +1694,7 @@
       "credit": "River and reservoir from OpenStreetMap. Only the tributaries somebody has already mapped are shown."
     },
     "legend": {
+      "open": "See {dam}'s figures and charts",
       "reservoir": "{dam} reservoir",
       "river": "{river} downstream of the dam",
       "tributary": "Lower reaches of the tributaries joining the main river"

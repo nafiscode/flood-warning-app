@@ -1,7 +1,7 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { GeoJSONSource, Map as MapLibreMap, Popup } from "maplibre-gl";
+import type { GeoJSONSource, Map as MapLibreMap, PointLike, Popup } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import type { MapLayer } from "@/lib/hazards";
 import { type Dam, reachesInOrder } from "@/lib/dam";
@@ -111,6 +111,9 @@ const PLACES = "jaga-places";
 const GAUGES = "jaga-gauges";
 const MINE = "jaga-mine";
 const MINE_LABEL = "jaga-mine-label";
+/** How far from a tap a thin line or a small mark still counts, in pixels. */
+const TAP_SLACK = 12;
+
 const DAM_WATER_SOURCE = "jaga-dam-water";
 const DAM_REACHES = "jaga-dam-reaches";
 const DAM_POINTS = "jaga-dam-points";
@@ -621,7 +624,19 @@ export function MapView({
             DAM_RESERVOIR_FILL,
             TAMBON_FILL_LAYER,
           ].filter((id) => created.getLayer(id));
-          const hit = created.queryRenderedFeatures(event.point, { layers: ids })[0];
+          /*
+           * A tap is a thumb, not a pixel. Measured on the same view, 665 taps 16 px apart
+           * over the middle of Yala: the dam, its river and its reservoir answered 4 of them
+           * when a tap had to land exactly on a 2 px line, and 29 once everything within
+           * TAP_SLACK counts. The layer drawn on top still wins, so a safe place or a gauge
+           * beside the river keeps its tap.
+           */
+          const at = event.point;
+          const near: [PointLike, PointLike] = [
+            [at.x - TAP_SLACK, at.y - TAP_SLACK],
+            [at.x + TAP_SLACK, at.y + TAP_SLACK],
+          ];
+          const hit = created.queryRenderedFeatures(near, { layers: ids })[0];
           const p = hit?.properties;
           if (!hit || !p) return;
           if (hit.layer.id === MINE) select.current({ kind: "mine", id: String(p.id) });

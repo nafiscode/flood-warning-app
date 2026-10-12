@@ -534,6 +534,23 @@ export function DashboardView(props: DashboardViewProps) {
                       ))}
                     </ul>
                     <p className={hint}>{tDam("path.limits")}</p>
+                    {/*
+                     * The way in that needs no aim at all. The card otherwise opens only by
+                     * tapping the dam itself, and a river is a thin thing to hit: 4 taps in 665
+                     * found it on the live map, and the owner could not find the card at all.
+                     * The legend names the dam anyway, so it is the natural button.
+                     */}
+                    {dams.map((dam) => (
+                      <button
+                        key={dam.code}
+                        type="button"
+                        data-open-dam={dam.code}
+                        onClick={() => setSelection({ kind: "dam", code: dam.code })}
+                        className="min-h-tap self-start text-start underline"
+                      >
+                        {tDam("legend.open", { dam: localName(dam.name, locale) })}
+                      </button>
+                    ))}
                   </div>
                 )}
                 {pending.length > 0 && (
