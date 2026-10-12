@@ -6,6 +6,11 @@ Commands
                          streams that join it. Writes GeoJSON into <output_dir>/geojson/ for the
                          owner's look in ArcGIS Pro and supabase/seed/40_dams.sql for the app.
                          --dry-run reports what it found and writes nothing.
+  travel [--dry-run]     how long released water takes to each gauge (measured from the archive:
+                         the turbines' daily pulses and the floods since 2020), and the arrival
+                         range for every tambon on the path from the decided times in
+                         config.yaml. Writes <output_dir>/travel.json, arrival_by_tambon.csv and
+                         supabase/seed/41_dam_arrivals.sql. Needs `geometry` to have run.
   thresholds             what the archive says about each grade criterion in config.yaml: how
                          often it would have fired, and the record's own ceilings. Writes
                          <output_dir>/thresholds.json.
@@ -25,7 +30,7 @@ import yaml
 
 from ingest_thaiwater.settings import PIPELINE_DIR, REPO_DIR, data_dir, env_value
 
-from . import build, thresholds
+from . import build, thresholds, travel
 
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 log = logging.getLogger("dam_release")
@@ -135,6 +140,88 @@ def cmd_thresholds(cfg: dict) -> int:
     return 0
 
 
+def cmd_travel(cfg: dict, dry_run: bool) -> int:
+    from hazard.tambons import tambon_geometries
+
+    out = output_dir(cfg)
+    tidy = data_dir() / "tidy"
+    t = cfg["travel"]
+    tambons = tambon_geometries()
+    names = {x["code"]: (x["name_th"], x["name_en"]) for x in tambons}
+    result = {}
+    for dam in cfg["dams"]:
+        code = dam["code"]
+        reach = json.loads((out / "geojson" / f"{code}_reach.geojson").read_text(encoding="utf-8"))
+        main_pts = next(f["geometry"]["coordinates"] for f in reach["features"] if f["properties"]["kind"] == "main")
+        tribs = json.loads((out / "geojson" / f"{code}_tributaries.geojson").read_text(encoding="utf-8"))["features"]
+        junctions = json.loads((out / "geometry.json").read_text(encoding="utf-8"))[code]["tributaries"]
+
+        gauges = {g["code"]: g for g in t["gauges"]}
+        for g in gauges.values():
+            g["km"], g["off_line_m"] = travel.river_km(main_pts, tuple(g["point"]))
+            if g["off_line_m"] > 200:
+                raise ValueError(f"gauge {g['code']} is {g['off_line_m']:.0f} m off the river line.")
+        levels = {c: travel.read_hourly(tidy, "water_level_msl", g["id"]) for c, g in gauges.items()}
+        outflow = thresholds.frame(tidy, dam["thaiwater"]["hourly_id"])["outflow_cms"].resample("1h").mean()
+
+        print(f"\n{dam['name']['en']}: the turbines' pulses (best lag per dry month)")
+        pulses = {}
+        for c, g in gauges.items():
+            rows = travel.pulse_lags(outflow, levels[c], t["pulses"]["months"], t["pulses"]["max_lag_h"], t["pulses"]["min_r"])
+            pulses[c] = {"km": round(g["km"], 1), "months": rows, "spread": travel.spread([r["lag_h"] for r in rows])}
+            s = pulses[c]["spread"]
+            print(f"  {c:8s} km {g['km']:6.1f}  " + (f"{s['n']:2d} months, median {s['median']:.0f} h "
+                  f"(quartiles {s['low']:.0f}-{s['high']:.0f})" if s else "no month with a clear fit"))
+        print("floods since 2020 (hours between gauges: quartiles and median)")
+        floods = []
+        f = t["floods"]
+        for up, down, max_h in t["pairs"]:
+            for label, rise in (("all", f["min_rise_m"]), ("large", f["large_rise_m"])):
+                ev = travel.event_lags(levels[up], levels[down], quantile=f["quantile"], gap_days=f["gap_days"],
+                                       min_rise_m=rise, max_h=max_h, max_up_m=gauges[up].get("max_level_m"),
+                                       max_down_m=gauges[down].get("max_level_m"))
+                row = {"up": up, "down": down, "km": round(gauges[down]["km"] - gauges[up]["km"], 1), "floods": label,
+                       "events": len(ev), "front": travel.spread([e["front_lag_h"] for e in ev]),
+                       "peak": travel.spread([e["peak_lag_h"] for e in ev]), "list": ev}
+                floods.append(row)
+                fr, pk = row["front"], row["peak"]
+                print(f"  {up:8s} -> {down:8s} {row['km']:5.1f} km  {label:5s} {len(ev):2d} floods  "
+                      + (f"front {fr['low']:.0f}/{fr['median']:.0f}/{fr['high']:.0f}  " if fr else "front -  ")
+                      + (f"peak {pk['low']:.0f}/{pk['median']:.0f}/{pk['high']:.0f}" if pk else "peak -"))
+
+        anchors = [{**a, "km": gauges[a["gauge"]]["km"]} for a in t["anchors"]]
+        entries = {c: {"km": k, "via": "main"} for c, k in travel.tambon_entry_km(main_pts, tambons).items()}
+        from shapely.geometry import LineString
+        for feature, junction in zip(tribs, junctions):
+            line = LineString(feature["geometry"]["coordinates"])
+            for x in tambons:
+                if x["code"] not in entries and x["geometry"].intersects(line):
+                    entries[x["code"]] = {"km": junction["junction_km_from_dam"], "via": "tributary"}
+        rows = travel.table(entries, anchors, t["safety_margin"])
+        print(f"arrival ranges: {len(rows)} tambons ({sum(r['via'] == 'main' for r in rows)} on the river, "
+              f"{sum(r['via'] == 'tributary' for r in rows)} on a tributary's lower reach)")
+        for r in rows:
+            print(f"  {r['tambon_code']} {names[r['tambon_code']][1][:22]:22s} km {r['km_from_dam']:6.1f}  warn from "
+                  f"{r['warn_from_h']:5.1f} h  first rise {r['earliest_h']:5.1f}-{r['latest_h']:5.1f} h  "
+                  f"peak {r['peak_earliest_h']}-{r['peak_latest_h']} h  {r['via']}")
+        result[code] = {"gauges": {c: {"km": round(g["km"], 2), "place": g["place"]} for c, g in gauges.items()},
+                        "pulses": pulses, "floods": floods, "anchors": anchors, "rows": rows}
+        if dry_run:
+            continue
+        travel.write_csv(out / "arrival_by_tambon.csv", rows, names)
+        method = {"source": t["source"], "safety_margin": t["safety_margin"],
+                  "basis_en": "Ranges from the river gauges: the turbines' daily pulses and the floods since 2020. "
+                              "Not a forecast and not a hydraulic model."}
+        seed = REPO_DIR / "supabase" / "seed" / "41_dam_arrivals.sql"
+        seed.write_text(travel.seed_sql(code, t["source"], rows, method), encoding="utf-8", newline="\n")
+        print(f"wrote {out / 'arrival_by_tambon.csv'} and {seed}")
+    if dry_run:
+        print("\n--dry-run: nothing written.")
+        return 0
+    travel.write_json(out / "travel.json", result)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="dam_release", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -142,11 +229,14 @@ def main(argv: list[str] | None = None) -> int:
     geometry = sub.add_parser("geometry", help="the release path from OpenStreetMap")
     geometry.add_argument("--dry-run", action="store_true")
     sub.add_parser("thresholds", help="what the archive says about the grade criteria")
+    sub.add_parser("travel", help="travel times and arrival ranges per tambon").add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
     if args.command == "geometry":
         return cmd_geometry(cfg, args.dry_run)
+    if args.command == "travel":
+        return cmd_travel(cfg, args.dry_run)
     return cmd_thresholds(cfg)
 
 

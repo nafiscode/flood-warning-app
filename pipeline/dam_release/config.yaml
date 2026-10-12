@@ -46,6 +46,40 @@ dams:
       # water into (spec section 15).
       lower_reach_km: 5
 
+# Travel times (travel.py, METHODS.md "Travel times"). Hours after the gates open, as ranges.
+travel:
+  source: gauges-2026-10          # the version of these times; goes into the table beside the geometry's source
+  # Gauges on the main stem, by ThaiWater station id. Their river distance is measured, not typed.
+  gauges:
+    - {code: BLGTD01, id: 562799, place: "tailwater bridge", point: [101.276104, 6.160477]}
+    - {code: BLGTD02, id: 562800, place: "Bannang Sata", point: [101.268237, 6.262132]}
+    - {code: BLGTD03, id: 709863, place: "Yala town (Tha Sap)", point: [101.266197, 6.552715]}
+    # max_level_m: readings above it are a broken sensor, not a flood (X.40A once reported 35 m).
+    - {code: X.40A, id: 2583, place: "Yala town (Tha Sap), RID", point: [101.266294, 6.552798], max_level_m: 30}
+    - {code: X.275, id: 726684, place: "Ban Brido", point: [101.244888, 6.821520], max_level_m: 10}
+    - {code: BLGTD05, id: 562803, place: "Pattani town", point: [101.251309, 6.859914], max_level_m: 10}
+    - {code: X.10A, id: 2587, place: "Pattani town (Dechanuchit bridge), RID", point: [101.252129, 6.866000], max_level_m: 10}
+  pulses: {months: [1, 2, 3, 4, 5], max_lag_h: 48, min_r: 0.25}
+  floods: {quantile: 0.95, gap_days: 8, min_rise_m: 1.0, large_rise_m: 2.5}
+  pairs:                           # upstream gauge, downstream gauge, longest lag looked for
+    - [BLGTD02, BLGTD03, 48]
+    - [BLGTD02, X.40A, 48]
+    - [X.40A, X.275, 96]
+    - [BLGTD03, X.275, 96]
+    - [X.275, BLGTD05, 48]
+    - [X.275, X.10A, 48]
+  # The decided times at the gauges, read off the measurements of 12 Oct 2026 (METHODS.md has the
+  # sums). earliest/latest: the first rise, hours after the gates open. peak_*: the highest water,
+  # hours after the highest release. Between gauges the times go by river distance.
+  anchors:
+    - {gauge: BLGTD01, earliest_h: 0, latest_h: 0, peak_earliest_h: 0, peak_latest_h: 0}
+    - {gauge: BLGTD02, earliest_h: 3, latest_h: 4, peak_earliest_h: 3, peak_latest_h: 4}
+    - {gauge: BLGTD03, earliest_h: 9, latest_h: 18, peak_earliest_h: 15, peak_latest_h: 26}
+    - {gauge: X.275, earliest_h: 14, latest_h: 32, peak_earliest_h: 40, peak_latest_h: 74}
+    - {gauge: BLGTD05, earliest_h: 16, latest_h: 44, peak_earliest_h: 45, peak_latest_h: 90}
+  # A warning counts down to the earliest time with this share taken off (spec section 15).
+  safety_margin: 0.2
+
 # The named criteria the app grades the live figures by (decision 10 Oct 2026). Starting values
 # only: they are written into system_settings, which admins own, and `thresholds` prints what the
 # archive says about each one. Flows are cubic metres per second.
