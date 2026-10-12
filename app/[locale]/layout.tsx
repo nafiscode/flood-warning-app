@@ -106,9 +106,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     <Logo size={40} tone="reverse" animated />
                   </Link>
                   {/*
-                    The weather, in the header's free space (the owner's request, 9 Oct): beside
-                    the logo where there is room, and at the end of the language row on a phone,
-                    where the top row is already full of Thai labels at 360 px.
+                    The weather, beside the logo where there is room (the owner's request,
+                    9 Oct). A phone has its own copy at the far end of this row, below.
                   */}
                   <WeatherChip where="header" className="hidden lg:inline-flex" />
                   {/* Thailand's time, beside the weather where there is room (the owner, 13 Oct). */}
@@ -119,7 +118,35 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   />
                 </div>
 
-                <div className="flex items-center">
+                {/*
+                  On a phone the top row is the logo with the weather and the bell at its far
+                  end, the links take the second row and the languages the third (the owner,
+                  13 Oct: the weather belongs at the top right, level with the logo; they chose
+                  the extra row over shortening the language names, and it costs 48 px of page).
+                  From a tablet's width up there is room for one row again: the links sit before
+                  the weather and the bell, and on a laptop the weather is beside the logo.
+                  The order in the page is the order on a phone, so the keyboard walks the bar
+                  the way it is drawn there.
+                */}
+                <div className="flex items-center gap-1 sm:order-3">
+                  {/* A tablet has room for the time up here; a phone has it by the languages. */}
+                  <ThaiClock
+                    size="small"
+                    short={tNav("clockShort")}
+                    long={tNav("clockLong")}
+                    className="hidden sm:inline lg:hidden"
+                  />
+                  <WeatherChip where="row" className="inline-flex lg:hidden" />
+                  {/*
+                    The bell: what they missed while the app was closed (the owner's request,
+                    10 Oct). Last on the row, so it sits at the far end of the bar where every
+                    other app puts it (the owner's note, 12 Oct) - and at the *inline* end, so it
+                    follows the writing direction if Jawi is ever chosen.
+                  */}
+                  <NoticeBell />
+                </div>
+
+                <div className="flex w-full items-center sm:order-2 sm:ms-auto sm:w-auto">
                   {/* Home as a word, not only the logo: people don't tap a logo to go back. */}
                   <Link
                     href="/"
@@ -144,34 +171,22 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   </Link>
                   {/* Only an admin ever sees this one, and only in their own browser. */}
                   <AdminLink />
-                  {/*
-                    The bell: what they missed while the app was closed (the owner's request,
-                    10 Oct). Last in the row, so it sits at the far end of the bar where every
-                    other app puts it (the owner's note, 12 Oct) — and at the *inline* end, so it
-                    follows the writing direction if Jawi is ever chosen. It shares the row with
-                    the links rather than standing alone: on its own it wrapped them onto a line
-                    of their own and made the frozen header 96 px taller at 360 px.
-                  */}
-                  <NoticeBell />
                 </div>
                 {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
-                <div className="flex w-full items-center justify-between gap-x-1">
+                <div className="flex w-full items-center justify-between gap-x-1 sm:order-4">
                   <LanguageSwitcher />
-                  {/* -me-1 uses the row's own end padding: at 360 px the three language names
-                      and the chip together need every pixel of the line. */}
                   {/*
-                    On a phone the time sits in the few pixels above the weather pill: the row has
-                    no width left for it, and a line of its own would take page height.
+                    The time, on a phone: in the room left beside the three language names.
+                    Up beside the weather it fitted only while the weather was a short reading;
+                    for someone who has not chosen a place yet the pill says "weather" in words,
+                    and the two together pushed the top row onto a fourth line.
                   */}
-                  <div className="relative -me-1 lg:hidden">
-                    <ThaiClock
-                      size="small"
-                      short={tNav("clockShort")}
-                      long={tNav("clockLong")}
-                      className="pointer-events-none absolute end-1 -top-1"
-                    />
-                    <WeatherChip where="row" className="inline-flex" />
-                  </div>
+                  <ThaiClock
+                    size="small"
+                    short={tNav("clockShort")}
+                    long={tNav("clockLong")}
+                    className="-me-1 sm:hidden"
+                  />
                 </div>
               </div>
             </header>

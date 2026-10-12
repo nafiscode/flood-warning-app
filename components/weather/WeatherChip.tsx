@@ -53,11 +53,11 @@ export function WeatherChip({
   const { weather } = useWeather(place, !quiet);
   const now = useNow();
 
-  // The link is the 48 px tap target; the pill inside it is the part that is drawn. No padding
-  // of its own: at 360 px the three language names leave 65 px beside them, and a wider chip
-  // pushes "English" onto a line of its own and makes the frozen header 48 px taller.
+  // The link is the 48 px tap target; the pill inside it is the part that is drawn. On a phone
+  // it sits at the far end of the top row, beside the clock and the bell (the owner, 13 Oct),
+  // where there is room for the arrow as well; the place's name still waits for a wide screen.
   const link = `${styles.link} ${quiet ? styles.quiet : ""} min-h-tap items-center rounded-full ${className}`;
-  const pill = `${styles.pill} inline-flex h-8 items-center gap-1 rounded-full px-1.5 text-small font-medium lg:gap-1.5 lg:px-3`;
+  const pill = `${styles.pill} inline-flex h-8 items-center gap-1 rounded-full px-2 text-small font-medium lg:gap-1.5 lg:px-3`;
 
   if (!place || !weather) {
     return (
@@ -154,7 +154,7 @@ export function WeatherChip({
   );
 }
 
-/** "This goes somewhere": shown where there is room for it, which a phone's row has not. */
+/** "This goes somewhere." */
 function Arrow() {
   return (
     <svg
@@ -168,7 +168,7 @@ function Arrow() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`${styles.arrow} hidden shrink-0 lg:block`}
+      className={`${styles.arrow} shrink-0`}
     >
       <path d="M4 2l4 4-4 4" />
     </svg>

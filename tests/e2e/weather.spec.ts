@@ -296,6 +296,47 @@ test.describe("weather", () => {
     expect(await slider.inputValue()).toBe(held);
   });
 
+  test("on a phone the weather sits at the top right, level with the logo", async ({ page }) => {
+    await serve(page, { area: true });
+    await page.goto("/");
+    const header = page.locator("header");
+    const chip = header.locator('[data-weather-slot="row"][data-weather-chip="reading"]');
+    await expect(chip).toBeVisible();
+    const logo = (await header.locator("a").first().boundingBox())!;
+    const pill = (await chip.boundingBox())!;
+    const bar = (await header.boundingBox())!;
+    // The same row as the logo, and in the far half of the bar (the owner, 13 Oct).
+    expect(Math.abs(pill.y - logo.y)).toBeLessThan(12);
+    expect(pill.x).toBeGreaterThan(bar.width / 2);
+    // Home, Map and Account are on the row below it, the languages below those.
+    const home = (await header.getByRole("link", { name: th.nav.home }).boundingBox())!;
+    expect(home.y).toBeGreaterThan(pill.y + 30);
+    await noSidewaysScroll(page);
+  });
+
+  test("the header is no taller before a place is chosen than after", async ({ page }) => {
+    // With no place the pill says "weather" in words and is twice as wide; it once pushed the
+    // top row onto a fourth line, 48 px of page lost for every first-time visitor.
+    await serve(page, { area: true });
+    await page.goto("/");
+    await expect(
+      page.locator('header [data-weather-slot="row"][data-weather-chip="reading"]'),
+    ).toBeVisible();
+    const withReading = (await page.locator("header").boundingBox())!.height;
+    await page.evaluate(() => {
+      window.localStorage.removeItem("jaga.area");
+      window.localStorage.removeItem("jaga.weather.reading");
+      window.localStorage.removeItem("jaga.weather.place");
+    });
+    const fresh = await page.context().newPage();
+    await serve(fresh);
+    await fresh.goto("/");
+    await expect(
+      fresh.locator('header [data-weather-slot="row"][data-weather-chip="empty"]'),
+    ).toBeVisible();
+    expect((await fresh.locator("header").boundingBox())!.height).toBe(withReading);
+  });
+
   test("nothing is fetched for the weather on the SOS screen (safety rule 1)", async ({ page }) => {
     const calls = await serve(page, { area: true });
     await page.goto("/sos");
