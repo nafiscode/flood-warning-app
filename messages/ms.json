@@ -189,7 +189,10 @@
       "openCaseLink": "Lihat status permintaan anda",
       "on_site": "Pasukan sudah sampai",
       "accepted": "Ada pasukan terima permintaan",
-      "released": "Pasukan itu tidak dapat teruskan. Sedang mencari pasukan lain."
+      "released": "Pasukan itu tidak dapat teruskan. Sedang mencari pasukan lain.",
+      "rescued_by_team": "Pasukan kata anda sudah diselamatkan",
+      "confirmed": "Penyelamatan sudah disahkan",
+      "not_rescued": "Anda kata anda belum diselamatkan"
     },
     "details": {
       "title": "Tambah butiran (pilihan)",
@@ -258,6 +261,15 @@
       "phoneOrg": "Nombor rasmi organisasi",
       "phoneNone": "Pasukan ini tiada nombor telefon dalam sistem. Jika cemas, telefon 1784 atau 1669.",
       "phoneFailed": "Nombor belum dapat dipaparkan. Cuba lagi."
+    },
+    "confirm": {
+      "title": "{unit} kata anda sudah diselamatkan",
+      "titleNoUnit": "Pasukan kata anda sudah diselamatkan",
+      "body": "Betulkah? Jawapan anda yang menutup permintaan ini.",
+      "yes": "Ya, saya sudah diselamatkan",
+      "no": "Tidak, saya masih perlukan bantuan",
+      "noHint": "Jika anda jawab tidak, permintaan anda terus dicarikan pasukan semula.",
+      "failed": "Tidak dapat dihantar. Jika cemas, telefon 1784 atau 1669 sekarang."
     }
   },
   "hotlines": {
@@ -721,7 +733,8 @@
       "searching": "Sedang ditawarkan kepada {unit}",
       "searchingNoName": "Sedang ditawarkan kepada pasukan lain",
       "unanswered": "Belum ada pasukan terima",
-      "closed": "Sudah ditutup"
+      "closed": "Sudah ditutup",
+      "awaiting": "Menunggu pengesahan"
     },
     "countdown": "Masa menjawab tinggal {time}",
     "countdownHint": "Bila masa habis, kes ditawarkan kepada pasukan seterusnya. Anda masih boleh terima.",
@@ -802,7 +815,10 @@
       "takenNoName": "Pasukan lain sudah terima kes ini dahulu.",
       "accepted": "Sudah diterima. Beritahu bila dijangka sampai.",
       "refused": "Tidak dapat dibuat. Kes ini mungkin sudah ditutup atau bertukar pasukan.",
-      "failed": "Tiada sambungan. Belum disimpan. Cuba lagi."
+      "failed": "Tiada sambungan. Belum disimpan. Cuba lagi.",
+      "completed": "Penyelamatan sudah dilaporkan. Menunggu orang itu sahkan.",
+      "confirmed": "Penyelamatan sudah disahkan. Kes ditutup.",
+      "upload": "Gambar tidak dapat dihantar, jadi belum disimpan. Periksa sambungan dan cuba lagi."
     },
     "time": {
       "hm": "{hours} jam {minutes} minit",
@@ -812,6 +828,44 @@
       "title": "Pasukan anda belum disahkan",
       "body": "Papan kes hanya dibuka kepada pasukan yang sudah disahkan oleh pentadbir Jaga. Lihat status pendaftaran di halaman akaun.",
       "account": "Pergi ke halaman akaun"
+    },
+    "finish": {
+      "choosePhoto": "Ambil atau pilih gambar",
+      "photosChosen": "{count} gambar dipilih. Sentuh untuk tukar.",
+      "photoHint": "Paling banyak {max} gambar. Gambar dikecilkan sebelum dihantar.",
+      "noteOptional": "Catatan (tidak wajib)",
+      "noteRequired": "Bagaimana anda semak (wajib)",
+      "sending": "Menghantar…",
+      "needPhoto": "Perlu sekurang-kurangnya satu gambar.",
+      "needBoth": "Perlu sekurang-kurangnya satu gambar dan catatan.",
+      "cancel": "Batal",
+      "complete": {
+        "open": "Lapor: sudah diselamatkan",
+        "title": "Lapor penyelamatan",
+        "hint": "Sertakan sekurang-kurangnya satu gambar. Kes ditutup apabila orang itu sahkan pada telefonnya sendiri.",
+        "send": "Hantar: sudah diselamatkan"
+      },
+      "confirm": {
+        "open": "Sahkan penyelamatan bagi pihak orang itu",
+        "title": "Sahkan penyelamatan bagi pihak orang itu",
+        "hint": "Orang itu belum sahkan dalam masa yang ditetapkan. Sahkan hanya jika anda sudah semak bahawa dia selamat. Sertakan gambar dan tulis bagaimana anda semak.",
+        "send": "Sahkan dan tutup kes"
+      },
+      "awaiting": {
+        "mine": "Pasukan anda sudah lapor penyelamatan ini. Menunggu orang itu sahkan.",
+        "other": "{unit} sudah lapor penyelamatan ini. Menunggu orang itu sahkan.",
+        "since": "Dilaporkan {hours} jam lalu",
+        "proof": "{count} gambar bukti",
+        "rule": "Jika orang itu tidak sahkan dalam masa yang ditetapkan, pasukan lain yang disahkan atau pentadbir boleh sahkan."
+      }
+    },
+    "media": {
+      "open": "Buka gambar dan suara",
+      "fromSender": "Gambar daripada pengirim",
+      "voice": "Rakaman suara pengirim",
+      "proof": "Gambar bukti daripada pasukan",
+      "none": "Tiada gambar atau suara.",
+      "failed": "Gambar tidak dapat dibuka. Cuba lagi."
     }
   },
   "admin": {

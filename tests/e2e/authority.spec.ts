@@ -148,7 +148,13 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
   });
 
   test.afterAll(async () => {
-    if (sos) await sql("delete from public.sos_requests where id = $1", [sos.id]);
+    if (sos) {
+      // The evidence photos the test uploaded: Storage only lets go of a file through its API.
+      const storage = service().storage.from("sos-media");
+      const { data } = await storage.list(`${sos.id}/proof`);
+      if (data?.length) await storage.remove(data.map((f) => `${sos!.id}/proof/${f.name}`));
+      await sql("delete from public.sos_requests where id = $1", [sos.id]);
+    }
     if (unitId) {
       await sql("delete from public.authority_coverage where unit_id = $1", [unitId]);
       await sql("delete from public.authority_unit_contacts where unit_id = $1", [unitId]);
@@ -255,5 +261,95 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
       [sos!.id],
     );
     expect(held.length).toBe(0);
+  });
+
+  /** The smallest real picture there is: the phone shrinks whatever it is given before sending. */
+  const PHOTO = {
+    name: "rescued.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64",
+    ),
+  };
+
+  /** Accept the case and report its rescue with one photo, as the team's phone does. */
+  async function acceptAndReport(page: Page) {
+    await signIn(page);
+    await page.goto("/authority");
+    const card = page.locator(`[data-case="${sos!.id}"]`);
+    await card.locator("[data-accept]").click();
+    await expect(card).toHaveAttribute("data-case-state", "mine");
+    await card.locator("[data-complete]").click();
+    // No photo, no report.
+    await expect(card.locator("[data-finish-send]")).toBeDisabled();
+    await card.locator("[data-finish-photos]").setInputFiles(PHOTO);
+    await card.locator("[data-finish-send]").click();
+    await expect(card).toHaveAttribute("data-case-state", "awaiting", { timeout: 30_000 });
+    return card;
+  }
+
+  test("the team reports the rescue with a photo, and that alone does not close the case", async ({
+    page,
+  }) => {
+    const card = await acceptAndReport(page);
+    const [row] = await sql(
+      `select s.status, s.closed_at, cardinality(c.completion_photos) as photos
+         from public.sos_requests s
+         join public.sos_claims c on c.sos_id = s.id and c.released_at is null
+        where s.id = $1`,
+      [sos!.id],
+    );
+    expect(row!.status).toBe("rescued");
+    expect(row!.closed_at).toBeNull();
+    expect(row!.photos).toBe(1);
+
+    // The photo can be opened from the card, through a link and not from the board itself.
+    await card.locator("[data-show-media]").click();
+    await expect(card.locator('[data-media="shown"] img')).toHaveCount(1);
+  });
+
+  test("the sender who says they were not rescued gets their case looked for again", async ({
+    page,
+  }) => {
+    await openSenderScreen(page);
+    const ask = page.locator("[data-confirm-rescue]");
+    await expect(ask).toContainText(UNIT);
+    await ask.locator("[data-confirm-no]").click();
+    await expect(ask).toHaveCount(0);
+    await expect(page.locator('[data-team="searching"]')).toBeVisible();
+
+    const [row] = await sql("select status, closed_at from public.sos_requests where id = $1", [
+      sos!.id,
+    ]);
+    expect(row!.status).toBe("received");
+    const held = await sql(
+      "select 1 from public.sos_claims where sos_id = $1 and released_at is null",
+      [sos!.id],
+    );
+    expect(held.length).toBe(0);
+  });
+
+  test("the sender's yes is what closes the case", async ({ page, browser }) => {
+    await acceptAndReport(page);
+
+    const phone = await browser.newContext({ serviceWorkers: "block" });
+    const theirs = await phone.newPage();
+    await openSenderScreen(theirs);
+    await theirs.locator("[data-confirm-yes]").click();
+    await expect(theirs.locator("[data-confirm-rescue]")).toHaveCount(0);
+    await expect(theirs.getByText(th.sos.status.closed)).toBeVisible();
+    await phone.close();
+
+    const [row] = await sql("select status, closed_at from public.sos_requests where id = $1", [
+      sos!.id,
+    ]);
+    expect(row!.status).toBe("rescued");
+    expect(row!.closed_at).not.toBeNull();
+    const confirmed = await sql(
+      "select method from public.rescue_confirmations where sos_id = $1",
+      [sos!.id],
+    );
+    expect(confirmed.map((r) => r.method)).toEqual(["requester"]);
   });
 });

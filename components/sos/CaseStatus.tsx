@@ -53,6 +53,9 @@ export function CaseStatus({ id, merged }: Props) {
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const [closing, setClosing] = useState(false);
   const open = timeline ? OPEN_STATUSES.includes(timeline.status) : true;
+  // The team has reported the rescue and the case waits for this person's word (spec 5.4).
+  const pending = timeline?.status === "rescued" && !timeline.closedAt;
+  const [disputeFailed, setDisputeFailed] = useState(false);
   const gps = useLocation({ start: false, watch: open && state === "ok" });
   const battery = useBattery();
   useQueue();
@@ -102,7 +105,7 @@ export function CaseStatus({ id, merged }: Props) {
   useEffect(() => {
     if (!ready) return;
     load();
-    const timer = window.setInterval(load, open ? OPEN_POLL_MS : CLOSED_POLL_MS);
+    const timer = window.setInterval(load, open || pending ? OPEN_POLL_MS : CLOSED_POLL_MS);
     const again = () => load();
     document.addEventListener("visibilitychange", again);
     window.addEventListener("online", again);
@@ -111,7 +114,7 @@ export function CaseStatus({ id, merged }: Props) {
       document.removeEventListener("visibilitychange", again);
       window.removeEventListener("online", again);
     };
-  }, [load, ready, open]);
+  }, [load, ready, open, pending]);
 
   // The first tap anywhere on this screen lets the later sounds play.
   useEffect(() => {
@@ -184,7 +187,11 @@ export function CaseStatus({ id, merged }: Props) {
       const sound = soundForChange(shown.current, { status: answer.status, hasTeam: false });
       if (shown.current) shown.current = { ...shown.current, status: answer.status };
       if (sound) play(sound);
-      setTimeline((current) => (current ? { ...current, status: answer.status } : current));
+      setTimeline((current) =>
+        current
+          ? { ...current, status: answer.status, closedAt: new Date().toISOString() }
+          : current,
+      );
       rememberCase({
         id,
         token,
@@ -197,6 +204,47 @@ export function CaseStatus({ id, merged }: Props) {
     } finally {
       setClosing(false);
     }
+  }
+
+  /**
+   * "No, I still need help": the team's report is set aside and the case goes straight back to
+   * looking for a team. Not queued for later like a closing - if it cannot be sent the screen
+   * says so at once, with the hotlines under it.
+   */
+  function dispute() {
+    setClosing(true);
+    setDisputeFailed(false);
+    fetch(`/api/sos/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "x-jaga-sos-token": token } : {}),
+      },
+      body: JSON.stringify({ action: "not_rescued", token }),
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return (await response.json()) as { status: SosStatus };
+      })
+      .then(
+        (answer) => {
+          shown.current = { status: answer.status, hasTeam: false };
+          setTeamPhone(null);
+          setTimeline((current) =>
+            current ? { ...current, status: answer.status, closedAt: null, team: null } : current,
+          );
+          rememberCase({
+            id,
+            token,
+            status: answer.status,
+            createdAt: timeline?.createdAt ?? new Date().toISOString(),
+          });
+          load();
+        },
+        () => setDisputeFailed(true),
+      )
+      .finally(() => setClosing(false));
   }
 
   if (!ready || state === "loading") {
@@ -231,11 +279,13 @@ export function CaseStatus({ id, merged }: Props) {
       {timeline && (
         <div className={card}>
           <p className="text-h3 font-bold text-jaga-ink" data-case-status={timeline.status}>
-            {timeline.status === "assigned"
-              ? timeline.unitName
-                ? t("status.assigned", { unit: timeline.unitName })
-                : t("status.accepted")
-              : t(`status.${timeline.status}`)}
+            {pending
+              ? t("status.rescued_by_team")
+              : timeline.status === "assigned"
+                ? timeline.unitName
+                  ? t("status.assigned", { unit: timeline.unitName })
+                  : t("status.accepted")
+                : t(`status.${timeline.status}`)}
           </p>
           {timeline.status === "received" && !timeline.team && <p>{t("status.waiting")}</p>}
           {timeline.unitName && !timeline.team && (
@@ -263,6 +313,44 @@ export function CaseStatus({ id, merged }: Props) {
               ))}
           </ol>
         </div>
+      )}
+
+      {pending && (
+        <section
+          className="flex flex-col gap-3 rounded-2xl border-2 border-jaga-edge bg-jaga-surface p-5"
+          data-confirm-rescue="true"
+        >
+          <h2 className="text-h3 font-bold text-jaga-ink">
+            {timeline?.unitName
+              ? t("confirm.title", { unit: timeline.unitName })
+              : t("confirm.titleNoUnit")}
+          </h2>
+          <p>{t("confirm.body")}</p>
+          <button
+            type="button"
+            onClick={() => void close(true)}
+            disabled={closing}
+            data-confirm-yes="true"
+            className={buttonPrimary}
+          >
+            {closing ? t("status.closing") : t("confirm.yes")}
+          </button>
+          <button
+            type="button"
+            onClick={dispute}
+            disabled={closing}
+            data-confirm-no="true"
+            className={buttonSecondary}
+          >
+            {t("confirm.no")}
+          </button>
+          <p className={hint}>{t("confirm.noHint")}</p>
+          {disputeFailed && (
+            <p role="alert" className="font-bold">
+              {t("confirm.failed")}
+            </p>
+          )}
+        </section>
       )}
 
       {timeline?.team && open && (
@@ -308,7 +396,7 @@ export function CaseStatus({ id, merged }: Props) {
         </>
       )}
 
-      {!open && (
+      {!open && !pending && (
         <div className="flex flex-col gap-3">
           <p className={notice}>{t("status.closed")}</p>
           <Link href="/" className={buttonSecondary}>
@@ -346,6 +434,9 @@ const KNOWN_EVENTS = [
   "en_route",
   "on_site",
   "rescued",
+  "rescued_by_team",
+  "confirmed",
+  "not_rescued",
   "safe_cancelled",
   "dismissed",
   "repeat_merged",

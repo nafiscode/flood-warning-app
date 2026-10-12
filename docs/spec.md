@@ -274,6 +274,8 @@ A case does not wait to be noticed. It is offered to the teams covering its tamb
 ### 5.4 Completion and confirmation
 - The authority marks the case "rescued" and must attach at least 1 photo.
 - The requester confirms in the app, or through a LINE button, and the case closes.
+- **The requester can say no.** The confirmation screen asks "the team says you have been rescued, is that right?" with two answers. "No, I still need help" sets the team's report aside and puts the case straight back into the relay of 5.2, the same team included, and is written to `audit_log`. A mistaken or false "rescued" must never be able to end someone's request.
+- A reported rescue that nobody has confirmed stays on every covering unit's board, marked as waiting for confirmation, however old it is. In the data it is `status = rescued` with `closed_at` empty; `closed_at` is set only by a confirmation, and every confirmation is a row in `rescue_confirmations`.
 - **Fallback:** if there is no confirmation within 12 hours (configurable), a second verified authority or an admin can confirm, with photo evidence and a note.
 
 ### 5.5 Hero score

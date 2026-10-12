@@ -49,6 +49,10 @@ const base: BoardCase = {
   offerExpiresAt: null,
   offerExhausted: false,
   myResponse: null,
+  closedAt: null,
+  completedAt: null,
+  proofCount: 0,
+  canConfirm: false,
 };
 
 const make = (over: Partial<BoardCase>): BoardCase => ({ ...base, ...over });
@@ -69,7 +73,9 @@ describe("what a card is", () => {
   });
 
   it("calls a case closed once it is finished, whatever the relay says", () => {
-    expect(caseState(make({ status: "rescued", offeredIsMine: true }))).toBe("closed");
+    expect(
+      caseState(make({ status: "rescued", closedAt: inSeconds(-60), offeredIsMine: true })),
+    ).toBe("closed");
     expect(caseState(make({ status: "safe_cancelled" }))).toBe("closed");
   });
 });

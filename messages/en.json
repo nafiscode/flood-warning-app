@@ -189,7 +189,10 @@
       "openCaseLink": "See the status of your request",
       "on_site": "The team has arrived",
       "accepted": "A team accepted the request",
-      "released": "The team couldn't continue. Looking for another team."
+      "released": "The team couldn't continue. Looking for another team.",
+      "rescued_by_team": "The team says you have been rescued",
+      "confirmed": "The rescue was confirmed",
+      "not_rescued": "You said you have not been rescued"
     },
     "details": {
       "title": "Add details (optional)",
@@ -258,6 +261,15 @@
       "phoneOrg": "The organisation's official number",
       "phoneNone": "This team has no phone number on file. If it is urgent, call 1784 or 1669.",
       "phoneFailed": "The number couldn't be shown. Try again."
+    },
+    "confirm": {
+      "title": "{unit} says you have been rescued",
+      "titleNoUnit": "The team says you have been rescued",
+      "body": "Is that right? Your answer is what closes this request.",
+      "yes": "Yes, I have been rescued",
+      "no": "No, I still need help",
+      "noHint": "If you say no, your request goes straight back to looking for a team.",
+      "failed": "That couldn't be sent. If it is urgent, call 1784 or 1669 now."
     }
   },
   "hotlines": {
@@ -721,7 +733,8 @@
       "searching": "Being offered to {unit}",
       "searchingNoName": "Being offered to another team",
       "unanswered": "No team has accepted",
-      "closed": "Closed"
+      "closed": "Closed",
+      "awaiting": "Waiting for confirmation"
     },
     "countdown": "{time} left to answer",
     "countdownHint": "When the time runs out the case goes to the next team. You can still accept it.",
@@ -802,7 +815,10 @@
       "takenNoName": "Another team accepted this case just before you.",
       "accepted": "Accepted. Now say when you expect to arrive.",
       "refused": "That couldn't be done. The case may have closed or changed hands.",
-      "failed": "No connection. Nothing was saved. Try again."
+      "failed": "No connection. Nothing was saved. Try again.",
+      "completed": "Rescue reported. Waiting for the person to confirm it.",
+      "confirmed": "Rescue confirmed. The case is closed.",
+      "upload": "The photo couldn't be sent, so nothing was saved. Check your connection and try again."
     },
     "time": {
       "hm": "{hours} h {minutes} min",
@@ -812,6 +828,44 @@
       "title": "Your team isn't verified yet",
       "body": "The case board is open only to teams a Jaga admin has verified. Your registration's status is on the account page.",
       "account": "Go to the account page"
+    },
+    "finish": {
+      "choosePhoto": "Take or choose a photo",
+      "photosChosen": "{count, plural, one {# photo chosen} other {# photos chosen}}. Tap to change.",
+      "photoHint": "Up to {max} photos. They are made smaller before sending.",
+      "noteOptional": "A note (optional)",
+      "noteRequired": "How you checked (required)",
+      "sending": "Sending…",
+      "needPhoto": "At least one photo is needed.",
+      "needBoth": "At least one photo and a note are needed.",
+      "cancel": "Cancel",
+      "complete": {
+        "open": "Report: rescued",
+        "title": "Report the rescue",
+        "hint": "Attach at least one photo. The case closes when the person confirms it on their own phone.",
+        "send": "Send: rescued"
+      },
+      "confirm": {
+        "open": "Confirm this rescue for the person",
+        "title": "Confirm this rescue for the person",
+        "hint": "The person has not confirmed within the waiting time. Confirm only if you have checked that they are safe. Attach a photo and say how you checked.",
+        "send": "Confirm and close the case"
+      },
+      "awaiting": {
+        "mine": "Your team reported this rescue. Waiting for the person to confirm it.",
+        "other": "{unit} reported this rescue. Waiting for the person to confirm it.",
+        "since": "Reported {hours} h ago",
+        "proof": "{count, plural, one {# evidence photo} other {# evidence photos}}",
+        "rule": "If the person does not confirm within the waiting time, another verified team or an admin can confirm instead."
+      }
+    },
+    "media": {
+      "open": "Open photos and voice note",
+      "fromSender": "Photos from the sender",
+      "voice": "Voice note from the sender",
+      "proof": "Evidence photos from the team",
+      "none": "No photos or voice note.",
+      "failed": "The photos couldn't be opened. Try again."
     }
   },
   "admin": {

@@ -243,6 +243,54 @@ describe("the requester's view of a case", () => {
     expect(document.body.textContent).not.toMatch(/spam/i);
   });
 
+  it("asks the person to confirm a rescue the team reported, and takes no for an answer", async () => {
+    const id = "55555555-5555-4555-8555-555555555555";
+    rememberCase({
+      id,
+      token: "d".repeat(48),
+      status: "en_route",
+      createdAt: new Date().toISOString(),
+    });
+    const posted: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: string, options?: RequestInit) => {
+        if (options?.method === "POST") {
+          posted.push(JSON.parse(options.body as string).action);
+          return Promise.resolve(new Response(JSON.stringify({ ok: true, status: "received" })));
+        }
+        return Promise.resolve(
+          new Response(
+            JSON.stringify(
+              timeline(
+                posted.length > 0
+                  ? { status: "received" }
+                  : { status: "rescued", closedAt: null, unitName: "หน่วยกู้ภัยยะลา" },
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+    await act(async () => {
+      renderWithIntl(<CaseStatus id={id} merged={false} />);
+    });
+    await waitFor(() => expect(document.querySelector("[data-confirm-rescue]")).not.toBeNull());
+    const block = document.querySelector("[data-confirm-rescue]")!;
+    expect(block.textContent).toContain("หน่วยกู้ภัยยะลา");
+    expect(block.querySelector("[data-confirm-yes]")?.textContent).toContain(th.sos.confirm.yes);
+    // The case is not shown as closed while it waits for their word.
+    expect(document.body.textContent).not.toContain(th.sos.status.closed);
+
+    await act(async () => {
+      fireEvent.click(block.querySelector("[data-confirm-no]")!);
+    });
+    await waitFor(() => expect(posted).toContain("not_rescued"));
+    // Back to an open request: the question is gone and the two usual buttons are there again.
+    await waitFor(() => expect(document.querySelector("[data-confirm-rescue]")).toBeNull());
+    expect(document.querySelector("[data-case-safe]")).not.toBeNull();
+  });
+
   it("sends the token with the request and never in the address", async () => {
     rememberCase({
       id: "44444444-4444-4444-8444-444444444444",

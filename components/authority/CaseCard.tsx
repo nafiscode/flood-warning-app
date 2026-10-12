@@ -11,21 +11,25 @@ import {
   TriangleIcon,
   WaveIcon,
 } from "@/components/icons";
+import { MediaView, PhotoForm } from "@/components/authority/Finish";
 import { Link } from "@/i18n/navigation";
 import {
   DECLINE_REASONS,
   ETA_BANDS,
   RELEASE_REASONS,
+  canReportRescue,
   caseState,
   clockText,
   coordsText,
   directionsHref,
+  hoursSince,
   needsEta,
   nextStep,
   secondsLeft,
   splitMinutes,
   vulnerableKeys,
   type BoardCase,
+  type CaseMedia,
   type CaseState,
   type DeclineReason,
   type EtaBand,
@@ -49,6 +53,12 @@ export type CaseActions = {
   advance: (sosId: string, status: "en_route" | "on_site") => void;
   release: (sosId: string, reason: ReleaseReason) => void;
   phone: (sosId: string) => void;
+  /** The team's own report of the rescue: at least one photo, a note if they want one. */
+  complete: (sosId: string, photos: File[], note: string) => void;
+  /** The fallback by a second team, once the person had their time to answer. */
+  confirm: (sosId: string, photos: File[], note: string) => void;
+  /** Ask for the case's photos, voice note and evidence. */
+  media: (sosId: string) => void;
 };
 
 type Props = {
@@ -57,6 +67,8 @@ type Props = {
   busy: boolean;
   /** Set once the number was asked for; `number` is null when the sender gave none. */
   phone: { number: string | null } | null;
+  /** Set once the photos were asked for. */
+  media: CaseMedia | "failed" | null;
   actions: CaseActions;
 };
 
@@ -66,6 +78,7 @@ const STATE_ICON: Record<CaseState, typeof CheckIcon> = {
   searching: ClockIcon,
   mine: LifebuoyIcon,
   held_by_other: LifebuoyIcon,
+  awaiting: ClockIcon,
   closed: CheckIcon,
 };
 
@@ -76,6 +89,7 @@ const STATE_CLASS: Record<CaseState, string> = {
   searching: "border-2 border-jaga-edge bg-jaga-surface text-jaga-ink",
   mine: "border-2 border-jaga-teal-ink bg-jaga-surface text-jaga-ink",
   held_by_other: "border-2 border-jaga-edge bg-jaga-surface text-jaga-ink",
+  awaiting: "border-2 border-jaga-teal-ink bg-jaga-surface text-jaga-ink",
   closed: "bg-alert-stale text-alert-stale-fg",
 };
 
@@ -109,18 +123,22 @@ function Chip({ children, strong = false }: { children: ReactNode; strong?: bool
   );
 }
 
-export function CaseCard({ c, now, busy, phone, actions }: Props) {
+export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
   const t = useTranslations("authority");
   const tSos = useTranslations("sos");
   const tReport = useTranslations("report");
   const locale = useLocale();
-  const [asking, setAsking] = useState<"decline" | "release" | "eta" | null>(null);
+  const [asking, setAsking] = useState<
+    "decline" | "release" | "eta" | "complete" | "confirm" | null
+  >(null);
   const [copied, setCopied] = useState(false);
 
   const state = caseState(c);
   const Icon = STATE_ICON[state];
   const left = state === "offered_to_me" ? (secondsLeft(c, now) ?? 0) : null;
-  const open = state !== "closed";
+  // A rescue waiting for its confirmation is over for the crew: no navigating, no phone.
+  const open = state !== "closed" && state !== "awaiting";
+  const hasMedia = c.photos.length > 0 || !!c.voiceUrl || c.proofCount > 0;
   const canAccept = state === "offered_to_me" || state === "searching" || state === "unanswered";
   const step = nextStep(c);
   const askEta = needsEta(c) || (state === "mine" && asking === "eta");
@@ -337,9 +355,77 @@ export function CaseCard({ c, now, busy, phone, actions }: Props) {
               {busy ? t("act.working") : t(step === "en_route" ? "act.enRoute" : "act.onSite")}
             </button>
           )}
-          {c.status === "on_site" && <p className={hint}>{t("case.closeNote")}</p>}
         </div>
       )}
+
+      {/* Reporting the rescue: a photo is required, and it does not close the case by itself. */}
+      {canReportRescue(c) &&
+        (asking === "complete" ? (
+          <PhotoForm
+            kind="complete"
+            busy={busy}
+            onSend={(photos, note) => actions.complete(c.sosId, photos, note)}
+            onCancel={() => setAsking(null)}
+          />
+        ) : (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setAsking("complete")}
+            data-complete="true"
+            className={buttonSecondary}
+          >
+            <CheckIcon size={20} />
+            <span className="ms-2">{t("finish.complete.open")}</span>
+          </button>
+        ))}
+
+      {state === "awaiting" && (
+        <div className="flex flex-col gap-2" data-awaiting={c.canConfirm ? "confirm" : "wait"}>
+          <p className="font-medium">
+            {c.claimedIsMine
+              ? t("finish.awaiting.mine")
+              : t("finish.awaiting.other", { unit: c.claimedByName ?? "" })}
+          </p>
+          <p className={hint}>
+            {t("finish.awaiting.since", { hours: hoursSince(c.completedAt, now) })}
+            {c.proofCount > 0 ? ` · ${t("finish.awaiting.proof", { count: c.proofCount })}` : ""}
+          </p>
+          {!c.canConfirm && <p className={hint}>{t("finish.awaiting.rule")}</p>}
+          {c.canConfirm &&
+            (asking === "confirm" ? (
+              <PhotoForm
+                kind="confirm"
+                busy={busy}
+                onSend={(photos, note) => actions.confirm(c.sosId, photos, note)}
+                onCancel={() => setAsking(null)}
+              />
+            ) : (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setAsking("confirm")}
+                data-confirm="true"
+                className={buttonPrimary}
+              >
+                {t("finish.confirm.open")}
+              </button>
+            ))}
+        </div>
+      )}
+
+      {hasMedia && !media && state !== "held_by_other" && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => actions.media(c.sosId)}
+          data-show-media="true"
+          className={act}
+        >
+          {t("media.open")}
+        </button>
+      )}
+      {media && <MediaView media={media} />}
 
       {open && state !== "held_by_other" && (
         <div className="grid grid-cols-2 gap-2">

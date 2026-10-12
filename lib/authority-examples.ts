@@ -56,6 +56,10 @@ const blank: BoardCase = {
   offerExpiresAt: null,
   offerExhausted: false,
   myResponse: null,
+  closedAt: null,
+  completedAt: null,
+  proofCount: 0,
+  canConfirm: false,
 };
 
 export const EXAMPLE_AUTHORITY_BOARD: AuthorityBoard = {
@@ -171,6 +175,28 @@ export const EXAMPLE_AUTHORITY_BOARD: AuthorityBoard = {
       status: "rescued",
       peopleCount: 2,
       depthRef: "waist",
+      closedAt: at(-200),
+    },
+    {
+      // Another team reported this rescue 13 hours ago and the person never confirmed it.
+      ...blank,
+      sosId: "77777777-0000-4000-8000-000000000007",
+      createdAt: at(-900),
+      waitingMinutes: 900,
+      status: "rescued",
+      tambon: "940111",
+      tambonNameTh: "ปูยุด",
+      tambonNameEn: "Puyut",
+      lat: 6.8405,
+      lon: 101.2877,
+      peopleCount: 5,
+      vulnerableFlags: { elderly: true },
+      depthRef: "waist",
+      claimedBy: OTHER_UNIT,
+      claimedByName: "อปพร. ตัวอย่าง",
+      completedAt: at(-780),
+      proofCount: 2,
+      canConfirm: true,
     },
   ],
 };
@@ -181,6 +207,8 @@ export type ExampleTap =
   | { action: "eta"; sos: string; band: EtaBand }
   | { action: "advance"; sos: string; status: "en_route" | "on_site" }
   | { action: "release"; sos: string; reason: ReleaseReason }
+  | { action: "complete"; sos: string; photos: number }
+  | { action: "confirm"; sos: string }
   | { action: "duty"; unit: string; on: boolean }
   | { action: "sharing"; unit: string; on: boolean };
 
@@ -233,6 +261,15 @@ export function applyExample(board: AuthorityBoard, tap: ExampleTap, now: number
         return { ...c, etaBand: tap.band, etaGivenAt: new Date(now).toISOString() };
       case "advance":
         return { ...c, status: tap.status };
+      case "complete":
+        return {
+          ...c,
+          status: "rescued",
+          completedAt: new Date(now).toISOString(),
+          proofCount: tap.photos,
+        };
+      case "confirm":
+        return { ...c, closedAt: new Date(now).toISOString(), canConfirm: false };
       case "release":
         return {
           ...c,

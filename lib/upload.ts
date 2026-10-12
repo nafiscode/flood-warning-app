@@ -47,6 +47,31 @@ export async function uploadMedia(
   return { photos: done, voice: voicePath, failed };
 }
 
+/**
+ * Evidence photos for a rescue (spec 5.4), from a team's phone: compressed like every other
+ * photo and stored under the case's proof folder, which only a covering team or an admin may
+ * write to. The names are random, so a second report never collides with the first.
+ */
+export async function uploadProof(
+  id: string,
+  photos: Blob[],
+): Promise<{ photos: string[]; failed: number }> {
+  const done: string[] = [];
+  let failed = 0;
+  const storage = createClient().storage.from(SOS_BUCKET);
+  for (const photo of photos.slice(0, MAX_PHOTOS)) {
+    try {
+      const small = await compressImage(photo);
+      const path = `${id}/proof/${crypto.randomUUID()}.jpg`;
+      if (await put(storage, path, small.blob, small.type)) done.push(path);
+      else failed += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+  return { photos: done, failed };
+}
+
 type Bucket = ReturnType<ReturnType<typeof createClient>["storage"]["from"]>;
 
 /**

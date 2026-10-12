@@ -11,6 +11,7 @@ import {
   tambonsOnBoard,
   type AuthorityBoard,
   type BoardScope,
+  type CaseMedia,
 } from "@/lib/dispatch";
 import { buttonPrimary, card, checkBox, checkRow, hint, input } from "@/lib/ui";
 
@@ -36,6 +37,9 @@ export type UnitActions = {
 export type BoardNotice =
   | { kind: "taken"; unit: string | null }
   | { kind: "accepted" }
+  | { kind: "completed" }
+  | { kind: "confirmed" }
+  | { kind: "upload" }
   | { kind: "refused" }
   | { kind: "failed" };
 
@@ -50,12 +54,18 @@ type Props = {
   notice: BoardNotice | null;
   /** Numbers already asked for in this sitting, by case. A key with null: the sender gave none. */
   phones: Record<string, string | null>;
+  /** Photos and voice notes already asked for in this sitting, by case. */
+  media: Record<string, CaseMedia | "failed">;
   /** The last refresh failed: the board on screen is standing still. */
   stale: boolean;
   onRefresh: (() => void) | null;
   actions: CaseActions;
   unitActions: UnitActions;
 };
+
+/** A notice that something worked, against one that says it did not. */
+const good = (notice: BoardNotice) =>
+  notice.kind === "accepted" || notice.kind === "completed" || notice.kind === "confirmed";
 
 export function BoardView({
   board,
@@ -65,6 +75,7 @@ export function BoardView({
   busy,
   notice,
   phones,
+  media,
   stale,
   onRefresh,
   actions,
@@ -116,10 +127,10 @@ export function BoardView({
         )}
         {notice && (
           <p
-            role={notice.kind === "accepted" ? "status" : "alert"}
+            role={good(notice) ? "status" : "alert"}
             data-board-notice={notice.kind}
             className={`rounded-xl border-2 bg-jaga-surface px-4 py-2 font-medium ${
-              notice.kind === "accepted" ? "border-jaga-teal-ink" : "border-sos"
+              good(notice) ? "border-jaga-teal-ink" : "border-sos"
             }`}
           >
             {notice.kind === "taken"
@@ -265,6 +276,7 @@ export function BoardView({
               now={now}
               busy={busy === c.sosId}
               phone={c.sosId in phones ? { number: phones[c.sosId] ?? null } : null}
+              media={media[c.sosId] ?? null}
               actions={actions}
             />
           ))}

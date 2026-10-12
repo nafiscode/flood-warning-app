@@ -6,7 +6,14 @@
  * No phone number comes back from the board. A requester's number is fetched one at a time
  * through the logged reveal_sos_phone(), exactly as the war room does it.
  */
-import type { AuthorityBoard, BoardCase, DeclineReason, EtaBand, MyUnit } from "@/lib/dispatch";
+import type {
+  AuthorityBoard,
+  BoardCase,
+  CaseMedia,
+  DeclineReason,
+  EtaBand,
+  MyUnit,
+} from "@/lib/dispatch";
 import { createClient } from "@/lib/supabase/server";
 
 type Row = Record<string, unknown>;
@@ -49,6 +56,10 @@ function toCase(r: Row): BoardCase {
     offerExpiresAt: text(r.offer_expires_at),
     offerExhausted: Boolean(r.offer_exhausted),
     myResponse: (text(r.my_response) as BoardCase["myResponse"]) ?? null,
+    closedAt: text(r.closed_at),
+    completedAt: text(r.completed_at),
+    proofCount: Number(r.proof_count ?? 0),
+    canConfirm: Boolean(r.can_confirm),
   };
 }
 
@@ -150,6 +161,60 @@ export async function releaseCase(sosId: string, reason: string): Promise<void> 
     p_reason: reason,
   });
   if (error) throw new Error(error.message);
+}
+
+/** The team reports the rescue. The database insists on a photo that was really uploaded. */
+export async function completeCase(sosId: string, photos: string[], note: string | null) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("authority_complete_sos", {
+    p_sos_id: sosId,
+    p_photos: photos,
+    p_note: note,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** The fallback: a second team confirms a rescue nobody confirmed in time (spec 5.4). */
+export async function confirmRescue(sosId: string, photos: string[], note: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("authority_confirm_rescue", {
+    p_sos_id: sosId,
+    p_photos: photos,
+    p_note: note,
+  });
+  if (error) throw new Error(error.message);
+}
+
+const MEDIA_BUCKET = "sos-media";
+const LINK_SECONDS = 600;
+
+/**
+ * Ten-minute links to a case's photos, voice note and evidence photos. The bucket is private and
+ * read with the responder's own session, so the storage policy decides: a team that does not
+ * cover the case gets an empty list, not somebody's photos (safety rule 5).
+ */
+export async function readCaseMedia(sosId: string): Promise<CaseMedia> {
+  const supabase = await createClient();
+  const storage = supabase.storage.from(MEDIA_BUCKET);
+  const [top, proof] = await Promise.all([
+    storage.list(sosId, { limit: 20 }),
+    storage.list(`${sosId}/proof`, { limit: 20 }),
+  ]);
+  // A folder comes back as an entry without an id: only files are linked.
+  const files = (top.data ?? []).filter((f) => f.id).map((f) => `${sosId}/${f.name}`);
+  const proofs = (proof.data ?? []).filter((f) => f.id).map((f) => `${sosId}/proof/${f.name}`);
+  const all = [...files, ...proofs];
+  if (all.length === 0) return { photos: [], voice: null, proof: [] };
+  const { data, error } = await storage.createSignedUrls(all, LINK_SECONDS);
+  if (error) throw new Error(error.message);
+  const link = new Map((data ?? []).map((d) => [d.path ?? "", d.signedUrl]));
+  const links = (paths: string[]) => paths.map((p) => link.get(p)).filter((u): u is string => !!u);
+  const voicePath = files.find((p) => /\/voice\./.test(p)) ?? null;
+  return {
+    photos: links(files.filter((p) => p !== voicePath)),
+    voice: voicePath ? (link.get(voicePath) ?? null) : null,
+    proof: links(proofs),
+  };
 }
 
 export async function setDuty(unitId: string, onDuty: boolean): Promise<void> {

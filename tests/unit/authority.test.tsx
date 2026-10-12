@@ -2,15 +2,19 @@ import { fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { BoardView } from "@/components/authority/BoardView";
 import type { CaseActions } from "@/components/authority/CaseCard";
+import { MediaView } from "@/components/authority/Finish";
 import { TeamStatus } from "@/components/sos/TeamStatus";
 import { EXAMPLE_AUTHORITY_BOARD, EXAMPLE_NOW, applyExample } from "@/lib/authority-examples";
 import {
+  canReportRescue,
   caseState,
   clockText,
   filterCases,
+  hoursSince,
   needsEta,
   nextStep,
   shouldAlarm,
+  sortCases,
   tambonsOnBoard,
   type AuthorityBoard,
 } from "@/lib/dispatch";
@@ -24,6 +28,8 @@ const OFFERED = "11111111-0000-4000-8000-000000000001";
 const UNANSWERED = "22222222-0000-4000-8000-000000000002";
 const MINE = "44444444-0000-4000-8000-000000000004";
 const THEIRS = "55555555-0000-4000-8000-000000000005";
+const CLOSED = "66666666-0000-4000-8000-000000000006";
+const UNCONFIRMED = "77777777-0000-4000-8000-000000000007";
 
 function actions(): CaseActions {
   return {
@@ -33,6 +39,9 @@ function actions(): CaseActions {
     advance: vi.fn(),
     release: vi.fn(),
     phone: vi.fn(),
+    complete: vi.fn(),
+    confirm: vi.fn(),
+    media: vi.fn(),
   };
 }
 
@@ -51,6 +60,7 @@ function draw(
       busy={null}
       notice={null}
       phones={{}}
+      media={{}}
       stale={false}
       onRefresh={null}
       actions={taps}
@@ -90,7 +100,8 @@ describe("the console's arithmetic", () => {
     const all = EXAMPLE_AUTHORITY_BOARD.cases;
     const open = filterCases(all, { scope: "open", tambon: null, vulnerableOnly: false });
     expect(open.every((c) => caseState(c) !== "closed")).toBe(true);
-    expect(open.length).toBe(5);
+    // A rescue nobody has confirmed is still open work, not history.
+    expect(open.length).toBe(6);
     expect(filterCases(all, { scope: "closed", tambon: null, vulnerableOnly: false }).length).toBe(
       1,
     );
@@ -98,8 +109,8 @@ describe("the console's arithmetic", () => {
       filterCases(all, { scope: "open", tambon: "940111", vulnerableOnly: false }).map(
         (c) => c.sosId,
       ),
-    ).toEqual([UNANSWERED, MINE]);
-    expect(filterCases(all, { scope: "open", tambon: null, vulnerableOnly: true }).length).toBe(3);
+    ).toEqual([UNANSWERED, MINE, UNCONFIRMED]);
+    expect(filterCases(all, { scope: "open", tambon: null, vulnerableOnly: true }).length).toBe(4);
     expect(tambonsOnBoard(all).map((t) => t.code)).toEqual(["940104", "940111"]);
   });
 
@@ -123,6 +134,100 @@ describe("the console's arithmetic", () => {
       EXAMPLE_NOW,
     );
     expect(caseState(back.cases.find((c) => c.sosId === OFFERED)!)).toBe("unanswered");
+  });
+});
+
+describe("finishing a case", () => {
+  const byId = (id: string) => EXAMPLE_AUTHORITY_BOARD.cases.find((c) => c.sosId === id)!;
+  const photo = () => new File(["x"], "rescue.jpg", { type: "image/jpeg" });
+  const choose = (root: Element, files: File[]) =>
+    fireEvent.change(root.querySelector("[data-finish-photos]")!, { target: { files } });
+
+  it("a reported rescue is not closed until somebody confirms it", () => {
+    expect(caseState(byId(UNCONFIRMED))).toBe("awaiting");
+    expect(caseState(byId(CLOSED))).toBe("closed");
+    expect(hoursSince(byId(UNCONFIRMED).completedAt, EXAMPLE_NOW)).toBe(13);
+  });
+
+  it("a rescue this team may confirm rises above the cases already in hand", () => {
+    const order = sortCases(EXAMPLE_AUTHORITY_BOARD.cases).map((c) => c.sosId);
+    expect(order.indexOf(UNCONFIRMED)).toBeLessThan(order.indexOf(MINE));
+    expect(order.indexOf(UNCONFIRMED)).toBeGreaterThan(order.indexOf(UNANSWERED));
+  });
+
+  it("only the team holding an open case can report its rescue", () => {
+    expect(canReportRescue(byId(MINE))).toBe(true);
+    expect(canReportRescue(byId(THEIRS))).toBe(false);
+    expect(canReportRescue(byId(OFFERED))).toBe(false);
+    expect(canReportRescue({ ...byId(MINE), status: "rescued" })).toBe(false);
+  });
+
+  it("reporting a rescue needs a photo, and the note is never required", () => {
+    const { taps } = draw();
+    const mine = card(MINE);
+    fireEvent.click(mine.querySelector("[data-complete]")!);
+    const send = mine.querySelector<HTMLButtonElement>("[data-finish-send]")!;
+    expect(send.disabled).toBe(true);
+    expect(mine.textContent).toContain(th.authority.finish.needPhoto);
+    const file = photo();
+    choose(mine, [file]);
+    expect(send.disabled).toBe(false);
+    fireEvent.click(send);
+    expect(taps.complete).toHaveBeenCalledWith(MINE, [file], "");
+  });
+
+  it("after the report the card waits for the person, and offers the team nothing to confirm", () => {
+    const reported = applyExample(
+      EXAMPLE_AUTHORITY_BOARD,
+      { action: "complete", sos: MINE, photos: 1 },
+      EXAMPLE_NOW,
+    );
+    draw(reported);
+    const mine = card(MINE);
+    expect(mine.getAttribute("data-case-state")).toBe("awaiting");
+    expect(mine.textContent).toContain(th.authority.finish.awaiting.mine);
+    expect(mine.querySelector("[data-confirm]")).toBeNull();
+    expect(mine.querySelector("[data-complete]")).toBeNull();
+    // Over for the crew: nothing to navigate to, no number to look up.
+    expect(mine.querySelector("[data-navigate]")).toBeNull();
+    expect(mine.querySelector("[data-show-phone]")).toBeNull();
+  });
+
+  it("the fallback needs a photo and a note, both", () => {
+    const { taps } = draw();
+    const waiting = card(UNCONFIRMED);
+    expect(waiting.querySelector("[data-awaiting]")?.getAttribute("data-awaiting")).toBe("confirm");
+    fireEvent.click(waiting.querySelector("[data-confirm]")!);
+    const send = waiting.querySelector<HTMLButtonElement>("[data-finish-send]")!;
+    const file = photo();
+    choose(waiting, [file]);
+    expect(send.disabled).toBe(true);
+    fireEvent.change(waiting.querySelector("[data-finish-note]")!, {
+      target: { value: "พบที่ศูนย์พักพิง" },
+    });
+    expect(send.disabled).toBe(false);
+    fireEvent.click(send);
+    expect(taps.confirm).toHaveBeenCalledWith(UNCONFIRMED, [file], "พบที่ศูนย์พักพิง");
+  });
+
+  it("photos are asked for by a tap, and shown from links, never from the board", () => {
+    const { taps } = draw();
+    expect(document.querySelectorAll("[data-case] img").length).toBe(0);
+    fireEvent.click(card(UNCONFIRMED).querySelector("[data-show-media]")!);
+    expect(taps.media).toHaveBeenCalledWith(UNCONFIRMED);
+    document.body.innerHTML = "";
+    renderWithIntl(
+      <MediaView
+        media={{
+          photos: ["https://example.invalid/a"],
+          voice: "https://example.invalid/v",
+          proof: ["https://example.invalid/p1", "https://example.invalid/p2"],
+        }}
+      />,
+    );
+    expect(document.querySelectorAll("img").length).toBe(3);
+    expect(document.querySelector("audio")).not.toBeNull();
+    expect(document.body.textContent).toContain(th.authority.media.proof);
   });
 });
 

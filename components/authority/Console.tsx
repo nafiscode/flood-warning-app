@@ -8,8 +8,9 @@ import {
   type UnitActions,
 } from "@/components/authority/BoardView";
 import type { CaseActions } from "@/components/authority/CaseCard";
-import { shouldAlarm, type AuthorityBoard } from "@/lib/dispatch";
+import { shouldAlarm, type AuthorityBoard, type CaseMedia } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
+import { uploadProof } from "@/lib/upload";
 
 /**
  * The authority console, live (spec 5.1, 5.2): it keeps the board fresh, carries every tap to the
@@ -32,6 +33,7 @@ type Answer = {
   taken?: boolean;
   byUnitName?: string | null;
   phone?: string | null;
+  media?: CaseMedia;
   error?: string;
 };
 
@@ -43,6 +45,7 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<BoardNotice | null>(null);
   const [phones, setPhones] = useState<Record<string, string | null>>({});
+  const [media, setMedia] = useState<Record<string, CaseMedia | "failed">>({});
   const [stale, setStale] = useState(false);
   // How far the server's clock is ahead of this phone's, from the last answer that came back.
   const skew = useRef(0);
@@ -127,6 +130,10 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
           const answer = (await response.json().catch(() => ({}))) as Answer;
           epoch.current += 1;
           if (!response.ok) {
+            if (body.action === "media") {
+              setMedia((seen) => ({ ...seen, [key]: "failed" }));
+              return;
+            }
             setNotice({ kind: "refused" });
             refresh();
             return;
@@ -139,6 +146,32 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
     },
     [refresh, take],
   );
+
+  /**
+   * A rescue report or a fallback confirmation: the photos go from this phone straight into the
+   * private bucket, then the report names them. If no photo arrives nothing is reported - the
+   * database would refuse it anyway, and the crew is told to try again.
+   */
+  const finish = (kind: "complete" | "confirm", sos: string, photos: File[], note: string) => {
+    setBusy(sos);
+    setNotice(null);
+    uploadProof(sos, photos).then(
+      (sent) => {
+        if (sent.photos.length === 0) {
+          setBusy(null);
+          setNotice({ kind: "upload" });
+          return;
+        }
+        send({ action: kind, sos, photos: sent.photos, note }, sos, () =>
+          setNotice({ kind: kind === "complete" ? "completed" : "confirmed" }),
+        );
+      },
+      () => {
+        setBusy(null);
+        setNotice({ kind: "upload" });
+      },
+    );
+  };
 
   const actions: CaseActions = {
     accept: (sos) =>
@@ -155,6 +188,15 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
       send({ action: "phone", sos }, sos, (answer) =>
         setPhones((seen) => ({ ...seen, [sos]: answer.phone ?? null })),
       ),
+    complete: (sos, photos, note) => finish("complete", sos, photos, note),
+    confirm: (sos, photos, note) => finish("confirm", sos, photos, note),
+    media: (sos) =>
+      send({ action: "media", sos }, sos, (answer) =>
+        setMedia((seen) => ({
+          ...seen,
+          [sos]: answer.media ?? { photos: [], voice: null, proof: [] },
+        })),
+      ),
   };
   const unitActions: UnitActions = {
     duty: (unit, on) => send({ action: "duty", unit, on }, unit),
@@ -170,6 +212,7 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
       busy={busy}
       notice={notice}
       phones={phones}
+      media={media}
       stale={stale}
       onRefresh={refresh}
       actions={actions}

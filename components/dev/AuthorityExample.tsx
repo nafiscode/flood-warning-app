@@ -23,6 +23,7 @@ export function AuthorityExample() {
   const [alarm, setAlarm] = useState<AlarmState>("off");
   const [notice, setNotice] = useState<BoardNotice | null>(null);
   const [phones, setPhones] = useState<Record<string, string | null>>({});
+  const [media, setMedia] = useState<Record<string, "failed">>({});
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow((t) => t + 1000), 1000);
@@ -37,7 +38,15 @@ export function AuthorityExample() {
   }, [ringing]);
 
   const tap = (t: ExampleTap) => {
-    setNotice(t.action === "accept" ? { kind: "accepted" } : null);
+    setNotice(
+      t.action === "accept"
+        ? { kind: "accepted" }
+        : t.action === "complete"
+          ? { kind: "completed" }
+          : t.action === "confirm"
+            ? { kind: "confirmed" }
+            : null,
+    );
     setBoard((b) => applyExample(b, t, now));
   };
 
@@ -50,6 +59,7 @@ export function AuthorityExample() {
       busy={null}
       notice={notice}
       phones={phones}
+      media={media}
       stale={false}
       onRefresh={null}
       actions={{
@@ -60,6 +70,10 @@ export function AuthorityExample() {
         release: (sos, reason) => tap({ action: "release", sos, reason }),
         // No number exists to show: the example says what the real card says when there is none.
         phone: (sos) => setPhones((seen) => ({ ...seen, [sos]: null })),
+        // The photos chosen are counted and go nowhere: the example has no storage behind it.
+        complete: (sos, photos) => tap({ action: "complete", sos, photos: photos.length }),
+        confirm: (sos) => tap({ action: "confirm", sos }),
+        media: (sos) => setMedia((seen) => ({ ...seen, [sos]: "failed" })),
       }}
       unitActions={{
         duty: (unit, on) => tap({ action: "duty", unit, on }),

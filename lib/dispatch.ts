@@ -53,7 +53,18 @@ export type BoardCase = {
   offerExpiresAt: string | null;
   offerExhausted: boolean;
   myResponse: "accepted" | "declined" | "timed_out" | null;
+  /** Set only by a confirmation. "rescued" without it is a rescue nobody has confirmed yet. */
+  closedAt: string | null;
+  /** When the team holding the case reported the rescue. */
+  completedAt: string | null;
+  /** How many evidence photos the team attached. The photos themselves are asked for by a tap. */
+  proofCount: number;
+  /** The waiting time has passed and this caller is not the reporting team (spec 5.4). */
+  canConfirm: boolean;
 };
+
+/** What a card shows once its photos and voice note were asked for: short-lived links. */
+export type CaseMedia = { photos: string[]; voice: string | null; proof: string[] };
 
 /**
  * What a card says it is. Deliberately not the database status: the console cares about what the
@@ -65,9 +76,11 @@ export type CaseState =
   | "held_by_other" // another unit holds it; I can still see it
   | "searching" // the relay is asking somebody else
   | "unanswered" // the queue ran out: nobody has taken it
+  | "awaiting" // a team reported the rescue; nobody has confirmed it yet
   | "closed";
 
 export function caseState(c: BoardCase): CaseState {
+  if (c.status === "rescued" && !c.closedAt) return "awaiting";
   if (c.status === "rescued" || c.status === "safe_cancelled" || c.status === "dismissed") {
     return "closed";
   }
@@ -97,12 +110,18 @@ export function sortCases(cases: BoardCase[]): BoardCase[] {
     searching: 2,
     mine: 3,
     held_by_other: 4,
+    awaiting: 4.5,
     closed: 5,
   };
   // A case this team has just accepted and not yet given an estimate for stays right under the
   // ringing one: the card is asking a question, and it must not drop out of sight to be asked.
+  // A reported rescue this team may now confirm is a job waiting for it, so it rises too.
   const place = (c: BoardCase) =>
-    caseState(c) === "mine" && c.etaBand === null ? 0.5 : rank[caseState(c)];
+    caseState(c) === "mine" && c.etaBand === null
+      ? 0.5
+      : caseState(c) === "awaiting" && c.canConfirm
+        ? 2.5
+        : rank[caseState(c)];
   return [...cases].sort((a, b) => {
     const byState = place(a) - place(b);
     if (byState !== 0) return byState;
@@ -180,6 +199,20 @@ export function nextStep(c: BoardCase): "en_route" | "on_site" | null {
   if (c.status === "assigned") return "en_route";
   if (c.status === "en_route") return "on_site";
   return null;
+}
+
+/** A team may report the rescue from any step after accepting: nobody taps every step. */
+export function canReportRescue(c: BoardCase): boolean {
+  return (
+    c.claimedIsMine &&
+    (c.status === "assigned" || c.status === "en_route" || c.status === "on_site")
+  );
+}
+
+/** Whole hours since the team reported the rescue, for "reported 13 h ago". */
+export function hoursSince(iso: string | null, now: number): number {
+  if (!iso) return 0;
+  return Math.max(0, Math.floor((now - Date.parse(iso)) / 3_600_000));
 }
 
 /** The card keeps asking for an arrival estimate until one is given (spec 5.2). */
