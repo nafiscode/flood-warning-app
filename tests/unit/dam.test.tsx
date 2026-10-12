@@ -25,7 +25,16 @@ import {
   type DamDaily,
   type DamSignal,
 } from "@/lib/dam";
-import { bars, hadSpill, run, scaleFor, WHOLE_DAY_HOURS, type DamDay } from "@/lib/dam-chart";
+import {
+  bars,
+  hadSpill,
+  levelY,
+  run,
+  scaleFor,
+  storageLine,
+  WHOLE_DAY_HOURS,
+  type DamDay,
+} from "@/lib/dam-chart";
 import {
   byZoom,
   CASING_EXTRA,
@@ -617,6 +626,105 @@ describe("the fortnight behind the dam", () => {
     expect([...hues]).toEqual(["bg-jaga-dam"]);
     expect(history.textContent).toContain(words(th.dam.history.outflowTitle));
     expect(history.textContent).toContain(words(th.dam.history.spillTitle));
+  });
+});
+
+/*
+ * The reservoir behind the releases (the owner, 12 Oct). The trap this guards against is an axis
+ * zoomed onto the days drawn: storage moves by a fraction of a per cent on an ordinary day, and
+ * such an axis would turn rounding into a mountain range.
+ */
+describe("the reservoir's own fortnight", () => {
+  const CAPACITY = 1589.8;
+  const NORMAL = 1454.4;
+  const day = (over: Partial<DamDay> & { day: string }): DamDay => ({
+    hours: 24,
+    releasedMeanCms: 46,
+    spilledMeanCms: 0,
+    outflowMeanCms: 46,
+    outflowMcm: 3.97,
+    spilledMcm: 0,
+    storageEndMcm: 745,
+    levelEndM: 99.5,
+    ...over,
+  });
+
+  it("the axis is the dam's capacity, not the range of the days drawn", () => {
+    // The real fortnight of 12 Oct 2026: 743.9 to 748.3 million m3, which is half full and flat.
+    const flat = [743.9, 745, 746.1, 748.3].map((storage, i) =>
+      day({ day: `2026-10-0${i + 1}`, storageEndMcm: storage }),
+    );
+    const [line] = storageLine(flat, CAPACITY);
+    const heights = line!.map((p) => p.y);
+    // Every point sits near the middle of the box, and the whole fortnight moves under a third
+    // of one per cent of it. On an axis fitted to the data it would have spanned the box.
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(0.3);
+    for (const h of heights) expect(h).toBeGreaterThan(50);
+    expect(line![0]!.percent).toBeCloseTo(46.8, 1);
+  });
+
+  it("a full reservoir reaches the top of the box and an empty one the bottom", () => {
+    const [line] = storageLine(
+      [
+        day({ day: "2026-10-01", storageEndMcm: 0 }),
+        day({ day: "2026-10-02", storageEndMcm: CAPACITY }),
+      ],
+      CAPACITY,
+    );
+    expect(line!.map((p) => p.y)).toEqual([100, 0]);
+    expect(line!.map((p) => p.x)).toEqual([0, 100]);
+  });
+
+  /*
+   * A line drawn across a gap is invented data: it would show the reservoir passing through
+   * levels nobody published.
+   */
+  it("a gap in the feed breaks the line instead of being drawn through", () => {
+    const runs = storageLine(
+      [
+        day({ day: "2026-10-01" }),
+        day({ day: "2026-10-02" }),
+        day({ day: "2026-10-03", hours: 0, storageEndMcm: null }),
+        day({ day: "2026-10-04" }),
+        day({ day: "2026-10-05" }),
+      ],
+      CAPACITY,
+    );
+    expect(runs).toHaveLength(2);
+    expect(runs.map((r) => r.length)).toEqual([2, 2]);
+  });
+
+  it("the normal high water line is drawn only when it is on the chart", () => {
+    expect(levelY(NORMAL, CAPACITY)).toBeCloseTo(8.5, 1);
+    expect(levelY(CAPACITY, CAPACITY)).toBeNull();
+    expect(levelY(null, CAPACITY)).toBeNull();
+    expect(levelY(NORMAL, 0)).toBeNull();
+  });
+
+  it("the card draws the reservoir under the releases, and lists it in the table", () => {
+    const dam = { ...DAM, days: exampleDamDays("watch") };
+    const { container } = renderWithIntl(<DamCard dam={dam} now={EXAMPLE_NOW} />);
+    const storage = container.querySelector("[data-dam-chart='storage']")!;
+    expect(storage).toBeTruthy();
+    expect(storage.textContent).toContain(words(th.dam.history.storageTitle));
+    // The capacity at normal high water is what an operator works to, so it is marked and named.
+    expect(storage.textContent).toContain(words(th.dam.history.normalLine));
+    expect(container.textContent).toContain(words(th.dam.history.columns.storage));
+    // One hue here too: no alert colour, and nothing but the river's own blue.
+    expect(storage.innerHTML).not.toMatch(/bg-alert-|text-alert-|border-alert-|bg-sos|border-sos/);
+    expect(storage.innerHTML).toMatch(/stroke-jaga-dam|fill-jaga-dam/);
+  });
+
+  it("draws no reservoir line when the dam's capacity is unknown", () => {
+    const { container } = renderWithIntl(
+      <DamCard
+        dam={{ ...DAM, storageMaxMcm: null, days: exampleDamDays("watch") }}
+        now={EXAMPLE_NOW}
+      />,
+    );
+    expect(container.querySelector("[data-dam-chart='storage']")).toBeNull();
+    // The release charts are unaffected: one missing figure does not take the rest down.
+    expect(container.querySelector("[data-dam-chart='outflow']")).toBeTruthy();
   });
 });
 

@@ -58,7 +58,8 @@ function fortnight(grade: "quiet" | "watchful" | "releasing") {
     outflowMeanCms: cms,
     outflowMcm: Math.round(((cms * 86400) / 1_000_000) * 100) / 100,
     spilledMcm: Math.round(((spill[i]! * 86400) / 1_000_000) * 100) / 100,
-    storageEndMcm: grade === "quiet" ? 745 : 1480,
+    // The reservoir behind those releases: flat on a quiet fortnight, filling before a spill.
+    storageEndMcm: grade === "quiet" ? 745 : 1180 + i * 28,
     levelEndM: null,
   }));
 }
@@ -294,6 +295,8 @@ test.describe("what /api/public/dam gives out", () => {
         // A plain calendar date, never a moment: a browser's own zone must not shift it.
         expect(day.day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
         expect(typeof day.hours).toBe("number");
+        // The reservoir's own figure travels with the day, for the storage chart.
+        expect(["number", "object"]).toContain(typeof day.storageEndMcm);
       }
     }
   });

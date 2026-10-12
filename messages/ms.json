@@ -1615,11 +1615,17 @@
         "rising": "Kadar pelepasan air meningkat {days} hari berturut-turut, daripada {from} kepada {to} m³/s",
         "falling": "Kadar pelepasan air menurun {days} hari berturut-turut, daripada {from} kepada {to} m³/s"
       },
+      "storageTitle": "Isipadu simpanan takungan pada akhir hari",
+      "storageValue": "{mcm} juta m³ ({percent}%)",
+      "storageScale": "Paksi menegak bermula dari sifar hingga kapasiti maksimum {mcm} juta m³",
+      "normalLine": "Garis halus dalam carta ialah kapasiti pada paras simpanan penuh biasa, {mcm} juta m³",
+      "storageChart": "Carta garis isipadu simpanan harian bagi {days} hari lepas. Terkini {mcm} juta m³, iaitu {percent}% daripada kapasiti maksimum. Semua angka ada dalam jadual di bawah",
       "numbers": "Lihat angka harian",
       "columns": {
         "day": "Tarikh",
         "outflow": "Purata pelepasan (m³/s)",
         "spill": "Melalui alur limpah (juta m³)",
+        "storage": "Isipadu simpanan (juta m³)",
         "hours": "Jam berdata"
       },
       "columnsNote": "Purata harian dikira daripada jam yang diterbitkan oleh empangan pada hari itu",

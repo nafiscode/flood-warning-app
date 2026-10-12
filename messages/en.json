@@ -1615,11 +1615,17 @@
         "rising": "Outflow has risen {days, plural, one {# day} other {# days}} in a row, from {from} to {to} m³/s",
         "falling": "Outflow has fallen {days, plural, one {# day} other {# days}} in a row, from {from} to {to} m³/s"
       },
+      "storageTitle": "Reservoir storage at the end of each day",
+      "storageValue": "{mcm} million m³ ({percent}%)",
+      "storageScale": "Vertical axis from empty to the maximum capacity of {mcm} million m³",
+      "normalLine": "The thin line across the chart is the capacity at normal high water level, {mcm} million m³",
+      "storageChart": "Line chart of daily reservoir storage over {days} days. Latest {mcm} million m³, {percent}% of maximum capacity. Every figure is in the table below",
       "numbers": "See the daily figures",
       "columns": {
         "day": "Date",
         "outflow": "Mean outflow (m³/s)",
         "spill": "Over the spillway (million m³)",
+        "storage": "Storage (million m³)",
         "hours": "Hours with data"
       },
       "columnsNote": "Each daily mean is over the hours the dam published that day",

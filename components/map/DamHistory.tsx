@@ -5,8 +5,10 @@ import { flow, volume, type Dam } from "@/lib/dam";
 import {
   bars,
   hadSpill,
+  levelY,
   run,
   scaleFor,
+  storageLine,
   type DamBar,
   type DamDay,
   type DamMeasure,
@@ -121,6 +123,112 @@ function Chart({
   );
 }
 
+/**
+ * The reservoir behind the releases: how full it was at the end of each day.
+ *
+ * A line and not bars, because storage is a level and not a quantity that starts at nothing each
+ * day - and the axis runs from empty to the dam's full capacity, so an ordinary fortnight (743.9
+ * to 748.3 million m3) reads as flat rather than as the mountain range a zoomed axis would draw.
+ * The capacity at normal high water is a marked line, since that is the figure an operator works
+ * to; the gates open when the water climbs towards it.
+ */
+function Storage({ days, dam }: { days: readonly DamDay[]; dam: Dam }) {
+  const t = useTranslations("dam");
+  const format = useFormatter();
+  const capacity = dam.storageMaxMcm ?? 0;
+  if (!(capacity > 0)) return null;
+  const runs = storageLine(days, capacity);
+  const points = runs.flat();
+  if (points.length < 2) return null;
+  const last = points[points.length - 1]!;
+  const normalY = levelY(dam.storageNormalMcm, capacity);
+  const n = (value: number, digits = 0) => format.number(value, { maximumFractionDigits: digits });
+  const ticks = [days[0], days[Math.floor((days.length - 1) / 2)], days[days.length - 1]];
+
+  return (
+    <div className="flex flex-col gap-1" data-dam-chart="storage">
+      <p className="font-medium">{t("history.storageTitle")}</p>
+      <div
+        role="img"
+        aria-label={t("history.storageChart", {
+          days: days.length,
+          mcm: n(last.value),
+          percent: n(last.percent, 1),
+        })}
+        className="relative h-28 w-full max-w-[26rem] border-b border-jaga-line"
+      >
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {normalY !== null && (
+            <line
+              x1="0"
+              x2="100"
+              y1={normalY}
+              y2={normalY}
+              /* The ink, not the grid colour: a threshold a reader must see, not a gridline. */
+              className="stroke-jaga-text-2"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+          {runs.map((part) => (
+            <g key={part[0]!.day}>
+              {/* The water under the line: a wash, never a block (10%). */}
+              <polygon
+                className="fill-jaga-dam"
+                opacity="0.1"
+                points={`${part[0]!.x},100 ${part.map((p) => `${p.x},${p.y}`).join(" ")} ${part[part.length - 1]!.x},100`}
+              />
+              <polyline
+                className="stroke-jaga-dam"
+                fill="none"
+                strokeWidth="2"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+                points={part.map((p) => `${p.x},${p.y}`).join(" ")}
+              />
+            </g>
+          ))}
+        </svg>
+        {/* The end dot and its label are HTML, so the dot stays round whatever the box's shape. */}
+        <span
+          aria-hidden="true"
+          className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-jaga-dam ring-2 ring-jaga-surface"
+          style={{ left: `${last.x}%`, top: `${last.y}%` }}
+        />
+        {/*
+         * Above the line, or below it when the reservoir is nearly full: at 93% the label would
+         * otherwise sit outside the box and over the heading (seen in a browser).
+         */}
+        <span
+          className={`absolute end-0 whitespace-nowrap text-small tabular-nums text-jaga-text-2 ${
+            last.y < 25 ? "pt-2" : "-translate-y-full pb-2"
+          }`}
+          style={{ top: `${last.y}%` }}
+        >
+          {t("history.storageValue", { mcm: n(last.value), percent: n(last.percent, 1) })}
+        </span>
+      </div>
+      <div className="flex w-full max-w-[26rem] justify-between gap-2 text-small text-jaga-text-2">
+        {ticks.map((tick, place) => (
+          <span key={`${tick?.day}-${place}`} className="tabular-nums">
+            {tick ? label(tick.day, format) : ""}
+          </span>
+        ))}
+      </div>
+      {normalY !== null && (
+        <p className={hint}>{t("history.normalLine", { mcm: n(dam.storageNormalMcm ?? 0) })}</p>
+      )}
+      <p className={hint}>{t("history.storageScale", { mcm: n(capacity) })}</p>
+    </div>
+  );
+}
+
 function Numbers({ days }: { days: readonly DamDay[] }) {
   const t = useTranslations("dam");
   const format = useFormatter();
@@ -142,6 +250,9 @@ function Numbers({ days }: { days: readonly DamDay[] }) {
               {t("history.columns.spill")}
             </th>
             <th scope="col" className="py-1 text-end font-medium">
+              {t("history.columns.storage")}
+            </th>
+            <th scope="col" className="py-1 text-end font-medium">
               {t("history.columns.hours")}
             </th>
           </tr>
@@ -157,6 +268,9 @@ function Numbers({ days }: { days: readonly DamDay[] }) {
               </td>
               <td className="py-1 text-end tabular-nums">
                 {day.hours > 0 ? n(volume(day.spilledMcm), 2) : "—"}
+              </td>
+              <td className="py-1 text-end tabular-nums">
+                {day.storageEndMcm === null ? "—" : n(Math.round(day.storageEndMcm))}
               </td>
               <td className="py-1 text-end tabular-nums">{day.hours}</td>
             </tr>
@@ -207,6 +321,8 @@ export function DamHistory({ dam }: { dam: Dam }) {
         /* A chart of noughts says less than a sentence, and takes more of a small screen. */
         <p>{t("history.noSpill", { days: days.length })}</p>
       )}
+      {/* The reservoir behind those releases: the cause after the effect. */}
+      <Storage days={days} dam={dam} />
       <Numbers days={days} />
       <p className={hint}>{t("history.note")}</p>
     </div>

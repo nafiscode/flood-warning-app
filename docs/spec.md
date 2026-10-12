@@ -706,6 +706,12 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   only, because the feed publishes part of today. A day with no readings is drawn as a gap and a
   published day of nothing keeps its mark: "released nothing" and "published nothing" are
   different facts. The charts are the record, never a forecast, and they say so.
+- **The reservoir behind those releases** (added 12 Oct 2026): a third chart, the storage at the
+  end of each day as a line, on an axis that runs **from empty to the dam's maximum capacity**,
+  with the capacity at normal high water marked across it. The axis is never fitted to the days
+  drawn: an ordinary fortnight moves a fraction of a per cent, and a zoomed axis would turn
+  rounding into a mountain range. A gap in the feed breaks the line rather than being drawn
+  through.
 - **The quiet tier** (`watchful`, or a release the app has not confirmed yet): a notice on the home
   screen and the map for anyone whose area or watched place is on the river below the dam. No
   alert level, no alert colour, no sound, no notification. It says it is not an alert from Jaga

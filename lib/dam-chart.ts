@@ -136,6 +136,56 @@ export function run(days: readonly DamDay[], measure: DamMeasure = "outflow"): D
   };
 }
 
+/**
+ * The reservoir itself, day by day: the cause behind the releases.
+ *
+ * **The axis runs from empty to the reservoir's full capacity, never from the lowest day drawn.**
+ * The storage moves by a fraction of a per cent on an ordinary day - 743.9 to 748.3 million m3
+ * over the fortnight measured on 12 Oct - and an axis zoomed onto that range would turn rounding
+ * into a mountain range. Against the dam's own capacity the same fortnight reads as what it is:
+ * half full and flat, with the line climbing towards the normal high water mark when it matters.
+ * The day-to-day figures are in the table for anyone who wants them.
+ */
+export type DamPoint = { day: string; value: number; percent: number; x: number; y: number };
+
+/**
+ * The line, in percentages of the box, as runs of days with no gap in them. A day the feed never
+ * published breaks the line rather than being drawn through: a line across a gap is invented data.
+ */
+export function storageLine(days: readonly DamDay[], capacityMcm: number): DamPoint[][] {
+  const top = capacityMcm > 0 ? capacityMcm : 1;
+  const span = Math.max(days.length - 1, 1);
+  const runs: DamPoint[][] = [];
+  let current: DamPoint[] = [];
+  days.forEach((day, i) => {
+    const value = day.hours > 0 ? day.storageEndMcm : null;
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      if (current.length > 0) runs.push(current);
+      current = [];
+      return;
+    }
+    const share = Math.max(0, Math.min(1, value / top));
+    current.push({
+      day: day.day,
+      value,
+      percent: Math.round(share * 1000) / 10,
+      x: (i / span) * 100,
+      // SVG counts down from the top; the water counts up from the bottom.
+      y: 100 - share * 100,
+    });
+  });
+  if (current.length > 0) runs.push(current);
+  return runs;
+}
+
+/** Where a mark sits on that axis, for the capacity at normal high water and the like. */
+export function levelY(mcm: number | null | undefined, capacityMcm: number): number | null {
+  if (mcm === null || mcm === undefined || !(capacityMcm > 0)) return null;
+  const share = mcm / capacityMcm;
+  // Only drawn when it is really on the chart; above the capacity it would sit on the frame.
+  return share > 0 && share < 1 ? 100 - share * 100 : null;
+}
+
 /** The last day the feed published anything for, which is what the figures are "as at". */
 export function lastDay(days: readonly DamDay[]): DamDay | null {
   for (let i = days.length - 1; i >= 0; i -= 1) {

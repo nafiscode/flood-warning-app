@@ -590,13 +590,14 @@ export function exampleDamDays(scenario: DamScenario): DamDay[] {
         { released: 140, spilled: 612, hours: 7, storage: 1489 },
       ]);
     case "stale":
-      // The feed stopped two days ago, and had holes before that.
+      // The feed stopped two days ago, and had holes before that. This is the fortnight that
+      // shows what a gap looks like: the reservoir's line breaks rather than being drawn through.
       return damDays([
-        ...QUIET_FORTNIGHT.slice(0, 4).map((released) => ({ released })),
+        ...QUIET_FORTNIGHT.slice(0, 4).map((released) => ({ released, storage: 745 })),
         { released: 0, hours: 0 },
         { released: 0, hours: 0 },
-        ...QUIET_FORTNIGHT.slice(4, 10).map((released) => ({ released })),
-        { released: 46.3, hours: 3 },
+        ...QUIET_FORTNIGHT.slice(4, 10).map((released) => ({ released, storage: 747 })),
+        { released: 46.3, hours: 3, storage: 747 },
         { released: 0, hours: 0 },
       ]);
     default:
