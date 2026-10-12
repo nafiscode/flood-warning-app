@@ -388,6 +388,14 @@ describe("the chip in the header", () => {
     expect(link.textContent).toContain("27°");
     expect(link.getAttribute("aria-label")).toContain(th.weather.codes.rainHeavy);
     expect(link.getAttribute("aria-label")).toContain(BANA.nameTh);
+    // It is drawn as a pill with the sky in it and an arrow, not as underlined text: nothing
+    // about a line of text said that it opens a page (the owner, 13 Oct).
+    const pill = link.querySelector("[data-weather-chip-sky]") as HTMLElement;
+    expect(pill.getAttribute("data-weather-chip-sky")).toMatch(/^rain/);
+    expect(pill.style.getPropertyValue("--chip-sky-top")).toMatch(/^#[0-9A-F]{6}$/i);
+    expect(pill.style.getPropertyValue("--chip-veil")).toContain("rgba(");
+    expect(link.className).not.toContain("underline");
+    expect(pill.querySelector("svg path[d='M4 2l4 4-4 4']")).not.toBeNull();
     window.localStorage.clear();
     vi.doUnmock("@/i18n/navigation");
   });

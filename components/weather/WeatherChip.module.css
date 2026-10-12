@@ -1,0 +1,102 @@
+/*
+ * The weather chip in the header: a small window of the sky as it is now (the owner, 13 Oct:
+ * it read as a line of text, and nobody could tell it opened a whole page).
+ *
+ * A pill is a button to every eye that has used a phone, the sky in it is the same one the
+ * weather page opens on, and a slow glint crosses it now and then so it reads as alive rather
+ * than printed. Only transform and opacity move, and nothing moves for anyone who asked for
+ * less motion, or on the SOS screens, where nothing may compete with the request.
+ */
+
+.pill {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* The veil first, the sky under it: the writing keeps its contrast on every sky. */
+  background:
+    linear-gradient(var(--chip-veil), var(--chip-veil)),
+    linear-gradient(135deg, var(--chip-sky-top), var(--chip-sky-bottom));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.38),
+    0 1px 5px rgba(0, 0, 0, 0.28);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+/* The glint: a pale band that crosses the pill, then rests for most of the cycle. */
+.pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0) 35%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 65%
+  );
+  transform: translate3d(-120%, 0, 0);
+  animation: glint 7s ease-in-out 2s infinite;
+}
+
+.icon {
+  animation: float 5s ease-in-out infinite;
+}
+
+.arrow {
+  transition: transform 160ms ease;
+}
+
+/* A laptop's pointer gets an answer; a phone never keeps a hover after the tap. */
+@media (hover: hover) {
+  .link:hover .pill {
+    transform: translate3d(0, -1px, 0);
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.75),
+      0 3px 10px rgba(0, 0, 0, 0.35);
+  }
+  .link:hover .arrow {
+    transform: translate3d(3px, 0, 0);
+  }
+}
+
+.link:active .pill {
+  transform: translate3d(0, 0, 0) scale(0.97);
+}
+
+@keyframes glint {
+  0% {
+    transform: translate3d(-120%, 0, 0);
+  }
+  18%,
+  100% {
+    transform: translate3d(120%, 0, 0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -1.5px, 0);
+  }
+}
+
+.quiet .pill::after,
+.quiet .icon {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill,
+  .arrow {
+    transition: none;
+  }
+  .pill::after,
+  .icon {
+    animation: none;
+  }
+}
