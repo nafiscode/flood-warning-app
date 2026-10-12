@@ -85,6 +85,20 @@
       "computer": "Install Jaga"
     },
     "later": "Not now",
+    "how": "Show me how",
+    "demo": {
+      "addHome": "Add to Home Screen",
+      "addHomeAndroid": "Add to Home screen",
+      "add": "Add",
+      "install": "Install",
+      "file": "File",
+      "addDock": "Add to Dock",
+      "openBrowser": "Open in browser",
+      "donePhone": "Jaga is on your home screen",
+      "doneComputer": "Jaga is on this computer",
+      "pause": "Pause the pictures",
+      "play": "Play the pictures"
+    },
     "guide": {
       "inApp": {
         "s1": "This page is open inside another app, such as Messenger or LINE, which cannot add an icon.",
@@ -1552,7 +1566,17 @@
     },
     "damScenarioLabel": "The dam's state",
     "authorityTitle": "Example: a response team's board",
-    "authorityNote": "Everything here is made up. Try accepting a case, giving an estimate and handing it back. Turn the alarm on to hear the real sound."
+    "authorityNote": "Everything here is made up. Try accepting a case, giving an estimate and handing it back. Turn the alarm on to hear the real sound.",
+    "installTitle": "Example: how to put Jaga on the home screen",
+    "installNote": "The moving guide for each device. A person only ever sees the one for their own.",
+    "installGuide": {
+      "iosSafari": "iPhone and iPad (Safari)",
+      "iosOther": "iPhone (Chrome, Edge, Firefox)",
+      "android": "Android",
+      "desktop": "Computer (Chrome, Edge)",
+      "macSafari": "Mac (Safari)",
+      "inApp": "Opened inside another app, such as Messenger or LINE"
+    }
   },
   "report": {
     "title": "Report flooding",

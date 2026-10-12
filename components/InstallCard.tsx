@@ -1,8 +1,17 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { type ReactNode, useState } from "react";
-import { AddSquareIcon, CheckIcon, InstallIcon, MenuDotsIcon, ShareIcon } from "@/components/icons";
+import { type ReactNode, useEffect, useState } from "react";
+import {
+  AddSquareIcon,
+  CheckIcon,
+  InstallIcon,
+  MenuDotsIcon,
+  PauseIcon,
+  PlayIcon,
+  ShareIcon,
+} from "@/components/icons";
+import { DEMO_STEP_MS, demoFrames, InstallDemo } from "@/components/InstallDemo";
 import {
   installDevice,
   installGuide,
@@ -33,6 +42,8 @@ export type InstallCardViewProps = {
   onInstall: () => Promise<"accepted" | "dismissed" | "unavailable">;
   /** "Not now", on the home screen only. */
   onLater?: () => void;
+  /** The review page shows the guide already open. */
+  startOpen?: boolean;
 };
 
 /**
@@ -46,9 +57,22 @@ export function InstallCardView({
   canAsk,
   onInstall,
   onLater,
+  startOpen = false,
 }: InstallCardViewProps) {
   const t = useTranslations("install");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(startOpen);
+  // Which picture of the moving guide is up, and whether the pictures change by themselves.
+  const [frame, setFrame] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const frames = demoFrames(guide);
+
+  useEffect(() => {
+    if (!open || !playing) return;
+    // Someone who asked their phone for less motion steps through by tapping the steps instead.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => setFrame((f) => (f + 1) % frames), DEMO_STEP_MS);
+    return () => window.clearInterval(id);
+  }, [open, playing, frames]);
 
   async function tap() {
     if (canAsk && (await onInstall()) !== "unavailable") return;
@@ -69,20 +93,59 @@ export function InstallCardView({
         <InstallIcon size={22} />
         {t(`button.${device}`)}
       </button>
+      {canAsk && !open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          data-install-how="true"
+          className="min-h-tap self-start underline"
+        >
+          {t("how")}
+        </button>
+      )}
       {open && (
-        <ol className="flex flex-col gap-3" data-install-guide={guide}>
-          {STEPS[guide].map((icon, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-jaga-line bg-jaga-ground text-jaga-ink">
-                {icon}
-              </span>
-              <span className="pt-1">
-                <span className="font-bold">{i + 1}. </span>
-                {t(`guide.${guide}.s${i + 1}`)}
-              </span>
-            </li>
-          ))}
-        </ol>
+        <>
+          <InstallDemo guide={guide} frame={frame} />
+          <button
+            type="button"
+            onClick={() => setPlaying(!playing)}
+            data-install-play={playing ? "on" : "off"}
+            className="inline-flex min-h-tap items-center gap-2 self-center underline"
+          >
+            {playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
+            {t(playing ? "demo.pause" : "demo.play")}
+          </button>
+          <ol className="flex flex-col gap-1" data-install-guide={guide}>
+            {STEPS[guide].map((icon, i) => (
+              <li key={i}>
+                {/* Tapping a step shows its picture and holds it there. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFrame(i);
+                    setPlaying(false);
+                  }}
+                  aria-current={frame === i ? "step" : undefined}
+                  className={`flex min-h-tap w-full items-start gap-3 rounded-xl p-1.5 text-start ${
+                    frame === i ? "bg-jaga-ground" : ""
+                  }`}
+                >
+                  <span
+                    className={`flex size-10 shrink-0 items-center justify-center rounded-xl border bg-jaga-ground text-jaga-ink ${
+                      frame === i ? "border-2 border-jaga-teal-ink" : "border-jaga-line"
+                    }`}
+                  >
+                    {icon}
+                  </span>
+                  <span className="pt-1">
+                    <span className="font-bold">{i + 1}. </span>
+                    {t(`guide.${guide}.s${i + 1}`)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
       {onLater && (
         <button

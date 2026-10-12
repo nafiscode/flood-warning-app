@@ -85,6 +85,20 @@
       "computer": "Pasang Jaga"
     },
     "later": "Nanti dulu",
+    "how": "Tunjukkan caranya",
+    "demo": {
+      "addHome": "Tambah ke Skrin Utama",
+      "addHomeAndroid": "Tambah ke skrin utama",
+      "add": "Tambah",
+      "install": "Pasang",
+      "file": "Fail",
+      "addDock": "Tambah ke Dock",
+      "openBrowser": "Buka dalam pelayar",
+      "donePhone": "Jaga sudah ada di skrin utama",
+      "doneComputer": "Jaga sudah ada pada komputer",
+      "pause": "Hentikan gambar",
+      "play": "Mainkan semula"
+    },
     "guide": {
       "inApp": {
         "s1": "Halaman ini dibuka di dalam aplikasi lain, seperti Messenger atau LINE, yang tidak boleh menambah ikon.",
@@ -1552,7 +1566,17 @@
     },
     "damScenarioLabel": "Keadaan empangan",
     "authorityTitle": "Contoh: papan pasukan bantuan",
-    "authorityNote": "Semua data di sini rekaan. Cuba terima kes, beri anggaran dan pulangkan kes. Buka bunyi amaran untuk dengar bunyi sebenar."
+    "authorityNote": "Semua data di sini rekaan. Cuba terima kes, beri anggaran dan pulangkan kes. Buka bunyi amaran untuk dengar bunyi sebenar.",
+    "installTitle": "Contoh: cara meletak Jaga di skrin utama",
+    "installNote": "Gambar bergerak bagi setiap peranti. Setiap orang hanya melihat yang untuk perantinya sendiri.",
+    "installGuide": {
+      "iosSafari": "iPhone dan iPad (Safari)",
+      "iosOther": "iPhone (Chrome, Edge, Firefox)",
+      "android": "Android",
+      "desktop": "Komputer (Chrome, Edge)",
+      "macSafari": "Mac (Safari)",
+      "inApp": "Dibuka dari aplikasi lain, seperti Messenger atau LINE"
+    }
   },
   "report": {
     "title": "Lapor banjir",

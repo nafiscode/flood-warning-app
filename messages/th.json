@@ -85,6 +85,20 @@
       "computer": "ติดตั้ง Jaga"
     },
     "later": "ไว้ทีหลัง",
+    "how": "ดูวิธีทำ",
+    "demo": {
+      "addHome": "เพิ่มไปยังหน้าจอโฮม",
+      "addHomeAndroid": "เพิ่มลงในหน้าจอหลัก",
+      "add": "เพิ่ม",
+      "install": "ติดตั้ง",
+      "file": "ไฟล์",
+      "addDock": "เพิ่มไปยัง Dock",
+      "openBrowser": "เปิดในเบราว์เซอร์",
+      "donePhone": "Jaga อยู่บนหน้าจอหลักแล้ว",
+      "doneComputer": "Jaga อยู่บนเครื่องแล้ว",
+      "pause": "หยุดภาพ",
+      "play": "เล่นภาพต่อ"
+    },
     "guide": {
       "inApp": {
         "s1": "หน้านี้เปิดอยู่ในแอปอื่น เช่น Messenger หรือ LINE ซึ่งเพิ่มไอคอนให้ไม่ได้",
@@ -1552,7 +1566,17 @@
     },
     "damScenarioLabel": "สถานการณ์ของเขื่อน",
     "authorityTitle": "ตัวอย่าง: กระดานของหน่วยช่วยเหลือ",
-    "authorityNote": "ข้อมูลสมมุติทั้งหมด ลองกดรับเรื่อง แจ้งเวลา และคืนเรื่องได้ เปิดเสียงเตือนเพื่อฟังเสียงจริง"
+    "authorityNote": "ข้อมูลสมมุติทั้งหมด ลองกดรับเรื่อง แจ้งเวลา และคืนเรื่องได้ เปิดเสียงเตือนเพื่อฟังเสียงจริง",
+    "installTitle": "ตัวอย่าง: วิธีเพิ่ม Jaga ไว้ที่หน้าจอหลัก",
+    "installNote": "ภาพเคลื่อนไหวของแต่ละเครื่อง แต่ละคนจะเห็นเฉพาะของเครื่องตัวเอง",
+    "installGuide": {
+      "iosSafari": "iPhone และ iPad (Safari)",
+      "iosOther": "iPhone (Chrome, Edge, Firefox)",
+      "android": "Android",
+      "desktop": "คอมพิวเตอร์ (Chrome, Edge)",
+      "macSafari": "Mac (Safari)",
+      "inApp": "เปิดจากในแอปอื่น เช่น Messenger หรือ LINE"
+    }
   },
   "report": {
     "title": "แจ้งน้ำท่วม",

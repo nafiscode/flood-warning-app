@@ -1,7 +1,8 @@
-import { fireEvent, waitFor } from "@testing-library/react";
+import { act, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { HomeView } from "@/components/home/HomeView";
 import { InstallCardView, type InstallCardViewProps } from "@/components/InstallCard";
+import { DEMO_STEP_MS, demoFrames, InstallDemo } from "@/components/InstallDemo";
 import { EXAMPLE_NOW, EXAMPLE_PLACES, homeExample, type HomeScenario } from "@/lib/dev-examples";
 import {
   INSTALL_LATER_MS,
@@ -174,5 +175,81 @@ describe("the install card on the home screen", () => {
   it("is not shown while the tambon is at Warning or Evacuate", () => {
     expect(home("warning").querySelector("[data-install-slot]")).toBeNull();
     expect(home("evacuate").querySelector("[data-install-slot]")).toBeNull();
+  });
+});
+
+describe("the moving guide", () => {
+  const guides: InstallGuide[] = [
+    "inApp",
+    "iosSafari",
+    "iosOther",
+    "android",
+    "macSafari",
+    "desktop",
+  ];
+
+  it("has a picture for every written step, and an ending where an icon arrives", () => {
+    for (const guide of guides) {
+      const steps = Object.keys(th.install.guide[guide]).length;
+      expect(demoFrames(guide)).toBe(steps + (guide === "inApp" ? 0 : 1));
+      for (let frame = 0; frame < demoFrames(guide); frame++) {
+        const c = renderWithIntl(<InstallDemo guide={guide} frame={frame} />).container;
+        const demo = c.querySelector(`[data-install-demo="${guide}"]`)!;
+        // A drawing, not content: the written steps say the same to a screen reader.
+        expect(demo.getAttribute("aria-hidden")).toBe("true");
+        const last = guide !== "inApp" && frame === demoFrames(guide) - 1;
+        expect(!!demo.querySelector("[data-demo-result]")).toBe(last);
+        // Every step points at one thing to tap; leaving an in-app browser is its menu and an entry.
+        if (!last && !(guide === "inApp" && frame === 0)) {
+          expect(demo.querySelectorAll("[data-demo-target]")).toHaveLength(
+            guide === "inApp" ? 2 : 1,
+          );
+        }
+      }
+    }
+  });
+
+  it("the menu entry is written as the phone writes it, in the reader's language", () => {
+    const c = renderWithIntl(<InstallDemo guide="iosSafari" frame={1} />).container;
+    expect(c.querySelector("[data-demo-target]")?.textContent).toBe(th.install.demo.addHome);
+  });
+
+  it("plays through the pictures by itself and comes round again", () => {
+    vi.useFakeTimers();
+    try {
+      const { c } = view({ startOpen: true });
+      const frame = () => c.querySelector("[data-install-demo]")!.getAttribute("data-frame");
+      expect(frame()).toBe("0");
+      act(() => void vi.advanceTimersByTime(DEMO_STEP_MS + 50));
+      expect(frame()).toBe("1");
+      act(() => void vi.advanceTimersByTime(DEMO_STEP_MS * 3));
+      expect(frame()).toBe("0");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("tapping a step shows its picture and holds it", () => {
+    vi.useFakeTimers();
+    try {
+      const { c } = view({ startOpen: true });
+      const steps = c.querySelectorAll("[data-install-guide] li button");
+      fireEvent.click(steps[2]!);
+      const demo = c.querySelector("[data-install-demo]")!;
+      expect(demo.getAttribute("data-frame")).toBe("2");
+      expect(steps[2]!.getAttribute("aria-current")).toBe("step");
+      act(() => void vi.advanceTimersByTime(DEMO_STEP_MS * 2));
+      expect(demo.getAttribute("data-frame")).toBe("2");
+      expect(c.querySelector('[data-install-play="off"]')).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("where the browser installs by itself, the guide is still one tap away", () => {
+    const { props, c } = view({ canAsk: true, guide: "android" });
+    fireEvent.click(c.querySelector("[data-install-how]")!);
+    expect(c.querySelector('[data-install-demo="android"]')).not.toBeNull();
+    expect(props.onInstall).not.toHaveBeenCalled();
   });
 });
