@@ -18,7 +18,7 @@ import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { boundsAround, darkNow, PROVINCE_BOUNDS } from "@/lib/map";
+import { boundsAround, darkNow, PROVINCE_BOUNDS, SERVICE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
@@ -103,6 +103,25 @@ const chipOff = "border-jaga-edge bg-jaga-surface text-jaga-ink";
  */
 const chipQuiet =
   "relative inline-flex min-h-9 items-center gap-1.5 rounded-full border-2 px-3 py-0.5 text-small font-medium after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-[''] active:translate-y-px lg:min-h-tap lg:gap-2 lg:px-4 lg:py-1 lg:text-body lg:after:hidden";
+
+/** Four corners of a frame: "show the whole area". */
+function ZoomOutIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+    </svg>
+  );
+}
 
 /**
  * The map dashboard (spec 4.2), drawn from what it is given. Map tab: hazard switcher, province
@@ -524,26 +543,44 @@ export function DashboardView(props: DashboardViewProps) {
                 />
               ))}
 
-              <MapView
-                layers={mapLayers}
-                status={fresh ? status : null}
-                data={data}
-                now={now}
-                bounds={focus?.box ?? askedBox ?? mapBounds}
-                boundsKey={focus?.key ?? (askedBox ? 1 : 0)}
-                onSelect={setSelection}
-                text={{ loading: t("loading"), failed: t("failed") }}
-                mine={mine}
-                showMine={showMine}
-                dams={dams}
-                hazardUrl={props.hazardTiles ?? null}
-                basemap={basemap}
-                damText={{
-                  spillway: tDam("mark.spillway"),
-                  outlet: tDam("mark.outlet"),
-                  locale,
-                }}
-              />
+              {/*
+               * The map opens close around the person's own area; this button pulls back to all
+               * four provinces in one tap (the owner, 13 Oct). It sits on the map, at the start
+               * of its top edge, opposite the zoom buttons.
+               */}
+              <div className="relative">
+                <button
+                  type="button"
+                  data-zoom-all="true"
+                  onClick={() =>
+                    setFocus((was) => ({ box: SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }))
+                  }
+                  className="absolute start-2 top-2 z-10 inline-flex min-h-tap items-center gap-2 rounded-lg border border-jaga-line bg-jaga-surface px-3 text-small font-bold text-jaga-ink shadow-sm"
+                >
+                  <ZoomOutIcon />
+                  {t("zoomAll")}
+                </button>
+                <MapView
+                  layers={mapLayers}
+                  status={fresh ? status : null}
+                  data={data}
+                  now={now}
+                  bounds={focus?.box ?? askedBox ?? mapBounds}
+                  boundsKey={focus?.key ?? (askedBox ? 1 : 0)}
+                  onSelect={setSelection}
+                  text={{ loading: t("loading"), failed: t("failed") }}
+                  mine={mine}
+                  showMine={showMine}
+                  dams={dams}
+                  hazardUrl={props.hazardTiles ?? null}
+                  basemap={basemap}
+                  damText={{
+                    spillway: tDam("mark.spillway"),
+                    outlet: tDam("mark.outlet"),
+                    locale,
+                  }}
+                />
+              </div>
               <fieldset className="flex flex-col gap-1" data-basemap={basemap}>
                 <legend className="font-medium">{t("basemap.title")}</legend>
                 <div className="flex flex-wrap gap-2">

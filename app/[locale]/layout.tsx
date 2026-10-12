@@ -11,6 +11,7 @@ import { DaylightTheme } from "@/components/DaylightTheme";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { QueueRunner } from "@/components/QueueRunner";
 import { NoticeBell } from "@/components/notices/NoticeBell";
+import { ThaiClock } from "@/components/ThaiClock";
 import { WeatherChip } from "@/components/weather/WeatherChip";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -110,6 +111,12 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     where the top row is already full of Thai labels at 360 px.
                   */}
                   <WeatherChip where="header" className="hidden lg:inline-flex" />
+                  {/* Thailand's time, beside the weather where there is room (the owner, 13 Oct). */}
+                  <ThaiClock
+                    short={tNav("clockShort")}
+                    long={tNav("clockLong")}
+                    className="hidden lg:inline"
+                  />
                 </div>
 
                 <div className="flex items-center">
@@ -152,7 +159,19 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   <LanguageSwitcher />
                   {/* -me-1 uses the row's own end padding: at 360 px the three language names
                       and the chip together need every pixel of the line. */}
-                  <WeatherChip where="row" className="-me-1 inline-flex lg:hidden" />
+                  {/*
+                    On a phone the time sits in the few pixels above the weather pill: the row has
+                    no width left for it, and a line of its own would take page height.
+                  */}
+                  <div className="relative -me-1 lg:hidden">
+                    <ThaiClock
+                      size="small"
+                      short={tNav("clockShort")}
+                      long={tNav("clockLong")}
+                      className="pointer-events-none absolute end-1 -top-1"
+                    />
+                    <WeatherChip where="row" className="inline-flex" />
+                  </div>
                 </div>
               </div>
             </header>

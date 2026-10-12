@@ -384,6 +384,7 @@
   },
   "map": {
     "title": "Peta",
+    "zoomAll": "Lihat 4 wilayah",
     "tabs": {
       "label": "Halaman peta",
       "map": "Peta",
@@ -509,6 +510,8 @@
     "en": "English"
   },
   "nav": {
+    "clockShort": "TH",
+    "clockLong": "Waktu Thailand",
     "home": "Utama",
     "account": "Akaun",
     "map": "Peta",

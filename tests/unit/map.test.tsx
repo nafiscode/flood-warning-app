@@ -687,6 +687,16 @@ describe("calling the person at a watched place, from the map", () => {
 });
 
 describe("the map opens where the person already is", () => {
+  it("one button pulls back from their own area to all four provinces (owner, 13 Oct)", () => {
+    const c = dashboard({ area: BANA });
+    const map = () => c.querySelector("[data-map]")!.getAttribute("data-bounds")!;
+    expect(map()).not.toBe("99.95,5.55,102.25,8.00");
+    const button = c.querySelector("[data-zoom-all]") as HTMLButtonElement;
+    expect(button.textContent).toBe(th.map.zoomAll);
+    fireEvent.click(button);
+    expect(map()).toBe("99.95,5.55,102.25,8.00");
+  });
+
   it("their area decides the province, where the map looks, and the alert shown first", () => {
     const c = dashboard({ area: BANA });
     // The province selector is already on theirs (Pattani, 94), not "all four".
