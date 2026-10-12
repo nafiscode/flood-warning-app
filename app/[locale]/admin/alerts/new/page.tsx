@@ -13,6 +13,7 @@ import {
   ISSUABLE_LEVELS,
   NEXT_UPDATE_HOURS,
 } from "@/lib/alert-console";
+import { getSessionProfile, isAdminRole } from "@/lib/auth";
 import { inService } from "@/lib/features";
 import { card, checkBox, checkRow, errorNotice, hint, input, label, notice } from "@/lib/ui";
 import { publishAlert } from "../actions";
@@ -54,6 +55,10 @@ export default async function NewAlert({
   const { locale } = await params;
   setRequestLocale(locale);
   const query = await searchParams;
+  // The layout turns a visitor away, but a page is rendered alongside its layout: read nothing
+  // for someone who is not an admin, rather than ask the database and be refused.
+  const session = await getSessionProfile();
+  if (!session || !isAdminRole(session.role)) return null;
   const t = await getTranslations("alertConsole");
   const tAdmin = await getTranslations("admin");
   const [templates, areas, alerts] = await Promise.all([

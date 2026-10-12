@@ -6,6 +6,7 @@ import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { Link } from "@/i18n/navigation";
 import { readAlerts, readAreas } from "@/lib/admin-alerts";
 import { alertState, NEXT_UPDATE_HOURS, type AdminAlert } from "@/lib/alert-console";
+import { getSessionProfile, isAdminRole } from "@/lib/auth";
 import { inService } from "@/lib/features";
 import { reasonFor } from "@/lib/public-status";
 import {
@@ -57,6 +58,10 @@ export default async function AdminAlerts({
   const { locale } = await params;
   setRequestLocale(locale);
   const query = await searchParams;
+  // The layout turns a visitor away, but a page is rendered alongside its layout: read nothing
+  // for someone who is not an admin, rather than ask the database and be refused.
+  const session = await getSessionProfile();
+  if (!session || !isAdminRole(session.role)) return null;
   const t = await getTranslations("alertConsole");
   const tAdmin = await getTranslations("admin");
   const [alerts, areas] = await Promise.all([readAlerts(100), readAreas()]);
