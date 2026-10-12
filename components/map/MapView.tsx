@@ -19,6 +19,7 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
+import { HAZARD_SOURCE_LAYER, hazardFillColor } from "@/lib/hazard-layer";
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
@@ -41,7 +42,8 @@ export type MapSelection =
   | { kind: "reports"; index: number }
   | { kind: "gauge"; id: string }
   | { kind: "mine"; id: string }
-  | { kind: "dam"; code: string };
+  | { kind: "dam"; code: string }
+  | { kind: "hazard"; value: number };
 
 /**
  * A place of the person's own: their home, or one they watch for someone (spec 4.9). It is
@@ -75,6 +77,8 @@ export type MinePlace = {
 type Props = {
   /** What may be drawn. Empty: nothing of ours but the tambon outlines. */
   layers: MapLayer[];
+  /** The `pmtiles://` address of the flood-hazard classes; null until the manifest names one. */
+  hazardUrl?: string | null;
   /** The person's own places, drawn on top of everything when they ask for them. */
   mine?: MinePlace[];
   showMine?: boolean;
@@ -115,6 +119,8 @@ const ALERT_STALE = "jaga-alert-stale";
 const REPORTS = "jaga-reports";
 const REPORTS_LINE = "jaga-reports-line";
 const PLACES = "jaga-places";
+const HAZARD = "jaga-hazard";
+const HAZARD_FILL = "jaga-hazard-fill";
 const GAUGES = "jaga-gauges";
 const MINE = "jaga-mine";
 const MINE_LABEL = "jaga-mine-label";
@@ -242,6 +248,7 @@ export function MapView({
   showMine = false,
   dams = [],
   damText = { spillway: "", outlet: "", locale: "th" },
+  hazardUrl = null,
 }: Props) {
   /*
    * The three labels are taken apart here because the caller builds damText fresh on every
@@ -308,6 +315,32 @@ export function MapView({
           held.current.set(id, value);
         }
         const above = m.getLayer(TAMBON_LINE_LAYER) ? TAMBON_LINE_LAYER : undefined;
+        /*
+         * The hazard classes, under everything else of ours: they are the ground the other layers
+         * sit on. Their colours are the same by day and by night (lib/hazard-layer.ts).
+         */
+        if (hazardUrl && !m.getSource(HAZARD)) {
+          m.addSource(HAZARD, { type: "vector", url: hazardUrl });
+        }
+        if (m.getSource(HAZARD) && !m.getLayer(HAZARD_FILL)) {
+          m.addLayer(
+            {
+              id: HAZARD_FILL,
+              type: "fill",
+              source: HAZARD,
+              "source-layer": HAZARD_SOURCE_LAYER,
+              paint: {
+                "fill-color": hazardFillColor() as never,
+                "fill-opacity": 0.6,
+                "fill-antialias": false,
+              },
+            },
+            above,
+          );
+        }
+        if (m.getLayer(HAZARD_FILL)) {
+          m.setLayoutProperty(HAZARD_FILL, "visibility", show("hazard"));
+        }
         if (!m.getLayer(ALERT_FILL)) {
           m.addLayer({ id: ALERT_FILL, type: "fill", source: TAMBON_SOURCE, paint: {} }, above);
         }
@@ -604,7 +637,19 @@ export function MapView({
       }
     };
     draw.current();
-  }, [layers, status, data, now, mine, showMine, dams, spillwayLabel, outletLabel, damLocale]);
+  }, [
+    layers,
+    status,
+    data,
+    now,
+    mine,
+    showMine,
+    dams,
+    spillwayLabel,
+    outletLabel,
+    damLocale,
+    hazardUrl,
+  ]);
 
   useEffect(() => {
     if (!container.current) return;
@@ -674,6 +719,7 @@ export function MapView({
             DAM_MAIN,
             DAM_TRIBUTARY,
             DAM_RESERVOIR_FILL,
+            HAZARD_FILL,
             TAMBON_FILL_LAYER,
           ].filter((id) => created.getLayer(id));
           /*
@@ -688,7 +734,16 @@ export function MapView({
             [at.x - TAP_SLACK, at.y - TAP_SLACK],
             [at.x + TAP_SLACK, at.y + TAP_SLACK],
           ];
-          const hit = created.queryRenderedFeatures(near, { layers: ids })[0];
+          let hit = created.queryRenderedFeatures(near, { layers: ids })[0];
+          /*
+           * A tambon covers the whole map, so on the risk view it would answer every tap and the
+           * hazard class under the finger would never be named. Where a class is drawn exactly
+           * at the tap, and nothing more specific was hit, the class answers.
+           */
+          if ((!hit || hit.layer.id === TAMBON_FILL_LAYER) && created.getLayer(HAZARD_FILL)) {
+            const under = created.queryRenderedFeatures(at, { layers: [HAZARD_FILL] })[0];
+            if (under) hit = under;
+          }
           const p = hit?.properties;
           if (!hit || !p) return;
           if (hit.layer.id === MINE) select.current({ kind: "mine", id: String(p.id) });
@@ -703,6 +758,8 @@ export function MapView({
           else if (hit.layer.id === PLACES) select.current({ kind: "place", id: String(p.id) });
           else if (hit.layer.id === REPORTS) {
             select.current({ kind: "reports", index: Number(p.index) });
+          } else if (hit.layer.id === HAZARD_FILL) {
+            select.current({ kind: "hazard", value: Number(p.class) });
           } else {
             select.current({
               kind: "tambon",

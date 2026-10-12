@@ -368,6 +368,26 @@ describe("map dashboard (spec 4.2)", () => {
     expect(quiet.querySelector('[data-pending-layer="hazard"]')).not.toBeNull();
   });
 
+  it("the hazard classes are named in the legend with their disclaimer once there are tiles to draw", () => {
+    const without = dashboard({ status: exampleStatus([]) });
+    expect(without.querySelector('[data-pending-layer="hazard"]')).not.toBeNull();
+    expect(without.querySelector("[data-hazard-class]")).toBeNull();
+    const c = dashboard({
+      status: exampleStatus([]),
+      hazardTiles: "pmtiles://https://tiles.example/h.pmtiles",
+    });
+    expect(c.querySelector('[data-pending-layer="hazard"]')).toBeNull();
+    const names = [...c.querySelectorAll("[data-hazard-class]")].map((el) => el.textContent);
+    expect(names).toEqual([
+      th.map.risk.level.high,
+      th.map.risk.level.medium,
+      th.map.risk.level.low,
+    ]);
+    // The lowest class is not drawn, so the words under the legend have to say what no colour means.
+    expect(c.querySelector("[data-hazard-note]")?.textContent).toBe(th.map.risk.note);
+    expect(th.map.risk.note).toContain("ไม่ได้แปลว่าไม่มีความเสี่ยง");
+  });
+
   it("safe places wait behind a switch that says how many there are", () => {
     const c = dashboard({ status: exampleStatus([]) });
     const toggle = c.querySelector<HTMLInputElement>("[data-places-toggle] input")!;

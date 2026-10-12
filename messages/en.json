@@ -467,6 +467,15 @@
     "places": {
       "toggle": "Show safe places on the map ({count})",
       "hint": "Square with a house: a place for people · square with a P: high ground for cars. Tap one for details and directions."
+    },
+    "risk": {
+      "level": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "here": "Flood-prone area here: {level}",
+      "note": "This map is estimated from the height of the land and nine flood seasons of satellite images. It has not been checked against real floods and it is not a forecast. A place without colour does not mean no risk."
     }
   },
   "attribution": {

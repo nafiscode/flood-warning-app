@@ -467,6 +467,15 @@
     "places": {
       "toggle": "Tunjukkan tempat selamat pada peta ({count})",
       "hint": "Petak bergambar rumah: tempat untuk orang · petak P: tanah tinggi untuk kereta. Ketik satu untuk butiran dan arah."
+    },
+    "risk": {
+      "level": {
+        "high": "Tinggi",
+        "medium": "Sederhana",
+        "low": "Rendah"
+      },
+      "here": "Kawasan berisiko banjir di sini: {level}",
+      "note": "Peta ini dianggar daripada ketinggian tanah dan imej satelit bagi 9 musim banjir. Ia belum disemak dengan banjir sebenar dan bukan ramalan. Kawasan tanpa warna tidak bermakna tiada risiko."
     }
   },
   "attribution": {

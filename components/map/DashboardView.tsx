@@ -8,6 +8,7 @@ import { AlertHero } from "@/components/home/AlertHero";
 import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/HomeView";
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
+import { HAZARD_CLASSES, hazardKey } from "@/lib/hazard-layer";
 import { HOUSE } from "@/lib/place-icons";
 import { PhoneIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
@@ -72,6 +73,8 @@ export type DashboardViewProps = {
   dataState: LoadState;
   /** The dams and their release path. Null while loading, or if the answer can't be had. */
   dams?: Dam[] | null;
+  /** The `pmtiles://` address of the flood-hazard classes; null while there is none to draw. */
+  hazardTiles?: string | null;
   now: number;
   /** The Transparency tab exists only once donations are switched on (A11, safety rule 9). */
   transparency: boolean;
@@ -265,7 +268,7 @@ export function DashboardView(props: DashboardViewProps) {
     .filter((x): x is { dam: Dam; hit: NonNullable<ReturnType<typeof onPath>> } => x.hit !== null);
 
   const pending: MapLayer[] = [
-    ...(layers.includes("hazard") ? (["hazard"] as const) : []),
+    ...(layers.includes("hazard") && !props.hazardTiles ? (["hazard"] as const) : []),
     ...(layers.includes("alerts") && status && !status.inService ? (["alerts"] as const) : []),
     ...(layers.includes("places") && data && data.places.length === 0 ? (["places"] as const) : []),
     ...(layers.includes("reports") && data && data.reports.length === 0
@@ -299,6 +302,21 @@ export function DashboardView(props: DashboardViewProps) {
   } else if (selection?.kind === "place") {
     const place = data?.places.find((p) => p.id === selection.id);
     selected = place ? <SafePlaceCard place={place} userAgent={props.userAgent} /> : null;
+  } else if (selection?.kind === "hazard") {
+    const key = hazardKey(selection.value);
+    selected = key ? (
+      <section className={card} data-selected="hazard">
+        <p className="flex items-center gap-2 font-bold">
+          <span
+            aria-hidden="true"
+            className="size-5 shrink-0 rounded-[4px] border border-jaga-edge"
+            style={{ backgroundColor: HAZARD_CLASSES.find((c) => c.key === key)!.color }}
+          />
+          {t("risk.here", { level: t(`risk.level.${key}`) })}
+        </p>
+        <p className={hint}>{t("risk.note")}</p>
+      </section>
+    ) : null;
   } else if (selection?.kind === "reports") {
     const bin = data?.reports[selection.index];
     selected = bin ? (
@@ -473,6 +491,7 @@ export function DashboardView(props: DashboardViewProps) {
                 mine={mine}
                 showMine={showMine}
                 dams={dams}
+                hazardUrl={props.hazardTiles ?? null}
                 damText={{
                   spillway: tDam("mark.spillway"),
                   outlet: tDam("mark.outlet"),
@@ -570,25 +589,50 @@ export function DashboardView(props: DashboardViewProps) {
                 )}
                 {drawn.length > 0 && (
                   <ul className="flex flex-col gap-1">
-                    {drawn.map((layer) => (
-                      <li key={layer} className="flex items-center gap-2" data-layer={layer}>
-                        {layer === "places" ? (
-                          <PlaceMark size={18} />
-                        ) : (
-                          <span
-                            aria-hidden="true"
-                            className={
-                              layer === "gauges"
-                                ? "size-4 shrink-0 rounded-full border-4 border-jaga-edge bg-white"
-                                : layer === "reports"
-                                  ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
-                                  : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
-                            }
-                          />
-                        )}
-                        {t(`layers.${layer}`)}
-                      </li>
-                    ))}
+                    {drawn.map((layer) =>
+                      layer === "hazard" ? (
+                        <li key={layer} className="flex flex-col gap-1" data-layer={layer}>
+                          <span className="font-medium">{t("layers.hazard")}</span>
+                          <ul className="flex flex-wrap gap-x-4 gap-y-1">
+                            {HAZARD_CLASSES.map((c) => (
+                              <li
+                                key={c.key}
+                                className="flex items-center gap-2"
+                                data-hazard-class={c.key}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className="size-4 shrink-0 rounded-[3px] border border-jaga-edge"
+                                  style={{ backgroundColor: c.color }}
+                                />
+                                {t(`risk.level.${c.key}`)}
+                              </li>
+                            ))}
+                          </ul>
+                          <span className={hint} data-hazard-note="true">
+                            {t("risk.note")}
+                          </span>
+                        </li>
+                      ) : (
+                        <li key={layer} className="flex items-center gap-2" data-layer={layer}>
+                          {layer === "places" ? (
+                            <PlaceMark size={18} />
+                          ) : (
+                            <span
+                              aria-hidden="true"
+                              className={
+                                layer === "gauges"
+                                  ? "size-4 shrink-0 rounded-full border-4 border-jaga-edge bg-white"
+                                  : layer === "reports"
+                                    ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
+                                    : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
+                              }
+                            />
+                          )}
+                          {t(`layers.${layer}`)}
+                        </li>
+                      ),
+                    )}
                   </ul>
                 )}
                 {dams.length > 0 && (

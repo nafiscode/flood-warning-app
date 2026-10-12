@@ -86,10 +86,28 @@ export const TAMBON_SELECTED_LAYER = "jaga-tambon-selected";
  * once and still works when the basemap can't be reached; the street basemap is then loaded
  * underneath. MapLibre itself is loaded here, on demand, never with the page (slow 3G).
  */
+let pmtilesReady = false;
+/**
+ * Teach MapLibre the `pmtiles://` address once: a PMTiles file is one static file on the tile
+ * bucket, read in ranges, so the hazard layer needs no tile server (CLAUDE.md, Stack). A failure
+ * here must not cost the map itself, so it is swallowed: the layer then stays "being prepared".
+ */
+async function registerPmtiles(maplibre: typeof import("maplibre-gl")): Promise<void> {
+  if (pmtilesReady) return;
+  try {
+    const { Protocol } = await import("pmtiles");
+    maplibre.addProtocol("pmtiles", new Protocol().tile);
+    pmtilesReady = true;
+  } catch {
+    // No hazard layer this time; everything else draws as before.
+  }
+}
+
 export async function createServiceAreaMap(container: HTMLElement): Promise<MapLibreMap> {
   const maplibre = await import("maplibre-gl");
   // The worker is served from public/vendor (scripts/vendor-maplibre.mjs), not from the bundle.
   maplibre.setWorkerUrl(`/vendor/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`);
+  await registerPmtiles(maplibre);
   const map = new maplibre.Map({
     container,
     style: startStyle(darkNow()),

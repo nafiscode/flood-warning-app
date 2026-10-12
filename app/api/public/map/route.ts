@@ -10,18 +10,37 @@ type PlaceRow = Record<string, unknown> & { point: { coordinates: [number, numbe
  * hexagon, and river gauges. One address for everyone, kept at the edge for 60 s. Reports never
  * leave the database as points (safety rule 6); the counting happens in report_hex_bins().
  */
+/** The API hands back at most this many rows per request, whatever `limit` asks for. */
+const PAGE = 1000;
+const MAX_PAGES = 6;
+
 export async function GET() {
   if (!supabaseConfigured()) return unavailable();
   const supabase = createPublicClient();
+  /*
+   * Every safe place, read a page at a time. One request with a large limit looked right and
+   * silently returned the first thousand: the map said "1000" when the table held 2,566.
+   */
+  const allPlaces = async () => {
+    const rows: unknown[] = [];
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const { data, error } = await supabase
+        .from("safe_places")
+        .select(
+          "id, name, type, status, verification_status, point, freeboard_m, flooded_2024, flooded_2025, capacity, needs, updated_at",
+        )
+        .neq("status", "closed")
+        .contains("suitable_for", ["flood"])
+        .order("id")
+        .range(page * PAGE, (page + 1) * PAGE - 1);
+      if (error) return { data: null, error };
+      rows.push(...(data ?? []));
+      if ((data ?? []).length < PAGE) break;
+    }
+    return { data: rows, error: null };
+  };
   const [places, reports, gauges] = await Promise.all([
-    supabase
-      .from("safe_places")
-      .select(
-        "id, name, type, status, verification_status, point, freeboard_m, flooded_2024, flooded_2025, capacity, needs, updated_at",
-      )
-      .neq("status", "closed")
-      .contains("suitable_for", ["flood"])
-      .limit(5000),
+    allPlaces(),
     supabase.rpc("report_hex_bins"),
     supabase.rpc("station_status"),
   ]);
