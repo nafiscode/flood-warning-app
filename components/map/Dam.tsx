@@ -16,6 +16,7 @@ import {
   type DamLevel,
   type DamSignal,
 } from "@/lib/dam";
+import { DamSectionFigure } from "@/components/dam/DamFigures";
 import { DamHistory } from "@/components/map/DamHistory";
 import { localName } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
@@ -222,6 +223,8 @@ export function DamNotice({
           {t(`notice.${state}.title`, { dam: name })}
         </p>
         <DamStateChip signal={dam.signal} />
+        {/* The drawing the owner chose on 12 Oct, where the notice already goes. */}
+        <DamSectionFigure dam={dam} />
         <p>{t(`notice.${state}.body`, { dam: name, river: localName(dam.river, locale) })}</p>
         <p>
           {t(via === "tributary" ? "notice.whereTributary" : "notice.where", {

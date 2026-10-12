@@ -9,6 +9,8 @@ import {
   homeExample,
   type HomeScenario,
 } from "@/lib/dev-examples";
+import type { Dam } from "@/lib/dam";
+import { exampleDamSignal } from "@/lib/dev-examples";
 import { toPublicAlert } from "@/lib/public-status";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
@@ -36,6 +38,90 @@ function home(scenario: HomeScenario, more: Partial<HomeViewProps> = {}) {
 
 const follows = (a: Element, b: Element) =>
   !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+/*
+ * The dam's drawing on the home screen (the owner's choice of 12 Oct). Someone on the river gets
+ * the quiet notice, which carries the drawing inside it; someone else in Yala, Pattani or
+ * Narathiwat gets the drawing alone, with nothing saying water is coming to them; Songkhla gets
+ * neither, because the released water ends in Pattani Bay.
+ */
+describe("the dam's figure on the home screen", () => {
+  const DAM: Dam = {
+    code: "bang_lang",
+    name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
+    river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
+    operator: "EGAT",
+    point: null,
+    spillwayPoint: null,
+    outletPoint: null,
+    reservoir: null,
+    storageMaxMcm: 1589.8,
+    storageNormalMcm: 1454.4,
+    geometrySource: "osm",
+    geometryNote: {},
+    reaches: [],
+    // BANA (940104) is on the river; the other example places are not.
+    tambons: [{ code: BANA.code, via: "main", kmFromDam: 128 }],
+    signal: exampleDamSignal("releasing"),
+    daily: null,
+    days: [],
+  };
+  const area = (code: string) => ({ ...BANA, code, from: "list" as const });
+
+  it("someone on the river gets the notice, with the drawing inside it and no second card", () => {
+    const c = home("normal", { dams: [DAM], area: BANA });
+    const notice = c.querySelector("[data-dam-notice]")!;
+    expect(notice).toBeTruthy();
+    expect(notice.querySelector("[data-dam-figure='section']")).toBeTruthy();
+    expect(c.querySelector("[data-dam-figure-card]")).toBeNull();
+  });
+
+  it("someone else in the three provinces gets the drawing, and nothing that says water is coming", () => {
+    for (const code of ["950299", "940999", "960501"]) {
+      const c = home("normal", { dams: [DAM], area: area(code) });
+      const card = c.querySelector("[data-dam-figure-card]")!;
+      expect(card, code).toBeTruthy();
+      expect(card.querySelector("[data-dam-figure='section']")).toBeTruthy();
+      expect(c.querySelector("[data-dam-notice]")).toBeNull();
+      // It says what it is, and what it is not.
+      expect(card.textContent).toContain(th.dam.disclaimer.notAnAlert);
+      expect(card.getAttribute("data-dam-on-river")).toBe("false");
+      expect(card.textContent).toContain(th.dam.figure.cardWhere.replace("{river}", DAM.river.th!));
+    }
+  });
+
+  /*
+   * The quiet notice says nothing at all on an ordinary day (`attention` is "none"), so without
+   * this someone living on the river would see **less** of their own dam than a neighbour a
+   * province away. Found in a browser on 13 Oct, where the live dam is quiet.
+   */
+  it("someone on the river on a quiet day gets the drawing too, as the card", () => {
+    const quiet = { ...DAM, signal: exampleDamSignal("quiet") };
+    const c = home("normal", { dams: [quiet], area: BANA });
+    expect(c.querySelector("[data-dam-notice]")).toBeNull();
+    const card = c.querySelector("[data-dam-figure-card]")!;
+    expect(card).toBeTruthy();
+    expect(card.querySelector("[data-dam-figure='section']")).toBeTruthy();
+    // And it tells them the truth about where they live, rather than the other card's sentence.
+    expect(card.getAttribute("data-dam-on-river")).toBe("true");
+    expect(card.textContent).toContain(
+      th.dam.figure.cardWhereOnPath.replace("{river}", DAM.river.th!),
+    );
+  });
+
+  it("Songkhla gets neither: the dam's water never reaches it", () => {
+    const c = home("normal", { dams: [DAM], area: area("900101") });
+    expect(c.querySelector("[data-dam-figure-card]")).toBeNull();
+    expect(c.querySelector("[data-dam-notice]")).toBeNull();
+  });
+
+  it("nothing is drawn before someone has told the app where they are", () => {
+    // "choose" is the home screen of someone who has not picked an area yet.
+    const c = home("choose", { dams: [DAM] });
+    expect(c.querySelector("[data-dam-figure-card]")).toBeNull();
+    expect(c.querySelector("[data-dam-notice]")).toBeNull();
+  });
+});
 
 describe("home hero (safety rule 3)", () => {
   it("shows level, area, issuer, issue time, reason and next update", () => {

@@ -41,9 +41,14 @@ import {
 import type { WeatherPlace } from "@/lib/weather";
 import type { WeatherField } from "@/lib/weather-grid";
 
-/** One home-screen example, fed with made-up data instead of the live status. */
+/**
+ * One home-screen example, fed with made-up data instead of the live status - and the real dam,
+ * read from /api/public/dam, so the drawing the owner chose on 12 Oct can be judged here. The
+ * example person's area is in Pattani, which is one of the three provinces that see it.
+ */
 export function HomeExample({ scenario }: { scenario: HomeScenario }) {
   const example = homeExample(scenario);
+  const { data } = useFetched<DamData>(DAM_URL);
   return (
     <HomeView
       ready
@@ -54,6 +59,7 @@ export function HomeExample({ scenario }: { scenario: HomeScenario }) {
       me={example.me}
       places={EXAMPLE_PLACES}
       placesState="ok"
+      dams={data?.dams ?? null}
       now={EXAMPLE_NOW}
       onChooseArea={() => {}}
       onRetry={() => {}}

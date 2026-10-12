@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DamDialFigure, DamRiverFigure, DamSectionFigure } from "@/components/dam/DamFigures";
-import type { Dam } from "@/lib/dam";
+import { DAM_FIGURE_PROVINCES, showsDamFigure, type Dam } from "@/lib/dam";
 import { cycleFor, damFigure, RECORD_OUTFLOW_CMS, TURBINE_MAX_CMS } from "@/lib/dam-figure";
 import { exampleDamSignal } from "@/lib/dev-examples";
 import th from "@/messages/th.json";
@@ -131,5 +131,45 @@ describe("every figure says what it shows, without the motion", () => {
   it("the stale marker rides along, so an old reading is not drawn as the present", () => {
     const { container } = renderWithIntl(<DamSectionFigure dam={withSignal("stale")} />);
     expect(container.textContent).toContain(th.dam.state.stale);
+  });
+});
+
+/*
+ * Who sees the figure on their home screen (the owner's choice of 12 Oct): the people the quiet
+ * notice already reaches, and everyone in Yala, Pattani or Narathiwat. **Songkhla is left out on
+ * the evidence**: the 39 tambons the released water runs through are in Yala and Pattani only,
+ * and the river ends in Pattani Bay, so neither a release nor a failure of the dam sends water
+ * over the divide into the Songkhla Lake or U-Taphao basins.
+ */
+describe("whose home screen the figure reaches", () => {
+  const onRiver: Dam = {
+    ...DAM,
+    tambons: [
+      { code: "950801", via: "main", kmFromDam: 4.6 },
+      { code: "940104", via: "main", kmFromDam: 128 },
+    ],
+  };
+
+  it("reaches someone whose own area is on the river", () => {
+    expect(showsDamFigure(onRiver, ["950801"])).toBe(true);
+  });
+
+  it("reaches the three provinces the dam's water belongs to, river or no river", () => {
+    // A tambon in each, none of them on the dam's own path.
+    expect(showsDamFigure(onRiver, ["950299"])).toBe(true); // Yala
+    expect(showsDamFigure(onRiver, ["940999"])).toBe(true); // Pattani
+    expect(showsDamFigure(onRiver, ["960501"])).toBe(true); // Narathiwat
+    expect([...DAM_FIGURE_PROVINCES].sort()).toEqual(["94", "95", "96"]);
+  });
+
+  it("does not reach Songkhla, which is the other side of the divide", () => {
+    expect(showsDamFigure(onRiver, ["900101"])).toBe(false);
+    // Nor anywhere else in the country.
+    expect(showsDamFigure(onRiver, ["100101"])).toBe(false);
+  });
+
+  it("one place in the region is enough, and no places at all is not", () => {
+    expect(showsDamFigure(onRiver, ["900101", "960501"])).toBe(true);
+    expect(showsDamFigure(onRiver, [])).toBe(false);
   });
 });

@@ -244,6 +244,30 @@ export function damFrame(dam: Dam): { lon: number; lat: number }[] {
   return points;
 }
 
+/**
+ * Who sees the dam's figure on their home screen (the owner's choice of 12 Oct).
+ *
+ * Anyone whose own area or watched place is on the river below the dam sees it, as they already
+ * see the quiet notice - **and so does anyone in Yala, Pattani or Narathiwat**, because a dam
+ * upstream of the region is worth knowing about before it is your own tambon's turn.
+ *
+ * **Songkhla is left out, on the evidence.** Measured from the path itself: the 39 tambons the
+ * released water runs through are in Yala (18) and Pattani (21) and nowhere else, and the river
+ * ends at 101.244, 6.904 - Pattani Bay. Songkhla lies in its own basins (Songkhla Lake and the
+ * U-Taphao), the other side of the divide, so neither a release nor a failure of the dam sends
+ * water there; a figure of this dam on a Songkhla home screen would be noise at best and a
+ * frightening irrelevance at worst.
+ */
+export const DAM_FIGURE_PROVINCES = ["94", "95", "96"] as const;
+
+export function showsDamFigure(dam: Dam, tambonCodes: readonly string[]): boolean {
+  if (tambonCodes.length === 0) return false;
+  if (onPath(dam, tambonCodes)) return true;
+  return tambonCodes.some((code) =>
+    (DAM_FIGURE_PROVINCES as readonly string[]).includes(code.slice(0, 2)),
+  );
+}
+
 /** The reaches that carry released water, in drawing order: tributaries first, river on top. */
 export function reachesInOrder(dam: Dam): DamReach[] {
   const rank: Record<DamReachKind, number> = { tributary: 0, outlet: 1, main: 2 };

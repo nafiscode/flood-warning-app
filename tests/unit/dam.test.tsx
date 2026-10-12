@@ -196,10 +196,11 @@ describe("the notice is not an alert", () => {
 
   /*
    * Until 12 Oct nothing about the dam could wear an alert colour. The owner then asked for the
-   * states to be coloured and chose Jaga's own hues, so the **state chip** may - and nothing
-   * else may, which is what this now holds: strip the chip and the old rule still stands.
+   * states to be coloured and chose Jaga's own hues, so the two things that *are* the state - the
+   * chip and the drawing - may, and nothing else may. Strip those two and the old rule stands:
+   * the notice's own background, borders and body text stay as they were.
    */
-  it("carries no alert or SOS colour beyond the state chip itself", () => {
+  it("carries no alert or SOS colour beyond the state chip and the figure", () => {
     const { container } = renderWithIntl(
       <DamNotice
         dam={withSignal(exampleDamSignal("releasing"))}
@@ -209,6 +210,7 @@ describe("the notice is not an alert", () => {
       />,
     );
     container.querySelector("[data-dam-level]")!.remove();
+    container.querySelector("[data-dam-figure]")?.remove();
     const html = container.innerHTML;
     // Only the alert palette may show a level (docs/brand.md), and this is not a level.
     expect(html).not.toMatch(/bg-alert-|text-alert-|border-alert-|bg-sos/);

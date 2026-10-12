@@ -1629,6 +1629,8 @@
     },
     "warRoomTitle": "Example: the war room",
     "impactTitle": "Example: the impact record",
+    "damFigureTitle": "Figures of the dam's situation — three to choose from",
+    "damFigureNote": "The drawings move with the dam's real figures. Pick a state above to see each one; none of them is on the home screen yet.",
     "damTitle": "Bang Lang Dam",
     "damNote": "The real river path with made-up figures. Pick a state to see each message.",
     "damScenario": {
@@ -1651,9 +1653,7 @@
       "desktop": "Computer (Chrome, Edge)",
       "macSafari": "Mac (Safari)",
       "inApp": "Opened inside another app, such as Messenger or LINE"
-    },
-    "damFigureTitle": "Figures of the dam's situation — three to choose from",
-    "damFigureNote": "The drawings move with the dam's real figures. Pick a state above to see each one; none of them is on the home screen yet."
+    }
   },
   "report": {
     "title": "Report flooding",
@@ -1884,6 +1884,29 @@
       "release_unconfirmed": "A single reading indicates a high release rate. Waiting for the next hourly reading to confirm it, because the record contains clearly erroneous hourly values.",
       "watch_unconfirmed": "A single reading is above the threshold. Waiting for the next hourly reading to confirm it."
     },
+    "figure": {
+      "cardTitle": "{dam}: how it stands",
+      "cardWhereOnPath": "Your area is on the {river}, which carries the water released from the dam. Shown for information.",
+      "cardWhere": "Water released from the dam flows into the {river}. Shown for information, even where your own area is not on that river.",
+      "caption": "Releasing {cms} m³/s · reservoir {percent}% of maximum capacity",
+      "section": {
+        "about": "Shows cause and effect at once: the reservoir against its normal high water line, and the water leaving",
+        "title": "The dam in cross-section",
+        "alt": "The dam in cross-section: {state}, releasing {cms} m³/s, reservoir {percent}% full"
+      },
+      "river": {
+        "about": "The quietest on a home screen: the lines run faster the more the dam is releasing",
+        "title": "The river below the dam",
+        "alt": "The river below the dam: {state}, releasing {cms} m³/s"
+      },
+      "dial": {
+        "about": "The most exact to read: the grey band is what the turbines alone can pass",
+        "title": "A dial of the release",
+        "alt": "A dial of the release: {state}, releasing {cms} m³/s"
+      },
+      "note": "The drawing moves with the figures the dam publishes. It is not a forecast and not an alert from Jaga.",
+      "scale": "Full scale is {cms} m³/s, the largest release in the record; the grey part is what the turbines alone can pass"
+    },
     "figures": {
       "none": "No figures from the dam yet",
       "outflow": "Total outflow {cms, number} m³/s",
@@ -1970,26 +1993,6 @@
       "reservoir": "{dam} reservoir",
       "river": "{river} downstream of the dam",
       "tributary": "Lower reaches of the tributaries joining the main river"
-    },
-    "figure": {
-      "caption": "Releasing {cms} m³/s · reservoir {percent}% of maximum capacity",
-      "section": {
-        "about": "Shows cause and effect at once: the reservoir against its normal high water line, and the water leaving",
-        "title": "The dam in cross-section",
-        "alt": "The dam in cross-section: {state}, releasing {cms} m³/s, reservoir {percent}% full"
-      },
-      "river": {
-        "about": "The quietest on a home screen: the lines run faster the more the dam is releasing",
-        "title": "The river below the dam",
-        "alt": "The river below the dam: {state}, releasing {cms} m³/s"
-      },
-      "dial": {
-        "about": "The most exact to read: the grey band is what the turbines alone can pass",
-        "title": "A dial of the release",
-        "alt": "A dial of the release: {state}, releasing {cms} m³/s"
-      },
-      "note": "The drawing moves with the figures the dam publishes. It is not a forecast and not an alert from Jaga.",
-      "scale": "Full scale is {cms} m³/s, the largest release in the record; the grey part is what the turbines alone can pass"
     }
   }
 }

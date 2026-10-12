@@ -719,6 +719,19 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   alert hues, as a pill rather than the badge a level wears, with an icon and a word, on the card,
   the notice, the war room and the dam's marks on the map. The water keeps its own colour. See
   docs/brand.md; the screen always says these are the dam's figures, not an alert from Jaga.
+- **The drawing of the dam's state on the home screen** (added 13 Oct 2026, the owner's choice of
+  three): a cross-section of the dam, animated, where everything that moves is a published figure -
+  the reservoir against the capacity at normal high water, and the water leaving at the speed it is
+  really leaving, with the spillway drawn only when a gate is open. A dam that has published
+  nothing stands still, in grey. Motion is never the only channel: the state's colour, an icon, the
+  word and the figures sit beside it, and nothing moves under `prefers-reduced-motion`. **Who sees
+  it:** inside the quiet notice for anyone on the river below the dam, and as a card of its own for
+  everyone whose area or watched place is in Yala, Pattani or Narathiwat - including the people on
+  the river on an ordinary day, when the notice has nothing to say and draws nothing. The card
+  names their own river in that case and otherwise says the water runs into a river that is not
+  theirs; it never says water is coming. **Songkhla is excluded on the evidence**: the tambons the
+  released water runs through are in Yala and Pattani only and the river ends in Pattani Bay, so
+  the dam's water does not cross the divide into the Songkhla Lake or U-Taphao basins.
 - **The quiet tier** (`watchful`, or a release the app has not confirmed yet): a notice on the home
   screen and the map for anyone whose area or watched place is on the river below the dam. No
   alert level, no alert colour, no sound, no notification. It says it is not an alert from Jaga

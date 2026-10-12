@@ -1629,6 +1629,8 @@
     },
     "warRoomTitle": "Contoh: bilik gerakan",
     "impactTitle": "Contoh: rekod bantuan",
+    "damFigureTitle": "Gambar rajah keadaan empangan — tiga pilihan",
+    "damFigureNote": "Gambar rajah bergerak mengikut angka sebenar empangan. Pilih keadaan di atas untuk melihat setiap satu; belum diletakkan di laman utama.",
     "damTitle": "Empangan Bang Lang",
     "damNote": "Laluan sungai yang sebenar dengan angka rekaan. Pilih keadaan untuk melihat setiap mesej.",
     "damScenario": {
@@ -1651,9 +1653,7 @@
       "desktop": "Komputer (Chrome, Edge)",
       "macSafari": "Mac (Safari)",
       "inApp": "Dibuka dari aplikasi lain, seperti Messenger atau LINE"
-    },
-    "damFigureTitle": "Gambar rajah keadaan empangan — tiga pilihan",
-    "damFigureNote": "Gambar rajah bergerak mengikut angka sebenar empangan. Pilih keadaan di atas untuk melihat setiap satu; belum diletakkan di laman utama."
+    }
   },
   "report": {
     "title": "Lapor banjir",
@@ -1884,6 +1884,29 @@
       "release_unconfirmed": "Satu bacaan sahaja menunjukkan kadar pelepasan yang tinggi. Menunggu bacaan jam berikutnya untuk pengesahan, kerana rekod lalu mengandungi nilai sejam yang jelas tidak munasabah.",
       "watch_unconfirmed": "Satu bacaan sahaja melebihi ambang. Menunggu bacaan jam berikutnya untuk pengesahan."
     },
+    "figure": {
+      "cardTitle": "Keadaan {dam}",
+      "cardWhereOnPath": "Kawasan anda terletak di {river}, yang menerima air yang dilepaskan dari empangan. Ditunjukkan sebagai maklumat.",
+      "cardWhere": "Air yang dilepaskan dari empangan mengalir ke {river}. Ditunjukkan sebagai maklumat, walaupun kawasan anda tidak terletak di sungai itu.",
+      "caption": "Pelepasan {cms} m³/s · takungan {percent}% daripada kapasiti maksimum",
+      "section": {
+        "about": "Menunjukkan punca dan kesan sekali gus: paras takungan berbanding paras simpanan penuh biasa, dan air yang dilepaskan",
+        "title": "Keratan rentas empangan",
+        "alt": "Keratan rentas empangan: {state}, pelepasan {cms} m³/s, takungan {percent}%"
+      },
+      "river": {
+        "about": "Paling ringkas untuk kad di laman utama: garis air bergerak lebih laju apabila pelepasan lebih tinggi",
+        "title": "Sungai di hilir empangan",
+        "alt": "Sungai di hilir empangan: {state}, pelepasan {cms} m³/s"
+      },
+      "dial": {
+        "about": "Paling tepat untuk dibaca: bahagian kelabu ialah julat yang boleh dilepaskan melalui turbin sahaja",
+        "title": "Tolok kadar pelepasan",
+        "alt": "Tolok kadar pelepasan: {state}, pelepasan {cms} m³/s"
+      },
+      "note": "Gambar rajah bergerak mengikut angka yang diterbitkan oleh empangan. Ia bukan ramalan dan bukan amaran Jaga.",
+      "scale": "Skala penuh ialah {cms} m³/s, pelepasan terbesar dalam rekod; bahagian kelabu ialah julat lepasan turbin"
+    },
     "figures": {
       "none": "Belum ada data daripada empangan",
       "outflow": "Jumlah pelepasan air {cms, number} m³/s",
@@ -1970,26 +1993,6 @@
       "reservoir": "Takungan {dam}",
       "river": "{river} di hilir empangan",
       "tributary": "Bahagian hilir anak sungai yang mengalir masuk ke sungai utama"
-    },
-    "figure": {
-      "caption": "Pelepasan {cms} m³/s · takungan {percent}% daripada kapasiti maksimum",
-      "section": {
-        "about": "Menunjukkan punca dan kesan sekali gus: paras takungan berbanding paras simpanan penuh biasa, dan air yang dilepaskan",
-        "title": "Keratan rentas empangan",
-        "alt": "Keratan rentas empangan: {state}, pelepasan {cms} m³/s, takungan {percent}%"
-      },
-      "river": {
-        "about": "Paling ringkas untuk kad di laman utama: garis air bergerak lebih laju apabila pelepasan lebih tinggi",
-        "title": "Sungai di hilir empangan",
-        "alt": "Sungai di hilir empangan: {state}, pelepasan {cms} m³/s"
-      },
-      "dial": {
-        "about": "Paling tepat untuk dibaca: bahagian kelabu ialah julat yang boleh dilepaskan melalui turbin sahaja",
-        "title": "Tolok kadar pelepasan",
-        "alt": "Tolok kadar pelepasan: {state}, pelepasan {cms} m³/s"
-      },
-      "note": "Gambar rajah bergerak mengikut angka yang diterbitkan oleh empangan. Ia bukan ramalan dan bukan amaran Jaga.",
-      "scale": "Skala penuh ialah {cms} m³/s, pelepasan terbesar dalam rekod; bahagian kelabu ialah julat lepasan turbin"
     }
   }
 }

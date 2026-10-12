@@ -27,6 +27,9 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       figures: dam.figures!,
       disclaimer: dam.disclaimer!,
       source: dam.source!,
+      // The drawing of the dam's state and the words under it (the owner's choice of 12 Oct).
+      state: dam.state!,
+      figure: dam.figure!,
     },
   };
 }
