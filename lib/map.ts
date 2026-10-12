@@ -279,3 +279,39 @@ export function boundsAround(
   const margin = { lon: (e - w) * MARGIN, lat: (n - s) * MARGIN };
   return [w - margin.lon, s - margin.lat, e + margin.lon, n + margin.lat];
 }
+
+/**
+ * The basemap's own names (villages, towns, roads) that sit under one of our fills, in the order
+ * they are drawn. Our layers are added after the basemap's, so the flood-risk shading, the alert
+ * colours and the hill shading all land on top of its names and dim them; at night, over the risk
+ * shading, they could not be read at all (owner, 13 Oct). The answer is the names to lift so they
+ * end up directly under `anchor`, the first of our layers that is a line or a mark; empty when
+ * they are already there, so asking again after the move changes nothing.
+ */
+export function labelsToLift(layers: { id: string; type: string }[], anchor: string): string[] {
+  const at = layers.findIndex((l) => l.id === anchor);
+  if (at < 0) return [];
+  const labels = layers.filter((l) => l.type === "symbol" && !l.id.startsWith("jaga-"));
+  const inPlace = layers.slice(Math.max(0, at - labels.length), at);
+  return labels.length > 0 && labels.every((l, i) => inPlace[i]?.id === l.id)
+    ? []
+    : labels.map((l) => l.id);
+}
+
+/**
+ * Lift the basemap's names above our fills (see `labelsToLift`), and on a dark map give them the
+ * light ink and dark outline our own names use: the dark basemap writes its names in a dim grey
+ * that is lost on the risk shading even when nothing covers it.
+ */
+export function liftBasemapLabels(map: MapLibreMap): void {
+  const layers = map.getStyle().layers;
+  for (const id of labelsToLift(layers, TAMBON_LINE_LAYER)) map.moveLayer(id, TAMBON_LINE_LAYER);
+  if (!mapIsDark()) return;
+  for (const layer of layers) {
+    if (layer.type !== "symbol" || layer.id.startsWith("jaga-")) continue;
+    if (map.getPaintProperty(layer.id, "text-color") === mapInk()) continue;
+    map.setPaintProperty(layer.id, "text-color", mapInk());
+    map.setPaintProperty(layer.id, "text-halo-color", mapHalo());
+    map.setPaintProperty(layer.id, "text-halo-width", 1.4);
+  }
+}

@@ -31,6 +31,7 @@ import {
   type Basemap,
   createServiceAreaMap,
   darkNow,
+  liftBasemapLabels,
   mapHalo,
   mapInk,
   mapIsDark,
@@ -392,6 +393,8 @@ export function MapView({
             paint: { "line-color": ink(), "line-width": 1.5 },
           });
         }
+        // The basemap's place names go above the fills just added, or the shading hides them.
+        liftBasemapLabels(m);
         if (!m.getLayer(ALERT_STALE)) {
           m.addLayer({
             id: ALERT_STALE,
