@@ -207,6 +207,45 @@ test("a watched place can be added with a pin, shows on home with Call, and can 
   await expect(page.locator("[data-place]")).toHaveCount(0);
 });
 
+test("a place is found by pasting what was copied, or by its name", async ({ page }) => {
+  await signIn(page, emails.authority);
+  await page.goto("/account/places/new");
+  const box = page.locator("#place-finder");
+  const status = page.locator("[data-finder-status]");
+
+  // Coordinates copied from a map app: Enter looks for the place and does not save the form.
+  await box.fill("6.87821, 101.27191");
+  await box.press("Enter");
+  await expect(status).toHaveAttribute("data-finder-status", "pinned");
+  await expect(page).toHaveURL(/\/account\/places\/new$/);
+  await expect(page.locator('input[name="lat"]')).toHaveValue("6.878210");
+  await expect(page.locator('input[name="lon"]')).toHaveValue("101.271910");
+  // The pin is said in words, and the map opens by itself so it can be put right by hand.
+  await expect(page.locator("[data-pin-area='tambon']")).toContainText("ปัตตานี", {
+    timeout: 30_000,
+  });
+  await expect(page.locator("[data-map-ready]")).toBeVisible();
+
+  // A link somebody shared, with the words a chat app puts round it.
+  await box.fill("บ้านแม่ https://maps.google.com/?q=6.54321,101.28123");
+  await page.locator("[data-finder-search]").click();
+  await expect(page.locator('input[name="lat"]')).toHaveValue("6.543210");
+
+  // A name: Jaga's own tambons come first, whatever the outside search adds or fails to.
+  await box.fill("ต.สะเตง");
+  await page.locator("[data-finder-search]").click();
+  const first = page.locator("[data-finder-result='tambon']").first();
+  await expect(first).toContainText("สะเตง", { timeout: 30_000 });
+  await first.click();
+  await expect(status).toHaveAttribute("data-finder-status", "pinned");
+  expect(Number(await page.locator('input[name="lat"]').inputValue())).toBeGreaterThan(6.4);
+
+  // A link that is not a map says so, and leaves the pin where it was.
+  await box.fill("https://example.com/somewhere");
+  await page.locator("[data-finder-search]").click();
+  await expect(status).toHaveAttribute("data-finder-status", "unknownLink");
+});
+
 test("coverage can be chosen on the map, and the list follows", async ({ page }) => {
   await signIn(page, emails.authority);
   await page.goto("/authority/register");

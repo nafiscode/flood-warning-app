@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HomeLocationField } from "@/components/account/HomeLocationField";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
+import { finderText } from "@/lib/place-finder-text";
 import { createClient } from "@/lib/supabase/server";
 import {
   buttonPrimary,
@@ -54,6 +55,7 @@ export default async function WatchedPlace({
   const t = await getTranslations("watched");
   const tHome = await getTranslations("account.home");
   const tHousehold = await getTranslations("household");
+  const finder = await finderText();
 
   let place: Row | null = null;
   if (id !== "new") {
@@ -113,6 +115,8 @@ export default async function WatchedPlace({
               mapHint: t("location.why"),
               mapFailed: tHome("mapFailed"),
             }}
+            finder={finder}
+            locale={locale}
             initial={
               place ? { lat: place.point.coordinates[1], lon: place.point.coordinates[0] } : null
             }

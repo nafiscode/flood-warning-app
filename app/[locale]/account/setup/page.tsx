@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HomeLocationField } from "@/components/account/HomeLocationField";
 import { routing } from "@/i18n/routing";
 import { getSessionProfile, localePath, needsName, safeNextPath } from "@/lib/auth";
+import { finderText } from "@/lib/place-finder-text";
 import { createClient } from "@/lib/supabase/server";
 import {
   buttonPrimary,
@@ -41,6 +42,7 @@ export default async function AccountSetup({
   const t = await getTranslations("account");
   const tLanguage = await getTranslations("language");
 
+  const finder = await finderText();
   const supabase = await createClient();
   const [{ data: contact }, { data: profile }] = await Promise.all([
     supabase.from("profile_contacts").select("phone").maybeSingle(),
@@ -131,6 +133,8 @@ export default async function AccountSetup({
             mapHint: t("home.mapHint"),
             mapFailed: t("home.mapFailed"),
           }}
+          finder={finder}
+          locale={locale}
         />
         <label className={checkRow}>
           <input type="checkbox" name="locationConsent" value="yes" className={checkBox} />

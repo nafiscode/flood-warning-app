@@ -526,6 +526,32 @@
       "see": "Lihat permintaan anda"
     }
   },
+  "placeFinder": {
+    "label": "Cari tempat, atau tampal koordinat",
+    "hint": "Taip nama mukim, kampung, sekolah, masjid, wat atau pasar. Atau tampal koordinat atau pautan yang disalin daripada Google Maps.",
+    "placeholder": "Contoh: Sekolah Ban Bana atau 6.8782, 101.2719",
+    "search": "Cari",
+    "paste": "Tampal yang disalin",
+    "searching": "Sedang mencari…",
+    "resolving": "Sedang membuka pautan…",
+    "results": "Ketik tempat yang betul",
+    "none": "Tempat ini tidak dijumpai. Cuba taip nama mukim atau tempat berdekatan, kemudian ketik pada peta di titik yang betul.",
+    "failed": "Tidak dapat mencari sekarang. Cuba lagi, atau pilih pada peta.",
+    "partial": "Carian tidak lengkap. Hanya mukim yang Jaga kenal ditunjukkan.",
+    "linkFailed": "Lokasi tidak dapat dibaca daripada pautan ini. Cuba salin angka koordinat daripada Google Maps dan tampal di sini.",
+    "unknownLink": "Ini bukan pautan peta yang boleh dibaca. Cuba tampal pautan daripada Google Maps, atau taip nama tempat.",
+    "pinned": "Pin sudah diletakkan. Lihat pada peta di bawah. Jika belum tepat, ketik pada peta untuk mengalihkan pin ke rumah.",
+    "inArea": "Pin berada di",
+    "notCovered": "Jaga belum meliputi wilayah ini. Boleh disimpan, tetapi belum ada amaran untuk tempat ini.",
+    "outside": "Titik ini di luar kawasan yang Jaga kenal. Boleh disimpan, tetapi tiada amaran untuk tempat ini.",
+    "credit": "Nama tempat daripada OpenStreetMap",
+    "howTitle": "Cara menyalin lokasi daripada Google Maps",
+    "how": {
+      "a": "Buka Google Maps, kemudian tekan lama pada rumah atau tempat itu sehingga pin merah muncul.",
+      "b": "Ketik “Kongsi” dan pilih “Salin”, atau ketik pada angka koordinat untuk menyalinnya.",
+      "c": "Kembali ke halaman ini dan ketik “Tampal yang disalin”."
+    }
+  },
   "signIn": {
     "title": "Log masuk",
     "visitorNote": "Tak perlu log masuk untuk minta tolong (SOS), tengok amaran atau telefon talian kecemasan.",

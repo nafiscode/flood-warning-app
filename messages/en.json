@@ -526,6 +526,32 @@
       "see": "See your request"
     }
   },
+  "placeFinder": {
+    "label": "Search for the place, or paste its coordinates",
+    "hint": "Type the name of a tambon, village, school, mosque, temple or market. Or paste coordinates or a link copied from Google Maps.",
+    "placeholder": "e.g. Ban Bana School or 6.8782, 101.2719",
+    "search": "Search",
+    "paste": "Paste what I copied",
+    "searching": "Searching…",
+    "resolving": "Opening the link…",
+    "results": "Tap the right place",
+    "none": "Couldn't find that place. Try the tambon's name or somewhere nearby, then tap the exact spot on the map.",
+    "failed": "Search isn't working right now. Try again, or choose on the map.",
+    "partial": "The search was incomplete. Only tambons Jaga knows are shown.",
+    "linkFailed": "Couldn't read a location from this link. Try copying the coordinate numbers from Google Maps and pasting them here instead.",
+    "unknownLink": "This isn't a map link Jaga can read. Paste a link from Google Maps, or type the place's name.",
+    "pinned": "Pin placed. See it on the map below. If it isn't quite right, tap the map to move the pin onto the house.",
+    "inArea": "The pin is in",
+    "notCovered": "Jaga doesn't cover this province yet. You can save it, but there are no alerts for it yet.",
+    "outside": "This point is outside the area Jaga knows. You can save it, but there will be no alerts for it.",
+    "credit": "Place names from OpenStreetMap",
+    "howTitle": "How to copy a location from Google Maps",
+    "how": {
+      "a": "Open Google Maps and press and hold on the house or place until a red pin appears.",
+      "b": "Tap “Share” and choose “Copy”, or tap the coordinate numbers to copy them.",
+      "c": "Come back to this page and tap “Paste what I copied”."
+    }
+  },
   "signIn": {
     "title": "Sign in",
     "visitorNote": "You don't need to sign in to send an SOS, see alerts or call the hotlines.",

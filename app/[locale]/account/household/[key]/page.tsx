@@ -5,6 +5,7 @@ import { HomeLocationField } from "@/components/account/HomeLocationField";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
 import { VULNERABLE_ORDER } from "@/lib/coverage";
+import { finderText } from "@/lib/place-finder-text";
 import { createClient } from "@/lib/supabase/server";
 import {
   buttonPrimary,
@@ -70,6 +71,7 @@ export default async function HouseholdPage({
   const t = await getTranslations("household");
   const tSos = await getTranslations("sos");
   const tHome = await getTranslations("account.home");
+  const finder = await finderText();
   const supabase = await createClient();
 
   let placeLabel: string | null = null;
@@ -212,6 +214,8 @@ export default async function HouseholdPage({
                 mapHint: t("locationHint"),
                 mapFailed: tHome("mapFailed"),
               }}
+              finder={finder}
+              locale={locale}
               initial={at ? { lat: at[1], lon: at[0] } : null}
             />
           )}
