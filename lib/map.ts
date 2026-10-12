@@ -134,3 +134,38 @@ export async function createServiceAreaMap(container: HTMLElement): Promise<MapL
   map.on("error", () => {});
   return map;
 }
+
+/**
+ * A box that holds every one of these points, for the map to fly to (the owner's request of
+ * 12 Oct: opening the dam's figures should also show the dam **and** the places the person has
+ * saved, so the distance between them is something they can see).
+ *
+ * The box never gets smaller than MIN_SPAN, or a lone point - a dam with nobody's places beside
+ * it - would zoom to the street and tell the reader nothing about where it sits.
+ */
+export const MIN_SPAN = { lon: 0.24, lat: 0.2 };
+/** Breathing room on each side of the box, as a share of its own span. */
+export const MARGIN = 0.06;
+
+export function boundsAround(
+  points: readonly { lon: number; lat: number }[],
+): [number, number, number, number] | undefined {
+  const usable = points.filter(
+    (p) => Number.isFinite(p.lon) && Number.isFinite(p.lat) && (p.lon !== 0 || p.lat !== 0),
+  );
+  if (usable.length === 0) return undefined;
+  const lons = usable.map((p) => p.lon);
+  const lats = usable.map((p) => p.lat);
+  const west = Math.min(...lons);
+  const east = Math.max(...lons);
+  const south = Math.min(...lats);
+  const north = Math.max(...lats);
+  // Grow around the middle until the box is at least MIN_SPAN across, so one point still gets
+  // a neighbourhood around it rather than a rooftop.
+  const growLon = Math.max(0, MIN_SPAN.lon - (east - west)) / 2;
+  const growLat = Math.max(0, MIN_SPAN.lat - (north - south)) / 2;
+  const [w, s, e, n] = [west - growLon, south - growLat, east + growLon, north + growLat];
+  // A margin, so a pin on the edge of the box is not drawn half under the edge of the screen.
+  const margin = { lon: (e - w) * MARGIN, lat: (n - s) * MARGIN };
+  return [w - margin.lon, s - margin.lat, e + margin.lon, n + margin.lat];
+}

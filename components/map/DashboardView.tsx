@@ -13,9 +13,9 @@ import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
-import { onPath, type Dam } from "@/lib/dam";
+import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { darkNow, PROVINCE_BOUNDS } from "@/lib/map";
+import { boundsAround, darkNow, PROVINCE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
@@ -118,6 +118,15 @@ export function DashboardView(props: DashboardViewProps) {
     setPicked(next);
   };
   const [showMine, setShowMine] = useState(true);
+  /*
+   * A box the map has been asked to fly to, and a count so that asking for the same box twice
+   * still moves it (the owner, 12 Oct: opening the dam's figures should show the dam and the
+   * person's own places together, so the distance between them is something they can see).
+   */
+  const [focus, setFocus] = useState<{
+    box: [number, number, number, number];
+    key: number;
+  } | null>(null);
   /*
    * The pins take their light colours once the app has turned dark for the night (the owner,
    * 10 Oct: their own pin was too dark to see on the night map). `now` moves on every 30 s, so
@@ -421,7 +430,8 @@ export function DashboardView(props: DashboardViewProps) {
                 status={fresh ? status : null}
                 data={data}
                 now={now}
-                bounds={mapBounds}
+                bounds={focus?.box ?? mapBounds}
+                boundsKey={focus?.key ?? 0}
                 onSelect={setSelection}
                 text={{ loading: t("loading"), failed: t("failed") }}
                 mine={mine}
@@ -545,7 +555,16 @@ export function DashboardView(props: DashboardViewProps) {
                         key={dam.code}
                         type="button"
                         data-open-dam={dam.code}
-                        onClick={() => setSelection({ kind: "dam", code: dam.code })}
+                        onClick={() => {
+                          setSelection({ kind: "dam", code: dam.code });
+                          /*
+                           * The dam, and the places this person saved, in one view. Their own
+                           * pins come along only while they are shown: framing a map around
+                           * something invisible would read as a wrong zoom.
+                           */
+                          const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
+                          if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+                        }}
                         className="min-h-tap self-start text-start underline"
                       >
                         {tDam("legend.open", { dam: localName(dam.name, locale) })}

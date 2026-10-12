@@ -105,7 +105,15 @@ export type Dam = {
   spillwayPoint: DamPoint | null;
   /** Head of the mapped outlet channel, roughly the powerhouse tailwater. Approximate. */
   outletPoint: DamPoint | null;
-  reservoir: { type: "MultiPolygon"; coordinates: number[][][][] } | null;
+  /**
+   * The lake. PostGIS gives whichever it has, and Bang Lang's is a **Polygon** with 13 holes,
+   * not a MultiPolygon - this said MultiPolygon until 12 Oct, when walking it one level too deep
+   * threw in a browser. Anything that reads it must take both.
+   */
+  reservoir: {
+    type: "Polygon" | "MultiPolygon";
+    coordinates: number[][][] | number[][][][];
+  } | null;
   storageMaxMcm: number | null;
   storageNormalMcm: number | null;
   /** Where the lines came from and what they do not say (safety rule 8). */
@@ -194,6 +202,46 @@ export function onPath(dam: Dam, tambonCodes: readonly string[]): DamTambon | nu
       (a.via === "main" ? 0 : 1) - (b.via === "main" ? 0 : 1) ||
       (a.kmFromDam ?? Infinity) - (b.kmFromDam ?? Infinity),
   )[0]!;
+}
+
+/**
+ * What the map should hold when someone opens the dam's figures: the dam, its two outlets, and
+ * **the whole reservoir**, which is the thing that makes the view read as a dam at all. Framing
+ * the dam's point alone cut the lake off the bottom of the screen (seen in a browser, 12 Oct).
+ *
+ * The person's own places are added by the caller, because only the map knows whether they are
+ * being shown.
+ */
+export function damFrame(dam: Dam): { lon: number; lat: number }[] {
+  const points: { lon: number; lat: number }[] = [];
+  for (const point of [dam.point, dam.spillwayPoint, dam.outletPoint]) {
+    if (point) points.push({ lon: point.coordinates[0], lat: point.coordinates[1] });
+  }
+  if (dam.reservoir) {
+    // The lake's corners are enough: a box around them is a box around all of it. The walk is
+    // depth-blind on purpose, so a Polygon and a MultiPolygon are both read correctly.
+    let west = Infinity;
+    let east = -Infinity;
+    let south = Infinity;
+    let north = -Infinity;
+    const walk = (part: unknown): void => {
+      if (!Array.isArray(part)) return;
+      if (typeof part[0] === "number" && typeof part[1] === "number") {
+        const [lon, lat] = part as [number, number];
+        if (lon < west) west = lon;
+        if (lon > east) east = lon;
+        if (lat < south) south = lat;
+        if (lat > north) north = lat;
+        return;
+      }
+      for (const deeper of part) walk(deeper);
+    };
+    walk(dam.reservoir.coordinates);
+    if (Number.isFinite(west)) {
+      points.push({ lon: west, lat: south }, { lon: east, lat: north });
+    }
+  }
+  return points;
 }
 
 /** The reaches that carry released water, in drawing order: tributaries first, river on top. */

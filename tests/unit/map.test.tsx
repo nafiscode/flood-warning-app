@@ -18,8 +18,9 @@ import {
   exampleDamSignal,
   exampleStatus,
 } from "@/lib/dev-examples";
-import type { Dam } from "@/lib/dam";
+import { damFrame, type Dam } from "@/lib/dam";
 import { layersFor } from "@/lib/hazards";
+import { boundsAround, MARGIN, MIN_SPAN } from "@/lib/map";
 import { alertFillColor, staleTambons } from "@/lib/map-style";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
@@ -116,6 +117,138 @@ const green = /47, ?122, ?37/; // --alert-normal as rgb
  * view is a mark a few pixels across: measured on the live map, 2 taps in 361 found it, and the
  * owner could not find it at all. The legend names the dam, so the legend opens it.
  */
+/*
+ * Opening the dam's figures also frames the map on the dam and the places this person saved
+ * (the owner, 12 Oct), so the distance between them is something they can see rather than work
+ * out. The box is the pure part; MapView already flies to whatever `bounds` it is given.
+ */
+describe("the view that opening the dam asks for", () => {
+  const DAM_POINT = { lon: 101.2721, lat: 6.1551 };
+
+  it("holds every point it is given", () => {
+    const box = boundsAround([DAM_POINT, { lon: 101.25, lat: 6.87 }])!;
+    const [west, south, east, north] = box;
+    expect(west).toBeLessThanOrEqual(101.25);
+    expect(east).toBeGreaterThanOrEqual(101.2721);
+    expect(south).toBeLessThanOrEqual(6.1551);
+    expect(north).toBeGreaterThanOrEqual(6.87);
+  });
+
+  /*
+   * A dam with nobody's places beside it is one point, and a box around one point is a rooftop.
+   * The reader needs the country around it to see where it is.
+   */
+  it("a single point still gets a neighbourhood around it", () => {
+    const [west, south, east, north] = boundsAround([DAM_POINT])!;
+    // The floor, plus the margin that keeps a pin off the edge of the screen.
+    expect(east - west).toBeCloseTo(MIN_SPAN.lon * (1 + 2 * MARGIN), 6);
+    expect(north - south).toBeCloseTo(MIN_SPAN.lat * (1 + 2 * MARGIN), 6);
+    // Centred on the point, not hanging off one side of it.
+    expect((west + east) / 2).toBeCloseTo(DAM_POINT.lon, 6);
+    expect((south + north) / 2).toBeCloseTo(DAM_POINT.lat, 6);
+  });
+
+  it("ignores a place with no usable position, and asks for nothing when there is none", () => {
+    const box = boundsAround([DAM_POINT, { lon: 0, lat: 0 }, { lon: NaN, lat: 6 }])!;
+    expect(box[0]).toBeGreaterThan(100);
+    expect(boundsAround([])).toBeUndefined();
+    expect(boundsAround([{ lon: 0, lat: 0 }])).toBeUndefined();
+  });
+
+  it("the button hands the map a box that holds the dam and the person's places", () => {
+    const c = dashboard({ dams: [EXAMPLE_DAM], me: EXAMPLE_ME });
+    const before = c.querySelector("[data-map]")!.getAttribute("data-bounds");
+    fireEvent.click(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)!);
+    const after = c.querySelector("[data-map]")!.getAttribute("data-bounds")!;
+    expect(after).not.toBe(before);
+    const [west, south, east, north] = after.split(",").map(Number);
+    const [damLon, damLat] = EXAMPLE_DAM.point!.coordinates;
+    // The dam is in the box, and so is every place this person has saved. The mock rounds the
+    // box to two decimals, which is about a kilometre, hence the slack on each edge.
+    const slack = 0.01;
+    expect(west!).toBeLessThanOrEqual(damLon! + slack);
+    expect(east!).toBeGreaterThanOrEqual(damLon! - slack);
+    expect(south!).toBeLessThanOrEqual(damLat! + slack);
+    expect(north!).toBeGreaterThanOrEqual(damLat! - slack);
+    const saved = (EXAMPLE_ME.signedIn ? EXAMPLE_ME.places : []).filter((p) => p.area);
+    expect(saved.length).toBeGreaterThan(0);
+    for (const place of saved) {
+      expect(west!).toBeLessThanOrEqual(place.area!.lon + slack);
+      expect(east!).toBeGreaterThanOrEqual(place.area!.lon - slack);
+      expect(south!).toBeLessThanOrEqual(place.area!.lat + slack);
+      expect(north!).toBeGreaterThanOrEqual(place.area!.lat - slack);
+    }
+  });
+
+  /*
+   * Framing the dam's point alone cut the reservoir off the bottom of the screen (seen in a
+   * browser). The lake is what makes the view read as a dam.
+   */
+  it("the frame holds the reservoir, not only the dam's point", () => {
+    const withLake = {
+      ...EXAMPLE_DAM,
+      reservoir: {
+        type: "MultiPolygon" as const,
+        coordinates: [
+          [
+            [
+              [101.2, 5.95],
+              [101.35, 5.95],
+              [101.35, 6.15],
+              [101.2, 6.15],
+              [101.2, 5.95],
+            ],
+          ],
+        ],
+      },
+    };
+    const points = damFrame(withLake);
+    expect(points.length).toBeGreaterThan(1);
+    const [west, south, east, north] = boundsAround(points)!;
+    expect(south).toBeLessThanOrEqual(5.95);
+    expect(north).toBeGreaterThanOrEqual(6.1551);
+    expect(west).toBeLessThanOrEqual(101.2);
+    expect(east).toBeGreaterThanOrEqual(101.35);
+  });
+
+  /*
+   * Bang Lang's lake comes back from PostGIS as a **Polygon** with 13 holes, not a MultiPolygon.
+   * The frame walked it one level too deep and threw in the browser ("`.for` is not iterable"),
+   * which is why the walk is depth-blind now.
+   */
+  it("reads the lake whether it is a Polygon or a MultiPolygon", () => {
+    const ring = [
+      [101.2, 5.95],
+      [101.35, 5.95],
+      [101.35, 6.15],
+      [101.2, 6.15],
+      [101.2, 5.95],
+    ];
+    const asPolygon = damFrame({
+      ...EXAMPLE_DAM,
+      reservoir: { type: "Polygon", coordinates: [ring] },
+    });
+    const asMulti = damFrame({
+      ...EXAMPLE_DAM,
+      reservoir: { type: "MultiPolygon", coordinates: [[ring]] },
+    });
+    expect(boundsAround(asPolygon)).toEqual(boundsAround(asMulti));
+    expect(boundsAround(asPolygon)![1]).toBeLessThanOrEqual(5.95);
+  });
+
+  it("frames the dam alone when the person has saved nothing", () => {
+    const c = dashboard({ dams: [EXAMPLE_DAM] });
+    fireEvent.click(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)!);
+    const [west, south, east, north] = c
+      .querySelector("[data-map]")!
+      .getAttribute("data-bounds")!
+      .split(",")
+      .map(Number);
+    expect(east! - west!).toBeCloseTo(MIN_SPAN.lon, 1);
+    expect(north! - south!).toBeCloseTo(MIN_SPAN.lat, 1);
+  });
+});
+
 describe("the dam's card can be opened without hitting a two-pixel mark", () => {
   it("the legend has a button that opens it, and the card carries the charts", () => {
     const c = dashboard({ dams: [EXAMPLE_DAM] });

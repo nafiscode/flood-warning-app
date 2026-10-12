@@ -94,6 +94,11 @@ type Props = {
   now: number;
   /** Where to look: the service area, or one province. */
   bounds?: [number, number, number, number];
+  /**
+   * Changes when the caller asks for the same box again - tapping "see the dam's figures" twice
+   * after panning away should bring the map back, and the box itself has not changed.
+   */
+  boundsKey?: number;
   onSelect: (selection: MapSelection) => void;
   text: { loading: string; failed: string };
 };
@@ -148,7 +153,9 @@ function damCollections(
     if (dam.reservoir) {
       water.push({
         type: "Feature",
-        geometry: dam.reservoir,
+        // Either a Polygon or a MultiPolygon, whichever PostGIS held (lib/dam.ts); MapLibre
+        // draws both, and the narrower type is only a GeoJSON typing detail.
+        geometry: dam.reservoir as GeoJSON.Geometry,
         properties: { code: dam.code, name },
       });
     }
@@ -227,6 +234,7 @@ export function MapView({
   data,
   now,
   bounds,
+  boundsKey = 0,
   onSelect,
   text,
   mine = [],
@@ -697,9 +705,13 @@ export function MapView({
         [west, south],
         [east, north],
       ],
-      { padding: 8, duration: 0 },
+      /*
+       * A move the reader asked for is animated, so they see the map travel rather than find a
+       * different picture; the first fit, and a change of province, are instant.
+       */
+      { padding: 8, duration: boundsKey > 0 ? 600 : 0 },
     );
-  }, [state, west, south, east, north]);
+  }, [state, west, south, east, north, boundsKey]);
 
   if (state === "failed") {
     return (

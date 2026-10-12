@@ -62,10 +62,16 @@ export function HomeExample({ scenario }: { scenario: HomeScenario }) {
   );
 }
 
-/** The map with made-up alerts, reports, places, a gauge and two watched places. */
+/**
+ * The map with made-up alerts, reports, places, a gauge and two watched places - and the real
+ * dam, read from /api/public/dam like the live map does, so that "see the dam's figures" can be
+ * tried here with somebody's own places on the map beside it (the owner, 12 Oct).
+ */
 export function MapExample() {
+  const { data } = useFetched<DamData>(DAM_URL);
   return (
     <DashboardView
+      dams={data?.dams ?? []}
       status={exampleStatus([
         exampleAlert("evacuate", ["940111", "940112"]),
         exampleAlert("warning", [BANA.code, "940105"], {
