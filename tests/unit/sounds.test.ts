@@ -42,6 +42,16 @@ describe("Jaga's sounds", () => {
     }
   });
 
+  it("is the fast two-tone the owner chose by ear: six notes, high and low in turn, then a breath", () => {
+    const alarm = SOUNDS.offer;
+    expect(alarm.tones.map((t) => t.freq)).toEqual([988, 740, 988, 740, 988, 740]);
+    expect(alarm.tones.every((t) => t.type === "triangle")).toBe(true);
+    // The notes are over well before the next round starts, so each round is heard apart.
+    expect(durationMs("offer")).toBeLessThan(alarm.repeatEveryMs! - 300);
+    expect(alarm.repeatEveryMs).toBe(1300);
+    expect(alarm.vibrate).toHaveLength(7);
+  });
+
   it("gives the dam release a shape of its own, never mistakable for an alert", () => {
     const dam = SOUNDS.damRelease.tones.map((t) => t.freq);
     const alert = SOUNDS.alert.tones.map((t) => t.freq);

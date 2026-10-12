@@ -115,7 +115,7 @@ Jaga makes five sounds and no others. They are generated in the app with the Web
 
 | Sound | When | Shape |
 |---|---|---|
-| Offer alarm | an authority is being offered an SOS case | two alternating tones, repeating until the offer is answered or passes on. The only insistent sound in Jaga. |
+| Offer alarm | an authority is being offered an SOS case | a fast two-tone: six short bright notes, high and low in turn (988 and 740 Hz), then a breath, repeating every 1.3 s until the offer is answered or passes on. The only insistent sound in Jaga. Chosen by the owner by ear on 12 Oct 2026 from eighteen candidates. |
 | Accepted | a team accepts the requester's case | one short rising pair. Relief, not celebration. |
 | Rescued / safe | "rescued" and "I'm safe now" | three soft notes resolving downward |
 | Alert | a new alert at Warning or Evacuate | one low double-tone |

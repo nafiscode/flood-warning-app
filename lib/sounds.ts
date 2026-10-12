@@ -28,6 +28,8 @@ type Tone = {
   ms: number;
   /** 0..1, before the shared output gain. */
   gain?: number;
+  /** The waveform. A sine is round and soft; a triangle is brighter and carries on a small speaker. */
+  type?: "sine" | "triangle";
 };
 
 export type SoundSpec = {
@@ -40,21 +42,24 @@ export type SoundSpec = {
 
 /**
  * A5 and A7 use these by name. The frequencies are deliberately plain: two alternating notes for
- * the alarm (the shape of a European emergency siren, which people read as "answer me"), a rising
+ * the alarm (the shape of an emergency two-tone, which people read as "answer me"), a rising
  * pair for good news, a falling resolve for "it is over", and low tones for an alert so it does
  * not sound like a notification from a game.
  */
 export const SOUNDS: Record<SoundName, SoundSpec> = {
-  // A team is being offered a case. The only insistent sound in Jaga.
+  // A team is being offered a case. The only insistent sound in Jaga. The owner's choice of 12
+  // October from eighteen candidates played on the tracker ("fast two-tone"): six short notes,
+  // high and low in turn, then a breath. Brighter and higher than the first version, so it
+  // carries on a cheap phone speaker over rain and an engine.
   offer: {
-    tones: [
-      { freq: 784, at: 0, ms: 260 },
-      { freq: 587, at: 300, ms: 260 },
-      { freq: 784, at: 600, ms: 260 },
-      { freq: 587, at: 900, ms: 260 },
-    ],
-    repeatEveryMs: 1500,
-    vibrate: [220, 120, 220, 120, 220],
+    tones: [0, 1, 2, 3, 4, 5].map((i) => ({
+      freq: i % 2 === 0 ? 988 : 740,
+      at: i * 150,
+      ms: 130,
+      type: "triangle" as const,
+    })),
+    repeatEveryMs: 1300,
+    vibrate: [120, 60, 120, 60, 120, 60, 120],
   },
   // A team accepted: the requester's screen. Relief, not celebration.
   accepted: {
@@ -146,7 +151,7 @@ function playOnce(spec: SoundSpec, volume: number): void {
   for (const tone of spec.tones) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = "sine";
+    osc.type = tone.type ?? "sine";
     osc.frequency.value = tone.freq;
     const start = now + tone.at / 1000;
     const end = start + tone.ms / 1000;
