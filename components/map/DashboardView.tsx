@@ -157,9 +157,11 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const [showPlaces, setShowPlaces] = useState(false);
   // The flood-risk areas start on (the owner, 12 Oct 2026) and can be switched off to read the
-  // ground underneath; the basemap is the person's choice for as long as this page is open.
+  // ground underneath; the basemap is the person's choice for as long as this page is open. It
+  // opens on the terrain (the owner, 13 Oct 2026): where the hills are says most about where
+  // water goes.
   const [showHazard, setShowHazard] = useState(true);
-  const [basemap, setBasemapChoice] = useState<Basemap>("streets");
+  const [basemap, setBasemapChoice] = useState<Basemap>("terrain");
   /*
    * A box the map has been asked to fly to, and a count so that asking for the same box twice
    * still moves it (the owner, 12 Oct: opening the dam's figures should show the dam and the
