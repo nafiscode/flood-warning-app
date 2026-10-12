@@ -15,6 +15,7 @@ import {
   coverageTotals,
   gapsByProvince,
   isGap,
+  livePoints,
   myPoints,
   pointsByProvince,
   type UnconfirmedRescue,
@@ -126,6 +127,71 @@ describe("the responsibility map as a team reads it", () => {
   it("uses no alert colour for a gap: a missing team is not an alert level", () => {
     draw();
     expect(document.body.innerHTML).not.toMatch(/alert-(watch|warning|evacuate|normal)|bg-sos/);
+  });
+});
+
+describe("another team's contact, for coordination", () => {
+  const draw = (contacts: Parameters<typeof CoverageView>[0]["contacts"] = {}) => {
+    const onContact = vi.fn();
+    renderWithIntl(
+      <CoverageView
+        map={<div data-fake-map />}
+        coverage={EXAMPLE_COVERAGE}
+        picked={{ tambon: "940111", units: exampleUnits("940111") }}
+        onPick={() => {}}
+        contacts={contacts}
+        onContact={onContact}
+      />,
+    );
+    return onContact;
+  };
+  const OTHER = "00000000-0000-4000-8000-0000000000c3";
+
+  it("is asked for by a tap, never for the caller's own team, and no number is shown before", () => {
+    const onContact = draw();
+    const buttons = [...document.querySelectorAll("[data-unit-contact]")];
+    // Puyut in the example: the caller's own team and one coordinator.
+    expect(buttons.map((b) => b.getAttribute("data-unit-contact"))).toEqual([OTHER]);
+    expect(document.querySelector('a[href^="tel:"]')).toBeNull();
+    fireEvent.click(buttons[0]!);
+    expect(onContact).toHaveBeenCalledWith(OTHER);
+  });
+
+  it("shows the name and the number once asked for, and says the look is logged", () => {
+    draw({ [OTHER]: { name: "Aminah", phone: "+66830000009" } });
+    const shown = document.querySelector("[data-unit-contact-shown]")!;
+    expect(shown.textContent).toContain("Aminah");
+    expect(shown.querySelector('a[href="tel:+66830000009"]')).not.toBeNull();
+    expect(shown.textContent).toContain(th.authority.act.phoneLogged);
+    expect(document.querySelector("[data-unit-contact]")).toBeNull();
+  });
+
+  it("says so when the team has no number, or the database refused", () => {
+    draw({ [OTHER]: { name: null, phone: null } });
+    expect(document.body.textContent).toContain(th.authority.coverage.contactNone);
+    document.body.innerHTML = "";
+    draw({ [OTHER]: "failed" });
+    expect(document.body.textContent).toContain(th.authority.coverage.contactFailed);
+  });
+});
+
+describe("the points ledger", () => {
+  it("counts only the awards nobody has taken back", () => {
+    const row = (points: number, revokedAt: string | null) => ({
+      id: points,
+      createdAt: "2026-11-20T00:00:00Z",
+      unitName: "x",
+      orgName: "y",
+      sosId: null,
+      tambonNameTh: null,
+      tambonNameEn: null,
+      points,
+      reason: "rescue confirmed: requester",
+      revokedAt,
+      revokeReason: revokedAt ? "duplicate" : null,
+    });
+    expect(livePoints([row(12, null), row(16, "2026-11-21T00:00:00Z"), row(10, null)])).toBe(22);
+    expect(livePoints([])).toBe(0);
   });
 });
 
@@ -270,6 +336,9 @@ describe("the wording of the new views", () => {
       (m: typeof th) => m.authority.coverage,
       (m: typeof th) => m.authority.points,
       (m: typeof th) => m.warRoom.unconfirmed,
+      (m: typeof th) => m.admin.points,
+      (m: typeof th) => m.admin.households,
+      (m: typeof th) => m.admin.nav,
     ];
     for (const group of groups) {
       const thai = keys(group(th)).sort();

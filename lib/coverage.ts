@@ -208,3 +208,26 @@ export function cleanCounts(input: Record<string, unknown>): Record<string, numb
   }
   return out;
 }
+
+/** One row of the points ledger, as the admins read it (spec 5.5). A revoked row is kept. */
+export type PointsAward = {
+  id: number;
+  createdAt: string;
+  unitName: string;
+  orgName: string;
+  sosId: string | null;
+  tambonNameTh: string | null;
+  tambonNameEn: string | null;
+  points: number;
+  reason: string;
+  revokedAt: string | null;
+  revokeReason: string | null;
+};
+
+/** What counts now: the awards nobody has taken back. */
+export function livePoints(rows: PointsAward[]): number {
+  return rows.filter((r) => !r.revokedAt).reduce((sum, r) => sum + r.points, 0);
+}
+
+/** Another team's point of contact, once a team asked for it (spec 5.3). */
+export type UnitContact = { name: string | null; phone: string | null };

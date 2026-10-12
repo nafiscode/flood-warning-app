@@ -1006,7 +1006,11 @@
         "94": "Pattani",
         "95": "Yala",
         "96": "Narathiwat"
-      }
+      },
+      "showContact": "Lihat nombor penyelaras pasukan ini",
+      "contact": "Penyelaras: {name}",
+      "contactNone": "Pasukan ini tiada nombor penyelaras dalam sistem.",
+      "contactFailed": "Nombor tidak dapat dipaparkan. Ia hanya dibuka kepada pasukan yang berkongsi kawasan dengan pasukan anda."
     },
     "points": {
       "mine": "Pasukan anda: {points} mata daripada {cases} penyelamatan yang disahkan",
@@ -1047,7 +1051,9 @@
       "authorities": "Semak pasukan",
       "invitations": "Pentadbir",
       "warRoom": "Bilik gerakan",
-      "impact": "Rekod bantuan"
+      "impact": "Rekod bantuan",
+      "points": "Mata",
+      "households": "Isi rumah"
     },
     "role": {
       "admin": "Pentadbir",
@@ -1125,6 +1131,28 @@
       "title": "Rekod bantuan (contoh)",
       "note": "Ringkasan bantuan yang Jaga sampaikan dan pasukan yang membantu. Angkanya masih rekaan.",
       "open": "Buka rekod bantuan"
+    },
+    "points": {
+      "title": "Lejar mata pasukan",
+      "intro": "Sistem memberi mata sendiri apabila penyelamatan disahkan. Pentadbir boleh menarik balik mata dengan memberi sebab. Rekod yang ditarik balik kekal dalam lejar, cuma tidak dikira.",
+      "total": "{points} mata dikira, daripada {count} rekod",
+      "none": "Belum ada rekod mata.",
+      "amount": "{points} mata",
+      "revoked": "Sudah ditarik balik. Sebab: {reason}",
+      "revoke": "Tarik balik mata ini",
+      "reason": "Sebab (wajib)",
+      "reasonHint": "Contoh: kes berulang, atau pengesahan yang salah. Pasukan tidak diberitahu secara automatik.",
+      "revokeSend": "Tarik balik mata",
+      "done": "Mata sudah ditarik balik.",
+      "error": {
+        "reason": "Sebab diperlukan.",
+        "gone": "Rekod itu tidak dijumpai, atau sudah ditarik balik.",
+        "save": "Tidak dapat dibuat. Cuba lagi."
+      }
+    },
+    "households": {
+      "title": "Isi rumah yang berdaftar",
+      "intro": "{count} isi rumah berdaftar. Setiap kali halaman ini dibuka, ia dicatat dalam log capaian."
     }
   },
   "warRoom": {

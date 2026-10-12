@@ -13,6 +13,7 @@ import type {
   PointsRow,
   TeamHousehold,
   TeamReport,
+  UnitContact,
 } from "@/lib/coverage";
 import type { BoardCase, CaseMedia } from "@/lib/dispatch";
 
@@ -47,6 +48,9 @@ export type TeamReadsState = {
   householdPhones: Record<string, string | null>;
   onReportMedia: (reportId: string) => void;
   onHouseholdPhone: (householdId: string) => void;
+  /** Other teams' contacts, asked for one at a time from the coverage view. */
+  contacts: Record<string, UnitContact | "failed">;
+  onContact: (unitId: string) => void;
 };
 
 /**
@@ -102,7 +106,16 @@ export function OtherView({
     />
   );
   if (view === "coverage") {
-    return <CoverageView map={map} coverage={coverage} picked={picked} onPick={onPickTambon} />;
+    return (
+      <CoverageView
+        map={map}
+        coverage={coverage}
+        picked={picked}
+        onPick={onPickTambon}
+        contacts={reads.contacts}
+        onContact={reads.onContact}
+      />
+    );
   }
   const chosen = caseId ? (cases.find((c) => c.sosId === caseId) ?? null) : null;
   return (

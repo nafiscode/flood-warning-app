@@ -1006,7 +1006,11 @@
         "94": "Pattani",
         "95": "Yala",
         "96": "Narathiwat"
-      }
+      },
+      "showContact": "Show this team's contact number",
+      "contact": "Contact: {name}",
+      "contactNone": "This team has no contact number on file.",
+      "contactFailed": "The number can't be shown. It is open only to teams sharing coverage with yours."
     },
     "points": {
       "mine": "Your team: {points} points from {cases, plural, one {# confirmed rescue} other {# confirmed rescues}}",
@@ -1047,7 +1051,9 @@
       "authorities": "Verify units",
       "invitations": "Admins",
       "warRoom": "War room",
-      "impact": "Impact"
+      "impact": "Impact",
+      "points": "Points",
+      "households": "Households"
     },
     "role": {
       "admin": "Admin",
@@ -1125,6 +1131,28 @@
       "title": "Impact record (example)",
       "note": "What Jaga carried and which teams helped. The figures are still made up.",
       "open": "Open the impact record"
+    },
+    "points": {
+      "title": "Points ledger",
+      "intro": "The system awards points by itself when a rescue is confirmed. An admin can take an award back, with a reason. A row taken back stays in the ledger; it only stops counting.",
+      "total": "{points} points counting, from {count, plural, one {# award} other {# awards}}",
+      "none": "No awards yet.",
+      "amount": "{points} points",
+      "revoked": "Taken back. Reason: {reason}",
+      "revoke": "Take this award back",
+      "reason": "Reason (required)",
+      "reasonHint": "For example: a duplicate case, or a confirmation that was wrong. The team is not told automatically.",
+      "revokeSend": "Take the points back",
+      "done": "The points were taken back.",
+      "error": {
+        "reason": "A reason is needed.",
+        "gone": "That award wasn't found, or was already taken back.",
+        "save": "That couldn't be done. Try again."
+      }
+    },
+    "households": {
+      "title": "Registered households",
+      "intro": "{count, plural, one {# household is} other {# households are}} registered. Every opening of this page is written to the access log."
     }
   },
   "warRoom": {

@@ -11,6 +11,7 @@ import {
   type CoverageRow,
   type CoverageUnit,
   type PointsRow,
+  type UnitContact,
 } from "@/lib/coverage";
 import { card, hint } from "@/lib/ui";
 
@@ -34,6 +35,28 @@ function Waiting({ state, failed }: { state: unknown; failed: string }) {
   const t = useTranslations("authority");
   if (state === "failed") return <p className="font-medium">{failed}</p>;
   return <p className={hint}>{t("views.loading")}</p>;
+}
+
+/** Another team's point of contact, shown after it was asked for; the look is in the log. */
+function Contact({ contact }: { contact: UnitContact | "failed" }) {
+  const t = useTranslations("authority");
+  if (contact === "failed") return <p className="font-medium">{t("coverage.contactFailed")}</p>;
+  return (
+    <span className="flex flex-col gap-1 pt-1" data-unit-contact-shown="true">
+      {contact.name && <span>{t("coverage.contact", { name: contact.name })}</span>}
+      {contact.phone ? (
+        <a
+          href={`tel:${contact.phone}`}
+          className="inline-flex min-h-tap items-center font-bold underline"
+        >
+          {contact.phone}
+        </a>
+      ) : (
+        <span className="font-medium">{t("coverage.contactNone")}</span>
+      )}
+      <span className={hint}>{t("act.phoneLogged")}</span>
+    </span>
+  );
 }
 
 /** The cases on a map, with the card of whichever one was tapped under it. */
@@ -61,9 +84,19 @@ type CoverageProps = {
   /** The tambon tapped on the map or in the list, and the teams covering it. */
   picked: { tambon: string; units: Loaded<CoverageUnit[]> } | null;
   onPick: (tambon: string) => void;
+  /** Other teams' contacts already asked for in this sitting, by unit (spec 5.3). */
+  contacts?: Record<string, UnitContact | "failed">;
+  onContact?: (unitId: string) => void;
 };
 
-export function CoverageView({ map, coverage, picked, onPick }: CoverageProps) {
+export function CoverageView({
+  map,
+  coverage,
+  picked,
+  onPick,
+  contacts = {},
+  onContact,
+}: CoverageProps) {
   const t = useTranslations("authority");
   const tWar = useTranslations("warRoom");
   const locale = useLocale();
@@ -131,6 +164,17 @@ export function CoverageView({ map, coverage, picked, onPick }: CoverageProps) {
                       .filter(Boolean)
                       .join(" · ")}
                   </span>
+                  {!u.mine && onContact && !(u.id in contacts) && (
+                    <button
+                      type="button"
+                      onClick={() => onContact(u.id)}
+                      data-unit-contact={u.id}
+                      className="inline-flex min-h-tap items-center self-start font-medium underline"
+                    >
+                      {t("coverage.showContact")}
+                    </button>
+                  )}
+                  {u.id in contacts && <Contact contact={contacts[u.id]!} />}
                 </li>
               ))}
             </ul>

@@ -20,6 +20,7 @@ import {
   applyExample,
   type ExampleTap,
 } from "@/lib/authority-examples";
+import type { UnitContact } from "@/lib/coverage";
 import { shouldAlarm } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
 
@@ -66,6 +67,7 @@ export function AuthorityExample() {
   const [tambon, setTambon] = useState<string | null>(null);
   const [reportMedia, setReportMedia] = useState<Record<string, "failed">>({});
   const [householdPhones, setHouseholdPhones] = useState<Record<string, string | null>>({});
+  const [contacts, setContacts] = useState<Record<string, UnitContact>>({});
   const actions: CaseActions = {
     accept: (sos) => tap({ action: "accept", sos }),
     decline: (sos, reason) => tap({ action: "decline", sos, reason }),
@@ -121,6 +123,9 @@ export function AuthorityExample() {
               // The example has no storage and no numbers: it shows what the real screen says then.
               onReportMedia: (id) => setReportMedia((seen) => ({ ...seen, [id]: "failed" })),
               onHouseholdPhone: (id) => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
+              contacts,
+              onContact: (id) =>
+                setContacts((seen) => ({ ...seen, [id]: { name: null, phone: null } })),
             }}
           />
         )

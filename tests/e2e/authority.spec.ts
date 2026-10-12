@@ -38,7 +38,9 @@ const run = randomUUID().slice(0, 8);
 const email = `e2e-team-${run}@test.invalid`;
 const UNIT = `E2E boat team ${run}`;
 const POC_PHONE = "66830000123";
-const SENDER_PHONE = "0810000123";
+// Unique to the run: a request left open by an interrupted run with the same number would make
+// this run's SOS merge into it (a repeat from the same phone never opens a second case).
+const SENDER_PHONE = `08${String(Number.parseInt(run, 16) % 100_000_000).padStart(8, "0")}`;
 
 const service = () =>
   createClient(url!, secret!, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -82,6 +84,9 @@ test.describe("closed to everyone without a verified team", () => {
 test.describe("a team accepts, and the sender sees who is coming", () => {
   test.describe.configure({ mode: "serial" });
   test.skip(!url || !secret || !dbUrl, "needs a Supabase project and its keys");
+  // Several of these walk a whole case through two or three accounts against a remote database;
+  // the default 30 seconds is cut fine for that on a slow connection.
+  test.setTimeout(90_000);
   // The answers are real ones from the database, which a service worker would only get in the way of.
   test.use({ serviceWorkers: "block" });
 
@@ -556,6 +561,65 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
       if (reportId) await sql("delete from public.reports where id = $1", [reportId]);
       await sql("delete from public.households where owner_id = $1", [resident]);
       await service().auth.admin.deleteUser(resident);
+    }
+  });
+
+  test("an admin takes an award back with a reason, and it stops counting for the team", async ({
+    page,
+    browser,
+  }) => {
+    const adminEmail = `e2e-ledger-admin-${run}@test.invalid`;
+    const { data, error } = await service().auth.admin.createUser({
+      email: adminEmail,
+      email_confirm: true,
+    });
+    if (error || !data.user) throw new Error(`could not create the admin: ${error?.message}`);
+    try {
+      await sql("update public.profiles set role = 'admin', display_name = $2 where user_id = $1", [
+        data.user.id,
+        `E2E ledger admin ${run}`,
+      ]);
+      const [award] = await sql(
+        "select id from public.hero_points where unit_id = $1 and revoked_at is null",
+        [unitId],
+      );
+      const desk = await browser.newContext({ serviceWorkers: "block" });
+      const theirs = await desk.newPage();
+      await signIn(theirs, adminEmail);
+      await theirs.goto("/admin/points");
+      const row = theirs.locator(`[data-award="${award!.id}"]`);
+      await expect(row).toContainText(UNIT);
+      await row.locator("summary").click();
+      await row.locator('input[name="reason"]').fill(`e2e duplicate ${run}`);
+      await row.locator("[data-revoke]").click();
+      await expect(theirs.locator(`[data-award="${award!.id}"]`)).toHaveAttribute(
+        "data-revoked",
+        "true",
+      );
+      await expect(theirs.locator(`[data-award="${award!.id}"]`)).toContainText(
+        `e2e duplicate ${run}`,
+      );
+
+      // Admins read the households on a page of their own, and that read is in the log too.
+      await theirs.goto("/admin/households");
+      await expect(theirs.locator("[data-admin-households]")).toBeVisible();
+      // The list itself carries no phone number, for an admin as for a team.
+      expect(await theirs.locator('[data-view="households"] a[href^="tel:"]').count()).toBe(0);
+      await desk.close();
+      const read = await sql(
+        "select 1 from public.audit_log where actor = $1 and action = 'read_households' and entity = 'households'",
+        [data.user.id],
+      );
+      expect(read.length).toBe(1);
+
+      // The team's own board no longer counts the award.
+      await signIn(page);
+      await page.goto("/authority");
+      await page.locator('[data-console-view="points"]').click();
+      await expect(page.locator("[data-points-mine]")).toHaveAttribute("data-points-mine", "0");
+      await expect(page.locator(`[data-points-row="${unitId}"]`)).toHaveCount(0);
+    } finally {
+      await service().auth.admin.deleteUser(data.user.id);
     }
   });
 });

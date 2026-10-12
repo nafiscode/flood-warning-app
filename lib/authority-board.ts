@@ -20,6 +20,7 @@ import type {
   PointsRow,
   TeamHousehold,
   TeamReport,
+  UnitContact,
 } from "@/lib/coverage";
 import { createClient } from "@/lib/supabase/server";
 
@@ -374,4 +375,16 @@ export async function readReportMedia(reportId: string): Promise<CaseMedia> {
     voice: voicePath ? (link.get(voicePath) ?? null) : null,
     proof: [],
   };
+}
+
+/**
+ * Another team's point of contact, for coordination (spec 5.3). The database allows it only
+ * within shared coverage and writes the look to the access log.
+ */
+export async function revealUnitContact(unitId: string): Promise<UnitContact> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("reveal_poc_phone", { p_unit_id: unitId });
+  if (error) throw new Error(error.message);
+  const row = ((data as Row[]) ?? [])[0] ?? {};
+  return { name: text(row.poc_name), phone: text(row.poc_phone) };
 }

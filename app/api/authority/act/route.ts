@@ -9,6 +9,7 @@ import {
   readReportMedia,
   releaseCase,
   revealHouseholdPhone,
+  revealUnitContact,
   revealRequesterPhone,
   setDuty,
   setEta,
@@ -144,6 +145,11 @@ export async function POST(request: Request) {
         if (!sos) return answer({ error: "bad_request" }, 400);
         extra = { media: await readCaseMedia(sos) };
         break;
+      }
+      case "unit_phone": {
+        if (!unit) return answer({ error: "bad_request" }, 400);
+        // Another team's contact, within shared coverage only; logged by the database.
+        return answer({ contact: await revealUnitContact(unit) });
       }
       case "household_phone": {
         const id = typeof input.id === "string" && UUID.test(input.id) ? input.id : null;

@@ -30,6 +30,12 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
         <Link href="/admin/authorities" className="inline-flex min-h-tap items-center underline">
           {t("nav.authorities")}
         </Link>
+        <Link href="/admin/points" className="inline-flex min-h-tap items-center underline">
+          {t("nav.points")}
+        </Link>
+        <Link href="/admin/households" className="inline-flex min-h-tap items-center underline">
+          {t("nav.households")}
+        </Link>
         {session.role === "super_admin" && (
           <Link href="/admin/invitations" className="inline-flex min-h-tap items-center underline">
             {t("nav.invitations")}

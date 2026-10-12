@@ -16,6 +16,7 @@ import type {
   PointsRow,
   TeamHousehold,
   TeamReport,
+  UnitContact,
 } from "@/lib/coverage";
 import { shouldAlarm, type AuthorityBoard, type CaseMedia } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
@@ -229,6 +230,7 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
   const [households, setHouseholds] = useState<TeamHousehold[] | "failed" | null>(null);
   const [reportMedia, setReportMedia] = useState<Record<string, CaseMedia | "failed">>({});
   const [householdPhones, setHouseholdPhones] = useState<Record<string, string | null>>({});
+  const [contacts, setContacts] = useState<Record<string, UnitContact | "failed">>({});
 
   /** One household's number or one report's photos: asked for by a tap, never with the list. */
   const one = <T,>(body: Record<string, unknown>, take: (answer: T) => void, fail: () => void) => {
@@ -343,6 +345,13 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
                   { action: "household_phone", id },
                   (answer) => setHouseholdPhones((seen) => ({ ...seen, [id]: answer.phone })),
                   () => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
+                ),
+              contacts,
+              onContact: (id) =>
+                one<{ contact: UnitContact }>(
+                  { action: "unit_phone", unit: id },
+                  (answer) => setContacts((seen) => ({ ...seen, [id]: answer.contact })),
+                  () => setContacts((seen) => ({ ...seen, [id]: "failed" })),
                 ),
             }}
           />

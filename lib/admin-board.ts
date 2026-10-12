@@ -6,7 +6,7 @@
  * No phone number is in any of these reads. A number is fetched one at a time by `revealSosPhone`
  * and `revealPersonPhone`, which call the logged reveal functions.
  */
-import type { UnconfirmedRescue } from "@/lib/coverage";
+import type { PointsAward, TeamHousehold, UnconfirmedRescue } from "@/lib/coverage";
 import type { DamSignal } from "@/lib/dam";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -316,5 +316,49 @@ export async function readUnconfirmedRescues(): Promise<UnconfirmedRescue[]> {
     proofCount: Number(r.proof_count ?? 0),
     peopleCount: r.people_count == null ? null : Number(r.people_count),
     due: Boolean(r.due),
+  }));
+}
+
+/** The points ledger, newest first, revoked rows included (spec 5.5). */
+export async function readPointsLedger(): Promise<PointsAward[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_points_ledger", { p_limit: 200 });
+  if (error) throw new Error(error.message);
+  return ((data as Record<string, unknown>[]) ?? []).map((r) => ({
+    id: Number(r.award_id),
+    createdAt: String(r.created_at),
+    unitName: String(r.unit_name ?? ""),
+    orgName: String(r.org_name ?? ""),
+    sosId: (r.sos_id as string | null) ?? null,
+    tambonNameTh: (r.tambon_name_th as string | null) ?? null,
+    tambonNameEn: (r.tambon_name_en as string | null) ?? null,
+    points: Number(r.points ?? 0),
+    reason: String(r.reason ?? ""),
+    revokedAt: (r.revoked_at as string | null) ?? null,
+    revokeReason: (r.revoke_reason as string | null) ?? null,
+  }));
+}
+
+/**
+ * Every registered household, for admins. The database writes the read to the access log; no
+ * phone number comes back, exactly as for a team.
+ */
+export async function readAdminHouseholds(): Promise<TeamHousehold[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_households");
+  if (error) throw new Error(error.message);
+  return ((data as Record<string, unknown>[]) ?? []).map((r) => ({
+    id: String(r.household_id),
+    tambon: (r.tambon as string | null) ?? null,
+    tambonNameTh: (r.tambon_name_th as string | null) ?? null,
+    tambonNameEn: (r.tambon_name_en as string | null) ?? null,
+    lat: Number(r.lat),
+    lon: Number(r.lon),
+    size: r.size == null ? null : Number(r.size),
+    vulnerable: (r.vulnerable as Record<string, number>) ?? {},
+    mobilityNotes: (r.mobility_notes as string | null) ?? null,
+    hasPhone: Boolean(r.has_phone),
+    onBehalf: Boolean(r.on_behalf),
+    updatedAt: String(r.updated_at),
   }));
 }
