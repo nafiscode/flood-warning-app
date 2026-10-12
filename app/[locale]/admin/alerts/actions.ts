@@ -1,0 +1,99 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { readAreas, zoneMap } from "@/lib/admin-alerts";
+import { areaChoice, chosenTambons, isUuid, updateHours, windowOf } from "@/lib/alert-console";
+import { localePath } from "@/lib/auth";
+import { inService } from "@/lib/features";
+import { createClient } from "@/lib/supabase/server";
+
+const HOUR = 3_600_000;
+
+/**
+ * Publish an alert (spec 6.2). A person pressed the button: nothing else calls this (safety
+ * rule 2). The words are built in the database from the reviewed template, so no message text
+ * passes through here at all; the database also checks the caller is an admin, that the area and
+ * the next-update time are there, and that Evacuate was confirmed a second time.
+ *
+ * Until the service is switched on at launch every alert is saved as a drill, which the public
+ * cannot see (decision 2026-10-13). That is decided here from the deployment's own switch, never
+ * from the form, so no tick box can make a test real or a real alert a test.
+ */
+export async function publishAlert(locale: string, form: FormData) {
+  const supersedes = isUuid(form.get("supersedes")) ? String(form.get("supersedes")) : null;
+  const back = `${localePath(locale, "/admin/alerts/new")}?${supersedes ? `supersedes=${supersedes}&` : ""}error=`;
+
+  const template = form.get("template");
+  if (!isUuid(template)) redirect(`${back}template`);
+  const hours = updateHours(form.get("hours"));
+  if (hours === null) redirect(`${back}nextUpdate`);
+  const onset = windowOf(form.get("onsetFrom"), form.get("onsetTo"));
+  const returning = windowOf(form.get("returnFrom"), form.get("returnTo"));
+  if (!onset.ok || !returning.ok) redirect(`${back}window`);
+
+  const areas = await readAreas();
+  const tambons = chosenTambons(
+    areas.tambons.map((t) => t.code),
+    areaChoice((name) => form.getAll(name)),
+    zoneMap(areas),
+  );
+  if (tambons.length === 0) redirect(`${back}area`);
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_publish_alert", {
+    p_template: template,
+    p_tambons: tambons,
+    p_next_update_at: new Date(Date.now() + hours * HOUR).toISOString(),
+    p_note: String(form.get("note") ?? "").trim() || null,
+    p_onset_from: onset.range?.[0] ?? null,
+    p_onset_to: onset.range?.[1] ?? null,
+    p_return_from: returning.range?.[0] ?? null,
+    p_return_to: returning.range?.[1] ?? null,
+    p_supersedes: supersedes,
+    p_drill: !inService(),
+    p_confirm_evacuate: form.get("confirmEvacuate") === "yes",
+  });
+  if (error) {
+    const why =
+      error.code === "P0002"
+        ? "gone"
+        : error.message.includes("Evacuate")
+          ? "evacuate"
+          : error.message.includes("replace each other")
+            ? "drillMix"
+            : "save";
+    redirect(`${back}${why}`);
+  }
+  redirect(`${localePath(locale, "/admin/alerts")}?done=published`);
+}
+
+/** "Nothing has changed; we will look again in ...": moves only the next-update time. */
+export async function extendAlert(locale: string, form: FormData) {
+  const back = localePath(locale, "/admin/alerts");
+  const id = form.get("alert");
+  const hours = updateHours(form.get("hours"));
+  if (!isUuid(id) || hours === null) redirect(`${back}?error=save`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_extend_alert", {
+    p_alert: id,
+    p_next_update_at: new Date(Date.now() + hours * HOUR).toISOString(),
+    p_note: String(form.get("note") ?? "").trim() || null,
+  });
+  if (error) redirect(`${back}?error=${error.code === "P0002" ? "gone" : "save"}`);
+  redirect(`${back}?done=extended`);
+}
+
+/** Withdraw an alert. A reason is required: it is the only record of why people were un-warned. */
+export async function cancelAlert(locale: string, form: FormData) {
+  const back = localePath(locale, "/admin/alerts");
+  const id = form.get("alert");
+  const note = String(form.get("note") ?? "")
+    .trim()
+    .slice(0, 400);
+  if (!isUuid(id)) redirect(`${back}?error=save`);
+  if (note === "") redirect(`${back}?error=reason`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_cancel_alert", { p_alert: id, p_note: note });
+  if (error) redirect(`${back}?error=${error.code === "P0002" ? "gone" : "save"}`);
+  redirect(`${back}?done=cancelled`);
+}

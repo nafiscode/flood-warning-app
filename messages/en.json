@@ -1097,7 +1097,8 @@
       "impact": "Impact",
       "points": "Points",
       "households": "Households",
-      "damRelease": "Dam release"
+      "damRelease": "Dam release",
+      "alerts": "Alerts"
     },
     "role": {
       "admin": "Admin",
@@ -1227,6 +1228,11 @@
       "failed": "The notice could not be sent. Check the figures and times.",
       "cancelFailed": "The notice could not be withdrawn.",
       "noDam": "There is no dam in the database yet."
+    },
+    "alerts": {
+      "title": "Alerts",
+      "note": "Publish, extend, replace or cancel an alert, and see the full history.",
+      "open": "Open the alert console"
     }
   },
   "warRoom": {
@@ -2054,6 +2060,157 @@
       "estimate": "The times are estimates from the river gauges, not a forecast.",
       "issuer": "Issued by a Jaga admin from the release figures of {operator}.",
       "reason": "{dam} releasing {cms} m³/s since {time}"
+    }
+  },
+  "alertConsole": {
+    "title": "Alerts",
+    "intro": "Every alert is published by an admin. The system never publishes one by itself. Everything done on this page is logged.",
+    "new": "New alert",
+    "drillMode": "The service is not switched on yet: every alert from this page is saved as a drill. The public will not see it on the map, the home screen or the bell.",
+    "drillTag": "Drill",
+    "damNote": "This notice was sent from the dam panel, so it cannot be replaced here. It can be extended or cancelled.",
+    "hours": "{hours, plural, one {in # hour} other {in # hours}}",
+    "replace": "Replace with a new alert",
+    "done": {
+      "published": "The alert is saved.",
+      "extended": "The next-update time has been moved.",
+      "cancelled": "The alert has been cancelled."
+    },
+    "error": {
+      "save": "That could not be saved. Try again.",
+      "gone": "That alert is no longer in force (it was replaced or cancelled first).",
+      "reason": "Cancelling needs a reason."
+    },
+    "inForce": {
+      "title": "In force ({count})",
+      "none": "No alert is in force right now."
+    },
+    "ended": {
+      "title": "Ended",
+      "none": "None yet."
+    },
+    "state": {
+      "superseded": "Replaced",
+      "cancelled": "Cancelled"
+    },
+    "card": {
+      "tambons": "{count, plural, one {# tambon} other {# tambons}}",
+      "area": "{names}",
+      "areaMore": "{names} and {more} more",
+      "reason": "Reason",
+      "issued": "Issued by {name} ·",
+      "nextUpdate": "Next update",
+      "ended": "Ended",
+      "onset": "Flooding expected (estimate)",
+      "returnWindow": "Return expected (estimate)",
+      "history": "History ({count})"
+    },
+    "event": {
+      "alert_published": "Published",
+      "alert_extended": "Next update moved",
+      "alert_superseded": "Replaced by a new alert",
+      "alert_cancelled": "Cancelled",
+      "dam_release_sent": "Dam release notice sent"
+    },
+    "extend": {
+      "summary": "Nothing has changed: move the next update",
+      "hours": "Look again",
+      "note": "Note (optional)",
+      "hint": "The level and the text stay as they are; only the next-update time moves. The note is kept in the history only.",
+      "send": "Move the next update"
+    },
+    "cancel": {
+      "summary": "Cancel this alert",
+      "reason": "Why it is being cancelled",
+      "hint": "The alert leaves the map and the home screen at once. The reason is kept in the history.",
+      "send": "Cancel the alert"
+    },
+    "form": {
+      "title": "New alert",
+      "back": "Back to alerts",
+      "replacing": "This new alert will replace the one below. Its area is already ticked; you can change it.",
+      "template": {
+        "legend": "Level and text",
+        "hint": "The Thai, Malay and English text comes only from reviewed templates. It cannot be edited here.",
+        "none": "No template was found. An alert cannot be published."
+      },
+      "area": {
+        "legend": "Area",
+        "hint": "Tick a whole province, a whole district or single tambons, from the list or on the map.",
+        "zones": "Warning zones",
+        "wholeProvince": "All of {name} province",
+        "wholeDistrict": "All of {name} district",
+        "chooseDistricts": "Choose districts in {name}",
+        "chooseTambons": "Choose tambons in {name}",
+        "useMap": "Choose on the map",
+        "hideMap": "Hide the map",
+        "mapHint": "Tap a tambon to tick or untick it.",
+        "mapCount": "{count} tambons chosen",
+        "mapLocked": "This tambon is ticked through its whole district or province. Untick that in the list.",
+        "mapFailed": "The map could not be loaded. Use the list below.",
+        "unavailable": "The list of areas could not be loaded. Try again."
+      },
+      "note": {
+        "label": "More detail (optional)",
+        "hint": "Added after the template's reason and shown as typed in every language, never translated. For example: “The gauge at X.40A rose 40 cm in 3 hours.”"
+      },
+      "nextUpdate": {
+        "label": "Next update",
+        "hint": "Always required. Once this time has passed the alert keeps its level and gains a grey “not updated since…” marker."
+      },
+      "windows": {
+        "summary": "Expected times (optional)",
+        "hint": "Always shown as a range and as an estimate. Enter Thailand time; a window needs both its start and its end.",
+        "onsetFrom": "Flooding expected, from",
+        "onsetTo": "Flooding expected, to",
+        "returnFrom": "Return expected, from",
+        "returnTo": "Return expected, to"
+      },
+      "error": {
+        "template": "Choose a level and text first.",
+        "nextUpdate": "Choose when the next update is due.",
+        "window": "An expected time needs both a start and an end, and the end must be after the start.",
+        "area": "Choose at least one tambon.",
+        "gone": "The alert to replace is no longer in force.",
+        "evacuate": "Evacuate must be confirmed a second time at the review step.",
+        "drillMix": "A drill and a real alert cannot replace each other.",
+        "save": "That could not be saved. No alert was published. Try again."
+      }
+    },
+    "review": {
+      "button": "Review before publishing",
+      "loading": "Preparing…",
+      "back": "Go back and change it",
+      "title": "Review: this is what will be published",
+      "drill": "Drill: the public will not see this alert, because the service is not switched on yet.",
+      "real": "Real alert: people in this area will see it within about 1 minute.",
+      "tambons": "{count, plural, one {# tambon} other {# tambons}}",
+      "nextUpdate": "Next update",
+      "reason": "Reason",
+      "text": {
+        "th": "Thai text",
+        "ms": "Malay text",
+        "en": "English text"
+      },
+      "reach": {
+        "title": "Who this concerns",
+        "people": "{count, plural, one {# person has} other {# people have}} a home or a watched place in this area",
+        "detail": "Homes {homes} · watched places {watched}",
+        "channels": "Notifications on the phone: {push} · LINE connected: {line}",
+        "notYet": "Phone notifications and LINE are not connected yet (phase A7). For now the alert shows in the app, on the map and in the bell only."
+      },
+      "quota": "LINE quota this month after sending: {after} of {limit}",
+      "quotaOver": "Over this month's LINE quota: {after} of {limit}",
+      "overlaps": "{count, plural, one {# alert is} other {# alerts are}} already in force in some of these tambons. The new one will be shown there, but the old one stays in force. To replace it instead, go back and use “Replace with a new alert” on the old one.",
+      "evacuate": "I confirm an Evacuate alert for {count, plural, one {# tambon} other {# tambons}}",
+      "publish": "Publish the alert",
+      "publishDrill": "Save as a drill",
+      "error": {
+        "area": "Choose at least one tambon first.",
+        "template": "Choose a level and text first.",
+        "nextUpdate": "Choose when the next update is due first.",
+        "unavailable": "The review could not be prepared. No alert was published. Try again."
+      }
     }
   }
 }

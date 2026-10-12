@@ -1097,7 +1097,8 @@
       "impact": "Rekod bantuan",
       "points": "Mata",
       "households": "Isi rumah",
-      "damRelease": "Notis pelepasan"
+      "damRelease": "Notis pelepasan",
+      "alerts": "Amaran"
     },
     "role": {
       "admin": "Pentadbir",
@@ -1227,6 +1228,11 @@
       "failed": "Notis tidak dapat dihantar. Sila semak angka dan masa sekali lagi.",
       "cancelFailed": "Notis tidak dapat dibatalkan.",
       "noDam": "Tiada empangan dalam pangkalan data lagi."
+    },
+    "alerts": {
+      "title": "Amaran",
+      "note": "Keluarkan, lanjutkan, gantikan atau batalkan amaran, dan lihat semua sejarahnya.",
+      "open": "Buka konsol amaran"
     }
   },
   "warRoom": {
@@ -2054,6 +2060,157 @@
       "estimate": "Julat masa ini ialah anggaran daripada stesen paras air, bukan ramalan.",
       "issuer": "Dikeluarkan oleh pentadbir Jaga daripada angka pelepasan {operator}.",
       "reason": "{dam} melepaskan {cms} m³/s sejak {time}"
+    }
+  },
+  "alertConsole": {
+    "title": "Amaran",
+    "intro": "Setiap amaran dikeluarkan oleh pentadbir sahaja. Sistem tidak mengeluarkan amaran sendiri. Setiap tindakan di halaman ini direkodkan.",
+    "new": "Keluarkan amaran baharu",
+    "drillMode": "Perkhidmatan belum dibuka: setiap amaran dari halaman ini disimpan sebagai “latihan”. Orang awam tidak akan melihatnya di peta, halaman utama atau loceng pemberitahuan.",
+    "drillTag": "Latihan",
+    "damNote": "Amaran ini dihantar dari panel empangan, jadi tidak boleh digantikan di sini. Ia boleh dilanjutkan atau dibatalkan.",
+    "hours": "dalam {hours} jam",
+    "replace": "Gantikan dengan amaran baharu",
+    "done": {
+      "published": "Amaran telah disimpan.",
+      "extended": "Masa kemas kini seterusnya telah dianjak.",
+      "cancelled": "Amaran telah dibatalkan."
+    },
+    "error": {
+      "save": "Tidak berjaya disimpan. Cuba lagi.",
+      "gone": "Amaran ini tidak lagi berkuat kuasa (telah diganti atau dibatalkan).",
+      "reason": "Pembatalan memerlukan sebab."
+    },
+    "inForce": {
+      "title": "Amaran yang berkuat kuasa ({count})",
+      "none": "Tiada amaran yang berkuat kuasa sekarang."
+    },
+    "ended": {
+      "title": "Amaran yang telah tamat",
+      "none": "Belum ada."
+    },
+    "state": {
+      "superseded": "Telah diganti",
+      "cancelled": "Dibatalkan"
+    },
+    "card": {
+      "tambons": "{count} mukim",
+      "area": "{names}",
+      "areaMore": "{names} dan {more} mukim lagi",
+      "reason": "Sebab",
+      "issued": "Dikeluarkan oleh {name} ·",
+      "nextUpdate": "Kemas kini seterusnya",
+      "ended": "Tamat pada",
+      "onset": "Jangkaan air tiba (anggaran)",
+      "returnWindow": "Jangkaan boleh pulang (anggaran)",
+      "history": "Sejarah ({count})"
+    },
+    "event": {
+      "alert_published": "Dikeluarkan",
+      "alert_extended": "Masa kemas kini dianjak",
+      "alert_superseded": "Diganti dengan amaran baharu",
+      "alert_cancelled": "Dibatalkan",
+      "dam_release_sent": "Notis pelepasan air empangan dihantar"
+    },
+    "extend": {
+      "summary": "Keadaan masih sama: anjak masa kemas kini",
+      "hours": "Kemas kini semula",
+      "note": "Catatan (pilihan)",
+      "hint": "Tahap dan teks tidak berubah; hanya masa kemas kini seterusnya. Catatan disimpan dalam sejarah sahaja.",
+      "send": "Anjak masa kemas kini"
+    },
+    "cancel": {
+      "summary": "Batalkan amaran ini",
+      "reason": "Sebab pembatalan",
+      "hint": "Amaran akan hilang dari peta dan halaman utama serta-merta. Sebabnya disimpan dalam sejarah.",
+      "send": "Batalkan amaran"
+    },
+    "form": {
+      "title": "Keluarkan amaran baharu",
+      "back": "Kembali ke senarai amaran",
+      "replacing": "Amaran baharu ini akan menggantikan amaran sedia ada. Kawasannya telah dipilih; anda boleh mengubahnya.",
+      "template": {
+        "legend": "Tahap dan teks",
+        "hint": "Teks Thai, Melayu dan Inggeris datang daripada templat yang telah disemak sahaja. Teks tidak boleh diubah di sini.",
+        "none": "Tiada templat ditemui. Amaran tidak boleh dikeluarkan."
+      },
+      "area": {
+        "legend": "Kawasan",
+        "hint": "Pilih seluruh wilayah, seluruh daerah atau mukim satu demi satu, daripada senarai atau peta.",
+        "zones": "Zon amaran",
+        "wholeProvince": "Seluruh wilayah {name}",
+        "wholeDistrict": "Seluruh daerah {name}",
+        "chooseDistricts": "Pilih daerah di {name}",
+        "chooseTambons": "Pilih mukim di {name}",
+        "useMap": "Pilih pada peta",
+        "hideMap": "Sembunyikan peta",
+        "mapHint": "Ketik mukim untuk memilih atau membatalkannya.",
+        "mapCount": "{count} mukim dipilih",
+        "mapLocked": "Mukim ini dipilih melalui seluruh daerah atau wilayah. Batalkan dalam senarai.",
+        "mapFailed": "Peta tidak dapat dimuatkan. Gunakan senarai di bawah.",
+        "unavailable": "Senarai kawasan tidak dapat dimuatkan. Cuba lagi."
+      },
+      "note": {
+        "label": "Butiran tambahan (pilihan)",
+        "hint": "Ditambah selepas sebab templat dan dipaparkan seperti yang ditaip dalam semua bahasa, tanpa terjemahan."
+      },
+      "nextUpdate": {
+        "label": "Kemas kini seterusnya",
+        "hint": "Wajib. Selepas masa ini, amaran kekal pada tahapnya dengan tanda kelabu “belum dikemas kini sejak…”."
+      },
+      "windows": {
+        "summary": "Tempoh jangkaan (pilihan)",
+        "hint": "Sentiasa dipaparkan sebagai julat dan anggaran. Masukkan waktu Thailand; mula dan tamat kedua-duanya diperlukan.",
+        "onsetFrom": "Air dijangka tiba, dari",
+        "onsetTo": "Air dijangka tiba, hingga",
+        "returnFrom": "Dijangka boleh pulang, dari",
+        "returnTo": "Dijangka boleh pulang, hingga"
+      },
+      "error": {
+        "template": "Pilih tahap dan teks dahulu.",
+        "nextUpdate": "Pilih masa kemas kini seterusnya.",
+        "window": "Tempoh jangkaan memerlukan mula dan tamat, dan tamat mesti selepas mula.",
+        "area": "Pilih sekurang-kurangnya satu mukim.",
+        "gone": "Amaran yang hendak diganti tidak lagi berkuat kuasa.",
+        "evacuate": "Amaran pindah mesti disahkan sekali lagi pada langkah semakan.",
+        "drillMix": "Amaran latihan dan amaran sebenar tidak boleh menggantikan satu sama lain.",
+        "save": "Tidak berjaya disimpan. Tiada amaran dikeluarkan. Cuba lagi."
+      }
+    },
+    "review": {
+      "button": "Semak sebelum mengeluarkan",
+      "loading": "Sedang menyediakan…",
+      "back": "Kembali untuk mengubah",
+      "title": "Semakan: amaran akan dikeluarkan seperti ini",
+      "drill": "Latihan: orang awam tidak akan melihat amaran ini kerana perkhidmatan belum dibuka.",
+      "real": "Amaran sebenar: penduduk di kawasan ini akan melihatnya dalam kira-kira 1 minit.",
+      "tambons": "{count} mukim",
+      "nextUpdate": "Kemas kini seterusnya",
+      "reason": "Sebab",
+      "text": {
+        "th": "Teks Thai",
+        "ms": "Teks Melayu",
+        "en": "Teks Inggeris"
+      },
+      "reach": {
+        "title": "Siapa yang terlibat",
+        "people": "{count} orang mempunyai rumah atau tempat yang dipantau di kawasan ini",
+        "detail": "Rumah {homes} · tempat dipantau {watched}",
+        "channels": "Pemberitahuan pada peranti: {push} orang · LINE disambung: {line} orang",
+        "notYet": "Pemberitahuan pada peranti dan LINE belum disambungkan (peringkat A7). Buat masa ini amaran hanya dipaparkan dalam aplikasi, pada peta dan dalam loceng."
+      },
+      "quota": "Kuota LINE bulan ini selepas dihantar: {after} daripada {limit}",
+      "quotaOver": "Melebihi kuota LINE bulan ini: {after} daripada {limit}",
+      "overlaps": "Sebahagian mukim yang dipilih sudah mempunyai {count} amaran yang berkuat kuasa. Amaran baharu akan dipaparkan di mukim itu, tetapi yang lama masih berkuat kuasa. Untuk menggantikannya, kembali dan tekan “Gantikan dengan amaran baharu” pada amaran lama.",
+      "evacuate": "Saya mengesahkan amaran “Pindah” untuk {count} mukim",
+      "publish": "Keluarkan amaran",
+      "publishDrill": "Simpan sebagai amaran latihan",
+      "error": {
+        "area": "Pilih sekurang-kurangnya satu mukim dahulu.",
+        "template": "Pilih tahap dan teks dahulu.",
+        "nextUpdate": "Pilih masa kemas kini seterusnya dahulu.",
+        "unavailable": "Semakan tidak dapat disediakan. Tiada amaran dikeluarkan. Cuba lagi."
+      }
     }
   }
 }

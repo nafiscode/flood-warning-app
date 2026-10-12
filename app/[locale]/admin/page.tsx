@@ -13,7 +13,7 @@ export async function generateMetadata({
   return { title: t("title") };
 }
 
-/** Admin home. The war room (A6) is here; the alert console and the signal dashboard follow. */
+/** Admin home: the alert console and the war room (A6); the signal dashboard follows. */
 export default async function AdminHome({ params }: PageProps<"/[locale]/admin">) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -29,6 +29,13 @@ export default async function AdminHome({ params }: PageProps<"/[locale]/admin">
     <div className="flex flex-col gap-5">
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={hint}>{t("signedInAs", { name: session?.displayName ?? "" })}</p>
+      <section className={card}>
+        <h2 className="text-body font-bold">{t("alerts.title")}</h2>
+        <p className={hint}>{t("alerts.note")}</p>
+        <Link href="/admin/alerts" className={buttonSecondary}>
+          {t("alerts.open")}
+        </Link>
+      </section>
       <section className={card}>
         <h2 className="text-body font-bold">{t("warRoom.title")}</h2>
         <p className={hint}>{t("warRoom.note")}</p>

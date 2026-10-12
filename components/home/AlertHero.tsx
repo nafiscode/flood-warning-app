@@ -4,7 +4,7 @@ import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { ClockIcon } from "@/components/icons";
 import type { AlertLevel } from "@/lib/brand/tokens";
-import type { AreaStatus, PublicAlert } from "@/lib/public-status";
+import { reasonFor, type AreaStatus, type PublicAlert } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { hint } from "@/lib/ui";
 
@@ -119,7 +119,7 @@ export function AlertHero({ status, area, now, onRetry }: Props) {
         </div>
       )}
       <dl className="flex flex-col gap-2">
-        <Row term={t("reason")}>{alert.reason}</Row>
+        <Row term={t("reason")}>{reasonFor(alert, locale)}</Row>
         <Row term={t("issuedBy")}>{t("issuer")}</Row>
         {alert.source && <Row term={t("source")}>{alert.source}</Row>}
         <div className="grid grid-cols-2 gap-2">

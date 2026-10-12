@@ -48,6 +48,15 @@ export function areaStatus(status: PublicStatus, tambon: string): AreaStatus {
   return status.inService ? { kind: "normal" } : { kind: "notInService" };
 }
 
+/**
+ * The reason in the reader's language. An alert made in the console carries its template's
+ * reason per language beside the Thai one (`reason_ms`, `reason_en`); anything older, or sent
+ * another way, has the Thai reason only.
+ */
+export function reasonFor(alert: Pick<PublicAlert, "reason" | "messages">, locale: string): string {
+  return alert.messages[`reason_${locale}`] ?? alert.reason;
+}
+
 /** Past its next-update time. A marker beside the level, never a change of level (rule 3). */
 export function isStale(alert: Pick<PublicAlert, "nextUpdateAt">, now: number): boolean {
   return now > Date.parse(alert.nextUpdateAt);

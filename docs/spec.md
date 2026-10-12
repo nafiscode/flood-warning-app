@@ -316,6 +316,8 @@ A case does not wait to be noticed. It is offered to the teams covering its tamb
 - The alert goes out by web push and LINE, and the map updates within 1 minute.
 - Admins can supersede, extend or cancel it. Full history is kept.
 
+**Built (13 Oct 2026):** `/admin/alerts`. The words come only from `alert_templates` (the publish function takes a template id, never text); the admin's note follows the template's reason, untranslated. The next update is chosen as a wait in hours. Until the launch switch is on every alert is a **drill**, hidden from the public by row-level security. Push and LINE delivery, and with them real recipient and quota figures, arrive with A7.
+
 ### 6.3 Signal dashboard (advisory only)
 For each warning zone:
 - gauges against thresholds, with rate of rise
@@ -434,6 +436,8 @@ Admins decide. The system never auto-publishes. Every data source shows its last
   - `expected_onset_window`, `expected_return_window`
   - `superseded_by`, `cancelled_at`
   - `signals_snapshot` (jsonb)
+  - `is_drill` (default false; a drill is readable by admins only), `template_id`
+- `alert_templates`: `code`, `hazard_type`, `level`, `label`, `reason` and `messages` per language (`{area}` is filled with the tambons named), `active`. Admins read; only the super admin writes.
 - `alert_tambons`: links alerts to tambons.
 - `alert_deliveries`: `alert_id`, `channel`, `recipients`, `line_messages_used`, `status`, `sent_at`.
 - `push_subscriptions`: `user_id`, `endpoint`, `keys`, `created_at`.
