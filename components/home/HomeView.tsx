@@ -255,14 +255,21 @@ export function HomeView(props: HomeViewProps) {
           </Link>
         )}
 
-        {home && !loading && (
-          <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />
-        )}
-
-        <Link href="/map" prefetch={false} className={`${buttonSecondary} gap-2`}>
+        {/* The map comes straight after the person's own places, and the safe places after it,
+            folded under their own button (owner, 12 Oct). */}
+        <Link
+          href="/map"
+          prefetch={false}
+          data-map-link="true"
+          className={`${buttonSecondary} gap-2`}
+        >
           <MapIcon size={22} />
           {t("mapLink")}
         </Link>
+
+        {home && !loading && (
+          <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />
+        )}
 
         {!loading && !choosing && !tense && props.install}
       </div>

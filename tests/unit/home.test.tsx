@@ -164,6 +164,34 @@ describe("safe places (spec 4.3)", () => {
     expect(c.textContent).toContain(th.places.parkingTitle);
   });
 
+  it("is folded under its own button, which says how many places there are", () => {
+    const c = home("watch");
+    const fold = c.querySelector<HTMLDetailsElement>("details[data-safe-places]")!;
+    // Closed until the person asks: the home screen stays short (owner, 12 Oct).
+    expect(fold.open).toBe(false);
+    const button = fold.querySelector("summary")!;
+    expect(button.textContent).toContain(th.places.title);
+    expect(button.textContent).toContain("4");
+    // The places are inside the fold, not somewhere else on the page.
+    expect(c.querySelectorAll("[data-safe-place]").length).toBe(
+      fold.querySelectorAll("[data-safe-place]").length,
+    );
+  });
+
+  it("sits below the map button, which comes straight after the places the person watches", () => {
+    const c = home("watch", { me: homeExample("watched").me });
+    const watched = c.querySelector("[data-watched]")!;
+    const map = c.querySelector("[data-map-link]")!;
+    const fold = c.querySelector("[data-safe-places]")!;
+    expect(watched.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(map.compareDocumentPosition(fold) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("says on the button when nothing is listed, so an empty list is not hidden behind a tap", () => {
+    const c = home("watch", { places: { people: [], parking: [] } });
+    expect(c.querySelector("details[data-safe-places] summary")?.textContent).toContain("0");
+  });
+
   it("an empty list says where to ask, never that none is needed", () => {
     const c = home("watch", { places: { people: [], parking: [] } });
     expect(c.querySelector("[data-safe-places]")?.textContent).toContain(th.places.none);
