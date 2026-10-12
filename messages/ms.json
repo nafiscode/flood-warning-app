@@ -1643,7 +1643,9 @@
       "desktop": "Komputer (Chrome, Edge)",
       "macSafari": "Mac (Safari)",
       "inApp": "Dibuka dari aplikasi lain, seperti Messenger atau LINE"
-    }
+    },
+    "damFigureTitle": "Gambar rajah keadaan empangan — tiga pilihan",
+    "damFigureNote": "Gambar rajah bergerak mengikut angka sebenar empangan. Pilih keadaan di atas untuk melihat setiap satu; belum diletakkan di laman utama."
   },
   "report": {
     "title": "Lapor banjir",
@@ -1960,6 +1962,26 @@
       "reservoir": "Takungan {dam}",
       "river": "{river} di hilir empangan",
       "tributary": "Bahagian hilir anak sungai yang mengalir masuk ke sungai utama"
+    },
+    "figure": {
+      "caption": "Pelepasan {cms} m³/s · takungan {percent}% daripada kapasiti maksimum",
+      "section": {
+        "about": "Menunjukkan punca dan kesan sekali gus: paras takungan berbanding paras simpanan penuh biasa, dan air yang dilepaskan",
+        "title": "Keratan rentas empangan",
+        "alt": "Keratan rentas empangan: {state}, pelepasan {cms} m³/s, takungan {percent}%"
+      },
+      "river": {
+        "about": "Paling ringkas untuk kad di laman utama: garis air bergerak lebih laju apabila pelepasan lebih tinggi",
+        "title": "Sungai di hilir empangan",
+        "alt": "Sungai di hilir empangan: {state}, pelepasan {cms} m³/s"
+      },
+      "dial": {
+        "about": "Paling tepat untuk dibaca: bahagian kelabu ialah julat yang boleh dilepaskan melalui turbin sahaja",
+        "title": "Tolok kadar pelepasan",
+        "alt": "Tolok kadar pelepasan: {state}, pelepasan {cms} m³/s"
+      },
+      "note": "Gambar rajah bergerak mengikut angka yang diterbitkan oleh empangan. Ia bukan ramalan dan bukan amaran Jaga.",
+      "scale": "Skala penuh ialah {cms} m³/s, pelepasan terbesar dalam rekod; bahagian kelabu ialah julat lepasan turbin"
     }
   }
 }

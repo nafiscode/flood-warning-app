@@ -1643,7 +1643,9 @@
       "desktop": "Computer (Chrome, Edge)",
       "macSafari": "Mac (Safari)",
       "inApp": "Opened inside another app, such as Messenger or LINE"
-    }
+    },
+    "damFigureTitle": "Figures of the dam's situation — three to choose from",
+    "damFigureNote": "The drawings move with the dam's real figures. Pick a state above to see each one; none of them is on the home screen yet."
   },
   "report": {
     "title": "Report flooding",
@@ -1960,6 +1962,26 @@
       "reservoir": "{dam} reservoir",
       "river": "{river} downstream of the dam",
       "tributary": "Lower reaches of the tributaries joining the main river"
+    },
+    "figure": {
+      "caption": "Releasing {cms} m³/s · reservoir {percent}% of maximum capacity",
+      "section": {
+        "about": "Shows cause and effect at once: the reservoir against its normal high water line, and the water leaving",
+        "title": "The dam in cross-section",
+        "alt": "The dam in cross-section: {state}, releasing {cms} m³/s, reservoir {percent}% full"
+      },
+      "river": {
+        "about": "The quietest on a home screen: the lines run faster the more the dam is releasing",
+        "title": "The river below the dam",
+        "alt": "The river below the dam: {state}, releasing {cms} m³/s"
+      },
+      "dial": {
+        "about": "The most exact to read: the grey band is what the turbines alone can pass",
+        "title": "A dial of the release",
+        "alt": "A dial of the release: {state}, releasing {cms} m³/s"
+      },
+      "note": "The drawing moves with the figures the dam publishes. It is not a forecast and not an alert from Jaga.",
+      "scale": "Full scale is {cms} m³/s, the largest release in the record; the grey part is what the turbines alone can pass"
     }
   }
 }
