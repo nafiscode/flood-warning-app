@@ -23,8 +23,8 @@ The logo is the **Sheltered j**: the letter j of Jaga with its dot under a small
 | `jaga-app-icon.svg` | Rounded app icon, for in-app and marketing use |
 | `jaga-app-icon-square.svg` | Full-bleed icon source; platforms apply their own corner rounding |
 | `jaga-app-icon-shadow.svg` | Laptop and plain PWA icon: the slate square with its shadow, transparent around it |
-| `jaga-app-icon-touch.svg` | iPhone and iPad home-screen icon: the slate square with its shadow on the pale ground |
-| `jaga-app-icon-maskable.svg` | Android home-screen icon (maskable): the slate square with its shadow on the pale ground, all inside the 80% safe zone |
+| `jaga-app-icon-touch.svg` | iPhone and iPad home-screen icon: the full slate tile, shaded light to dark, with a soft shadow under the mark |
+| `jaga-app-icon-maskable.svg` | Android home-screen icon (maskable): the same full tile, with the mark inside the 80% safe zone |
 | `favicon.svg` | Browser tab |
 
 Ready-made PNGs are in `public/icons/`:
@@ -35,7 +35,10 @@ Ready-made PNGs are in `public/icons/`:
 
 After changing a logo SVG, re-render the PNGs with `npm run icons`.
 
-**Home-screen icons.** The icon someone adds to a phone, tablet or laptop carries a soft shadow around the slate square (the owner's request, 12 October 2026), so it stands off the wallpaper. A phone fills and cuts the whole tile itself, so there the square sits a little smaller on the pale ground (`--jaga-ground`) for the shadow to fall on; on a laptop the icon is transparent around the square. The shadow belongs to the square, never to the mark, and is used nowhere else: not in the app header, not on the favicon.
+**Home-screen icons.** The icon someone adds to a phone, tablet or laptop has depth, so it stands off any wallpaper (the owner's request, 12–13 October 2026).
+- **Phones and tablets:** the system fills the whole tile and cuts its corners, so nothing can be drawn outside it and the icon is never shrunk onto a surround. The slate fills the tile at the original size, shaded slightly from light at the top (#264B68) through the brand slate to dark at the bottom (#152C3F), with a soft shadow under the mark. This is how store app icons get their depth.
+- **Laptops:** the icon is transparent around the slate square, and a soft shadow around the square falls on the desktop or taskbar.
+- This shading and these shadows are for the home-screen icons only: not the app header, not the favicon, not the logo anywhere else.
 
 **The mark.** The canopy is teal (`--jaga-teal`; `--jaga-teal-light` on dark backgrounds). The dot and the stem of the j are slate (white on dark backgrounds). The mark files are 84 × 120: taller than wide.
 
@@ -49,7 +52,7 @@ After changing a logo SVG, re-render the PNGs with `npm run icons`.
 - Don't use umbrella icons anywhere else in the UI (including map and weather layers); the umbrella belongs to the logo only.
 - Don't use eye icons anywhere in the UI.
 - Don't use eye or monitoring language about people ("we are watching you"). The copy is about care and looking out for each other.
-- Don't distort it or add effects (shadows, gradients, glows). The one exception is the shadow around the square of the home-screen icons, above.
+- Don't distort it or add effects (shadows, gradients, glows). The one exception is the depth of the home-screen icons, above.
 
 ## Color tokens
 Implement these as CSS variables and a Tailwind theme. The brand colors must never be used to show a status.
