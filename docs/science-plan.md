@@ -172,6 +172,14 @@ One thing the data showed that matters for the design: ThaiWater's feed for this
 hours** (at 06:00 Bangkok only the 00:00 hour was published), so it is a record that trails
 reality, not a warning in time. The operator's own screen is what would give warning.
 
+### Module 8: Road embankments (later; not scheduled)
+
+Added 12 Oct 2026 from the owner's knowledge of the area: the main highways are built on fill about 2 m above the original ground. They stay dry when the land beside them floods, and they hold water back where it has no way through.
+
+1. **Parking on the embankments.** Add the main highways (trunk and primary roads, where the radar saw no flood on the carriageway) as candidates for high-ground parking, beside the terrain rule of Module 2. The 30 m elevation model smooths a 2 m embankment away, so this has to come from the road map and the radar, not from elevation. Whether cars may stand on a shoulder is a question for the highway authority, not for the map.
+2. **Where water needs a path.** Along each highway line, compare the flood on its two sides in the radar seasons: water standing higher or longer on the upstream side is water the road holds back. Mark those stretches, and the mapped bridges and culverts along them, so the authorities can see where an opening is missing or too small. Output: a layer and a list per highway section for the provincial highway and irrigation offices, as advice, never as a public alert.
+3. **Honest limits.** The radar sees extent, not depth; a 10 to 20 m pixel beside a road is noisy; culverts are mostly unmapped in OpenStreetMap. The list is where to look, to be confirmed on the ground.
+
 ## 4. Validation metrics
 
 - **Extents:** CSI, hit rate, false-alarm rate against held-out SAR.
