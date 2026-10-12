@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { BellIcon } from "@/components/icons";
 import { usePathname } from "@/i18n/navigation";
+import { setIconBadge } from "@/lib/app-badge";
 import type { Area } from "@/lib/area";
 import { badgeText } from "@/lib/notices";
 import { useStored } from "@/lib/phone-store";
 import { useNotices } from "@/lib/use-notices";
+import { useNow } from "@/lib/use-public";
 import { NoticeList } from "./NoticeList";
 
 /** Nothing is fetched on the SOS screens: there, only the request matters (safety rule 1). */
@@ -81,6 +83,14 @@ export function NoticeBell({ className = "" }: { className?: string }) {
     // Opening the bell is reading it: the number goes, the list keeps its "new" marks.
     markAllRead();
   };
+
+  // The same number goes on Jaga's own icon where it is installed (the owner's request, 13 Oct).
+  // Not before the phone's clock is readable: until then the list is empty, and an empty list
+  // would wipe a number that is still true.
+  const now = useNow();
+  useEffect(() => {
+    if (now > 0) setIconBadge(unread);
+  }, [now, unread]);
 
   const badge = badgeText(unread);
   return (
