@@ -500,6 +500,14 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
       await theirs.locator('[data-household-link="home"]').click();
       await expect(theirs.locator('[data-household-form="home"]')).toBeVisible();
       // Nothing is stored without the consent tick: the browser itself will not send the form.
+      // Each count sits on one line: its words on the left, a short box on the right. (The box
+      // once took the whole row and squeezed the words into a column one word wide.)
+      const countRow = theirs.locator('[data-count-row="bedridden"]');
+      const words = (await countRow.locator("span").boundingBox())!;
+      const box = (await countRow.locator("input").boundingBox())!;
+      expect(box.width).toBeLessThanOrEqual(96);
+      expect(words.height).toBeLessThanOrEqual(40);
+      expect(words.width).toBeGreaterThan(box.width);
       await theirs.locator("#size").fill("3");
       await theirs.locator('input[name="v_elderly"]').fill("1");
       await theirs.locator("#notes").fill("Sleeps downstairs");

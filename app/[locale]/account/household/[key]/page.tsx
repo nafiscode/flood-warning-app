@@ -20,6 +20,15 @@ import {
 } from "@/lib/ui";
 import { deleteHousehold, saveHousehold } from "../actions";
 
+/**
+ * A short box for a count, at the end of its row. Not the shared `input` class: that one is full
+ * width, and a width added beside it loses to it, which left each box filling the row and its
+ * label squeezed into a column one word wide.
+ */
+const countBox =
+  "min-h-tap w-20 shrink-0 rounded-xl border border-jaga-text-2 bg-jaga-surface px-3 py-2 text-center text-body tabular-nums text-jaga-text";
+const countRow = "flex min-h-tap items-center justify-between gap-4";
+
 const ERRORS = ["size", "consent", "agreed", "phone", "location", "notes", "save"] as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -124,28 +133,28 @@ export default async function HouseholdPage({
         <p className={notice}>{t("who")}</p>
 
         <section className={card}>
-          <label htmlFor="size" className={label}>
-            {t("size")}
+          <label className={countRow}>
+            <span className={`${label} min-w-0 flex-1`}>{t("size")}</span>
+            <input
+              id="size"
+              name="size"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={50}
+              required
+              defaultValue={household?.size ?? ""}
+              className={countBox}
+            />
           </label>
-          <input
-            id="size"
-            name="size"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={50}
-            required
-            defaultValue={household?.size ?? ""}
-            className={input}
-          />
         </section>
 
         <section className={card}>
           <h2 className="text-body font-bold">{t("vulnerableTitle")}</h2>
           <p className={hint}>{t("vulnerableHint")}</p>
           {VULNERABLE_ORDER.map((k) => (
-            <label key={k} className="flex min-h-tap items-center justify-between gap-3">
-              <span>{tSos(`vulnerable.${k}`)}</span>
+            <label key={k} className={countRow} data-count-row={k}>
+              <span className="min-w-0 flex-1">{tSos(`vulnerable.${k}`)}</span>
               <input
                 name={`v_${k}`}
                 type="number"
@@ -153,7 +162,7 @@ export default async function HouseholdPage({
                 min={0}
                 max={20}
                 defaultValue={household?.vulnerable?.[k] ?? 0}
-                className={`${input} w-24 shrink-0`}
+                className={countBox}
               />
             </label>
           ))}
