@@ -1096,7 +1096,8 @@
       "warRoom": "Bilik gerakan",
       "impact": "Rekod bantuan",
       "points": "Mata",
-      "households": "Isi rumah"
+      "households": "Isi rumah",
+      "damRelease": "Notis pelepasan"
     },
     "role": {
       "admin": "Pentadbir",
@@ -1196,6 +1197,36 @@
     "households": {
       "title": "Isi rumah yang berdaftar",
       "intro": "{count} isi rumah berdaftar. Setiap kali halaman ini dibuka, ia dicatat dalam log capaian."
+    },
+    "damRelease": {
+      "title": "Hantar notis pelepasan empangan",
+      "lead": "Notis ini sampai kepada semua orang di laluan air di hilir empangan. Teksnya datang daripada templat yang telah disemak dalam tiga bahasa; anda mengisi angka dan masa sahaja.",
+      "dam": "Empangan",
+      "gatesOpenAt": "Pintu dibuka pada (waktu Thailand)",
+      "gatesHint": "Masa pintu benar-benar dibuka, bukan masa anda mengisi borang ini. Masa ketibaan air dikira daripadanya.",
+      "releaseCms": "Kadar pelepasan (m³/s)",
+      "releaseHint": "Angka daripada pengendali empangan, termasuk limpahan dan janakuasa.",
+      "expectedEnd": "Dijangka berakhir (jika diketahui)",
+      "level": "Tahap amaran",
+      "levelHint": "Anda yang memilih, bukan sistem.",
+      "nextUpdate": "Kemas kini seterusnya sebelum (waktu Thailand)",
+      "zone": "Dihantar ke {count} mukim di laluan air. Kawasan ini tidak boleh diubah.",
+      "arrivals": "Masa ketibaan: mukim pertama kira-kira {firstFrom}–{firstTo} jam, mukim terakhir kira-kira {lastFrom}–{lastTo} jam selepas pintu dibuka.",
+      "preview": "Teks yang akan dihantar",
+      "previewHint": "Semak sebelum menghantar. Setelah dihantar ia muncul serta-merta pada aplikasi semua orang di kawasan itu.",
+      "send": "Hantar notis",
+      "sending": "Menghantar…",
+      "sent": "Notis dihantar pada {time}.",
+      "inForce": "Notis yang berkuat kuasa",
+      "inForceNone": "Tiada notis pelepasan yang berkuat kuasa.",
+      "inForceRow": "{level} · pelepasan {cms} m³/s sejak {time} · {tambons} mukim",
+      "issuedBy": "Dihantar oleh {name} pada {time}",
+      "cancelled": "Dibatalkan pada {time}",
+      "cancel": "Batalkan notis ini",
+      "cancelHint": "Gunakan jika ia dihantar tersilap. Notis hilang daripada aplikasi serta-merta.",
+      "failed": "Notis tidak dapat dihantar. Sila semak angka dan masa sekali lagi.",
+      "cancelFailed": "Notis tidak dapat dibatalkan.",
+      "noDam": "Tiada empangan dalam pangkalan data lagi."
     }
   },
   "warRoom": {
@@ -1448,7 +1479,8 @@
         "ended": "Pelepasan sudah berakhir",
         "open": ""
       },
-      "feedFailed": "Gagal membaca data empangan; cubaan terakhir pada {time}. Angka mungkin bukan yang terbaharu."
+      "feedFailed": "Gagal membaca data empangan; cubaan terakhir pada {time}. Angka mungkin bukan yang terbaharu.",
+      "send": "Hantar notis pelepasan"
     },
     "unconfirmed": {
       "title": "Penyelamatan yang menunggu pengesahan",
@@ -1949,7 +1981,7 @@
     },
     "disclaimer": {
       "notAnAlert": "Ini bukan amaran Jaga. Ia angka yang diterbitkan oleh empangan sendiri. Jika amaran diperlukan, pihak berkuasa yang akan mengeluarkannya.",
-      "noArrivalTime": "Masa air sampai ke setiap tempat belum boleh diberitahu, kerana masa perjalanan air dari hilir empangan belum dianalisis."
+      "noArrivalTime": "Tiada data masa perjalanan air untuk empangan ini lagi."
     },
     "source": "Sumber: {operator}, diterbitkan melalui ThaiWater",
     "history": {
@@ -1993,6 +2025,35 @@
       "reservoir": "Takungan {dam}",
       "river": "{river} di hilir empangan",
       "tributary": "Bahagian hilir anak sungai yang mengalir masuk ke sungai utama"
+    },
+    "arrival": {
+      "title": "Bila air sampai",
+      "atOnce": "Selepas pintu empangan dibuka, air sampai di {tambon} dalam masa satu jam.",
+      "first": {
+        "hours": "Selepas pintu empangan dibuka, air mula naik di {tambon} kira-kira {from}–{to} jam kemudian.",
+        "days": "Selepas pintu empangan dibuka, air mula naik di {tambon} kira-kira {from}–{to} hari kemudian."
+      },
+      "peak": {
+        "hours": "Paras tertinggi kira-kira {from}–{to} jam selepas pelepasan tertinggi.",
+        "days": "Paras tertinggi kira-kira {from}–{to} hari selepas pelepasan tertinggi."
+      },
+      "windowAt": "Air dijangka mula naik di {tambon} antara {from} dan {to}.",
+      "span": {
+        "hours": "Di sepanjang sungai, air mula naik kira-kira {from}–{to} jam selepas pintu dibuka, bergantung pada jarak dari empangan.",
+        "days": "Di sepanjang sungai, air mula naik kira-kira {from}–{to} hari selepas pintu dibuka, bergantung pada jarak dari empangan."
+      },
+      "tributary": "Kawasan anda berada di anak sungai. Apabila sungai utama naik, air berkumpul masuk ke anak sungai, dan masa yang ditunjukkan ialah masa di tempat pertemuan.",
+      "basis": "Julat masa ini dianggarkan daripada stesen paras air di sungai (pelepasan janakuasa dan banjir sejak 2020). Ia bukan ramalan dan tiada model hidraulik di sebaliknya."
+    },
+    "release": {
+      "title": "{dam} membuka pintu pelepasan",
+      "body": "{dam} mula melepaskan air pada {time} pada kadar {cms} m³/s. Air mengalir ke {river} dan paras air di hilir empangan akan naik.",
+      "window": "Air dijangka mula naik di kawasan tepi sungai dari {from} hingga {to}, bergantung pada jarak dari empangan. Buka aplikasi Jaga untuk melihat masa bagi kawasan anda.",
+      "until": "Pelepasan dijangka berakhir sekitar {time}.",
+      "act": "Angkat barang dan dokumen penting ke tempat tinggi, sediakan beg kecemasan dan telefon, alihkan kenderaan ke tempat tinggi, dan ikuti pengumuman. Jika anda perlukan bantuan, hubungi 1784 atau tekan butang bantuan dalam aplikasi.",
+      "estimate": "Julat masa ini ialah anggaran daripada stesen paras air, bukan ramalan.",
+      "issuer": "Dikeluarkan oleh pentadbir Jaga daripada angka pelepasan {operator}.",
+      "reason": "{dam} melepaskan {cms} m³/s sejak {time}"
     }
   }
 }

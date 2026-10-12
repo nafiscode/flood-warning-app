@@ -17,12 +17,24 @@ export const HAZARD_SOURCE_LAYER = "hazard";
 
 /** Highest first, as a legend reads. `value` is the `class` property in the tiles. */
 export const HAZARD_CLASSES = [
-  { value: 4, key: "high", color: "#7A1238" },
-  { value: 3, key: "medium", color: "#DB6A9A" },
-  { value: 2, key: "low", color: "#F2B8C6" },
+  { value: 4, key: "high", color: "#7A1238", night: "#FFC4D6" },
+  { value: 3, key: "medium", color: "#DB6A9A", night: "#E0679E" },
+  { value: 2, key: "low", color: "#F2B8C6", night: "#7E5C74" },
 ] as const;
 /** How solid the classes are drawn: the streets and place names underneath stay readable. */
 export const HAZARD_OPACITY = 0.45;
+export const HAZARD_OPACITY_NIGHT = 0.6;
+
+/**
+ * The colour of a class on the map as it is now. On the dark map the order of lightness is turned
+ * round (the owner, 13 Oct 2026): by day the highest class is the darkest, and on a dark ground
+ * that made it the hardest to see, the wrong way round for the class that matters most. At night
+ * the highest class is the brightest and the lowest a dim mauve. Same family of pinks, still clear
+ * of every alert colour, and the legend always shows the colours the map is using.
+ */
+export function hazardColor(c: (typeof HAZARD_CLASSES)[number], dark: boolean): string {
+  return dark ? c.night : c.color;
+}
 export type HazardKey = (typeof HAZARD_CLASSES)[number]["key"];
 
 export type TileManifest = { layers?: Record<string, { key?: string; updated?: string }> };
@@ -46,11 +58,11 @@ export function hazardKey(value: unknown): HazardKey | null {
 }
 
 /** MapLibre's fill-color: one colour per class, nothing for anything else. */
-export function hazardFillColor(): unknown[] {
+export function hazardFillColor(dark = false): unknown[] {
   return [
     "match",
     ["get", "class"],
-    ...HAZARD_CLASSES.flatMap((c) => [c.value, c.color]),
+    ...HAZARD_CLASSES.flatMap((c) => [c.value, hazardColor(c, dark)]),
     "rgba(0,0,0,0)",
   ];
 }

@@ -8,7 +8,7 @@ import { AlertHero } from "@/components/home/AlertHero";
 import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/HomeView";
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
-import { HAZARD_CLASSES, hazardKey } from "@/lib/hazard-layer";
+import { HAZARD_CLASSES, hazardColor, hazardKey } from "@/lib/hazard-layer";
 import { BASEMAPS, type Basemap } from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
 import { PhoneIcon, WaveIcon } from "@/components/icons";
@@ -285,6 +285,8 @@ export function DashboardView(props: DashboardViewProps) {
   ];
   const placesOnOffer = layers.includes("places") && !!data && data.places.length > 0;
   const hazardOnOffer = layers.includes("hazard") && !!props.hazardTiles;
+  // The map is dark at night except on the satellite picture; the legend shows the shades in use.
+  const nightMap = dark && basemap !== "satellite";
   const mapLayers = layers.filter(
     (l) => (l !== "places" || showPlaces) && (l !== "hazard" || showHazard || !hazardOnOffer),
   );
@@ -320,7 +322,12 @@ export function DashboardView(props: DashboardViewProps) {
           <span
             aria-hidden="true"
             className="size-5 shrink-0 rounded-[4px] border border-jaga-edge"
-            style={{ backgroundColor: HAZARD_CLASSES.find((c) => c.key === key)!.color }}
+            style={{
+              backgroundColor: hazardColor(
+                HAZARD_CLASSES.find((c) => c.key === key)!,
+                nightMap,
+              ),
+            }}
           />
           {t("risk.here", { level: t(`risk.level.${key}`) })}
         </p>
@@ -368,7 +375,14 @@ export function DashboardView(props: DashboardViewProps) {
     ) : null;
   } else if (selection?.kind === "dam") {
     const dam = dams.find((d) => d.code === selection.code);
-    selected = dam ? <DamCard dam={dam} now={now} /> : null;
+    selected = dam ? (
+      <DamCard
+        dam={dam}
+        now={now}
+        tambonCode={props.area?.code ?? null}
+        tambonName={props.area ? tambonName(props.area.code) : null}
+      />
+    ) : null;
   } else if (selection?.kind === "gauge") {
     const gauge = data?.gauges.find((g) => g.id === selection.id);
     selected = gauge ? (
@@ -484,6 +498,7 @@ export function DashboardView(props: DashboardViewProps) {
                   key={dam.code}
                   dam={dam}
                   via={hit.via}
+                  tambonCode={hit.code}
                   tambonName={tambonName(hit.code)}
                   now={now}
                 />
@@ -547,7 +562,7 @@ export function DashboardView(props: DashboardViewProps) {
                       <span
                         key={c.key}
                         className="h-5 w-2.5"
-                        style={{ backgroundColor: c.color }}
+                        style={{ backgroundColor: hazardColor(c, nightMap) }}
                       />
                     ))}
                   </span>
@@ -659,7 +674,7 @@ export function DashboardView(props: DashboardViewProps) {
                                 <span
                                   aria-hidden="true"
                                   className="size-4 shrink-0 rounded-[3px] border border-jaga-edge"
-                                  style={{ backgroundColor: c.color }}
+                                  style={{ backgroundColor: hazardColor(c, nightMap) }}
                                 />
                                 {t(`risk.level.${c.key}`)}
                               </li>

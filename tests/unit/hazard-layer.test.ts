@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HAZARD_CLASSES,
   HAZARD_OPACITY,
+  hazardColor,
   hazardFillColor,
   hazardKey,
   hazardSourceUrl,
@@ -31,6 +32,22 @@ describe("the flood-hazard layer", () => {
     const light = HAZARD_CLASSES.map((c) => rgb(c.color).reduce((a, v) => a + v, 0));
     expect(light[0]!).toBeLessThan(light[1]!);
     expect(light[1]!).toBeLessThan(light[2]!);
+    // On the dark map the order of lightness turns round: the highest class is the brightest.
+    const nightLight = HAZARD_CLASSES.map((c) => rgb(c.night).reduce((a, v) => a + v, 0));
+    expect(nightLight[0]!).toBeGreaterThan(nightLight[1]!);
+    expect(nightLight[1]!).toBeGreaterThan(nightLight[2]!);
+    for (const c of HAZARD_CLASSES) {
+      const [r, g, b] = rgb(c.night) as [number, number, number];
+      expect(r).toBeGreaterThan(b);
+      expect(b).toBeGreaterThan(g);
+      for (const [ar, ag, ab] of alert as [number, number, number][]) {
+        expect(Math.hypot(r - ar, g - ag, b - ab)).toBeGreaterThan(60);
+      }
+      expect(hazardColor(c, true)).toBe(c.night);
+      expect(hazardColor(c, false)).toBe(c.color);
+    }
+    expect(JSON.stringify(hazardFillColor(true))).toContain(HAZARD_CLASSES[0].night);
+    expect(JSON.stringify(hazardFillColor(true))).not.toContain(HAZARD_CLASSES[0].color);
     // See-through: the streets and names underneath stay readable.
     expect(HAZARD_OPACITY).toBeLessThanOrEqual(0.5);
     expect(HAZARD_OPACITY).toBeGreaterThanOrEqual(0.3);

@@ -19,7 +19,12 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
-import { HAZARD_OPACITY, HAZARD_SOURCE_LAYER, hazardFillColor } from "@/lib/hazard-layer";
+import {
+  HAZARD_OPACITY,
+  HAZARD_OPACITY_NIGHT,
+  HAZARD_SOURCE_LAYER,
+  hazardFillColor,
+} from "@/lib/hazard-layer";
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
@@ -28,6 +33,7 @@ import {
   darkNow,
   mapHalo,
   mapInk,
+  mapIsDark,
   SERVICE_BOUNDS,
   setBasemap,
   TAMBON_FILL_LAYER,
@@ -355,6 +361,13 @@ export function MapView({
         }
         if (m.getLayer(HAZARD_FILL)) {
           m.setLayoutProperty(HAZARD_FILL, "visibility", show("hazard"));
+          // The shades follow the ground they are drawn on: lighter on the dark map (lib/hazard-layer.ts).
+          m.setPaintProperty(HAZARD_FILL, "fill-color", hazardFillColor(mapIsDark()) as never);
+          m.setPaintProperty(
+            HAZARD_FILL,
+            "fill-opacity",
+            mapIsDark() ? HAZARD_OPACITY_NIGHT : HAZARD_OPACITY,
+          );
         }
         if (!m.getLayer(ALERT_FILL)) {
           m.addLayer({ id: ALERT_FILL, type: "fill", source: TAMBON_SOURCE, paint: {} }, above);

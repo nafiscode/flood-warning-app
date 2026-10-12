@@ -1096,7 +1096,8 @@
       "warRoom": "War room",
       "impact": "Impact",
       "points": "Points",
-      "households": "Households"
+      "households": "Households",
+      "damRelease": "Dam release"
     },
     "role": {
       "admin": "Admin",
@@ -1196,6 +1197,36 @@
     "households": {
       "title": "Registered households",
       "intro": "{count, plural, one {# household is} other {# households are}} registered. Every opening of this page is written to the access log."
+    },
+    "damRelease": {
+      "title": "Send a dam release notice",
+      "lead": "This reaches everyone on the water path below the dam. The words come from a reviewed template in all three languages; you fill in the figures and the times.",
+      "dam": "Dam",
+      "gatesOpenAt": "Gates opened at (Bangkok time)",
+      "gatesHint": "When the gates actually opened, not when you fill this in. The arrival times are counted from it.",
+      "releaseCms": "Release (m³/s)",
+      "releaseHint": "The figure from the dam operator, spillway and generators together.",
+      "expectedEnd": "Expected to end (if known)",
+      "level": "Alert level",
+      "levelHint": "You choose it, not the system.",
+      "nextUpdate": "Next update before (Bangkok time)",
+      "zone": "Goes to {count} tambons on the water path. The area cannot be changed.",
+      "arrivals": "Arrival ranges: the first tambon about {firstFrom}–{firstTo} hours, the last about {lastFrom}–{lastTo} hours after the gates open.",
+      "preview": "The text that will be sent",
+      "previewHint": "Read it before sending. Once sent it is on every phone in the area at once.",
+      "send": "Send the notice",
+      "sending": "Sending…",
+      "sent": "Notice sent at {time}.",
+      "inForce": "Notices in force",
+      "inForceNone": "No dam release notice is in force.",
+      "inForceRow": "{level} · releasing {cms} m³/s since {time} · {tambons} tambons",
+      "issuedBy": "Sent by {name} at {time}",
+      "cancelled": "Withdrawn at {time}",
+      "cancel": "Withdraw this notice",
+      "cancelHint": "Use this if it went out in error. It leaves every phone at once.",
+      "failed": "The notice could not be sent. Check the figures and times.",
+      "cancelFailed": "The notice could not be withdrawn.",
+      "noDam": "There is no dam in the database yet."
     }
   },
   "warRoom": {
@@ -1448,7 +1479,8 @@
         "ended": "The release has ended",
         "open": ""
       },
-      "feedFailed": "The dam's figures could not be read; last tried at {time}. What is shown may not be the newest."
+      "feedFailed": "The dam's figures could not be read; last tried at {time}. What is shown may not be the newest.",
+      "send": "Send the release notice"
     },
     "unconfirmed": {
       "title": "Rescues waiting for confirmation",
@@ -1949,7 +1981,7 @@
     },
     "disclaimer": {
       "notAnAlert": "This is not an alert from Jaga. These are figures the dam publishes itself. If an alert is needed, the authorities issue it.",
-      "noArrivalTime": "Nobody can yet say when the water reaches each place: the travel time from the dam downstream has not been analysed."
+      "noArrivalTime": "There is no measured travel time for this dam yet."
     },
     "source": "Source: {operator}, published through ThaiWater",
     "history": {
@@ -1993,6 +2025,35 @@
       "reservoir": "{dam} reservoir",
       "river": "{river} downstream of the dam",
       "tributary": "Lower reaches of the tributaries joining the main river"
+    },
+    "arrival": {
+      "title": "When the water arrives",
+      "atOnce": "Once the gates open, water reaches {tambon} within the hour.",
+      "first": {
+        "hours": "After the gates open, water starts rising at {tambon} about {from}–{to} hours later.",
+        "days": "After the gates open, water starts rising at {tambon} about {from}–{to} days later."
+      },
+      "peak": {
+        "hours": "The highest water comes about {from}–{to} hours after the largest release.",
+        "days": "The highest water comes about {from}–{to} days after the largest release."
+      },
+      "windowAt": "Water is expected to start rising at {tambon} between {from} and {to}.",
+      "span": {
+        "hours": "Along the river, water starts rising about {from}–{to} hours after the gates open, depending on the distance from the dam.",
+        "days": "Along the river, water starts rising about {from}–{to} days after the gates open, depending on the distance from the dam."
+      },
+      "tributary": "Your area is on a side stream. When the main river rises it backs water up into the stream, and the times shown are those of the junction.",
+      "basis": "These ranges are estimated from the river gauges (the generators releasing, and the floods since 2020). They are not a forecast, and there is no hydraulic model behind them."
+    },
+    "release": {
+      "title": "{dam} has opened its gates",
+      "body": "{dam} began releasing water at {time} at {cms} m³/s. The water runs into the {river} and the level below the dam will rise.",
+      "window": "Water is expected to start rising along the river between {from} and {to}, depending on the distance from the dam. Open Jaga to see the times for your own area.",
+      "until": "The release is expected to end around {time}.",
+      "act": "Move valuables and documents up high, get your go-bag and phone ready, move vehicles to higher ground, and follow the announcements. If you need help, call 1784 or press for help in the app.",
+      "estimate": "The times are estimates from the river gauges, not a forecast.",
+      "issuer": "Issued by a Jaga admin from the release figures of {operator}.",
+      "reason": "{dam} releasing {cms} m³/s since {time}"
     }
   }
 }

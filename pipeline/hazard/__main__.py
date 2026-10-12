@@ -16,7 +16,8 @@ Commands
                                -> <output_dir>/classes/. --hold-out leaves a year's season and event out
                                and scores the classes against that event.
   tambons [--radar-hash HASH]  area and buildings per class in every tambon, from the class raster
-                               -> <output_dir>/tambons/hazard_by_tambon_<hash>.csv
+                               -> <output_dir>/tambons/hazard_by_tambon_<hash>.csv and the table's
+                               seed, supabase/seed/45_hazard_by_tambon.sql
   tiles [--radar-hash HASH]    the classes as vector tiles in one PMTiles file for the map
                                -> <output_dir>/tiles/hazard_classes_<hash>.pmtiles
   streams-compare              score every candidate stream network against OpenStreetMap waterways
@@ -37,7 +38,7 @@ from pathlib import Path
 
 import yaml
 
-from ingest_thaiwater.settings import PIPELINE_DIR, env_value
+from ingest_thaiwater.settings import PIPELINE_DIR, REPO_DIR, env_value
 from sar_floods import aoi as aoi_module
 from sar_floods import ee_ops, settings as sar_settings
 
@@ -272,6 +273,8 @@ def run_tambons(cfg: dict, radar_hash: str | None) -> None:
     rows = tambons.summarise(index, cls, basis, building_count, len(places), transform.a ** 2 / 1e6)
     dest = root / "tambons" / f"hazard_by_tambon_{h}.csv"
     tambons.write_csv(dest, places, rows, h)
+    seed = REPO_DIR / "supabase" / "seed" / "45_hazard_by_tambon.sql"
+    seed.write_text(tambons.seed_sql(places, rows, h), encoding="utf-8", newline="\n")
     empty = [t["code"] for t, r in zip(places, rows) if r["land_km2"] == 0]
     print(f"{dest.name}: {len(rows)} tambons, {sum(r['land_km2'] for r in rows):.0f} km2, "
           f"{sum(r['buildings'] for r in rows)} buildings; without any classed cell: {empty or 'none'}")
