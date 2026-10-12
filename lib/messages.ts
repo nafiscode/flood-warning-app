@@ -67,6 +67,9 @@ export function warRoomMessages(messages: AbstractIntlMessages): AbstractIntlMes
     ...pick(messages, ["warRoom"]),
     // The photo-and-note form an admin confirms a rescue with is the teams' own (spec 5.4).
     authority: { finish: (all.authority as Messages).finish! },
+    // The dam's state chip is the same component the public card wears, so it reads its own
+    // words: four of them, not the whole namespace (12 Oct).
+    dam: { state: (all.dam as Messages).state! },
     sos: { vulnerable: (all.sos as Messages).vulnerable! },
     report: { depths: (all.report as Messages).depths! },
   };

@@ -1660,6 +1660,13 @@
       "operator": "Operated by {operator}",
       "river": "Downstream river: {river}"
     },
+    "state": {
+      "unknown": "No figures",
+      "normal": "Normal range",
+      "watch": "Worth watching",
+      "releasing": "Releasing high",
+      "stale": "Figures are late"
+    },
     "grade": {
       "quiet": "Outflow is within the normal operating range",
       "watchful": "Worth watching: reservoir storage is high or rising quickly",

@@ -714,6 +714,11 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   drawn: an ordinary fortnight moves a fraction of a per cent, and a zoomed axis would turn
   rounding into a mountain range. A gap in the feed breaks the line rather than being drawn
   through.
+- **The state in colour** (added 12 Oct 2026, the owner's request): green for the normal range,
+  yellow for watchful, red for a confirmed release, grey when there are no figures - Jaga's own
+  alert hues, as a pill rather than the badge a level wears, with an icon and a word, on the card,
+  the notice, the war room and the dam's marks on the map. The water keeps its own colour. See
+  docs/brand.md; the screen always says these are the dam's figures, not an alert from Jaga.
 - **The quiet tier** (`watchful`, or a release the app has not confirmed yet): a notice on the home
   screen and the map for anyone whose area or watched place is on the river below the dam. No
   alert level, no alert colour, no sound, no notification. It says it is not an alert from Jaga

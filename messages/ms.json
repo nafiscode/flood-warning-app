@@ -1660,6 +1660,13 @@
       "operator": "Pengendali empangan: {operator}",
       "river": "Sungai hilir: {river}"
     },
+    "state": {
+      "unknown": "Tiada data",
+      "normal": "Julat biasa",
+      "watch": "Perlu dipantau",
+      "releasing": "Pelepasan tinggi",
+      "stale": "Data lewat"
+    },
     "grade": {
       "quiet": "Kadar pelepasan air berada dalam julat operasi biasa",
       "watchful": "Perlu dipantau: isipadu simpanan takungan tinggi atau meningkat dengan cepat",

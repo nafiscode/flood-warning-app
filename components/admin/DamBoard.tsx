@@ -2,6 +2,7 @@
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ClockIcon, TriangleIcon, WaveIcon } from "@/components/icons";
+import { DamStateChip } from "@/components/map/Dam";
 import { flow, trend } from "@/lib/dam";
 import { localName } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
@@ -98,6 +99,12 @@ export function DamBoard({ dams, now, review }: Props) {
               )}
             </h2>
 
+            {/*
+             * The same state chip the public card wears (the owner, 12 Oct), so an admin reading
+             * the war room sees what the person downstream sees. It is still not an alert: the
+             * row below asks them to judge it, and sending is their act (safety rule 2).
+             */}
+            <DamStateChip signal={dam.signal} />
             <p className="font-medium">{t(`dam.grade.${dam.signal?.grade ?? "unknown"}`)}</p>
             {(dam.signal?.reasons ?? []).map((reason) => (
               <p key={reason}>{t(`dam.reason.${reason}`)}</p>

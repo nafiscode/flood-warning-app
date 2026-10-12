@@ -158,6 +158,28 @@ export function attention(signal: DamSignal | null): DamAttention {
 }
 
 /**
+ * The dam's state as a colour (the owner's request of 12 Oct: normal green, attention yellow,
+ * risky red). They chose Jaga's own alert hues over a second traffic light, so that there is one
+ * set of colours in the app to learn - **and that choice is why the words beside the colour do
+ * more work here than anywhere else**: this state is worked out by code from the operator's
+ * figures, and only a person may issue an alert (safety rule 2). Every place that paints it also
+ * says, in words, that these are the dam's own figures and not an alert from Jaga.
+ *
+ * "unknown" is its own colour and is never green. A dam that has published nothing is not a dam
+ * that is behaving: a placeholder must never read as "no risk" (safety rule 10).
+ */
+export type DamLevel = "unknown" | "normal" | "watch" | "releasing";
+
+export function damLevel(signal: DamSignal | null | undefined): DamLevel {
+  if (!signal) return "unknown";
+  if (signal.grade === "releasing") return "releasing";
+  if (signal.grade === "watchful") return "watch";
+  // A rule that has fired once and is waiting for the next reading is worth attention, not calm.
+  if (signal.awaiting.length > 0) return "watch";
+  return "normal";
+}
+
+/**
  * Whether this person is shown the notice at all: only someone whose chosen area or watched
  * place is on the river below the dam. Everyone else can still read everything on the map; they
  * are simply not told that water is coming their way, because it is not.

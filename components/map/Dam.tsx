@@ -1,17 +1,20 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { ClockIcon, WaveIcon } from "@/components/icons";
+import { CheckIcon, ClockIcon, TriangleIcon, WaveIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import {
   ageHours,
   attention,
   dailyPart,
+  damLevel,
   flow,
   trend,
   volume,
   type Dam,
   type DamAttention,
+  type DamLevel,
+  type DamSignal,
 } from "@/lib/dam";
 import { DamHistory } from "@/components/map/DamHistory";
 import { localName } from "@/lib/places";
@@ -34,6 +37,66 @@ import { card, hint, notice } from "@/lib/ui";
  *     hours, so a figure without its age would be a lie by omission (safety rule 8).
  *   * It makes no sound and sends nothing. The loud one is raised for the admins to review.
  */
+
+/*
+ * The dam's state as a colour, in Jaga's own alert hues (the owner's choice of 12 Oct: normal
+ * green, attention yellow, a confirmed release red; one traffic light in the app, not two).
+ *
+ * Three things keep that honest. It is a **pill, not an alert badge** - a different shape from
+ * the levels a person issues, which are square-cornered. It never carries the colour alone: an
+ * icon and a word ride with it, as every level in this app does (docs/brand.md). And wherever it
+ * appears, the words beside it say these are the dam's own published figures and not an alert
+ * from Jaga, because only a person may issue one (safety rule 2).
+ *
+ * "unknown" is grey and never green: a dam that has published nothing is not a dam that is
+ * behaving (safety rule 10).
+ */
+const LEVEL_CLASS: Record<DamLevel, string> = {
+  unknown: "bg-alert-stale text-alert-stale-fg",
+  normal: "bg-alert-normal text-alert-normal-fg",
+  watch: "bg-alert-watch text-alert-watch-fg",
+  releasing: "bg-alert-evacuate text-alert-evacuate-fg",
+};
+
+const LEVEL_ICON: Record<DamLevel, typeof CheckIcon> = {
+  unknown: ClockIcon,
+  normal: CheckIcon,
+  watch: TriangleIcon,
+  // A wave, not the running figure of an Evacuate alert: this says water is leaving the dam.
+  releasing: WaveIcon,
+};
+
+export function DamStateChip({ signal }: { signal: DamSignal | null }) {
+  const t = useTranslations("dam");
+  const level = damLevel(signal);
+  const Icon = LEVEL_ICON[level];
+  return (
+    <span className="flex flex-wrap items-center gap-2">
+      <span
+        data-dam-level={level}
+        className={`inline-flex min-h-tap items-center gap-2 rounded-full px-4 py-1 font-bold ${LEVEL_CLASS[level]}`}
+      >
+        <Icon size={24} aria-hidden="true" />
+        <span>{t(`state.${level}`)}</span>
+      </span>
+      {/*
+       * A figure from yesterday morning does not say what the dam is doing now, so a green chip
+       * on its own would be a lie by omission. The app's rule for a stale alert is to keep the
+       * level and add a grey marker beside it (docs/brand.md), and the same holds here: the last
+       * known state stays, with the grey saying how old it is.
+       */}
+      {signal?.stale && (
+        <span
+          data-dam-stale="true"
+          className="inline-flex min-h-tap items-center gap-2 rounded-full bg-alert-stale px-4 py-1 font-medium text-alert-stale-fg"
+        >
+          <ClockIcon size={20} aria-hidden="true" />
+          <span>{t("state.stale")}</span>
+        </span>
+      )}
+    </span>
+  );
+}
 
 function Figures({
   dam,
@@ -158,6 +221,7 @@ export function DamNotice({
           <WaveIcon size={24} aria-hidden="true" />
           {t(`notice.${state}.title`, { dam: name })}
         </p>
+        <DamStateChip signal={dam.signal} />
         <p>{t(`notice.${state}.body`, { dam: name, river: localName(dam.river, locale) })}</p>
         <p>
           {t(via === "tributary" ? "notice.whereTributary" : "notice.where", {
@@ -201,8 +265,14 @@ export function DamCard({ dam, now }: { dam: Dam; now: number }) {
         </p>
       </div>
 
-      {/* The state in words with an icon, never by colour alone (CLAUDE.md, accessibility). */}
+      {/* The state in colour, icon and words, never by colour alone (CLAUDE.md, accessibility). */}
+      <DamStateChip signal={dam.signal} />
       <p className="font-medium">{t(`grade.${dam.signal?.grade ?? "unknown"}`)}</p>
+      {/*
+       * The card now wears the alert hues, so it has to carry the line the notice always had:
+       * this is the dam's own figure, not a level Jaga issued (safety rule 2).
+       */}
+      <p className={hint}>{t("disclaimer.notAnAlert")}</p>
       {(dam.signal?.reasons ?? []).map((reason) => (
         /* "rising_fast" names the window it measured over, so every reason is given it. */
         <p key={reason}>{t(`reason.${reason}`, { hours: dam.signal?.riseWindowH ?? 6 })}</p>

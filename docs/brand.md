@@ -76,6 +76,8 @@ Implement these as CSS variables and a Tailwind theme. The brand colors must nev
 
 **Stale is a marker, not a sixth level.** When an alert passes its next-update time, its level badge stays as it is and a grey "not updated since [time]" marker (`--alert-stale`) is added beside it. Never replace or downgrade the level.
 
+**One other thing may wear these hues: the dam's own state** (owner, 12 October 2026; this supersedes "the water colour never changes with the dam's state" of 10 October only for the state chip — the river, the tributaries and the reservoir are still drawn in the water blue). Bang Lang's computed state is shown as a **pill**, not a square-cornered badge, in `--alert-normal` (normal range), `--alert-watch` (worth watching), `--alert-evacuate` (releasing above the normal range) and `--alert-stale` (no figures), on the dam's card, its quiet notice, the war room and the dam's own three marks on the map. It carries an icon and a word like every level does, and the screen it sits on always says in words that these are the dam's published figures and **not an alert from Jaga**, because only a person issues one (safety rule 2). A dam whose feed has gone quiet is grey, never green; a stale reading keeps its colour and gains the grey marker beside it, exactly as an alert does.
+
 **Level icons:**
 | Level | Icon |
 |---|---|

@@ -18,6 +18,9 @@
  *     against the dark basemap rather than guessed: the daytime water colour disappears into it.
  */
 
+import { alert } from "@/lib/brand/tokens";
+import type { DamLevel } from "@/lib/dam";
+
 /** Water, by day and by night. Not an alert hue, and the same whatever the dam is doing. */
 export const DAM_WATER = "#1b6e8c";
 export const DAM_WATER_DARK = "#7ec8e3";
@@ -50,6 +53,18 @@ export function damPaint(dark: boolean): DamPaint {
         label: "#0d4a5e",
         halo: "#ffffff",
       };
+}
+
+/**
+ * The dam's own three marks take the state's colour (the owner, 12 Oct). The water does not:
+ * the river runs through 39 tambons whose alert colours lie underneath it, and a red line across
+ * a green tambon would contradict the level a person issued there. A mark is a point at the dam,
+ * so it says what the dam is doing without claiming anything about the places downstream.
+ */
+export function markColor(level: DamLevel, dark: boolean): string {
+  if (level === "unknown") return dark ? DAM_MARK_DARK : DAM_MARK;
+  // The alert palette is the same in both themes on purpose (docs/brand.md).
+  return alert[level === "releasing" ? "evacuate" : level === "watch" ? "watch" : "normal"].bg;
 }
 
 /**

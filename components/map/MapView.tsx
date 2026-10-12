@@ -4,12 +4,13 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { GeoJSONSource, Map as MapLibreMap, PointLike, Popup } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import type { MapLayer } from "@/lib/hazards";
-import { type Dam, reachesInOrder } from "@/lib/dam";
+import { damLevel, type Dam, reachesInOrder } from "@/lib/dam";
 import {
   byZoom,
   CASING_EXTRA,
   damMarks,
   damPaint,
+  markColor,
   emphasis,
   MAIN_WIDTH,
   RESERVOIR_FILL_OPACITY,
@@ -169,7 +170,8 @@ function damCollections(
       marks.push({
         type: "Feature",
         geometry: point,
-        properties: { code: dam.code, kind, label },
+        // The state travels with the mark, so the one layer paints it (the owner, 12 Oct).
+        properties: { code: dam.code, kind, label, level: damLevel(dam.signal) },
       });
     }
   }
@@ -267,7 +269,25 @@ export function MapView({
       locale: damLocale,
     });
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
-    const paint = damPaint(darkNow());
+    const dark = darkNow();
+    const paint = damPaint(dark);
+    /*
+     * The dam's three marks take the state's colour (the owner, 12 Oct: normal green, attention
+     * yellow, a release red). One layer, painted from the `level` each mark carries, so a dam
+     * whose feed has gone quiet is grey rather than green (safety rule 10).
+     */
+    const markPaint = (night: boolean) =>
+      [
+        "match",
+        ["get", "level"],
+        "normal",
+        markColor("normal", night),
+        "watch",
+        markColor("watch", night),
+        "releasing",
+        markColor("releasing", night),
+        markColor("unknown", night),
+      ] as unknown as string;
     draw.current = () => {
       const m = map.current;
       if (!m) return;
@@ -395,7 +415,7 @@ export function MapView({
             source: DAM_POINTS,
             paint: {
               "circle-radius": ["case", ["==", ["get", "kind"], "dam"], 8, 5.5],
-              "circle-color": paint.mark,
+              "circle-color": markPaint(dark),
               "circle-stroke-color": paint.halo,
               "circle-stroke-width": 2.5,
             },
@@ -515,7 +535,7 @@ export function MapView({
           [DAM_TRIBUTARY, "line-color", paint.water],
           [DAM_CASING, "line-color", paint.casing],
           [DAM_MAIN, "line-color", paint.water],
-          [DAM_MARKS, "circle-color", paint.mark],
+          [DAM_MARKS, "circle-color", markPaint(dark)],
           [DAM_MARKS, "circle-stroke-color", paint.halo],
           [DAM_LABELS, "text-color", paint.label],
           [DAM_LABELS, "text-halo-color", paint.halo],

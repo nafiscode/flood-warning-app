@@ -15,6 +15,7 @@ import {
   ageHours,
   attention,
   dailyPart,
+  damLevel,
   flow,
   fullness,
   onPath,
@@ -42,6 +43,7 @@ import {
   DAM_WATER_DARK,
   damMarks,
   damPaint,
+  markColor,
   emphasis,
   MAIN_WIDTH,
   RESERVOIR_FILL_OPACITY,
@@ -192,7 +194,12 @@ describe("the notice is not an alert", () => {
     expect(getByText(th.dam.disclaimer.notAnAlert)).toBeTruthy();
   });
 
-  it("carries no alert or SOS colour anywhere", () => {
+  /*
+   * Until 12 Oct nothing about the dam could wear an alert colour. The owner then asked for the
+   * states to be coloured and chose Jaga's own hues, so the **state chip** may - and nothing
+   * else may, which is what this now holds: strip the chip and the old rule still stands.
+   */
+  it("carries no alert or SOS colour beyond the state chip itself", () => {
     const { container } = renderWithIntl(
       <DamNotice
         dam={withSignal(exampleDamSignal("releasing"))}
@@ -201,6 +208,7 @@ describe("the notice is not an alert", () => {
         now={EXAMPLE_NOW}
       />,
     );
+    container.querySelector("[data-dam-level]")!.remove();
     const html = container.innerHTML;
     // Only the alert palette may show a level (docs/brand.md), and this is not a level.
     expect(html).not.toMatch(/bg-alert-|text-alert-|border-alert-|bg-sos/);
@@ -440,6 +448,120 @@ describe("the day behind the newest reading", () => {
  * do not - a gap is not a nought, a half-published day is not a quiet day, and a wobble is not a
  * trend.
  */
+/*
+ * The dam's state as a colour (the owner, 12 Oct: normal green, attention yellow, risky red).
+ * They chose Jaga's own alert hues over a second traffic light. Because those hues mean "a
+ * person issued this level" everywhere else in the app (safety rule 2), what is tested here is
+ * everything that keeps the two apart: the words, the icon, the shape, and the fact that a dam
+ * with no figures is never green.
+ */
+describe("the dam's state wears a colour", () => {
+  const chipOf = (signal: DamSignal | null) =>
+    renderWithIntl(<DamCard dam={withSignal(signal)} now={EXAMPLE_NOW} />).container.querySelector(
+      "[data-dam-level]",
+    )!;
+
+  it("names the level the figures are at", () => {
+    expect(damLevel(exampleDamSignal("quiet"))).toBe("normal");
+    expect(damLevel(exampleDamSignal("watch"))).toBe("watch");
+    expect(damLevel(exampleDamSignal("releasing"))).toBe("releasing");
+    // A rule that has fired once and waits for the next reading is attention, not calm.
+    expect(damLevel(exampleDamSignal("awaiting"))).toBe("watch");
+  });
+
+  it("a dam that has published nothing is grey, never green (safety rule 10)", () => {
+    expect(damLevel(null)).toBe("unknown");
+    const chip = chipOf(null);
+    expect(chip.getAttribute("data-dam-level")).toBe("unknown");
+    expect(chip.className).toContain("bg-alert-stale");
+    expect(chip.className).not.toContain("bg-alert-normal");
+  });
+
+  it("wears the alert hues the owner chose, one per state", () => {
+    expect(chipOf(exampleDamSignal("quiet")).className).toContain("bg-alert-normal");
+    expect(chipOf(exampleDamSignal("watch")).className).toContain("bg-alert-watch");
+    expect(chipOf(exampleDamSignal("releasing")).className).toContain("bg-alert-evacuate");
+  });
+
+  it("never carries the colour alone: an icon and a word ride with it", () => {
+    const chip = chipOf(exampleDamSignal("releasing"));
+    expect(chip.querySelector("svg")).toBeTruthy();
+    expect(chip.textContent).toContain(th.dam.state.releasing);
+  });
+
+  /*
+   * A level a person issued is a square-cornered badge; the dam's own state is a pill. The
+   * colours are shared on purpose, so the shape and the words are what tell them apart.
+   */
+  it("is a pill, not an alert badge, and says it is not an alert from Jaga", () => {
+    const { container } = renderWithIntl(
+      <DamCard dam={withSignal(exampleDamSignal("releasing"))} now={EXAMPLE_NOW} />,
+    );
+    const chip = container.querySelector("[data-dam-level]")!;
+    expect(chip.className).toContain("rounded-full");
+    expect(chip.getAttribute("data-level")).toBeNull();
+    expect(container.textContent).toContain(th.dam.disclaimer.notAnAlert);
+  });
+
+  /*
+   * A reading from yesterday morning does not say what the dam is doing now. The app's rule for
+   * a stale alert is to keep the level and add a grey marker beside it (docs/brand.md), never to
+   * downgrade it, and the dam follows the same rule.
+   */
+  it("a stale reading keeps its state and gains a grey marker, it is not recoloured", () => {
+    const { container } = renderWithIntl(
+      <DamCard dam={withSignal(exampleDamSignal("stale"))} now={EXAMPLE_NOW} />,
+    );
+    const chip = container.querySelector("[data-dam-level]")!;
+    expect(chip.getAttribute("data-dam-level")).toBe("normal");
+    const marker = container.querySelector("[data-dam-stale]")!;
+    expect(marker).toBeTruthy();
+    expect(marker.className).toContain("bg-alert-stale");
+    expect(marker.textContent).toContain(th.dam.state.stale);
+    // A fresh reading has no marker at all.
+    const fresh = renderWithIntl(
+      <DamCard dam={withSignal(exampleDamSignal("quiet"))} now={EXAMPLE_NOW} />,
+    );
+    expect(fresh.container.querySelector("[data-dam-stale]")).toBeNull();
+  });
+
+  it("the quiet notice carries the same chip", () => {
+    const { container } = renderWithIntl(
+      <DamNotice
+        dam={withSignal(exampleDamSignal("releasing"))}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
+    );
+    expect(container.querySelector("[data-dam-level='releasing']")).toBeTruthy();
+  });
+
+  /*
+   * On the map only the dam's own three marks take the state's colour. The river runs through 39
+   * tambons whose alert colours lie underneath it, and a red line across a green tambon would
+   * contradict the level a person issued there.
+   */
+  it("the marks take the state's colour and the water does not", () => {
+    expect(markColor("normal", false)).toBe(alertColors.normal.bg);
+    expect(markColor("watch", false)).toBe(alertColors.watch.bg);
+    expect(markColor("releasing", false)).toBe(alertColors.evacuate.bg);
+    // Unknown keeps the dam's own ink, not an alert hue.
+    const hues = Object.values(alertColors).map((c) => c.bg.toLowerCase());
+    expect(hues).not.toContain(markColor("unknown", false).toLowerCase());
+    expect(hues).not.toContain(markColor("unknown", true).toLowerCase());
+    // The water is the water, whatever the dam is doing.
+    expect(damPaint(false).water).toBe(DAM_WATER);
+    expect(damPaint(true).water).toBe(DAM_WATER_DARK);
+  });
+
+  it("the state's colour is the same by day and by night, like every level in this app", () => {
+    for (const level of ["normal", "watch", "releasing"] as const) {
+      expect(markColor(level, true)).toBe(markColor(level, false));
+    }
+  });
+});
+
 describe("the fortnight behind the dam", () => {
   const day = (over: Partial<DamDay> & { day: string }): DamDay => ({
     hours: 24,
@@ -906,10 +1028,15 @@ describe("the dam on the admins' war room", () => {
     );
   });
 
-  it("is not an alert either: no alert or SOS colour on the panel", () => {
+  it("wears the state chip, and no other alert or SOS colour", () => {
     // The war room paints an unanswered SOS with border-sos. A dam release is not a level and
-    // must not borrow that weight (docs/brand.md).
+    // must not borrow that weight (docs/brand.md) - the chip the owner asked for on 12 Oct is
+    // the one thing that carries a hue, and it says what it is in words.
     const { container } = render();
+    const chip = container.querySelector("[data-dam-level]")!;
+    expect(chip).toBeTruthy();
+    expect(chip.textContent).toContain(th.dam.state.releasing);
+    chip.remove();
     expect(container.innerHTML).not.toMatch(
       /bg-alert-|text-alert-|border-alert-|bg-sos|border-sos/,
     );
