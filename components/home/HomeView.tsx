@@ -195,14 +195,6 @@ export function HomeView(props: HomeViewProps) {
           />
         ))}
 
-        {/*
-         * The same dam, for everyone the notice does not reach: the drawing and what it means,
-         * with nothing saying water is coming to them, because it is not.
-         */}
-        {damsNearMe.map(({ dam, onRiver }) => (
-          <DamFigureCard key={dam.code} dam={dam} onRiver={onRiver} />
-        ))}
-
         {loading ? (
           <section data-hero="loading" className={card}>
             <p>{t("loading")}</p>
@@ -277,6 +269,16 @@ export function HomeView(props: HomeViewProps) {
             {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
           </Link>
         )}
+
+        {/*
+         * The same dam, for everyone the notice does not reach: the drawing and what it means,
+         * with nothing saying water is coming to them, because it is not. It sits in the smaller
+         * column, directly above the map button on every screen size (owner, 13 Oct), which is
+         * why the card has no map link of its own.
+         */}
+        {damsNearMe.map(({ dam, onRiver }) => (
+          <DamFigureCard key={dam.code} dam={dam} onRiver={onRiver} />
+        ))}
 
         {/* The map comes straight after the person's own places, and the safe places after it,
             folded under their own button (owner, 12 Oct). */}

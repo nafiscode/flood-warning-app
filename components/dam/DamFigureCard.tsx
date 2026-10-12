@@ -2,7 +2,6 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { DamSectionFigure } from "@/components/dam/DamFigures";
-import { Link } from "@/i18n/navigation";
 import type { Dam } from "@/lib/dam";
 import { localName } from "@/lib/places";
 import { card, hint } from "@/lib/ui";
@@ -12,8 +11,9 @@ import { card, hint } from "@/lib/ui";
  * and Narathiwat sees it, Songkhla does not - see `showsDamFigure` for why).
  *
  * It is deliberately not the quiet notice: nothing here says water is coming. It says where the
- * dam is, what it is doing, that these are the dam's own published figures and not an alert from
- * Jaga (safety rule 2), and offers the map. Someone on the river gets the notice instead **while
+ * dam is, what it is doing, and that these are the dam's own published figures and not an alert
+ * from Jaga (safety rule 2). It has no map link: on the home screen it sits directly above the
+ * "Open the map" button (owner, 13 Oct). Someone on the river gets the notice instead **while
  * the dam has something to say**; on an ordinary day the notice is silent, so they get this card
  * too, with `onRiver` so the sentence beneath the drawing tells them the truth about where they
  * live.
@@ -32,9 +32,6 @@ export function DamFigureCard({ dam, onRiver = false }: { dam: Dam; onRiver?: bo
         })}
       </p>
       <p className={hint}>{t("disclaimer.notAnAlert")}</p>
-      <Link href="/map" prefetch={false} className="min-h-tap self-start underline">
-        {t("notice.openMap")}
-      </Link>
     </section>
   );
 }

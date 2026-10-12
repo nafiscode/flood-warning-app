@@ -109,6 +109,14 @@ describe("the dam's figure on the home screen", () => {
     );
   });
 
+  it("the card sits directly above the map button, and carries no map link of its own", () => {
+    const c = home("normal", { dams: [DAM], area: area("950299") });
+    const card = c.querySelector("[data-dam-figure-card]")!;
+    const map = c.querySelector("[data-map-link]")!;
+    expect(card.nextElementSibling).toBe(map);
+    expect(card.querySelector("a")).toBeNull();
+  });
+
   it("Songkhla gets neither: the dam's water never reaches it", () => {
     const c = home("normal", { dams: [DAM], area: area("900101") });
     expect(c.querySelector("[data-dam-figure-card]")).toBeNull();
