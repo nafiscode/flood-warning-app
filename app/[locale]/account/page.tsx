@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { InstallCard } from "@/components/InstallCard";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, isAdminRole, localePath, needsName } from "@/lib/auth";
+import { installMessages } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
 import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
 
@@ -78,6 +81,10 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
           {t("adminLink")}
         </Link>
       )}
+
+      <NextIntlClientProvider messages={installMessages(await getMessages())}>
+        <InstallCard place="account" />
+      </NextIntlClientProvider>
 
       <form action="/api/auth/sign-out" method="post">
         <button type="submit" className={buttonSecondary}>

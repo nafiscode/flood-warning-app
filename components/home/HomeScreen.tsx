@@ -10,6 +10,7 @@ import {
   useNow,
   usePublicStatus,
 } from "@/lib/use-public";
+import { InstallCard } from "@/components/InstallCard";
 import { HomeView } from "./HomeView";
 
 /**
@@ -48,6 +49,7 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       dams={dam.data?.dams ?? null}
       projectLine={projectLine}
       userAgent={ready ? navigator.userAgent : ""}
+      install={<InstallCard place="home" />}
     />
   );
 }

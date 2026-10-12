@@ -14,7 +14,7 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
   const all = messages as Messages;
   const dam = all.dam as Messages;
   return {
-    ...pick(messages, ["home", "alert", "sos", "places", "hotlines"]),
+    ...pick(messages, ["home", "alert", "sos", "places", "hotlines", "install"]),
     // The area chooser's province list.
     map: { province: all.map!.province! },
     /*
@@ -41,6 +41,11 @@ export function sosMessages(messages: AbstractIntlMessages): AbstractIntlMessage
     ...pick(messages, ["sos", "report", "hotlines", "home"]),
     map: { province: all.map!.province! },
   };
+}
+
+/** The "put Jaga on your home screen" card, where it stands by itself (the Account page). */
+export function installMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  return pick(messages, ["install"]);
 }
 
 export function reportMessages(messages: AbstractIntlMessages): AbstractIntlMessages {

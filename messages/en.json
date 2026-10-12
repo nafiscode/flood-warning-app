@@ -71,6 +71,49 @@
     "mapLink": "Open the map",
     "projectLine": "Jaga help line"
   },
+  "install": {
+    "title": {
+      "phone": "Put Jaga on your home screen",
+      "computer": "Install Jaga on this computer"
+    },
+    "body": {
+      "phone": "It opens from its own icon, like an app. Even with no signal, the hotlines and your last saved status still open.",
+      "computer": "It opens from its own icon, like a program, without opening the browser first."
+    },
+    "button": {
+      "phone": "Add to home screen",
+      "computer": "Install Jaga"
+    },
+    "later": "Not now",
+    "guide": {
+      "inApp": {
+        "s1": "This page is open inside another app, such as Messenger or LINE, which cannot add an icon.",
+        "s2": "Tap the ⋯ menu, choose “Open in browser”, then press this button again."
+      },
+      "iosSafari": {
+        "s1": "Tap the Share button in Safari's bottom bar.",
+        "s2": "Scroll down and tap “Add to Home Screen”.",
+        "s3": "Tap “Add” in the top right corner."
+      },
+      "iosOther": {
+        "s1": "Tap the Share button at the end of the address bar.",
+        "s2": "Scroll down and tap “Add to Home Screen”.",
+        "s3": "Tap “Add” in the top right corner."
+      },
+      "android": {
+        "s1": "Tap the ⋮ menu in the top right corner of the browser.",
+        "s2": "Tap “Add to Home screen” or “Install app”."
+      },
+      "macSafari": {
+        "s1": "In the menu bar at the top of the screen, choose “File”.",
+        "s2": "Choose “Add to Dock”."
+      },
+      "desktop": {
+        "s1": "In Chrome or Edge, press the install icon at the end of the address bar, or open the ⋮ menu.",
+        "s2": "Choose “Install Jaga”. In other browsers, bookmark this page instead."
+      }
+    }
+  },
   "alert": {
     "level": {
       "normal": "Normal",

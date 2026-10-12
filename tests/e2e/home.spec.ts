@@ -347,3 +347,50 @@ test.describe("what the public endpoints give out (safety rule 6)", () => {
     expect((await response.json()).inService).toBe(false);
   });
 });
+
+test.describe("the install card", () => {
+  test.use({ serviceWorkers: "block" });
+
+  test("opens the browser's install dialog, then shows the steps, and 'Not now' is remembered", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await page.goto("/");
+    const card = page.locator("[data-install]");
+    await expect(card).toBeVisible();
+
+    // What Chrome and Edge hand a page they are willing to install; the person says no here.
+    await page.evaluate(() => {
+      const offer = new Event("beforeinstallprompt", { cancelable: true });
+      Object.assign(offer, {
+        prompt: async () => {
+          document.body.dataset.asked = "yes";
+        },
+        userChoice: Promise.resolve({ outcome: "dismissed" }),
+      });
+      window.dispatchEvent(offer);
+    });
+    await card.locator("[data-install-button]").click();
+    await expect(page.locator("body")).toHaveAttribute("data-asked", "yes");
+    await expect(card.locator("[data-install-guide]")).toHaveCount(0);
+
+    // An offer can be used once. After it, the button shows where the browser's own menu is.
+    await card.locator("[data-install-button]").click();
+    await expect(card.locator("[data-install-guide] li").first()).toBeVisible();
+    await noSidewaysScroll(page);
+
+    await card.locator("[data-install-later]").click();
+    await expect(card).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator("[data-hero]")).toBeVisible();
+    await expect(page.locator('a[href="/map"]').last()).toBeVisible();
+    await expect(card).toHaveCount(0);
+  });
+
+  test("is not on the home screen while the tambon is at Warning", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [alert("warning")] });
+    await page.goto("/");
+    await expect(page.locator('[data-hero="alert"]')).toBeVisible();
+    await expect(page.locator("[data-install]")).toHaveCount(0);
+  });
+});

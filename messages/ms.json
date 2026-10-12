@@ -71,6 +71,49 @@
     "mapLink": "Buka peta",
     "projectLine": "Talian bantuan Jaga"
   },
+  "install": {
+    "title": {
+      "phone": "Letak Jaga di skrin utama telefon",
+      "computer": "Pasang Jaga pada komputer ini"
+    },
+    "body": {
+      "phone": "Buka dari ikon seperti aplikasi. Tanpa isyarat pun, nombor kecemasan dan status terakhir yang disimpan masih boleh dibuka.",
+      "computer": "Buka dari ikon pada komputer seperti program, tanpa membuka pelayar dahulu."
+    },
+    "button": {
+      "phone": "Tambah ke skrin utama",
+      "computer": "Pasang Jaga"
+    },
+    "later": "Nanti dulu",
+    "guide": {
+      "inApp": {
+        "s1": "Halaman ini dibuka di dalam aplikasi lain, seperti Messenger atau LINE, yang tidak boleh menambah ikon.",
+        "s2": "Ketik menu ⋯, pilih “Buka dalam pelayar”, kemudian tekan butang ini sekali lagi."
+      },
+      "iosSafari": {
+        "s1": "Ketik butang Kongsi pada bar bawah Safari.",
+        "s2": "Tatal ke bawah dan ketik “Tambah ke Skrin Utama”.",
+        "s3": "Ketik “Tambah” di penjuru kanan atas."
+      },
+      "iosOther": {
+        "s1": "Ketik butang Kongsi di hujung ruang alamat.",
+        "s2": "Tatal ke bawah dan ketik “Tambah ke Skrin Utama”.",
+        "s3": "Ketik “Tambah” di penjuru kanan atas."
+      },
+      "android": {
+        "s1": "Ketik menu ⋮ di penjuru kanan atas pelayar.",
+        "s2": "Ketik “Tambah ke skrin utama” atau “Pasang aplikasi”."
+      },
+      "macSafari": {
+        "s1": "Pada bar menu di atas skrin, pilih “Fail”.",
+        "s2": "Pilih “Tambah ke Dock”."
+      },
+      "desktop": {
+        "s1": "Dalam Chrome atau Edge, tekan ikon pasang di hujung ruang alamat, atau buka menu ⋮.",
+        "s2": "Pilih “Pasang Jaga”. Dalam pelayar lain, tandakan halaman ini sebagai penanda buku."
+      }
+    }
+  },
   "alert": {
     "level": {
       "normal": "Biasa",

@@ -317,3 +317,44 @@ export function PlayIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Install: an arrow down onto a tray. */
+export function InstallIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 4v10" />
+      <path d="M8 10.5l4 4 4-4" />
+      <path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" />
+    </Icon>
+  );
+}
+
+/** The Share button as iPhones draw it: an arrow rising out of a box. */
+export function ShareIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 14V3" />
+      <path d="M8.5 6.5L12 3l3.5 3.5" />
+      <path d="M8 10H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1" />
+    </Icon>
+  );
+}
+
+/** "Add to Home Screen" as iPhones draw it: a plus in a square. */
+export function AddSquareIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="4" y="4" width="16" height="16" rx="4" />
+      <path d="M12 8.5v7M8.5 12h7" />
+    </Icon>
+  );
+}
+
+/** A browser's menu: three dots, one above the other. */
+export function MenuDotsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 5.5v.01M12 12v.01M12 18.5v.01" strokeWidth={3} />
+    </Icon>
+  );
+}

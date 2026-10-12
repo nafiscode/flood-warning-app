@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { MapIcon, PhoneIcon, WaveIcon } from "@/components/icons";
 import { SafePlaces } from "@/components/places/SafePlaces";
 import { SOSButton } from "@/components/sos/SOSButton";
@@ -45,6 +45,8 @@ export type HomeViewProps = {
   /** The dams, for the quiet dam notice. Null while loading or if it can't be had. */
   dams?: Dam[] | null;
   userAgent?: string;
+  /** The "put Jaga on your home screen" card. Drawn last, and not at Warning or Evacuate. */
+  install?: ReactNode;
 };
 
 /** What a tambon shows, never green from a copy that is too old to trust. */
@@ -110,6 +112,10 @@ export function HomeView(props: HomeViewProps) {
   };
 
   const evacuate = hero?.kind === "alert" && hero.alert.level === "evacuate";
+  // An invitation to install has no place on the screen while somebody's tambon is in danger.
+  const tense = [hero, ...watched.map((w) => w.status)].some(
+    (s) => s?.kind === "alert" && (s.alert.level === "warning" || s.alert.level === "evacuate"),
+  );
   const sos = <SOSButton href={getPathname({ href: "/sos", locale })} />;
   const checklist =
     hero?.kind === "alert" ? (
@@ -257,6 +263,8 @@ export function HomeView(props: HomeViewProps) {
           <MapIcon size={22} />
           {t("mapLink")}
         </Link>
+
+        {!loading && !choosing && !tense && props.install}
       </div>
     </div>
   );
