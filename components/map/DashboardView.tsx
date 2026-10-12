@@ -9,6 +9,7 @@ import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/H
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { HAZARD_CLASSES, hazardKey } from "@/lib/hazard-layer";
+import { BASEMAPS, type Basemap } from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
 import { PhoneIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
@@ -155,6 +156,10 @@ export function DashboardView(props: DashboardViewProps) {
    * all of them at once bury the map. The switch sits right under the map and says how many.
    */
   const [showPlaces, setShowPlaces] = useState(false);
+  // The flood-risk areas start on (the owner, 12 Oct 2026) and can be switched off to read the
+  // ground underneath; the basemap is the person's choice for as long as this page is open.
+  const [showHazard, setShowHazard] = useState(true);
+  const [basemap, setBasemapChoice] = useState<Basemap>("streets");
   /*
    * A box the map has been asked to fly to, and a count so that asking for the same box twice
    * still moves it (the owner, 12 Oct: opening the dam's figures should show the dam and the
@@ -277,7 +282,10 @@ export function DashboardView(props: DashboardViewProps) {
     ...(layers.includes("gauges") && data && data.gauges.length === 0 ? (["gauges"] as const) : []),
   ];
   const placesOnOffer = layers.includes("places") && !!data && data.places.length > 0;
-  const mapLayers = showPlaces ? layers : layers.filter((l) => l !== "places");
+  const hazardOnOffer = layers.includes("hazard") && !!props.hazardTiles;
+  const mapLayers = layers.filter(
+    (l) => (l !== "places" || showPlaces) && (l !== "hazard" || showHazard || !hazardOnOffer),
+  );
   const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
 
   /*
@@ -492,12 +500,58 @@ export function DashboardView(props: DashboardViewProps) {
                 showMine={showMine}
                 dams={dams}
                 hazardUrl={props.hazardTiles ?? null}
+                basemap={basemap}
                 damText={{
                   spillway: tDam("mark.spillway"),
                   outlet: tDam("mark.outlet"),
                   locale,
                 }}
               />
+              <fieldset className="flex flex-col gap-1" data-basemap={basemap}>
+                <legend className="font-medium">{t("basemap.title")}</legend>
+                <div className="flex flex-wrap gap-2">
+                  {BASEMAPS.map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      data-basemap-choice={kind}
+                      aria-pressed={basemap === kind}
+                      onClick={() => setBasemapChoice(kind)}
+                      className={`min-h-tap rounded-full border-2 px-4 font-bold ${
+                        basemap === kind
+                          ? "border-jaga-edge bg-jaga-slate text-white"
+                          : "border-jaga-line bg-jaga-surface"
+                      }`}
+                    >
+                      {t(`basemap.${kind}`)}
+                    </button>
+                  ))}
+                </div>
+                {basemap === "satellite" && <p className={hint}>{t("basemap.satelliteNote")}</p>}
+              </fieldset>
+              {hazardOnOffer && (
+                <label
+                  data-hazard-toggle="true"
+                  className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
+                >
+                  <input
+                    type="checkbox"
+                    className={`${checkBox} mt-0`}
+                    checked={showHazard}
+                    onChange={(event) => setShowHazard(event.target.checked)}
+                  />
+                  <span aria-hidden="true" className="flex shrink-0 overflow-hidden rounded-[4px]">
+                    {[...HAZARD_CLASSES].reverse().map((c) => (
+                      <span
+                        key={c.key}
+                        className="h-5 w-2.5"
+                        style={{ backgroundColor: c.color }}
+                      />
+                    ))}
+                  </span>
+                  <span>{t("risk.toggle")}</span>
+                </label>
+              )}
               {placesOnOffer && (
                 <label
                   data-places-toggle="true"

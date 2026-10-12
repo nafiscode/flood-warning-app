@@ -19,15 +19,17 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
-import { HAZARD_SOURCE_LAYER, hazardFillColor } from "@/lib/hazard-layer";
+import { HAZARD_OPACITY, HAZARD_SOURCE_LAYER, hazardFillColor } from "@/lib/hazard-layer";
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
+  type Basemap,
   createServiceAreaMap,
   darkNow,
   mapHalo,
   mapInk,
   SERVICE_BOUNDS,
+  setBasemap,
   TAMBON_FILL_LAYER,
   TAMBON_LINE_LAYER,
   TAMBON_SOURCE,
@@ -79,6 +81,8 @@ type Props = {
   layers: MapLayer[];
   /** The `pmtiles://` address of the flood-hazard classes; null until the manifest names one. */
   hazardUrl?: string | null;
+  /** The basemap under our layers (lib/map.ts). */
+  basemap?: Basemap;
   /** The person's own places, drawn on top of everything when they ask for them. */
   mine?: MinePlace[];
   showMine?: boolean;
@@ -249,6 +253,7 @@ export function MapView({
   dams = [],
   damText = { spillway: "", outlet: "", locale: "th" },
   hazardUrl = null,
+  basemap = "streets",
 }: Props) {
   /*
    * The three labels are taken apart here because the caller builds damText fresh on every
@@ -261,6 +266,16 @@ export function MapView({
   // Which data object each source holds, so data is sent again only when it changed.
   const held = useRef(new Map<string, Collection>());
   const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
+  // The basemap the map was made with, and the one it shows now: changing it later swaps the
+  // ground under our layers without making the map again (lib/map.ts, setBasemap).
+  const basemapAtStart = useRef(basemap);
+  const applied = useRef(basemap);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready" || applied.current === basemap) return;
+    applied.current = basemap;
+    setBasemap(m, basemap);
+  }, [basemap, state]);
   const select = useRef(onSelect);
   const draw = useRef<() => void>(() => {});
   // The places as the handlers below need them, without rebuilding the map when they change.
@@ -331,7 +346,7 @@ export function MapView({
               "source-layer": HAZARD_SOURCE_LAYER,
               paint: {
                 "fill-color": hazardFillColor() as never,
-                "fill-opacity": 0.6,
+                "fill-opacity": HAZARD_OPACITY,
                 "fill-antialias": false,
               },
             },
@@ -654,7 +669,8 @@ export function MapView({
   useEffect(() => {
     if (!container.current) return;
     let cancelled = false;
-    createServiceAreaMap(container.current)
+    applied.current = basemapAtStart.current;
+    createServiceAreaMap(container.current, basemapAtStart.current)
       .then((created) => {
         if (cancelled) {
           created.remove();

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HAZARD_CLASSES,
+  HAZARD_OPACITY,
   hazardFillColor,
   hazardKey,
   hazardSourceUrl,
@@ -10,25 +11,29 @@ import {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("the flood-hazard layer", () => {
-  it("draws three classes, highest first, in purples that are no alert colour", () => {
+  it("draws three classes, highest first, light to dark, in colours that are no alert colour", () => {
     expect(HAZARD_CLASSES.map((c) => c.key)).toEqual(["high", "medium", "low"]);
     expect(HAZARD_CLASSES.map((c) => c.value)).toEqual([4, 3, 2]);
-    const alert = ["#2F7A25", "#F2C230", "#F07F1A", "#C62828", "#1F6FD1", "#6B7780"];
+    const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    // Watch, Warning, Evacuate (docs/brand.md): the hues a risk map would otherwise borrow.
+    const alert = ["#F2C230", "#F07F1A", "#C62828"].map(rgb);
     for (const c of HAZARD_CLASSES) {
-      expect(alert).not.toContain(c.color.toUpperCase());
-      const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.color.slice(i, i + 2), 16)) as [
-        number,
-        number,
-        number,
-      ];
-      // Purple: blue leads, red follows, green is the least. No alert hue has that order.
-      expect(b).toBeGreaterThan(r);
-      expect(r).toBeGreaterThan(g);
+      const [r, g, b] = rgb(c.color) as [number, number, number];
+      // Pink to wine: red leads and blue stays above green. Yellow, orange and red all have
+      // green at or above blue, so no class can drift into an alert hue unnoticed.
+      expect(r).toBeGreaterThan(b);
+      expect(b).toBeGreaterThan(g);
+      for (const [ar, ag, ab] of alert as [number, number, number][]) {
+        expect(Math.hypot(r - ar, g - ag, b - ab)).toBeGreaterThan(60);
+      }
     }
     // Light to dark with the class: a higher class is never the paler one.
-    const light = HAZARD_CLASSES.map((c) => parseInt(c.color.slice(3, 5), 16));
+    const light = HAZARD_CLASSES.map((c) => rgb(c.color).reduce((a, v) => a + v, 0));
     expect(light[0]!).toBeLessThan(light[1]!);
     expect(light[1]!).toBeLessThan(light[2]!);
+    // See-through: the streets and names underneath stay readable.
+    expect(HAZARD_OPACITY).toBeLessThanOrEqual(0.5);
+    expect(HAZARD_OPACITY).toBeGreaterThanOrEqual(0.3);
   });
 
   it("names a class from the tile's value and nothing for the lowest class or rubbish", () => {
@@ -39,7 +44,7 @@ describe("the flood-hazard layer", () => {
     expect(hazardKey(undefined)).toBeNull();
     const paint = JSON.stringify(hazardFillColor());
     expect(paint).toContain('["get","class"]');
-    expect(paint).toContain("#5A2A8C");
+    expect(paint).toContain(HAZARD_CLASSES[0].color);
     expect(paint.endsWith('"rgba(0,0,0,0)"]')).toBe(true);
   });
 

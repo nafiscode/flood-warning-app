@@ -475,7 +475,15 @@
         "low": "Rendah"
       },
       "here": "Kawasan berisiko banjir di sini: {level}",
-      "note": "Peta ini dianggar daripada ketinggian tanah dan imej satelit bagi 9 musim banjir. Ia belum disemak dengan banjir sebenar dan bukan ramalan. Kawasan tanpa warna tidak bermakna tiada risiko."
+      "note": "Peta ini dianggar daripada ketinggian tanah dan imej satelit bagi 9 musim banjir. Ia belum disemak dengan banjir sebenar dan bukan ramalan. Kawasan tanpa warna tidak bermakna tiada risiko.",
+      "toggle": "Tunjukkan kawasan berisiko banjir"
+    },
+    "basemap": {
+      "title": "Peta asas",
+      "streets": "Biasa",
+      "terrain": "Rupa bumi",
+      "satellite": "Satelit",
+      "satelliteNote": "Gambar satelit tahun 2020, kira-kira 10 meter setiap titik: sungai, sawah dan bandar kelihatan, tetapi rumah satu per satu tidak, dan ia bukan gambar semasa."
     }
   },
   "attribution": {

@@ -13,11 +13,33 @@ export function darkNow(): boolean {
 }
 
 /**
- * The colours our own layers draw with. At night the outlines and dots turn light, or they
- * would disappear into the dark basemap; the alert colours of the tambons never change.
+ * The basemaps a person can choose (the owner, 12 Oct 2026). All free and without a key:
+ *   streets    OpenFreeMap, light by day and dark at night; the default.
+ *   terrain    the same streets with the hills shaded from open elevation tiles (Mapzen's
+ *              Terrarium set on AWS), so it follows day and night as well.
+ *   satellite  Sentinel-2 cloudless by EOX: a cloud-free picture of 2020 at about 10 m, so fields,
+ *              rivers and towns are clear but single houses are not. A photograph has no night
+ *              version, so it always looks like day.
  */
-export const mapInk = () => (darkNow() ? "#cfe0e8" : "#1d3b53");
-export const mapHalo = () => (darkNow() ? "#0f1c26" : "#ffffff");
+export const BASEMAPS = ["streets", "terrain", "satellite"] as const;
+export type Basemap = (typeof BASEMAPS)[number];
+const SATELLITE_TILES =
+  "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg";
+const SATELLITE_CREDIT =
+  'Sentinel-2 cloudless 2020 by <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX</a> (contains modified Copernicus Sentinel data), CC BY-NC-SA 4.0';
+const TERRAIN_TILES = "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
+const TERRAIN_CREDIT = "Elevation: Mapzen terrain tiles on AWS (SRTM, GMTED and others)";
+
+let chosen: Basemap = "streets";
+/** Whether the map itself is dark right now: at night, except on the satellite picture. */
+export const mapIsDark = () => darkNow() && chosen !== "satellite";
+
+/**
+ * The colours our own layers draw with. On a dark map the outlines and dots turn light, or they
+ * would disappear into it; the alert colours of the tambons never change.
+ */
+export const mapInk = () => (mapIsDark() ? "#cfe0e8" : "#1d3b53");
+export const mapHalo = () => (mapIsDark() ? "#0f1c26" : "#ffffff");
 
 export const TAMBON_SOURCE = "jaga-tambons";
 export const TAMBONS_URL = "/api/geo/tambons";
@@ -86,6 +108,88 @@ export const TAMBON_SELECTED_LAYER = "jaga-tambon-selected";
  * once and still works when the basemap can't be reached; the street basemap is then loaded
  * underneath. MapLibre itself is loaded here, on demand, never with the page (slow 3G).
  */
+/** Parts of a basemap that are ours to add and must not be carried from one basemap to the next. */
+const BASE_PARTS = ["jaga-ground", "jaga-base-satellite", "jaga-base-hillshade"];
+const BASE_SOURCES = ["jaga-base-satellite", "jaga-base-dem"];
+
+/** The satellite picture as a whole style: one raster layer, and the font server our labels need. */
+const satelliteStyle = (): StyleSpecification => ({
+  version: 8,
+  glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+  sources: {
+    "jaga-base-satellite": {
+      type: "raster",
+      tiles: [SATELLITE_TILES],
+      tileSize: 256,
+      maxzoom: 15,
+      attribution: SATELLITE_CREDIT,
+    },
+  },
+  layers: [{ id: "jaga-base-satellite", type: "raster", source: "jaga-base-satellite" }],
+});
+
+/**
+ * Put another basemap under our own layers. Everything of ours (sources with the data they hold,
+ * and the layers in their order) is carried across; only the basemap's own parts are replaced.
+ * The caller draws again on "styledata", which also recolours our outlines for the new ground.
+ */
+export function setBasemap(map: MapLibreMap, basemap: Basemap): void {
+  chosen = basemap;
+  const dark = mapIsDark();
+  const style =
+    basemap === "satellite" ? satelliteStyle() : dark ? BASEMAP_STYLE_DARK : BASEMAP_STYLE;
+  map.setStyle(style, {
+    transformStyle: (previous, next) => {
+      const base: StyleSpecification =
+        basemap === "terrain"
+          ? {
+              ...next,
+              sources: {
+                ...next.sources,
+                "jaga-base-dem": {
+                  type: "raster-dem",
+                  tiles: [TERRAIN_TILES],
+                  tileSize: 256,
+                  maxzoom: 13,
+                  encoding: "terrarium",
+                  attribution: TERRAIN_CREDIT,
+                },
+              },
+              layers: [
+                ...next.layers,
+                {
+                  id: "jaga-base-hillshade",
+                  type: "hillshade",
+                  source: "jaga-base-dem",
+                  paint: {
+                    "hillshade-exaggeration": 0.55,
+                    "hillshade-shadow-color": dark ? "#000000" : "#3b4a57",
+                    "hillshade-highlight-color": dark ? "#5d7382" : "#ffffff",
+                    "hillshade-accent-color": dark ? "#0b1117" : "#6b7780",
+                  },
+                },
+              ],
+            }
+          : next;
+      if (!previous) return base;
+      const own = previous.layers.filter(
+        (l) => l.id.startsWith("jaga-") && !BASE_PARTS.includes(l.id),
+      );
+      // Every source of ours comes along, with whatever data it holds by now.
+      const ownSources = Object.fromEntries(
+        Object.entries(previous.sources).filter(
+          ([id]) => id.startsWith("jaga-") && !BASE_SOURCES.includes(id),
+        ),
+      );
+      return {
+        ...base,
+        sources: { ...base.sources, ...ownSources },
+        layers: [...base.layers, ...own],
+      };
+    },
+  });
+}
+
 let pmtilesReady = false;
 /**
  * Teach MapLibre the `pmtiles://` address once: a PMTiles file is one static file on the tile
@@ -103,14 +207,18 @@ async function registerPmtiles(maplibre: typeof import("maplibre-gl")): Promise<
   }
 }
 
-export async function createServiceAreaMap(container: HTMLElement): Promise<MapLibreMap> {
+export async function createServiceAreaMap(
+  container: HTMLElement,
+  basemap: Basemap = "streets",
+): Promise<MapLibreMap> {
+  chosen = basemap;
   const maplibre = await import("maplibre-gl");
   // The worker is served from public/vendor (scripts/vendor-maplibre.mjs), not from the bundle.
   maplibre.setWorkerUrl(`/vendor/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`);
   await registerPmtiles(maplibre);
   const map = new maplibre.Map({
     container,
-    style: startStyle(darkNow()),
+    style: startStyle(mapIsDark()),
     bounds: SERVICE_BOUNDS,
     fitBoundsOptions: { padding: 8 },
     maxBounds: [
@@ -130,23 +238,7 @@ export async function createServiceAreaMap(container: HTMLElement): Promise<MapL
     credits?.classList.remove("maplibregl-compact-show");
     credits?.removeAttribute("open");
     // Put the basemap under our layers, keeping whatever is selected at that moment.
-    map.setStyle(darkNow() ? BASEMAP_STYLE_DARK : BASEMAP_STYLE, {
-      transformStyle: (previous, next) => {
-        if (!previous) return next;
-        const own = previous.layers.filter(
-          (l) => l.id.startsWith("jaga-") && l.id !== "jaga-ground",
-        );
-        // Every source of ours comes along, with whatever data it holds by now.
-        const ownSources = Object.fromEntries(
-          Object.entries(previous.sources).filter(([id]) => id.startsWith("jaga-")),
-        );
-        return {
-          ...next,
-          sources: { ...next.sources, ...ownSources },
-          layers: [...next.layers, ...own],
-        };
-      },
-    });
+    setBasemap(map, chosen);
   });
   // A failed basemap or tile must not break the picker: the outlines are enough to choose on.
   map.on("error", () => {});

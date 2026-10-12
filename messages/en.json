@@ -475,7 +475,15 @@
         "low": "Low"
       },
       "here": "Flood-prone area here: {level}",
-      "note": "This map is estimated from the height of the land and nine flood seasons of satellite images. It has not been checked against real floods and it is not a forecast. A place without colour does not mean no risk."
+      "note": "This map is estimated from the height of the land and nine flood seasons of satellite images. It has not been checked against real floods and it is not a forecast. A place without colour does not mean no risk.",
+      "toggle": "Show flood-risk areas"
+    },
+    "basemap": {
+      "title": "Map background",
+      "streets": "Standard",
+      "terrain": "Terrain",
+      "satellite": "Satellite",
+      "satelliteNote": "A satellite picture from 2020 at about 10 metres a point: rivers, fields and towns show, single houses do not, and it is not a live picture."
     }
   },
   "attribution": {

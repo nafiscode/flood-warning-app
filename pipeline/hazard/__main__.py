@@ -287,7 +287,8 @@ def run_tiles(cfg: dict, radar_hash: str | None) -> None:
     dest = output_dir(cfg) / "tiles" / f"hazard_classes_{h}.pmtiles"
     print(json.dumps(tiles.build(path, dest, (west, south, east, north), min_zoom=t["min_zoom"], max_zoom=t["max_zoom"],
                                  tile_px=t["tile_px"], buffer_px=t["buffer_px"], min_share=t["coarse_min_share"],
-                                 metadata=meta), indent=1))
+                                 metadata=meta, sigma_px=t.get("smooth_sigma_px", 0.0),
+                                 simplify_px=t.get("simplify_px", 0.0), smooth_cut=t.get("smooth_cut", 0.5)), indent=1))
 
 
 def run_compare(cfg: dict) -> None:

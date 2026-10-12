@@ -251,6 +251,25 @@ def test_tiles_coarsen_by_share_and_keep_cell_edges(tmp_path):
     px[4, 4] = 1                                                      # Minimal is not drawn
     polys = tiles.tile_polygons(px, 1, 4)
     assert list(polys) == [4] and polys[4].bounds == (0.0, 0.0, 2048.0, 2048.0)
+    # Smoothing rounds a square's corners, keeps its middle, never invents a class, and leaves the sea alone.
+    grid = np.ones((40, 40), dtype="uint8")
+    grid[:, :5] = 0                                                   # sea
+    grid[10:30, 10:30] = 3
+    grid[15:25, 15:25] = 4
+    grid[2, 20] = 4                                                   # one stray pixel
+    round_ = tiles.smooth(grid, 1.8)
+    assert round_[20, 20] == 4 and round_[12, 20] == 3 and round_[10, 10] == 1      # the corner is cut
+    assert round_[2, 20] == 1 and (round_[:, :3] == 0).all()
+    assert (round_[:, :5] == 0).all() and (round_[:, 5:] > 0).all()   # the land keeps its outline exactly
+    wide = tiles.smooth(grid, 1.8, cut=0.3)
+    assert (wide == 4).sum() > (round_ == 4).sum() and (wide[:, :5] == 0).all()   # a lower cut gives area back
+    assert set(np.unique(round_)) <= {0, 1, 3, 4} and tiles.smooth(grid, 0) is grid
+    assert ((round_ >= 4) <= (round_ >= 3)).all()                    # still nested
+    assert abs(int((round_ == 4).sum()) - 100) < 15                  # about the same area
+    stepped = tiles.tile_polygons(round_, 0, 40)
+    eased = tiles.tile_polygons(round_, 0, 40, simplify_px=0.6)
+    count = lambda m: sum(len(g.exterior.coords) for g in m.geoms)    # noqa: E731
+    assert count(eased[3]) < count(stepped[3]) and abs(eased[3].area - stepped[3].area) < 0.05 * stepped[3].area
     # End to end on a small raster near Pattani: the file opens and a tile decodes with its classes.
     cls = np.ones((200, 200), dtype="uint8")
     cls[50:120, 40:160] = 3

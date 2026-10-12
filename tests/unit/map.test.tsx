@@ -34,7 +34,9 @@ vi.mock("@/components/map/MapView", () => ({
     showMine = false,
     onSelect,
     bounds,
+    basemap = "streets",
   }: {
+    basemap?: string;
     onSelect?: (s: { kind: "mine"; id: string }) => void;
     bounds?: [number, number, number, number];
     layers: string[];
@@ -50,6 +52,7 @@ vi.mock("@/components/map/MapView", () => ({
   }) => (
     <div
       data-map="true"
+      data-basemap={basemap}
       data-mine={showMine ? mine.map((p) => p.id).join(",") : ""}
       data-mine-count={mine.length}
       data-mine-colors={mine.map((p) => p.color).join(",")}
@@ -386,6 +389,40 @@ describe("map dashboard (spec 4.2)", () => {
     // The lowest class is not drawn, so the words under the legend have to say what no colour means.
     expect(c.querySelector("[data-hazard-note]")?.textContent).toBe(th.map.risk.note);
     expect(th.map.risk.note).toContain("ไม่ได้แปลว่าไม่มีความเสี่ยง");
+  });
+
+  it("the flood-risk areas start on and can be switched off; without tiles there is no switch", () => {
+    expect(
+      dashboard({ status: exampleStatus([]) }).querySelector("[data-hazard-toggle]"),
+    ).toBeNull();
+    const c = dashboard({
+      status: exampleStatus([]),
+      hazardTiles: "pmtiles://https://tiles.example/h.pmtiles",
+    });
+    const toggle = c.querySelector<HTMLInputElement>("[data-hazard-toggle] input")!;
+    expect(toggle.checked).toBe(true);
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard");
+    fireEvent.click(toggle);
+    expect(c.querySelector("[data-map]")?.textContent).toBe("");
+    expect(c.querySelector("[data-hazard-class]")).toBeNull();
+    fireEvent.click(toggle);
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard");
+  });
+
+  it("offers three map backgrounds, standard first, and says what the satellite picture is", () => {
+    const c = dashboard({ status: exampleStatus([]) });
+    const choices = [...c.querySelectorAll<HTMLButtonElement>("[data-basemap-choice]")];
+    expect(choices.map((b) => b.dataset.basemapChoice)).toEqual([
+      "streets",
+      "terrain",
+      "satellite",
+    ]);
+    expect(choices.map((b) => b.getAttribute("aria-pressed"))).toEqual(["true", "false", "false"]);
+    expect(c.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("streets");
+    expect(c.textContent).not.toContain(th.map.basemap.satelliteNote);
+    fireEvent.click(choices[2]!);
+    expect(c.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("satellite");
+    expect(c.textContent).toContain(th.map.basemap.satelliteNote);
   });
 
   it("safe places wait behind a switch that says how many there are", () => {
