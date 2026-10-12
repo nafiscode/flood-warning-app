@@ -65,6 +65,9 @@ describe("geography", () => {
 describe("rank_safe_places", () => {
   it("ranks by score and distance, and leaves out closed places", async () => {
     await asOwner(db);
+    // The database holds the pipeline's own candidates since S4 (supabase/seed/50_safe_places.sql);
+    // this test is about the rows it adds, so it clears the table first. Rolled back with the test.
+    await db.query("delete from safe_places");
     const add = (name: string, dx: number, score: number, status = "open") =>
       db.query(
         `insert into safe_places (name, type, point, score, status)

@@ -227,6 +227,9 @@ describe("areas", () => {
 describe("safe_places_near", () => {
   it("lists places for people and car parking separately, without closed or rejected ones", async () => {
     await asOwner(db);
+    // The database holds the pipeline's own candidates since S4 (supabase/seed/50_safe_places.sql);
+    // this test is about the rows it adds, so it clears the table first. Rolled back with the test.
+    await db.query("delete from safe_places");
     const add = (name: string, type: string, extra = "") =>
       db.query(
         `insert into safe_places (name, type, point, score, status, verification_status)

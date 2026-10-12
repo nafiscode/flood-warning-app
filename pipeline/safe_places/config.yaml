@@ -1,0 +1,69 @@
+# S4, docs/science-plan.md Module 2: candidate safe places, what the terrain and the radar say
+# about each, whether it can be reached on dry roads, and a score. Every number is a starting value.
+#
+# Decided by the owner on 12 Oct 2026 (docs/decisions.md): nothing is excluded, doubtful sites are
+# flagged; travel is on foot to places for people and by car to high-ground parking; the scored
+# candidates are loaded into the development database as unverified.
+
+output_dir: out/safe_places
+user_agent: "jaga-pipeline/0.1 (+https://github.com/nafiscode/flood-warning-app; {contact})"
+# Public Overpass servers, asked in turn: any one of them is often busy. All free, no account.
+overpass_url:
+  - https://overpass-api.de/api/interpreter
+  - https://overpass.private.coffee/api/interpreter
+  - https://maps.mail.ru/osm/tools/overpass/api/interpreter
+radar_hash: c97e0bf                  # the radar run whose event extents and frequency are used
+events: [2024, 2025]
+
+roads:
+  # Highway classes nobody walks or drives on in an evacuation, or that are not roads at all.
+  drop: [proposed, construction, abandoned, razed, platform, bus_guideway, raceway, corridor, elevator, rest_area, services]
+  no_walking: [motorway, motorway_link]
+  no_driving: [footway, path, steps, cycleway, pedestrian, bridleway, track]
+  walk_kmh: 4.0
+  drive_kmh: 30.0                    # slow on purpose: rain, traffic, people on the road
+  # A road piece counts as flooded when two of its three sample points (ends and middle) are on
+  # radar flood of either event. Flood patches smaller than min_flood_patch_cells (30 m cells; 20 is
+  # 1.8 ha) are ignored for this, and the flood is not widened: a single flagged cell beside a road,
+  # or a stream under a culvert, would otherwise cut the network to pieces (the first trial left
+  # hill towns like Betong with a seventh of their houses "reachable"). Bridges and tunnels are kept.
+  flood_buffer_cells: 0
+  min_flood_patch_cells: 20
+
+reach:
+  walk_minutes: 30                   # the houses a place for people serves
+  drive_minutes: 15                  # the houses a parking place serves
+  snap_site_m: 300                   # a site farther than this from any road has no route
+  snap_house_m: 150
+
+freeboard:
+  # The flood's stage near a site: the median height above the nearest stream of the nearest cells on
+  # the edge of the radar flood (FwDET's idea, taken in height above the stream so that it holds in
+  # hills). Freeboard is the site's own height above the stream minus that. Without an edge this
+  # close, the site's height above the stream is used as it is and the row says so.
+  edge_cells: 25
+  max_edge_km: 2.0
+  full_score_m: 5.0                  # freeboard at or above this scores 1
+  low_m: 0.5                         # below this a site is flagged "low ground"
+
+parking:
+  min_hand_m: 8.0
+  per_tambon: 3
+  spacing_m: 1000
+  houses_within_m: 1000              # ranks the candidate cells inside a tambon
+
+# S = sum of weight x component. A component nobody knows yet (capacity, or a route for a site off
+# the road network) is left out and the other weights are scaled up, and the row says which.
+weights:
+  freeboard: 0.35
+  not_flooded_often: 0.20
+  route_dry: 0.25
+  travel_time: 0.10
+  capacity: 0.10
+
+# What marks a site for a volunteer's check before anyone relies on it. A flag never removes a site.
+flags:
+  radar_flood: true                  # the radar saw flood on the site's cell in 2024 or 2025
+  low_ground: true                   # freeboard under freeboard.low_m
+  flood_frequency_over: 0.02         # flooded on more than this share of valid passes
+  route_dry_under: 0.5               # fewer than half the houses it serves can still reach it
