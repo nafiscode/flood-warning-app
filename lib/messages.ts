@@ -65,6 +65,8 @@ export function warRoomMessages(messages: AbstractIntlMessages): AbstractIntlMes
   const all = messages as Messages;
   return {
     ...pick(messages, ["warRoom"]),
+    // The photo-and-note form an admin confirms a rescue with is the teams' own (spec 5.4).
+    authority: { finish: (all.authority as Messages).finish! },
     sos: { vulnerable: (all.sos as Messages).vulnerable! },
     report: { depths: (all.report as Messages).depths! },
   };
@@ -79,6 +81,8 @@ export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlM
   const sos = all.sos as Messages;
   return {
     ...pick(messages, ["authority"]),
+    // The capability names are the war room's, so a team and an admin read the same words.
+    warRoom: { capability: (all.warRoom as Messages).capability! },
     sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard! },
     report: { depths: (all.report as Messages).depths! },
   };

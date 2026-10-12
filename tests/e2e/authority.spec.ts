@@ -54,8 +54,11 @@ async function sql(text: string, params: unknown[] = []) {
 }
 
 /** Sign in through the same route an email link uses, without sending an email. */
-async function signIn(page: Page) {
-  const { data, error } = await service().auth.admin.generateLink({ type: "magiclink", email });
+async function signIn(page: Page, address = email) {
+  const { data, error } = await service().auth.admin.generateLink({
+    type: "magiclink",
+    email: address,
+  });
   if (error) throw new Error(`could not make a link: ${error.message}`);
   await page.goto(`/api/auth/confirm?token_hash=${data.properties.hashed_token}&type=magiclink`);
 }
@@ -156,6 +159,7 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
       await sql("delete from public.sos_requests where id = $1", [sos.id]);
     }
     if (unitId) {
+      await sql("delete from public.hero_points where unit_id = $1", [unitId]);
       await sql("delete from public.authority_coverage where unit_id = $1", [unitId]);
       await sql("delete from public.authority_unit_contacts where unit_id = $1", [unitId]);
       await sql("delete from public.authority_units where id = $1", [unitId]);
@@ -351,5 +355,109 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
       [sos!.id],
     );
     expect(confirmed.map((r) => r.method)).toEqual(["requester"]);
+  });
+
+  test("the points, the responsibility map and the map of cases open from the console", async ({
+    page,
+  }) => {
+    await signIn(page);
+    await page.goto("/authority");
+
+    // Points exist now, because the rescue above was confirmed - and only because of that.
+    await page.locator('[data-console-view="points"]').click();
+    const mine = page.locator(`[data-points-row="${unitId}"]`);
+    await expect(mine).toBeVisible();
+    await expect(mine).toContainText(UNIT);
+    expect(Number(await page.locator("[data-points-mine]").getAttribute("data-points-mine"))).toBe(
+      12,
+    );
+    const [ledger] = await sql(
+      "select points, reason from public.hero_points where unit_id = $1 and revoked_at is null",
+      [unitId],
+    );
+    expect(ledger!.points).toBe(12);
+
+    // The responsibility map: the totals in words, and the alarm still on screen beside it.
+    await page.locator('[data-console-view="coverage"]').click();
+    await expect(page.locator("[data-coverage-totals]")).toBeVisible();
+    await expect(page.locator("[data-alarm]")).toBeVisible();
+    await expect(page.locator('[data-map-mode="coverage"]')).toBeVisible();
+
+    await page.locator('[data-console-view="map"]').click();
+    await expect(page.locator('[data-map-mode="cases"]')).toBeVisible();
+    await expect(page.getByText(th.authority.map.pickCase)).toBeVisible();
+
+    await page.evaluate(() => window.scrollTo(9999, 0));
+    expect(await page.evaluate(() => window.scrollX)).toBe(0);
+  });
+
+  test("an admin confirms a rescue the person never answered, with a photo and a note", async ({
+    page,
+    request,
+  }) => {
+    // A second request in the same tambon, reported by the team and then left for 13 hours.
+    const [place] = await sql(
+      `select extensions.st_y(point) as lat, extensions.st_x(point) as lon
+         from public.sos_requests where id = $1`,
+      [sos!.id],
+    );
+    const sent = await request.post("/api/sos", {
+      data: { lat: Number(place!.lat), lon: Number(place!.lon), deviceId: `e2e-b-${run}` },
+    });
+    const second = (await sent.json()) as { id: string };
+    const first = sos!;
+    sos = { id: second.id, token: "" };
+    try {
+      await acceptAndReport(page);
+      await sql(
+        "update public.sos_claims set completed_at = now() - interval '13 hours' where sos_id = $1 and released_at is null",
+        [second.id],
+      );
+
+      const adminEmail = `e2e-team-admin-${run}@test.invalid`;
+      const { data, error } = await service().auth.admin.createUser({
+        email: adminEmail,
+        email_confirm: true,
+      });
+      if (error || !data.user) throw new Error(`could not create the admin: ${error?.message}`);
+      try {
+        await sql(
+          "update public.profiles set role = 'admin', display_name = $2 where user_id = $1",
+          [data.user.id, `E2E admin ${run}`],
+        );
+        await page.context().clearCookies();
+        await signIn(page, adminEmail);
+        await page.goto("/admin/war-room");
+
+        const row = page.locator(`[data-unconfirmed-case="${second.id}"]`);
+        await expect(row).toHaveAttribute("data-due", "true");
+        await row.locator("[data-admin-confirm]").click();
+        await row.locator("[data-finish-photos]").setInputFiles(PHOTO);
+        await expect(row.locator("[data-finish-send]")).toBeDisabled();
+        await row.locator("[data-finish-note]").fill("Phoned the family: all at the shelter.");
+        await row.locator("[data-finish-send]").click();
+        await expect(page.getByText(th.warRoom.unconfirmed.done)).toBeVisible({ timeout: 30_000 });
+        await expect(row).toHaveCount(0);
+
+        const [closed] = await sql(
+          `select s.closed_at, c.method from public.sos_requests s
+             join public.rescue_confirmations c on c.sos_id = s.id where s.id = $1`,
+          [second.id],
+        );
+        expect(closed!.closed_at).not.toBeNull();
+        expect(closed!.method).toBe("admin");
+      } finally {
+        await service().auth.admin.deleteUser(data.user.id);
+      }
+    } finally {
+      const storage = service().storage.from("sos-media");
+      const files = await storage.list(`${second.id}/proof`);
+      if (files.data?.length) {
+        await storage.remove(files.data.map((f) => `${second.id}/proof/${f.name}`));
+      }
+      await sql("delete from public.hero_points where sos_id = $1", [second.id]);
+      await sql("delete from public.sos_requests where id = $1", [second.id]);
+      sos = first;
+    }
   });
 });

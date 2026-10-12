@@ -6,6 +6,7 @@
  * No phone number is in any of these reads. A number is fetched one at a time by `revealSosPhone`
  * and `revealPersonPhone`, which call the logged reveal functions.
  */
+import type { UnconfirmedRescue } from "@/lib/coverage";
 import type { DamSignal } from "@/lib/dam";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -299,4 +300,21 @@ export async function revealPersonPhone(userId: string): Promise<string | null> 
   const supabase = await createClient();
   const { data } = await supabase.rpc("reveal_profile_phone", { p_user_id: userId });
   return typeof data === "string" && data !== "" ? data : null;
+}
+
+/** Rescues a team reported that nobody has confirmed yet (spec 5.4), oldest first. */
+export async function readUnconfirmedRescues(): Promise<UnconfirmedRescue[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_unconfirmed_rescues");
+  if (error) throw new Error(error.message);
+  return ((data as Record<string, unknown>[]) ?? []).map((r) => ({
+    sosId: String(r.sos_id),
+    tambonNameTh: (r.tambon_name_th as string | null) ?? null,
+    tambonNameEn: (r.tambon_name_en as string | null) ?? null,
+    unitName: String(r.unit_name ?? ""),
+    completedAt: (r.completed_at as string | null) ?? null,
+    proofCount: Number(r.proof_count ?? 0),
+    peopleCount: r.people_count == null ? null : Number(r.people_count),
+    due: Boolean(r.due),
+  }));
 }

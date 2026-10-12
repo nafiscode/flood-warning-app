@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { UnconfirmedRescues } from "@/components/admin/UnconfirmedRescues";
 import { WarRoom, type WarRoomView } from "@/components/admin/WarRoom";
 import type { CasePanels } from "@/components/admin/WarRoomCases";
 import {
@@ -8,6 +9,7 @@ import {
   readHistory,
   readMapData,
   readPeople,
+  readUnconfirmedRescues,
   readUnits,
   revealPersonPhone,
   revealSosPhone,
@@ -76,13 +78,15 @@ export default async function WarRoomPage({
     caseId ? (board.cases.find((c) => c.id === caseId) ?? null) : null;
 
   // Only what this screen is actually showing is read.
-  const [people, mapData, phone, units, rows, personPhone] = await Promise.all([
+  const [people, mapData, phone, units, rows, personPhone, unconfirmed] = await Promise.all([
     view === "people" ? readPeople(search, offset) : Promise.resolve(null),
     view === "map" || view === "people" ? readMapData() : Promise.resolve(null),
     reveal ? revealSosPhone(reveal) : Promise.resolve(null),
     assign ? readUnits(openCase(assign)?.tambon ?? null) : Promise.resolve([]),
     history ? readHistory(history) : Promise.resolve([]),
     person ? revealPersonPhone(person) : Promise.resolve(null),
+    // Rescues nobody has confirmed (spec 5.4). A fault here must not take the war room down.
+    view === "cases" ? readUnconfirmedRescues().catch(() => []) : Promise.resolve([]),
   ]);
 
   const form: CasePanels["form"] = release
@@ -95,30 +99,33 @@ export default async function WarRoomPage({
 
   return (
     <NextIntlClientProvider messages={warRoomMessages(await getMessages())}>
-      <WarRoom
-        initial={board}
-        view={view}
-        people={people}
-        mapData={mapData}
-        panels={{
-          reveal: reveal ? { caseId: reveal, phone } : null,
-          assign: assign ? { caseId: assign, units } : null,
-          history: history ? { caseId: history, rows } : null,
-          form,
-        }}
-        personReveal={person ? { userId: person, phone: personPhone } : null}
-        path={PATH}
-        pollUrl="/api/admin/war-room"
-        actions={{
-          assign: assignCase.bind(null, locale),
-          release: releaseCase.bind(null, locale),
-          note: noteCase.bind(null, locale),
-          spam: judgeSpam.bind(null, locale),
-        }}
-        reviewDam={reviewDamNotice.bind(null, locale)}
-        done={one(query.done) || null}
-        error={one(query.error) || null}
-      />
+      <div className="flex flex-col gap-5">
+        <UnconfirmedRescues rows={unconfirmed} />
+        <WarRoom
+          initial={board}
+          view={view}
+          people={people}
+          mapData={mapData}
+          panels={{
+            reveal: reveal ? { caseId: reveal, phone } : null,
+            assign: assign ? { caseId: assign, units } : null,
+            history: history ? { caseId: history, rows } : null,
+            form,
+          }}
+          personReveal={person ? { userId: person, phone: personPhone } : null}
+          path={PATH}
+          pollUrl="/api/admin/war-room"
+          actions={{
+            assign: assignCase.bind(null, locale),
+            release: releaseCase.bind(null, locale),
+            note: noteCase.bind(null, locale),
+            spam: judgeSpam.bind(null, locale),
+          }}
+          reviewDam={reviewDamNotice.bind(null, locale)}
+          done={one(query.done) || null}
+          error={one(query.error) || null}
+        />
+      </div>
     </NextIntlClientProvider>
   );
 }

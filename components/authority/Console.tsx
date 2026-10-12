@@ -5,9 +5,12 @@ import {
   BoardView,
   type AlarmState,
   type BoardNotice,
+  type ConsoleView,
   type UnitActions,
 } from "@/components/authority/BoardView";
 import type { CaseActions } from "@/components/authority/CaseCard";
+import { OtherView } from "@/components/authority/OtherView";
+import type { CoverageRow, CoverageUnit, PointsRow } from "@/lib/coverage";
 import { shouldAlarm, type AuthorityBoard, type CaseMedia } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
 import { uploadProof } from "@/lib/upload";
@@ -198,6 +201,54 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
         })),
       ),
   };
+  // The other views read their own data, and only when somebody opens them.
+  const [view, setView] = useState<ConsoleView>("cases");
+  const [coverage, setCoverage] = useState<CoverageRow[] | "failed" | null>(null);
+  const [points, setPoints] = useState<PointsRow[] | "failed" | null>(null);
+  const [picked, setPicked] = useState<{
+    tambon: string;
+    units: CoverageUnit[] | "failed" | null;
+  } | null>(null);
+
+  const ask = <T,>(query: string, take: (answer: T) => void, fail: () => void) => {
+    fetch(`/api/authority/extra?${query}`, { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return (await response.json()) as T;
+      })
+      .then(take, fail);
+  };
+
+  const openView = (next: ConsoleView) => {
+    setView(next);
+    // Coverage changes when a team is verified, which is rare: read once a sitting.
+    if ((next === "map" || next === "coverage") && !Array.isArray(coverage)) {
+      ask<{ coverage: CoverageRow[] }>(
+        "what=coverage",
+        (answer) => setCoverage(answer.coverage),
+        () => setCoverage("failed"),
+      );
+    }
+    // Points move with every confirmation: read each time the tab is opened.
+    if (next === "points") {
+      ask<{ points: PointsRow[] }>(
+        "what=points",
+        (answer) => setPoints(answer.points),
+        () => setPoints("failed"),
+      );
+    }
+  };
+
+  const pickTambon = (tambon: string) => {
+    setPicked({ tambon, units: null });
+    ask<{ tambon: string; units: CoverageUnit[] }>(
+      `what=units&tambon=${encodeURIComponent(tambon)}`,
+      (answer) =>
+        setPicked((now) => (now?.tambon === answer.tambon ? { ...now, units: answer.units } : now)),
+      () => setPicked((now) => (now?.tambon === tambon ? { ...now, units: "failed" } : now)),
+    );
+  };
+
   const unitActions: UnitActions = {
     duty: (unit, on) => send({ action: "duty", unit, on }, unit),
     sharing: (unit, on) => send({ action: "sharing", unit, on }, unit),
@@ -217,6 +268,25 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
       onRefresh={refresh}
       actions={actions}
       unitActions={unitActions}
+      view={view}
+      onView={openView}
+      other={
+        view !== "cases" && (
+          <OtherView
+            view={view}
+            cases={board.cases}
+            now={now}
+            busy={busy}
+            phones={phones}
+            media={media}
+            actions={actions}
+            coverage={coverage}
+            points={points}
+            picked={picked}
+            onPickTambon={pickTambon}
+          />
+        )
+      }
     />
   );
 }

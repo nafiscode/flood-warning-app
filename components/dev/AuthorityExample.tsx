@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BoardView, type AlarmState, type BoardNotice } from "@/components/authority/BoardView";
+import {
+  BoardView,
+  type AlarmState,
+  type BoardNotice,
+  type ConsoleView,
+} from "@/components/authority/BoardView";
+import type { CaseActions } from "@/components/authority/CaseCard";
+import { OtherView } from "@/components/authority/OtherView";
 import {
   EXAMPLE_AUTHORITY_BOARD,
+  EXAMPLE_COVERAGE,
   EXAMPLE_NOW,
+  EXAMPLE_POINTS,
+  exampleUnits,
   applyExample,
   type ExampleTap,
 } from "@/lib/authority-examples";
@@ -50,6 +60,22 @@ export function AuthorityExample() {
     setBoard((b) => applyExample(b, t, now));
   };
 
+  const [view, setView] = useState<ConsoleView>("cases");
+  const [tambon, setTambon] = useState<string | null>(null);
+  const actions: CaseActions = {
+    accept: (sos) => tap({ action: "accept", sos }),
+    decline: (sos, reason) => tap({ action: "decline", sos, reason }),
+    eta: (sos, band) => tap({ action: "eta", sos, band }),
+    advance: (sos, status) => tap({ action: "advance", sos, status }),
+    release: (sos, reason) => tap({ action: "release", sos, reason }),
+    // No number exists to show: the example says what the real card says when there is none.
+    phone: (sos) => setPhones((seen) => ({ ...seen, [sos]: null })),
+    // The photos chosen are counted and go nowhere: the example has no storage behind it.
+    complete: (sos, photos) => tap({ action: "complete", sos, photos: photos.length }),
+    confirm: (sos) => tap({ action: "confirm", sos }),
+    media: (sos) => setMedia((seen) => ({ ...seen, [sos]: "failed" })),
+  };
+
   return (
     <BoardView
       board={board}
@@ -62,23 +88,30 @@ export function AuthorityExample() {
       media={media}
       stale={false}
       onRefresh={null}
-      actions={{
-        accept: (sos) => tap({ action: "accept", sos }),
-        decline: (sos, reason) => tap({ action: "decline", sos, reason }),
-        eta: (sos, band) => tap({ action: "eta", sos, band }),
-        advance: (sos, status) => tap({ action: "advance", sos, status }),
-        release: (sos, reason) => tap({ action: "release", sos, reason }),
-        // No number exists to show: the example says what the real card says when there is none.
-        phone: (sos) => setPhones((seen) => ({ ...seen, [sos]: null })),
-        // The photos chosen are counted and go nowhere: the example has no storage behind it.
-        complete: (sos, photos) => tap({ action: "complete", sos, photos: photos.length }),
-        confirm: (sos) => tap({ action: "confirm", sos }),
-        media: (sos) => setMedia((seen) => ({ ...seen, [sos]: "failed" })),
-      }}
+      actions={actions}
       unitActions={{
         duty: (unit, on) => tap({ action: "duty", unit, on }),
         sharing: (unit, on) => tap({ action: "sharing", unit, on }),
       }}
+      view={view}
+      onView={setView}
+      other={
+        view !== "cases" && (
+          <OtherView
+            view={view}
+            cases={board.cases}
+            now={now}
+            busy={null}
+            phones={phones}
+            media={media}
+            actions={actions}
+            coverage={EXAMPLE_COVERAGE}
+            points={EXAMPLE_POINTS}
+            picked={tambon ? { tambon, units: exampleUnits(tambon) } : null}
+            onPickTambon={setTambon}
+          />
+        )
+      }
     />
   );
 }

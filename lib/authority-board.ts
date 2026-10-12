@@ -14,6 +14,7 @@ import type {
   EtaBand,
   MyUnit,
 } from "@/lib/dispatch";
+import type { CoverageRow, CoverageUnit, PointsRow } from "@/lib/coverage";
 import { createClient } from "@/lib/supabase/server";
 
 type Row = Record<string, unknown>;
@@ -241,4 +242,51 @@ export async function revealRequesterPhone(sosId: string): Promise<string | null
   const { data, error } = await supabase.rpc("reveal_sos_phone", { p_sos_id: sosId });
   if (error) throw new Error(error.message);
   return typeof data === "string" && data !== "" ? data : null;
+}
+
+/** Every tambon with the number of verified teams covering it (spec 5.6). */
+export async function readCoverage(): Promise<CoverageRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("coverage_summary");
+  if (error) throw new Error(error.message);
+  return ((data as Row[]) ?? []).map((r) => ({
+    tambon: String(r.tambon),
+    nameTh: String(r.name_th ?? r.tambon),
+    nameEn: String(r.name_en ?? r.tambon),
+    province: String(r.province_code ?? ""),
+    rescueUnits: Number(r.rescue_units ?? 0),
+    coordinationUnits: Number(r.coordination_units ?? 0),
+    mine: Boolean(r.mine),
+  }));
+}
+
+/** The verified teams covering one tambon: names and capabilities, never a phone number. */
+export async function readCoverageUnits(tambon: string): Promise<CoverageUnit[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("coverage_units", { p_tambon: tambon });
+  if (error) throw new Error(error.message);
+  return ((data as Row[]) ?? []).map((r) => ({
+    id: String(r.unit_id),
+    name: String(r.unit_name),
+    orgName: String(r.org_name ?? ""),
+    capabilities: Array.isArray(r.capabilities) ? (r.capabilities as string[]) : [],
+    onDuty: Boolean(r.on_duty),
+    mine: Boolean(r.is_mine),
+  }));
+}
+
+/** Confirmed rescues and points per team, by the province of the case (spec 5.5). */
+export async function readLeaderboard(): Promise<PointsRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("hero_leaderboard", { p_province: null });
+  if (error) throw new Error(error.message);
+  return ((data as Row[]) ?? []).map((r) => ({
+    province: String(r.province_code ?? ""),
+    unitId: String(r.unit_id),
+    unitName: String(r.unit_name),
+    orgName: String(r.org_name ?? ""),
+    points: Number(r.points ?? 0),
+    cases: Number(r.cases ?? 0),
+    mine: Boolean(r.is_mine),
+  }));
 }

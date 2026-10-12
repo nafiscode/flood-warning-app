@@ -866,6 +866,58 @@
       "proof": "Gambar bukti daripada pasukan",
       "none": "Tiada gambar atau suara.",
       "failed": "Gambar tidak dapat dibuka. Cuba lagi."
+    },
+    "views": {
+      "label": "Paparan",
+      "cases": "Senarai kes",
+      "map": "Kes pada peta",
+      "coverage": "Kawasan jagaan",
+      "points": "Mata",
+      "loading": "Memuatkan…"
+    },
+    "map": {
+      "loading": "Memuatkan peta…",
+      "failed": "Peta tidak dapat dibuka. Senarai kes masih boleh digunakan.",
+      "pickCase": "Sentuh tanda pada peta untuk lihat kes itu.",
+      "case": {
+        "open": "Belum ada pasukan ambil",
+        "mine": "Pasukan anda ambil",
+        "other": "Pasukan lain ambil",
+        "awaiting": "Menunggu pengesahan",
+        "closed": "Sudah ditutup"
+      }
+    },
+    "coverage": {
+      "intro": "Tambon mana yang dijaga pasukan penyelamat yang disahkan, dan mana yang belum ada. Sentuh tambon untuk lihat pasukan di situ.",
+      "failed": "Tidak dapat dimuatkan. Cuba lagi.",
+      "mark": {
+        "covered": "Ada pasukan penyelamat",
+        "gap": "Tiada pasukan penyelamat",
+        "mine": "Kawasan pasukan anda"
+      },
+      "summary": "{covered} daripada {total} tambon ada pasukan penyelamat. {gaps} belum ada.",
+      "mine": "Pasukan anda menjaga {count} tambon.",
+      "noUnits": "Tiada pasukan disahkan yang menjaga tambon ini.",
+      "yours": "pasukan anda",
+      "gapsTitle": "Tambon yang tiada pasukan penyelamat",
+      "noGaps": "Semua tambon ada pasukan penyelamat.",
+      "gapCount": "{count} tambon",
+      "coordinatorOnly": "penyelaras sahaja",
+      "province": {
+        "90": "Songkhla",
+        "94": "Pattani",
+        "95": "Yala",
+        "96": "Narathiwat"
+      }
+    },
+    "points": {
+      "mine": "Pasukan anda: {points} mata daripada {cases} penyelamatan yang disahkan",
+      "rule": "10 mata bagi kes yang disahkan, 2 lagi bagi setiap orang yang diselamatkan, dan 3 lagi jika ada golongan rentan. Tiada mata untuk terima kes sahaja.",
+      "none": "Belum ada penyelamatan yang disahkan.",
+      "team": "Pasukan",
+      "cases": "Kes",
+      "points": "Mata",
+      "failed": "Mata tidak dapat dimuatkan. Cuba lagi."
     }
   },
   "admin": {
@@ -1209,6 +1261,19 @@
         "open": ""
       },
       "feedFailed": "Gagal membaca data empangan; cubaan terakhir pada {time}. Angka mungkin bukan yang terbaharu."
+    },
+    "unconfirmed": {
+      "title": "Penyelamatan yang menunggu pengesahan",
+      "intro": "Pasukan sudah lapor penyelamatan ini tetapi orang itu belum sahkan. Selepas masa yang ditetapkan, pentadbir boleh sahkan dengan gambar dan catatan bagaimana ia disemak.",
+      "row": "{unit} lapor {hours} jam lalu",
+      "rowNoTime": "{unit} sudah lapor penyelamatan",
+      "proof": "{count} gambar bukti",
+      "noArea": "Tambon tak diketahui",
+      "notDue": "Orang itu masih ada masa untuk sahkan sendiri.",
+      "open": "Sahkan penyelamatan ini",
+      "done": "Sudah disahkan. Kes ditutup.",
+      "refused": "Tidak dapat disahkan. Mungkin sudah disahkan, atau gambar belum sampai.",
+      "upload": "Gambar tidak dapat dihantar, jadi belum disimpan. Cuba lagi."
     }
   },
   "impact": {

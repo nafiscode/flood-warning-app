@@ -866,6 +866,58 @@
       "proof": "Evidence photos from the team",
       "none": "No photos or voice note.",
       "failed": "The photos couldn't be opened. Try again."
+    },
+    "views": {
+      "label": "Views",
+      "cases": "Case list",
+      "map": "Cases on a map",
+      "coverage": "Coverage",
+      "points": "Points",
+      "loading": "Loading…"
+    },
+    "map": {
+      "loading": "Loading the map…",
+      "failed": "The map couldn't be opened. The case list still works.",
+      "pickCase": "Tap a mark on the map to see that case.",
+      "case": {
+        "open": "No team has it",
+        "mine": "Your team has it",
+        "other": "Another team has it",
+        "awaiting": "Waiting for confirmation",
+        "closed": "Closed"
+      }
+    },
+    "coverage": {
+      "intro": "Which tambons a verified rescue team covers, and which have none. Tap a tambon to see the teams there.",
+      "failed": "That couldn't be loaded. Try again.",
+      "mark": {
+        "covered": "A rescue team covers it",
+        "gap": "No rescue team",
+        "mine": "Your team's area"
+      },
+      "summary": "{covered} of {total} tambons have a rescue team. {gaps, plural, one {# has} other {# have}} none.",
+      "mine": "Your team covers {count, plural, one {# tambon} other {# tambons}}.",
+      "noUnits": "No verified team covers this tambon.",
+      "yours": "your team",
+      "gapsTitle": "Tambons with no rescue team",
+      "noGaps": "Every tambon has a rescue team.",
+      "gapCount": "{count, plural, one {# tambon} other {# tambons}}",
+      "coordinatorOnly": "coordinator only",
+      "province": {
+        "90": "Songkhla",
+        "94": "Pattani",
+        "95": "Yala",
+        "96": "Narathiwat"
+      }
+    },
+    "points": {
+      "mine": "Your team: {points} points from {cases, plural, one {# confirmed rescue} other {# confirmed rescues}}",
+      "rule": "10 points for a confirmed case, 2 more for each person rescued, and 3 more when vulnerable people were involved. Nothing for accepting alone.",
+      "none": "No confirmed rescues yet.",
+      "team": "Team",
+      "cases": "Cases",
+      "points": "Points",
+      "failed": "The points couldn't be loaded. Try again."
     }
   },
   "admin": {
@@ -1209,6 +1261,19 @@
         "open": ""
       },
       "feedFailed": "The dam's figures could not be read; last tried at {time}. What is shown may not be the newest."
+    },
+    "unconfirmed": {
+      "title": "Rescues waiting for confirmation",
+      "intro": "A team reported these rescues and the person has not confirmed them. Once the waiting time has passed an admin can confirm instead, with a photo and a note saying how it was checked.",
+      "row": "{unit} reported it {hours} h ago",
+      "rowNoTime": "{unit} reported the rescue",
+      "proof": "{count, plural, one {# evidence photo} other {# evidence photos}}",
+      "noArea": "Tambon unknown",
+      "notDue": "The person still has time to confirm it themselves.",
+      "open": "Confirm this rescue",
+      "done": "Confirmed. The case is closed.",
+      "refused": "That couldn't be confirmed. It may already be confirmed, or the photo didn't arrive.",
+      "upload": "The photo couldn't be sent, so nothing was saved. Try again."
     }
   },
   "impact": {

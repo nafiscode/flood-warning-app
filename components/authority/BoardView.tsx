@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { CaseCard, type CaseActions } from "@/components/authority/CaseCard";
 import { BellIcon, CheckIcon, TriangleIcon } from "@/components/icons";
 import {
@@ -28,6 +28,10 @@ import { buttonPrimary, card, checkBox, checkRow, hint, input } from "@/lib/ui";
  */
 
 export type AlarmState = "off" | "on" | "none";
+
+/** The console's views: the case list, the cases on a map, the responsibility map, the points. */
+export type ConsoleView = "cases" | "map" | "coverage" | "points";
+export const CONSOLE_VIEWS: ConsoleView[] = ["cases", "map", "coverage", "points"];
 
 export type UnitActions = {
   duty: (unitId: string, on: boolean) => void;
@@ -61,6 +65,11 @@ type Props = {
   onRefresh: (() => void) | null;
   actions: CaseActions;
   unitActions: UnitActions;
+  /** Which view is open. The alarm and the team's switches stay on screen in every one. */
+  view?: ConsoleView;
+  onView?: (view: ConsoleView) => void;
+  /** What a view other than the case list shows, drawn by whoever holds its data. */
+  other?: ReactNode;
 };
 
 /** A notice that something worked, against one that says it did not. */
@@ -80,6 +89,9 @@ export function BoardView({
   onRefresh,
   actions,
   unitActions,
+  view = "cases",
+  onView,
+  other = null,
 }: Props) {
   const t = useTranslations("authority");
   const locale = useLocale();
@@ -218,70 +230,98 @@ export function BoardView({
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {tab("open", t("filter.open", { count: openCount }))}
-            {tab("closed", t("filter.closed", { count: closedCount }))}
-            {onRefresh && (
-              <button
-                type="button"
-                onClick={onRefresh}
-                className="inline-flex min-h-tap items-center rounded-xl border-2 border-jaga-edge px-3 text-small font-medium text-jaga-ink"
-              >
-                {t("refresh")}
-              </button>
-            )}
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-            {tambons.length > 1 && (
-              <label className="flex flex-col gap-1 sm:flex-1">
-                <span className="sr-only">{t("filter.tambon")}</span>
-                <select
-                  className={input}
-                  value={tambon ?? ""}
-                  onChange={(e) => setTambon(e.target.value || null)}
+          {onView && (
+            <nav aria-label={t("views.label")} className="flex flex-wrap gap-2">
+              {CONSOLE_VIEWS.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={view === key}
+                  onClick={() => onView(key)}
+                  data-console-view={key}
+                  className={`inline-flex min-h-tap items-center rounded-xl px-4 font-medium ${
+                    view === key
+                      ? "bg-jaga-teal-ink text-white"
+                      : "border border-jaga-edge bg-jaga-surface text-jaga-ink"
+                  }`}
                 >
-                  <option value="">{t("filter.allTambons")}</option>
-                  {tambons.map((x) => (
-                    <option key={x.code} value={x.code}>
-                      {locale === "th" ? x.th : `${x.th} (${x.en})`}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-            <label className={checkRow}>
-              <input
-                type="checkbox"
-                className={checkBox}
-                checked={vulnerableOnly}
-                onChange={(e) => setVulnerableOnly(e.target.checked)}
-              />
-              <span>{t("filter.vulnerable")}</span>
-            </label>
-          </div>
-
-          {shown.length === 0 && (
-            <p className="rounded-2xl border border-jaga-line bg-jaga-surface p-5 font-medium">
-              {scope === "closed"
-                ? t("empty.closed")
-                : openCount === 0
-                  ? t("empty.open")
-                  : t("empty.filtered")}
-            </p>
+                  {t(`views.${key}`)}
+                </button>
+              ))}
+            </nav>
           )}
-          {shown.map((c) => (
-            <CaseCard
-              key={c.sosId}
-              c={c}
-              now={now}
-              busy={busy === c.sosId}
-              phone={c.sosId in phones ? { number: phones[c.sosId] ?? null } : null}
-              media={media[c.sosId] ?? null}
-              actions={actions}
-            />
-          ))}
+          {view !== "cases" ? other : caseList()}
         </div>
       </div>
     </div>
   );
+
+  function caseList() {
+    return (
+      <>
+        <div className="flex flex-wrap items-center gap-2">
+          {tab("open", t("filter.open", { count: openCount }))}
+          {tab("closed", t("filter.closed", { count: closedCount }))}
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="inline-flex min-h-tap items-center rounded-xl border-2 border-jaga-edge px-3 text-small font-medium text-jaga-ink"
+            >
+              {t("refresh")}
+            </button>
+          )}
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          {tambons.length > 1 && (
+            <label className="flex flex-col gap-1 sm:flex-1">
+              <span className="sr-only">{t("filter.tambon")}</span>
+              <select
+                className={input}
+                value={tambon ?? ""}
+                onChange={(e) => setTambon(e.target.value || null)}
+              >
+                <option value="">{t("filter.allTambons")}</option>
+                {tambons.map((x) => (
+                  <option key={x.code} value={x.code}>
+                    {locale === "th" ? x.th : `${x.th} (${x.en})`}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <label className={checkRow}>
+            <input
+              type="checkbox"
+              className={checkBox}
+              checked={vulnerableOnly}
+              onChange={(e) => setVulnerableOnly(e.target.checked)}
+            />
+            <span>{t("filter.vulnerable")}</span>
+          </label>
+        </div>
+
+        {shown.length === 0 && (
+          <p className="rounded-2xl border border-jaga-line bg-jaga-surface p-5 font-medium">
+            {scope === "closed"
+              ? t("empty.closed")
+              : openCount === 0
+                ? t("empty.open")
+                : t("empty.filtered")}
+          </p>
+        )}
+        {shown.map((c) => (
+          <CaseCard
+            key={c.sosId}
+            c={c}
+            now={now}
+            busy={busy === c.sosId}
+            phone={c.sosId in phones ? { number: phones[c.sosId] ?? null } : null}
+            media={media[c.sosId] ?? null}
+            actions={actions}
+          />
+        ))}
+      </>
+    );
+  }
 }

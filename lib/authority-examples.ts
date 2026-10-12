@@ -7,6 +7,7 @@
  * The example answers taps by itself (applyExample), so accepting, giving an estimate and handing
  * a case back can all be tried without a database behind them.
  */
+import type { CoverageRow, CoverageUnit, PointsRow } from "@/lib/coverage";
 import type {
   AuthorityBoard,
   BoardCase,
@@ -200,6 +201,99 @@ export const EXAMPLE_AUTHORITY_BOARD: AuthorityBoard = {
     },
   ],
 };
+
+/**
+ * A made-up slice of the responsibility map: real tambons of Mueang Pattani, invented teams. Two
+ * of them have no rescue team, one of those only a coordinator, so the example shows a gap.
+ */
+const COVER: [string, string, string, number, number, boolean][] = [
+  ["940101", "สะบารัง", "Sabarang", 2, 1, false],
+  ["940102", "อาเนาะรู", "A Noru", 1, 0, false],
+  ["940103", "จะบังติกอ", "Chabang Tiko", 0, 1, false],
+  ["940104", "บานา", "Bana", 2, 0, true],
+  ["940105", "ตันหยงลุโละ", "Tanyong Lulo", 0, 0, false],
+  ["940111", "ปูยุด", "Puyut", 1, 1, true],
+];
+export const EXAMPLE_COVERAGE: CoverageRow[] = COVER.map(
+  ([tambon, nameTh, nameEn, rescueUnits, coordinationUnits, mine]) => ({
+    tambon,
+    nameTh,
+    nameEn,
+    province: "94",
+    rescueUnits,
+    coordinationUnits,
+    mine,
+  }),
+);
+
+/** Who covers a tambon in the example: the caller's own team where it does, and one other. */
+export function exampleUnits(tambon: string): CoverageUnit[] {
+  const row = EXAMPLE_COVERAGE.find((r) => r.tambon === tambon);
+  if (!row) return [];
+  const units: CoverageUnit[] = [];
+  if (row.mine) {
+    units.push({
+      id: MY_UNIT,
+      name: "ทีมกู้ภัยตัวอย่าง บานา",
+      orgName: "มูลนิธิตัวอย่าง",
+      capabilities: ["rescue"],
+      onDuty: true,
+      mine: true,
+    });
+  }
+  if (row.rescueUnits > (row.mine ? 1 : 0)) {
+    units.push({
+      id: OTHER_UNIT,
+      name: "อปพร. ตัวอย่าง",
+      orgName: "เทศบาลตัวอย่าง",
+      capabilities: ["rescue", "support"],
+      onDuty: false,
+      mine: false,
+    });
+  }
+  if (row.coordinationUnits > 0) {
+    units.push({
+      id: "00000000-0000-4000-8000-0000000000c3",
+      name: "ศูนย์ประสานงานตัวอย่าง",
+      orgName: "อำเภอตัวอย่าง",
+      capabilities: ["coordination"],
+      onDuty: true,
+      mine: false,
+    });
+  }
+  return units;
+}
+
+/** Invented points: 10 a confirmed case, 2 a person, 3 more with vulnerable people. */
+export const EXAMPLE_POINTS: PointsRow[] = [
+  {
+    province: "94",
+    unitId: OTHER_UNIT,
+    unitName: "อปพร. ตัวอย่าง",
+    orgName: "เทศบาลตัวอย่าง",
+    points: 214,
+    cases: 13,
+    mine: false,
+  },
+  {
+    province: "94",
+    unitId: MY_UNIT,
+    unitName: "ทีมกู้ภัยตัวอย่าง บานา",
+    orgName: "มูลนิธิตัวอย่าง",
+    points: 167,
+    cases: 9,
+    mine: true,
+  },
+  {
+    province: "95",
+    unitId: "00000000-0000-4000-8000-0000000000d4",
+    unitName: "ทีมเรือกู้ภัยตัวอย่าง ยะลา",
+    orgName: "มูลนิธิตัวอย่าง",
+    points: 88,
+    cases: 5,
+    mine: false,
+  },
+];
 
 export type ExampleTap =
   | { action: "accept"; sos: string }
