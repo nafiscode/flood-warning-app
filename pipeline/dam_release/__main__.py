@@ -15,6 +15,12 @@ Commands
                          often it would have fired, and the record's own ceilings. Writes
                          <output_dir>/thresholds.json.
 
+  zone                   the land a rise in the river can reach below the dam: height above the
+                         river from the elevation model, joined to the channel, checked against
+                         the radar's flood maps. Writes <output_dir>/zone.json, zone_by_tambon.csv,
+                         <dam>_zone.tif and geojson/<dam>_zone.geojson. Needs `geometry`, the
+                         hazard module's elevation model and the radar products on disk.
+
 Settings: dam_release/config.yaml. See docs/science-plan.md Module 7 and METHODS.md.
 """
 
@@ -30,7 +36,7 @@ import yaml
 
 from ingest_thaiwater.settings import PIPELINE_DIR, REPO_DIR, data_dir, env_value
 
-from . import build, thresholds, travel
+from . import build, thresholds, travel, zone
 
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 log = logging.getLogger("dam_release")
@@ -222,6 +228,33 @@ def cmd_travel(cfg: dict, dry_run: bool) -> int:
     return 0
 
 
+def cmd_zone(cfg: dict) -> int:
+    out = output_dir(cfg)
+    names = list(cfg["zone"]["radar"])
+    for dam in cfg["dams"]:
+        found = zone.run(dam, cfg["zone"], cfg["travel"]["gauges"], data_dir() / "tidy", out, PIPELINE_DIR)
+        print(f"\n{dam['name']['en']}: river surface {found['river_surface_m']['at_dam']} m at the dam, "
+              f"{found['river_surface_m']['at_mouth']} m at the mouth")
+        print("  rise   zone km2   " + "   ".join(f"{name}: held / seen wet" for name in names))
+        for row in found["curve"]:
+            cells = "   ".join(f"{row[name]['flood_held_pct']:5.1f}% / {row[name]['zone_seen_wet_pct']:5.1f}%"
+                               for name in names)
+            print(f"  {row['rise_m']:4} m  {row[names[0]]['zone_km2']:7.1f}   {cells}")
+        for g in found["gauges"]:
+            print(f"  {g['code']:8} km {g['km_from_dam']:6.1f}  highest {g['peak_m']:6.2f} m ({g['peak_at'][:10]})  "
+                  f"river surface {g['river_surface_m']:6.2f}  rise {g['rise_m']:.2f} m")
+        for name in names:
+            z, o = found["against_radar"][name]["zone"], found["against_radar"][name]["outer"]
+            print(f"  {name}: zone holds {z['flood_held_pct']}% of the radar flood in the corridor, "
+                  f"{z['zone_seen_wet_pct']}% of it seen wet; outer {o['flood_held_pct']}% / {o['zone_seen_wet_pct']}%")
+        print(f"  zone: {found['zone_km2']} km2, {found['zone_buildings']} buildings, "
+              f"{found['tambons_in_zone']} tambons; with the outer band: {found['outer_km2']} km2, "
+              f"{found['outer_buildings']} buildings, {found['tambons_in_outer']} tambons")
+        print(f"  on the interim path but outside the zone: {found['interim_not_in_zone']}")
+        print(f"  in the zone but not on the interim path:  {found['zone_not_on_interim']}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="dam_release", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -230,6 +263,7 @@ def main(argv: list[str] | None = None) -> int:
     geometry.add_argument("--dry-run", action="store_true")
     sub.add_parser("thresholds", help="what the archive says about the grade criteria")
     sub.add_parser("travel", help="travel times and arrival ranges per tambon").add_argument("--dry-run", action="store_true")
+    sub.add_parser("zone", help="the land a rise in the river can reach, from the elevation model")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -237,6 +271,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_geometry(cfg, args.dry_run)
     if args.command == "travel":
         return cmd_travel(cfg, args.dry_run)
+    if args.command == "zone":
+        return cmd_zone(cfg)
     return cmd_thresholds(cfg)
 
 

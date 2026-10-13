@@ -53,6 +53,9 @@ travel:
   gauges:
     - {code: BLGTD01, id: 562799, place: "tailwater bridge", point: [101.276104, 6.160477]}
     - {code: BLGTD02, id: 562800, place: "Bannang Sata", point: [101.268237, 6.262132]}
+    # RID's X.77 stands at the same place (2,283 km2 above it). ThaiWater's station list gives it
+    # a wrong position, on Khlong Yai 20 km to the west (station 1095877); its flow rating moves
+    # by a factor of two between years (METHODS.md, "The outside check"), so it is not used here.
     - {code: BLGTD03, id: 709863, place: "Yala town (Tha Sap)", point: [101.266197, 6.552715]}
     # max_level_m: readings above it are a broken sensor, not a flood (X.40A once reported 35 m).
     - {code: X.40A, id: 2583, place: "Yala town (Tha Sap), RID", point: [101.266294, 6.552798], max_level_m: 30}
@@ -113,3 +116,28 @@ grades:
   # shown, labelled as waiting for the next one, and a release that is really happening confirms
   # itself within the hour.
   min_consecutive_h: 2
+
+# The zone (zone.py, METHODS.md "The zone"): the land a rise in the river can reach, from the
+# elevation model, checked against the radar. Starting values, decided 13 Oct 2026.
+zone:
+  dem: out/hazard/work/dem_utm.tif        # the unburned surface (the burned copy has rivers cut 10 m in)
+  buildings: out/hazard/buildings/buildings_2023_30m.tif
+  # Land farther than this from the channel is never in the zone, however low it lies: beyond it
+  # the nearest-river reading stops meaning anything on the coastal plain.
+  max_distance_km: 6
+  surface: {bin_m: 500, low_percentile: 25, within_cells: 1}
+  rises_m: [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6]
+  # The zone is the land no higher above the river than the river has been seen to rise: the
+  # highest level in the archive at each of these gauges (RID's and EGAT's, listed under travel),
+  # as a six-hour median, less the river surface from the elevation model at the gauge.
+  flood_surface:
+    gauges: [BLGTD02, X.40A, X.275, X.10A]
+    smooth_h: 6
+    min_rise_m: 1.0        # floor: the gorge below the dam, where the model's river surface is partly bank
+    outer_extra_m: 1.0     # the outer band, drawn lighter: a metre above anything recorded
+  simplify_m: 30
+  min_patch_km2: 0.02
+  radar:
+    season_2020: out/sar_floods/products/jaga_sar_max_season-2020_20m_c97e0bf.tif   # holds the January 2021 release
+    event_2024: out/sar_floods/products/jaga_sar_max_event-2024-nov-dec_10m_c97e0bf.tif
+    event_2025: out/sar_floods/products/jaga_sar_max_event-2025-nov-dec_10m_c97e0bf.tif

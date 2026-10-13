@@ -158,11 +158,11 @@ Before launch:
 
 Acceptance: the collector fills the archive without gaps it does not report; every arrival time is a range with the events behind it; a place the analysis cannot speak for says so.
 
-**Step 1 done** (9 Oct) and **step 4 done with an interim step 3** (10 Oct): `pipeline/dam_release`
-builds the release path from OpenStreetMap and measures the grade criteria against the archive;
-see its METHODS.md. **Steps 2 and 5 are still open**, and step 3 is still to be done properly from
-HAND and the radar extents — when it is, load it under `source = 's7'` beside the OSM version and
-show the owner both before replacing anything (decision 10 Oct).
+**All four steps done** (9 to 13 Oct): the collector, the travel times and arrival ranges
+(`dam_arrivals`), the interim path from OpenStreetMap and, on 13 Oct, the zone from the elevation
+model anchored on the gauges' highest levels (`dam_release zone`; METHODS.md "The zone"). Open:
+the owner's choice between the path and the zone, and the question of unrecorded releases
+(METHODS.md "The outside check"), which S5's rainfall will help settle.
 
 ## App track
 

@@ -114,9 +114,9 @@ not constants. Re-run `thresholds` after changing them to see what the change wo
 
 ## Still open
 
-- S7 steps 2–3: travel time per reach from the 2014, 2015 and Jan 2021 releases to the EGAT
-  (BLGTD01–05) and RID (X.77, X.40A, X.275, X.10A) gauges, then the zone from HAND and the radar
-  extents. Until then the app shows no arrival time at all.
+- The owner's choice between the OpenStreetMap path and the zone below, and loading the chosen
+  one into the database (the zone as an area needs its own table).
+- Whether water left the dam unrecorded in the floods of 2024 and 2025: see "The outside check".
 - The powerhouse position, and whether the spillway channel should be digitised by hand.
 - A contact at EGAT Bang Lang (the owner).
 
@@ -172,3 +172,58 @@ Between two gauges a tambon gets the times in proportion to the river distance a
 - The safety margin (20 %) and the choice of quartiles are starting values, not measured.
 
 **Checked against the operator's record, 12 Oct 2026.** The owner doubts that the 2025 flood came without water from the dam. Since December 2021 the record has no hour of spill. The tailwater gauge 0.6 km below the dam reads 43.83 m (median) and up to 44.56 m (99th percentile) at full turbine outflow; its highest in Nov–Dec 2024 was 44.59 m and in Nov–Dec 2025 43.90 m. Storage peaked at 1,215 Mm³ (84 % of the normal high level's capacity) in 2024 and 1,019 Mm³ (70 %) in 2025. Both series are the operator's, so this shows the record agrees with itself, not that it is right. An outside check (RID's discharge at Yala against the tributaries, or the reservoir's area from satellite) has not been made.
+
+## The zone (13 Oct 2026, not validated)
+
+`uv run python -m dam_release zone` builds the land a rise in the river can reach below the dam: `out/dam_release/bang_lang_zone.tif` (band 1: 1 zone, 2 outer band; band 2: height above the river), `geojson/bang_lang_zone.geojson`, `zone_by_tambon.csv` and `zone.json`. It is the second version of step 3, to set beside the OpenStreetMap path (decision 10 Oct). Nothing in the app or the database uses it yet: the owner sees both first.
+
+**Method.**
+
+1. *The river's surface.* The 25th percentile of the heights on and one cell beside the mapped channel, in 500 m stretches, made to fall towards the sea (pool-adjacent-violators, so one pit in the model does not lower the whole river below it). The model is FABDEM on the 30 m grid, **unburned** (`out/hazard/work/dem_utm.tif`): the routing copy has the rivers cut 10 m in. Surface: 48.8 m at the dam, 0.5 m at the mouth.
+2. *Height above the river.* Each land cell takes the surface of the river cell nearest to it in a straight line; its own height less that.
+3. *How high the river has stood.* At four gauges, the highest level in the archive as a six-hour median, less the surface of step 1 there:
+
+| Gauge | River km | Highest level (m MSL) | When | River surface in the model | Rise |
+|---|---|---|---|---|---|
+| BLGTD02, Bannang Sata (EGAT) | 18.6 | 40.56 | 25 Dec 2023 | 38.05 | 2.51 m |
+| X.40A, Yala town (RID) | 78.1 | 18.95 | 28 Nov 2024 | 14.50 | 4.45 m |
+| X.275, Ban Brido (RID) | 120.6 | 3.48 | 26 Nov 2025 | 2.22 | 1.26 m |
+| X.10A, Pattani town (RID) | 129.7 | 1.88 | 29 Nov 2024 | 0.71 | 1.17 m |
+
+   Between gauges the rise goes by river distance; above the first and below the last it stays at theirs; it is never taken as less than 1 m. The January 2021 release, the largest on record, came within 0.3 m of the highest level at Yala (18.63 m) and at Pattani town.
+4. *The zone.* Cells no higher above the river than that rise, within 6 km of the channel, inside a tambon, and joined to the channel through other such cells (a low field behind a ridge is out; the lower valley of a side stream is in). The outer band is the same with one metre added.
+
+**Result.** Zone 224 km², about 36,500 buildings (Open Buildings 2023), in 51 tambons. With the outer band 325 km², about 86,500 buildings, 55 tambons. The interim path lists 39 tambons: one of them (La-Ae, reached only by a side stream's lower 5 km) has nothing in the zone, and 13 tambons the river does not run through have land in it (Dato, Tuyong, Bang Tawa, Pado, Pa Nan, Rawaeng, Wat, Ko Lam, Mae Lan, Pa Rai, Li Don, Na Tham, Phron).
+
+**Against the radar** (the VV rule, inside the 6 km corridor):
+
+| Radar map | Share of the radar's flood the zone holds | Share of the zone the radar saw wet | Same, with the outer band |
+|---|---|---|---|
+| Season 2020 (holds the January 2021 release) | 67 % | 18 % | 79 % / 15 % |
+| Nov–Dec 2024 | 65 % | 19 % | 83 % / 17 % |
+| Nov–Dec 2025 | 62 % | 24 % | 76 % / 21 % |
+
+For comparison, one uniform rise along the whole river holds 55–57 % of the 2020 and 2024 floods at 2 m (170 km²) and 74–83 % at 4 m (353 km²): the gauge-anchored zone does better per km² than either.
+
+**Limits.**
+
+- A level-pool reading of a 30 m model. No volume, no duration, no flow: it cannot say whether a release of a given size fills the zone. It says which land is low enough and joined to the river at the highest levels the gauges have shown.
+- Those highest levels are mostly rain floods with water from the whole catchment, not releases. A release alone, into a low river, would stand lower. The zone is therefore the outer case for the river, which is the right way round for a warning.
+- The radar's flood in the corridor is largely rain standing on the plain, not river water, and the radar is blind in towns and under trees. "Holds 65 %" and "18 % seen wet" are a sanity check, not a score.
+- The gauges are in metres above Thai mean sea level, the model in EGM2008 heights: a difference of some decimetres is inside the method.
+- "Nearest river cell in a straight line" is wrong across a ridge and loose on the coastal plain, hence the 6 km limit, which is visible as a cut on the plain west of Yarang and Pattani town. The model also gives the tidal flats and fish ponds north-west of Pattani town heights near zero; they are in the zone where they lie inside a tambon.
+- Embankments, road fills and channels narrower than a cell are not in the model (science plan Module 8).
+
+## The outside check of the dam's figures (13 Oct 2026)
+
+The owner does not take it as settled that the floods of late 2024 and 2025 came without water from the dam (12 Oct). The dam's own record says: no spill since January 2021, releases stopped altogether from the evening of 26 November 2024 to 30 November, and from 23 November 2025 through the flood. Three things were set against that which do not come from the operator. The scripts were one-off; the numbers below are what they printed.
+
+**1. The reservoir seen from space.** Water area inside the mapped reservoir from Sentinel-1 (VV below −17 dB after a 30 m median; `out/dam_release/reservoir_area.csv`, 35 passes). In both floods the area grew as the reported storage did: 29.2 km² on 17 November 2024, 34.2 on the 29th, 36.8 on 11 December (reported 725, 1,095, 1,215 Mm³); 25–29 km² on 11–24 November 2025, 36.6 on the 29th (657–742, then 901 Mm³). On one orbit the rank correlation of area with reported storage is 0.94 (six passes); on the other, with 28 passes, 0.44, because wind on the water makes single passes read low. So the reservoir was filling through both floods, which is what the record says, and it stood below its January 2021 state (38 km² at 1,370–1,440 Mm³). This confirms the storage figures. It cannot show whether water was also let out while the reservoir filled.
+
+**2. The irrigation department's gauge at Bannang Sata (X.77), 18.6 km below the dam.** ThaiWater lists X.77 with a wrong position (on Khlong Yai, 20 km west); the department's own listing puts it on the main stem at Bannang Sata, beside EGAT's BLGTD02, with 2,283 km² above it against 1,992 km² above the dam. On 27 November 2024 at 16:00 it read 901 m³/s while the dam reported no release at all and an inflow of about 1,650 m³/s. Taken at face value, the 291 km² between the dam and the gauge gave 3.1 m³/s per km² while the 1,992 km² above the dam gave 0.83. Over 24 November to 6 December: 333 Mm³ passed X.77, the dam reported 92 Mm³ released, leaving 241 Mm³ (828 mm) from those 291 km², against 280 mm from the catchment above the dam. In 2025 the same sums give 368 mm against 125 mm. **Three times more water per km² from the land just below the dam than from the land above it, in both floods.**
+
+   That is either heavier rain below the dam, a gauge that over-reads, or water from the dam that the record does not show. The gauge is not good enough to choose: against the dam's own outflow in the dry months, when nothing else feeds the river, X.77 read 0.68 of it in 2024, 0.99 in 2025 and 2.42 in 2026. Its rating moves by a factor of two or more from year to year.
+
+**3. The irrigation department's gauge at Yala (X.40A).** 797 Mm³ passed Yala from 22 November to 10 December 2024, of which the dam's reported releases are 155 Mm³ (19 %); in 2025, 621 Mm³ and 23 Mm³ (4 %); in the January 2021 release, 615 Mm³ and 369 Mm³ (60 %). The government's statement of 1 December 2024 that the dam had held back over 400 Mm³ in a week agrees with the archive (storage up 466 Mm³).
+
+**Reading.** Nothing outside the operator contradicts the record, and the satellite confirms the part of it that can be seen from above. But the one independent gauge close to the dam shows more water than the land below the dam should easily give, in both floods, and it is too unsteady to say why. The question is not closed. What would close it: the rain on those 291 km² and on the catchment above the dam in the same days (GSMaP, collected in S5), and the department's rating notes for X.77.
