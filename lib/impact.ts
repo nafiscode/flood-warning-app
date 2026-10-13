@@ -278,3 +278,31 @@ export function areaPath(points: { x: number; y: number }[]): string {
   const last = points[points.length - 1]!;
   return `${linePath(points)} L${round(last.x)} 100 L${round(first.x)} 100 Z`;
 }
+
+/**
+ * Where a province's circle sits on the impact map: a point well inside the province, chosen by
+ * hand (the middle of a bounding box falls in the sea for Songkhla and Pattani) and far enough
+ * from its neighbours that four circles and their names fit on a phone. It stands for the whole
+ * province and for no place in it.
+ */
+const PROVINCE_CENTRE: Record<ProvinceCode, [number, number]> = {
+  "90": [100.55, 7.05],
+  "94": [101.35, 6.85],
+  "95": [101.15, 6.15],
+  "96": [101.85, 6.2],
+};
+
+export function provinceCentre(province: ProvinceCode): [number, number] {
+  return PROVINCE_CENTRE[province];
+}
+
+/**
+ * The width of a province's circle in pixels. Area carries the figure, so the width grows with
+ * the square root: twice the requests is twice the ink, not four times. Never narrower than
+ * `smallest`, even for a province with nothing yet; the button around the circle keeps the
+ * 48 px a thumb needs whatever the circle's own width (ImpactMap.tsx).
+ */
+export function bubbleSize(value: number, max: number, largest = 92, smallest = 40): number {
+  if (max <= 0 || value <= 0) return smallest;
+  return Math.round(Math.max(smallest, largest * Math.sqrt(Math.min(value, max) / max)));
+}

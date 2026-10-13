@@ -175,6 +175,20 @@
   }
 }
 
+/* A circle on the map: one soft ring going out from it, twice, when the map opens. */
+:is(.seen, .now) .ping {
+  animation: ping 1.8s ease-out 0.6s 2 both;
+}
+
+@keyframes ping {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--jaga-teal) 55%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 18px transparent;
+  }
+}
+
 /* A card that answers the pointer, where there is one. */
 @media (hover: hover) {
   .lift {
@@ -199,6 +213,7 @@
   .pop,
   .rise,
   .grow,
+  .ping,
   .cup {
     animation: none !important;
   }

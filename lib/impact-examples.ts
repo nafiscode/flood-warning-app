@@ -200,8 +200,8 @@ export const EXAMPLE_IMPACT: ImpactSeason = {
   ],
   units: UNITS,
   gaps: [
-    { tambon: "950505", name: "อัยเยอร์เวง", district: "เบตง", province: "95" },
-    { tambon: "960807", name: "ภูเขาทอง", district: "สุคิริน", province: "96" },
-    { tambon: "900905", name: "ทุ่งหมอ", district: "สะเดา", province: "90" },
+    { tambon: "950204", name: "อัยเยอร์เวง", district: "เบตง", province: "95" },
+    { tambon: "960904", name: "ภูเขาทอง", district: "สุคิริน", province: "96" },
+    { tambon: "901005", name: "ทุ่งหมอ", district: "สะเดา", province: "90" },
   ],
 };

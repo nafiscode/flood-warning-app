@@ -1738,7 +1738,8 @@
       "teams": "Teams",
       "opened": "Openings",
       "usageNote": "Usage is counted per province per day. Jaga counts it with its own code and changes the device code every day, so one phone cannot be followed from day to day, and no outside analytics service is used.",
-      "ringNote": "Each ring is the share of that province's requests a team confirmed"
+      "ringNote": "Each ring is the share of that province's requests a team confirmed",
+      "share": "{percent}% confirmed"
     },
     "province": {
       "90": "Songkhla",
@@ -1797,6 +1798,16 @@
       "noNames": "Credit goes to units and organisations, never to a named person.",
       "grain": "Province and day are the finest grain published. A figure that could point at one household is not published.",
       "later": "After launch the public version lives at /impact (spec section 16). For now only admins see it."
+    },
+    "map": {
+      "loading": "Loading the map…",
+      "failed": "The map could not be loaded. The same figures are below.",
+      "pick": "Tap a province's circle to see its figures",
+      "all": "All 4 provinces",
+      "legendCircle": "One circle per province: its size is the requests carried, its ring the share a team confirmed",
+      "legendGap": "Tambon with no rescue team",
+      "note": "A province is the finest grain on this map. A circle stands for the whole province, not for a place where someone asked for help, and no mark here is anybody's home or request.",
+      "bubble": "{province}: {requests} requests, {confirmed} confirmed"
     }
   },
   "devBrand": {

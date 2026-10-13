@@ -14,6 +14,7 @@ import {
   Numbers,
   OutcomeDots,
   PanelStat,
+  ProvinceMap,
   Reveal,
   Ring,
   rise,
@@ -44,7 +45,8 @@ import { card, hint, notice } from "@/lib/ui";
  *  - **Jaga carried requests; the teams did the rescues.** No sentence here claims otherwise.
  *  - **The failures sit beside the successes**, in the same size type.
  *  - **It moves, and it is not all bars** (owner, 13 Oct): a navy panel with a dial at the top,
- *    every request as one mark, waiting as a curve, the season as a wave, a ring per province.
+ *    every request as one mark, waiting as a curve, the season as a wave, a ring per province,
+ *    and the four provinces on a map - at province grain and no finer (ImpactMap.tsx).
  *    The movement is an entrance played once; the rules for it are in ImpactBits.tsx.
  *  - **Recognition, not ranking.** Every unit gets its own card with what it did, the milestones
  *    it has reached and the next one to aim at, and it is compared with *its own* last season.
@@ -190,6 +192,12 @@ export function Impact({ season, locale }: { season: ImpactSeason; locale: strin
       <Reveal className={card}>
         <h2 className="text-body font-bold">{t("provinces.title")}</h2>
         <p className={hint}>{t("provinces.note")}</p>
+        <ProvinceMap
+          provinces={provinces}
+          gaps={gaps.map((gap) => gap.tambon)}
+          name={(province) => t(`province.${province}`)}
+          format={n}
+        />
         <ul className="grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
           {provinces.map((row, i) => {
             const share = percent(row.confirmed, row.requests);

@@ -1738,7 +1738,8 @@
       "teams": "Pasukan",
       "opened": "Dibuka",
       "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri dan menukar kod peranti setiap hari, jadi satu telefon tidak boleh diikut dari hari ke hari; tiada perkhidmatan analitik syarikat lain digunakan.",
-      "ringNote": "Gelang menunjukkan bahagian permintaan wilayah itu yang disahkan oleh pasukan"
+      "ringNote": "Gelang menunjukkan bahagian permintaan wilayah itu yang disahkan oleh pasukan",
+      "share": "{percent}% disahkan"
     },
     "province": {
       "90": "Songkhla",
@@ -1797,6 +1798,16 @@
       "noNames": "Kredit diberi kepada unit dan organisasi, bukan kepada individu.",
       "grain": "Yang paling halus boleh diterbitkan ialah wilayah dan hari. Angka yang boleh menunjuk kepada satu rumah tidak diterbitkan.",
       "later": "Selepas pelancaran, halaman umum berada di /impact (spesifikasi bahagian 16). Sekarang hanya pentadbir melihatnya."
+    },
+    "map": {
+      "loading": "Memuatkan peta…",
+      "failed": "Peta tidak dapat dimuatkan. Angka yang sama ada di bawah.",
+      "pick": "Ketik bulatan sesebuah wilayah untuk melihat angkanya",
+      "all": "Lihat keempat-empat wilayah",
+      "legendCircle": "Satu bulatan bagi setiap wilayah: saiznya ialah permintaan yang disampaikan, gelangnya bahagian yang disahkan pasukan",
+      "legendGap": "Tambon tanpa pasukan penyelamat",
+      "note": "Peta ini paling terperinci pada peringkat wilayah. Bulatan mewakili seluruh wilayah, bukan tempat seseorang meminta bantuan, dan tiada tanda pada peta ini ialah rumah atau permintaan sesiapa.",
+      "bubble": "{province}: {requests} permintaan, {confirmed} disahkan"
     }
   },
   "devBrand": {

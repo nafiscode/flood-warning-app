@@ -3,6 +3,7 @@ import { Impact } from "@/components/admin/Impact";
 import {
   areaPath,
   barPercent,
+  bubbleSize,
   byProvince,
   chartPoints,
   confirmedShare,
@@ -14,12 +15,14 @@ import {
   MILESTONES,
   nextMilestone,
   percent,
+  provinceCentre,
   seasonChange,
   sumBy,
   unansweredShare,
   type UnitImpact,
 } from "@/lib/impact";
 import { EXAMPLE_IMPACT } from "@/lib/impact-examples";
+import { PROVINCE_BOUNDS } from "@/lib/map";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
 
@@ -202,6 +205,47 @@ describe("the charts' arithmetic", () => {
     expect(linePath(points)).toBe("M12.5 100 L37.5 50 L62.5 0 L87.5 0");
     expect(areaPath(points).endsWith("L87.5 100 L12.5 100 Z")).toBe(true);
     expect(areaPath([])).toBe("");
+  });
+});
+
+describe("the map of the four provinces", () => {
+  it("sizes a circle by area, with a floor so a small figure is still seen", () => {
+    expect(bubbleSize(100, 100)).toBe(92);
+    // A quarter of the requests is half the width: a quarter of the ink.
+    expect(bubbleSize(25, 100)).toBe(46);
+    expect(bubbleSize(50, 100)).toBe(65);
+    expect(bubbleSize(1, 1000)).toBe(40);
+    expect(bubbleSize(0, 0)).toBe(40);
+    // The phone's smaller circles keep the same proportions.
+    expect(bubbleSize(100, 100, 60, 27)).toBe(60);
+    expect(bubbleSize(25, 100, 60, 27)).toBe(30);
+  });
+
+  it("names real tambons in the example, so the map can find them", () => {
+    // A code is province (2) + district (2) + tambon (2), and must sit in its own province.
+    for (const gap of EXAMPLE_IMPACT.gaps) {
+      expect(gap.tambon).toMatch(/^\d{6}$/);
+      expect(gap.tambon.slice(0, 2)).toBe(gap.province);
+    }
+    expect(EXAMPLE_IMPACT.gaps.map((g) => g.tambon)).toEqual(["950204", "960904", "901005"]);
+  });
+
+  it("puts each circle inside its own province", () => {
+    for (const row of EXAMPLE_IMPACT.provinces) {
+      const [lon, lat] = provinceCentre(row.province);
+      const [west, south, east, north] = PROVINCE_BOUNDS[row.province]!;
+      expect(lon).toBeGreaterThan(west);
+      expect(lon).toBeLessThan(east);
+      expect(lat).toBeGreaterThan(south);
+      expect(lat).toBeLessThan(north);
+    }
+  });
+
+  it("says in words that a province is the finest grain it shows", () => {
+    const { container } = renderWithIntl(<Impact season={EXAMPLE_IMPACT} locale="th" />);
+    const figure = container.querySelector("[data-impact-map-figure]")!;
+    expect(figure.textContent).toContain(th.impact.map.note);
+    expect(figure.textContent).toContain(th.impact.map.legendGap);
   });
 });
 

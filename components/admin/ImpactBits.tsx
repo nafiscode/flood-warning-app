@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { CheckIcon, TrophyIcon } from "@/components/icons";
 import {
@@ -13,6 +14,8 @@ import {
   percent,
   type Outcome,
   type OutcomeCount,
+  type ProvinceCode,
+  type ProvinceRow,
   type WaitCount,
 } from "@/lib/impact";
 import motion from "./Impact.module.css";
@@ -469,6 +472,126 @@ export function WeekWave({
         head={[t("season.week"), t("season.requests"), t("season.confirmed")]}
         rows={weeks.map((w) => [weekLabel(w.from), String(w.requests), String(w.confirmed)])}
       />
+    </figure>
+  );
+}
+
+// MapLibre is large: it is fetched only when the map is about to be looked at.
+const ImpactMap = dynamic(() => import("@/components/admin/ImpactMap").then((m) => m.ImpactMap), {
+  ssr: false,
+});
+
+/**
+ * The four provinces on a map, and the figures of the one that is chosen. The map is decoration
+ * for a reader who cannot see it: the same figures are in the rings and the table under it, and
+ * the uncovered tambons are listed by name further down the page.
+ */
+export function ProvinceMap({
+  provinces,
+  gaps,
+  name,
+  format,
+}: {
+  provinces: ProvinceRow[];
+  gaps: string[];
+  name: (province: ProvinceCode) => string;
+  format: (n: number) => string;
+}) {
+  const t = useTranslations("impact");
+  const slot = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+  const [picked, setPicked] = useState<ProvinceCode | null>(null);
+  useEffect(() => {
+    const node = slot.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const watcher = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setNear(true);
+        watcher.disconnect();
+      },
+      { rootMargin: "300px" },
+    );
+    watcher.observe(node);
+    return () => watcher.disconnect();
+  }, []);
+  const row = provinces.find((p) => p.province === picked);
+  return (
+    <figure className="m-0 flex flex-col gap-3" data-impact-map-figure>
+      <div ref={slot} className="min-h-80">
+        {near && (
+          <ImpactMap
+            provinces={provinces.map((p) => ({
+              province: p.province,
+              name: name(p.province),
+              requests: p.requests,
+              confirmed: p.confirmed,
+              label: t("map.bubble", {
+                province: name(p.province),
+                requests: p.requests,
+                confirmed: p.confirmed,
+              }),
+            }))}
+            gaps={gaps}
+            picked={picked}
+            onPick={(province) => setPicked((now) => (now === province ? null : province))}
+            format={format}
+            text={{ loading: t("map.loading"), failed: t("map.failed") }}
+          />
+        )}
+      </div>
+      <div className="flex flex-wrap gap-x-5 gap-y-1 text-small text-jaga-text-2">
+        <span className="inline-flex items-center gap-2">
+          <span
+            className="size-4 rounded-full border-[3px] border-jaga-teal-ink bg-jaga-surface"
+            aria-hidden="true"
+          />
+          {t("map.legendCircle")}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span
+            className="size-4 rounded-[2px] border-2 border-dashed border-jaga-ink bg-jaga-ink/30"
+            aria-hidden="true"
+          />
+          {t("map.legendGap")}
+        </span>
+      </div>
+      <div
+        className="flex min-h-tap flex-wrap items-center justify-between gap-3 rounded-xl border border-jaga-line bg-jaga-ground px-4 py-3"
+        aria-live="polite"
+        data-impact-picked={picked ?? ""}
+      >
+        {row ? (
+          <p className="m-0">
+            <span className="font-bold text-jaga-ink">{name(row.province)}</span>
+            {" · "}
+            <span className="tabular-nums">
+              {t("provinces.value", {
+                requests: format(row.requests),
+                confirmed: format(row.confirmed),
+              })}
+            </span>
+            <span className="block text-small text-jaga-text-2">
+              {t("provinces.share", { percent: percent(row.confirmed, row.requests) })}
+              {" · "}
+              {t("provinces.rowNote", { teams: row.teams, opened: format(row.openedApp) })}
+            </span>
+          </p>
+        ) : (
+          <p className="m-0 text-jaga-text-2">{t("map.pick")}</p>
+        )}
+        {row && (
+          <button
+            type="button"
+            className="inline-flex min-h-tap items-center rounded-xl border border-jaga-teal-ink bg-jaga-teal-ink/10 px-4 font-medium text-jaga-ink"
+            onClick={() => setPicked(null)}
+            data-impact-all
+          >
+            {t("map.all")}
+          </button>
+        )}
+      </div>
+      <figcaption className="text-small text-jaga-text-2">{t("map.note")}</figcaption>
     </figure>
   );
 }
