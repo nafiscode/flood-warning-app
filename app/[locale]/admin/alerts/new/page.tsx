@@ -60,7 +60,6 @@ export default async function NewAlert({
   const session = await getSessionProfile();
   if (!session || !isAdminRole(session.role)) return null;
   const t = await getTranslations("alertConsole");
-  const tAdmin = await getTranslations("admin");
   const [templates, areas, alerts] = await Promise.all([
     readTemplates(),
     readAreas(),
