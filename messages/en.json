@@ -2800,5 +2800,13 @@
       "openReport": "Go to my reports",
       "signInNote": "Requests for help can be followed without an account. A team's registration and flood reports appear once you are signed in."
     }
+  },
+  "line": {
+    "open": "Open Jaga",
+    "nextUpdate": "Next update by {time}.",
+    "statusHead": "Alerts in force for your area",
+    "statusNone": "There is no alert in the Jaga app for your area right now. No alert does not mean no risk. Follow official warnings. In an emergency call 1784 or 1669.",
+    "statusUnknown": "No Jaga account is linked to this LINE yet. Open the Jaga app and sign in with LINE to get alerts for your area. In an emergency call 1784 or 1669.",
+    "statusNoPlaces": "You have not set a home or a place to watch in the Jaga app yet. Open the app and go to Account to set them. In an emergency call 1784 or 1669."
   }
 }

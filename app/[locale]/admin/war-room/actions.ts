@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+import { runPushTick } from "@/lib/push-server";
 import { redirect } from "next/navigation";
 import { localePath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -49,6 +51,8 @@ export async function assignCase(locale: string, form: FormData) {
     p_note: field(form, "note") || null,
   });
   if (error) back(locale, { error: why(error), assign: sos });
+  // The sender is told a team has their case now, not at the next minute's tick (A7).
+  after(() => void runPushTick());
   back(locale, { done: "assigned" });
 }
 

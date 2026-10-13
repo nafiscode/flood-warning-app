@@ -6,6 +6,7 @@ import { readAreas, zoneMap } from "@/lib/admin-alerts";
 import { areaChoice, chosenTambons, isUuid, updateHours, windowOf } from "@/lib/alert-console";
 import { localePath } from "@/lib/auth";
 import { inService } from "@/lib/features";
+import { lineAlert } from "@/lib/line-server";
 import { pushAlert } from "@/lib/push-server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -79,7 +80,8 @@ export async function publishAlert(locale: string, form: FormData) {
    */
   if (!drill && typeof published === "string") {
     after(async () => {
-      await pushAlert(supabase, published);
+      // Two roads, neither waiting for the other: web push, and LINE for those who use it.
+      await Promise.all([pushAlert(supabase, published), lineAlert(supabase, published)]);
     });
   }
   redirect(`${localePath(locale, "/admin/alerts")}?done=published`);

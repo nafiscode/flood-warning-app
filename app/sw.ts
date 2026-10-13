@@ -100,6 +100,10 @@ self.addEventListener("push", (event) => {
       )
       .catch(() => {}),
   );
+  // The app icon is flagged too, where the system allows it; the real count replaces the flag
+  // as soon as Jaga is opened and the bell has counted.
+  const badge = (self.navigator as Navigator & { setAppBadge?: () => Promise<void> }).setAppBadge;
+  if (badge) event.waitUntil(badge.call(self.navigator).catch(() => {}));
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
