@@ -1301,7 +1301,8 @@
       "handover": "Nota serah tugas",
       "exports": "Eksport",
       "log": "Log akses",
-      "fieldRescues": "Penyelamatan ditemui sendiri"
+      "fieldRescues": "Penyelamatan ditemui sendiri",
+      "signals": "Isyarat"
     },
     "role": {
       "admin": "Pentadbir",
@@ -3003,5 +3004,112 @@
       "waitingHint": "Ia dihantar sendiri apabila ada isyarat dan Jaga dibuka. Jangan padam data aplikasi sebelum dihantar.",
       "sendNow": "Cuba hantar sekarang"
     }
+  },
+  "signals": {
+    "title": "Isyarat",
+    "intro": "Apa yang ditunjukkan oleh stesen paras air, hujan, kadar alir model dan paras laut bagi setiap zon amaran, bersama tahap yang dicadangkan dan sebabnya. Cadangan ini hanyalah nasihat. Tiada apa-apa diterbitkan dari halaman ini: anda yang memutuskan dan anda yang menghantar.",
+    "now": "sekarang",
+    "unknown": "tidak diketahui",
+    "mm": "{value} mm",
+    "noZones": "Belum ada zon amaran dimuatkan.",
+    "forecastAt": "Hujan, kadar alir dan paras laut diambil pada {time}.",
+    "level": {
+      "watch": "Berjaga-jaga",
+      "warning": "Amaran",
+      "evacuate": "Pindah"
+    },
+    "signal": {
+      "rain_72h_mm": "Hujan purata lembangan dalam 72 jam (mm)",
+      "rain_24h_mm": "Hujan purata lembangan dalam 24 jam (mm)",
+      "key_level_m": "Paras di stesen utama (m aras laut purata)",
+      "upstream_level_m": "Paras di stesen hulu (m aras laut purata)"
+    },
+    "ref": {
+      "bank": "tebing {value} m",
+      "warning": "Amaran {value} m"
+    },
+    "gauge": {
+      "key": "Stesen utama",
+      "upstream": "Stesen hulu",
+      "others": "Stesen lain dalam zon ini",
+      "level": "Paras",
+      "levelValue": "{value} m aras laut purata",
+      "measured": "Diukur",
+      "stale": "{hours} jam lalu",
+      "rise": "Perubahan dalam kira-kira 6 jam",
+      "riseValue": "{value} m",
+      "toBank": "Berbanding tebing",
+      "below": "{value} m di bawah tebing",
+      "over": "{value} m melebihi tebing",
+      "none": "belum ada bacaan disimpan",
+      "noSeries": "Tiada bacaan dalam empat hari lepas.",
+      "noKey": "Zon ini belum ada stesen utama.",
+      "few": "Hanya {count} bacaan disimpan setakat ini. Garisan akan terisi apabila stesen melaporkan."
+    },
+    "suggestion": {
+      "title": "Tahap yang dicadangkan (nasihat sahaja, belum dikeluarkan)",
+      "none": "Tiada yang mencapai had",
+      "onlyAdvice": "Dikira daripada angka di bawah mengikut peraturan tetap. Ia boleh silap ke dua-dua arah. Semak carta dan umur data sebelum bertindak.",
+      "toAlerts": "Tulis amaran"
+    },
+    "reason": {
+      "keyAtBank": "Stesen utama mencatat {value} m, pada atau melebihi tebing ({threshold} m), diukur {time}: {level}.",
+      "keyNearBank": "Stesen utama mencatat {value} m, pada atau melebihi paras Amaran ({threshold} m), diukur {time}: {level}.",
+      "upstreamOverBank": "Stesen hulu mencatat {value} m, pada atau melebihi {threshold} m, diukur {time}: {level}.",
+      "rain72": "{value} mm hujan purata lembangan dalam 72 jam lepas, berbanding had {threshold} mm: {level}.",
+      "rain72Forecast": "Ramalan memberi {value} mm dalam 72 jam menjelang {time}, berbanding had {threshold} mm. Ini ramalan, jadi tidak lebih daripada {level}.",
+      "rain24": "{value} mm hujan purata lembangan dalam 24 jam lepas, berbanding had {threshold} mm: {level}.",
+      "rain24Forecast": "Ramalan memberi {value} mm dalam 24 jam akan datang, berbanding had {threshold} mm. Ini ramalan, jadi tidak lebih daripada {level}."
+    },
+    "blind": {
+      "keyGaugeStale": "Bacaan terbaharu stesen utama berumur lebih 6 jam, jadi keadaan sungai sekarang tidak dinilai di sini.",
+      "keyGaugeMissing": "Tiada bacaan stesen utama disimpan, jadi sungai tidak dinilai di sini.",
+      "rainMissing": "Tiada angka hujan bagi 72 jam lepas.",
+      "forecastStale": "Ramalan hujan berumur lebih 3 jam atau belum pernah diambil.",
+      "noThresholds": "Zon ini tiada had."
+    },
+    "rain": {
+      "title": "Hujan purata lembangan",
+      "past24": "24 jam lepas",
+      "past72": "72 jam lepas",
+      "next24": "24 jam akan datang (ramalan)",
+      "peak72": "72 jam terbesar akan datang (ramalan)",
+      "by": "menjelang {time}",
+      "none": "Angka hujan belum diambil.",
+      "thresholds": "Had: 72 jam: {r72}. 24 jam: {r24}.",
+      "caveat": "Hujan setiap jam daripada model cuaca (Open-Meteo), dipuratakan daripada beberapa titik di seluruh lembangan. Bar pekat ialah catatan model bagi masa lepas, bar pudar ialah ramalannya. Had ditetapkan berdasarkan hujan satelit, iaitu ukuran yang berbeza: gunakan jumlah ini sebagai panduan, bukan sebagai angka yang sama."
+    },
+    "discharge": {
+      "title": "Kadar alir sungai daripada model (GloFAS, m³/s)",
+      "none": "Kadar alir model belum diambil.",
+      "caveat": "Kadar alir harian model global di sel terdekat dengan stesen utama. Lihat arahnya, bukan angkanya."
+    },
+    "tide": {
+      "title": "Paras laut di muara sungai (m)",
+      "none": "Paras laut belum diambil.",
+      "caveat": "Paras laut setiap jam daripada model pasang surut dan lautan (Open-Meteo Marine). Air pasang melambatkan aliran sungai ke laut."
+    },
+    "feed": {
+      "title": "Keadaan data itu sendiri",
+      "gauges": "Stesen paras air",
+      "forecasts": "Hujan, kadar alir dan paras laut",
+      "ok": "{name}: kali terakhir diambil {time}.",
+      "failed": "{name}: pengambilan terakhir, {time}, ada kegagalan.",
+      "never": "{name}: belum pernah diambil.",
+      "old": "Itu {hours} jam yang lalu.",
+      "lag": "Stesen ditanya setiap 15 minit dan ramalan setiap jam. Suapan agensi sendiri lewat: sesebuah stesen boleh ketinggalan berjam-jam walaupun pengambilan berjaya, sebab itu setiap bacaan menunjukkan masanya sendiri."
+    },
+    "thresholds": {
+      "title": "Had bagi zon ini",
+      "intro": "Ubah had dan simpan. Had yang anda tetapkan dikekalkan apabila kiraan semula dijalankan, dan perubahan itu dicatat dalam log akses. Biarkan kotak kosong bagi tahap yang tidak diberi oleh isyarat ini.",
+      "provisional": "sementara, daripada kiraan semula",
+      "byHand": "ditetapkan oleh pentadbir {time}",
+      "unset": "belum ditetapkan",
+      "save": "Simpan had ini",
+      "saved": "Had telah disimpan.",
+      "error": "Had tidak disimpan. Setiap tahap mesti nombor lebih daripada sifar, dan sekurang-kurangnya satu diperlukan."
+    },
+    "devTitle": "Isyarat: contoh",
+    "devNote": "Angka rekaan: sungai sedang naik menghampiri tebing dengan ramalan hujan lebat. Untuk melihat skrin tanpa log masuk. Pembangunan sahaja."
   }
 }

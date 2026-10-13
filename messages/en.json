@@ -1301,7 +1301,8 @@
       "handover": "Handover",
       "exports": "Exports",
       "log": "Access log",
-      "fieldRescues": "Field rescues"
+      "fieldRescues": "Field rescues",
+      "signals": "Signals"
     },
     "role": {
       "admin": "Admin",
@@ -3003,5 +3004,112 @@
       "waitingHint": "They are sent by themselves when there is signal and Jaga is open. Do not clear the app's data before then.",
       "sendNow": "Try sending now"
     }
+  },
+  "signals": {
+    "title": "Signals",
+    "intro": "What the river gauges, the rain, the modelled discharge and the tide say for each warning zone, with a suggested level and its reasons. The suggestion is advice. Nothing is published from this page: you decide and you send.",
+    "now": "now",
+    "unknown": "not known",
+    "mm": "{value} mm",
+    "noZones": "No warning zone has been loaded yet.",
+    "forecastAt": "Rain, discharge and tide fetched {time}.",
+    "level": {
+      "watch": "Watch",
+      "warning": "Warning",
+      "evacuate": "Evacuate"
+    },
+    "signal": {
+      "rain_72h_mm": "Rain over the basin in 72 hours (mm)",
+      "rain_24h_mm": "Rain over the basin in 24 hours (mm)",
+      "key_level_m": "Level at the key gauge (m MSL)",
+      "upstream_level_m": "Level at the upstream gauge (m MSL)"
+    },
+    "ref": {
+      "bank": "bank {value} m",
+      "warning": "Warning {value} m"
+    },
+    "gauge": {
+      "key": "Key gauge",
+      "upstream": "Upstream gauge",
+      "others": "Other gauges in this zone",
+      "level": "Level",
+      "levelValue": "{value} m MSL",
+      "measured": "Measured",
+      "stale": "{hours} h old",
+      "rise": "Change in about 6 hours",
+      "riseValue": "{value} m",
+      "toBank": "Against the bank",
+      "below": "{value} m below the bank",
+      "over": "{value} m over the bank",
+      "none": "no reading stored yet",
+      "noSeries": "No reading in the last four days.",
+      "noKey": "This zone has no key gauge set.",
+      "few": "Only {count} readings stored so far. The line fills in as the gauge reports."
+    },
+    "suggestion": {
+      "title": "Suggested level (advice only, not issued)",
+      "none": "Nothing reaches a threshold",
+      "onlyAdvice": "Worked out from the figures below by fixed rules. It can be wrong in both directions. Check the charts and the data's age before you act.",
+      "toAlerts": "Write an alert"
+    },
+    "reason": {
+      "keyAtBank": "The key gauge reads {value} m, at or over its bank ({threshold} m), measured {time}: {level}.",
+      "keyNearBank": "The key gauge reads {value} m, at or over its Warning level ({threshold} m), measured {time}: {level}.",
+      "upstreamOverBank": "The upstream gauge reads {value} m, at or over {threshold} m, measured {time}: {level}.",
+      "rain72": "{value} mm of rain over the basin in the last 72 hours, against a threshold of {threshold} mm: {level}.",
+      "rain72Forecast": "The forecast holds {value} mm in 72 hours by {time}, against a threshold of {threshold} mm. A forecast, so no more than {level}.",
+      "rain24": "{value} mm of rain over the basin in the last 24 hours, against a threshold of {threshold} mm: {level}.",
+      "rain24Forecast": "The forecast holds {value} mm in the next 24 hours, against a threshold of {threshold} mm. A forecast, so no more than {level}."
+    },
+    "blind": {
+      "keyGaugeStale": "The key gauge's newest reading is more than 6 hours old, so the river as it is now is not judged here.",
+      "keyGaugeMissing": "No reading from the key gauge is stored, so the river is not judged here.",
+      "rainMissing": "No rain figures for the last 72 hours.",
+      "forecastStale": "The rain forecast is more than 3 hours old or has never been fetched.",
+      "noThresholds": "This zone has no thresholds."
+    },
+    "rain": {
+      "title": "Rain over the basin",
+      "past24": "Last 24 hours",
+      "past72": "Last 72 hours",
+      "next24": "Next 24 hours (forecast)",
+      "peak72": "Largest 72 hours ahead (forecast)",
+      "by": "by {time}",
+      "none": "No rain figures fetched yet.",
+      "thresholds": "Thresholds: 72 hours: {r72}. 24 hours: {r24}.",
+      "caveat": "Hourly rain from a weather model (Open-Meteo), averaged over points across the catchment. Solid bars are the model's account of the past, pale bars its forecast. The thresholds were set on satellite rain, which is a different measurement: read the totals as a guide, not as the same number."
+    },
+    "discharge": {
+      "title": "Modelled river flow (GloFAS, m³/s)",
+      "none": "No modelled flow fetched yet.",
+      "caveat": "A global model's daily flow at the cell nearest the key gauge. Use its direction, not its figure."
+    },
+    "tide": {
+      "title": "Sea level at the river mouth (m)",
+      "none": "No sea level fetched yet.",
+      "caveat": "A tide and ocean model's hourly sea level (Open-Meteo Marine). A high tide slows the river's way out to sea."
+    },
+    "feed": {
+      "title": "The data's own state",
+      "gauges": "River gauges",
+      "forecasts": "Rain, flow and tide",
+      "ok": "{name}: last fetched {time}.",
+      "failed": "{name}: the last fetch, {time}, had a failure.",
+      "never": "{name}: never fetched.",
+      "old": "That is {hours} hours ago.",
+      "lag": "Gauges are asked for every 15 minutes and the forecasts every hour. The agencies' own feeds lag: a gauge can be hours behind even when the fetch worked, which is why every reading shows its own time."
+    },
+    "thresholds": {
+      "title": "Thresholds for this zone",
+      "intro": "Change a threshold and save it. A threshold you set is kept when the hindcast is run again, and the change is written to the access log. Leave a box empty for a level this signal does not give.",
+      "provisional": "provisional, from the hindcast",
+      "byHand": "set by an admin {time}",
+      "unset": "not set",
+      "save": "Save this threshold",
+      "saved": "The threshold is saved.",
+      "error": "The threshold was not saved. Each level must be a number above nought, and at least one is needed."
+    },
+    "devTitle": "Signals: an example",
+    "devNote": "Made-up figures: a river rising towards its bank with heavy rain forecast. For looking at the screen without signing in. Development only."
   }
 }
