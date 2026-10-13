@@ -11,7 +11,8 @@ const apple = () =>
   // An iPad that says it is a Mac.
   (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 const standalone = () =>
-  window.matchMedia("(display-mode: standalone)").matches ||
+  // Asked gently: a browser (or a test) without matchMedia must not throw here.
+  window.matchMedia?.("(display-mode: standalone)").matches === true ||
   (navigator as Navigator & { standalone?: boolean }).standalone === true;
 const hasPush = () =>
   PUBLIC_KEY !== "" &&
