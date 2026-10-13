@@ -35,7 +35,7 @@ It lets government and volunteer responders coordinate rescues without duplicati
 - calibrated hydrodynamic models
 - ML forecasting
 - native mobile apps
-- resource marketplace (boats, supplies)
+- resource marketplace (boats, supplies). A request for food and water (4.10) is not one: Jaga passes a person's request to a verified team and lists, holds and trades nothing.
 - collecting, holding or distributing donations for people affected by disasters. The app's donations fund only the app itself (section 12). Relief fundraising would need a registered foundation and a separate legal review.
 - forecasts or alerts for hazards other than river/coastal flooding (placeholders only, section 13)
 - live GPS tracking of rescue teams
@@ -77,7 +77,7 @@ It lets government and volunteer responders coordinate rescues without duplicati
 - Official phone.
 - Point-of-contact name and phone. The POC phone is OTP-verified.
 - **Coverage:** multi-select at any level. Selecting a province means all its districts and tambons; selecting a district means all its tambons. Store both what was selected and the expanded tambon list.
-- **Capabilities** (multi-select): coordination, rescue, planning, support.
+- **Capabilities** (multi-select): coordination, rescue, supplies (food and water distribution, 4.10), planning, support.
 - **Same team, different areas:** register separately under the same organization name with a different POC phone.
 - **Status:** `pending` → `verified` → `suspended`. Unverified authorities cannot see personal data.
 - **Sign-in fallback:** if the SMS provider is not ready by launch, authorities can also sign in with LINE Login. The admin then verifies the POC phone by calling it during verification.
@@ -219,8 +219,9 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
   - alerts for their home tambon and every watched place with notifications on. One notification per alert, listing all affected places, e.g. "Warning: your home (Bana) and Mum's house (Taluboh)". LINE is billed per recipient, so watching more places costs nothing extra.
   - status updates on their own SOS
   - rescue-confirmation requests
-- **Sounds and vibration.** Every notification shown while the app is open carries a short sound and a vibration pattern, generated in the app itself (no audio files to download, so they work offline). Five sounds only:
+- **Sounds and vibration.** Every notification shown while the app is open carries a short sound and a vibration pattern, generated in the app itself (no audio files to download, so they work offline). Six sounds only:
   - an urgent repeating two-tone alarm for an authority being offered a case, looping until it is answered or passed on
+  - three low, unhurried notes, played once, for a team being offered a request for food and water (4.10). It never loops and can never be taken for the alarm.
   - a single rising chime for the requester when a team accepts their case
   - a soft three-note resolve for "rescued" and "I'm safe now"
   - one low double-tone for a new alert at Warning or Evacuate
@@ -235,6 +236,22 @@ Many people at risk are elderly and have no smartphone. Their children or relati
 - **SOS for them:** from a watched place, [SOS for Mum's house] sends an SOS at that place's location, marked as sent by a relative, with the person's phone (if stored) and the user's own phone as callbacks. Still two taps; never blocked (safety rule 1). The user's own location is not sent.
 - **Household for them:** see 4.7.
 - **Alerts:** as 4.8. The alert text names the place with the user's own label; the label never leaves the user's account.
+
+### 4.10 Requests for food, water and essentials
+Some people are not in danger and cannot leave: the house stands above the water, the road is gone, and food and drinking water run out. They need things brought to them, not a rescue.
+
+- **Its own button.** "Request food and water" sits under SOS and Report on the home screen, quieter than SOS and never in its way. The SOS button and its two taps are unchanged, and nothing about supplies is ever asked before an SOS (safety rule 1).
+- **The same record as an SOS**, with `kind = supplies`. So it is never refused, needs no account, merges with the sender's open case, is kept and retried offline, and is followed on the same case page with the same token.
+- **The form** asks, before sending: what is needed (drinking water, food, baby items, medicine, clothes and blankets, hygiene items, torch/candles/power bank, something else), how many people, how long what they have will last (nothing left / enough for today / enough for a few days), a free-text detail, and the optional phone. Only the location is required. Medicine carries the line "if someone needs medicine urgently, call 1669 or send an SOS".
+- **The way back to SOS is on every screen of it.** The form opens with "In danger, or is someone ill or hurt? Don't use this page" and a red SOS button. The case page carries one large button, **"It got worse: I need rescue"**, which turns the same case into a rescue case at once: the delivering team's claim is set aside (it may accept again), the rescue relay of 5.2 starts, and the change is written to `audit_log`. A plain SOS from the same phone does the same. A supply request sent while a rescue case is open stays a rescue case and gains the needs.
+- **Who is offered it:** verified units covering the tambon with the `supplies` capability first (same ordering as 5.2), then `coordination` units, then the admins' monitor. **Rescue units see it on their board and may accept it, and their alarm never rings for it**, so a boat is not called off a rescue to carry rice. A distributor is never in the queue of a rescue SOS.
+- **The window** is its own setting (`dispatch_windows.supplies_seconds`, default 10 minutes a team). The sound is the soft one of 4.8, played once.
+- **On the boards** it is marked in words and an icon ("Food and water request (not a rescue)"), never in the SOS red, and it sorts below every rescue case nobody holds. The admins' counters of open, waiting and overdue cases count rescue cases only; a supply request counts as overdue after four times the rescue setting, never less than an hour.
+- **Finishing** is as 5.4 in a delivery's words: the team reports "delivered" with a photo, the sender confirms or says nothing arrived, and the 12-hour fallback applies.
+- **Points:** 5 per confirmed delivery plus 1 per person (settings `hero_points.supplies_per_case` and `supplies_per_person`), so delivering never pays better than rescuing.
+- **Access:** as for an SOS. A covering verified unit sees the exact point and may reveal the phone (logged). The `supplies` capability does **not** open vulnerable-household data (safety rule 5 is unchanged).
+- **What Jaga is not:** it holds no goods, collects no donations and promises no delivery. The form says so. Delivery depends on the teams that registered.
+- **Before launch** the page is the same call-first page as SOS.
 
 ## 5. Authority features
 
@@ -280,13 +297,14 @@ A case does not wait to be noticed. It is offered to the teams covering its tamb
 
 ### 5.5 Hero score
 - Points are awarded only when a case closes with confirmation. There are no points for claiming alone.
-- **Default rule:** 10 points per case, plus 2 per person rescued, plus 3 if vulnerable people were involved. All values are configurable.
+- **Default rule:** 10 points per case, plus 2 per person rescued, plus 3 if vulnerable people were involved. All values are configurable. A confirmed delivery of food and water (4.10) earns 5 plus 1 per person.
 - Points are stored as a ledger, so admins can revoke them.
 - The leaderboard per province is visible to authorities and admins. Public visibility is an open item.
 
 ### 5.6 Responsibility map
 - Coverage per unit and capability, shown to authorities and admins.
 - Highlights gaps: tambons with no verified rescue-capable unit.
+- Also says how many tambons have a food and water team (4.10).
 
 ### 5.7 Other views
 - Reports feed for the coverage area.
@@ -424,7 +442,8 @@ Admins decide. The system never auto-publishes. Every data source shows its last
   - `created_at`, `last_location_at`
 - `sos_locations`: location history.
 - `sos_claims`: `sos_id`, `unit_id`, `claimed_at`, `released_at`, `release_reason`, `eta_band`, `eta_given_at`. Unique active claim per SOS.
-- `sos_offers`: `sos_id`, `unit_id`, `tier` (`rescue` / `coordination`), `round`, `offered_at`, `expires_at`, `responded_at`, `response` (`accepted` / `declined` / `timed_out`), `decline_reason`. Who was asked, when, and what they answered.
+- On `sos_requests` since 13 Oct: `kind` (`rescue` / `supplies`), `needs` (text array from a fixed list), `needs_note`, `supplies_left` (`none` / `today` / `days`) (4.10).
+- `sos_offers`: `sos_id`, `unit_id`, `tier` (`rescue` / `coordination` / `supplies`), `round`, `offered_at`, `expires_at`, `responded_at`, `response` (`accepted` / `declined` / `timed_out`), `decline_reason`. Who was asked, when, and what they answered.
 - `sos_events`: every status change, actor, note, photos.
 - `rescue_confirmations`: `sos_id`, `method` (`requester` / `second_authority` / `admin`), `confirmed_by`, `photos[]`, `note`.
 - `hero_points`: ledger with `unit_id`, `sos_id`, `points`, `reason`, `revoked_at`.

@@ -499,6 +499,10 @@ Build on the first season's real data. An empty page showing zeros is honest; in
 Acceptance: no published figure identifies a person or a household (test); re-running the nightly job changes nothing; /impact loads without an account and appears nowhere in the SOS, report or alert flows (test); the exports match the page.
 ```
 
+### A14: Requests for food, water and essentials (built 13 October 2026)
+
+Spec 4.10. A second kind of request beside the rescue SOS, for people who are safe and cut off, and a `supplies` capability for the teams that deliver. Built on the SOS record and the A5 relay. Still to do when A7 lands: the push notification for a supply offer uses the phone's ordinary notification sound, never the alarm channel.
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.

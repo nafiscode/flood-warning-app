@@ -118,11 +118,12 @@ The dark values are in `lib/brand/tokens.ts` (`darkBrand`) and mirrored in `app/
 
 ## Sound
 
-Jaga makes five sounds and no others. They are generated in the app with the Web Audio API, so there is no audio file to download, nothing to cache and nothing to licence, and they work offline. Short, plain tones; nothing cinematic, no siren samples, no music.
+Jaga makes six sounds and no others. They are generated in the app with the Web Audio API, so there is no audio file to download, nothing to cache and nothing to licence, and they work offline. Short, plain tones; nothing cinematic, no siren samples, no music.
 
 | Sound | When | Shape |
 |---|---|---|
 | Offer alarm | an authority is being offered an SOS case | a fast two-tone: six short bright notes, high and low in turn (988 and 740 Hz), then a breath, repeating every 1.3 s until the offer is answered or passes on. The only insistent sound in Jaga. Chosen by the owner by ear on 12 Oct 2026 from eighteen candidates. |
+| Supply offer | a team is being offered a request for food and water (spec 4.10) | three low, round, unhurried notes (523, 523, 659 Hz), played **once**. Everything the alarm is not: lower than its lowest note, slower, and silent afterwards, so a crew that does both jobs never takes one for the other by ear. Not heard by the owner yet. |
 | Accepted | a team accepts the requester's case | one short rising pair. Relief, not celebration. |
 | Rescued / safe | "rescued" and "I'm safe now" | three soft notes resolving downward |
 | Alert | a new alert at Warning or Evacuate | one low double-tone |
