@@ -52,6 +52,7 @@ zones:
       - {name: dam_to_x77, outlet: [101.268219, 6.262033], minus: above_dam}
     rain_basin: below_dam
     dam: {hourly_id: 50}
+    tide_point: [101.27, 6.96]        # off the mouth of the Pattani River
   kolok:
     name: {th: "แม่น้ำโก-ลก", ms: "Sungai Golok", en: "Kolok River"}
     key: {code: X.119A, id: 2559, bank_m: 9.3, place: "Sungai Kolok (Lantu bridge)", point: [101.9749, 6.0226]}
@@ -61,6 +62,7 @@ zones:
     basins:
       - {name: above_key, outlet: [101.9749, 6.0226]}
     rain_basin: above_key
+    tide_point: [102.10, 6.27]        # off Tak Bai, where the Kolok meets the sea
   u_taphao:
     name: {th: "คลองอู่ตะเภา", ms: "Khlong U-Taphao", en: "Khlong U-Taphao"}
     key: {code: X.44, id: 2591, bank_m: 7.4, place: "Hat Yai (Ban Hat Yai Nai)", point: [100.4561, 7.0022]}
@@ -73,6 +75,17 @@ zones:
       # The listed position of X.44 is 1.2 km from the channel the elevation model drains by.
       - {name: above_key, outlet: [100.4561, 7.0022], snap_cells: 40}
     rain_basin: above_key
+    tide_point: [100.62, 7.25]        # off Songkhla, at the lake's outlet, where the U-Taphao's water ends up
+
+# The live feeds the app's database asks for every hour (A8; migration a8_signals). All three are
+# Open-Meteo's, free and without a key. Rain is the mean over a grid of points inside the zone's
+# rain basin; discharge is taken at the GloFAS cell the hindcast chose; the tide at `tide_point`.
+feeds:
+  rain_url: https://api.open-meteo.com/v1/forecast
+  flood_url: https://flood-api.open-meteo.com/v1/flood
+  marine_url: https://marine-api.open-meteo.com/v1/marine
+  rain_grid_deg: 0.1
+  rain_points_max: 16
 
 # Threshold candidates the hindcast scores. The proposal takes, per level, the candidate that
 # catches every flood the gauge recorded with the fewest false alarms (ties: the longer lead).

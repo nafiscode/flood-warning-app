@@ -134,7 +134,13 @@ def cmd_seed(cfg: dict) -> int:
     out = output_dir(cfg)
     result = json.loads((out / "hindcast.json").read_text(encoding="utf-8"))
     stations = pd.read_csv(data_dir() / "stations.csv")
-    text, counts = seed.sql(cfg, result, read_basins(out), stations)
+    cells = {}
+    for zone in cfg["zones"]:
+        path = out / "glofas" / f"{zone}.json"
+        if path.exists():
+            d = json.loads(path.read_text(encoding="utf-8"))
+            cells[zone] = [round(float(d["longitude"]), 4), round(float(d["latitude"]), 4)]
+    text, counts = seed.sql(cfg, result, read_basins(out), stations, cells)
     dest = REPO_DIR / "supabase" / "seed" / "46_zones_gauges_thresholds.sql"
     seed.write(dest, text)
     print(f"wrote {dest} ({dest.stat().st_size // 1024} kB): {counts}")
