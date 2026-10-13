@@ -1916,7 +1916,9 @@
       "android": "Android",
       "desktop": "Computer (Chrome, Edge)",
       "macSafari": "Mac (Safari)",
-      "inApp": "Opened inside another app, such as Messenger or LINE"
+      "inApp": "Opened inside another app, such as Messenger or LINE",
+      "quietIos": "Through Do Not Disturb: iPhone and iPad",
+      "quietAndroid": "Through Do Not Disturb: Android"
     }
   },
   "report": {
@@ -2705,6 +2707,35 @@
       "rescuedSuppliesTitle": "The team reports the supplies were delivered",
       "rescuedSuppliesBody": "Open Jaga to confirm you received them, or to say you did not.",
       "announcementTitle": "Announcement from Jaga"
+    },
+    "quiet": {
+      "button": "Let Jaga through Do Not Disturb and Sleep",
+      "intro": "Jaga cannot change this by itself: it is set in the phone's own Settings. Do it once, so alerts still reach you at night.",
+      "pause": "Pause the pictures",
+      "play": "Play the pictures",
+      "ios": {
+        "s1": "Open the phone's “Settings”, then tap “Focus”.",
+        "s2": "Tap “Do Not Disturb”.",
+        "s3": "Under “Allow Notifications”, tap “Apps”, then “Add”.",
+        "s4": "Choose Jaga and tap “Done”. Then go back and do the same for “Sleep”."
+      },
+      "android": {
+        "s1": "Open the phone's “Settings”, then tap “Notifications”.",
+        "s2": "Tap “Do Not Disturb”.",
+        "s3": "Tap “Apps”, then “Add apps”.",
+        "s4": "Choose Jaga. If Jaga is not in the list, choose Chrome or the browser you open Jaga with."
+      },
+      "brands": "The names differ a little between brands (Samsung, Oppo, Xiaomi, Vivo). Look for “Do Not Disturb”, then “Apps” or “Exceptions”.",
+      "sound": "A notification that gets through still follows the phone's volume and silent switch. In flood season, keep the sound on at night. In an emergency call 1784 or 1669.",
+      "demo": {
+        "settings": "Settings",
+        "focus": "Focus",
+        "notifications": "Notifications",
+        "dnd": "Do Not Disturb",
+        "appsIos": "Apps",
+        "appsAndroid": "Apps",
+        "done": "Jaga gets through at night"
+      }
     }
   },
   "journey": {

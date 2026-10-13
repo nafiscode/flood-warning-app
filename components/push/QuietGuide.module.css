@@ -1,0 +1,39 @@
+/*
+ * The last picture of "let Jaga through Do Not Disturb": a notification arriving on a sleeping
+ * phone. Brand colours only, never an alert hue. Everything stands still under reduced motion.
+ */
+.banner {
+  animation: arrive 0.5s cubic-bezier(0.2, 1.2, 0.4, 1) 0.3s both;
+}
+.ringing {
+  transform-origin: 50% 10%;
+  animation: ring 1.1s ease-in-out 0.8s infinite;
+}
+
+@keyframes arrive {
+  from {
+    transform: translateY(-140%);
+    opacity: 0;
+  }
+}
+@keyframes ring {
+  0%,
+  40%,
+  100% {
+    transform: rotate(0);
+  }
+  10%,
+  30% {
+    transform: rotate(-16deg);
+  }
+  20% {
+    transform: rotate(16deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner,
+  .ringing {
+    animation: none;
+  }
+}

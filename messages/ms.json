@@ -1916,7 +1916,9 @@
       "android": "Android",
       "desktop": "Komputer (Chrome, Edge)",
       "macSafari": "Mac (Safari)",
-      "inApp": "Dibuka dari aplikasi lain, seperti Messenger atau LINE"
+      "inApp": "Dibuka dari aplikasi lain, seperti Messenger atau LINE",
+      "quietIos": "Melepasi Jangan Ganggu: iPhone dan iPad",
+      "quietAndroid": "Melepasi Jangan Ganggu: Android"
     }
   },
   "report": {
@@ -2705,6 +2707,35 @@
       "rescuedSuppliesTitle": "Pasukan melaporkan barang sudah dihantar",
       "rescuedSuppliesBody": "Buka Jaga untuk mengesahkan anda menerimanya, atau beritahu belum terima.",
       "announcementTitle": "Pengumuman daripada Jaga"
+    },
+    "quiet": {
+      "button": "Benarkan Jaga walaupun mod Jangan Ganggu atau Tidur dihidupkan",
+      "intro": "Jaga tidak boleh menukar tetapan ini sendiri. Anda perlu menetapkannya dalam Tetapan telefon. Buat sekali sahaja, supaya amaran tetap sampai pada waktu malam.",
+      "pause": "Hentikan gambar",
+      "play": "Mainkan semula",
+      "ios": {
+        "s1": "Buka “Tetapan” telefon, kemudian ketik “Fokus”.",
+        "s2": "Ketik “Jangan Ganggu”.",
+        "s3": "Di bawah “Benarkan Pemberitahuan”, ketik “App”, kemudian “Tambah”.",
+        "s4": "Pilih Jaga dan ketik “Selesai”. Kemudian kembali dan buat perkara yang sama untuk “Tidur”."
+      },
+      "android": {
+        "s1": "Buka “Tetapan” telefon, kemudian ketik “Pemberitahuan”.",
+        "s2": "Ketik “Jangan Ganggu”.",
+        "s3": "Ketik “Apl”, kemudian “Tambah apl”.",
+        "s4": "Pilih Jaga. Jika Jaga tiada dalam senarai, pilih Chrome atau pelayar yang anda gunakan untuk membuka Jaga."
+      },
+      "brands": "Nama menu berbeza sedikit mengikut jenama (Samsung, Oppo, Xiaomi, Vivo). Cari “Jangan Ganggu”, kemudian “Apl” atau “Pengecualian”.",
+      "sound": "Pemberitahuan yang dibenarkan masih mengikut kelantangan dan suis senyap telefon. Pada musim banjir, biarkan bunyi dihidupkan pada waktu malam. Kecemasan: hubungi 1784 atau 1669.",
+      "demo": {
+        "settings": "Tetapan",
+        "focus": "Fokus",
+        "notifications": "Pemberitahuan",
+        "dnd": "Jangan Ganggu",
+        "appsIos": "App",
+        "appsAndroid": "Apl",
+        "done": "Jaga tetap sampai pada waktu malam"
+      }
     }
   },
   "journey": {

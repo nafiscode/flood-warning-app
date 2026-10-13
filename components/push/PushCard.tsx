@@ -1,13 +1,15 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BellIcon } from "@/components/icons";
+import { QuietGuideView, useQuietGuide } from "@/components/push/QuietGuide";
 import type { Area } from "@/lib/area";
 import type { MyPlaces } from "@/lib/me";
 import { myTambons } from "@/lib/notices";
 import { useStored } from "@/lib/phone-store";
 import type { PushState } from "@/lib/push";
+import type { QuietGuide } from "@/lib/quiet";
 import { buttonPrimary, buttonSecondary, card, errorNotice, hint } from "@/lib/ui";
 import { currentSubscription, usePush } from "@/lib/use-push";
 
@@ -25,6 +27,13 @@ type ViewProps = {
   failed: boolean;
   onEnable: () => void;
   onDisable: () => void;
+  /**
+   * Turned on in this sitting: the card then stays where it would otherwise leave, because this
+   * is the moment to show how to let Jaga through Do Not Disturb and Sleep.
+   */
+  justOn?: boolean;
+  /** Which phone's settings the Do Not Disturb guide describes; none on a computer. */
+  quiet?: QuietGuide | null;
 };
 
 /**
@@ -42,9 +51,11 @@ export function PushCardView(props: ViewProps) {
   const own = place === "team" || place === "case";
   const hasArea = own || props.hasArea;
   if (state === null || state === "unsupported") return null;
-  if (place === "home" && (state === "on" || state === "blocked" || !hasArea)) return null;
+  const justOn = state === "on" && props.justOn === true;
+  if (place === "home" && ((state === "on" && !justOn) || state === "blocked" || !hasArea))
+    return null;
   // On a board or a request's page, a card that only says "on" is in the way of the work.
-  if (own && state === "on") return null;
+  if (own && state === "on" && !justOn) return null;
   return (
     <section className={card} data-push={state} data-push-place={place}>
       <h2 className="flex items-start gap-3 text-h3 font-bold text-jaga-ink">
@@ -82,14 +93,16 @@ export function PushCardView(props: ViewProps) {
       {state === "on" && (
         <>
           <p className="font-medium">{t("on")}</p>
-          <button
-            type="button"
-            className={buttonSecondary}
-            disabled={props.busy}
-            onClick={props.onDisable}
-          >
-            {t("off")}
-          </button>
+          {!own && (
+            <button
+              type="button"
+              className={buttonSecondary}
+              disabled={props.busy}
+              onClick={props.onDisable}
+            >
+              {t("off")}
+            </button>
+          )}
         </>
       )}
       {props.failed && (
@@ -98,6 +111,9 @@ export function PushCardView(props: ViewProps) {
         </p>
       )}
       <p className={hint}>{t("note")}</p>
+      {props.quiet && hasArea && (state === "ask" || state === "on") && (
+        <QuietGuideView key={String(justOn)} guide={props.quiet} startOpen={justOn} />
+      )}
     </section>
   );
 }
@@ -113,6 +129,8 @@ export function CasePush({ id, token }: { id: string; token: string | null }) {
   const area = useStored<Area>("area");
   const me = useStored<MyPlaces>("me");
   const push = usePush(myTambons(area, me), locale);
+  const quiet = useQuietGuide();
+  const [justOn, setJustOn] = useState(false);
   const on = push.state === "on";
   useEffect(() => {
     if (!on) return;
@@ -147,8 +165,10 @@ export function CasePush({ id, token }: { id: string; token: string | null }) {
       hasArea
       busy={push.busy}
       failed={push.failed}
-      onEnable={() => void push.enable()}
+      onEnable={() => void push.enable().then(() => setJustOn(true))}
       onDisable={() => void push.disable()}
+      justOn={justOn}
+      quiet={quiet}
     />
   );
 }
@@ -160,6 +180,8 @@ export function PushCard({ place }: { place: "home" | "account" | "team" }) {
   const me = useStored<MyPlaces>("me");
   const tambons = myTambons(area, me);
   const push = usePush(tambons, locale);
+  const quiet = useQuietGuide();
+  const [justOn, setJustOn] = useState(false);
   return (
     <PushCardView
       state={push.state}
@@ -167,8 +189,10 @@ export function PushCard({ place }: { place: "home" | "account" | "team" }) {
       hasArea={tambons.length > 0}
       busy={push.busy}
       failed={push.failed}
-      onEnable={() => void push.enable()}
+      onEnable={() => void push.enable().then(() => setJustOn(true))}
       onDisable={() => void push.disable()}
+      justOn={justOn}
+      quiet={quiet}
     />
   );
 }
