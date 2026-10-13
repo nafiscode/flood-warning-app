@@ -8,10 +8,14 @@ import { arm, isArmed, play, type Playing } from "@/lib/sounds";
 /** A repeating sound (the dam release) stops by itself after this long, or at the next tap. */
 export const RING_MAX_MS = 30_000;
 const RUNG_KEPT = 200;
+/** Watch and Safe to return ring too, but quieter than Warning and Evacuate. */
+const LOUD_VOLUME = 0.6;
+const SOFT_VOLUME = 0.3;
 
 /**
- * The app rings when a new Warning, Evacuate or dam release notice arrives for this person's
- * places while Jaga is open (the owner's request, 13 Oct; docs/brand.md "Sound").
+ * The app rings for every alert in force for this person's places - the area they chose, their
+ * home and the places they watch - that they have not yet seen on this phone, whether it was
+ * issued a minute ago or before they ever opened Jaga (the owner, 13 Oct; docs/brand.md "Sound").
  *
  * Two limits no web page can remove, so the screen never relies on the sound alone:
  *  - a browser plays nothing until the person has tapped the page once, so the first tap arms the
@@ -50,7 +54,7 @@ export function useAlertRing(
       if (!due.sound) return;
       writeStored("noticesRung", [...rung, ...due.ids].slice(-RUNG_KEPT));
       stop();
-      playing.current = play(due.sound);
+      playing.current = play(due.sound, { volume: due.soft ? SOFT_VOLUME : LOUD_VOLUME });
       stopTimer.current = window.setTimeout(stop, RING_MAX_MS);
     };
     const onTap = () => {

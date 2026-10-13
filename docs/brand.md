@@ -126,14 +126,14 @@ Jaga makes six sounds and no others. They are generated in the app with the Web 
 | Supply offer | a team is being offered a request for food and water (spec 4.10) | three low, round, unhurried notes (523, 523, 659 Hz), played **once**. Everything the alarm is not: lower than its lowest note, slower, and silent afterwards, so a crew that does both jobs never takes one for the other by ear. Not heard by the owner yet. |
 | Accepted | a team accepts the requester's case | one short rising pair. Relief, not celebration. |
 | Rescued / safe | "rescued" and "I'm safe now" | three soft notes resolving downward |
-| Alert | a new alert at Warning or Evacuate | one low double-tone |
+| Alert | an alert in force for the person's places that this phone has not shown yet | one low double-tone; full volume for Warning and Evacuate, half for Watch and Safe to return |
 | Dam release | a release notice from Bang Lang (spec 15) reaches someone in the zone downstream | a rising figure, repeated; the only public alert sound that repeats. Never mistakable for the alert double-tone. |
 
 Rules:
-- **Watch and Normal are silent.** A level that means "get ready" does not deserve a noise at 3 a.m.
+- **Every alert an admin issues rings in an open app** (the owner, 13 Oct 2026; before that Watch was silent). Watch and Safe to return ring at half volume. Normal is the absence of an alert and has no sound.
 - **Never sound alone.** Every sound has a vibration pattern and its own icon and words on screen (the accessibility rule: a level is never carried by one channel).
 - **Audio needs a tap first.** Browsers refuse to play until the person has interacted, so the authority console asks once to arm the alarm and then stays armed. Never assume a sound was heard.
-- **An open app rings for a new alert** in the person's area, home or watched places: the Alert tone for Warning and Evacuate, the Dam release figure for a release notice (30 s at most, or until a tap). Once per alert per phone, never on the SOS screens (`lib/use-alert-ring.ts`).
+- **An open app rings for every alert in force** in the person's area, home or watched places that the phone has not shown yet, whenever it was issued: the Alert tone, or the Dam release figure for a release notice (30 s at most, or until a tap). Once per alert per phone, never on the SOS screens (`lib/use-alert-ring.ts`).
 - **A push with the app closed plays the phone's own notification sound.** No web app can replace it; do not design as if it could.
 - Nothing in the app plays a sound the person cannot turn off, except the offer alarm for an authority who has armed it.
 

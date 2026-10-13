@@ -20,6 +20,9 @@ afterAll(async () => {
 beforeEach(async () => {
   await db.query("begin");
   w = await buildWorld(db);
+  // The development database holds real test alerts; these tests count what is in the feed, so
+  // they start from none. Rolled back with everything else.
+  await db.query("delete from alerts");
 });
 afterEach(async () => {
   await db.query("rollback");
@@ -75,13 +78,19 @@ describe("the feed", () => {
     expect(notice!.level).toBe("warning");
   });
 
-  it("nothing older than fourteen days, unless it ended inside them", async () => {
-    await alertFor(w.yala1, { days: 20 });
+  it("an alert in force is always there; an ended one only for fourteen days", async () => {
+    // Ended three weeks ago: gone.
+    await alertFor(w.yala1, { days: 30, cancelledDays: 20 });
     await as(db, "anon");
     expect(await feed([w.yala1])).toEqual([]);
-    await alertFor(w.yala1, { days: 20, cancelledDays: 2 });
+    // Issued three weeks ago and still standing: someone opening Jaga today must find it.
+    await alertFor(w.yala1, { days: 20 });
     await as(db, "anon");
     expect((await feed([w.yala1])).length).toBe(1);
+    // Old, but lifted two days ago: there, as news that it was lifted.
+    await alertFor(w.yala1, { days: 20, cancelledDays: 2 });
+    await as(db, "anon");
+    expect((await feed([w.yala1])).length).toBe(2);
   });
 
   it("junk and a long list of codes are cut, not refused", async () => {

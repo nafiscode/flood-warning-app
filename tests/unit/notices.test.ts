@@ -140,12 +140,18 @@ describe("building the list", () => {
     expect(items[0]!.places).toEqual([{ label: "สะบารัง", tambon: "940101" }]);
   });
 
-  it("forgets nothing inside the window and nothing older", () => {
+  it("keeps an alert in force however old it is, and forgets ended ones after the window", () => {
     const items = build([
-      alertRow({ id: "old", issuedAt: daysAgo(WINDOW_DAYS + 1) }),
+      // Standing for three weeks: someone opening Jaga for the first time must still find it.
+      alertRow({ id: "standing", issuedAt: daysAgo(WINDOW_DAYS + 7) }),
+      alertRow({
+        id: "over",
+        issuedAt: daysAgo(WINDOW_DAYS + 9),
+        endedAt: daysAgo(WINDOW_DAYS + 1),
+      }),
       alertRow({ id: "new", issuedAt: daysAgo(WINDOW_DAYS - 1) }),
     ]);
-    expect(items.map((i) => i.id)).toEqual(["alert:new"]);
+    expect(items.map((i) => i.id).sort()).toEqual(["alert:new", "alert:standing"]);
   });
 
   it("a lifted alert is news of its own and keeps its level", () => {

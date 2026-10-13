@@ -28,10 +28,25 @@ const ended = (id: string): NoticeItem =>
   }) as NoticeItem;
 
 describe("when the app rings", () => {
-  it("rings for a new Warning or Evacuate, and stays silent for Watch and Safe to return", () => {
-    expect(ringFor([alert("a", "warning")], [], [])).toEqual({ sound: "alert", ids: ["alert:a"] });
-    expect(ringFor([alert("a", "evacuate")], [], []).sound).toBe("alert");
-    expect(ringFor([alert("a", "watch"), alert("b", "return")], [], []).sound).toBeNull();
+  it("rings for every level, loudly for Warning and Evacuate and softly for the others", () => {
+    expect(ringFor([alert("a", "warning")], [], [])).toEqual({
+      sound: "alert",
+      ids: ["alert:a"],
+      soft: false,
+    });
+    expect(ringFor([alert("a", "evacuate")], [], []).soft).toBe(false);
+    expect(ringFor([alert("a", "watch"), alert("b", "return")], [], [])).toEqual({
+      sound: "alert",
+      ids: ["alert:a", "alert:b"],
+      soft: true,
+    });
+    // One loud alert among quiet ones is loud.
+    expect(ringFor([alert("a", "watch"), alert("b", "evacuate")], [], []).soft).toBe(false);
+  });
+
+  it("rings for an alert that was standing long before the person first opened Jaga", () => {
+    const old = { ...alert("old", "warning"), at: "2026-09-01T00:00:00Z" } as NoticeItem;
+    expect(ringFor([old], [], []).ids).toEqual(["alert:old"]);
   });
 
   it("uses the dam's own sound for a release notice, whatever its level, and before the plain one", () => {
@@ -40,6 +55,7 @@ describe("when the app rings", () => {
     expect(ringFor([alert("a", "warning"), dam], [], [])).toEqual({
       sound: "damRelease",
       ids: ["alert:a", "alert:d"],
+      soft: false,
     });
   });
 
@@ -51,6 +67,6 @@ describe("when the app rings", () => {
   });
 
   it("is silent for an empty bell", () => {
-    expect(ringFor([], [], [])).toEqual({ sound: null, ids: [] });
+    expect(ringFor([], [], [])).toEqual({ sound: null, ids: [], soft: false });
   });
 });

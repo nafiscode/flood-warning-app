@@ -201,7 +201,9 @@ export function buildNotices(input: {
       continue;
     }
     const level = row.level!;
-    if (within(row.issuedAt)) {
+    // An alert still in force is always in the bell, however long ago it was issued: someone who
+    // starts using Jaga today must find the warning that has stood for three weeks.
+    if (within(row.issuedAt) || (!row.endedAt && Date.parse(row.issuedAt) <= now + 60_000)) {
       items.push({
         kind: "alert",
         id: `alert:${row.id}`,
@@ -275,10 +277,12 @@ export function keepRead(read: readonly string[], items: NoticeItem[]): string[]
 }
 
 /**
- * Which sound, if any, the notices call for right now (docs/brand.md "Sound"): an alert at
- * Warning or Evacuate, or a dam release notice, that is still in force, has not been read and
- * has not rung on this phone before. Watch, Safe to return, announcements and anything already
+ * Which sound, if any, the notices call for right now (docs/brand.md "Sound"): any alert for the
+ * person's places that is still in force, has not been read and has not rung on this phone
+ * before - whenever it was issued, so a person who opens Jaga for the first time hears the
+ * alert that was already standing (the owner, 13 Oct). Announcements and anything already
  * lifted are silent. A dam release outranks the plain alert tone: its water is already coming.
+ * `soft` is true when nothing louder than Watch or Safe to return is due: same tone, quieter.
  *
  * `ids` is everything this ring answers for, so each alert rings once on a phone and no more.
  */
@@ -286,7 +290,7 @@ export function ringFor(
   items: readonly NoticeItem[],
   read: readonly string[],
   rung: readonly string[],
-): { sound: "alert" | "damRelease" | null; ids: string[] } {
+): { sound: "alert" | "damRelease" | null; ids: string[]; soft: boolean } {
   const ended = new Set(items.flatMap((i) => (i.kind === "alertEnded" ? [i.alertId] : [])));
   const seen = new Set([...read, ...rung]);
   const due = items.filter(
@@ -294,11 +298,13 @@ export function ringFor(
       i.kind === "alert" &&
       !ended.has(i.alertId) &&
       !seen.has(i.id) &&
-      (i.level === "warning" || i.level === "evacuate" || isDamRelease(i.source)),
+      (i.level !== "normal" || isDamRelease(i.source)),
   );
-  if (due.length === 0) return { sound: null, ids: [] };
+  if (due.length === 0) return { sound: null, ids: [], soft: false };
+  const dam = due.some((i) => isDamRelease(i.source));
   return {
-    sound: due.some((i) => isDamRelease(i.source)) ? "damRelease" : "alert",
+    sound: dam ? "damRelease" : "alert",
+    soft: !dam && !due.some((i) => i.level === "warning" || i.level === "evacuate"),
     ids: due.map((i) => i.id),
   };
 }

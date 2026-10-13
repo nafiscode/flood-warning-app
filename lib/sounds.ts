@@ -6,8 +6,8 @@
  * hundred bytes of code instead of a few hundred kilobytes of audio.
  *
  * The rules the shapes below follow:
- *  - **Watch and Normal are silent.** A level that means "get ready" does not deserve a noise at
- *    three in the morning, and a sound people learn to ignore is worse than no sound.
+ *  - **Every alert rings in an open app, Watch and Safe to return more quietly** (the owner,
+ *    13 Oct, superseding "Watch is silent"). Normal is the absence of an alert and has no sound.
  *  - **Only the offer alarm repeats** among the private sounds, and only while a team is being
  *    asked. Among the public ones only the dam release repeats, because that water is already on
  *    its way (spec 15).
@@ -92,7 +92,7 @@ export const SOUNDS: Record<SoundName, SoundSpec> = {
     repeatEveryMs: null,
     vibrate: [90, 70, 90, 70, 160],
   },
-  // A new alert at Warning or Evacuate. One low double-tone, and nothing for Watch or Normal.
+  // A new alert. One low double-tone; played at half volume for Watch and Safe to return.
   alert: {
     tones: [
       { freq: 392, at: 0, ms: 300 },
@@ -115,8 +115,9 @@ export const SOUNDS: Record<SoundName, SoundSpec> = {
 
 /** Alert levels that make a sound at all, and which one (docs/brand.md). */
 export function soundForAlertLevel(level: string): SoundName | null {
-  if (level === "warning" || level === "evacuate") return "alert";
-  // normal, watch, return and anything unknown: silent on purpose.
+  if (level === "watch" || level === "warning" || level === "evacuate" || level === "return")
+    return "alert";
+  // Normal is the absence of an alert, and anything unknown stays silent.
   return null;
 }
 

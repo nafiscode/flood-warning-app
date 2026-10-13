@@ -71,16 +71,14 @@ describe("Jaga's sounds", () => {
 });
 
 describe("which alert level makes a sound", () => {
-  it("is silent for Normal, Watch and Return", () => {
-    // "get ready" does not deserve a noise at three in the morning (docs/brand.md).
+  it("is silent for Normal, which is the absence of an alert", () => {
     expect(soundForAlertLevel("normal")).toBeNull();
-    expect(soundForAlertLevel("watch")).toBeNull();
-    expect(soundForAlertLevel("return")).toBeNull();
   });
 
-  it("sounds for Warning and Evacuate", () => {
-    expect(soundForAlertLevel("warning")).toBe("alert");
-    expect(soundForAlertLevel("evacuate")).toBe("alert");
+  it("sounds for every level an admin can issue (the owner, 13 Oct)", () => {
+    for (const level of ["watch", "warning", "evacuate", "return"]) {
+      expect(soundForAlertLevel(level)).toBe("alert");
+    }
   });
 
   it("stays silent for a level it does not know", () => {
