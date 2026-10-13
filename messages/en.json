@@ -641,7 +641,28 @@
       "en_route": "A rescue team is on the way to you.",
       "rescued": "You were recorded as rescued.",
       "by": "By {unit}",
-      "see": "See your request"
+      "see": "See your request",
+      "on_site": "The rescue team has arrived.",
+      "rescued_by_team": "The team reports you have been rescued. Please confirm on your request.",
+      "confirmed": "The rescue is confirmed. This request is finished.",
+      "released": "The team could not continue. Looking for another team."
+    },
+    "supply": {
+      "title": "Your request for food and water",
+      "accepted": "A team accepted your request for food and water.",
+      "assigned_by_admin": "An admin handed your request to a team.",
+      "en_route": "A team is bringing supplies to you.",
+      "on_site": "The team has arrived.",
+      "rescued_by_team": "The team reports the supplies were delivered. Please confirm on your request.",
+      "rescued": "The supplies were recorded as delivered.",
+      "confirmed": "The delivery is confirmed. This request is finished.",
+      "released": "The team could not continue. Looking for another team."
+    },
+    "unit": {
+      "title": "Your team's registration",
+      "verified": "{name} has been verified and can start taking requests.",
+      "suspended": "{name} has been suspended. Please contact the Jaga admins.",
+      "see": "See the steps"
     }
   },
   "placeFinder": {
@@ -2684,6 +2705,100 @@
       "rescuedSuppliesTitle": "The team reports the supplies were delivered",
       "rescuedSuppliesBody": "Open Jaga to confirm you received them, or to say you did not.",
       "announcementTitle": "Announcement from Jaga"
+    }
+  },
+  "journey": {
+    "label": "The steps of this request",
+    "now": "Now",
+    "aTeam": "A team",
+    "link": "Follow my requests",
+    "linkOpen": "{count} in progress",
+    "state": {
+      "done": "Done",
+      "now": "In progress",
+      "todo": "Next",
+      "stopped": "Stopped"
+    },
+    "rescue": {
+      "title": "Request for help (SOS)",
+      "steps": {
+        "sent": "Request sent",
+        "accepted": "{name} accepted the request",
+        "en_route": "The team set out",
+        "on_site": "The team arrived",
+        "finished": "The team reported you rescued",
+        "confirmed": "Rescue confirmed",
+        "safe_cancelled": "You said you are safe",
+        "dismissed": "This request was closed"
+      },
+      "wait": {
+        "accepted": "Looking for a team. Rescue teams covering your area can see your request. If life is in danger, call 1669 or 1784.",
+        "en_route": "The team has accepted and is getting ready to set out.",
+        "on_site": "The team is on its way to you.",
+        "finished": "The team is with you.",
+        "confirmed": "Waiting for you to confirm on the request that you were helped."
+      }
+    },
+    "supplies": {
+      "title": "Request for food and water",
+      "steps": {
+        "sent": "Request sent",
+        "accepted": "{name} accepted the request",
+        "en_route": "The team set out with supplies",
+        "on_site": "The team arrived",
+        "finished": "The team reported the delivery",
+        "confirmed": "Delivery confirmed",
+        "safe_cancelled": "You said you no longer need it",
+        "dismissed": "This request was closed"
+      },
+      "wait": {
+        "accepted": "Looking for a team to deliver. This can take longer than a request for help. If you are in danger, press SOS.",
+        "en_route": "The team has accepted and is preparing the supplies.",
+        "on_site": "The team is on its way to you.",
+        "finished": "The team is with you.",
+        "confirmed": "Waiting for you to confirm on the request that the supplies arrived."
+      }
+    },
+    "unit": {
+      "titleNamed": "Team registration: {name}",
+      "steps": {
+        "sent": "Registration sent",
+        "review": "Checked by an admin",
+        "verified": "Verified; can start taking requests",
+        "suspended": "The team was suspended"
+      },
+      "wait": {
+        "review": "An admin checks the details and calls the organisation's official number to confirm. The bell tells you when that is done."
+      }
+    },
+    "report": {
+      "titleNamed": "Flood report: {place}",
+      "steps": {
+        "sent": "Report sent",
+        "standing": "Shown to people in the area",
+        "ended": "You said the water has gone",
+        "cleared": "People in the area said the water has gone",
+        "expired": "The report ran out of time",
+        "hidden": "An admin hid this report"
+      },
+      "wait": {
+        "standing": "Your report stays up until you or others in the area say the water has gone, or until its time runs out."
+      }
+    },
+    "page": {
+      "title": "My requests",
+      "intro": "Everything you have sent to Jaga that someone else acts on, with where each one stands. The bell tells you when each step is done.",
+      "loading": "Loading…",
+      "none": "No requests from this phone yet.",
+      "unread": "{count, plural, one {# request} other {# requests}} could not be read right now. Check your connection and try again.",
+      "sent": "Sent {time}",
+      "inProgress": "In progress",
+      "finished": "Finished",
+      "openCase": "Open this request",
+      "openConsole": "Open the team's board",
+      "openAccount": "Go to my account",
+      "openReport": "Go to my reports",
+      "signInNote": "Requests for help can be followed without an account. A team's registration and flood reports appear once you are signed in."
     }
   }
 }

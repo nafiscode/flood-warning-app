@@ -6,7 +6,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
 import { LifebuoyIcon } from "@/components/icons";
 import { SosDetailsForm } from "@/components/sos/SosDetailsForm";
+import { Journey } from "@/components/journey/Journey";
 import { TeamStatus } from "@/components/sos/TeamStatus";
+import { sosJourney } from "@/lib/journey";
 import { Link } from "@/i18n/navigation";
 import { enqueue } from "@/lib/queue";
 import { useOnPhone, useStored } from "@/lib/phone-store";
@@ -46,6 +48,7 @@ type Props = { id: string; merged: boolean };
  */
 export function CaseStatus({ id, merged }: Props) {
   const t = useTranslations("sos");
+  const tJourney = useTranslations("journey");
   // The token the phone kept when this case was sent: the only way to an anonymous case.
   const ready = useOnPhone();
   const cases = useStored<RememberedCase[]>("sos.cases");
@@ -336,6 +339,16 @@ export function CaseStatus({ id, merged }: Props) {
         <p role="status" className={`${notice} font-bold`} data-escalated="true">
           {t("supplies.escalate.done")}
         </p>
+      )}
+
+      {/* Where the request stands, as steps (the owner, 13 Oct). */}
+      {timeline && (
+        <div className={card} data-case-journey="true">
+          <Journey journey={sosJourney(timeline)} />
+          <Link href="/requests" prefetch={false} className="min-h-tap self-start underline">
+            {tJourney("link")}
+          </Link>
+        </div>
       )}
 
       {timeline && (

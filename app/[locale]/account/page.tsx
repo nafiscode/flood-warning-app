@@ -3,10 +3,12 @@ import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { InstallCard } from "@/components/InstallCard";
+import { Journey } from "@/components/journey/Journey";
 import { ShareApp } from "@/components/ShareApp";
 import { PushCard } from "@/components/push/PushCard";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, isAdminRole, localePath, needsName } from "@/lib/auth";
+import { toUnitRequest, unitJourney } from "@/lib/journey";
 import { installMessages } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
 import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
@@ -30,11 +32,12 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
   const t = await getTranslations("account");
   const tWatched = await getTranslations("watched");
   const tHousehold = await getTranslations("household");
+  const tJourney = await getTranslations("journey");
 
   const supabase = await createClient();
   const { data: units } = await supabase
     .from("authority_units")
-    .select("id, unit_name, status")
+    .select("id, unit_name, status, created_at, verified_at, updated_at")
     .eq("user_id", session.userId)
     .order("created_at");
 
@@ -54,6 +57,9 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
         </Link>
       </section>
 
+      <Link href="/requests" className={buttonSecondary} data-requests-link="account">
+        {tJourney("link")}
+      </Link>
       <Link href="/account/places" className={buttonSecondary}>
         {tWatched("title")}
       </Link>
@@ -63,14 +69,23 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
 
       <section className={card}>
         <h2 className="text-body font-bold">{t("authority.title")}</h2>
-        {(units ?? []).map((unit) => (
-          <p key={unit.id as string}>
-            {unit.unit_name as string}
-            <span className={`block ${hint}`}>
-              {t(`authority.status.${unit.status as "pending" | "verified" | "suspended"}`)}
-            </span>
-          </p>
-        ))}
+        {(units ?? []).map((unit) => {
+          // Where the registration stands, as steps (the owner, 13 Oct).
+          const request = toUnitRequest(unit);
+          return (
+            <div key={unit.id as string} className="flex flex-col gap-2" data-unit={unit.id}>
+              <p>
+                {unit.unit_name as string}
+                <span className={`block ${hint}`}>
+                  {t(`authority.status.${unit.status as "pending" | "verified" | "suspended"}`)}
+                </span>
+              </p>
+              {request && (
+                <Journey journey={unitJourney(request)} compact={request.status !== "pending"} />
+              )}
+            </div>
+          );
+        })}
         {(units ?? []).some((unit) => unit.status === "verified") && (
           <Link href="/authority" className={buttonPrimary}>
             {t("authority.console")}

@@ -11,6 +11,7 @@
  */
 import type { Area } from "@/lib/area";
 import type { AlertLevel } from "@/lib/brand/tokens";
+import { unitNews, type UnitRequest } from "@/lib/journey";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import type { MyPlaces } from "@/lib/me";
 import type { SosTimeline } from "@/lib/sos";
@@ -52,7 +53,15 @@ export type NoticeItem = Base &
         alertId: string;
       }
     | { kind: "announcement"; messages: Record<string, string> }
-    | { kind: "sos"; caseId: string; event: SosNews; unitName: string | null }
+    | {
+        kind: "sos";
+        caseId: string;
+        event: SosNews;
+        unitName: string | null;
+        /** A request for food and water reads differently from a rescue. */
+        supplies: boolean;
+      }
+    | { kind: "unit"; event: "verified" | "suspended"; unitName: string }
   );
 
 /** One row of public_notices(), as /api/public/notices gives it. */
@@ -152,11 +161,21 @@ function placesIn(
 }
 
 /**
- * The steps of their own SOS worth catching up on. "received" is not news to the person who
- * pressed the button, and the details they added themselves are not either; the arrival estimate
- * is left to the case page, where it is shown as a band with the time it was given.
+ * The steps of their own request that somebody else took (the owner, 13 Oct: a bell item as
+ * each step is completed). "received" is not news to the person who pressed the button, and what
+ * they did themselves is not either; the arrival estimate is left to the case page, where it is
+ * shown as a band with the time it was given.
  */
-export const SOS_NEWS = ["accepted", "assigned_by_admin", "en_route", "rescued"] as const;
+export const SOS_NEWS = [
+  "accepted",
+  "assigned_by_admin",
+  "en_route",
+  "on_site",
+  "rescued_by_team",
+  "rescued",
+  "confirmed",
+  "released",
+] as const;
 export type SosNews = (typeof SOS_NEWS)[number];
 
 const isSosNews = (event: string): event is SosNews =>
@@ -173,12 +192,14 @@ export function buildNotices(input: {
   area: Area | null;
   me: MyPlaces | null;
   cases: KnownCase[];
+  /** The teams this person registered, for news of their verification. */
+  units?: UnitRequest[];
   now: number;
   /** The word for the person's own home, and how to name a chosen area, both translated. */
   homeLabel: string;
   areaLabel: (area: Area) => string;
 }): NoticeItem[] {
-  const { rows, area, me, cases, now, homeLabel, areaLabel } = input;
+  const { rows, area, me, cases, units = [], now, homeLabel, areaLabel } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -250,8 +271,22 @@ export function buildNotices(input: {
         caseId: known.id,
         event: entry.event,
         unitName: entry.unit ?? timeline.unitName,
+        supplies: timeline.kind === "supplies",
       });
     }
+  }
+
+  for (const unit of units) {
+    const news = unitNews(unit);
+    if (!news || !within(news.at)) continue;
+    items.push({
+      kind: "unit",
+      id: news.id,
+      at: news.at,
+      places: [],
+      event: news.event,
+      unitName: unit.name,
+    });
   }
 
   items.sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || a.id.localeCompare(b.id));

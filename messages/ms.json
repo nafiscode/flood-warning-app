@@ -641,7 +641,28 @@
       "en_route": "Pasukan penyelamat sedang dalam perjalanan kepada anda.",
       "rescued": "Direkodkan bahawa anda telah diselamatkan.",
       "by": "Oleh {unit}",
-      "see": "Lihat permintaan anda"
+      "see": "Lihat permintaan anda",
+      "on_site": "Pasukan penyelamat telah tiba.",
+      "rescued_by_team": "Pasukan melaporkan anda telah diselamatkan. Sila sahkan pada halaman permintaan.",
+      "confirmed": "Penyelamatan disahkan. Permintaan ini selesai.",
+      "released": "Pasukan tidak dapat meneruskan. Sedang mencari pasukan lain."
+    },
+    "supply": {
+      "title": "Permintaan makanan dan air anda",
+      "accepted": "Satu pasukan telah menerima permintaan makanan dan air anda.",
+      "assigned_by_admin": "Pentadbir telah menyerahkan permintaan anda kepada satu pasukan.",
+      "en_route": "Pasukan sedang membawa bekalan kepada anda.",
+      "on_site": "Pasukan telah tiba.",
+      "rescued_by_team": "Pasukan melaporkan bekalan telah dihantar. Sila sahkan pada halaman permintaan.",
+      "rescued": "Direkodkan bahawa bekalan telah dihantar.",
+      "confirmed": "Penerimaan disahkan. Permintaan ini selesai.",
+      "released": "Pasukan tidak dapat meneruskan. Sedang mencari pasukan lain."
+    },
+    "unit": {
+      "title": "Pendaftaran pasukan anda",
+      "verified": "Pasukan {name} telah disahkan dan boleh mula menerima permintaan.",
+      "suspended": "Pasukan {name} digantung. Sila hubungi pentadbir Jaga.",
+      "see": "Lihat langkah"
     }
   },
   "placeFinder": {
@@ -2684,6 +2705,100 @@
       "rescuedSuppliesTitle": "Pasukan melaporkan barang sudah dihantar",
       "rescuedSuppliesBody": "Buka Jaga untuk mengesahkan anda menerimanya, atau beritahu belum terima.",
       "announcementTitle": "Pengumuman daripada Jaga"
+    }
+  },
+  "journey": {
+    "label": "Langkah permintaan ini",
+    "now": "Sekarang",
+    "aTeam": "Satu pasukan",
+    "link": "Jejaki permintaan saya",
+    "linkOpen": "{count} sedang berjalan",
+    "state": {
+      "done": "Selesai",
+      "now": "Sedang berjalan",
+      "todo": "Langkah seterusnya",
+      "stopped": "Dihentikan"
+    },
+    "rescue": {
+      "title": "Permintaan bantuan (SOS)",
+      "steps": {
+        "sent": "Permintaan dihantar",
+        "accepted": "{name} menerima permintaan",
+        "en_route": "Pasukan bertolak",
+        "on_site": "Pasukan tiba",
+        "finished": "Pasukan melaporkan anda diselamatkan",
+        "confirmed": "Penyelamatan disahkan",
+        "safe_cancelled": "Anda memaklumkan anda selamat",
+        "dismissed": "Permintaan ini ditutup"
+      },
+      "wait": {
+        "accepted": "Sedang mencari pasukan. Pasukan penyelamat di kawasan ini sudah nampak permintaan anda. Jika nyawa terancam, hubungi 1669 atau 1784.",
+        "en_route": "Pasukan telah menerima dan sedang bersiap untuk bertolak.",
+        "on_site": "Pasukan sedang dalam perjalanan ke tempat anda.",
+        "finished": "Pasukan sudah bersama anda.",
+        "confirmed": "Menunggu anda mengesahkan pada halaman permintaan bahawa anda telah dibantu."
+      }
+    },
+    "supplies": {
+      "title": "Permintaan makanan dan air",
+      "steps": {
+        "sent": "Permintaan dihantar",
+        "accepted": "{name} menerima permintaan",
+        "en_route": "Pasukan bertolak membawa bekalan",
+        "on_site": "Pasukan tiba",
+        "finished": "Pasukan melaporkan bekalan dihantar",
+        "confirmed": "Penerimaan disahkan",
+        "safe_cancelled": "Anda memaklumkan tidak lagi memerlukannya",
+        "dismissed": "Permintaan ini ditutup"
+      },
+      "wait": {
+        "accepted": "Sedang mencari pasukan penghantar. Ini mungkin lebih lama daripada permintaan bantuan. Jika dalam bahaya, tekan SOS.",
+        "en_route": "Pasukan telah menerima dan sedang menyediakan bekalan.",
+        "on_site": "Pasukan sedang dalam perjalanan ke tempat anda.",
+        "finished": "Pasukan sudah bersama anda.",
+        "confirmed": "Menunggu anda mengesahkan pada halaman permintaan bahawa bekalan diterima."
+      }
+    },
+    "unit": {
+      "titleNamed": "Pendaftaran pasukan: {name}",
+      "steps": {
+        "sent": "Pendaftaran dihantar",
+        "review": "Semakan oleh pentadbir",
+        "verified": "Disahkan; boleh mula menerima permintaan",
+        "suspended": "Pasukan digantung"
+      },
+      "wait": {
+        "review": "Pentadbir akan menyemak butiran dan menghubungi nombor rasmi organisasi untuk pengesahan. Loceng akan memaklumkan anda apabila selesai."
+      }
+    },
+    "report": {
+      "titleNamed": "Laporan banjir: {place}",
+      "steps": {
+        "sent": "Laporan dihantar",
+        "standing": "Dipaparkan kepada penduduk kawasan",
+        "ended": "Anda memaklumkan air sudah surut",
+        "cleared": "Penduduk memaklumkan air sudah surut",
+        "expired": "Laporan tamat tempoh",
+        "hidden": "Pentadbir menyembunyikan laporan ini"
+      },
+      "wait": {
+        "standing": "Laporan anda dipaparkan sehingga anda atau penduduk lain memaklumkan air sudah surut, atau sehingga tamat tempoh."
+      }
+    },
+    "page": {
+      "title": "Permintaan saya",
+      "intro": "Semua yang anda hantar kepada Jaga dan menunggu tindakan orang lain, dengan langkah-langkahnya. Loceng akan memaklumkan anda apabila setiap langkah selesai.",
+      "loading": "Memuatkan…",
+      "none": "Belum ada permintaan daripada telefon ini.",
+      "unread": "{count} permintaan tidak dapat dibaca sekarang. Semak sambungan dan cuba lagi.",
+      "sent": "Dihantar {time}",
+      "inProgress": "Sedang berjalan",
+      "finished": "Selesai",
+      "openCase": "Buka permintaan ini",
+      "openConsole": "Buka papan pasukan",
+      "openAccount": "Ke akaun saya",
+      "openReport": "Ke laporan saya",
+      "signInNote": "Permintaan bantuan boleh dijejaki tanpa akaun. Pendaftaran pasukan dan laporan banjir dipaparkan selepas log masuk."
     }
   }
 }

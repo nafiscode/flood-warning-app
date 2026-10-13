@@ -12,6 +12,7 @@ import {
 } from "@/lib/use-public";
 import { InstallCard } from "@/components/InstallCard";
 import { ShareApp } from "@/components/ShareApp";
+import { RequestsLink } from "@/components/journey/MyRequests";
 import { PushCard } from "@/components/push/PushCard";
 import { MyReports } from "@/components/reports/MyReports";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
@@ -55,7 +56,12 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       onRetry={refresh}
       dams={dam.data?.dams ?? null}
       reports={reports.data?.tambons ?? null}
-      myReports={<MyReports />}
+      myReports={
+        <>
+          <RequestsLink />
+          <MyReports />
+        </>
+      }
       projectLine={projectLine}
       userAgent={ready ? navigator.userAgent : ""}
       push={<PushCard place="home" />}

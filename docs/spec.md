@@ -232,6 +232,9 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 
   Watch and Normal are silent. A browser plays nothing until the person has tapped once, so the authority console asks once to arm the alarm and stays armed; a web push arriving with the app closed plays the system notification sound, which no web app can replace. Sound is never the only channel: each one also has its vibration pattern and its own icon and words on screen (accessibility rule).
 
+### 4.11 My requests (the journey of a request)
+Built 13 Oct 2026. Everything a person sends that somebody else acts on - an SOS, a request for food and water, a team's registration, a flood report - shows a line of steps: done, now (with what is being waited for), next. `/requests` lists them all; each request's own page carries the same line. Requests for help are read with the key kept on the phone, so no account is needed. The bell gets an item as each step is completed by a team or an admin.
+
 ### 4.9 Watching places for others
 Many people at risk are elderly and have no smartphone. Their children or relatives, often living elsewhere, watch their place for them and call them when there is a warning.
 - **Watched places:** up to 10 per user, each a pin or the user's GPS position, a label ("Mum's house") and a notifications on/off switch. The tambon is derived from the pin.

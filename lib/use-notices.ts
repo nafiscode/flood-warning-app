@@ -11,6 +11,7 @@ import {
   type NoticeItem,
   type NoticeRow,
 } from "@/lib/notices";
+import { REQUESTS_URL, type UnitRequest } from "@/lib/journey";
 import { readStored, useStored, writeStored } from "@/lib/phone-store";
 import { caseToken, rememberedCases, type SosTimeline } from "@/lib/sos";
 import { isSessionCookie } from "@/lib/supabase/env";
@@ -21,6 +22,7 @@ const POLL_MS = 5 * 60_000;
 
 type StoredFeed = { key: string; rows: NoticeRow[]; checkedAt: number };
 type StoredCases = { cases: KnownCase[]; checkedAt: number };
+type StoredUnits = { units: UnitRequest[]; checkedAt: number };
 
 function hasSession(): boolean {
   return document.cookie.split(";").some((c) => isSessionCookie(c.trim().split("=")[0] ?? ""));
@@ -59,6 +61,7 @@ export function useNotices(options: {
   const me = useMyPlaces();
   const stored = useStored<StoredFeed>("notices");
   const storedCases = useStored<StoredCases>("noticeCases");
+  const storedUnits = useStored<StoredUnits>("noticeUnits");
   const read = useStored<string[]>("noticesRead");
   const now = useNow();
   const [syncedRead, setSyncedRead] = useState<string[] | null>(null);
@@ -143,6 +146,36 @@ export function useNotices(options: {
     };
   }, [ask]);
 
+  // The teams this person registered: news when an admin has verified one. Asked only of a
+  // signed-in browser, and forgotten when the session goes.
+  useEffect(() => {
+    if (!ask) return;
+    if (!hasSession()) {
+      if (readStored("noticeUnits") !== null) writeStored("noticeUnits", null);
+      return;
+    }
+    let cancelled = false;
+    const load = () => {
+      getJson<{ units: UnitRequest[] }>(REQUESTS_URL).then(
+        (answer) => {
+          if (!cancelled) {
+            writeStored("noticeUnits", {
+              units: answer.units,
+              checkedAt: Date.now(),
+            } satisfies StoredUnits);
+          }
+        },
+        () => {},
+      );
+    };
+    load();
+    const timer = window.setInterval(load, POLL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [ask]);
+
   const items = useMemo(() => {
     const rows = stored?.key === key ? stored.rows : [];
     return buildNotices({
@@ -150,12 +183,13 @@ export function useNotices(options: {
       area,
       me,
       cases: storedCases?.cases ?? [],
+      units: storedUnits?.units ?? [],
       // Zero until the phone's clock is readable (the server's HTML draws an empty bell).
       now,
       homeLabel,
       areaLabel,
     });
-  }, [stored, key, area, me, storedCases, now, homeLabel, areaLabel]);
+  }, [stored, key, area, me, storedCases, storedUnits, now, homeLabel, areaLabel]);
 
   const readIds = useMemo(() => syncedRead ?? read ?? [], [syncedRead, read]);
 

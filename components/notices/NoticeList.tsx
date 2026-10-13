@@ -44,7 +44,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         ) : (
           <span className="inline-flex items-center gap-2 font-bold text-jaga-ink">
             <LifebuoyIcon size={24} />
-            {t("sos.title")}
+            {item.kind === "unit"
+              ? t("unit.title")
+              : item.kind === "sos" && item.supplies
+                ? t("supply.title")
+                : t("sos.title")}
           </span>
         )}
         {unread && (
@@ -65,9 +69,10 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
           <p className="text-small text-jaga-text-2">{t("announcementNote")}</p>
         </>
       )}
+      {item.kind === "unit" && <p>{t(`unit.${item.event}`, { name: item.unitName })}</p>}
       {item.kind === "sos" && (
         <>
-          <p>{t(`sos.${item.event}`)}</p>
+          <p>{t(`${item.supplies ? "supply" : "sos"}.${item.event}`)}</p>
           {item.unitName && (
             <p className="text-small text-jaga-text-2">{t("sos.by", { unit: item.unitName })}</p>
           )}
@@ -82,6 +87,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         {item.kind === "sos" && (
           <Link href={`/sos/${item.caseId}`} prefetch={false} className="underline">
             {t("sos.see")}
+          </Link>
+        )}
+        {item.kind === "unit" && (
+          <Link href="/requests" prefetch={false} className="underline">
+            {t("unit.see")}
           </Link>
         )}
         {/* An alert leads to the home screen, which shows it in full: level, area, issuer, time,
