@@ -76,6 +76,10 @@ classes:
     medium_max_hand_m: 2.0
     low_max_hand_m: 5.0
     built_high_min_seasons: 6         # High in built-up land needs this many flooded seasons; events alone do not count
+  # Land GISTDA's repeated-flood layer flags in any year 2011-2024 is at least Low when it is less than
+  # this far above its nearest stream (decision 2026-10-13). Higher ground is left alone: their flags
+  # there sit on slopes our terrain mask removes. It never makes a cell more than Low.
+  outside_flag: {source: gistda, raster: out/gistda/gistda_flood_years_20m.tif, max_hand_m: 10.0}
   # Places to read the result at: [west, south, east, north].
   benchmarks:
     "Hat Yai city centre (heavily flooded 19-21 Nov 2025, owner)": [100.455, 6.995, 100.485, 7.020]
@@ -94,7 +98,7 @@ tiles:
   simplify_px: 0.6
   coarse_min_share: 0.25              # a coarse cell takes the highest class filling at least this much of it
   description: "Flood hazard classes for Pattani, Yala, Narathiwat and Songkhla from height above the nearest stream and nine seasons of Sentinel-1 radar. Not validated against observed floods; not a forecast."
-  attribution: "Jaga; FABDEM (Hawker et al. 2022); Copernicus Sentinel-1; OpenStreetMap contributors; Google Open Buildings"
+  attribution: "Jaga; FABDEM (Hawker et al. 2022); Copernicus Sentinel-1; OpenStreetMap contributors; Google Open Buildings; GISTDA"
   licence: "CC BY-NC-SA 4.0"
 
 # Local outputs, relative to pipeline/ (ignored by git through the root rule "out/").

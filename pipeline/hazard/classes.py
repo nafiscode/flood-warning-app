@@ -28,9 +28,10 @@ from rasterio.warp import Resampling, reproject
 
 log = logging.getLogger("hazard")
 MINIMAL, LOW, MEDIUM, HIGH = 1, 2, 3, 4
-RADAR, BUILT, UNSEEN = 1, 2, 3
+RADAR, BUILT, UNSEEN, OUTSIDE = 1, 2, 3, 4
 NAMES = {HIGH: "high", MEDIUM: "medium", LOW: "low", MINIMAL: "minimal"}
-BASIS_NAMES = {RADAR: "radar and elevation", BUILT: "elevation only: built-up", UNSEEN: "elevation only: not seen by radar"}
+BASIS_NAMES = {RADAR: "radar and elevation", BUILT: "elevation only: built-up", UNSEEN: "elevation only: not seen by radar",
+               OUTSIDE: "flagged by an outside flood map"}
 
 
 def box_mean(a: np.ndarray, cells: int) -> np.ndarray:
@@ -48,9 +49,11 @@ def box_mean(a: np.ndarray, cells: int) -> np.ndarray:
 
 def classify(hand: np.ndarray, land: np.ndarray, seasons_flooded: np.ndarray, frequency: np.ndarray,
              events_flooded: np.ndarray, observed: np.ndarray, built: np.ndarray, rules: dict,
-             n_events: int) -> tuple[np.ndarray, np.ndarray]:
+             n_events: int, outside: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
     """(class, basis) per cell. `land` is where a class is given; `hand` may be NaN on land (then only
-    the radar can raise the class). `events_flooded` counts the priority events with flood in the cell."""
+    the radar can raise the class). `events_flooded` counts the priority events with flood in the cell.
+    `outside` marks cells another agency's flood map has flagged: with `rules["outside_flag"]` they are at
+    least Low when under its height limit, and never more than Low on that ground alone."""
     hi, med, low, blind = rules["high"], rules["medium"], rules["low"], rules["radar_blind"]
     known = np.nan_to_num(hand, nan=np.inf)
     radar_high = seasons_flooded >= hi["min_seasons"]
@@ -75,6 +78,11 @@ def classify(hand: np.ndarray, land: np.ndarray, seasons_flooded: np.ndarray, fr
     basis = np.full(hand.shape, RADAR, dtype="uint8")
     basis[unseen] = UNSEEN
     basis[built] = BUILT
+    flag = rules.get("outside_flag")
+    if flag and outside is not None:
+        lifted = (cls == MINIMAL) & outside & (known < flag["max_hand_m"])
+        cls[lifted] = LOW
+        basis[lifted] = OUTSIDE
     cls[~land] = 0
     basis[~land] = 0
     return cls, basis

@@ -166,6 +166,33 @@ Hat Yai centre: 2 % High, 80 % Medium. Pattani town: 8 % High, 65 % Medium. The 
 
 **Tiles** (`hazard tiles` -> `out/hazard/tiles/hazard_classes_<run>.pmtiles`): one vector layer `hazard` with Low, Medium and High as polygons (`class` 2, 3, 4), zoom 6 to 11, 4.2 MB. Written in Python without tippecanoe: each tile is the class raster on the tile's own 512-pixel grid, and the pixel edges are the polygons, so at zoom 11 a pixel is about 38 m and nothing is smoothed. Coarser zooms take, per coarse cell, the highest class that fills at least a quarter of it. Check: the class areas summed from the zoom-11 tiles are within 0.6 % of the raster's, and no geometry is invalid. Minimal is not drawn, so the app has to say in words what an empty place means. Not yet looked at in MapLibre itself.
 
+## Land GISTDA has flagged is at least Low (13 Oct 2026, not validated)
+
+Decision 2026-10-13, after the comparison in `pipeline/gistda/METHODS.md`. A cell that would be
+Minimal becomes **Low** when GISTDA's repeated-flood layer flags it in any year 2011 to 2024 and it is
+less than 10 m above its nearest stream (`classes.outside_flag`). The flag is taken to the 30 m grid as
+"flagged anywhere in the cell", the way the radar is. It never makes a cell more than Low, and it does
+nothing on higher ground, where their flags sit on slopes our terrain mask removes. Such cells carry
+basis 4, "flagged by an outside flood map", in the class raster.
+
+| | Before | After |
+|---|---|---|
+| Low, km² | 2,962.9 | 3,062.4 |
+| Low, buildings | 653,762 | 668,964 |
+| Minimal, km² | 12,529.3 | 12,429.9 |
+| Minimal, buildings | 719,774 | 704,571 |
+
+So 99.4 km² and about 15,200 buildings move from Minimal to Low; High and Medium are untouched. This
+is more than the 67 km² and 9,900 buildings counted cell by cell before the decision: a thin band of
+20 m flags touches more 30 m cells than it fills. The hold-out score against the 2025 event is
+unchanged (Medium and High catch 73.9%, CSI 0.36), as it must be, since that score does not look at Low.
+
+The previous result is kept locally as `hazard_classes_c97e0bf_before_gistda.*`. Tiles:
+`hazard/flood-classes/2026-10-13-gistda.pmtiles` (public, in the manifest). The tambon table and its
+seed were rebuilt. **The classes now depend on GISTDA's layer**, whose licence ("Open Data Common") is
+still to be confirmed in writing before launch; setting `outside_flag` aside in the config and
+rebuilding takes the dependence out again.
+
 ## Known issues and open points
 
 - Stream threshold, river burning and the coastal rule were decided on 8 Oct 2026 (above). The burn depth (10 m) and the choice of rivers only are first values.

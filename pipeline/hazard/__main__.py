@@ -219,8 +219,14 @@ def run_classes(cfg: dict, hold_out: int | None, radar_hash: str | None) -> None
         presence, building_count = src.read(1), src.read(2)
     blind = c["radar_blind"]
     built = classes.box_mean(presence, blind["built_window_cells"]) >= blind["built_min_presence"]
+    outside, flag = None, c.get("outside_flag")
+    if flag:
+        f = PIPELINE_DIR / flag["raster"]
+        if not f.exists():
+            raise sar_settings.ConfigError(f"{f.name} is missing: run `gistda fetch` and `gistda burn` first.")
+        outside = classes.on_grid(f, 1, *grid_args, Resampling.max, lambda a: (a > 0).astype("uint8")).astype(bool)
     cls, basis = classes.classify(hand_m, land, seasons_flooded, frequency, events_flooded, observed, built, c,
-                                  len(events_used))
+                                  len(events_used), outside)
     tag = f"{h}" + (f"_without{hold_out}" if hold_out else "")
     dest = root / "classes" / f"hazard_classes_{tag}.tif"
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -232,7 +238,8 @@ def run_classes(cfg: dict, hold_out: int | None, radar_hash: str | None) -> None
         dst.set_band_description(1, "hazard_class")
         dst.set_band_description(2, "basis")
         dst.update_tags(classes="1 minimal, 2 low, 3 medium, 4 high", radar_run=h,
-                        basis="1 radar and elevation, 2 elevation only: built-up, 3 elevation only: not seen by radar",
+                        basis="1 radar and elevation, 2 elevation only: built-up, 3 elevation only: not seen by radar, "
+                              "4 flagged by an outside flood map (GISTDA)",
                         licence="CC BY-NC-SA 4.0 (derived from FABDEM)")
     stats = {"radar_run": h, "hold_out": hold_out, "seasons": seasons_used, "events": events_used,
              **classes.areas(cls, basis, cell_km2, building_count)}

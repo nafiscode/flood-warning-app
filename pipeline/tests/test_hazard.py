@@ -293,3 +293,20 @@ def test_tiles_coarsen_by_share_and_keep_cell_edges(tmp_path):
     layer = tiles.read_tile(tmp_path / "t.pmtiles", z, x, y)["hazard"]
     assert layer["extent"] == 4096 and {f["properties"]["class"] for f in layer["features"]} == {3, 4}
     assert tiles.read_tile(tmp_path / "t.pmtiles", 11, 0, 0) is None
+
+
+def test_land_an_outside_map_flags_is_at_least_low_under_the_height_limit():
+    hand_m = np.array([[3.0, 9.9, 10.0, 60.0, 3.0, 1.0, np.nan]], dtype="float32")
+    shape = hand_m.shape
+    land, observed = np.ones(shape, dtype=bool), np.ones(shape, dtype=bool)
+    none8, none32 = np.zeros(shape, dtype="uint8"), np.zeros(shape, dtype="float32")
+    seasons = np.array([[0, 0, 0, 0, 0, 5, 0]], dtype="uint8")
+    outside = np.array([[1, 1, 1, 1, 0, 1, 1]], dtype=bool)
+    rules = {**RULES, "outside_flag": {"max_hand_m": 10.0}}
+    cls, basis = classes.classify(hand_m, land, seasons, none32, none8, observed, ~land, rules, 2, outside)
+    #                      lifted         lifted        at the limit     high ground      not flagged      already High  no height
+    assert cls.tolist() == [[classes.LOW, classes.LOW, classes.MINIMAL, classes.MINIMAL, classes.MINIMAL, classes.HIGH, classes.MINIMAL]]
+    assert basis.tolist() == [[classes.OUTSIDE, classes.OUTSIDE, classes.RADAR, classes.RADAR, classes.RADAR, classes.RADAR, classes.RADAR]]
+    # without the rule, or without the map, nothing moves
+    assert classes.classify(hand_m, land, seasons, none32, none8, observed, ~land, RULES, 2, outside)[0][0, 0] == classes.MINIMAL
+    assert classes.classify(hand_m, land, seasons, none32, none8, observed, ~land, rules, 2)[0][0, 0] == classes.MINIMAL
