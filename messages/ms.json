@@ -2682,7 +2682,8 @@
       "rescuedTitle": "Pasukan melaporkan anda sudah dibantu",
       "rescuedBody": "Buka Jaga untuk mengesahkan, atau beritahu anda masih perlukan bantuan.",
       "rescuedSuppliesTitle": "Pasukan melaporkan barang sudah dihantar",
-      "rescuedSuppliesBody": "Buka Jaga untuk mengesahkan anda menerimanya, atau beritahu belum terima."
+      "rescuedSuppliesBody": "Buka Jaga untuk mengesahkan anda menerimanya, atau beritahu belum terima.",
+      "announcementTitle": "Pengumuman daripada Jaga"
     }
   }
 }

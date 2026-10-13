@@ -26,7 +26,9 @@ export type SoundName =
   | "alertWarning"
   | "alertEvacuate"
   | "alertReturn"
-  | "damRelease";
+  | "damRelease"
+  | "announcement"
+  | "notice";
 
 /** The shortest an alert sound may be (the owner, 13 Oct): long enough not to be missed. */
 export const ALERT_MIN_MS = 5000;
@@ -103,6 +105,29 @@ export const SOUNDS: Record<SoundName, SoundSpec> = {
     ],
     repeatEveryMs: null,
     vibrate: [90, 70, 90, 70, 160],
+  },
+  // An announcement from Jaga's admins (the owner, 13 Oct: positive, nothing like an alert or
+  // an alarm). A bright rising four-note figure that lands on its top note and rings: news,
+  // not danger. Higher and lighter than every alert sound.
+  announcement: {
+    tones: [
+      { freq: 523, at: 0, ms: 160, gain: 0.5 },
+      { freq: 659, at: 150, ms: 160, gain: 0.5 },
+      { freq: 784, at: 300, ms: 160, gain: 0.5 },
+      { freq: 1047, at: 450, ms: 520, gain: 0.5 },
+    ],
+    repeatEveryMs: null,
+    vibrate: [80, 60, 80],
+  },
+  // Anything else new in the bell (an alert that has ended, news about one's own team): two
+  // quiet notes, so every item is heard without any of them sounding urgent.
+  notice: {
+    tones: [
+      { freq: 698, at: 0, ms: 140, gain: 0.4 },
+      { freq: 880, at: 140, ms: 240, gain: 0.4 },
+    ],
+    repeatEveryMs: null,
+    vibrate: [70],
   },
   /*
    * The four alert sounds (the owner, 13 Oct): one per level, so the level is heard before the

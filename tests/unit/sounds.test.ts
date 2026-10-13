@@ -2,10 +2,19 @@ import { describe, expect, it } from "vitest";
 import { ALERT_MIN_MS, durationMs, SOUNDS, soundForAlertLevel, type SoundName } from "@/lib/sounds";
 
 const ALERTS: SoundName[] = ["alertWatch", "alertWarning", "alertEvacuate", "alertReturn"];
-const NAMES: SoundName[] = ["offer", "supplyOffer", "accepted", "rescued", ...ALERTS, "damRelease"];
+const NAMES: SoundName[] = [
+  "offer",
+  "supplyOffer",
+  "accepted",
+  "rescued",
+  ...ALERTS,
+  "damRelease",
+  "announcement",
+  "notice",
+];
 
 describe("Jaga's sounds", () => {
-  it("has the nine in docs/brand.md and no more", () => {
+  it("has the eleven in docs/brand.md and no more", () => {
     // One alert sound per level since 13 October (the owner). Another needs a decision, not a
     // commit.
     expect(Object.keys(SOUNDS).sort()).toEqual([...NAMES].sort());

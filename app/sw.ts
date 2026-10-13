@@ -90,6 +90,16 @@ self.addEventListener("push", (event) => {
   }
   const payload = readPayload(raw);
   if (!payload) return;
+  // An open Jaga should not wait for its next five-minute look: tell it now, so the bell fills
+  // and the app's own sound for this kind of thing plays (the owner, 13 Oct: it came late).
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((windows) =>
+        windows.forEach((w) => w.postMessage({ type: "jaga-push", kind: payload.kind })),
+      )
+      .catch(() => {}),
+  );
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,

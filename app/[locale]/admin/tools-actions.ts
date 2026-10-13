@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+import { pushAnnouncement } from "@/lib/push-server";
 import { redirect } from "next/navigation";
 import { readAreas, zoneMap } from "@/lib/admin-alerts";
 import {
@@ -132,11 +134,17 @@ export async function postAnnouncement(locale: string, form: FormData) {
     if (tambons.length > 500) tambons = null;
   }
   const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_announce", {
+  const { data: posted, error } = await supabase.rpc("admin_announce", {
     p_messages: messages,
     p_tambons: tambons,
     p_ends_at: hours === 0 ? null : new Date(Date.now() + hours * 3_600_000).toISOString(),
   });
+  // The phones it is for are told (A7), after this page has answered. It is in the bell either way.
+  if (!error && typeof posted === "string") {
+    after(async () => {
+      await pushAnnouncement(supabase, posted, messages);
+    });
+  }
   redirect(error ? `${back}?error=save` : `${back}?done=posted`);
 }
 

@@ -34,6 +34,8 @@ export const CASE_KINDS = [
   "en_route",
   "on_site",
   "rescued",
+  // Not about a case, but the same shape: a title, words, and a page of this app to open.
+  "announcement",
 ] as const;
 export type CaseKind = (typeof CASE_KINDS)[number];
 export type CasePayload = {
@@ -46,6 +48,27 @@ export type CasePayload = {
   sticky: boolean;
 };
 export type AnyPayload = PushPayload | CasePayload;
+
+/**
+ * The notification for an announcement from the admins: its own reviewed words in the phone's
+ * language (Thai where there is no other), under a title that says it is from Jaga.
+ */
+export function announcementPayload(
+  announcement: { id: string; messages: Record<string, string> },
+  locale: string,
+  title: string,
+): CasePayload | null {
+  const body = announcement.messages[locale] ?? announcement.messages.th ?? "";
+  if (!body) return null;
+  return {
+    kind: "announcement",
+    title,
+    body: clip(body),
+    url: locale === "th" ? "/" : `/${locale}`,
+    tag: `announcement-${announcement.id}`,
+    sticky: false,
+  };
+}
 
 /** One row of `push_due()`. */
 export type DueRow = {
@@ -77,7 +100,7 @@ const CLOCK = new Intl.DateTimeFormat("en-GB", {
  */
 export function casePayload(row: DueRow, words: Record<string, string>): CasePayload | null {
   const kind = CASE_KINDS.find((k) => k === row.kind);
-  if (!kind || !/^[0-9a-f-]{36}$/i.test(row.sos_id)) return null;
+  if (!kind || kind === "announcement" || !/^[0-9a-f-]{36}$/i.test(row.sos_id)) return null;
   const data = row.data ?? {};
   const supplies = data.request === "supplies";
   const prefix = row.locale === "th" ? "" : `/${row.locale}`;
@@ -93,7 +116,8 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
     time: expires && !Number.isNaN(expires.getTime()) ? CLOCK.format(expires) : "",
   };
   // A request for food and water is worded as one, for the team and for the sender alike.
-  const key = (name: string) => (supplies && words[`${name}SuppliesTitle`] ? `${name}Supplies` : name);
+  const key = (name: string) =>
+    supplies && words[`${name}SuppliesTitle`] ? `${name}Supplies` : name;
   const name = {
     offer: "offer",
     unclaimed: "unclaimed",

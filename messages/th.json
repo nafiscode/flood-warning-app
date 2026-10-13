@@ -2682,7 +2682,8 @@
       "rescuedTitle": "ทีมแจ้งว่าช่วยเหลือแล้ว",
       "rescuedBody": "เปิด Jaga เพื่อยืนยัน หรือแจ้งว่ายังต้องการความช่วยเหลือ",
       "rescuedSuppliesTitle": "ทีมแจ้งว่าส่งของแล้ว",
-      "rescuedSuppliesBody": "เปิด Jaga เพื่อยืนยันว่าได้รับของ หรือแจ้งว่ายังไม่ได้รับ"
+      "rescuedSuppliesBody": "เปิด Jaga เพื่อยืนยันว่าได้รับของ หรือแจ้งว่ายังไม่ได้รับ",
+      "announcementTitle": "ประกาศจาก Jaga"
     }
   }
 }

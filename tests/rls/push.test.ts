@@ -180,3 +180,53 @@ describe("the addresses, at the moment an alert is published", () => {
     expect(left.map((r) => r.endpoint).sort()).toEqual([`${FCM}in-yala1`, `${FCM}in-yala2`]);
   });
 });
+
+describe("the addresses for an announcement", () => {
+  const announce = async (tambons: string[] | null) => {
+    await asOwner(db);
+    return (
+      await rows<{ id: string }>(
+        db,
+        `insert into announcements (messages, tambons, created_by)
+         values ('{"th": "ประกาศ"}'::jsonb, $1, $2) returning id`,
+        [tambons, w.admin],
+      )
+    )[0]!.id;
+  };
+  beforeEach(async () => {
+    await as(db, "anon");
+    await subscribe(`${FCM}ann-yala1`, [w.yala1]);
+    await subscribe(`${FCM}ann-yala2`, [w.yala2]);
+  });
+
+  it("one for an area reaches only the phones following it; one for everyone reaches all", async () => {
+    const local = await announce([w.yala2]);
+    const everyone = await announce(null);
+    await as(db, { uid: w.admin });
+    const some = await rows<{ endpoint: string }>(
+      db,
+      "select * from push_targets_for_announcement($1)",
+      [local],
+    );
+    expect(some.map((r) => r.endpoint)).toEqual([`${FCM}ann-yala2`]);
+    const all = await rows<{ endpoint: string }>(
+      db,
+      "select * from push_targets_for_announcement($1)",
+      [everyone],
+    );
+    expect(all.map((r) => r.endpoint).sort()).toEqual([`${FCM}ann-yala1`, `${FCM}ann-yala2`]);
+  });
+
+  it("nobody but an admin can read them, and a withdrawn one hands out none", async () => {
+    const id = await announce(null);
+    for (const caller of ["anon", { uid: w.requester }, { uid: w.yalaRescue.user }] as const) {
+      await as(db, caller);
+      await expectDenied(db, "select * from push_targets_for_announcement($1)", [id]);
+      await expectDenied(db, "select push_drop_gone('{}')");
+    }
+    await asOwner(db);
+    await db.query("update announcements set cancelled_at = now() where id = $1", [id]);
+    await as(db, { uid: w.admin });
+    expect(await rows(db, "select * from push_targets_for_announcement($1)", [id])).toEqual([]);
+  });
+});

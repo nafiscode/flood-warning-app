@@ -118,7 +118,7 @@ The dark values are in `lib/brand/tokens.ts` (`darkBrand`) and mirrored in `app/
 
 ## Sound
 
-Jaga makes nine sounds and no others. They are generated in the app with the Web Audio API, so there is no audio file to download, nothing to cache and nothing to licence, and they work offline. Short, plain tones; nothing cinematic, no siren samples, no music.
+Jaga makes eleven sounds and no others. They are generated in the app with the Web Audio API, so there is no audio file to download, nothing to cache and nothing to licence, and they work offline. Short, plain tones; nothing cinematic, no siren samples, no music.
 
 | Sound | When | Shape |
 |---|---|---|
@@ -131,8 +131,11 @@ Jaga makes nine sounds and no others. They are generated in the app with the Web
 | Alert: Evacuate | the same, for an Evacuate | a high-low call (880, 660 Hz), half a second a note, six times without a pause; 6 s. The most insistent alert sound, and far slower than the offer alarm |
 | Alert: Safe to return | the same, for Safe to return | three unhurried notes settling downward (659, 523, 392 Hz), twice; about 5 s |
 | Dam release | a release notice from Bang Lang (spec 15) reaches someone in the zone downstream | a rising figure, repeated; the only public alert sound that repeats. Never mistakable for the alert double-tone. |
+| Announcement | an announcement from the admins that this phone has not shown yet | a bright rising four-note figure (523, 659, 784, 1047 Hz) that lands on its top note, once; under a second. Positive on purpose: news, not danger, and nothing like an alert or the alarm (the owner, 13 Oct 2026). Not chosen by ear yet. |
+| Notice | anything else new in the bell: an alert that has ended, news about one's own team | two quiet notes (698, 880 Hz), once |
 
 Rules:
+- **Every new item in the bell is heard once in an open app** (the owner, 13 Oct 2026). When several are new at the same moment one sound plays, the most serious: an alert first, then an announcement, then a step of one's own request, then the quiet notice. An alert always wins, so good news can never cover a warning.
 - **Every alert an admin issues rings in an open app, each level with its own sound, each at least five seconds long** (the owner, 13 Oct 2026; before that there was one short tone and Watch was silent). When several are due the most serious one plays. Normal is the absence of an alert and has no sound. None of the four was chosen by ear yet.
 - **A web page cannot override a phone's volume or Do Not Disturb.** On iPhone the app declares its sound as media (`navigator.audioSession`), so the ring/silent switch does not mute it; a volume turned to zero still does, on every phone. Sounding through silence and Do Not Disturb is reserved by the phone makers for native apps with a special permission (Apple's Critical Alerts) and for the government's own cell broadcast.
 - **Never sound alone.** Every sound has a vibration pattern and its own icon and words on screen (the accessibility rule: a level is never carried by one channel).

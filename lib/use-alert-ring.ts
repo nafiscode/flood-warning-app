@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ringFor, type NoticeItem } from "@/lib/notices";
+import { ringForAll } from "@/lib/notice-sounds";
+import type { NoticeItem } from "@/lib/notices";
 import { readStored, writeStored } from "@/lib/phone-store";
 import { arm, isArmed, play, type Playing } from "@/lib/sounds";
 
@@ -47,7 +48,7 @@ export function useAlertRing(
     const dueNow = () => {
       const now = latest.current;
       if (now.quiet || !now.ready) return null;
-      const due = ringFor(now.items, now.read, readStored<string[]>("noticesRung") ?? []);
+      const due = ringForAll(now.items, now.read, readStored<string[]>("noticesRung") ?? []);
       return due.sound ? { sound: due.sound, ids: due.ids } : null;
     };
     const sound = (due: NonNullable<ReturnType<typeof dueNow>>) => {
@@ -74,10 +75,26 @@ export function useAlertRing(
     };
     document.addEventListener("pointerdown", onTap);
     document.addEventListener("keydown", onTap);
+    /*
+     * A push has just arrived while Jaga is open: the bell must not wait for its next
+     * five-minute look. The bell reloads whenever the phone says it is back online, so that is
+     * the knock used here; once now, and once more after the shared 60-second copy of the list
+     * has turned over, because the first look can still be handed the copy from before.
+     */
+    const timers: number[] = [];
+    const knock = () => window.dispatchEvent(new Event("online"));
+    const onPush = (event: MessageEvent) => {
+      if ((event.data as { type?: string } | null)?.type !== "jaga-push") return;
+      knock();
+      timers.push(window.setTimeout(knock, 20_000), window.setTimeout(knock, 70_000));
+    };
+    navigator.serviceWorker?.addEventListener("message", onPush);
     ringNow.current = ring;
     return () => {
       document.removeEventListener("pointerdown", onTap);
       document.removeEventListener("keydown", onTap);
+      navigator.serviceWorker?.removeEventListener("message", onPush);
+      timers.forEach((t) => window.clearTimeout(t));
       stop();
     };
   }, []);

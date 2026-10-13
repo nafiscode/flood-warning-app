@@ -1,7 +1,14 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import webpush from "web-push";
-import { alertPayload, casePayload, type DueRow, type PushAlert, type PushLevel } from "@/lib/push";
+import {
+  alertPayload,
+  announcementPayload,
+  casePayload,
+  type DueRow,
+  type PushAlert,
+  type PushLevel,
+} from "@/lib/push";
 import { siteUrl } from "@/lib/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import en from "@/messages/en.json";
@@ -91,6 +98,62 @@ export async function pushAlert(supabase: SupabaseClient, alertId: string): Prom
       p_failed: failed,
       p_gone: gone,
     });
+    return { sent, failed, gone: gone.length };
+  } catch {
+    return { skipped: "error" };
+  }
+}
+
+const ANNOUNCE_TITLE: Record<string, string> = {
+  th: th.push.send.announcementTitle,
+  ms: ms.push.send.announcementTitle,
+  en: en.push.send.announcementTitle,
+};
+
+/**
+ * Push one announcement the admin has just posted, to the phones it is for. Like an alert's, it
+ * runs with the admin's own session and never throws: the announcement is in the bell whether or
+ * not a notification leaves.
+ */
+export async function pushAnnouncement(
+  supabase: SupabaseClient,
+  id: string,
+  messages: Record<string, string>,
+): Promise<PushOutcome> {
+  try {
+    if (!configured()) return { skipped: "no_keys" };
+    const { data, error } = await supabase.rpc("push_targets_for_announcement", {
+      p_announcement: id,
+    });
+    if (error || !Array.isArray(data)) return { skipped: "no_targets" };
+    const gone: string[] = [];
+    let sent = 0;
+    let failed = 0;
+    const queue = [...(data as Target[])];
+    const worker = async () => {
+      for (let t = queue.pop(); t; t = queue.pop()) {
+        const payload = announcementPayload(
+          { id, messages },
+          t.locale,
+          ANNOUNCE_TITLE[t.locale] ?? ANNOUNCE_TITLE.th!,
+        );
+        if (!payload) continue;
+        try {
+          await webpush.sendNotification(
+            { endpoint: t.endpoint, keys: t.keys },
+            JSON.stringify(payload),
+            { TTL: 24 * 3600, urgency: "normal" },
+          );
+          sent++;
+        } catch (e) {
+          const status = (e as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) gone.push(t.endpoint);
+          else failed++;
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: 16 }, worker));
+    if (gone.length > 0) await supabase.rpc("push_drop_gone", { p_gone: gone });
     return { sent, failed, gone: gone.length };
   } catch {
     return { skipped: "error" };

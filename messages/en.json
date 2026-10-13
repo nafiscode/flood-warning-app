@@ -2682,7 +2682,8 @@
       "rescuedTitle": "The team reports you have been helped",
       "rescuedBody": "Open Jaga to confirm, or to say you still need help.",
       "rescuedSuppliesTitle": "The team reports the supplies were delivered",
-      "rescuedSuppliesBody": "Open Jaga to confirm you received them, or to say you did not."
+      "rescuedSuppliesBody": "Open Jaga to confirm you received them, or to say you did not.",
+      "announcementTitle": "Announcement from Jaga"
     }
   }
 }
