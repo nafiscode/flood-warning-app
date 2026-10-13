@@ -41,32 +41,55 @@ export function areaPlaceDetail(area: Area, locale: string): string {
 }
 
 /**
+ * The place the weather starts on when the person has not picked one for the weather (owner,
+ * 13 Oct): their own location first - the home saved in their account, else the area chosen on
+ * this phone's home screen - and, for someone with neither, the first place they watch. People
+ * outside the service area mostly use Jaga for a relative's house, and that is the weather they
+ * want. Null when there is nothing to go by; then the weather page asks.
+ */
+export function defaultWeatherArea(
+  me: MyPlaces | null,
+  area: Area | null,
+): { area: Area; label: string | null } | null {
+  if (me?.signedIn && me.home) return { area: me.home, label: null };
+  if (area) return { area, label: null };
+  const watched = me?.signedIn ? me.places.find((p) => p.area !== null) : undefined;
+  if (watched?.area) return { area: watched.area, label: watched.label.trim() || null };
+  return null;
+}
+
+/**
  * Which place the weather is shown for (owner's choice, 9 Oct 2026): the one the person picked
- * for the weather if there is one, otherwise the home saved in their account or the area already
- * chosen on the home screen, so nobody is asked for their position a second time. Null means no
- * place is known yet; then the weather page asks, and the chip invites a tap.
+ * for the weather if there is one, otherwise their own location or the first place they watch
+ * (defaultWeatherArea), so nobody is asked for their position a second time - and so the weather
+ * is back by itself after signing out and in again, or on a new phone. Null means no place is
+ * known yet; then the weather page asks, and the chip invites a tap.
  */
 export function useWeatherPlace(
   me: MyPlaces | null,
   locale: string,
 ): {
   place: WeatherPlace | null;
-  /** Set when the place comes from the home screen's area rather than a weather choice. */
+  /** Set when the place comes from the account or the home screen rather than a weather choice. */
   fromArea: Area | null;
   picked: WeatherPlace | null;
   setPlace: (place: WeatherPlace | null) => void;
 } {
   const picked = useStored<WeatherPlace>(PLACE_KEY);
   const area = useStored<Area>("area");
-  const home = me?.signedIn && me.home ? me.home : area;
-  const fromArea = picked ? null : home;
+  const start = picked ? null : defaultWeatherArea(me, area);
+  const fromArea = start?.area ?? null;
+  const label = start?.label ?? null;
   const setPlace = useCallback((place: WeatherPlace | null) => writeStored(PLACE_KEY, place), []);
   // One object for as long as the choice behind it is the same: the forecast request below is
   // keyed on it, and a new object on every render would restart it on every render.
-  const place = useMemo(
-    () => picked ?? (fromArea ? areaToPlace(fromArea, locale) : null),
-    [picked, fromArea, locale],
-  );
+  const place = useMemo(() => {
+    if (picked) return picked;
+    if (!fromArea) return null;
+    const base = areaToPlace(fromArea, locale);
+    // A watched place goes by the name the person gave it ("Mum's house").
+    return label ? { ...base, name: label } : base;
+  }, [picked, fromArea, label, locale]);
   return { place, fromArea, picked, setPlace };
 }
 
