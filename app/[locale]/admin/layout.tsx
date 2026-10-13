@@ -42,6 +42,27 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
         <Link href="/admin/households" className="inline-flex min-h-tap items-center underline">
           {t("nav.households")}
         </Link>
+        <Link href="/admin/moderation" className="inline-flex min-h-tap items-center underline">
+          {t("nav.moderation")}
+        </Link>
+        <Link href="/admin/safe-places" className="inline-flex min-h-tap items-center underline">
+          {t("nav.safePlaces")}
+        </Link>
+        <Link href="/admin/duplicates" className="inline-flex min-h-tap items-center underline">
+          {t("nav.duplicates")}
+        </Link>
+        <Link href="/admin/announcements" className="inline-flex min-h-tap items-center underline">
+          {t("nav.announcements")}
+        </Link>
+        <Link href="/admin/handover" className="inline-flex min-h-tap items-center underline">
+          {t("nav.handover")}
+        </Link>
+        <Link href="/admin/exports" className="inline-flex min-h-tap items-center underline">
+          {t("nav.exports")}
+        </Link>
+        <Link href="/admin/log" className="inline-flex min-h-tap items-center underline">
+          {t("nav.log")}
+        </Link>
         {session.role === "super_admin" && (
           <Link href="/admin/invitations" className="inline-flex min-h-tap items-center underline">
             {t("nav.invitations")}

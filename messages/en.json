@@ -1248,7 +1248,14 @@
       "points": "Points",
       "households": "Households",
       "damRelease": "Dam release",
-      "alerts": "Alerts"
+      "alerts": "Alerts",
+      "moderation": "Reports",
+      "safePlaces": "Safe places",
+      "duplicates": "Duplicates",
+      "announcements": "Announcements",
+      "handover": "Handover",
+      "exports": "Exports",
+      "log": "Access log"
     },
     "role": {
       "admin": "Admin",
@@ -1383,6 +1390,10 @@
       "title": "Alerts",
       "note": "Publish, extend, replace or cancel an alert, and see the full history.",
       "open": "Open the alert console"
+    },
+    "tools": {
+      "title": "The other admin tools",
+      "note": "Report moderation, safe places, duplicate requests, announcements, handover notes, exports and the access log are in the menu above."
     }
   },
   "warRoom": {
@@ -2399,6 +2410,196 @@
         "drillHint": "The public does not see it; nothing rings.",
         "real": "Real alert",
         "realHint": "Shown on the map, the home screen and the bell of everyone in the area, even though the service is not switched on yet."
+      }
+    }
+  },
+  "adminTools": {
+    "error": {
+      "save": "That could not be saved. Try again."
+    },
+    "moderation": {
+      "title": "Flood report moderation",
+      "intro": "An approved report counts in the hexagons on the public map. A hidden one does not, and is not shown to rescue teams. Nothing is deleted and either answer can be changed later. This page never says who sent a report.",
+      "status": {
+        "pending": "Waiting",
+        "approved": "Approved",
+        "hidden": "Hidden"
+      },
+      "to": {
+        "approved": "Approve",
+        "hidden": "Hide"
+      },
+      "done": {
+        "pending": "Moved back to waiting.",
+        "approved": "Report approved.",
+        "hidden": "Report hidden."
+      },
+      "none": "No reports in this list.",
+      "noMedia": "No photo or voice note.",
+      "mediaFailed": "The photos or voice note cannot be opened right now.",
+      "photo": "Photo {n}"
+    },
+    "places": {
+      "title": "Safe places",
+      "intro": "One district at a time. Update whether a place is open, full or closed, what it needs, how many it holds, and whether an admin stands behind it. “Rejected” takes a place off every public list without deleting it.",
+      "district": "District",
+      "chooseDistrict": "Choose a district",
+      "show": "Show",
+      "showAll": "All",
+      "open": "Show the list",
+      "count": "{count, plural, one {# place} other {# places}} in {name}",
+      "status": "Status",
+      "needs": "Needs",
+      "capacity": "Capacity (people)",
+      "holds": "holds {count}",
+      "verification": "Verification",
+      "verified": {
+        "unverified": "Unverified",
+        "verified": "Verified",
+        "rejected": "Rejected"
+      },
+      "nameTh": "Thai name",
+      "nameEn": "English name (optional)",
+      "save": "Save",
+      "edit": "Edit",
+      "score": "score {score}",
+      "source": "source {source}",
+      "flags": "Flags: {flags}",
+      "updated": "Last updated",
+      "done": {
+        "saved": "Saved.",
+        "added": "The place has been added."
+      },
+      "error": {
+        "save": "That could not be saved. Try again.",
+        "name": "A Thai name and a type are required.",
+        "capacity": "Capacity must be a number, 0 or more.",
+        "position": "Latitude and longitude must be numbers.",
+        "outside": "That position is not inside a tambon Jaga covers. Check that latitude and longitude are not swapped."
+      },
+      "add": {
+        "summary": "Add a new safe place",
+        "type": "Type",
+        "lat": "Latitude",
+        "lon": "Longitude",
+        "positionHint": "Decimal degrees, WGS 84, for example 6.54321 and 101.28123. The tambon is worked out for you.",
+        "verified": "I have checked this place (save it as verified)",
+        "send": "Add the place"
+      }
+    },
+    "log": {
+      "title": "Access log",
+      "intro": "Who did what, to what, and when: every phone number shown, every alert published, every export taken. Newest first. It cannot be changed.",
+      "kind": "Kind of act",
+      "all": "All",
+      "show": "Show",
+      "none": "Nothing recorded.",
+      "system": "system",
+      "older": "Older entries"
+    },
+    "handover": {
+      "title": "Handover notes",
+      "intro": "A short note for the next admin on watch: what is happening, what was decided, what to keep an eye on. A note cannot be edited or deleted; a correction is a new note.",
+      "label": "Your note",
+      "hint": "Do not put a phone number or a requester's personal details here.",
+      "send": "Save the note",
+      "done": "The note is saved.",
+      "empty": "The note is empty.",
+      "none": "No notes yet."
+    },
+    "announce": {
+      "title": "Announcements",
+      "intro": "A word from the admins to everyone using Jaga, such as maintenance or a changed hotline. It appears in the bell.",
+      "notAnAlert": "This is not an alert: it has no level and makes no sound. Anything about danger is published from the Alerts page only.",
+      "new": "Write an announcement",
+      "text": {
+        "th": "Thai text (required)",
+        "ms": "Malay text",
+        "en": "English text"
+      },
+      "textHint": "Write each language yourself; nothing is translated automatically. A language left empty shows the Thai text.",
+      "until": "Show it for",
+      "untilWithdrawn": "Until withdrawn",
+      "hours": "{hours} hours",
+      "who": "Who sees it",
+      "everyone": "Everyone",
+      "someAreas": "Some areas only",
+      "chooseAreas": "Choose areas",
+      "tambons": "{count, plural, one {# tambon} other {# tambons}}",
+      "send": "Post the announcement",
+      "list": "Earlier announcements",
+      "none": "No announcements yet.",
+      "state": {
+        "live": "Showing now",
+        "ended": "Ended",
+        "cancelled": "Withdrawn"
+      },
+      "cancel": "Withdraw this announcement",
+      "done": {
+        "posted": "The announcement is posted.",
+        "cancelled": "The announcement is withdrawn."
+      },
+      "error": {
+        "thai": "Thai text is required.",
+        "area": "“Some areas only” is chosen but no area is ticked.",
+        "save": "That could not be posted. Try again."
+      }
+    },
+    "exports": {
+      "title": "Exports",
+      "intro": "No file carries a phone number, a name or text a person typed. Every export is logged with its number of rows.",
+      "period": "Period",
+      "days": "Last {days} days",
+      "format": "File format",
+      "csv": "CSV (spreadsheet)",
+      "geojson": "GeoJSON (GIS, EPSG:4326)",
+      "full": "Include case ids and exact positions",
+      "fullHint": "Without this: no case id, positions rounded to about 1 km and times to the hour.",
+      "download": "Download",
+      "sos": {
+        "title": "Requests for help (SOS)",
+        "note": "Time, status, tambon, position, number of people and how long until a team accepted."
+      },
+      "reports": {
+        "title": "Flood reports",
+        "note": "Position, water depth, trend, road access and the moderation result."
+      },
+      "alerts": {
+        "title": "Alerts",
+        "note": "Level, times, tambons and the outline of the area (in GeoJSON). Drills are included and marked."
+      }
+    },
+    "duplicates": {
+      "title": "Possible duplicate SOS",
+      "intro": "The system pairs requests from the same phone, or within 300 m and two hours of each other. A person decides. Merging takes the later request off the teams' boards but closes nothing: its sender is shown the team that took the main request, the merge can be undone, and it undoes itself if the main request ends first.",
+      "possible": "Possible duplicates ({count})",
+      "none": "No possible duplicates right now.",
+      "later": "Later request",
+      "earlier": "Earlier request",
+      "people": "{count, plural, one {# person} other {# people}}",
+      "claimed": "a team has accepted it",
+      "waiting": "no team yet",
+      "apart": "{m} m apart",
+      "kind": {
+        "rescue": "Request for help",
+        "supplies": "Request for food and water"
+      },
+      "note": "Why (optional)",
+      "merge": "Merge the later request into the earlier one",
+      "mergeHint": "Merge only when you are sure it is the same house. If in doubt, leave both.",
+      "mergedTitle": "Merged ({count})",
+      "noneMerged": "Nothing is merged.",
+      "mergedCase": "Merged request",
+      "into": "Merged into",
+      "unmerge": "Undo the merge",
+      "done": {
+        "merged": "The requests are merged.",
+        "unmerged": "The merge is undone; the request is back on the teams' boards."
+      },
+      "error": {
+        "held": "A team holds this request, so it cannot be merged. Ask the team to hand it back first.",
+        "refused": "These two cannot be merged (one is closed, already merged, or they are of different kinds).",
+        "save": "That did not work. Try again."
       }
     }
   }

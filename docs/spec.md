@@ -359,6 +359,8 @@ Admins decide. The system never auto-publishes. Every data source shows its last
 - **Audit log viewer.**
 - **Handover notes:** a short shift log for volunteers across time zones.
 
+**Built (13 Oct 2026):** `/admin/moderation`, `/admin/safe-places`, `/admin/duplicates`, `/admin/announcements`, `/admin/handover`, `/admin/exports`, `/admin/log`. A merged SOS is never closed: it leaves the boards, its sender sees the main request's team, and it returns by itself if the main request ends first. Exports carry no phone, name or free text; the SOS export is anonymized by default.
+
 ## 7. Alert levels
 
 | Code | Thai | English | Color / icon | What the user should do |

@@ -1248,7 +1248,14 @@
       "points": "Mata",
       "households": "Isi rumah",
       "damRelease": "Notis pelepasan",
-      "alerts": "Amaran"
+      "alerts": "Amaran",
+      "moderation": "Semak laporan",
+      "safePlaces": "Tempat selamat",
+      "duplicates": "Permintaan berulang",
+      "announcements": "Pengumuman",
+      "handover": "Nota serah tugas",
+      "exports": "Eksport",
+      "log": "Log akses"
     },
     "role": {
       "admin": "Pentadbir",
@@ -1383,6 +1390,10 @@
       "title": "Amaran",
       "note": "Keluarkan, lanjutkan, gantikan atau batalkan amaran, dan lihat semua sejarahnya.",
       "open": "Buka konsol amaran"
+    },
+    "tools": {
+      "title": "Alat pentadbir yang lain",
+      "note": "Semakan laporan, tempat selamat, permintaan berulang, pengumuman, nota serah tugas, eksport dan log akses ada dalam menu di atas."
     }
   },
   "warRoom": {
@@ -2399,6 +2410,196 @@
         "drillHint": "Orang awam tidak nampak; tiada bunyi.",
         "real": "Amaran sebenar",
         "realHint": "Dipaparkan pada peta, halaman utama dan loceng semua orang di kawasan itu, walaupun perkhidmatan belum dibuka."
+      }
+    }
+  },
+  "adminTools": {
+    "error": {
+      "save": "Tidak berjaya disimpan. Cuba lagi."
+    },
+    "moderation": {
+      "title": "Semakan laporan banjir",
+      "intro": "Laporan yang diluluskan dikira dalam heksagon pada peta awam. Laporan yang disembunyikan tidak dikira dan tidak ditunjukkan kepada pasukan penyelamat. Tiada yang dipadam, dan keputusan boleh diubah kemudian. Halaman ini tidak menunjukkan siapa penghantarnya.",
+      "status": {
+        "pending": "Menunggu semakan",
+        "approved": "Diluluskan",
+        "hidden": "Disembunyikan"
+      },
+      "to": {
+        "approved": "Luluskan",
+        "hidden": "Sembunyikan"
+      },
+      "done": {
+        "pending": "Dikembalikan ke senarai menunggu.",
+        "approved": "Laporan diluluskan.",
+        "hidden": "Laporan disembunyikan."
+      },
+      "none": "Tiada laporan dalam senarai ini.",
+      "noMedia": "Tiada gambar atau suara.",
+      "mediaFailed": "Gambar atau suara tidak dapat dibuka sekarang.",
+      "photo": "Gambar {n}"
+    },
+    "places": {
+      "title": "Urus tempat selamat",
+      "intro": "Satu daerah pada satu masa. Kemas kini sama ada dibuka, penuh atau ditutup, apa yang diperlukan, berapa orang boleh ditampung, dan sama ada pentadbir telah mengesahkannya. “Ditolak” mengeluarkan tempat itu daripada senarai awam tanpa memadamnya.",
+      "district": "Daerah",
+      "chooseDistrict": "Pilih daerah",
+      "show": "Tunjukkan",
+      "showAll": "Semua",
+      "open": "Tunjukkan senarai",
+      "count": "{count} tempat di {name}",
+      "status": "Status",
+      "needs": "Keperluan",
+      "capacity": "Kapasiti (orang)",
+      "holds": "menampung {count} orang",
+      "verification": "Pengesahan",
+      "verified": {
+        "unverified": "Belum disahkan",
+        "verified": "Disahkan",
+        "rejected": "Ditolak"
+      },
+      "nameTh": "Nama dalam bahasa Thai",
+      "nameEn": "Nama dalam bahasa Inggeris (pilihan)",
+      "save": "Simpan",
+      "edit": "Ubah",
+      "score": "skor {score}",
+      "source": "sumber {source}",
+      "flags": "Catatan: {flags}",
+      "updated": "Kemas kini terakhir",
+      "done": {
+        "saved": "Disimpan.",
+        "added": "Tempat ditambah."
+      },
+      "error": {
+        "save": "Tidak berjaya disimpan. Cuba lagi.",
+        "name": "Nama Thai dan jenis diperlukan.",
+        "capacity": "Kapasiti mestilah nombor 0 atau lebih.",
+        "position": "Latitud dan longitud mestilah nombor.",
+        "outside": "Kedudukan ini bukan dalam mukim yang diliputi Jaga. Semak sama ada latitud dan longitud tertukar."
+      },
+      "add": {
+        "summary": "Tambah tempat selamat baharu",
+        "type": "Jenis",
+        "lat": "Latitud",
+        "lon": "Longitud",
+        "positionHint": "Darjah perpuluhan WGS 84, contohnya 6.54321 dan 101.28123. Mukim dicari secara automatik.",
+        "verified": "Saya telah memeriksa tempat ini (simpan sebagai disahkan)",
+        "send": "Tambah tempat"
+      }
+    },
+    "log": {
+      "title": "Log akses",
+      "intro": "Siapa buat apa, kepada apa, dan bila: nombor telefon yang dilihat, amaran yang dikeluarkan, eksport yang diambil dan lain-lain. Terbaharu di atas; tidak boleh diubah.",
+      "kind": "Jenis tindakan",
+      "all": "Semua",
+      "show": "Tunjukkan",
+      "none": "Tiada rekod.",
+      "system": "sistem",
+      "older": "Rekod yang lebih lama"
+    },
+    "handover": {
+      "title": "Nota serah tugas",
+      "intro": "Nota ringkas untuk pentadbir seterusnya: apa yang berlaku, apa yang diputuskan, apa yang perlu diperhatikan. Tidak boleh diubah atau dipadam; pembetulan ialah nota baharu.",
+      "label": "Nota anda",
+      "hint": "Jangan masukkan nombor telefon atau butiran peribadi orang yang meminta bantuan.",
+      "send": "Simpan nota",
+      "done": "Nota disimpan.",
+      "empty": "Nota masih kosong.",
+      "none": "Belum ada nota."
+    },
+    "announce": {
+      "title": "Pengumuman",
+      "intro": "Pesanan daripada pentadbir kepada pengguna, seperti penyelenggaraan sistem atau pertukaran nombor talian. Dipaparkan dalam loceng pemberitahuan.",
+      "notAnAlert": "Ini bukan amaran: tiada tahap, tiada bunyi. Perkara berbahaya dikeluarkan dari halaman “Amaran” sahaja.",
+      "new": "Tulis pengumuman baharu",
+      "text": {
+        "th": "Teks Thai (wajib)",
+        "ms": "Teks Melayu",
+        "en": "Teks Inggeris"
+      },
+      "textHint": "Tulis sendiri setiap bahasa; tiada terjemahan automatik. Bahasa yang dikosongkan akan memaparkan teks Thai.",
+      "until": "Dipaparkan selama",
+      "untilWithdrawn": "Sehingga ditarik balik",
+      "hours": "{hours} jam",
+      "who": "Kepada siapa",
+      "everyone": "Semua orang",
+      "someAreas": "Kawasan tertentu sahaja",
+      "chooseAreas": "Pilih kawasan",
+      "tambons": "{count} mukim",
+      "send": "Hantar pengumuman",
+      "list": "Pengumuman terdahulu",
+      "none": "Belum ada pengumuman.",
+      "state": {
+        "live": "Sedang dipaparkan",
+        "ended": "Tamat tempoh",
+        "cancelled": "Ditarik balik"
+      },
+      "cancel": "Tarik balik pengumuman ini",
+      "done": {
+        "posted": "Pengumuman dihantar.",
+        "cancelled": "Pengumuman ditarik balik."
+      },
+      "error": {
+        "thai": "Teks Thai diperlukan.",
+        "area": "“Kawasan tertentu” dipilih tetapi tiada kawasan ditandakan.",
+        "save": "Tidak berjaya dihantar. Cuba lagi."
+      }
+    },
+    "exports": {
+      "title": "Eksport data",
+      "intro": "Tiada fail mengandungi nombor telefon, nama atau teks yang ditaip pengguna. Setiap eksport direkodkan bersama bilangan barisnya.",
+      "period": "Tempoh",
+      "days": "{days} hari terakhir",
+      "format": "Format fail",
+      "csv": "CSV (hamparan)",
+      "geojson": "GeoJSON (GIS, EPSG:4326)",
+      "full": "Sertakan ID permintaan dan kedudukan sebenar",
+      "fullHint": "Jika tidak ditanda: tiada ID, kedudukan dibundarkan kepada kira-kira 1 km dan masa kepada jam.",
+      "download": "Muat turun",
+      "sos": {
+        "title": "Permintaan bantuan (SOS)",
+        "note": "Masa, status, mukim, kedudukan, bilangan orang dan masa pasukan menerima."
+      },
+      "reports": {
+        "title": "Laporan banjir",
+        "note": "Kedudukan, paras air, arah aliran, keadaan jalan dan keputusan semakan."
+      },
+      "alerts": {
+        "title": "Amaran",
+        "note": "Tahap, masa, mukim dan sempadan kawasan (dalam GeoJSON). Termasuk latihan."
+      }
+    },
+    "duplicates": {
+      "title": "Permintaan SOS yang mungkin berulang",
+      "intro": "Sistem memadankan permintaan daripada telefon yang sama, atau dalam jarak 300 m dan dua jam. Pentadbir yang memutuskan. Penggabungan mengeluarkan permintaan yang kemudian daripada papan pasukan tetapi tidak menutupnya: penghantarnya melihat pasukan yang menerima permintaan utama, penggabungan boleh dibatalkan, dan ia terbatal sendiri jika permintaan utama tamat dahulu.",
+      "possible": "Pasangan yang mungkin berulang ({count})",
+      "none": "Tiada pasangan sekarang.",
+      "later": "Permintaan yang kemudian",
+      "earlier": "Permintaan yang lebih awal",
+      "people": "{count} orang",
+      "claimed": "sudah diterima pasukan",
+      "waiting": "belum diterima pasukan",
+      "apart": "{m} m jaraknya",
+      "kind": {
+        "rescue": "Permintaan bantuan",
+        "supplies": "Permintaan makanan dan air"
+      },
+      "note": "Sebab (pilihan)",
+      "merge": "Gabungkan yang kemudian ke dalam yang lebih awal",
+      "mergeHint": "Gabungkan hanya jika pasti ia rumah yang sama. Jika ragu, biarkan kedua-duanya.",
+      "mergedTitle": "Telah digabungkan ({count})",
+      "noneMerged": "Tiada permintaan yang digabungkan.",
+      "mergedCase": "Permintaan yang digabungkan",
+      "into": "Digabungkan ke dalam",
+      "unmerge": "Batalkan penggabungan",
+      "done": {
+        "merged": "Permintaan digabungkan.",
+        "unmerged": "Penggabungan dibatalkan; permintaan kembali ke papan pasukan."
+      },
+      "error": {
+        "held": "Satu pasukan sedang memegang permintaan ini, jadi ia tidak boleh digabungkan. Minta pasukan menyerahkannya semula dahulu.",
+        "refused": "Dua permintaan ini tidak boleh digabungkan (satu sudah ditutup, sudah digabungkan, atau jenisnya berbeza).",
+        "save": "Tidak berjaya. Cuba lagi."
       }
     }
   }

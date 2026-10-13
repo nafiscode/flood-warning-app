@@ -57,6 +57,10 @@ export default async function AdminHome({ params }: PageProps<"/[locale]/admin">
           {t("authorities.open")}
         </Link>
       </section>
+      <section className={card}>
+        <h2 className="text-body font-bold">{t("tools.title")}</h2>
+        <p className={hint}>{t("tools.note")}</p>
+      </section>
       {session?.role === "super_admin" && (
         <section className={card}>
           <h2 className="text-body font-bold">{t("invitations.title")}</h2>
