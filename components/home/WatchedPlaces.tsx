@@ -3,7 +3,7 @@ import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { LifebuoyIcon, PhoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
-import { areaName } from "@/lib/area";
+import { areaName, tambonName } from "@/lib/area";
 import type { WatchedPlace } from "@/lib/me";
 import { AlertDetails, type HeroStatus } from "./AlertHero";
 import { Checklist } from "./Checklist";
@@ -51,8 +51,9 @@ export function PlaceStatus({ status, now }: { status: WatchedStatus["status"]; 
  * 13 Oct - on a phone the badge alone said what level, but not why or until when). Closed to
  * start with, so the Call and SOS buttons stay near the top of the card.
  */
-function PlaceAlert({ status }: { status: WatchedStatus["status"] }) {
+function PlaceAlert({ place, status }: { place: WatchedPlace; status: WatchedStatus["status"] }) {
   const t = useTranslations("home.watched");
+  const locale = useLocale();
   if (status.kind !== "alert") return null;
   return (
     <details data-place-alert={status.alert.id} className="group">
@@ -60,7 +61,10 @@ function PlaceAlert({ status }: { status: WatchedStatus["status"] }) {
         {t("details")}
       </summary>
       <div className="flex flex-col gap-3 pt-1">
-        <AlertDetails alert={status.alert} />
+        <AlertDetails
+          alert={status.alert}
+          areaName={place.area ? tambonName(locale, place.area) : undefined}
+        />
         {/* What to do at this level, for the person at that place: the same list the home area
             gets, ticked off on this phone. */}
         <Checklist level={status.alert.level} listId={status.alert.id} forPlace />
@@ -89,7 +93,7 @@ export function WorseBanner({ item, now }: { item: WatchedStatus; now: number })
         )}
       </h2>
       <PlaceStatus status={item.status} now={now} />
-      <PlaceAlert status={item.status} />
+      <PlaceAlert place={item.place} status={item.status} />
       <CallButton place={place} />
       <Link
         href={{ pathname: "/sos", query: { place: place.id } }}
@@ -123,7 +127,7 @@ export function WatchedPlaces({ items, now }: { items: WatchedStatus[]; now: num
               )}
             </p>
             <PlaceStatus status={item.status} now={now} />
-            <PlaceAlert status={item.status} />
+            <PlaceAlert place={item.place} status={item.status} />
             <CallButton place={item.place} />
           </li>
         ))}

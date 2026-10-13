@@ -1,3 +1,4 @@
+import { alertWords, fillArea } from "@/lib/alert-words";
 import { alert as ALERT_COLOURS } from "@/lib/brand/tokens";
 import { clip, type PushLevel } from "@/lib/push";
 
@@ -41,8 +42,6 @@ export type LineAlert = {
   tambons?: number;
 };
 
-const THAI_AREA = "พื้นที่";
-
 /**
  * The alert's words for one person: the reviewed template with "your area" in place of the list
  * of tambons. Nothing else of the reviewed text is touched. Null when there is no template for
@@ -55,11 +54,7 @@ export function personalBody(
 ): string | null {
   const text = template?.[locale];
   if (!text || !text.includes("{area}") || !yourArea) return null;
-  // Thai templates say "ในพื้นที่ {area}", and the Thai for "your area" begins with that word.
-  const doubled = `${THAI_AREA} {area}`;
-  return yourArea.startsWith(THAI_AREA) && text.includes(doubled)
-    ? text.replace(doubled, yourArea)
-    : text.replace("{area}", yourArea);
+  return fillArea(text, yourArea);
 }
 
 const CLOCK = new Intl.DateTimeFormat("en-GB", {
@@ -199,7 +194,7 @@ export function statusText(
     const next = lineTime(a.next_update_at);
     return [
       `【${levelName(a.level)}】`,
-      clip(a.messages[locale] ?? a.messages.th ?? "", 600),
+      clip(alertWords(a.messages, locale, words.yourArea), 600),
       next ? words.nextUpdate.replace("{time}", next) : "",
     ]
       .filter(Boolean)

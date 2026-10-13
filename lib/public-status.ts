@@ -1,5 +1,7 @@
 import { ALERT_LEVELS, type AlertLevel } from "@/lib/brand/tokens";
 
+export { alertWords, fillArea } from "@/lib/alert-words";
+
 /** One alert in force, as /api/public/status gives it. Times are ISO strings in UTC. */
 export type PublicAlert = {
   id: string;

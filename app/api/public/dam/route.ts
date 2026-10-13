@@ -132,14 +132,8 @@ export async function GET() {
     });
     arrivalsByDam.set(dam, list);
   }
-  // Two versions of the path can sit in the table at once (the river line and the zone); a dam's
-  // tambons are those of the geometry it is drawn with.
-  const sourceOf = new Map<string, string>(
-    ((map.data ?? []) as Row[]).map((row) => [String(row.code), String(row.geometry_source ?? "osm")]),
-  );
   const byDam = new Map<string, DamTambon[]>();
   for (const row of (tambons.data ?? []) as Row[]) {
-    if (String(row.source) !== sourceOf.get(String(row.dam_code))) continue;
     const list = byDam.get(String(row.dam_code)) ?? [];
     list.push({
       code: String(row.tambon_code),

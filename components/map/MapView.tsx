@@ -148,10 +148,6 @@ const TAP_SLACK = 12;
 
 const DAM_WATER_SOURCE = "jaga-dam-water";
 const DAM_REACHES = "jaga-dam-reaches";
-const DAM_ZONE_SOURCE = "jaga-dam-zone";
-const DAM_ZONE_FILL = "jaga-dam-zone-fill";
-const DAM_ZONE_LINE = "jaga-dam-zone-line";
-const DAM_ZONE_OUTER = "jaga-dam-zone-outer";
 const DAM_POINTS = "jaga-dam-points";
 const DAM_RESERVOIR_FILL = "jaga-dam-reservoir-fill";
 const DAM_RESERVOIR_LINE = "jaga-dam-reservoir-line";
@@ -178,16 +174,8 @@ function damCollections(
   const water: GeoJSON.Feature[] = [];
   const reaches: GeoJSON.Feature[] = [];
   const marks: GeoJSON.Feature[] = [];
-  const zones: GeoJSON.Feature[] = [];
   for (const dam of dams) {
     const name = localName(dam.name, text.locale) || dam.code;
-    for (const zone of dam.zones ?? []) {
-      zones.push({
-        type: "Feature",
-        geometry: zone.geometry as GeoJSON.Geometry,
-        properties: { code: dam.code, band: zone.band },
-      });
-    }
     if (dam.reservoir) {
       water.push({
         type: "Feature",
@@ -224,7 +212,6 @@ function damCollections(
     [DAM_WATER_SOURCE]: collection(water),
     [DAM_REACHES]: collection(reaches),
     [DAM_POINTS]: collection(marks),
-    [DAM_ZONE_SOURCE]: collection(zones),
   };
 }
 
@@ -466,46 +453,6 @@ export function MapView({
          * the safe places and the person's own pins, which are what they came to tap.
          */
         if (!m.getLayer(DAM_RESERVOIR_FILL)) {
-          /*
-           * The land a rise in the river can reach (lib/dam.ts, DamZone). Kept faint, and the
-           * outer band an outline only, so the flood-risk classes and the alert levels under and
-           * over it still read. It is not a flood extent and the legend says so.
-           */
-          m.addLayer(
-            {
-              id: DAM_ZONE_FILL,
-              type: "fill",
-              source: DAM_ZONE_SOURCE,
-              filter: ["==", ["get", "band"], "zone"],
-              paint: { "fill-color": paint.water, "fill-opacity": 0.2 },
-            },
-            above,
-          );
-          m.addLayer(
-            {
-              id: DAM_ZONE_LINE,
-              type: "line",
-              source: DAM_ZONE_SOURCE,
-              filter: ["==", ["get", "band"], "zone"],
-              paint: { "line-color": paint.water, "line-width": 1, "line-opacity": 0.8 },
-            },
-            above,
-          );
-          m.addLayer(
-            {
-              id: DAM_ZONE_OUTER,
-              type: "line",
-              source: DAM_ZONE_SOURCE,
-              filter: ["==", ["get", "band"], "outer"],
-              paint: {
-                "line-color": paint.water,
-                "line-width": 1,
-                "line-opacity": 0.7,
-                "line-dasharray": [2, 2],
-              },
-            },
-            above,
-          );
           m.addLayer(
             {
               id: DAM_RESERVOIR_FILL,
@@ -722,9 +669,6 @@ export function MapView({
          * reloading (components/DaylightTheme.tsx).
          */
         for (const [layer, property, value] of [
-          [DAM_ZONE_FILL, "fill-color", paint.water],
-          [DAM_ZONE_LINE, "line-color", paint.water],
-          [DAM_ZONE_OUTER, "line-color", paint.water],
           [DAM_RESERVOIR_FILL, "fill-color", paint.water],
           [DAM_RESERVOIR_LINE, "line-color", paint.water],
           [DAM_TRIBUTARY, "line-color", paint.water],
@@ -741,9 +685,6 @@ export function MapView({
         // because they switched to the risk map (the owner, 10 Oct).
         const damOn = dams.length > 0 ? "visible" : "none";
         for (const layer of [
-          DAM_ZONE_FILL,
-          DAM_ZONE_LINE,
-          DAM_ZONE_OUTER,
           DAM_RESERVOIR_FILL,
           DAM_RESERVOIR_LINE,
           DAM_TRIBUTARY,

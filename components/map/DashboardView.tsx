@@ -13,7 +13,13 @@ import { BASEMAPS, type Basemap } from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
 import { PhoneIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
-import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
+import {
+  areaName,
+  pickName,
+  tambonName as tambonInWords,
+  type Area,
+  type AreaDirectory,
+} from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
@@ -373,6 +379,7 @@ export function DashboardView(props: DashboardViewProps) {
       <AlertHero
         status={heroStatusFor(status, selection.code, fresh)}
         area={<p className="font-bold">{pickName(locale, selection.nameTh, selection.nameEn)}</p>}
+        areaName={tambonInWords(locale, selection)}
         now={now}
       />
     );

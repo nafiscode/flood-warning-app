@@ -114,9 +114,8 @@ not constants. Re-run `thresholds` after changing them to see what the change wo
 
 ## Still open
 
-- Done 14 Oct 2026: the owner chose the zone with its outer band. `zone --seed` writes
-  `supabase/seed/42_dam_zone.sql` (table `dam_zones`, the river's line and 55 tambons under source
-  `s7`, arrival ranges for all 55) and the dam's `geometry_source` becomes `s7`.
+- The owner's choice between the OpenStreetMap path and the zone below, and loading the chosen
+  one into the database (the zone as an area needs its own table).
 - Whether water left the dam unrecorded in the floods of 2024 and 2025: see "The outside check".
 - The powerhouse position, and whether the spillway channel should be digitised by hand.
 - A contact at EGAT Bang Lang (the owner).
@@ -176,7 +175,7 @@ Between two gauges a tambon gets the times in proportion to the river distance a
 
 ## The zone (13 Oct 2026, not validated)
 
-`uv run python -m dam_release zone` builds the land a rise in the river can reach below the dam: `out/dam_release/bang_lang_zone.tif` (band 1: 1 zone, 2 outer band; band 2: height above the river), `geojson/bang_lang_zone.geojson`, `zone_by_tambon.csv` and `zone.json`. It is the second version of step 3. The owner saw it beside the OpenStreetMap path and chose it, with the outer band, on 14 Oct 2026: a release notice now goes to the 55 tambons of the outer band, and the map shades the zone and outlines the band. A tambon the river does not run through takes the arrival times of the nearest point of the river (the earliest its water could come). The spill of 6 January 2021 that anchors the largest release is also on film: the owner pointed to footage of the spillway that day, which agrees with the archive (level 115.9 m, the highest on record, that evening).
+`uv run python -m dam_release zone` builds the land a rise in the river can reach below the dam: `out/dam_release/bang_lang_zone.tif` (band 1: 1 zone, 2 outer band; band 2: height above the river), `geojson/bang_lang_zone.geojson`, `zone_by_tambon.csv` and `zone.json`. It is the second version of step 3, to set beside the OpenStreetMap path (decision 10 Oct). Nothing in the app or the database uses it yet: the owner sees both first.
 
 **Method.**
 

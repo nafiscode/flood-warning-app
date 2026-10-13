@@ -963,7 +963,7 @@ describe("how it is drawn", () => {
     expect(order).toEqual(["tributary", "tributary", "outlet", "main"]);
   });
 
-  it("the legend names the reservoir, the river and the land its water can reach", () => {
+  it("the legend names the reservoir, the river and the tributaries", () => {
     const { container } = renderWithIntl(
       <ul>
         <DamLegend dam={DAM} />
@@ -971,9 +971,7 @@ describe("how it is drawn", () => {
     );
     expect(container.textContent).toContain("อ่างเก็บน้ำ");
     expect(container.textContent).toContain("แม่น้ำปัตตานี");
-    expect(container.textContent).toContain("น้ำจากลำน้ำเอ่อถึงได้");
-    // The shaded land is not a flood extent, and the legend has to say so (safety rule 8).
-    expect(container.textContent).toContain("ไม่ใช่แผนที่น้ำท่วม");
+    expect(container.textContent).toContain("ลำน้ำสาขา");
   });
 });
 

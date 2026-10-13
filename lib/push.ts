@@ -7,6 +7,7 @@
  * with its area, issuer, time and next update (safety rule 3). A browser, not Jaga, chooses the
  * sound a notification makes.
  */
+import { alertWords } from "@/lib/alert-words";
 export const ALERT_LEVELS_PUSHED = ["watch", "warning", "evacuate", "return"] as const;
 export type PushLevel = (typeof ALERT_LEVELS_PUSHED)[number];
 
@@ -171,10 +172,12 @@ export function alertPayload(
   alert: PushAlert,
   locale: string,
   levelName: (level: PushLevel, locale: string) => string,
+  /** "your area" in that language: said where the alert's own text lists all its tambons. */
+  yourArea = "",
 ): PushPayload | null {
   const level = ALERT_LEVELS_PUSHED.find((l) => l === alert.level);
   if (!level) return null;
-  const body = alert.messages[locale] ?? alert.messages.th ?? "";
+  const body = alertWords(alert.messages, locale, yourArea);
   if (!body) return null;
   return {
     kind: "alert",

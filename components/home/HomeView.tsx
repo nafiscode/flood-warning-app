@@ -7,7 +7,7 @@ import { SafePlaces } from "@/components/places/SafePlaces";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { SOSButton } from "@/components/sos/SOSButton";
 import { getPathname, Link } from "@/i18n/navigation";
-import { areaName, type Area } from "@/lib/area";
+import { areaName, tambonName, type Area } from "@/lib/area";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces } from "@/lib/places";
@@ -223,7 +223,15 @@ export function HomeView(props: HomeViewProps) {
             />
           </section>
         ) : (
-          hero && <AlertHero status={hero} area={areaLine} now={now} onRetry={props.onRetry} />
+          hero && (
+            <AlertHero
+              status={hero}
+              area={areaLine}
+              areaName={home ? tambonName(locale, home) : undefined}
+              now={now}
+              onRetry={props.onRetry}
+            />
+          )
         )}
 
         {/*

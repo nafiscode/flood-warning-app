@@ -228,7 +228,7 @@ def cmd_travel(cfg: dict, dry_run: bool) -> int:
     return 0
 
 
-def cmd_zone(cfg: dict, seed: bool = False) -> int:
+def cmd_zone(cfg: dict) -> int:
     out = output_dir(cfg)
     names = list(cfg["zone"]["radar"])
     for dam in cfg["dams"]:
@@ -252,26 +252,6 @@ def cmd_zone(cfg: dict, seed: bool = False) -> int:
               f"{found['outer_buildings']} buildings, {found['tambons_in_outer']} tambons")
         print(f"  on the interim path but outside the zone: {found['interim_not_in_zone']}")
         print(f"  in the zone but not on the interim path:  {found['zone_not_on_interim']}")
-        if seed:
-            travelled = json.loads((out / "travel.json").read_text(encoding="utf-8"))[dam["code"]]
-            t = cfg["travel"]
-            note = {
-                "source": "s7", "rise": "highest recorded levels at the gauges", "outer_extra_m": found["outer_extra_m"],
-                "max_distance_km": found["max_distance_km"], "zone_km2": found["zone_km2"], "outer_km2": found["outer_km2"],
-                "basis_en": "Land the river has been high enough to reach, from a 30 m elevation model. Not a hydraulic model.",
-                "arrivals_source": t["source"],
-                "arrivals_method": {"source": t["source"], "safety_margin": t["safety_margin"],
-                                    "basis_en": "Ranges from the river gauges: the turbines' daily pulses and the floods since 2020. "
-                                                "Not a forecast and not a hydraulic model. A place off the channel takes the "
-                                                "time of the nearest point of the river."},
-                "geometry_note": {"zone_source": "s7", "zone": True, "zone_km2": found["zone_km2"], "outer_km2": found["outer_km2"],
-                                  "river_line": "osm"},
-            }
-            sql, rows = zone.seed_sql(dam["code"], "s7", found["_seed"], travelled, t["safety_margin"], note)
-            dest = REPO_DIR / "supabase" / "seed" / "42_dam_zone.sql"
-            dest.write_text(sql, encoding="utf-8", newline="\n")
-            print(f"  wrote {dest} ({dest.stat().st_size // 1024} kB): {len(rows)} tambons, "
-                  f"{sum(r['via'] == 'main' for r in rows)} on the river")
     return 0
 
 
@@ -283,8 +263,7 @@ def main(argv: list[str] | None = None) -> int:
     geometry.add_argument("--dry-run", action="store_true")
     sub.add_parser("thresholds", help="what the archive says about the grade criteria")
     sub.add_parser("travel", help="travel times and arrival ranges per tambon").add_argument("--dry-run", action="store_true")
-    sub.add_parser("zone", help="the land a rise in the river can reach, from the elevation model").add_argument(
-        "--seed", action="store_true", help="also write supabase/seed/42_dam_zone.sql (the zone as the dam's geometry)")
+    sub.add_parser("zone", help="the land a rise in the river can reach, from the elevation model")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -293,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "travel":
         return cmd_travel(cfg, args.dry_run)
     if args.command == "zone":
-        return cmd_zone(cfg, args.seed)
+        return cmd_zone(cfg)
     return cmd_thresholds(cfg)
 
 

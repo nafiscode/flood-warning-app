@@ -4,7 +4,7 @@ import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { ClockIcon } from "@/components/icons";
 import type { AlertLevel } from "@/lib/brand/tokens";
-import { reasonFor, type AreaStatus, type PublicAlert } from "@/lib/public-status";
+import { alertWords, reasonFor, type AreaStatus, type PublicAlert } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { hint } from "@/lib/ui";
 
@@ -23,15 +23,12 @@ type Props = {
   status: HeroStatus;
   /** The area's name and the "change" control, shown above the level. */
   area: ReactNode;
+  /** The tambon's name as the alert's text writes it; "your area" is said when it is not given. */
+  areaName?: string;
   now: number;
   /** Shown under an "unknown" status. */
   onRetry?: () => void;
 };
-
-/** The reviewed alert text in the reader's language; Thai when there is no reviewed translation. */
-function alertText(alert: PublicAlert, locale: string): string {
-  return alert.messages[locale] ?? alert.messages.th ?? "";
-}
 
 function Row({ term, children }: { term: string; children: ReactNode }) {
   return (
@@ -47,15 +44,18 @@ function Row({ term, children }: { term: string; children: ReactNode }) {
  * as ranges, the reason, the issuer, when it was issued and when it will be updated next (safety
  * rule 3). The hero shows it for the person's own area; a watched place shows the same thing
  * behind a tap, so an alert for Mum's village is never only a coloured badge.
+ *
+ * The text names the one place it is shown for (`areaName`), not the alert's whole area: a list
+ * of hundreds of other tambons tells the reader nothing about their own (the owner, 14 Oct).
  */
-export function AlertDetails({ alert }: { alert: PublicAlert }) {
+export function AlertDetails({ alert, areaName }: { alert: PublicAlert; areaName?: string }) {
   const t = useTranslations("home");
   const tAlert = useTranslations("alert");
   const locale = useLocale();
   const format = useFormatter();
   const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
   const range = (r: [string, string]) => t("range", { from: time(r[0]), to: time(r[1]) });
-  const text = alertText(alert, locale);
+  const text = alertWords(alert.messages, locale, areaName || tAlert("yourArea"));
   return (
     <>
       <p className="text-h3 font-bold">{tAlert(`summary.${alert.level}`)}</p>
@@ -88,7 +88,7 @@ export function AlertDetails({ alert }: { alert: PublicAlert }) {
  * keeps its level and gets the grey marker beside it. The two states that are not levels ("not
  * in service yet", "couldn't load") are grey cards without any level badge or color.
  */
-export function AlertHero({ status, area, now, onRetry }: Props) {
+export function AlertHero({ status, area, areaName, now, onRetry }: Props) {
   const t = useTranslations("home");
   const tAlert = useTranslations("alert");
 
@@ -142,7 +142,7 @@ export function AlertHero({ status, area, now, onRetry }: Props) {
         now={new Date(now)}
         size="hero"
       />
-      <AlertDetails alert={alert} />
+      <AlertDetails alert={alert} areaName={areaName} />
     </section>
   );
 }

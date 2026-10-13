@@ -28,6 +28,13 @@ const LEVELS: Record<string, Record<PushLevel, string>> = {
   en: en.alert.level,
 };
 const levelName = (level: PushLevel, locale: string) => (LEVELS[locale] ?? LEVELS.th!)[level];
+/** "your area": a notification goes to one phone about its own places, not the whole list. */
+const YOUR_AREA: Record<string, string> = {
+  th: th.alert.yourArea,
+  ms: ms.alert.yourArea,
+  en: en.alert.yourArea,
+};
+const yourArea = (locale: string) => YOUR_AREA[locale] ?? YOUR_AREA.th!;
 
 export type PushOutcome = { sent: number; failed: number; gone: number } | { skipped: string };
 
@@ -73,7 +80,7 @@ export async function pushAlert(supabase: SupabaseClient, alertId: string): Prom
     const queue = [...(targets as Target[])];
     const worker = async () => {
       for (let t = queue.pop(); t; t = queue.pop()) {
-        const payload = alertPayload(alert as PushAlert, t.locale, levelName);
+        const payload = alertPayload(alert as PushAlert, t.locale, levelName, yourArea(t.locale));
         if (!payload) continue;
         try {
           await webpush.sendNotification(

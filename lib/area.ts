@@ -43,6 +43,11 @@ export function pickName(locale: string, th: string, en: string): string {
   return locale === "th" ? th : en;
 }
 
+/** A tambon as an alert's own text writes it: "ต.บานา" / "Bana". */
+export function tambonName(locale: string, tambon: { nameTh: string; nameEn: string }): string {
+  return locale === "th" ? `ต.${tambon.nameTh}` : tambon.nameEn || tambon.nameTh;
+}
+
 /** "ต.บานา อ.เมืองปัตตานี จ.ปัตตานี" / "Bana, Mueang Pattani, Pattani". */
 export function areaName(locale: string, area: Area): string {
   return locale === "th"

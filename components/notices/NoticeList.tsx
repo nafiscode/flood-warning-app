@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { ClockIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
+import { alertWords } from "@/lib/alert-words";
 import type { NoticeItem } from "@/lib/notices";
 
 /**
@@ -63,7 +64,9 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
       {(item.kind === "alert" || item.kind === "alertEnded") && (
         <p className="font-medium">{where}</p>
       )}
-      {item.kind === "alert" && <p>{text(item.messages)}</p>}
+      {/* The line above says which of the person's places; the words say "your area", not the
+          alert's whole list of tambons. */}
+      {item.kind === "alert" && <p>{alertWords(item.messages, locale, t("yourArea"))}</p>}
       {item.kind === "alertEnded" && <p>{t("ended")}</p>}
       {item.kind === "announcement" && (
         <>

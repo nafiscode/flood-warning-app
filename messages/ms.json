@@ -185,7 +185,8 @@
           "d": "Ambil gambar kerosakan sebelum membersihkan rumah."
         }
       }
-    }
+    },
+    "yourArea": "kawasan anda"
   },
   "sos": {
     "label": "SOS",
@@ -1673,7 +1674,7 @@
       "stale": "Data lebih lewat daripada biasa. Periksa sama ada empangan masih menerbitkan data.",
       "awaiting": "Satu bacaan sahaja memenuhi paras; {readings} bacaan berturut-turut diperlukan.",
       "noFigures": "Belum ada data daripada empangan",
-      "tambons": "Zon ini meliputi {main} mukim yang dilalui sungai utama dan {tributary} mukim lagi yang mempunyai tanah rendah yang boleh dicapai air sungai",
+      "tambons": "Laluan air melalui {main} mukim di sepanjang sungai utama dan {tributary} mukim di anak sungai",
       "reviewTitle": "Tiada amaran dihantar kepada sesiapa",
       "reviewBody": "Sistem mengesan pelepasan yang disahkan dan memberitahu pentadbir sahaja. Orang di tebing sungai hanya melihat satu nota dengan penafian bahawa ia bukan amaran. Mengeluarkan amaran adalah tugas manusia.",
       "raisedAt": "Dibangkitkan pada {time}",
@@ -2217,7 +2218,7 @@
         "body": "Menurut angka yang diterbitkan oleh empangan sendiri, kadar pelepasan air melebihi julat operasi biasa. Air itu mengalir ke {river}. Pantau paras air dekat rumah, alihkan kereta ke tempat tinggi, dan siapkan barang penting."
       },
       "where": "{tambon} terletak di tebing {river} di hilir empangan",
-      "whereTributary": "{tambon} tidak terletak di tebing sungai ini, tetapi mempunyai tanah rendah yang boleh dicapai air sungai apabila parasnya tinggi, melalui anak sungai dan merentasi dataran.",
+      "whereTributary": "{tambon} terletak di anak sungai yang mengalir masuk ke sungai ini. Apabila paras sungai utama naik, air anak sungai mungkin lambat mengalir keluar dan berlaku kesan air balik.",
       "openMap": "Lihat peta laluan air"
     },
     "disclaimer": {
@@ -2256,16 +2257,16 @@
     },
     "path": {
       "title": "Laluan air yang dilepaskan dari empangan",
-      "tambons": "Melalui {count} mukim, dan {tributary} mukim lagi yang mempunyai tanah rendah yang boleh dicapai air sungai",
+      "tambons": "Melalui {count} mukim di sepanjang sungai utama, dan {tributary} mukim lagi di bahagian hilir anak sungai",
       "limits": "Garis di peta ialah laluan sungai, bukan sempadan kawasan banjir. Kawasan di luar garis pun boleh dilanda banjir.",
       "spillwayNotMapped": "Saluran pelepasan dari alur limpah belum ada dalam data peta, jadi ia ditunjukkan sebagai titik bukan garis.",
-      "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Kawasan berlorek ialah tanah yang pernah dicapai paras sungai, dianggar daripada model ketinggian 30 m dan stesen paras air; garis putus-putus ialah satu meter lebih tinggi. Ini bukan peta banjir dan bukan ramalan."
+      "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Hanya anak sungai yang sudah dipetakan ditunjukkan."
     },
     "legend": {
       "open": "Lihat data {dam} dan carta 14 hari",
       "reservoir": "Takungan {dam}",
       "river": "{river} di hilir empangan",
-      "tributary": "Tanah yang boleh dicapai air sungai apabila parasnya tinggi (garis putus-putus: satu meter lebih tinggi). Bukan peta banjir."
+      "tributary": "Bahagian hilir anak sungai yang mengalir masuk ke sungai utama"
     },
     "arrival": {
       "title": "Bila air sampai",
@@ -2283,7 +2284,7 @@
         "hours": "Di sepanjang sungai, air mula naik kira-kira {from}–{to} jam selepas pintu dibuka, bergantung pada jarak dari empangan.",
         "days": "Di sepanjang sungai, air mula naik kira-kira {from}–{to} hari selepas pintu dibuka, bergantung pada jarak dari empangan."
       },
-      "tributary": "Kawasan anda tidak terletak di tebing sungai. Masa yang ditunjukkan ialah masa di titik sungai yang terdekat. Air yang melimpah merentasi dataran atau berbalik ke anak sungai mungkin mengambil masa lebih lama untuk tiba; jangan bergantung pada masa tambahan itu.",
+      "tributary": "Kawasan anda berada di anak sungai. Apabila sungai utama naik, air berkumpul masuk ke anak sungai, dan masa yang ditunjukkan ialah masa di tempat pertemuan.",
       "basis": "Julat masa ini dianggarkan daripada stesen paras air di sungai (pelepasan janakuasa dan banjir sejak 2020). Ia bukan ramalan dan tiada model hidraulik di sebaliknya."
     },
     "release": {

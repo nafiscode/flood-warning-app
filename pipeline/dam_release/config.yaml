@@ -137,7 +137,6 @@ zone:
     outer_extra_m: 1.0     # the outer band, drawn lighter: a metre above anything recorded
   simplify_m: 30
   min_patch_km2: 0.02
-  seed: {simplify_m: 60, min_patch_km2: 0.05}    # the outlines the database and the map get
   radar:
     season_2020: out/sar_floods/products/jaga_sar_max_season-2020_20m_c97e0bf.tif   # holds the January 2021 release
     event_2024: out/sar_floods/products/jaga_sar_max_event-2024-nov-dec_10m_c97e0bf.tif
