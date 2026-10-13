@@ -170,6 +170,29 @@ model anchored on the gauges' highest levels (`dam_release zone`; METHODS.md "Th
 the owner's choice between the path and the zone, and the question of unrecorded releases
 (METHODS.md "The outside check"), which S5's rainfall will help settle.
 
+### S8: Seasonal outlook
+
+```text
+Read docs/science-plan.md Module 9 and pipeline/seasonal_outlook/METHODS.md.
+
+Step 1 (the record of 45 seasons against ENSO) is built. Continue in order, and show the owner the
+result of each step before the next:
+1. A second rainfall record for the same seasons (ERA5-Land; ThaiWater and TMD gauges where they
+   reach back). Compare totals, wettest five and fifteen days, and the trend with CHIRPS. Say plainly
+   which findings survive.
+2. Seasonal forecast models, free sources only (ask before anything that needs a new account):
+   fetch the hindcasts for the box around the four provinces and score each model's lean
+   (drier, normal, wetter) against what happened, season by season. Report the score beside
+   "always say normal" and "ENSO alone".
+3. Only if a source beats those: build the outlook as odds for the three thirds with its past
+   hit rate, as a small table the admin signal dashboard (A8) can read. No public screen.
+4. Propose, do not build, the wording and place of a public version, for the owner to decide.
+
+Rules: an outlook is a range with its skill and its date, never "there will be floods" or "there will
+be none" (safety rule 8). A dry-leaning outlook changes nothing in readiness and is never shown as an
+all-clear (safety rule 10). No alert is ever issued from it (safety rule 2).
+```
+
 ## App track
 
 ### A0: Scaffold and Jaga brand setup

@@ -180,6 +180,21 @@ Added 12 Oct 2026 from the owner's knowledge of the area: the main highways are 
 2. **Where water needs a path.** Along each highway line, compare the flood on its two sides in the radar seasons: water standing higher or longer on the upstream side is water the road holds back. Mark those stretches, and the mapped bridges and culverts along them, so the authorities can see where an opening is missing or too small. Output: a layer and a list per highway section for the provincial highway and irrigation offices, as advice, never as a public alert.
 3. **Honest limits.** The radar sees extent, not depth; a 10 to 20 m pixel beside a road is noisy; culverts are mostly unmapped in OpenStreetMap. The list is where to look, to be confirmed on the ground.
 
+### Module 9: Seasonal outlook (is this season likely to be a wet one?)
+
+Added 14 Oct 2026 at the owner's request: can Jaga say ahead of the season whether it will bring heavy floods like 2024 and 2025?
+
+**What is and is not predictable.** The rain total of a November to January season can be leaned one way or the other some weeks ahead, mostly from the state of the Pacific (ENSO) and from the seasonal forecast models. The floods that do the damage come from bursts of a few days, and nobody can foresee those more than about one to two weeks ahead. So the product is an **outlook in thirds** (odds of a drier, normal or wetter season), never a flood forecast, and a dry-leaning outlook never lowers readiness.
+
+1. **The record (built 14 Oct 2026, `pipeline/seasonal_outlook`, METHODS.md).** 45 seasons of CHIRPS rain over the four provinces against NOAA's ENSO index. First findings: the two wettest five-day bursts of the record are 2025 and 2024; the Pacific's state before the season explains about 17% of the differences in season totals and 9% in the worst burst; El Niño seasons were in the dry third 5 times in 9 and in the wet third once; season totals have risen about 14% a decade in this record (to be checked against a second record), with no trend shown in the worst burst.
+2. **A second rainfall record** (ERA5-Land, and the ThaiWater and TMD gauges where they reach back) to check the totals, the bursts and the trend before anything is quoted.
+3. **The forecast models.** ECMWF SEAS5 and the other free seasonal systems (Copernicus C3S, or Open-Meteo's seasonal service) for the box around the provinces, and a **hindcast check**: how often did each model's wet, normal or dry lean come true here in past seasons. Only a model that beats "always say normal" in that check is used.
+4. **The outlook.** Odds for the three thirds from the record and the models that passed, issued once before the season (mid-October) and updated monthly, written with its skill beside it ("in past seasons a lean like this was right about N times in 10").
+5. **Two to four weeks ahead** (a later step): the extended-range forecasts and the MJO for "a wet spell is more likely in week 3", which is where bursts first become visible.
+6. **Rain to flood.** Tie season rain and burst size to flooded area (the nine radar seasons) and to the gauges, so the outlook can say what a wet third has meant on the ground.
+
+**Where it is shown.** To the admins first (the signal dashboard of A8), as one of the things a person weighs. Whether it is shown to the public at all, and in what words, is the owner's decision after the hindcast check; if it is, it sits apart from the alert levels and wears none of their colours.
+
 ## 4. Validation metrics
 
 - **Extents:** CSI, hit rate, false-alarm rate against held-out SAR.

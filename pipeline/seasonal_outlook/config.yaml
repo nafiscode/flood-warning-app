@@ -1,0 +1,19 @@
+# Science plan Module 9: is this flood season likely to be a wet one? This package holds the
+# evidence from the past; the outlook itself is a later step (see METHODS.md).
+output_dir: out/seasonal_outlook
+user_agent: "jaga-pipeline/0.1 (+https://github.com/nafiscode/flood-warning-app; {contact})"
+provinces: ["90", "94", "95", "96"]
+
+# Rain: CHIRPS five-day totals (UCSB Climate Hazards Center, public domain), about 5.5 km, 1981 on.
+chirps_pentad: UCSB-CHG/CHIRPS/PENTAD
+scale_m: 5566
+simplify_deg: 0.01
+first_season: 1981
+last_year: 2026
+years_per_request: 8
+
+# The Pacific: NOAA's Oceanic Nino Index (three-month means, public domain).
+oni_url: https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt
+enso_months: JAS            # the newest value known in mid-October, when the outlook would be made
+baseline: [1991, 2020]      # the seasons that define "normal" and the thirds
+rank_from: 2017
