@@ -15,6 +15,10 @@ export const LINE_BATCH = 500;
 export type LineWords = {
   open: string;
   nextUpdate: string;
+  /** "your area", put where the alert's own text lists its tambons. */
+  yourArea: string;
+  /** "This alert covers {count} subdistricts…", under the message. */
+  covers: string;
   statusHead: string;
   statusNone: string;
   statusUnknown: string;
@@ -26,7 +30,37 @@ export type LineAlert = {
   level: string;
   messages: Record<string, string>;
   nextUpdateAt: string | null;
+  /**
+   * The reviewed template the alert was made from, per language, with its "{area}" still in it.
+   * With it, the message says "your area" where the app lists the alert's tambons: a LINE
+   * message is sent to one person about their own places, and a list of other people's tambons
+   * tells them nothing. Without it (an alert not made from a template) the stored words stand.
+   */
+  template?: Record<string, string> | null;
+  /** How many tambons the alert covers, said under the message when it is more than one. */
+  tambons?: number;
 };
+
+const THAI_AREA = "พื้นที่";
+
+/**
+ * The alert's words for one person: the reviewed template with "your area" in place of the list
+ * of tambons. Nothing else of the reviewed text is touched. Null when there is no template for
+ * that language or it names no area.
+ */
+export function personalBody(
+  template: Record<string, string> | null | undefined,
+  locale: string,
+  yourArea: string,
+): string | null {
+  const text = template?.[locale];
+  if (!text || !text.includes("{area}") || !yourArea) return null;
+  // Thai templates say "ในพื้นที่ {area}", and the Thai for "your area" begins with that word.
+  const doubled = `${THAI_AREA} {area}`;
+  return yourArea.startsWith(THAI_AREA) && text.includes(doubled)
+    ? text.replace(doubled, yourArea)
+    : text.replace("{area}", yourArea);
+}
 
 const CLOCK = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Asia/Bangkok",
@@ -67,8 +101,14 @@ export function alertFlex(
   const level = (["watch", "warning", "evacuate", "return"] as PushLevel[]).find(
     (l) => l === alert.level,
   );
-  const body = alert.messages[locale] ?? alert.messages.th ?? "";
+  const body =
+    personalBody(alert.template, locale, words.yourArea) ??
+    alert.messages[locale] ??
+    alert.messages.th ??
+    "";
   if (!level || !body) return null;
+  const covers =
+    (alert.tambons ?? 0) > 1 ? words.covers.replace("{count}", String(alert.tambons)) : "";
   const colour = ALERT_COLOURS[level];
   const next = lineTime(alert.nextUpdateAt);
   return {
@@ -100,6 +140,9 @@ export function alertFlex(
         spacing: "md",
         contents: [
           { type: "text", text: clip(body, 1200), wrap: true, size: "md" },
+          ...(covers
+            ? [{ type: "text", text: covers, wrap: true, size: "sm", color: "#5B6B78" }]
+            : []),
           ...(next
             ? [
                 {

@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { alertFlex, batches, lineTime, statusText, type LineWords } from "@/lib/line";
+import { alertFlex, batches, lineTime, personalBody, statusText, type LineWords } from "@/lib/line";
 import { lineSignatureOk } from "@/lib/line-server";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
@@ -33,6 +33,46 @@ describe("an alert as a LINE message", () => {
     const english = JSON.stringify(alertFlex(ALERT, "en", "Warning", en.line, "https://x"));
     expect(english).toContain(ALERT.messages.th);
     expect(english).toContain("https://x/en");
+  });
+
+  it("says 'your area' where the app lists the alert's tambons, and how many it covers", () => {
+    const template = {
+      th: "กลับบ้านได้ในพื้นที่ {area} กลับอย่างระมัดระวัง",
+      ms: "Selamat pulang di {area}. Pulang dengan berhati-hati.",
+      en: "It is safe to return in {area}. Go back carefully.",
+    };
+    const listed = {
+      ...ALERT,
+      messages: {
+        th: "กลับบ้านได้ในพื้นที่ ต.บ่อยาง, ต.เขารูปช้าง และอีก 375 ตำบล กลับอย่างระมัดระวัง",
+      },
+      template,
+      tambons: 377,
+    };
+    const thai = JSON.stringify(alertFlex(listed, "th", "กลับบ้านได้", th.line, "https://x"));
+    expect(thai).toContain("กลับบ้านได้ในพื้นที่ของคุณ กลับอย่างระมัดระวัง");
+    expect(thai).not.toContain("ต.บ่อยาง");
+    expect(thai).toContain("377");
+    expect(personalBody(template, "ms", ms.line.yourArea)).toBe(
+      "Selamat pulang di kawasan anda. Pulang dengan berhati-hati.",
+    );
+    expect(personalBody(template, "en", en.line.yourArea)).toBe(
+      "It is safe to return in your area. Go back carefully.",
+    );
+    // One tambon: "your area" says it all, so no line about how many.
+    const one = JSON.stringify(
+      alertFlex({ ...listed, tambons: 1 }, "en", "Return", en.line, "https://x"),
+    );
+    expect(one).not.toContain(en.line.covers.slice(0, 16));
+  });
+
+  it("keeps the stored words for an alert not made from a template", () => {
+    expect(personalBody(null, "th", th.line.yourArea)).toBeNull();
+    expect(personalBody({ th: "ไม่มีชื่อพื้นที่" }, "th", th.line.yourArea)).toBeNull();
+    const flex = JSON.stringify(
+      alertFlex({ ...ALERT, template: null }, "th", "เตือนภัย", words, "https://x"),
+    );
+    expect(flex).toContain(ALERT.messages.th);
   });
 
   it("is never made for Normal or for an alert with no words", () => {

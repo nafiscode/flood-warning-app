@@ -106,7 +106,7 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
     if (!accessToken()) return { skipped: "no_token" };
     const { data: alert } = await supabase
       .from("alerts")
-      .select("id, level, messages, next_update_at, is_drill")
+      .select("id, level, messages, next_update_at, is_drill, template_id")
       .eq("id", alertId)
       .maybeSingle();
     if (!alert || alert.is_drill) return { skipped: "drill_or_gone" };
@@ -115,6 +115,22 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
     });
     if (error || !Array.isArray(targets)) return { skipped: "no_targets" };
     if (targets.length === 0) return { recipients: 0, failed: 0, warnAt: null };
+
+    // The reviewed template and the size of the area, so each person reads "your area" rather
+    // than a list of other people's tambons. Either may be missing; the stored words then stand.
+    const [{ data: template }, { count: tambons }] = await Promise.all([
+      alert.template_id
+        ? supabase
+            .from("alert_templates")
+            .select("messages")
+            .eq("id", alert.template_id as string)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from("alert_tambons")
+        .select("tambon", { count: "exact", head: true })
+        .eq("alert_id", alertId),
+    ]);
 
     const byLocale = new Map<Locale, string[]>();
     for (const t of targets as { line_user_id: string; locale: string }[]) {
@@ -130,6 +146,8 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
           level: alert.level as string,
           messages: alert.messages as Record<string, string>,
           nextUpdateAt: alert.next_update_at as string | null,
+          template: (template?.messages as Record<string, string> | undefined) ?? null,
+          tambons: tambons ?? 0,
         },
         locale,
         levelOf(locale, alert.level as string),

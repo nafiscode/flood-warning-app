@@ -2838,6 +2838,8 @@
     "statusHead": "Amaran yang berkuat kuasa untuk kawasan anda",
     "statusNone": "Tiada amaran dalam aplikasi Jaga untuk kawasan anda sekarang. Tiada amaran tidak bermakna tiada risiko. Ikuti amaran rasmi. Kecemasan: hubungi 1784 atau 1669.",
     "statusUnknown": "Belum ada akaun Jaga yang dipautkan dengan LINE ini. Buka aplikasi Jaga dan log masuk dengan LINE untuk menerima amaran bagi kawasan anda. Kecemasan: hubungi 1784 atau 1669.",
-    "statusNoPlaces": "Anda belum menetapkan lokasi rumah atau tempat yang dipantau dalam aplikasi Jaga. Buka aplikasi dan pergi ke Akaun untuk menetapkannya. Kecemasan: hubungi 1784 atau 1669."
+    "statusNoPlaces": "Anda belum menetapkan lokasi rumah atau tempat yang dipantau dalam aplikasi Jaga. Buka aplikasi dan pergi ke Akaun untuk menetapkannya. Kecemasan: hubungi 1784 atau 1669.",
+    "yourArea": "kawasan anda",
+    "covers": "Amaran ini meliputi {count} mukim. Buka Jaga untuk melihat tempat anda yang terlibat."
   }
 }
