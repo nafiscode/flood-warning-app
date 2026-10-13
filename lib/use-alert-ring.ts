@@ -8,9 +8,7 @@ import { arm, isArmed, play, type Playing } from "@/lib/sounds";
 /** A repeating sound (the dam release) stops by itself after this long, or at the next tap. */
 export const RING_MAX_MS = 30_000;
 const RUNG_KEPT = 200;
-/** Watch and Safe to return ring too, but quieter than Warning and Evacuate. */
-const LOUD_VOLUME = 0.6;
-const SOFT_VOLUME = 0.3;
+const VOLUME = 0.8;
 
 /**
  * The app rings for every alert in force for this person's places - the area they chose, their
@@ -46,23 +44,32 @@ export function useAlertRing(
       if (stopTimer.current !== null) window.clearTimeout(stopTimer.current);
       stopTimer.current = null;
     };
-    const ring = () => {
+    const dueNow = () => {
       const now = latest.current;
-      if (now.quiet || !now.ready || !isArmed()) return;
+      if (now.quiet || !now.ready) return null;
+      const due = ringFor(now.items, now.read, readStored<string[]>("noticesRung") ?? []);
+      return due.sound ? { sound: due.sound, ids: due.ids } : null;
+    };
+    const sound = (due: NonNullable<ReturnType<typeof dueNow>>) => {
       const rung = readStored<string[]>("noticesRung") ?? [];
-      const due = ringFor(now.items, now.read, rung);
-      if (!due.sound) return;
-      writeStored("noticesRung", [...rung, ...due.ids].slice(-RUNG_KEPT));
+      writeStored("noticesRung", [...new Set([...rung, ...due.ids])].slice(-RUNG_KEPT));
       stop();
-      playing.current = play(due.sound, { volume: due.soft ? SOFT_VOLUME : LOUD_VOLUME });
+      playing.current = play(due.sound, { volume: VOLUME });
       stopTimer.current = window.setTimeout(stop, RING_MAX_MS);
     };
+    const ring = () => {
+      const due = isArmed() ? dueNow() : null;
+      if (due) sound(due);
+    };
     const onTap = () => {
-      // A tap silences what is ringing; the first tap of a visit is also what lets sound play.
+      // A tap silences a repeating sound; the first tap of a visit is also what lets sound play.
       if (playing.current) stop();
       if (isArmed()) return;
+      // What is due is worked out now, before the tap does anything else: if this very tap is
+      // on the bell, opening it marks everything read, and the alert would never ring.
+      const due = dueNow();
       arm().then((ok) => {
-        if (ok) ring();
+        if (ok && due) sound(due);
       });
     };
     document.addEventListener("pointerdown", onTap);

@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { durationMs, SOUNDS, soundForAlertLevel, type SoundName } from "@/lib/sounds";
+import { ALERT_MIN_MS, durationMs, SOUNDS, soundForAlertLevel, type SoundName } from "@/lib/sounds";
 
-const NAMES: SoundName[] = ["offer", "supplyOffer", "accepted", "rescued", "alert", "damRelease"];
+const ALERTS: SoundName[] = ["alertWatch", "alertWarning", "alertEvacuate", "alertReturn"];
+const NAMES: SoundName[] = ["offer", "supplyOffer", "accepted", "rescued", ...ALERTS, "damRelease"];
 
 describe("Jaga's sounds", () => {
-  it("has six and no more", () => {
-    // docs/brand.md: six sounds and no others (the sixth, for a request for food and water, was
-    // decided on 13 October). A seventh needs a decision, not a commit.
+  it("has the nine in docs/brand.md and no more", () => {
+    // One alert sound per level since 13 October (the owner). Another needs a decision, not a
+    // commit.
     expect(Object.keys(SOUNDS).sort()).toEqual([...NAMES].sort());
   });
 
@@ -30,17 +31,37 @@ describe("Jaga's sounds", () => {
     }
   });
 
-  it("keeps every sound short enough to be a signal rather than a tune", () => {
-    for (const name of NAMES) {
+  it("keeps the private sounds short: a signal rather than a tune", () => {
+    for (const name of NAMES.filter((n) => !ALERTS.includes(n))) {
       expect(durationMs(name)).toBeLessThanOrEqual(1200);
     }
   });
 
-  it("makes the alarm the most insistent of them", () => {
-    const alarm = SOUNDS.offer;
-    for (const name of NAMES.filter((n) => n !== "offer")) {
-      expect(alarm.tones.length).toBeGreaterThanOrEqual(SOUNDS[name].tones.length);
+  it("makes every alert sound at least five seconds long, and not much longer", () => {
+    for (const name of ALERTS) {
+      expect(durationMs(name)).toBeGreaterThanOrEqual(ALERT_MIN_MS);
+      expect(durationMs(name)).toBeLessThanOrEqual(7000);
     }
+  });
+
+  it("gives each alert level a sound of its own", () => {
+    const shapes = ALERTS.map((n) =>
+      SOUNDS[n].tones.map((t) => `${t.freq}@${t.at}/${t.ms}`).join(","),
+    );
+    expect(new Set(shapes).size).toBe(ALERTS.length);
+    // And the level is in the pitch, not only the rhythm: no two share their set of notes.
+    const notes = ALERTS.map((n) => [...new Set(SOUNDS[n].tones.map((t) => t.freq))].join(","));
+    expect(new Set(notes).size).toBe(ALERTS.length);
+  });
+
+  it("makes Evacuate the most insistent alert, and never as fast as the teams' alarm", () => {
+    const busy = (n: SoundName) =>
+      SOUNDS[n].tones.reduce((sum, t) => sum + t.ms, 0) / durationMs(n);
+    for (const name of ALERTS.filter((n) => n !== "alertEvacuate")) {
+      expect(busy("alertEvacuate")).toBeGreaterThan(busy(name));
+    }
+    const shortest = (n: SoundName) => Math.min(...SOUNDS[n].tones.map((t) => t.ms));
+    expect(shortest("alertEvacuate")).toBeGreaterThan(shortest("offer") * 3);
   });
 
   it("is the fast two-tone the owner chose by ear: six notes, high and low in turn, then a breath", () => {
@@ -55,11 +76,14 @@ describe("Jaga's sounds", () => {
 
   it("gives the dam release a shape of its own, never mistakable for an alert", () => {
     const dam = SOUNDS.damRelease.tones.map((t) => t.freq);
-    const alert = SOUNDS.alert.tones.map((t) => t.freq);
-    expect(dam).not.toEqual(alert);
-    // The alert is one note twice; the dam release rises. That difference is the point.
-    expect(new Set(alert).size).toBe(1);
+    const warning = SOUNDS.alertWarning.tones.map((t) => t.freq);
+    // The Warning is one low note, struck in pairs; the dam release rises. That difference is
+    // the point.
+    expect(new Set(warning).size).toBe(1);
     expect(dam[0]).toBeLessThan(dam[dam.length - 1]!);
+    for (const name of ALERTS) {
+      expect([...new Set(SOUNDS[name].tones.map((t) => t.freq))]).not.toEqual([...new Set(dam)]);
+    }
   });
 
   it("says good news with a rising shape and an ending with a falling one", () => {
@@ -76,9 +100,10 @@ describe("which alert level makes a sound", () => {
   });
 
   it("sounds for every level an admin can issue (the owner, 13 Oct)", () => {
-    for (const level of ["watch", "warning", "evacuate", "return"]) {
-      expect(soundForAlertLevel(level)).toBe("alert");
-    }
+    expect(soundForAlertLevel("watch")).toBe("alertWatch");
+    expect(soundForAlertLevel("warning")).toBe("alertWarning");
+    expect(soundForAlertLevel("evacuate")).toBe("alertEvacuate");
+    expect(soundForAlertLevel("return")).toBe("alertReturn");
   });
 
   it("stays silent for a level it does not know", () => {

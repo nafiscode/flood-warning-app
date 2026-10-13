@@ -118,7 +118,7 @@ The dark values are in `lib/brand/tokens.ts` (`darkBrand`) and mirrored in `app/
 
 ## Sound
 
-Jaga makes six sounds and no others. They are generated in the app with the Web Audio API, so there is no audio file to download, nothing to cache and nothing to licence, and they work offline. Short, plain tones; nothing cinematic, no siren samples, no music.
+Jaga makes nine sounds and no others. They are generated in the app with the Web Audio API, so there is no audio file to download, nothing to cache and nothing to licence, and they work offline. Short, plain tones; nothing cinematic, no siren samples, no music.
 
 | Sound | When | Shape |
 |---|---|---|
@@ -126,11 +126,15 @@ Jaga makes six sounds and no others. They are generated in the app with the Web 
 | Supply offer | a team is being offered a request for food and water (spec 4.10) | three low, round, unhurried notes (523, 523, 659 Hz), played **once**. Everything the alarm is not: lower than its lowest note, slower, and silent afterwards, so a crew that does both jobs never takes one for the other by ear. Not heard by the owner yet. |
 | Accepted | a team accepts the requester's case | one short rising pair. Relief, not celebration. |
 | Rescued / safe | "rescued" and "I'm safe now" | three soft notes resolving downward |
-| Alert | an alert in force for the person's places that this phone has not shown yet | one low double-tone; full volume for Warning and Evacuate, half for Watch and Safe to return |
+| Alert: Watch | a Watch in force for the person's places that this phone has not shown yet | a soft two-note chime (523, 659 Hz), three times; about 5 s |
+| Alert: Warning | the same, for a Warning | a low, firm double-tone (392 Hz), four times; about 5 s |
+| Alert: Evacuate | the same, for an Evacuate | a high-low call (880, 660 Hz), half a second a note, six times without a pause; 6 s. The most insistent alert sound, and far slower than the offer alarm |
+| Alert: Safe to return | the same, for Safe to return | three unhurried notes settling downward (659, 523, 392 Hz), twice; about 5 s |
 | Dam release | a release notice from Bang Lang (spec 15) reaches someone in the zone downstream | a rising figure, repeated; the only public alert sound that repeats. Never mistakable for the alert double-tone. |
 
 Rules:
-- **Every alert an admin issues rings in an open app** (the owner, 13 Oct 2026; before that Watch was silent). Watch and Safe to return ring at half volume. Normal is the absence of an alert and has no sound.
+- **Every alert an admin issues rings in an open app, each level with its own sound, each at least five seconds long** (the owner, 13 Oct 2026; before that there was one short tone and Watch was silent). When several are due the most serious one plays. Normal is the absence of an alert and has no sound. None of the four was chosen by ear yet.
+- **A web page cannot override a phone's volume or Do Not Disturb.** On iPhone the app declares its sound as media (`navigator.audioSession`), so the ring/silent switch does not mute it; a volume turned to zero still does, on every phone. Sounding through silence and Do Not Disturb is reserved by the phone makers for native apps with a special permission (Apple's Critical Alerts) and for the government's own cell broadcast.
 - **Never sound alone.** Every sound has a vibration pattern and its own icon and words on screen (the accessibility rule: a level is never carried by one channel).
 - **Audio needs a tap first.** Browsers refuse to play until the person has interacted, so the authority console asks once to arm the alarm and then stays armed. Never assume a sound was heard.
 - **An open app rings for every alert in force** in the person's area, home or watched places that the phone has not shown yet, whenever it was issued: the Alert tone, or the Dam release figure for a release notice (30 s at most, or until a tap). Once per alert per phone, never on the SOS screens (`lib/use-alert-ring.ts`).

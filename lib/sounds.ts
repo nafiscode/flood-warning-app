@@ -1,5 +1,5 @@
 /**
- * Jaga's six sounds (docs/brand.md "Sound", spec 4.8, decision of 9 Oct).
+ * Jaga's sounds (docs/brand.md "Sound", spec 4.8, decision of 9 Oct).
  *
  * They are generated here with the Web Audio API rather than loaded as files: nothing to
  * download on a bad connection, nothing to cache for offline, nothing to licence, and a few
@@ -17,7 +17,19 @@
  *    which is why `arm()` exists and why the authority console asks once.
  */
 
-export type SoundName = "offer" | "supplyOffer" | "accepted" | "rescued" | "alert" | "damRelease";
+export type SoundName =
+  | "offer"
+  | "supplyOffer"
+  | "accepted"
+  | "rescued"
+  | "alertWatch"
+  | "alertWarning"
+  | "alertEvacuate"
+  | "alertReturn"
+  | "damRelease";
+
+/** The shortest an alert sound may be (the owner, 13 Oct): long enough not to be missed. */
+export const ALERT_MIN_MS = 5000;
 
 type Tone = {
   /** Hz. */
@@ -92,14 +104,49 @@ export const SOUNDS: Record<SoundName, SoundSpec> = {
     repeatEveryMs: null,
     vibrate: [90, 70, 90, 70, 160],
   },
-  // A new alert. One low double-tone; played at half volume for Watch and Safe to return.
-  alert: {
-    tones: [
-      { freq: 392, at: 0, ms: 300 },
-      { freq: 392, at: 400, ms: 300 },
-    ],
+  /*
+   * The four alert sounds (the owner, 13 Oct): one per level, so the level is heard before the
+   * screen is read, and each at least five seconds long so it is not missed. They rise in
+   * urgency the way the levels do, and none of them can be taken for the teams' offer alarm,
+   * which is much faster.
+   */
+  // Watch: a soft two-note chime, three times. "Get ready", not "run".
+  alertWatch: {
+    tones: [0, 1, 2].flatMap((i) => [
+      { freq: 523, at: i * 2000, ms: 420, gain: 0.5 },
+      { freq: 659, at: i * 2000 + 450, ms: 700, gain: 0.5 },
+    ]),
     repeatEveryMs: null,
-    vibrate: [300, 150, 300],
+    vibrate: [200, 1800, 200, 1800, 200],
+  },
+  // Warning: a low, firm double-tone, four times.
+  alertWarning: {
+    tones: [0, 1, 2, 3].flatMap((i) => [
+      { freq: 392, at: i * 1400, ms: 380 },
+      { freq: 392, at: i * 1400 + 480, ms: 380 },
+    ]),
+    repeatEveryMs: null,
+    vibrate: [300, 150, 300, 650, 300, 150, 300, 650, 300, 150, 300, 650, 300, 150, 300],
+  },
+  // Evacuate: a high-low call, half a second a note, six times without a pause. The most
+  // insistent of the four; brighter (triangle) so it carries on a small speaker.
+  alertEvacuate: {
+    tones: [0, 1, 2, 3, 4, 5].flatMap((i) => [
+      { freq: 880, at: i * 1000, ms: 480, type: "triangle" as const },
+      { freq: 660, at: i * 1000 + 500, ms: 480, type: "triangle" as const },
+    ]),
+    repeatEveryMs: null,
+    vibrate: [450, 50, 450, 50, 450, 50, 450, 50, 450, 50, 450, 50, 450, 50, 450, 50, 450],
+  },
+  // Safe to return: three unhurried notes settling downward, twice. Relief.
+  alertReturn: {
+    tones: [0, 1].flatMap((i) => [
+      { freq: 659, at: i * 2700, ms: 600, gain: 0.5 },
+      { freq: 523, at: i * 2700 + 650, ms: 600, gain: 0.5 },
+      { freq: 392, at: i * 2700 + 1300, ms: 1000, gain: 0.5 },
+    ]),
+    repeatEveryMs: null,
+    vibrate: [150, 500, 150, 500, 300],
   },
   // A dam release notice (spec 15). Its own rising figure, repeated: the water is already coming.
   damRelease: {
@@ -115,8 +162,10 @@ export const SOUNDS: Record<SoundName, SoundSpec> = {
 
 /** Alert levels that make a sound at all, and which one (docs/brand.md). */
 export function soundForAlertLevel(level: string): SoundName | null {
-  if (level === "watch" || level === "warning" || level === "evacuate" || level === "return")
-    return "alert";
+  if (level === "watch") return "alertWatch";
+  if (level === "warning") return "alertWarning";
+  if (level === "evacuate") return "alertEvacuate";
+  if (level === "return") return "alertReturn";
   // Normal is the absence of an alert, and anything unknown stays silent.
   return null;
 }
@@ -141,6 +190,11 @@ export async function arm(): Promise<boolean> {
   if (!Ctor) return false;
   try {
     ctx ??= new Ctor();
+    // iPhone: the ring/silent switch mutes a page's sounds unless the page says it is playing
+    // media. Saying so lets an alert be heard with the switch on silent. It cannot raise a
+    // volume that is turned all the way down, and no web page can (docs/brand.md "Sound").
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+    if (session) session.type = "playback";
     if (ctx.state === "suspended") await ctx.resume();
     return ctx.state === "running";
   } catch {

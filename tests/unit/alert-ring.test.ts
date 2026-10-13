@@ -28,20 +28,27 @@ const ended = (id: string): NoticeItem =>
   }) as NoticeItem;
 
 describe("when the app rings", () => {
-  it("rings for every level, loudly for Warning and Evacuate and softly for the others", () => {
+  it("rings for every level, each with its own sound", () => {
     expect(ringFor([alert("a", "warning")], [], [])).toEqual({
-      sound: "alert",
+      sound: "alertWarning",
       ids: ["alert:a"],
-      soft: false,
     });
-    expect(ringFor([alert("a", "evacuate")], [], []).soft).toBe(false);
+    expect(ringFor([alert("a", "evacuate")], [], []).sound).toBe("alertEvacuate");
+    expect(ringFor([alert("a", "watch")], [], []).sound).toBe("alertWatch");
+    expect(ringFor([alert("a", "return")], [], []).sound).toBe("alertReturn");
+  });
+
+  it("plays the most serious sound when several alerts are due, and answers for all of them", () => {
     expect(ringFor([alert("a", "watch"), alert("b", "return")], [], [])).toEqual({
-      sound: "alert",
+      sound: "alertWatch",
       ids: ["alert:a", "alert:b"],
-      soft: true,
     });
-    // One loud alert among quiet ones is loud.
-    expect(ringFor([alert("a", "watch"), alert("b", "evacuate")], [], []).soft).toBe(false);
+    expect(ringFor([alert("a", "watch"), alert("b", "evacuate")], [], []).sound).toBe(
+      "alertEvacuate",
+    );
+    expect(ringFor([alert("a", "warning"), alert("b", "return")], [], []).sound).toBe(
+      "alertWarning",
+    );
   });
 
   it("rings for an alert that was standing long before the person first opened Jaga", () => {
@@ -55,7 +62,6 @@ describe("when the app rings", () => {
     expect(ringFor([alert("a", "warning"), dam], [], [])).toEqual({
       sound: "damRelease",
       ids: ["alert:a", "alert:d"],
-      soft: false,
     });
   });
 
@@ -67,6 +73,6 @@ describe("when the app rings", () => {
   });
 
   it("is silent for an empty bell", () => {
-    expect(ringFor([], [], [])).toEqual({ sound: null, ids: [], soft: false });
+    expect(ringFor([], [], [])).toEqual({ sound: null, ids: [] });
   });
 });

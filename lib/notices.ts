@@ -282,7 +282,7 @@ export function keepRead(read: readonly string[], items: NoticeItem[]): string[]
  * before - whenever it was issued, so a person who opens Jaga for the first time hears the
  * alert that was already standing (the owner, 13 Oct). Announcements and anything already
  * lifted are silent. A dam release outranks the plain alert tone: its water is already coming.
- * `soft` is true when nothing louder than Watch or Safe to return is due: same tone, quieter.
+ * Each level has its own sound; when several are due, the most serious one plays.
  *
  * `ids` is everything this ring answers for, so each alert rings once on a phone and no more.
  */
@@ -290,7 +290,7 @@ export function ringFor(
   items: readonly NoticeItem[],
   read: readonly string[],
   rung: readonly string[],
-): { sound: "alert" | "damRelease" | null; ids: string[]; soft: boolean } {
+): { sound: RingSound | null; ids: string[] } {
   const ended = new Set(items.flatMap((i) => (i.kind === "alertEnded" ? [i.alertId] : [])));
   const seen = new Set([...read, ...rung]);
   const due = items.filter(
@@ -300,14 +300,25 @@ export function ringFor(
       !seen.has(i.id) &&
       (i.level !== "normal" || isDamRelease(i.source)),
   );
-  if (due.length === 0) return { sound: null, ids: [], soft: false };
-  const dam = due.some((i) => isDamRelease(i.source));
+  if (due.length === 0) return { sound: null, ids: [] };
+  const has = (level: AlertLevel) => due.some((i) => i.level === level);
   return {
-    sound: dam ? "damRelease" : "alert",
-    soft: !dam && !due.some((i) => i.level === "warning" || i.level === "evacuate"),
+    // One sound for the most serious thing due: a dam release first, then by level.
+    sound: due.some((i) => isDamRelease(i.source))
+      ? "damRelease"
+      : has("evacuate")
+        ? "alertEvacuate"
+        : has("warning")
+          ? "alertWarning"
+          : has("watch")
+            ? "alertWatch"
+            : "alertReturn",
     ids: due.map((i) => i.id),
   };
 }
+
+export type RingSound =
+  "alertWatch" | "alertWarning" | "alertEvacuate" | "alertReturn" | "damRelease";
 
 function isDamRelease(source: string | null): boolean {
   return !!source && source.startsWith("dam_release");
