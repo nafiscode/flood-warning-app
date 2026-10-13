@@ -98,7 +98,10 @@ test.describe("sending one", () => {
 
     // The zone is shown and has no control of its own: it is S7's, not the sender's.
     const form = page.locator("[data-dam-release-form]");
-    await expect(form).toContainText(th.admin.damRelease.zone.replace("{count}", "39"));
+    // 55 tambons since 14 Oct: the zone with its outer band, not the 39 of the river line.
+    await expect(form).toContainText(th.admin.damRelease.zone.replace("{count}", "55"));
+    // The furthest tambon is two days away, and the line must say so in hours, not "0.5–2".
+    await expect(form).toContainText(/ตำบลสุดท้ายประมาณ 1\d–4\d ชั่วโมง/);
     expect(await form.locator("input[name='tambon'], select[name='tambon']").count()).toBe(0);
 
     await page.fill("#releaseCms", "650");

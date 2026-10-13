@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { WaveIcon } from "@/components/icons";
 import type { DamArrival } from "@/lib/dam-arrival";
-import { spanOf } from "@/lib/dam-arrival";
 import {
   bangkokInput,
   DEFAULT_RELEASE_LEVEL,
@@ -39,6 +38,9 @@ export type DamForRelease = {
  * below the form is built from the same reviewed template the server will send, from the same
  * figures, so what they read is what arrives. The zone is S7's and has no control at all.
  */
+/** Half hours under two, whole hours above: never days. */
+const wholeHours = (h: number) => (h < 2 ? Math.round(h * 2) / 2 : Math.round(h));
+
 export function DamReleaseForm({
   dams,
   send,
@@ -194,10 +196,12 @@ export function DamReleaseForm({
         {ends && (
           <p className={hint}>
             {t("damRelease.arrivals", {
-              firstFrom: spanOf(ends.first.warnFromH, ends.first.latestH).from,
-              firstTo: spanOf(ends.first.warnFromH, ends.first.latestH).to,
-              lastFrom: spanOf(ends.last.warnFromH, ends.last.latestH).from,
-              lastTo: spanOf(ends.last.warnFromH, ends.last.latestH).to,
+              // Always hours: the sentence says hours. spanOf turns a range that reaches two
+              // days into days, which printed "0.5–2 hours" for a tambon two days away.
+              firstFrom: wholeHours(ends.first.warnFromH),
+              firstTo: wholeHours(ends.first.latestH),
+              lastFrom: wholeHours(ends.last.warnFromH),
+              lastTo: wholeHours(ends.last.latestH),
             })}
           </p>
         )}

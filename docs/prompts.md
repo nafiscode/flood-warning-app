@@ -423,10 +423,12 @@ Read docs/science-plan.md Module 3 and docs/spec.md section 6.3.
 Acceptance: live data for the priority zones; a simulated source outage handled gracefully; suggested levels shown with their reasons.
 ```
 
-**A8 first slice done** (14 Oct): `gauges_fetch()` every 15 minutes into `stations` / `observations`
-(migration `a8_gauges_live`), zones, gauges and provisional thresholds from the generated seed
-`46_zones_gauges_thresholds.sql` (`pipeline/thresholds seed`). Open: forecast rain, GloFAS and tide
-feeds, the admins' signal dashboard with its suggested level, and editing a threshold from a screen.
+**A8 built** (14 Oct): `gauges_fetch()` every 15 minutes and `signals_fetch()` every hour (migrations
+`a8_gauges_live`, `a8_signals`), zones, gauges, thresholds and the feed setting from the generated seed
+`46_zones_gauges_thresholds.sql`, the dashboard at `/admin/signals` (`lib/signals.ts`,
+`components/admin/Signals.tsx`, example at `/dev/signals`) and `admin_set_threshold`. Open: ThaiWater's
+tide data was not evaluated (Open-Meteo Marine is used), `warning_zone_tambons` is empty, the page does
+not refresh by itself, and live rain is a model's while the thresholds were set on satellite rain.
 
 ### A9: Offline and language hardening
 ```text
