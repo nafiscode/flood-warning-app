@@ -48,6 +48,9 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
         <Link href="/admin/safe-places" className="inline-flex min-h-tap items-center underline">
           {t("nav.safePlaces")}
         </Link>
+        <Link href="/admin/field-rescues" className="inline-flex min-h-tap items-center underline">
+          {t("nav.fieldRescues")}
+        </Link>
         <Link href="/admin/duplicates" className="inline-flex min-h-tap items-center underline">
           {t("nav.duplicates")}
         </Link>

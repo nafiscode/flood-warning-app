@@ -24,7 +24,7 @@ export type JourneyStep = {
   name?: string | null;
 };
 
-export type JourneyKind = "rescue" | "supplies" | "unit" | "report";
+export type JourneyKind = "rescue" | "supplies" | "unit" | "report" | "field";
 
 export type Journey = {
   kind: JourneyKind;

@@ -187,3 +187,26 @@ export async function unmergeSos(locale: string, form: FormData) {
   const { error } = await supabase.rpc("admin_sos_unmerge", { p_sos: id });
   redirect(error ? `${back}?error=save` : `${back}?done=unmerged`);
 }
+
+/**
+ * An admin's decision on a rescue a team found by itself: approve a held one (the half points
+ * are awarded), or refuse one with a reason - which also takes back the points of one that had
+ * been counted automatically. Checked and logged by the database function.
+ */
+export async function reviewFieldRescue(locale: string, form: FormData) {
+  const from = String(form.get("from") ?? "pending").replace(/[^a-z]/g, "");
+  const back = `${localePath(locale, "/admin/field-rescues")}?status=${from}`;
+  const id = form.get("rescue");
+  const approve = form.get("decision") === "approve";
+  const note = words(form, "note", 500);
+  if (!isUuid(id)) redirect(`${back}&error=save`);
+  if (!approve && note === "") redirect(`${back}&error=reason`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_review_field_rescue", {
+    p_rescue: id,
+    p_approve: approve,
+    p_note: note || null,
+  });
+  if (error) redirect(`${back}&error=${error.code === "23514" ? "gone" : "save"}`);
+  redirect(`${back}&done=${approve ? "approved" : "rejected"}`);
+}

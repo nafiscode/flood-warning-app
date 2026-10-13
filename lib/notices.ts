@@ -11,6 +11,7 @@
  */
 import type { Area } from "@/lib/area";
 import type { AlertLevel } from "@/lib/brand/tokens";
+import { fieldNews, type MyFieldRescue } from "@/lib/field-rescue";
 import { unitNews, type UnitRequest } from "@/lib/journey";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import type { MyPlaces } from "@/lib/me";
@@ -62,6 +63,7 @@ export type NoticeItem = Base &
         supplies: boolean;
       }
     | { kind: "unit"; event: "verified" | "suspended"; unitName: string }
+    | { kind: "field"; event: "approved" | "rejected" }
   );
 
 /** One row of public_notices(), as /api/public/notices gives it. */
@@ -194,12 +196,14 @@ export function buildNotices(input: {
   cases: KnownCase[];
   /** The teams this person registered, for news of their verification. */
   units?: UnitRequest[];
+  /** Rescues their team found by itself, for news of an admin's decision. */
+  field?: MyFieldRescue[];
   now: number;
   /** The word for the person's own home, and how to name a chosen area, both translated. */
   homeLabel: string;
   areaLabel: (area: Area) => string;
 }): NoticeItem[] {
-  const { rows, area, me, cases, units = [], now, homeLabel, areaLabel } = input;
+  const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -287,6 +291,12 @@ export function buildNotices(input: {
       event: news.event,
       unitName: unit.name,
     });
+  }
+
+  for (const record of field) {
+    const news = fieldNews(record);
+    if (!news || !within(news.at)) continue;
+    items.push({ kind: "field", id: news.id, at: news.at, places: [], event: news.event });
   }
 
   items.sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || a.id.localeCompare(b.id));

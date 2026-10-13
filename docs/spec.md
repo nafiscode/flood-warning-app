@@ -307,6 +307,9 @@ A case does not wait to be noticed. It is offered to the teams covering its tamb
 - Points are stored as a ledger, so admins can revoke them.
 - The leaderboard per province is visible to authorities and admins. Public visibility is an open item.
 
+### 5.5a Rescues a team found by itself
+Built 14 Oct 2026 (`/authority/field-rescue`, `/admin/field-rescues`). For people a team helps who never sent an SOS. Recorded at the place and at the moment: the phone's own position, a phone number for the rescued person and a photo are all required. Worth half the points of an SOS rescue, never as much. Counted at once where a flood is known or expected and nothing looks repeated; otherwise held for an admin to approve or refuse. The rescued person's number is never listed: an admin asks for it, and each look is logged. Tables `field_rescues`, `field_rescue_contacts`; `hero_points.field_rescue_id`.
+
 ### 5.6 Responsibility map
 - Coverage per unit and capability, shown to authorities and admins.
 - Highlights gaps: tambons with no verified rescue-capable unit.

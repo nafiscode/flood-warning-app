@@ -663,6 +663,12 @@
       "verified": "{name} has been verified and can start taking requests.",
       "suspended": "{name} has been suspended. Please contact the Jaga admins.",
       "see": "See the steps"
+    },
+    "field": {
+      "title": "A rescue your team recorded",
+      "approved": "An admin approved your team's rescue record. The points have been awarded.",
+      "rejected": "An admin did not approve your team's rescue record. The reason is on the record.",
+      "see": "See the record"
     }
   },
   "placeFinder": {
@@ -1288,7 +1294,8 @@
       "announcements": "Announcements",
       "handover": "Handover",
       "exports": "Exports",
-      "log": "Access log"
+      "log": "Access log",
+      "fieldRescues": "Field rescues"
     },
     "role": {
       "admin": "Admin",
@@ -2636,6 +2643,50 @@
         "refused": "These two cannot be merged (one is closed, already merged, or they are of different kinds).",
         "save": "That did not work. Try again."
       }
+    },
+    "field": {
+      "title": "Rescues teams found themselves",
+      "intro": "Teams record rescues of people who never sent an SOS, for half the points. A record with no sign of flooding at that place, or one that looks repeated, waits here for you to approve or refuse. One that was counted automatically can be taken back too.",
+      "status": {
+        "counted": "Counted automatically",
+        "pending": "Waiting",
+        "approved": "Approved",
+        "rejected": "Refused"
+      },
+      "none": "Nothing here.",
+      "people": "{count, plural, one {# person} other {# people}}",
+      "accuracy": "within {m} m",
+      "heldFor": "Why it is waiting",
+      "evidence": "Signs of flooding: {list}",
+      "noEvidence": "No sign of flooding is known at this place.",
+      "evidenceKind": {
+        "alert_in_force": "an alert in force",
+        "flood_report_near": "a flood report nearby",
+        "sos_near": "an SOS nearby",
+        "flood_prone_area": "a flood-prone tambon"
+      },
+      "unitWeek": "This team recorded {count} in the last 7 days",
+      "points": "{points} points",
+      "showPhone": "Show the rescued person's number",
+      "phoneLogged": "This look at the number has been logged.",
+      "noPhone": "No number.",
+      "reviewNote": "Admin's note: {note}",
+      "approveNote": "How you checked (optional)",
+      "approve": "Approve and award the points",
+      "reject": "Refuse",
+      "takeBack": "Take this record back",
+      "rejectReason": "Reason",
+      "rejectHint": "The team will see this reason. Any points already given are taken back.",
+      "rejectSend": "Confirm the refusal",
+      "done": {
+        "approved": "Approved.",
+        "rejected": "Refused."
+      },
+      "error": {
+        "reason": "A reason is required.",
+        "gone": "This record has already been decided.",
+        "save": "That could not be saved. Try again."
+      }
     }
   },
   "reportsNear": {
@@ -2829,7 +2880,21 @@
       "openConsole": "Open the team's board",
       "openAccount": "Go to my account",
       "openReport": "Go to my reports",
-      "signInNote": "Requests for help can be followed without an account. A team's registration and flood reports appear once you are signed in."
+      "signInNote": "Requests for help can be followed without an account. A team's registration and flood reports appear once you are signed in.",
+      "openField": "Go to the team's records"
+    },
+    "field": {
+      "titleNamed": "Field rescue: {place}",
+      "steps": {
+        "recorded": "Recorded at the place of the rescue",
+        "counted": "Counted; points awarded",
+        "review": "Checked by an admin",
+        "approved": "Approved; points awarded",
+        "rejected": "Not approved"
+      },
+      "wait": {
+        "review": "An admin looks at the photo and the position and may call the number given. The bell tells you the result."
+      }
     }
   },
   "line": {
@@ -2841,5 +2906,74 @@
     "statusNoPlaces": "You have not set a home or a place to watch in the Jaga app yet. Open the app and go to Account to set them. In an emergency call 1784 or 1669.",
     "yourArea": "your area",
     "covers": "This alert covers {count} subdistricts. Open Jaga to see which of your places are in it."
+  },
+  "fieldRescue": {
+    "title": "Record a rescue your team did",
+    "link": "Record a rescue we did (not from an SOS)",
+    "intro": "For people your team found and helped by itself, who never sent an SOS through the app.",
+    "rules": {
+      "now": "Record it while you are at the place of the rescue. The position comes from your phone at that moment.",
+      "proof": "A phone number for the rescued person (or a relative) and at least one photo are required.",
+      "half": "It is worth half the points of a rescue that came from an SOS.",
+      "review": "Where there is an alert, a flood report nearby or flood-prone ground, it counts at once. Otherwise, or if it looks repeated, an admin checks it first."
+    },
+    "position": {
+      "label": "Position of the rescue",
+      "locating": "Finding your position…",
+      "found": "Position found (within about {m} m)",
+      "foundNoAccuracy": "Position found",
+      "failed": "Your position could not be found. Turn GPS on, allow Jaga to use it, then try again.",
+      "again": "Find my position again",
+      "hint": "A pin cannot be placed by hand. The position is read again when you press Record."
+    },
+    "people": "People rescued",
+    "vulnerable": "Anyone who needed special help",
+    "phone": {
+      "label": "Phone number of the rescued person (required)",
+      "hint": "Their own or a relative's. An admin may call it to check. Nobody is shown this number; an admin has to ask to see it, and each look is logged."
+    },
+    "photo": {
+      "choose": "Take a photo at the rescue (required)",
+      "chosen": "{count, plural, one {# photo} other {# photos}} chosen",
+      "hint": "Show the place and the help being given; where you can, without clear faces. Up to 3."
+    },
+    "note": "Note (optional)",
+    "send": "Record the rescue",
+    "sending": "Recording…",
+    "another": "Record another",
+    "result": {
+      "counted": "Counted",
+      "points": "Your team earned {points} points.",
+      "pending": "Recorded; waiting for an admin",
+      "pendingBody": "No points until an admin approves it. Why it is being checked:"
+    },
+    "holds": {
+      "no_flood_evidence": "No alert, flood report or flood-prone ground is known here.",
+      "outside_coverage": "This place is outside your team's coverage.",
+      "vague_position": "The phone's position was too imprecise.",
+      "repeat_nearby": "Your team recorded another rescue close to this spot recently.",
+      "many_today": "Your team has recorded many rescues in one day.",
+      "phone_used_before": "This phone number was used on another record.",
+      "open_request_here": "An SOS is still open close to this spot; finish it through that request."
+    },
+    "error": {
+      "position": "There is no position from the phone yet, so it cannot be recorded.",
+      "people": "Say how many people were rescued (1–200).",
+      "phone": "A phone number for the rescued person is required.",
+      "photo": "At least one photo is required.",
+      "upload": "The photo could not be sent. Nothing was recorded. Try again when you have signal.",
+      "stale": "The position was too old. Find your position again and record once more.",
+      "outside": "This place is outside the area Jaga covers.",
+      "not_team": "Only a verified team can record a rescue.",
+      "failed": "That could not be recorded. Try again."
+    },
+    "list": {
+      "title": "Your team's records",
+      "none": "No records yet.",
+      "item": "{place} · {count, plural, one {# person} other {# people}}",
+      "points": "{points} points",
+      "noPoints": "No points yet",
+      "adminNote": "Admin: {note}"
+    }
   }
 }

@@ -663,6 +663,12 @@
       "verified": "Pasukan {name} telah disahkan dan boleh mula menerima permintaan.",
       "suspended": "Pasukan {name} digantung. Sila hubungi pentadbir Jaga.",
       "see": "Lihat langkah"
+    },
+    "field": {
+      "title": "Rekod penyelamatan yang ditemui sendiri",
+      "approved": "Pentadbir meluluskan rekod penyelamatan pasukan anda. Mata telah diberikan.",
+      "rejected": "Pentadbir tidak meluluskan rekod penyelamatan pasukan anda. Lihat sebabnya pada halaman rekod.",
+      "see": "Lihat rekod"
     }
   },
   "placeFinder": {
@@ -1288,7 +1294,8 @@
       "announcements": "Pengumuman",
       "handover": "Nota serah tugas",
       "exports": "Eksport",
-      "log": "Log akses"
+      "log": "Log akses",
+      "fieldRescues": "Penyelamatan ditemui sendiri"
     },
     "role": {
       "admin": "Pentadbir",
@@ -2636,6 +2643,50 @@
         "refused": "Dua permintaan ini tidak boleh digabungkan (satu sudah ditutup, sudah digabungkan, atau jenisnya berbeza).",
         "save": "Tidak berjaya. Cuba lagi."
       }
+    },
+    "field": {
+      "title": "Penyelamatan yang ditemui pasukan sendiri",
+      "intro": "Pasukan merekod penyelamatan orang yang tidak menekan SOS, dengan separuh mata. Rekod tanpa bukti banjir di tempat itu, atau yang nampak berulang, menunggu di sini untuk anda luluskan atau tolak. Rekod yang dikira secara automatik juga boleh ditarik balik.",
+      "status": {
+        "counted": "Dikira automatik",
+        "pending": "Menunggu",
+        "approved": "Diluluskan",
+        "rejected": "Ditolak"
+      },
+      "none": "Tiada rekod.",
+      "people": "{count} orang",
+      "accuracy": "ketepatan {m} m",
+      "heldFor": "Sebab ia disemak",
+      "evidence": "Bukti banjir: {list}",
+      "noEvidence": "Tiada bukti banjir di tempat ini.",
+      "evidenceKind": {
+        "alert_in_force": "amaran berkuat kuasa",
+        "flood_report_near": "laporan banjir berhampiran",
+        "sos_near": "SOS berhampiran",
+        "flood_prone_area": "mukim berisiko banjir"
+      },
+      "unitWeek": "Pasukan ini merekod {count} dalam 7 hari",
+      "points": "{points} mata",
+      "showPhone": "Lihat nombor orang yang diselamatkan",
+      "phoneLogged": "Paparan nombor ini telah direkodkan.",
+      "noPhone": "Tiada nombor.",
+      "reviewNote": "Catatan pentadbir: {note}",
+      "approveNote": "Cara disemak (pilihan)",
+      "approve": "Luluskan dan beri mata",
+      "reject": "Tolak",
+      "takeBack": "Tarik balik rekod ini",
+      "rejectReason": "Sebab",
+      "rejectHint": "Pasukan akan melihat sebab ini. Mata yang telah diberi akan ditarik balik.",
+      "rejectSend": "Sahkan penolakan",
+      "done": {
+        "approved": "Diluluskan.",
+        "rejected": "Ditolak."
+      },
+      "error": {
+        "reason": "Sebab diperlukan.",
+        "gone": "Rekod ini telah diputuskan.",
+        "save": "Tidak berjaya disimpan. Cuba lagi."
+      }
     }
   },
   "reportsNear": {
@@ -2829,7 +2880,21 @@
       "openConsole": "Buka papan pasukan",
       "openAccount": "Ke akaun saya",
       "openReport": "Ke laporan saya",
-      "signInNote": "Permintaan bantuan boleh dijejaki tanpa akaun. Pendaftaran pasukan dan laporan banjir dipaparkan selepas log masuk."
+      "signInNote": "Permintaan bantuan boleh dijejaki tanpa akaun. Pendaftaran pasukan dan laporan banjir dipaparkan selepas log masuk.",
+      "openField": "Ke rekod pasukan"
+    },
+    "field": {
+      "titleNamed": "Penyelamatan ditemui sendiri: {place}",
+      "steps": {
+        "recorded": "Direkod di tempat penyelamatan",
+        "counted": "Dikira; mata diberikan",
+        "review": "Semakan oleh pentadbir",
+        "approved": "Diluluskan; mata diberikan",
+        "rejected": "Tidak diluluskan"
+      },
+      "wait": {
+        "review": "Pentadbir akan melihat gambar dan kedudukan, dan mungkin menghubungi nombor yang diberikan. Loceng akan memaklumkan keputusannya."
+      }
     }
   },
   "line": {
@@ -2841,5 +2906,74 @@
     "statusNoPlaces": "Anda belum menetapkan lokasi rumah atau tempat yang dipantau dalam aplikasi Jaga. Buka aplikasi dan pergi ke Akaun untuk menetapkannya. Kecemasan: hubungi 1784 atau 1669.",
     "yourArea": "kawasan anda",
     "covers": "Amaran ini meliputi {count} mukim. Buka Jaga untuk melihat tempat anda yang terlibat."
+  },
+  "fieldRescue": {
+    "title": "Rekod penyelamatan yang ditemui sendiri",
+    "link": "Rekod penyelamatan yang ditemui sendiri (bukan daripada SOS)",
+    "intro": "Untuk mangsa yang ditemui dan dibantu oleh pasukan sendiri, tanpa menekan SOS dalam aplikasi.",
+    "rules": {
+      "now": "Mesti direkod semasa berada di tempat penyelamatan. Kedudukan diambil daripada telefon anda pada ketika itu.",
+      "proof": "Nombor telefon orang yang diselamatkan (atau saudaranya) dan sekurang-kurangnya satu gambar diperlukan.",
+      "half": "Bernilai separuh mata penyelamatan daripada SOS.",
+      "review": "Jika kawasan itu ada amaran, laporan banjir berhampiran atau ialah kawasan berisiko banjir, ia dikira serta-merta. Jika tidak, atau jika nampak berulang, pentadbir menyemaknya dahulu."
+    },
+    "position": {
+      "label": "Kedudukan tempat penyelamatan",
+      "locating": "Mencari kedudukan…",
+      "found": "Kedudukan ditemui (ketepatan kira-kira {m} m)",
+      "foundNoAccuracy": "Kedudukan ditemui",
+      "failed": "Kedudukan tidak ditemui. Hidupkan GPS, benarkan Jaga menggunakan lokasi, kemudian cuba lagi.",
+      "again": "Cari kedudukan semula",
+      "hint": "Pin tidak boleh diletakkan sendiri pada peta. Kedudukan dibaca semula apabila anda menekan rekod."
+    },
+    "people": "Bilangan orang yang diselamatkan",
+    "vulnerable": "Ada yang memerlukan bantuan khas",
+    "phone": {
+      "label": "Nombor telefon orang yang diselamatkan (wajib)",
+      "hint": "Nombor mereka sendiri atau saudara. Pentadbir mungkin menghubunginya untuk semakan. Nombor ini tidak dipaparkan kepada sesiapa; setiap kali pentadbir melihatnya direkodkan."
+    },
+    "photo": {
+      "choose": "Ambil gambar di tempat penyelamatan (wajib)",
+      "chosen": "{count} gambar dipilih",
+      "hint": "Tunjukkan tempat dan bantuan yang diberikan; jika boleh, tanpa wajah yang jelas. Sehingga 3 gambar."
+    },
+    "note": "Catatan (pilihan)",
+    "send": "Rekod penyelamatan",
+    "sending": "Sedang merekod…",
+    "another": "Rekod satu lagi",
+    "result": {
+      "counted": "Dikira",
+      "points": "Pasukan anda mendapat {points} mata.",
+      "pending": "Direkod; menunggu semakan pentadbir",
+      "pendingBody": "Tiada mata sehingga pentadbir meluluskannya. Sebab ia disemak:"
+    },
+    "holds": {
+      "no_flood_evidence": "Tiada amaran, laporan banjir atau data kawasan berisiko di sini.",
+      "outside_coverage": "Tempat ini di luar kawasan liputan pasukan.",
+      "vague_position": "Kedudukan daripada telefon kurang tepat.",
+      "repeat_nearby": "Pasukan baru sahaja merekod penyelamatan berhampiran tempat ini.",
+      "many_today": "Pasukan merekod banyak penyelamatan dalam sehari.",
+      "phone_used_before": "Nombor telefon ini pernah digunakan dalam rekod lain.",
+      "open_request_here": "Ada permintaan SOS yang masih terbuka berhampiran; selesaikan melalui permintaan itu."
+    },
+    "error": {
+      "position": "Belum ada kedudukan daripada telefon; tidak dapat direkod.",
+      "people": "Nyatakan bilangan orang yang diselamatkan (1–200).",
+      "phone": "Nombor telefon orang yang diselamatkan diperlukan.",
+      "photo": "Sekurang-kurangnya satu gambar diperlukan.",
+      "upload": "Gambar tidak dapat dihantar. Belum direkod. Cuba lagi apabila ada isyarat.",
+      "stale": "Kedudukan terlalu lama. Cari kedudukan semula dan rekod lagi.",
+      "outside": "Tempat ini di luar kawasan yang diliputi Jaga.",
+      "not_team": "Hanya pasukan yang telah disahkan boleh merekod.",
+      "failed": "Tidak berjaya direkod. Cuba lagi."
+    },
+    "list": {
+      "title": "Rekod pasukan",
+      "none": "Belum ada rekod.",
+      "item": "{place} · {count} orang",
+      "points": "{points} mata",
+      "noPoints": "Belum ada mata",
+      "adminNote": "Pentadbir: {note}"
+    }
   }
 }

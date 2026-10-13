@@ -72,6 +72,32 @@ export async function uploadProof(
   return { photos: done, failed };
 }
 
+/**
+ * The photo of a rescue a team found by itself: compressed like every other photo and filed as
+ * <unit>/<rescue>/<file> in a private bucket only that team may write to. The record itself is
+ * refused without a photo that really arrived here.
+ */
+export async function uploadFieldPhotos(
+  unitId: string,
+  rescueId: string,
+  photos: Blob[],
+): Promise<{ photos: string[]; failed: number }> {
+  const done: string[] = [];
+  let failed = 0;
+  const storage = createClient().storage.from("field-media");
+  for (const photo of photos.slice(0, MAX_PHOTOS)) {
+    try {
+      const small = await compressImage(photo);
+      const path = `${unitId}/${rescueId}/${crypto.randomUUID()}.jpg`;
+      if (await put(storage, path, small.blob, small.type)) done.push(path);
+      else failed += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+  return { photos: done, failed };
+}
+
 type Bucket = ReturnType<ReturnType<typeof createClient>["storage"]["from"]>;
 
 /**

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Journey } from "@/components/journey/Journey";
 import { Link } from "@/i18n/navigation";
 import { pickName } from "@/lib/area";
+import { FIELD_URL, fieldJourney, type MyFieldRescue } from "@/lib/field-rescue";
 import type { MyReport } from "@/lib/flood-reports";
 import {
   REQUESTS_URL,
@@ -24,6 +25,8 @@ export type MyRequestsData = {
   cases: KnownCase[];
   units: UnitRequest[];
   reports: MyReport[];
+  /** Rescues the person's team found by itself. */
+  field?: MyFieldRescue[];
   /** False for a visitor: teams and reports belong to an account. */
   signedIn: boolean;
 };
@@ -74,6 +77,17 @@ export function MyRequestsView({ data, loading }: { data: MyRequestsData; loadin
         title: t("report.titleNamed", { place: pickName(locale, r.nameTh, r.nameEn) }),
         href: "/report",
         open: t("page.openReport"),
+      };
+    }),
+    ...(data.field ?? []).map((r) => {
+      const journey = fieldJourney(r);
+      return {
+        key: `field:${r.id}`,
+        at: r.createdAt,
+        journey,
+        title: t("field.titleNamed", { place: pickName(locale, r.tambonTh, r.tambonEn) }),
+        href: "/authority/field-rescue",
+        open: t("page.openField"),
       };
     }),
   ].sort(
@@ -149,7 +163,7 @@ export function MyRequests() {
     const load = async () => {
       const signedIn = hasSession();
       const stored = readStored<{ cases: KnownCase[] }>("noticeCases")?.cases ?? [];
-      const [cases, units, reports] = await Promise.all([
+      const [cases, units, reports, field] = await Promise.all([
         Promise.all(
           rememberedCases()
             .slice(0, 8)
@@ -167,6 +181,7 @@ export function MyRequests() {
         ),
         signedIn ? getJson<{ units: UnitRequest[] }>(REQUESTS_URL) : null,
         signedIn ? getJson<{ reports: MyReport[] }>("/api/report/mine") : null,
+        signedIn ? getJson<{ rescues: MyFieldRescue[] }>(FIELD_URL) : null,
       ]);
       if (cancelled) return;
       setData({
@@ -184,6 +199,7 @@ export function MyRequests() {
         ),
         units: units?.units ?? [],
         reports: reports?.reports ?? [],
+        field: field?.rescues ?? [],
         signedIn,
       });
     };
