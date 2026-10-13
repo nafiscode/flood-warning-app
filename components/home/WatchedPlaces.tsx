@@ -5,7 +5,7 @@ import { LifebuoyIcon, PhoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { areaName } from "@/lib/area";
 import type { WatchedPlace } from "@/lib/me";
-import type { HeroStatus } from "./AlertHero";
+import { AlertDetails, type HeroStatus } from "./AlertHero";
 import { buttonSecondary, card, hint } from "@/lib/ui";
 
 export type WatchedStatus = { place: WatchedPlace; status: HeroStatus | { kind: "outside" } };
@@ -46,6 +46,26 @@ export function PlaceStatus({ status, now }: { status: WatchedStatus["status"]; 
 }
 
 /**
+ * "See the alert details": the whole alert for a watched place, behind one tap (the owner,
+ * 13 Oct - on a phone the badge alone said what level, but not why or until when). Closed to
+ * start with, so the Call and SOS buttons stay near the top of the card.
+ */
+function PlaceAlert({ status }: { status: WatchedStatus["status"] }) {
+  const t = useTranslations("home.watched");
+  if (status.kind !== "alert") return null;
+  return (
+    <details data-place-alert={status.alert.id} className="group">
+      <summary className="flex min-h-tap cursor-pointer items-center font-medium underline">
+        {t("details")}
+      </summary>
+      <div className="flex flex-col gap-3 pt-1">
+        <AlertDetails alert={status.alert} />
+      </div>
+    </details>
+  );
+}
+
+/**
  * Most severe first (spec 4.1): a watched place with a more severe alert than home, shown above
  * the home hero with one tap to call the person there and one to send an SOS for them.
  */
@@ -65,6 +85,7 @@ export function WorseBanner({ item, now }: { item: WatchedStatus; now: number })
         )}
       </h2>
       <PlaceStatus status={item.status} now={now} />
+      <PlaceAlert status={item.status} />
       <CallButton place={place} />
       <Link
         href={{ pathname: "/sos", query: { place: place.id } }}
@@ -98,6 +119,7 @@ export function WatchedPlaces({ items, now }: { items: WatchedStatus[]; now: num
               )}
             </p>
             <PlaceStatus status={item.status} now={now} />
+            <PlaceAlert status={item.status} />
             <CallButton place={item.place} />
           </li>
         ))}

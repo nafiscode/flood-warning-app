@@ -43,6 +43,46 @@ function Row({ term, children }: { term: string; children: ReactNode }) {
 }
 
 /**
+ * Everything an alert says beyond its badge: what to do, the reviewed text, the expected times
+ * as ranges, the reason, the issuer, when it was issued and when it will be updated next (safety
+ * rule 3). The hero shows it for the person's own area; a watched place shows the same thing
+ * behind a tap, so an alert for Mum's village is never only a coloured badge.
+ */
+export function AlertDetails({ alert }: { alert: PublicAlert }) {
+  const t = useTranslations("home");
+  const tAlert = useTranslations("alert");
+  const locale = useLocale();
+  const format = useFormatter();
+  const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
+  const range = (r: [string, string]) => t("range", { from: time(r[0]), to: time(r[1]) });
+  const text = alertText(alert, locale);
+  return (
+    <>
+      <p className="text-h3 font-bold">{tAlert(`summary.${alert.level}`)}</p>
+      {text !== "" && <p lang={alert.messages[locale] ? locale : "th"}>{text}</p>}
+      {(alert.onset || alert.returnWindow) && (
+        <div className="flex flex-col gap-2 rounded-xl bg-jaga-ground p-3" data-estimate="true">
+          <dl className="flex flex-col gap-2">
+            {alert.onset && <Row term={t("onset")}>{range(alert.onset)}</Row>}
+            {alert.returnWindow && <Row term={t("returnWindow")}>{range(alert.returnWindow)}</Row>}
+          </dl>
+          <p className={hint}>{t("estimate")}</p>
+        </div>
+      )}
+      <dl className="flex flex-col gap-2">
+        <Row term={t("reason")}>{reasonFor(alert, locale)}</Row>
+        <Row term={t("issuedBy")}>{t("issuer")}</Row>
+        {alert.source && <Row term={t("source")}>{alert.source}</Row>}
+        <div className="grid grid-cols-2 gap-2">
+          <Row term={t("issued")}>{time(alert.issuedAt)}</Row>
+          <Row term={t("nextUpdate")}>{time(alert.nextUpdateAt)}</Row>
+        </div>
+      </dl>
+    </>
+  );
+}
+
+/**
  * The hero of the home screen (spec 4.1): the level for the person's tambon with everything
  * safety rule 3 asks for: level, area, issuer, issue time, reason and next update. A late alert
  * keeps its level and gets the grey marker beside it. The two states that are not levels ("not
@@ -51,10 +91,6 @@ function Row({ term, children }: { term: string; children: ReactNode }) {
 export function AlertHero({ status, area, now, onRetry }: Props) {
   const t = useTranslations("home");
   const tAlert = useTranslations("alert");
-  const locale = useLocale();
-  const format = useFormatter();
-  const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
-  const range = (r: [string, string]) => t("range", { from: time(r[0]), to: time(r[1]) });
 
   if (status.kind === "notInService" || status.kind === "unknown") {
     const unknown = status.kind === "unknown";
@@ -94,7 +130,6 @@ export function AlertHero({ status, area, now, onRetry }: Props) {
   }
 
   const { alert } = status;
-  const text = alertText(alert, locale);
   return (
     <section
       data-hero="alert"
@@ -107,26 +142,7 @@ export function AlertHero({ status, area, now, onRetry }: Props) {
         now={new Date(now)}
         size="hero"
       />
-      <p className="text-h3 font-bold">{tAlert(`summary.${alert.level}`)}</p>
-      {text !== "" && <p lang={alert.messages[locale] ? locale : "th"}>{text}</p>}
-      {(alert.onset || alert.returnWindow) && (
-        <div className="flex flex-col gap-2 rounded-xl bg-jaga-ground p-3" data-estimate="true">
-          <dl className="flex flex-col gap-2">
-            {alert.onset && <Row term={t("onset")}>{range(alert.onset)}</Row>}
-            {alert.returnWindow && <Row term={t("returnWindow")}>{range(alert.returnWindow)}</Row>}
-          </dl>
-          <p className={hint}>{t("estimate")}</p>
-        </div>
-      )}
-      <dl className="flex flex-col gap-2">
-        <Row term={t("reason")}>{reasonFor(alert, locale)}</Row>
-        <Row term={t("issuedBy")}>{t("issuer")}</Row>
-        {alert.source && <Row term={t("source")}>{alert.source}</Row>}
-        <div className="grid grid-cols-2 gap-2">
-          <Row term={t("issued")}>{time(alert.issuedAt)}</Row>
-          <Row term={t("nextUpdate")}>{time(alert.nextUpdateAt)}</Row>
-        </div>
-      </dl>
+      <AlertDetails alert={alert} />
     </section>
   );
 }

@@ -242,6 +242,23 @@ describe("watched places (spec 4.1, 4.9)", () => {
     expect(c.querySelectorAll("[data-watched] li")).toHaveLength(2);
   });
 
+  it("an alert for a watched place can be opened to read all of it", () => {
+    const c = home("watched");
+    const banner = c.querySelector('[data-worse-place="w1"]')!;
+    const details = banner.querySelector<HTMLDetailsElement>("details[data-place-alert]")!;
+    // Closed to start with, so Call and SOS stay near the top; one tap opens it.
+    expect(details.open).toBe(false);
+    expect(details.querySelector("summary")!.textContent).toBe(th.home.watched.details);
+    // Everything safety rule 3 asks of an alert is in there, not only the badge.
+    const text = details.textContent ?? "";
+    for (const term of [th.home.reason, th.home.issuedBy, th.home.issued, th.home.nextUpdate]) {
+      expect(text).toContain(term);
+    }
+    expect(text).toContain(th.alert.summary.evacuate);
+    // A place with no alert has nothing to open.
+    expect(c.querySelectorAll("[data-watched] details[data-place-alert]").length).toBeLessThan(2);
+  });
+
   it("before launch a watched place without an alert shows words, not a level", () => {
     const example = homeExample("watched");
     const c = home("watched", {
