@@ -1,3 +1,5 @@
+import { after } from "next/server";
+import { runPushTick } from "@/lib/push-server";
 import { sosSendingEnabled } from "@/lib/features";
 import { cleanNeeds, SUPPLIES_LEFT, type SendSos, type SentSos, type SosStatus } from "@/lib/sos";
 import { supabaseConfigured } from "@/lib/supabase/env";
@@ -36,6 +38,9 @@ export async function POST(request: Request) {
 
   const supplies = input.kind === "supplies";
   const supabase = await createClient();
+  // Whoever is owed a notification about a case is told now, after this answer has gone back:
+  // the team whose turn it is, or the sender (A7). It never holds up or fails the request.
+  after(() => void runPushTick());
   const { data, error } = await supabase.rpc("submit_sos", {
     p_lat: lat,
     p_lon: lon,

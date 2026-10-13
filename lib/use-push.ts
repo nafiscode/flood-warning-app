@@ -19,6 +19,11 @@ const hasPush = () =>
   "PushManager" in window &&
   "Notification" in window;
 
+/** This browser's subscription, if it has one. */
+export async function currentSubscription(): Promise<PushSubscription | null> {
+  return current();
+}
+
 async function current(): Promise<PushSubscription | null> {
   if (!hasPush()) return null;
   const registration = await navigator.serviceWorker.getRegistration();

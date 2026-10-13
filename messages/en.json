@@ -2659,6 +2659,30 @@
     "needsInstall": "On an iPhone or iPad, add Jaga to the Home Screen first and open it from that icon. Then notifications can be turned on.",
     "blocked": "This phone is blocking Jaga's notifications. Allow them again in the phone's or the browser's settings.",
     "failed": "Could not turn them on yet. Try again.",
-    "note": "The sound is the phone's own notification sound, and may stay silent on mute or Do Not Disturb. In an emergency call 1784 or 1669."
+    "note": "The sound is the phone's own notification sound, and may stay silent on mute or Do Not Disturb. In an emergency call 1784 or 1669.",
+    "teamTitle": "Get case notifications on this phone",
+    "teamBody": "When a request for help is offered to your team, Jaga notifies this phone, even with the board closed.",
+    "caseTitle": "Get notified when a team accepts",
+    "caseBody": "Jaga notifies this phone when a team accepts your request, is on its way, or has arrived, even with the app closed.",
+    "send": {
+      "somewhere": "your area",
+      "aTeam": "A response team",
+      "offerTitle": "SOS request in {tambon}",
+      "offerBody": "This request is offered to your team. Open the board to accept it before {time}.",
+      "offerSuppliesTitle": "Food and water request in {tambon}",
+      "offerSuppliesBody": "This request is offered to your team. Open the board to accept it.",
+      "unclaimedTitle": "No team has accepted a case in {tambon}",
+      "unclaimedBody": "Every team has been asked and none has accepted. Open the war room to assign it.",
+      "acceptedTitle": "A team has accepted your request",
+      "acceptedBody": "{unit} has accepted your request. Open Jaga to see the status and contact the team.",
+      "enRouteTitle": "The team is on its way to you",
+      "enRouteBody": "{unit} is on its way. Open Jaga to see the status.",
+      "onSiteTitle": "The team has arrived",
+      "onSiteBody": "{unit} reports it has reached you.",
+      "rescuedTitle": "The team reports you have been helped",
+      "rescuedBody": "Open Jaga to confirm, or to say you still need help.",
+      "rescuedSuppliesTitle": "The team reports the supplies were delivered",
+      "rescuedSuppliesBody": "Open Jaga to confirm you received them, or to say you did not."
+    }
   }
 }

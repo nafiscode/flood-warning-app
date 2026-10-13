@@ -2659,6 +2659,30 @@
     "needsInstall": "Pada iPhone dan iPad, tambah Jaga ke Skrin Utama dahulu dan buka Jaga daripada ikon itu, kemudian pemberitahuan boleh dihidupkan.",
     "blocked": "Telefon ini menyekat pemberitahuan Jaga. Benarkan semula dalam tetapan telefon atau pelayar.",
     "failed": "Belum dapat dihidupkan. Cuba lagi.",
-    "note": "Bunyinya ialah bunyi pemberitahuan telefon, dan mungkin tidak berbunyi dalam mod senyap atau Jangan Ganggu. Kecemasan: hubungi 1784 atau 1669."
+    "note": "Bunyinya ialah bunyi pemberitahuan telefon, dan mungkin tidak berbunyi dalam mod senyap atau Jangan Ganggu. Kecemasan: hubungi 1784 atau 1669.",
+    "teamTitle": "Terima pemberitahuan kes pada telefon ini",
+    "teamBody": "Apabila ada permintaan bantuan yang ditawarkan kepada pasukan anda, Jaga memberitahu telefon ini walaupun papan ditutup.",
+    "caseTitle": "Terima pemberitahuan apabila pasukan menerima permintaan",
+    "caseBody": "Jaga memberitahu telefon ini apabila pasukan menerima permintaan anda, dalam perjalanan atau sudah tiba, walaupun aplikasi ditutup.",
+    "send": {
+      "somewhere": "di kawasan anda",
+      "aTeam": "Pasukan bantuan",
+      "offerTitle": "SOS minta bantuan: {tambon}",
+      "offerBody": "Permintaan ini ditawarkan kepada pasukan anda. Buka papan untuk menerimanya sebelum {time}.",
+      "offerSuppliesTitle": "Minta makanan dan air: {tambon}",
+      "offerSuppliesBody": "Permintaan ini ditawarkan kepada pasukan anda. Buka papan untuk menerimanya.",
+      "unclaimedTitle": "Belum ada pasukan menerima kes: {tambon}",
+      "unclaimedBody": "Semua pasukan sudah ditawarkan dan tiada yang menerima. Buka bilik operasi untuk menugaskan.",
+      "acceptedTitle": "Satu pasukan menerima permintaan anda",
+      "acceptedBody": "{unit} menerima permintaan anda. Buka Jaga untuk melihat status dan menghubungi pasukan.",
+      "enRouteTitle": "Pasukan dalam perjalanan kepada anda",
+      "enRouteBody": "{unit} sedang dalam perjalanan. Buka Jaga untuk melihat status.",
+      "onSiteTitle": "Pasukan sudah tiba",
+      "onSiteBody": "{unit} melaporkan sudah tiba di tempat anda.",
+      "rescuedTitle": "Pasukan melaporkan anda sudah dibantu",
+      "rescuedBody": "Buka Jaga untuk mengesahkan, atau beritahu anda masih perlukan bantuan.",
+      "rescuedSuppliesTitle": "Pasukan melaporkan barang sudah dihantar",
+      "rescuedSuppliesBody": "Buka Jaga untuk mengesahkan anda menerimanya, atau beritahu belum terima."
+    }
   }
 }

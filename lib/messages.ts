@@ -53,7 +53,7 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
 export function sosMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   const all = messages as Messages;
   return {
-    ...pick(messages, ["sos", "report", "hotlines", "home"]),
+    ...pick(messages, ["sos", "report", "hotlines", "home", "push"]),
     map: { province: all.map!.province! },
   };
 }
@@ -115,7 +115,7 @@ export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlM
   const all = messages as Messages;
   const sos = all.sos as Messages;
   return {
-    ...pick(messages, ["authority"]),
+    ...pick(messages, ["authority", "push"]),
     // The capability names are the war room's, so a team and an admin read the same words.
     warRoom: { capability: (all.warRoom as Messages).capability! },
     sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard!, needs: sos.needs! },

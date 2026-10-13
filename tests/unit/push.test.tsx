@@ -1,7 +1,17 @@
 import { fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PushCardView } from "@/components/push/PushCard";
-import { alertPayload, clip, keyBytes, pushState, readPayload, type PushState } from "@/lib/push";
+import {
+  alertPayload,
+  casePayload,
+  clip,
+  keyBytes,
+  pushState,
+  readPayload,
+  type PushState,
+} from "@/lib/push";
+import en from "@/messages/en.json";
+import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
 
@@ -139,5 +149,84 @@ describe("the card", () => {
     expect(on.querySelector("button")!.textContent).toBe(th.push.off);
     expect(view("blocked", "account").textContent).toContain(th.push.blocked);
     expect(view("ask", "account", false).textContent).toContain(th.push.noArea);
+  });
+});
+
+describe("notifications about a request for help", () => {
+  const words = th.push.send;
+  const row = (kind: string, data: Record<string, unknown> = {}, locale = "th") => ({
+    kind,
+    sos_id: "0b0e7c1e-0000-4000-8000-000000000002",
+    locale,
+    data: { request: "rescue", tambon_th: "บานา", tambon_en: "Bana", ...data },
+  });
+
+  it("an offer names the tambon and the deadline in Thailand's time, and opens the board", () => {
+    const p = casePayload(row("offer", { expires_at: "2026-11-20T07:05:00Z" }), words)!;
+    expect(p.title).toBe(words.offerTitle.replace("{tambon}", "บานา"));
+    expect(p.body).toContain("14:05");
+    expect(p.url).toBe("/authority");
+    expect(p.sticky).toBe(true);
+    expect(p.tag).toBe("offer-0b0e7c1e-0000-4000-8000-000000000002");
+  });
+
+  it("a request for food and water is worded as one", () => {
+    const p = casePayload(row("offer", { request: "supplies" }), words)!;
+    expect(p.title).toBe(words.offerSuppliesTitle.replace("{tambon}", "บานา"));
+  });
+
+  it("the sender's steps name the team and open their own request, one notification per case", () => {
+    const accepted = casePayload(row("accepted", { unit: "Yala rescue" }, "en"), words)!;
+    expect(accepted.body).toContain("Yala rescue");
+    expect(accepted.url).toBe("/en/sos/0b0e7c1e-0000-4000-8000-000000000002");
+    const onWay = casePayload(row("en_route", { unit: "Yala rescue" }, "en"), words)!;
+    expect(onWay.tag).toBe(accepted.tag);
+    expect(accepted.sticky).toBe(false);
+  });
+
+  it("the admins are sent to the war room when nobody has accepted", () => {
+    expect(casePayload(row("unclaimed"), words)!.url).toBe("/admin/war-room");
+  });
+
+  it("a case with no tambon still reads as a sentence, and an unknown kind is dropped", () => {
+    const p = casePayload(row("offer", { tambon_th: null, tambon_en: null }), words)!;
+    expect(p.title).toContain(words.somewhere);
+    expect(casePayload(row("party"), words)).toBeNull();
+    expect(casePayload({ ...row("offer"), sos_id: "../../admin" }, words)).toBeNull();
+  });
+
+  it("the service worker accepts them and keeps a tap inside the app", () => {
+    const sent = casePayload(row("offer"), words)!;
+    expect(readPayload(JSON.parse(JSON.stringify(sent)))).toEqual(sent);
+    expect(readPayload({ ...sent, url: "https://example.com" })!.url).toBe("/");
+  });
+
+  it("every language has every line", () => {
+    for (const other of [ms.push.send, en.push.send]) {
+      expect(Object.keys(other).sort()).toEqual(Object.keys(words).sort());
+    }
+  });
+});
+
+describe("the card on a board and on a request's page", () => {
+  const view = (state: PushState, place: "team" | "case") =>
+    renderWithIntl(
+      <PushCardView
+        state={state}
+        place={place}
+        hasArea={false}
+        busy={false}
+        failed={false}
+        onEnable={() => {}}
+        onDisable={() => {}}
+      />,
+    ).container;
+
+  it("asks in its own words without any area chosen, and gets out of the way once on", () => {
+    expect(view("ask", "team").textContent).toContain(th.push.teamBody);
+    expect(view("ask", "team").querySelector("[data-push-enable]")).toBeTruthy();
+    expect(view("ask", "case").textContent).toContain(th.push.caseBody);
+    expect(view("on", "team").innerHTML).toBe("");
+    expect(view("blocked", "team").textContent).toContain(th.push.blocked);
   });
 });

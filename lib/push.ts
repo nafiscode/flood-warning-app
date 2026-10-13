@@ -22,6 +22,105 @@ export type PushPayload = {
   level: PushLevel;
 };
 
+/**
+ * A notification about one request for help: the offer to a team, the "nobody has accepted" to
+ * the admins, or a step of the case to its sender. It names a tambon or a team, never a place or
+ * a person: the detail is on the board, behind the sign-in (safety rules 5 and 6).
+ */
+export const CASE_KINDS = [
+  "offer",
+  "unclaimed",
+  "accepted",
+  "en_route",
+  "on_site",
+  "rescued",
+] as const;
+export type CaseKind = (typeof CASE_KINDS)[number];
+export type CasePayload = {
+  kind: CaseKind;
+  title: string;
+  body: string;
+  url: string;
+  tag: string;
+  /** Stays on the screen until dealt with: an offer runs against a clock. */
+  sticky: boolean;
+};
+export type AnyPayload = PushPayload | CasePayload;
+
+/** One row of `push_due()`. */
+export type DueRow = {
+  kind: string;
+  sos_id: string;
+  locale: string;
+  data: {
+    request?: string;
+    tambon_th?: string | null;
+    tambon_en?: string | null;
+    unit?: string | null;
+    expires_at?: string | null;
+  } | null;
+};
+
+const fill = (text: string, values: Record<string, string>) =>
+  text.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "");
+
+const CLOCK = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Bangkok",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+/**
+ * The notification for one due row, in the phone's language. `words` is the `push.send` group
+ * of that language's messages. Null for a kind this app does not know.
+ */
+export function casePayload(row: DueRow, words: Record<string, string>): CasePayload | null {
+  const kind = CASE_KINDS.find((k) => k === row.kind);
+  if (!kind || !/^[0-9a-f-]{36}$/i.test(row.sos_id)) return null;
+  const data = row.data ?? {};
+  const supplies = data.request === "supplies";
+  const prefix = row.locale === "th" ? "" : `/${row.locale}`;
+  const tambon =
+    (row.locale === "th" ? data.tambon_th : data.tambon_en) ||
+    data.tambon_th ||
+    words.somewhere ||
+    "";
+  const expires = data.expires_at ? new Date(data.expires_at) : null;
+  const values = {
+    tambon,
+    unit: data.unit || words.aTeam || "",
+    time: expires && !Number.isNaN(expires.getTime()) ? CLOCK.format(expires) : "",
+  };
+  // A request for food and water is worded as one, for the team and for the sender alike.
+  const key = (name: string) => (supplies && words[`${name}SuppliesTitle`] ? `${name}Supplies` : name);
+  const name = {
+    offer: "offer",
+    unclaimed: "unclaimed",
+    accepted: "accepted",
+    en_route: "enRoute",
+    on_site: "onSite",
+    rescued: "rescued",
+  }[kind];
+  const title = words[`${key(name)}Title`];
+  const body = words[`${key(name)}Body`];
+  if (!title || !body) return null;
+  const forSender = kind !== "offer" && kind !== "unclaimed";
+  return {
+    kind,
+    title: fill(title, values),
+    body: clip(fill(body, values)),
+    url: forSender
+      ? `${prefix}/sos/${row.sos_id}`
+      : kind === "offer"
+        ? `${prefix}/authority`
+        : `${prefix}/admin/war-room`,
+    // One notification per case and audience: the next step replaces the last.
+    tag: `${forSender ? "case" : kind}-${row.sos_id}`,
+    sticky: kind === "offer",
+  };
+}
+
 const BODY_MAX = 240;
 
 /** The start of a message, cut at a word where there is one, with an ellipsis when cut. */
@@ -63,19 +162,33 @@ export function alertPayload(
   };
 }
 
+/** A path of this app, whatever the message says. */
+const ownPath = (url: unknown) => (typeof url === "string" && /^\/(?!\/)/.test(url) ? url : "/");
+
 /** What the service worker was sent, or null when it is not one of ours. */
-export function readPayload(raw: unknown): PushPayload | null {
+export function readPayload(raw: unknown): AnyPayload | null {
   if (!raw || typeof raw !== "object") return null;
   const p = raw as Record<string, unknown>;
-  if (p.kind !== "alert" || typeof p.title !== "string" || typeof p.body !== "string") return null;
+  if (typeof p.title !== "string" || typeof p.body !== "string") return null;
+  const caseKind = CASE_KINDS.find((k) => k === p.kind);
+  if (caseKind) {
+    return {
+      kind: caseKind,
+      title: p.title,
+      body: p.body,
+      url: ownPath(p.url),
+      tag: typeof p.tag === "string" ? p.tag : `jaga-${caseKind}`,
+      sticky: p.sticky === true,
+    };
+  }
+  if (p.kind !== "alert") return null;
   const level = ALERT_LEVELS_PUSHED.find((l) => l === p.level);
   if (!level) return null;
   return {
     kind: "alert",
     title: p.title,
     body: p.body,
-    // Only a path of this app, whatever the message says.
-    url: typeof p.url === "string" && /^\/(?!\/)/.test(p.url) ? p.url : "/",
+    url: ownPath(p.url),
     tag: typeof p.tag === "string" ? p.tag : "jaga-alert",
     level,
   };

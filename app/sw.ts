@@ -75,7 +75,8 @@ self.addEventListener("sync", (event) => {
 });
 
 /**
- * Web push (A7): an alert a person published, arriving with the app closed. The message carries
+ * Web push (A7): an alert a person published, an SOS offered to a team, or a step of one's own
+ * request, arriving with the app closed. The message carries
  * the level and the reviewed words; the notification is shown at once, because a push that shows
  * nothing loses the browser's permission to be sent. One alert is one notification: a
  * replacement with the same tag takes the old one's place and still makes itself heard.
@@ -97,7 +98,7 @@ self.addEventListener("push", (event) => {
       badge: "/icons/icon-192.png",
       data: { url: payload.url },
       // An evacuation stays on the screen until the person has dealt with it.
-      requireInteraction: payload.level === "evacuate",
+      requireInteraction: payload.kind === "alert" ? payload.level === "evacuate" : payload.sticky,
       ...({ renotify: true } as object),
     }),
   );

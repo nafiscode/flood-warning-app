@@ -1,6 +1,8 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import webpush from "web-push";
-import { alertPayload, type PushAlert, type PushLevel } from "@/lib/push";
+import { alertPayload, casePayload, type DueRow, type PushAlert, type PushLevel } from "@/lib/push";
+import { createPublicClient } from "@/lib/supabase/public";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
@@ -82,6 +84,82 @@ export async function pushAlert(supabase: SupabaseClient, alertId: string): Prom
       p_failed: failed,
       p_gone: gone,
     });
+    return { sent, failed, gone: gone.length };
+  } catch {
+    return { skipped: "error" };
+  }
+}
+
+const GATE_LABEL = "jaga-push-gate-v1";
+
+/**
+ * The token Jaga's server proves itself with when it asks the database what is owed (and that
+ * the database's one-minute tick sends back). Derived from the signing key the server already
+ * holds, so there is no second secret to keep: whoever can sign Jaga's pushes may ask whom to
+ * push to, and nobody else. `scripts/push-gate.mjs` stores the same value in the database.
+ */
+export function gateToken(): string | null {
+  const privateKey = process.env.VAPID_PRIVATE_KEY ?? "";
+  if (!privateKey) return null;
+  return createHmac("sha256", privateKey).update(GATE_LABEL).digest("hex");
+}
+
+/** Whether a caller of the tick route holds the token, compared without leaking where it differs. */
+export function gateOpens(given: string | null): boolean {
+  const token = gateToken();
+  if (!token || !given || given.length !== token.length) return false;
+  return timingSafeEqual(Buffer.from(given), Buffer.from(token));
+}
+
+const SEND_WORDS: Record<string, Record<string, string>> = {
+  th: th.push.send,
+  ms: ms.push.send,
+  en: en.push.send,
+};
+
+type Due = DueRow & { endpoint: string; keys: { p256dh: string; auth: string } };
+
+/**
+ * Ask the database what notifications about requests for help are owed right now, and send
+ * them: the offer to the team being asked, "nobody has accepted" to the admins, each step to the
+ * sender. Called whenever something happens to a case and once a minute by the database, which
+ * is what moves an offer to the next team's phone while nobody has the app open.
+ *
+ * Never throws and never matters to the request it rides on: a case is on every covering team's
+ * board whether or not a single notification leaves (safety rule 1).
+ */
+export async function runPushTick(): Promise<PushOutcome> {
+  try {
+    const token = gateToken();
+    if (!token || !configured()) return { skipped: "no_keys" };
+    const supabase = createPublicClient();
+    const { data, error } = await supabase.rpc("push_due", { p_token: token });
+    if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
+    const gone: string[] = [];
+    let sent = 0;
+    let failed = 0;
+    const queue = [...(data as Due[])];
+    const worker = async () => {
+      for (let row = queue.pop(); row; row = queue.pop()) {
+        const payload = casePayload(row, SEND_WORDS[row.locale] ?? SEND_WORDS.th!);
+        if (!payload) continue;
+        try {
+          await webpush.sendNotification(
+            { endpoint: row.endpoint, keys: row.keys },
+            JSON.stringify(payload),
+            // An offer is worth nothing once its window and the next few have passed.
+            { TTL: payload.kind === "offer" ? 600 : 6 * 3600, urgency: "high" },
+          );
+          sent++;
+        } catch (e) {
+          const status = (e as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) gone.push(row.endpoint);
+          else failed++;
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: 8 }, worker));
+    if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
     return { sent, failed, gone: gone.length };
   } catch {
     return { skipped: "error" };

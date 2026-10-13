@@ -1,3 +1,5 @@
+import { after } from "next/server";
+import { runPushTick } from "@/lib/push-server";
 import { sosSendingEnabled } from "@/lib/features";
 import {
   cleanNeeds,
@@ -39,6 +41,9 @@ export async function GET(request: Request, context: RouteContext<"/api/sos/[id]
   if (!supabaseConfigured()) return answer({ error: "unavailable" }, 503);
   const token = request.headers.get(TOKEN_HEADER);
 
+  // Whoever is owed a notification about a case is told now, after this answer has gone back:
+  // the team whose turn it is, or the sender (A7). It never holds up or fails the request.
+  after(() => void runPushTick());
   const supabase = await createClient();
   // Who is coming is asked beside the timeline, behind the same gate (the sender or the token).
   const [{ data, error }, responder] = await Promise.all([
@@ -100,7 +105,14 @@ type Action =
   | { action: "media"; token?: string | null; photos?: string[]; voice?: string | null }
   | { action: "team_phone"; token?: string | null }
   | { action: "not_rescued"; token?: string | null }
-  | { action: "need_rescue"; token?: string | null };
+  | { action: "need_rescue"; token?: string | null }
+  | {
+      action: "follow_push";
+      token?: string | null;
+      endpoint?: string;
+      keys?: { p256dh?: string; auth?: string };
+      locale?: string;
+    };
 
 export async function POST(request: Request, context: RouteContext<"/api/sos/[id]">) {
   const { id } = await context.params;
@@ -185,6 +197,23 @@ export async function POST(request: Request, context: RouteContext<"/api/sos/[id
     });
     if (error) return refused(error.code);
     return answer({ ok: true, status: data as SosStatus });
+  }
+
+  if (input.action === "follow_push") {
+    // "Tell this phone when a team accepts": only the sender of this case can ask (A7).
+    const { error } = await supabase.rpc("push_follow_sos", {
+      p_sos: id,
+      p_token: token,
+      p_endpoint: typeof input.endpoint === "string" ? input.endpoint : "",
+      p_keys: {
+        p256dh: typeof input.keys?.p256dh === "string" ? input.keys.p256dh : "",
+        auth: typeof input.keys?.auth === "string" ? input.keys.auth : "",
+      },
+      p_locale: typeof input.locale === "string" ? input.locale : "th",
+    });
+    if (error)
+      return error.code === "22023" ? answer({ error: "bad_request" }, 400) : refused(error.code);
+    return answer({ ok: true });
   }
 
   if (input.action === "team_phone") {

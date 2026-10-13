@@ -1,5 +1,6 @@
 "use client";
 
+import { PushCard } from "@/components/push/PushCard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BoardView,
@@ -312,63 +313,67 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
   };
 
   return (
-    <BoardView
-      board={board}
-      now={now}
-      alarm={alarm}
-      onArm={onArm}
-      busy={busy}
-      notice={notice}
-      phones={phones}
-      media={media}
-      stale={stale}
-      onRefresh={refresh}
-      actions={actions}
-      unitActions={unitActions}
-      view={view}
-      onView={openView}
-      other={
-        view !== "cases" && (
-          <OtherView
-            view={view}
-            cases={board.cases}
-            now={now}
-            busy={busy}
-            phones={phones}
-            media={media}
-            actions={actions}
-            coverage={coverage}
-            points={points}
-            picked={picked}
-            onPickTambon={pickTambon}
-            reads={{
-              reports,
-              households,
-              reportMedia,
-              householdPhones,
-              onReportMedia: (id) =>
-                one<{ media: CaseMedia }>(
-                  { action: "report_media", id },
-                  (answer) => setReportMedia((seen) => ({ ...seen, [id]: answer.media })),
-                  () => setReportMedia((seen) => ({ ...seen, [id]: "failed" })),
-                ),
-              onHouseholdPhone: (id) =>
-                one<{ phone: string | null }>(
-                  { action: "household_phone", id },
-                  (answer) => setHouseholdPhones((seen) => ({ ...seen, [id]: answer.phone })),
-                  () => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
-                ),
-              contacts,
-              onContact: (id) =>
-                one<{ contact: UnitContact }>(
-                  { action: "unit_phone", unit: id },
-                  (answer) => setContacts((seen) => ({ ...seen, [id]: answer.contact })),
-                  () => setContacts((seen) => ({ ...seen, [id]: "failed" })),
-                ),
-            }}
-          />
-        )
-      }
-    />
+    <>
+      {/* The offer reaches this phone with the board closed once notifications are on (A7). */}
+      <PushCard place="team" />
+      <BoardView
+        board={board}
+        now={now}
+        alarm={alarm}
+        onArm={onArm}
+        busy={busy}
+        notice={notice}
+        phones={phones}
+        media={media}
+        stale={stale}
+        onRefresh={refresh}
+        actions={actions}
+        unitActions={unitActions}
+        view={view}
+        onView={openView}
+        other={
+          view !== "cases" && (
+            <OtherView
+              view={view}
+              cases={board.cases}
+              now={now}
+              busy={busy}
+              phones={phones}
+              media={media}
+              actions={actions}
+              coverage={coverage}
+              points={points}
+              picked={picked}
+              onPickTambon={pickTambon}
+              reads={{
+                reports,
+                households,
+                reportMedia,
+                householdPhones,
+                onReportMedia: (id) =>
+                  one<{ media: CaseMedia }>(
+                    { action: "report_media", id },
+                    (answer) => setReportMedia((seen) => ({ ...seen, [id]: answer.media })),
+                    () => setReportMedia((seen) => ({ ...seen, [id]: "failed" })),
+                  ),
+                onHouseholdPhone: (id) =>
+                  one<{ phone: string | null }>(
+                    { action: "household_phone", id },
+                    (answer) => setHouseholdPhones((seen) => ({ ...seen, [id]: answer.phone })),
+                    () => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
+                  ),
+                contacts,
+                onContact: (id) =>
+                  one<{ contact: UnitContact }>(
+                    { action: "unit_phone", unit: id },
+                    (answer) => setContacts((seen) => ({ ...seen, [id]: answer.contact })),
+                    () => setContacts((seen) => ({ ...seen, [id]: "failed" })),
+                  ),
+              }}
+            />
+          )
+        }
+      />
+    </>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { CasePush } from "@/components/push/PushCard";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
@@ -477,6 +478,8 @@ export function CaseStatus({ id, merged }: Props) {
 
       {open && (
         <>
+          {/* After sending, never before: "tell this phone when a team accepts" (A7). */}
+          <CasePush id={id} token={token} />
           {!supplies && <SosDetailsForm id={id} token={token} />}
           <div className={card}>
             <button

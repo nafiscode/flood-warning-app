@@ -1,3 +1,5 @@
+import { after } from "next/server";
+import { runPushTick } from "@/lib/push-server";
 import {
   acceptCase,
   advanceCase,
@@ -181,6 +183,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    after(() => void runPushTick());
     return answer({ ...extra, board: await readAuthorityBoard(session.userId) });
   } catch {
     return answer({ ...extra, board: null });
