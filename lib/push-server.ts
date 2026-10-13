@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 import { alertPayload, casePayload, type DueRow, type PushAlert, type PushLevel } from "@/lib/push";
+import { siteUrl } from "@/lib/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
@@ -26,9 +27,15 @@ export type PushOutcome = { sent: number; failed: number; gone: number } | { ski
 function configured(): boolean {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const privateKey = process.env.VAPID_PRIVATE_KEY ?? "";
+  if (!publicKey || !privateKey) return false;
+  // Who a push service may write to about Jaga's messages: the project's address where the
+  // server knows it, else the site itself. A missing address must never be what stops an alert
+  // from leaving - which it did on 13 Oct, when the live site had the keys but not the address.
   const contact = process.env.CONTACT_EMAIL ?? "";
-  if (!publicKey || !privateKey || !contact) return false;
-  webpush.setVapidDetails(`mailto:${contact}`, publicKey, privateKey);
+  const site = siteUrl();
+  const subject = contact ? `mailto:${contact}` : site.startsWith("https://") ? site : null;
+  if (!subject) return false;
+  webpush.setVapidDetails(subject, publicKey, privateKey);
   return true;
 }
 
