@@ -378,4 +378,49 @@ describe("a LINE sign-in that finishes in another browser", () => {
     );
     expect(await take(null as unknown as string)).toBeNull();
   });
+
+  it("keeps a sign-in started in the installed app for that app to collect", async () => {
+    const park = async (id: string, code: string) =>
+      (await one<{ v: boolean }>("select sign_in_flow_park($1, $2) as v", [id, code])).v;
+    const claim = async (id: string) =>
+      (
+        await one<{ v: { code: string; verifier: string } | null }>(
+          "select sign_in_flow_claim($1) as v",
+          [id],
+        )
+      ).v;
+    await as(db, "anon");
+    // A flow from a browser is never parked: it finishes where it lands, as before.
+    await db.query("select sign_in_flow_put($1, $2)", [ID, "key-1"]);
+    expect(await park(ID, "code-1")).toBe(false);
+    expect(await claim(ID)).toBeNull();
+    expect(await take(ID)).toBe("key-1");
+
+    // One from the app: nothing to claim until the browser has left the code.
+    await db.query("select sign_in_flow_put($1, $2)", [ID, "key-2"]);
+    await db.query("select sign_in_flow_mark_app($1)", [ID]);
+    expect(await claim(ID)).toBeNull();
+    expect(await park("B".repeat(43), "code-x")).toBe(false);
+    expect(await park(ID, "")).toBe(false);
+    expect(await park(ID, "code-2")).toBe(true);
+    // A second code cannot replace the one that is waiting.
+    expect(await park(ID, "code-3")).toBe(false);
+    expect(await expectDenied(db, "select 1 from sign_in_flows")).toBe("42501");
+    // Handed over once, with the key, to whoever holds the id.
+    expect(await claim(ID)).toEqual({ code: "code-2", verifier: "key-2" });
+    expect(await claim(ID)).toBeNull();
+    expect(await take(ID)).toBeNull();
+
+    // Too old: neither parked nor claimed.
+    await db.query("select sign_in_flow_put($1, $2)", [ID, "key-3"]);
+    await db.query("select sign_in_flow_mark_app($1)", [ID]);
+    await asOwner(db);
+    await db.query("update sign_in_flows set created_at = now() - interval '11 minutes'");
+    await as(db, "anon");
+    expect(await park(ID, "code-4")).toBe(false);
+    await asOwner(db);
+    await db.query("update sign_in_flows set code = 'code-5'");
+    await as(db, "anon");
+    expect(await claim(ID)).toBeNull();
+  });
 });

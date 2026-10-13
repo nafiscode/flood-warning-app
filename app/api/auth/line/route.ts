@@ -2,7 +2,13 @@ import type { Provider } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { localePath, safeNextPath } from "@/lib/auth";
 import { isPhoneBrowser, lineSignInConfigured } from "@/lib/features";
-import { newFlowId, packVerifier } from "@/lib/sign-in-flow";
+import {
+  FLOW_COOKIE,
+  FLOW_COOKIE_SECONDS,
+  FLOW_NEXT_COOKIE,
+  newFlowId,
+  packVerifier,
+} from "@/lib/sign-in-flow";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { createClient, type PlainCookie } from "@/lib/supabase/server";
 
@@ -58,10 +64,19 @@ export async function GET(request: NextRequest) {
     },
   });
   if (error || !data.url) return back("line");
+  // Started in Jaga on the home screen: the LINE app will come back in the phone's browser, not
+  // here. The flow is marked so that browser leaves the sign-in for this app to collect.
+  const fromApp = searchParams.get("app") === "1";
   const verifier = packVerifier(set);
+  let kept = false;
   if (verifier) {
     // If this fails the sign-in still works in the browser that started it.
-    await supabase.rpc("sign_in_flow_put", { p_id: flow, p_verifier: verifier });
+    const { error: notKept } = await supabase.rpc("sign_in_flow_put", {
+      p_id: flow,
+      p_verifier: verifier,
+    });
+    kept = !notKept;
+    if (kept && fromApp) await supabase.rpc("sign_in_flow_mark_app", { p_id: flow });
   }
 
   // Supabase answers its own address with a redirect to LINE. Follow that hop here, so the
@@ -74,7 +89,20 @@ export async function GET(request: NextRequest) {
   } catch {
     // Keep Supabase's address.
   }
-  return NextResponse.redirect(target, {
+  const response = NextResponse.redirect(target, {
     headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" },
   });
+  if (fromApp && kept) {
+    // What the app asks about when the person comes back to it (components/SignInFinisher.tsx).
+    // Readable by the page, so it only asks while there is something to ask about.
+    const options = {
+      path: "/",
+      maxAge: FLOW_COOKIE_SECONDS,
+      sameSite: "lax" as const,
+      secure: origin.startsWith("https:"),
+    };
+    response.cookies.set(FLOW_COOKIE, flow, options);
+    if (next) response.cookies.set(FLOW_NEXT_COOKIE, next, options);
+  }
+  return response;
 }

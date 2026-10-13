@@ -769,6 +769,15 @@
       "why": "Log masuk ini bermula dari aplikasi atau pelayar lain. Sila pastikan ini akaun anda.",
       "continue": "Ya, teruskan",
       "notMe": "Bukan saya, log keluar"
+    },
+    "returnToApp": {
+      "title": "Kembali ke aplikasi Jaga",
+      "done": "LINE telah mengesahkan anda.",
+      "open": "Buka Jaga dari skrin utama sekali lagi. Aplikasi akan log masuk sendiri dalam beberapa saat.",
+      "stuck": "Jika aplikasi masih memaparkan halaman LINE, ketik “Selesai” atau butang kembali untuk menutupnya dahulu.",
+      "soon": "Sila kembali ke aplikasi dalam beberapa minit. Jika terlalu lama, anda perlu log masuk semula.",
+      "why": "Halaman ini dibuka dalam pelayar kerana aplikasi LINE tidak dapat kembali ke aplikasi di skrin utama. Pelayar ini belum log masuk.",
+      "here": "Log masuk dalam pelayar ini sahaja"
     }
   },
   "watched": {

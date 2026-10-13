@@ -404,6 +404,67 @@ test("a started LINE sign-in keeps its one-time key for another browser", async 
   }
 });
 
+test("a LINE sign-in started in Jaga on the home screen waits for that app", async ({
+  playwright,
+  baseURL,
+  browser,
+}) => {
+  const db = new Client({ connectionString: dbUrl });
+  await db.connect();
+  // The app: it starts the sign-in and keeps the one-time key in its own cookies.
+  const app = await playwright.request.newContext({ baseURL });
+  // The phone's browser, where the LINE app comes back: no cookies of the app's.
+  const phone = await browser.newContext();
+  try {
+    const start = await app.get("/api/auth/line?locale=en&next=/en/account&app=1", {
+      maxRedirects: 0,
+    });
+    test.skip(
+      !(start.headers()["location"] ?? "").startsWith("https://access.line.me/"),
+      "LINE not configured here",
+    );
+    const cookies = (await app.storageState()).cookies;
+    const flow = cookies.find((c) => c.name === "jaga-flow")?.value ?? "";
+    expect(flow).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    const nextCookie = cookies.find((c) => c.name === "jaga-flow-next")?.value ?? "";
+    expect(decodeURIComponent(nextCookie)).toBe("/en/account");
+
+    // Nothing has come back yet: the app is told to wait, and keeps asking.
+    expect(await (await app.post("/api/auth/finish")).json()).toEqual({ state: "waiting" });
+
+    // LINE comes back in the phone's browser. It is not signed in; it says "go back to Jaga".
+    const page = await phone.newPage();
+    await page.goto(`/api/auth/callback?code=code-line-never-issued&flow=${flow}&next=/en/account`);
+    await expect(page).toHaveURL(/\/en\/account\/return-to-app\?flow=/);
+    await expect(page.getByRole("heading", { name: "Go back to the Jaga app" })).toBeVisible();
+    await expect(page.locator("[data-sign-in-here]")).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+    await page.goto("/en/account");
+    await expect(page).toHaveURL(/\/en\/sign-in/);
+    const waiting = await db.query(
+      "select from_app, code from public.sign_in_flows where id_hash = encode(sha256(convert_to($1, 'UTF8')), 'hex')",
+      [flow],
+    );
+    expect(waiting.rows[0]).toEqual({ from_app: true, code: "code-line-never-issued" });
+
+    // The app collects it. This code is made up, so the exchange is refused - but the app got
+    // it, tried it with its own key, and the waiting row and its cookies are gone.
+    expect(await (await app.post("/api/auth/finish")).json()).toEqual({ state: "failed" });
+    expect((await app.storageState()).cookies.some((c) => c.name === "jaga-flow")).toBe(false);
+    expect(await (await app.post("/api/auth/finish")).json()).toEqual({ state: "none" });
+    // Collected once: the browser's own "sign in here instead" finds nothing any more.
+    await page.goto(`/api/auth/callback?here=1&flow=${flow}`);
+    await expect(page).toHaveURL(/\/sign-in\?error=link$/);
+  } finally {
+    await app.dispose();
+    await phone.close();
+    await db.end();
+  }
+});
+
 test("the notice after a sign-in from another browser names the account and needs a session", async ({
   page,
 }) => {

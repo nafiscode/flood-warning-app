@@ -1,3 +1,4 @@
+import { LineLink } from "@/components/account/LineLink";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { safeNextPath } from "@/lib/auth";
@@ -68,9 +69,9 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
         {lineSignInConfigured() ? (
           <div className="flex flex-col gap-3">
             {/* A plain link, not a form: a phone only opens the LINE app for a tapped link. */}
-            <a href={lineHref} rel="nofollow" className={buttonPrimary}>
+            <LineLink href={lineHref} className={buttonPrimary}>
               {t("line.button")}
-            </a>
+            </LineLink>
             <p className={hint}>{t("line.note")}</p>
             {/* In-app browsers (Messenger, Chrome on iPhone) get LINE's web page, not the app. */}
             <p className={hint}>{t("line.appHint")}</p>

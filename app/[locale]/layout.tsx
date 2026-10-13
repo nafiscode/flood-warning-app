@@ -10,6 +10,7 @@ import { HotlineBar } from "@/components/HotlineBar";
 import { DaylightTheme } from "@/components/DaylightTheme";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { QueueRunner } from "@/components/QueueRunner";
+import { SignInFinisher } from "@/components/SignInFinisher";
 import { NoticeBell } from "@/components/notices/NoticeBell";
 import { ThaiClock } from "@/components/ThaiClock";
 import { WeatherChip } from "@/components/weather/WeatherChip";
@@ -195,6 +196,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               <HotlineBar />
             </footer>
             <QueueRunner />
+            <SignInFinisher />
             <DaylightTheme />
           </NextIntlClientProvider>
         </SerwistProvider>

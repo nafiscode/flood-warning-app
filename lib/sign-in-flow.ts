@@ -61,3 +61,29 @@ export function signedInNoticePath(destination: string): string {
     routing.defaultLocale;
   return `${localePath(locale, "/account/signed-in")}?next=${encodeURIComponent(destination)}`;
 }
+
+export { FLOW_COOKIE, FLOW_COOKIE_SECONDS, FLOW_NEXT_COOKIE } from "@/lib/flow-cookie";
+
+/** What `sign_in_flow_claim` hands back: the waiting code, and the key to use it with. */
+export function unpackClaim(value: unknown): { code: string; verifier: PlainCookie[] } | null {
+  if (!value || typeof value !== "object") return null;
+  const { code, verifier } = value as Record<string, unknown>;
+  if (typeof code !== "string" || code === "") return null;
+  return { code, verifier: unpackVerifier(verifier) };
+}
+
+function localeOf(destination: string | null): string {
+  return (
+    routing.locales.find((l) => destination === `/${l}` || destination?.startsWith(`/${l}/`)) ??
+    routing.defaultLocale
+  );
+}
+
+/**
+ * Where the phone's browser is sent when the sign-in belongs to the installed app: a page that
+ * says "go back to Jaga", with a way to finish here instead.
+ */
+export function returnToAppPath(flow: string, next: string | null): string {
+  const query = new URLSearchParams({ flow, ...(next ? { next } : {}) });
+  return `${localePath(localeOf(next), "/account/return-to-app")}?${query}`;
+}
