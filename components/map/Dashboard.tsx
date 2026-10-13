@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 import { hazardSourceUrl, tilesBase, type TileManifest } from "@/lib/hazard-layer";
 import type { Area, AreaDirectory } from "@/lib/area";
@@ -8,6 +9,7 @@ import { DAM_URL, type DamData } from "@/lib/dam";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
+import { satelliteUrl, type SatelliteFlood, type SatelliteWindow } from "@/lib/satellite-flood";
 import { useFetched, useMyPlaces, useNow, usePublicStatus } from "@/lib/use-public";
 import { DashboardView } from "./DashboardView";
 
@@ -36,6 +38,10 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   // The flood-hazard classes: the tile bucket's manifest names the current file (lib/hazard-layer.ts).
   const tiles = tilesBase();
   const manifest = useFetched<TileManifest>(tiles ? `${tiles}/manifest.json` : null);
+  // Flood seen by satellite (GISTDA): asked for only once someone switches it on, and again
+  // when they change how far back to look (lib/satellite-flood.ts).
+  const [satelliteDays, setSatelliteDays] = useState<SatelliteWindow | null>(null);
+  const satellite = useFetched<SatelliteFlood>(satelliteDays ? satelliteUrl(satelliteDays) : null);
   const me = useMyPlaces();
   // Where the person said they are on the home screen: their saved home first, else the area
   // they chose on this phone. The map opens there (the owner's note, 9 Oct).
@@ -55,6 +61,10 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       dataState={data.state}
       dams={dam.data?.dams ?? null}
       hazardTiles={hazardSourceUrl(tiles, manifest.data)}
+      satelliteDays={satelliteDays}
+      onSatelliteDays={setSatelliteDays}
+      satellite={satellite.data}
+      satelliteLoad={satellite.state}
       me={me}
       area={area}
       now={now}

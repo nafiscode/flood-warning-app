@@ -570,6 +570,19 @@
       "terrain": "Rupa bumi",
       "satellite": "Satelit",
       "satelliteNote": "Gambar satelit tahun 2020, kira-kira 10 meter setiap titik: sungai, sawah dan bandar kelihatan, tetapi rumah satu per satu tidak, dan ia bukan gambar semasa."
+    },
+    "satellite": {
+      "toggle": "Tunjukkan banjir yang dikesan satelit (GISTDA)",
+      "window": "Tempoh ke belakang",
+      "days": "{days} hari",
+      "loading": "Sedang meminta data daripada GISTDA…",
+      "failed": "Data banjir satelit GISTDA tidak dapat diperoleh sekarang. Ini tidak bermakna ada atau tiada banjir. Sila lihat tahap amaran kawasan anda.",
+      "none": "Dalam {days} hari lepas, satelit tidak mengesan banjir di 4 wilayah ini. Ini bukan bermakna selamat: satelit tidak lalu setiap hari dan tidak nampak air di kawasan bangunan padat atau di bawah pokok.",
+      "some": "Dalam {days} hari lepas, satelit mengesan kira-kira {km2} km² banjir di 4 wilayah ini.",
+      "latest": "Imej terkini diambil pada {day} · Jaga meminta data pada {asked}",
+      "asked": "Jaga meminta data pada {asked}",
+      "truncated": "Kawasan lebih besar daripada yang dapat ditunjukkan di peta ini; hanya sebahagian ditunjukkan.",
+      "note": "Sumber: GISTDA. Setiap heksagon kira-kira 0.12 km². Ia menunjukkan tempat satelit nampak air pada hari imej diambil, bukan kedalamannya dan bukan keadaan sekarang. Ini bukan amaran."
     }
   },
   "attribution": {

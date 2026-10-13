@@ -2,7 +2,7 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { GeoJSONSource, Map as MapLibreMap, PointLike, Popup } from "maplibre-gl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MapLayer } from "@/lib/hazards";
 import { damLevel, type Dam, reachesInOrder } from "@/lib/dam";
 import {
@@ -25,6 +25,7 @@ import {
   HAZARD_SOURCE_LAYER,
   hazardFillColor,
 } from "@/lib/hazard-layer";
+import { SATELLITE_OPACITY, satelliteColor, type SatelliteCell } from "@/lib/satellite-flood";
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
@@ -90,6 +91,11 @@ type Props = {
   hazardUrl?: string | null;
   /** The basemap under our layers (lib/map.ts). */
   basemap?: Basemap;
+  /**
+   * Hexagons where a satellite pass saw flood water (lib/satellite-flood.ts); null or empty
+   * draws nothing. The caller says in words what an empty map means.
+   */
+  satellite?: SatelliteCell[] | null;
   /** The person's own places, drawn on top of everything when they ask for them. */
   mine?: MinePlace[];
   showMine?: boolean;
@@ -132,6 +138,8 @@ const REPORTS_LINE = "jaga-reports-line";
 const PLACES = "jaga-places";
 const HAZARD = "jaga-hazard";
 const HAZARD_FILL = "jaga-hazard-fill";
+const SATELLITE = "jaga-satellite";
+const SATELLITE_LINE = "jaga-satellite-line";
 const GAUGES = "jaga-gauges";
 const MINE = "jaga-mine";
 const MINE_LABEL = "jaga-mine-label";
@@ -261,7 +269,13 @@ export function MapView({
   damText = { spillway: "", outlet: "", locale: "th" },
   hazardUrl = null,
   basemap = "streets",
+  satellite = null,
 }: Props) {
+  // One object for as long as the hexagons are the same, so they are sent to the map once.
+  const satelliteData = useMemo(
+    () => collection((satellite ?? []) as GeoJSON.Feature[]),
+    [satellite],
+  );
   /*
    * The three labels are taken apart here because the caller builds damText fresh on every
    * render: the object's identity would restart the drawing effect each time, while the
@@ -301,11 +315,14 @@ export function MapView({
   }, [mine]);
 
   useEffect(() => {
-    const collections = toCollections(data, mine, dams, {
-      spillway: spillwayLabel,
-      outlet: outletLabel,
-      locale: damLocale,
-    });
+    const collections = {
+      ...toCollections(data, mine, dams, {
+        spillway: spillwayLabel,
+        outlet: outletLabel,
+        locale: damLocale,
+      }),
+      [SATELLITE]: satelliteData,
+    };
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
     const dark = darkNow();
     const paint = damPaint(dark);
@@ -370,6 +387,32 @@ export function MapView({
             mapIsDark() ? HAZARD_OPACITY_NIGHT : HAZARD_OPACITY,
           );
         }
+        /*
+         * Flood seen by satellite: above the flood-prone areas, under the alert levels. Violet, by
+         * day and by night, and never an alert colour (lib/satellite-flood.ts).
+         */
+        if (!m.getLayer(SATELLITE)) {
+          m.addLayer(
+            {
+              id: SATELLITE,
+              type: "fill",
+              source: SATELLITE,
+              paint: { "fill-color": satelliteColor(false), "fill-opacity": SATELLITE_OPACITY },
+            },
+            above,
+          );
+          m.addLayer(
+            {
+              id: SATELLITE_LINE,
+              type: "line",
+              source: SATELLITE,
+              paint: { "line-color": satelliteColor(false), "line-width": 1 },
+            },
+            above,
+          );
+        }
+        m.setPaintProperty(SATELLITE, "fill-color", satelliteColor(mapIsDark()));
+        m.setPaintProperty(SATELLITE_LINE, "line-color", satelliteColor(mapIsDark()));
         if (!m.getLayer(ALERT_FILL)) {
           m.addLayer({ id: ALERT_FILL, type: "fill", source: TAMBON_SOURCE, paint: {} }, above);
         }
@@ -680,6 +723,7 @@ export function MapView({
     outletLabel,
     damLocale,
     hazardUrl,
+    satelliteData,
   ]);
 
   useEffect(() => {

@@ -28,6 +28,8 @@ import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
 import { HazardPlaceholder } from "./HazardPlaceholder";
+import { SatelliteFloodPanel } from "./SatelliteFlood";
+import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
 import { Link } from "@/i18n/navigation";
 import { checkBox, checkRow } from "@/lib/ui";
 import { MapView, type MapSelection, type MinePlace } from "./MapView";
@@ -76,6 +78,14 @@ export type DashboardViewProps = {
   dams?: Dam[] | null;
   /** The `pmtiles://` address of the flood-hazard classes; null while there is none to draw. */
   hazardTiles?: string | null;
+  /**
+   * Flood seen by satellite (GISTDA): the window asked for (null = switched off), the answer
+   * and how the asking went. Left out, the switch is not offered.
+   */
+  satelliteDays?: SatelliteWindow | null;
+  onSatelliteDays?: (days: SatelliteWindow | null) => void;
+  satellite?: SatelliteFlood | null;
+  satelliteLoad?: LoadState;
   now: number;
   /** The Transparency tab exists only once donations are switched on (A11, safety rule 9). */
   transparency: boolean;
@@ -573,6 +583,11 @@ export function DashboardView(props: DashboardViewProps) {
                   showMine={showMine}
                   dams={dams}
                   hazardUrl={props.hazardTiles ?? null}
+                  satellite={
+                    props.satelliteDays && props.satellite?.days === props.satelliteDays
+                      ? props.satellite.features
+                      : null
+                  }
                   basemap={basemap}
                   damText={{
                     spillway: tDam("mark.spillway"),
@@ -625,6 +640,15 @@ export function DashboardView(props: DashboardViewProps) {
                   </span>
                   <span>{t("risk.toggle")}</span>
                 </label>
+              )}
+              {props.onSatelliteDays && (
+                <SatelliteFloodPanel
+                  days={props.satelliteDays ?? null}
+                  onDays={props.onSatelliteDays}
+                  flood={props.satellite ?? null}
+                  load={props.satelliteLoad ?? "loading"}
+                  dark={nightMap}
+                />
               )}
               {placesOnOffer && (
                 <label

@@ -570,6 +570,19 @@
       "terrain": "Terrain",
       "satellite": "Satellite",
       "satelliteNote": "A satellite picture from 2020 at about 10 metres a point: rivers, fields and towns show, single houses do not, and it is not a live picture."
+    },
+    "satellite": {
+      "toggle": "Show flood seen by satellite (GISTDA)",
+      "window": "Look back",
+      "days": "{days} days",
+      "loading": "Asking GISTDA…",
+      "failed": "GISTDA's satellite flood map can't be reached right now. That says nothing about whether there is flooding. Please go by the alert level for your area.",
+      "none": "In the last {days} days no satellite pass saw flooding in these 4 provinces. This is not an all-clear: a satellite does not pass every day, and it cannot see water among dense buildings or under trees.",
+      "some": "In the last {days} days satellites saw about {km2} km² of flooding in these 4 provinces.",
+      "latest": "Latest image taken on {day} · Jaga asked at {asked}",
+      "asked": "Jaga asked at {asked}",
+      "truncated": "There is more than this map can show; only part is drawn.",
+      "note": "Source: GISTDA. Each hexagon is about 0.12 km². It marks where a satellite saw water on the day of the image, not how deep, and not what is flooded now. This is not a warning."
     }
   },
   "attribution": {
