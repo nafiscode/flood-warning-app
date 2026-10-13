@@ -1,11 +1,11 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { hazardSourceUrl, tilesBase, type TileManifest } from "@/lib/hazard-layer";
 import type { Area, AreaDirectory } from "@/lib/area";
-import { DAM_URL, type DamData } from "@/lib/dam";
+import { DAM_URL, DAM_ZONE_URL, type DamData, type DamZoneData } from "@/lib/dam";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
@@ -49,6 +49,14 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   // The dam, the reservoir and the path released water takes: public, edge-cached, and asked
   // for in every view because the river is always drawn (spec section 15).
   const dam = useFetched<DamData>(DAM_URL);
+  // The zone's outlines are heavy, so they come in their own request and only here, on the map.
+  const damZone = useFetched<DamZoneData>(DAM_ZONE_URL);
+  const damsWithZones = useMemo(() => {
+    const dams = dam.data?.dams ?? null;
+    const zones = damZone.data?.zones ?? [];
+    if (!dams || zones.length === 0) return dams;
+    return dams.map((d) => ({ ...d, zones: zones.filter((z) => z.dam === d.code) }));
+  }, [dam.data, damZone.data]);
   // The flood-hazard classes: the tile bucket's manifest names the current file (lib/hazard-layer.ts).
   const tiles = tilesBase();
   const manifest = useFetched<TileManifest>(tiles ? `${tiles}/manifest.json` : null);
@@ -73,7 +81,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       directoryState={directory.state}
       data={data.data}
       dataState={data.state}
-      dams={dam.data?.dams ?? null}
+      dams={damsWithZones}
       hazardTiles={hazardSourceUrl(tiles, manifest.data)}
       satelliteDays={satelliteDays}
       onSatelliteDays={setSatelliteDays}

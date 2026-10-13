@@ -120,6 +120,8 @@ export type Dam = {
   storageNormalMcm: number | null;
   /** Where the lines came from and what they do not say (safety rule 8). */
   geometrySource: string;
+  /** The zone's outlines, joined on by the map once its own request has answered. */
+  zones?: DamZone[];
   geometryNote: {
     source?: string;
     credit?: string;
@@ -142,6 +144,22 @@ export type Dam = {
 export type DamData = { dams: Dam[] };
 
 export const DAM_URL = "/api/public/dam";
+
+/**
+ * The land a rise in the river can reach below a dam (S7; the owner chose it with its outer band
+ * on 14 Oct 2026). `zone` is land the river has been high enough to reach at the highest levels
+ * the gauges have recorded; `outer` is one metre above that. From a 30 m elevation model, not a
+ * hydraulic model: it says which land is low enough and joined to the river, never how deep the
+ * water will be or that it will come. Asked for by the map only, in its own request, because the
+ * outlines are far heavier than everything else about the dam together.
+ */
+export type DamZone = {
+  dam: string;
+  band: "zone" | "outer";
+  geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon;
+};
+export type DamZoneData = { zones: DamZone[] };
+export const DAM_ZONE_URL = "/api/public/dam-zone";
 
 /** How old the reading is, in hours. The feed itself lags by hours, so this is always shown. */
 export function ageHours(signal: Pick<DamSignal, "observedAt">, now: number): number {
