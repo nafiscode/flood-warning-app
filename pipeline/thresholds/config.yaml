@@ -1,0 +1,83 @@
+# S5, docs/science-plan.md Module 3: the signals behind a suggested alert level, and provisional
+# thresholds from a hindcast. Everything here is a starting value; the output is marked provisional
+# and only ever suggests a level to an admin (safety rule 2).
+
+output_dir: out/thresholds
+user_agent: "jaga-pipeline/0.1 (+https://github.com/nafiscode/flood-warning-app; {contact})"
+
+# The flow directions the hazard module left on disk (rivers burned in, 30 m, UTM 47N).
+pointer: out/hazard/burned/d8_pointer.tif
+accumulation: out/hazard/burned/d8_accum.tif
+snap_cells: 12            # a gauge is moved to the largest stream within this many cells
+
+# Seasons are named by the year they start in: October of that year to the end of January.
+seasons: {first: 2017, last: 2025, start_month: 10, end_month: 1}
+
+rain:
+  collection: JAXA/GPM_L3/GSMaP/v8/operational
+  band: hourlyPrecipRateGC        # gauge-adjusted, mm per hour
+  scale_m: 11132                  # the product's own 0.1 degree grid
+  chunk_days: 10
+
+glofas:
+  url: https://flood-api.open-meteo.com/v1/flood
+  # GloFAS is a 5 km grid and its rivers do not sit exactly on ours: the nine cells around the
+  # gauge are asked for and the one with the largest mean flow is kept, its position recorded.
+  search_deg: 0.05
+
+# A flood, for the hindcast: the key gauge at or above its bank for at least `min_hours`, with
+# `gap_days` below the bank before the next one counts as new. Bank levels are the irrigation
+# department's (stations.csv, checked against its annual flood summaries of 2567 and 2568).
+flood: {min_hours: 3, gap_days: 5}
+leads_h: [72, 48, 24, 12, 6]
+# An alarm is a spell above a threshold; spells closer than this are one alarm. It counts as a hit
+# when a flood begins while it stands or within `hit_window_h` of its start.
+alarm: {merge_gap_h: 48, hit_window_h: 120}
+rise_window_h: 6
+
+zones:
+  pattani_river:
+    name: {th: "แม่น้ำปัตตานี", ms: "Sungai Patani", en: "Pattani River"}
+    key: {code: X.40A, id: 2583, bank_m: 16.5, place: "Yala town (Tha Sap)", point: [101.266294, 6.552798]}
+    upstream: {code: X.77, id: 1095877, bank_m: 39.7, place: "Bannang Sata", point: [101.268219, 6.262033]}
+    downstream:
+      - {code: X.283, id: 1095878, bank_m: 10.0, place: "Yarang"}
+      - {code: X.275, id: 726684, bank_m: 2.0, place: "Ban Brido"}
+      - {code: X.10A, id: 2587, bank_m: 1.15, place: "Pattani town"}
+    # Rain is taken over the land that drains to the key gauge without passing the dam; the
+    # reservoir's own catchment is kept as a second basin because the dam holds its water back.
+    basins:
+      - {name: below_dam, outlet: [101.266294, 6.552798], minus: above_dam}
+      - {name: above_dam, outlet: [101.2764, 6.1604]}
+      - {name: dam_to_x77, outlet: [101.268219, 6.262033], minus: above_dam}
+    rain_basin: below_dam
+    dam: {hourly_id: 50}
+  kolok:
+    name: {th: "แม่น้ำโก-ลก", ms: "Sungai Golok", en: "Kolok River"}
+    key: {code: X.119A, id: 2559, bank_m: 9.3, place: "Sungai Kolok (Lantu bridge)", point: [101.9749, 6.0226]}
+    upstream: {code: X.274, id: 505050, bank_m: 23.5, place: "Waeng (Ban Buketa)", point: [101.8921, 5.8392]}
+    downstream:
+      - {code: X.119, id: 505052, bank_m: 7.0, place: "Ban Muno"}
+    basins:
+      - {name: above_key, outlet: [101.9749, 6.0226]}
+    rain_basin: above_key
+  u_taphao:
+    name: {th: "คลองอู่ตะเภา", ms: "Khlong U-Taphao", en: "Khlong U-Taphao"}
+    key: {code: X.44, id: 2591, bank_m: 7.4, place: "Hat Yai (Ban Hat Yai Nai)", point: [100.4561, 7.0022]}
+    upstream: {code: X.90, id: 2589, bank_m: 9.34, place: "Khlong Hoi Khong (Ban Bang Sala)", point: [100.4399, 6.9312]}
+    downstream: []
+    extra:
+      - {code: X.173A, id: 2585, bank_m: 16.13, place: "Sadao (Ban Muang Kong)"}
+      - {code: X.174, id: 2590, bank_m: 8.88, place: "Khlong Wa, Hat Yai"}
+    basins:
+      # The listed position of X.44 is 1.2 km from the channel the elevation model drains by.
+      - {name: above_key, outlet: [100.4561, 7.0022], snap_cells: 40}
+    rain_basin: above_key
+
+# Threshold candidates the hindcast scores. The proposal takes, per level, the candidate that
+# catches every flood the gauge recorded with the fewest false alarms (ties: the longer lead).
+candidates:
+  rain_72h_mm: [60, 80, 100, 120, 150, 180, 220, 260, 300, 350, 400]
+  rain_24h_mm: [40, 60, 80, 100, 120, 150, 180, 220, 260]
+  key_below_bank_m: [3.0, 2.5, 2.0, 1.5, 1.0, 0.5]        # the key gauge within this much of its bank
+  upstream_below_bank_m: [3.0, 2.5, 2.0, 1.5, 1.0, 0.5, 0.0]

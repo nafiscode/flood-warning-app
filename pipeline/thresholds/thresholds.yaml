@@ -1,0 +1,53 @@
+# Provisional thresholds from the hindcast (pipeline/thresholds). Generated; do not edit by hand.
+# They suggest a level to an admin and never publish one. See out/thresholds/report.md for
+# how each was scored and how few floods stand behind it.
+provisional: true
+built: 2026-10-13T21:15+00:00
+thresholds:
+- zone: pattani_river
+  signal: rain_72h_mm
+  levels:
+    watch: 180
+  provisional: true
+  basin: pattani_river.below_dam
+- zone: pattani_river
+  signal: key_level_m
+  levels:
+    warning: 16.0
+    evacuate: 16.5
+  provisional: true
+  station: X.40A
+  station_id: 2583
+- zone: kolok
+  signal: rain_72h_mm
+  levels:
+    watch: 100
+  provisional: true
+  basin: kolok.above_key
+- zone: kolok
+  signal: key_level_m
+  levels:
+    warning: 8.8
+    evacuate: 9.3
+  provisional: true
+  station: X.119A
+  station_id: 2559
+- zone: u_taphao
+  signal: rain_72h_mm
+  levels:
+    watch: 220
+  provisional: true
+  basin: u_taphao.above_key
+- zone: u_taphao
+  signal: rain_24h_mm
+  levels:
+    warning: 150
+  provisional: true
+  basin: u_taphao.above_key
+- zone: u_taphao
+  signal: key_level_m
+  levels:
+    evacuate: 7.4
+  provisional: true
+  station: X.44
+  station_id: 2591

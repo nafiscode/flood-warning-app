@@ -153,4 +153,6 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests
 - `cd pipeline && uv run python -m ingest_thaiwater refresh`: refresh the ThaiWater archive in `pipeline/data/` (also `waterlevel`, `rain-daily`, `rain-hourly`, `backfill`, `coverage`, `snapshot`)
 - `cd pipeline && uv run python -m gistda fetch`: GISTDA's repeated-flood polygons for the four provinces (needs `GISTDA_API_KEY`); then `burn` and `compare` set them against the radar seasons and the hazard classes (see `pipeline/gistda/METHODS.md`)
+- `cd pipeline && uv run python -m thresholds hindcast`: rebuild the provisional alert thresholds and their report (`pipeline/thresholds/report.md`, `thresholds.yaml`); first `basins`, `rain` (Earth Engine, needs `EE_PROJECT`) and `glofas` (see `pipeline/thresholds/METHODS.md`)
+- `cd pipeline && uv run python -m dam_release zone`: the land a rise in the Pattani River can reach below Bang Lang dam; also `geometry`, `travel`, `thresholds` (see `pipeline/dam_release/METHODS.md`)
 - `cd pipeline && uv run python -m r2sync check`: test the R2 connection; also `push`, `ls`, `manifest` (see `pipeline/README.md`)

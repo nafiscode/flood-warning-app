@@ -131,6 +131,12 @@ Build notebooks/threshold_hindcast.ipynb and supporting code in pipeline/thresho
 Acceptance: a report with a table and plots per zone, clearly marked as provisional, with limitations stated.
 ```
 
+**S5 first pass done** (14 Oct): `pipeline/thresholds` (`basins`, `rain`, `glofas`, `hindcast`), report and
+`thresholds.yaml` beside the code, all provisional. The event timeline was filled from news and the
+irrigation department's flood summaries instead of by the owner (decision 14 Oct). Not done: the
+notebook and the plots (the report is tables only), forecast rain, tide, and the false-alarm check
+for 2017 to 2019 beyond counting the alarms (no gauge record then).
+
 ### S6: Stage-to-extent library
 ```text
 Read docs/science-plan.md Module 4.
