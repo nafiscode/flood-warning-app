@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { MediaFields, type VoiceNote } from "@/components/report/MediaFields";
+import { MyReports } from "@/components/reports/MyReports";
 import { PinOnMap } from "@/components/sos/PinOnMap";
 import { Link } from "@/i18n/navigation";
 import { enqueue } from "@/lib/queue";
@@ -127,6 +128,8 @@ export function ReportForm() {
         <Link href="/" className={buttonPrimary}>
           {t("home")}
         </Link>
+        {/* Mounted afresh here, so the report just sent is in the list and can be ended later. */}
+        {!queued && <MyReports always />}
       </section>
     );
   }
@@ -235,6 +238,8 @@ export function ReportForm() {
       >
         {state === "sending" ? t("sending") : t("send")}
       </button>
+      {/* What this person already reported, and the button that says the water has gone. */}
+      <MyReports always />
     </section>
   );
 }

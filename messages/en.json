@@ -2602,5 +2602,38 @@
         "save": "That did not work. Try again."
       }
     }
+  },
+  "reportsNear": {
+    "title": "Flood has been reported near your area",
+    "mapTitle": "Flood reports from residents",
+    "source": "These are reports from app users in the area. Jaga has not checked them, and this is not an alert from Jaga.",
+    "advice": "Check with your neighbours, get ready, and plan your travel.",
+    "here": "In your subdistrict",
+    "district": "In the same district",
+    "place": "{tambon}, {district}",
+    "count": "{reports, plural, one {# report} other {# reports}} from {people, plural, one {# person} other {# people}}",
+    "deepest": "Deepest reported: {depth}",
+    "latest": "Latest report around {time}",
+    "trend": "Water level: {trend}",
+    "road": "Road: {road}",
+    "confirmed": "Several residents report the same",
+    "unconfirmed": "Nobody else has reported the same yet",
+    "seeMap": "See where on the map",
+    "none": "No flood report stands in this area right now.",
+    "bell": "Flood reported in {tambon}",
+    "mine": {
+      "title": "Your reports",
+      "item": "{place} · {depth}",
+      "sent": "Reported {time}",
+      "standing": "Still standing. People in the same area can see it.",
+      "standingHint": "A report stands until you or others in the area report that the water has gone, and for no more than 72 hours.",
+      "end": "The water has gone, it is safe to travel",
+      "ending": "Saving…",
+      "endFailed": "Could not save yet. Try again.",
+      "ended": "You reported that the water has gone",
+      "cleared": "Others in the area reported that the water has gone",
+      "expired": "72 hours have passed. If it is still flooded, report again.",
+      "hidden": "An admin has hidden this report"
+    }
   }
 }

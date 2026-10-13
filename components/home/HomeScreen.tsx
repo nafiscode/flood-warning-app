@@ -11,6 +11,8 @@ import {
   usePublicStatus,
 } from "@/lib/use-public";
 import { InstallCard } from "@/components/InstallCard";
+import { MyReports } from "@/components/reports/MyReports";
+import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
 import { HomeView } from "./HomeView";
 
 /**
@@ -33,6 +35,9 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
    * people who already went looking. The answer is the same edge-cached one the map reads.
    */
   const dam = useFetched<DamData>(DAM_URL);
+  // What residents have reported, per tambon: the same edge-cached answer for everyone; this
+  // phone picks out its own district itself (the owner, 13 Oct).
+  const reports = useFetched<ReportsNear>(REPORTS_NEAR_URL);
   return (
     <HomeView
       ready={ready}
@@ -47,6 +52,8 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       onChooseArea={(chosen) => writeStored("area", chosen)}
       onRetry={refresh}
       dams={dam.data?.dams ?? null}
+      reports={reports.data?.tambons ?? null}
+      myReports={<MyReports />}
       projectLine={projectLine}
       userAgent={ready ? navigator.userAgent : ""}
       install={<InstallCard place="home" />}

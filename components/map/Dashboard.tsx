@@ -6,6 +6,7 @@ import { useState } from "react";
 import { hazardSourceUrl, tilesBase, type TileManifest } from "@/lib/hazard-layer";
 import type { Area, AreaDirectory } from "@/lib/area";
 import { DAM_URL, type DamData } from "@/lib/dam";
+import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
@@ -27,7 +28,20 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
    * still served from the cache when the phone is offline (safety rule 7); the page wraps this
    * component in a Suspense boundary, which is what keeps that true.
    */
-  const openDam = useSearchParams().get("dam");
+  const query = useSearchParams();
+  const openDam = query.get("dam");
+  /*
+   * "?reports=950101&at=6.54,101.28" from the home screen's "flood reported near you": the map
+   * opens on the current situation, on that tambon. The point is the tambon's own, never a
+   * report's (safety rule 6).
+   */
+  const at = (query.get("at") ?? "").split(",").map(Number);
+  const reportsTambon = query.get("reports");
+  const openReports =
+    reportsTambon && /^\d{6}$/.test(reportsTambon) && at.length === 2 && at.every(Number.isFinite)
+      ? { tambon: reportsTambon, lat: at[0]!, lon: at[1]! }
+      : null;
+  const reports = useFetched<ReportsNear>(REPORTS_NEAR_URL);
   const { status, checkedAt, failed } = usePublicStatus();
   const hazards = useFetched<{ hazards: Hazard[] }>("/api/public/hazards");
   const directory = useFetched<AreaDirectory>("/api/geo/areas");
@@ -70,6 +84,8 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       now={now}
       transparency={transparency}
       openDam={openDam}
+      openReports={openReports}
+      reports={reports.data?.tambons ?? null}
       userAgent={ready ? navigator.userAgent : ""}
     />
   );

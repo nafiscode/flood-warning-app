@@ -161,7 +161,10 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 - **Road access:** passable by car / motorbike only / not passable.
 - **Media and notes:** up to 3 photos (compressed on the client), an optional voice note (60 s or less), optional text.
 - **Offline:** reports queue offline and upload when back online.
-- **Visibility:** reports appear publicly only as hex-bin counts. Photos appear publicly only after admin moderation, without the reporter's identity and with the location snapped to the hex.
+- **Visibility:** reports appear publicly only as counts: per hexagon on the map, and per tambon in "Flood has been reported near your area". Photos appear publicly only after admin moderation, without the reporter's identity and with the location snapped to the hex.
+- **Counted at once (decision 13 Oct 2026):** a report counts as soon as it is sent, marked as a resident's report that Jaga has not checked. An admin can hide one, and a hidden report counts nowhere. It is never an alert: no level, no alert colour, and the screen says who is speaking.
+- **Near your area:** anyone whose home or watched place is in the same tambon, or the same district, as a standing report sees a banner under the alert status on the home screen with the tambon, how many reports from how many people, the deepest depth reported, and a link to the map on that tambon. Three different people reporting the same tambon is shown as "several residents report the same" (`system_settings.flood_reports.confirm_people`).
+- **A report stands** until its reporter says the water has gone ("The water has gone, it is safe to travel"), or two other people report dry ground in the same tambon after it, and for no more than 72 hours (`stand_hours`, `clear_people`). One person alone cannot take a neighbour's report down. The reporter sees their own reports and their state on the report page and on the home screen.
 
 ### 4.6 SOS
 **Sending:**

@@ -17,6 +17,14 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
     ...pick(messages, ["home", "alert", "sos", "places", "hotlines", "install"]),
     // The area chooser's province list.
     map: { province: all.map!.province! },
+    // Residents' flood reports near the person (13 Oct), with the report form's own words for
+    // depth, trend and road so they read the same on every screen.
+    reportsNear: all.reportsNear!,
+    report: {
+      depths: (all.report as Messages).depths!,
+      trends: (all.report as Messages).trends!,
+      roads: (all.report as Messages).roads!,
+    },
     /*
      * The quiet dam notice, for someone on the river below the dam (spec section 15). Only the
      * four groups that notice uses: its card, its legend and the names on the map marks stay
@@ -56,12 +64,23 @@ export function installMessages(messages: AbstractIntlMessages): AbstractIntlMes
 }
 
 export function reportMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
-  return pick(messages, ["report", "sos", "hotlines"]);
+  return pick(messages, ["report", "sos", "hotlines", "reportsNear"]);
 }
 
 export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   // "dam" comes with the map because the dam is drawn in every view (spec section 15).
-  return pick(messages, ["map", "home", "alert", "sos", "places", "hotlines", "dam"]);
+  const all = messages as Messages;
+  return {
+    ...pick(messages, ["map", "home", "alert", "sos", "places", "hotlines", "dam"]),
+    // Residents' flood reports near the person (13 Oct), with the report form's own words for
+    // depth, trend and road so they read the same on every screen.
+    reportsNear: all.reportsNear!,
+    report: {
+      depths: (all.report as Messages).depths!,
+      trends: (all.report as Messages).trends!,
+      roads: (all.report as Messages).roads!,
+    },
+  };
 }
 
 /** The weather page: its own text, plus the attribution line Open-Meteo requires. */

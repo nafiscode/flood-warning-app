@@ -2602,5 +2602,38 @@
         "save": "Tidak berjaya. Cuba lagi."
       }
     }
+  },
+  "reportsNear": {
+    "title": "Ada laporan banjir berhampiran kawasan anda",
+    "mapTitle": "Laporan banjir daripada pengguna",
+    "source": "Ini laporan daripada pengguna di kawasan itu. Jaga belum menyemaknya, dan ini bukan amaran daripada Jaga.",
+    "advice": "Tanya jiran, bersiap sedia dan rancang perjalanan anda.",
+    "here": "Di mukim anda",
+    "district": "Di daerah yang sama",
+    "place": "{tambon}, {district}",
+    "count": "{reports} laporan daripada {people} pengguna",
+    "deepest": "Paling dalam dilaporkan: {depth}",
+    "latest": "Laporan terkini sekitar {time}",
+    "trend": "Paras air: {trend}",
+    "road": "Jalan: {road}",
+    "confirmed": "Beberapa pengguna melaporkan perkara yang sama",
+    "unconfirmed": "Belum ada pengguna lain melaporkan perkara yang sama",
+    "seeMap": "Lihat lokasi pada peta",
+    "none": "Tiada laporan banjir yang masih berkuat kuasa di kawasan ini sekarang.",
+    "bell": "Laporan banjir di {tambon}",
+    "mine": {
+      "title": "Laporan anda",
+      "item": "{place} · {depth}",
+      "sent": "Dilaporkan pada {time}",
+      "standing": "Masih berkuat kuasa. Pengguna di kawasan yang sama melihat laporan ini.",
+      "standingHint": "Laporan kekal sehingga anda atau orang lain di kawasan itu melaporkan air sudah surut, dan tidak lebih daripada 72 jam.",
+      "end": "Air sudah surut, boleh dilalui",
+      "ending": "Menyimpan…",
+      "endFailed": "Belum dapat disimpan. Cuba lagi.",
+      "ended": "Anda melaporkan air sudah surut",
+      "cleared": "Orang lain di kawasan itu melaporkan air sudah surut",
+      "expired": "Sudah 72 jam. Jika masih banjir, lapor semula.",
+      "hidden": "Pentadbir menyembunyikan laporan ini"
+    }
   }
 }

@@ -14,6 +14,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { DAM_URL, type Dam, type DamData } from "@/lib/dam";
 import { useFetched } from "@/lib/use-public";
 import { areaName } from "@/lib/area";
+import { MyReportsView } from "@/components/reports/MyReports";
 import {
   BANA,
   EXAMPLE_DIRECTORY,
@@ -34,6 +35,8 @@ import {
   exampleDamDays,
   exampleDamSignal,
   type DamScenario,
+  EXAMPLE_MY_REPORTS,
+  EXAMPLE_REPORTS_NEAR,
   homeExample,
   type HomeScenario,
   type WeatherScenario,
@@ -60,6 +63,11 @@ export function HomeExample({ scenario }: { scenario: HomeScenario }) {
       places={EXAMPLE_PLACES}
       placesState="ok"
       dams={data?.dams ?? null}
+      // Made-up reports from residents, so "flood reported near you" can be judged here.
+      reports={EXAMPLE_REPORTS_NEAR}
+      myReports={
+        <MyReportsView reports={EXAMPLE_MY_REPORTS} busy={null} failed={false} onEnd={() => {}} />
+      }
       now={EXAMPLE_NOW}
       onChooseArea={() => {}}
       onRetry={() => {}}

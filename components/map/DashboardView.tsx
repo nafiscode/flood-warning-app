@@ -17,6 +17,8 @@ import { areaName, pickName, type Area, type AreaDirectory } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
+import { ReportsNear } from "@/components/reports/ReportsNear";
+import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
 import { boundsAround, darkNow, PROVINCE_BOUNDS, SERVICE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
@@ -97,6 +99,10 @@ export type DashboardViewProps = {
   initialProvince?: string;
   /** A dam whose whole report to open at once, asked for from the home screen (?dam=<code>). */
   openDam?: string | null;
+  /** A tambon whose residents' flood reports were asked for from the home screen. */
+  openReports?: { tambon: string; lat: number; lon: number } | null;
+  /** Tambons with a standing flood report from residents. Null while loading or unavailable. */
+  reports?: TambonReports[] | null;
   userAgent?: string;
 };
 
@@ -144,13 +150,15 @@ export function DashboardView(props: DashboardViewProps) {
   const t = useTranslations("map");
   const tHome = useTranslations("home");
   const tDam = useTranslations("dam");
+  const tNear = useTranslations("reportsNear");
   const locale = useLocale();
   const format = useFormatter();
   const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
 
   const [tab, setTab] = useState<"map" | "transparency">("map");
   const [hazardCode, setHazardCode] = useState("flood");
-  const [chosenMode, setChosenMode] = useState<MapMode | null>(null);
+  // Someone who came to see reports wants the current situation, not the long-term risk.
+  const [chosenMode, setChosenMode] = useState<MapMode | null>(props.openReports ? "live" : null);
   /*
    * The map opens where the person already said they are: the area chosen on the home screen
    * (their home if they have one saved) decides the province in the selector, where the map
@@ -348,7 +356,16 @@ export function DashboardView(props: DashboardViewProps) {
    * cannot pull the map back (MapView refits on the figures, not on the array).
    */
   const askedDam = asked ? dams.find((d) => d.code === asked) : undefined;
-  const askedBox = askedDam ? boundsAround(damFrame(askedDam)) : null;
+  const askedBox: [number, number, number, number] | null = askedDam
+    ? (boundsAround(damFrame(askedDam)) ?? null)
+    : props.openReports
+      ? [
+          props.openReports.lon - 0.06,
+          props.openReports.lat - 0.05,
+          props.openReports.lon + 0.06,
+          props.openReports.lat + 0.05,
+        ]
+      : null;
 
   let selected: React.ReactNode = null;
   if (selection?.kind === "tambon" && layers.includes("alerts")) {
@@ -552,6 +569,31 @@ export function DashboardView(props: DashboardViewProps) {
                   gatesOpenAt={damReleaseAt(status, dam.code, hit.code)}
                 />
               ))}
+
+              {/*
+               * What residents have reported in the person's own tambons and districts, and in
+               * the tambon they came here to look at (the owner, 13 Oct). Only in the current
+               * situation: the hexagons it speaks of are drawn in that view. Counts only, and
+               * the panel says it is neighbours speaking, not Jaga.
+               */}
+              {mode === "live" && props.reports && (
+                <>
+                  <ReportsNear
+                    title={tNear("mapTitle")}
+                    link={false}
+                    near={reportsNearMe(props.reports, [
+                      ...myTambons,
+                      ...(props.openReports ? [props.openReports.tambon] : []),
+                    ])}
+                  />
+                  {props.openReports &&
+                    !props.reports.some((r) => r.tambon === props.openReports!.tambon) && (
+                      <p className={hint} data-reports-none="true">
+                        {tNear("none")}
+                      </p>
+                    )}
+                </>
+              )}
 
               {/*
                * The map opens close around the person's own area; this button pulls back to all

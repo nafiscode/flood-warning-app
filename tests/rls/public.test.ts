@@ -85,17 +85,19 @@ describe("report_hex_bins: counts per hexagon only (safety rule 6)", () => {
       [w.yalaPoint],
     );
 
-  it("a visitor cannot read reports, and pending reports are not counted", async () => {
+  it("a visitor cannot read the reports themselves", async () => {
     await as(db, "anon");
     // No policy lets a visitor read a report.
     const direct = await one<{ n: string }>("select count(*) as n from reports");
     expect(Number(direct.n)).toBe(0);
-    expect(await rows(db, "select * from report_hex_bins()")).toEqual([]);
   });
 
-  it("counts approved recent reports and gives only a hexagon, a count, a depth and an hour", async () => {
+  // Since 13 Oct a report counts at once, checked or not; only a hidden one is left out
+  // (20261013150000_a4_reports_nearby).
+  it("counts standing recent reports and gives only a hexagon, a count, a depth and an hour", async () => {
     await asOwner(db);
-    await db.query("update reports set moderation_status = 'approved'");
+    // The development database may hold somebody's real reports: only the fixture's count here.
+    await db.query("delete from reports where reporter_id is distinct from $1", [w.otherUser]);
     const add = (status: string, age: string, depth: string) =>
       db.query(
         `insert into reports (reporter_id, point, depth_ref, moderation_status, created_at)
@@ -105,7 +107,7 @@ describe("report_hex_bins: counts per hexagon only (safety rule 6)", () => {
       );
     await add("approved", "2 hours", "waist");
     await add("hidden", "1 hour", "roof");
-    await add("pending", "1 hour", "roof");
+    await add("pending", "1 hour", "ankle");
     await add("approved", "5 days", "roof");
 
     await as(db, "anon");
@@ -113,7 +115,7 @@ describe("report_hex_bins: counts per hexagon only (safety rule 6)", () => {
     expect(bins).toHaveLength(1);
     const bin = bins[0]!;
     expect(Object.keys(bin).sort()).toEqual(["deepest", "hex", "latest", "reports"]);
-    expect(bin.reports).toBe(2);
+    expect(bin.reports).toBe(3);
     expect(bin.deepest).toBe("waist");
     expect((bin.latest as Date).getUTCMinutes()).toBe(0);
     const hex = bin.hex as { type: string; coordinates: number[][][] };

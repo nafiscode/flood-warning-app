@@ -4,9 +4,11 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
 import { MapIcon, ParcelIcon, PhoneIcon, WaveIcon } from "@/components/icons";
 import { SafePlaces } from "@/components/places/SafePlaces";
+import { ReportsNear } from "@/components/reports/ReportsNear";
 import { SOSButton } from "@/components/sos/SOSButton";
 import { getPathname, Link } from "@/i18n/navigation";
 import { areaName, type Area } from "@/lib/area";
+import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces } from "@/lib/places";
 import { areaStatus, damReleaseAt, severity, type PublicStatus } from "@/lib/public-status";
@@ -46,6 +48,10 @@ export type HomeViewProps = {
   /** The dams, for the quiet dam notice. Null while loading or if it can't be had. */
   dams?: Dam[] | null;
   userAgent?: string;
+  /** Tambons with a standing flood report from residents. Null while loading or unavailable. */
+  reports?: TambonReports[] | null;
+  /** The person's own standing reports, with the button that ends one. */
+  myReports?: ReactNode;
   /** The "put Jaga on your home screen" card. Drawn last, and not at Warning or Evacuate. */
   install?: ReactNode;
 };
@@ -218,6 +224,15 @@ export function HomeView(props: HomeViewProps) {
           hero && <AlertHero status={hero} area={areaLine} now={now} onRetry={props.onRetry} />
         )}
 
+        {/*
+         * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays
+         * the one place that says what level the tambon is at: this is neighbours speaking, not
+         * Jaga, and it says so.
+         */}
+        {!loading && !choosing && props.reports && (
+          <ReportsNear near={reportsNearMe(props.reports, myCodes)} />
+        )}
+
         {!loading && status && !status.inService && hero?.kind !== "notInService" && (
           // Said on every home screen before launch, also beside a real alert or the chooser.
           <p className={notice} data-not-in-service="true">
@@ -267,6 +282,8 @@ export function HomeView(props: HomeViewProps) {
             <span className="text-small font-normal">{tSos("supplies.homeHint")}</span>
           </span>
         </Link>
+
+        {props.myReports}
 
         {props.projectLine && (
           <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>

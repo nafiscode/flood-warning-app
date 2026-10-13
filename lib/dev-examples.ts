@@ -697,3 +697,60 @@ export function exampleDamSignal(scenario: DamScenario): DamSignal | null {
       return damSignal({});
   }
 }
+
+/**
+ * Made-up flood reports from residents, for the review pages: the example person's own tambon,
+ * reported by three different people (so it reads as confirmed), and a neighbour in the same
+ * district with one report nobody else has repeated.
+ */
+export const EXAMPLE_REPORTS_NEAR: import("@/lib/flood-reports").TambonReports[] = [
+  {
+    tambon: BANA.code,
+    nameTh: BANA.nameTh,
+    nameEn: BANA.nameEn,
+    district: BANA.code.slice(0, 4),
+    districtTh: BANA.districtTh,
+    districtEn: BANA.districtEn,
+    lat: BANA.lat,
+    lon: BANA.lon,
+    reports: 4,
+    people: 3,
+    deepest: "waist",
+    worstRoad: "motorbike_only",
+    trend: "rising",
+    firstAt: new Date(EXAMPLE_NOW - 5 * 3_600_000).toISOString(),
+    latestAt: new Date(EXAMPLE_NOW - 3_600_000).toISOString(),
+    confirmed: true,
+  },
+  {
+    tambon: "940101",
+    nameTh: "สะบารัง",
+    nameEn: "Sabarang",
+    district: "9401",
+    districtTh: BANA.districtTh,
+    districtEn: BANA.districtEn,
+    lat: 6.868,
+    lon: 101.25,
+    reports: 1,
+    people: 1,
+    deepest: "ankle",
+    worstRoad: "car",
+    trend: null,
+    firstAt: new Date(EXAMPLE_NOW - 2 * 3_600_000).toISOString(),
+    latestAt: new Date(EXAMPLE_NOW - 2 * 3_600_000).toISOString(),
+    confirmed: false,
+  },
+];
+
+/** The example person's own report, still standing. */
+export const EXAMPLE_MY_REPORTS: import("@/lib/flood-reports").MyReport[] = [
+  {
+    id: "00000000-0000-4000-8000-000000000001",
+    tambon: BANA.code,
+    nameTh: BANA.nameTh,
+    nameEn: BANA.nameEn,
+    depth: "knee",
+    createdAt: new Date(EXAMPLE_NOW - 3 * 3_600_000).toISOString(),
+    state: "standing",
+  },
+];
