@@ -19,6 +19,7 @@ import { routing } from "@/i18n/routing";
 import { DAYLIGHT_SCRIPT } from "@/lib/theme-script";
 import { layoutMessages } from "@/lib/messages";
 import "../globals.css";
+import { OG_LOCALE, SHARE_IMAGE, sharePath, siteUrl } from "@/lib/site";
 
 // Self-hosted at build time by next/font: no request to Google from users' phones.
 const plex = IBM_Plex_Sans_Thai({
@@ -39,6 +40,27 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
     title: { default: t("pwaName"), template: "%s · Jaga" },
     description: t("description"),
     applicationName: "Jaga",
+    /*
+     * What a chat app shows when someone pastes a link to Jaga (the owner, 13 Oct): the name,
+     * a line about what it is, and the picture scripts/og.mjs draws. One picture for every page
+     * and language, so a link to any screen looks like Jaga and never shows somebody's data.
+     */
+    metadataBase: new URL(siteUrl()),
+    openGraph: {
+      type: "website",
+      siteName: "Jaga",
+      title: t("pwaName"),
+      description: t("description"),
+      url: sharePath(locale),
+      locale: OG_LOCALE[locale] ?? "th_TH",
+      images: [{ ...SHARE_IMAGE, alt: `Jaga (${t("nameThai")}) – ${t("tagline")}` }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("pwaName"),
+      description: t("description"),
+      images: [SHARE_IMAGE.url],
+    },
     icons: {
       icon: [
         { url: "/brand/favicon.svg", type: "image/svg+xml" },

@@ -26,6 +26,7 @@
     "db:migrations": "node scripts/db.mjs migration list",
     "db:new": "supabase migration new",
     "icons": "node scripts/icons.mjs",
+    "og": "node scripts/og.mjs",
     "admin:super": "node scripts/admin.mjs super-admin",
     "admin:invite": "node scripts/admin.mjs invite",
     "postinstall": "node scripts/vendor-maplibre.mjs"

@@ -127,6 +127,15 @@
         "s1": "In Chrome or Edge, press the install icon at the end of the address bar, or open the ⋮ menu.",
         "s2": "Choose “Install Jaga”. In other browsers, bookmark this page instead."
       }
+    },
+    "share": {
+      "heading": "Share Jaga with family and friends",
+      "body": "The more people in a village use it, the sooner everyone hears and can help each other.",
+      "button": "Share Jaga",
+      "title": "Jaga – flood warnings and requests for help",
+      "text": "Jaga warns of floods, sends requests for help and shows safe places nearby, for Pattani, Yala, Narathiwat and Songkhla. Free, and it opens without installing anything.",
+      "copied": "Link copied. Paste it into a chat.",
+      "manual": "Copy this link and paste it into a chat"
     }
   },
   "alert": {

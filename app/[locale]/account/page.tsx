@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { InstallCard } from "@/components/InstallCard";
+import { ShareApp } from "@/components/ShareApp";
 import { PushCard } from "@/components/push/PushCard";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, isAdminRole, localePath, needsName } from "@/lib/auth";
@@ -90,6 +91,7 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
       <NextIntlClientProvider messages={installMessages(await getMessages())}>
         <PushCard place="account" />
         <InstallCard place="account" />
+        <ShareApp />
       </NextIntlClientProvider>
 
       <form action="/api/auth/sign-out" method="post">

@@ -127,6 +127,15 @@
         "s1": "Dalam Chrome atau Edge, tekan ikon pasang di hujung ruang alamat, atau buka menu ⋮.",
         "s2": "Pilih “Pasang Jaga”. Dalam pelayar lain, tandakan halaman ini sebagai penanda buku."
       }
+    },
+    "share": {
+      "heading": "Ajak keluarga dan rakan guna Jaga",
+      "body": "Lebih ramai orang kampung menggunakannya, lebih cepat semua orang tahu dan dapat saling membantu.",
+      "button": "Kongsi Jaga",
+      "title": "Jaga – amaran banjir dan permintaan bantuan",
+      "text": "Jaga memberi amaran banjir, menghantar permintaan bantuan dan menunjukkan tempat selamat berhampiran, untuk Pattani, Yala, Narathiwat dan Songkhla. Percuma, buka terus tanpa memasang apa-apa.",
+      "copied": "Pautan disalin. Tampal dalam sembang.",
+      "manual": "Salin pautan ini dan tampal dalam sembang"
     }
   },
   "alert": {

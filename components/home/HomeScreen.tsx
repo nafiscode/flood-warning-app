@@ -11,6 +11,7 @@ import {
   usePublicStatus,
 } from "@/lib/use-public";
 import { InstallCard } from "@/components/InstallCard";
+import { ShareApp } from "@/components/ShareApp";
 import { PushCard } from "@/components/push/PushCard";
 import { MyReports } from "@/components/reports/MyReports";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
@@ -58,7 +59,12 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       projectLine={projectLine}
       userAgent={ready ? navigator.userAgent : ""}
       push={<PushCard place="home" />}
-      install={<InstallCard place="home" />}
+      install={
+        <>
+          <InstallCard place="home" />
+          <ShareApp />
+        </>
+      }
     />
   );
 }
