@@ -7,6 +7,8 @@ Commands
              -> <output_dir>/gistda_flood_years_20m.tif
   compare    season by season against the radar season maxima, their count of years against ours,
              and against the hazard classes -> <output_dir>/compare_<radar hash>.json
+  minimal    the land GISTDA flags that the hazard map calls Minimal: how much, where and why
+             -> <output_dir>/minimal_<radar hash>.json, minimal_by_tambon_*.csv, minimal_patches_*.geojson
 
 Settings: gistda/config.yaml. Outputs are local (ignored by git).
 """
@@ -310,14 +312,162 @@ def cmd_compare(cfg: dict) -> None:
               f"{s['ours_also_theirs_pct']:>16}% {s['csi']:>5}   ({s['theirs_near_ours_pct']}%, {s['ours_near_theirs_pct']}%)")
 
 
+def cmd_minimal(cfg: dict) -> None:
+    """Every cell GISTDA flags that the hazard map calls Minimal, described and grouped."""
+    import csv
+
+    import rasterio
+    import shapely
+    from pyproj import Transformer
+    from rasterio import features
+    from rasterio.vrt import WarpedVRT
+    from rasterio.warp import Resampling
+    from rasterio.windows import Window, transform as window_transform
+
+    from hazard.__main__ import load_config as hazard_config
+    from hazard.classes import BUILT, MINIMAL
+    from hazard.tambons import tambon_geometries
+
+    from . import minimal
+
+    first, last = cfg["their_years"]
+    hz = hazard_config()
+    hz_root = PIPELINE_DIR / str(hz["output_dir"])
+    seasons = hz["classes"]["seasons"]
+    step, halo = cfg["strip_rows"], 2
+    tambons = tambon_geometries()
+    found = {k: [] for k in ("row", "col", "bits", "hand", "buildings", "vv", "vh", "seen", "built", "edge", "tambon")}
+    with rasterio.open(hz_root / "classes" / f"hazard_classes_{cfg['radar_hash']}.tif") as cls_src:
+        grid = dict(crs=cls_src.crs, transform=cls_src.transform, width=cls_src.width, height=cls_src.height,
+                    resampling=Resampling.nearest)
+        to_grid = Transformer.from_crs("EPSG:4326", cls_src.crs, always_xy=True).transform
+        shapes = [(shapely.transform(t["geometry"], lambda x, y: to_grid(x, y), interleaved=False), i + 1)
+                  for i, t in enumerate(tambons)]
+        k2 = abs(cls_src.transform.a * cls_src.transform.e) / 1e6
+        with rasterio.open(bits_file(cfg)) as b, rasterio.open(hz_root / "burned" / "hand.tif") as h, \
+                rasterio.open(hz_root / "buildings" / "buildings_2023_30m.tif") as bld, \
+                WarpedVRT(b, **grid) as bits_vrt, WarpedVRT(h, **grid) as hand_vrt:
+            season_src = [rasterio.open(season_file(cfg, y)) for y in seasons]
+            season_vrt = [WarpedVRT(src, **grid) for src in season_src]
+            for r0 in range(0, cls_src.height, step):
+                a, z = max(r0 - halo, 0), min(r0 + step + halo, cls_src.height)
+                inner = slice(r0 - a, r0 - a + min(step, cls_src.height - r0))
+                win = ((a, z), (0, cls_src.width))
+                cls, basis = cls_src.read(1, window=win), cls_src.read(2, window=win)
+                bits = bits_vrt.read(1, window=win)
+                wanted = np.zeros(cls.shape, dtype=bool)
+                wanted[inner] = ((cls == MINIMAL) & (bits > 0))[inner]
+                log.info("rows %s of %s", min(r0 + step, cls_src.height), cls_src.height)
+                if not wanted.any():
+                    continue
+                rr, cc = np.nonzero(wanted)
+                vv, vh, seen = (np.zeros(len(rr), dtype=np.uint8) for _ in range(3))
+                for vrt in season_vrt:
+                    e = vrt.read(1, window=win)[rr, cc]
+                    vv += (e == compare.VV) | (e == compare.BOTH)
+                    vh += e == compare.VH
+                    seen += e <= compare.BOTH
+                tam = features.rasterize(shapes, out_shape=cls.shape, fill=0, dtype="uint16",
+                                         transform=window_transform(Window(0, a, cls_src.width, z - a), cls_src.transform))
+                found["row"].append(rr + a)
+                found["col"].append(cc)
+                found["bits"].append(bits[rr, cc])
+                found["hand"].append(hand_vrt.read(1, window=win, masked=True).astype("float32").filled(np.nan)[rr, cc])
+                found["buildings"].append(np.nan_to_num(bld.read(2, window=win), nan=0.0)[rr, cc])
+                found["vv"].append(vv)
+                found["vh"].append(vh)
+                found["seen"].append(seen)
+                found["built"].append(basis[rr, cc] == BUILT)
+                found["edge"].append(compare.near(cls > MINIMAL, halo)[rr, cc])
+                found["tambon"].append(tam[rr, cc])
+            for x in season_vrt + season_src:
+                x.close()
+        c = {k: np.concatenate(v) for k, v in found.items()}
+        n = len(c["row"])
+        years_all = compare.count_years(c["bits"], first, first, last)
+        years_radar = compare.count_years(c["bits"], first, seasons[0], last)
+        patch = minimal.patches(c["row"], c["col"], cls_src.width)
+        size = np.bincount(patch)
+        # what our radar has at the cell, the first that applies
+        radar = np.select([c["seen"] == 0, c["vv"] >= 1, c["vh"] >= 1], [0, 1, 2], default=3)
+        radar_labels = ["radar cannot see it (terrain mask or no pass)", "radar flagged it in one season (VV)",
+                        "radar flagged it in VH only", "radar saw it and never flagged it"]
+        when = np.select([years_radar == 0, years_radar == years_all], [0, 2], default=1)
+        size_code = np.select([size[patch] * k2 < 0.01, size[patch] * k2 < 0.1], [0, 1], default=2)
+        hand_labels = [band[1] for band in minimal.HAND_BANDS] + ["not known"]
+        result = {
+            "radar_run": cfg["radar_hash"], "cells": n, "km2": round(n * k2, 1), "cell_m": abs(cls_src.transform.a),
+            "buildings": int(round(float(c["buildings"].sum()))),
+            "years_flagged_by_gistda": minimal.shares(["one year", "two years", "three or more"],
+                                                      np.minimum(years_all, 3) - 1, k2, c["buildings"]),
+            "when_flagged": minimal.shares([f"only before {seasons[0]} (no radar of ours to compare)", "before and since",
+                                            f"only since {seasons[0]}"], when, k2, c["buildings"]),
+            "height_above_nearest_stream": minimal.shares(hand_labels, minimal.hand_band(c["hand"]), k2, c["buildings"]),
+            "our_radar_there": minimal.shares(radar_labels, radar, k2, c["buildings"]),
+            "built_up": minimal.shares(["not built-up", "built-up"], c["built"].astype(np.uint8), k2, c["buildings"]),
+            "within_60_m_of_our_low_or_higher": minimal.shares(["no", "yes"], c["edge"].astype(np.uint8), k2, c["buildings"]),
+            "patch_size": minimal.shares(["under 1 ha", "1 to 10 ha", "10 ha or more"], size_code, k2, c["buildings"]),
+            "patches": int(len(size)),
+        }
+        # the solid part: not beside our own classes, and in a patch of a hectare or more
+        core = ~c["edge"] & (size_code >= 1)
+        result["away_from_our_classes_in_patches_of_1_ha_or_more"] = {
+            "km2": round(float(core.sum()) * k2, 1), "buildings": int(round(float(c["buildings"][core].sum()))),
+            "height_above_nearest_stream": minimal.shares(hand_labels, minimal.hand_band(c["hand"][core]), k2),
+            "our_radar_there": minimal.shares(radar_labels, radar[core], k2)}
+        to_lonlat = Transformer.from_crs(cls_src.crs, "EPSG:4326", always_xy=True).transform
+        big, by_tambon = [], []
+        for p in np.argsort(size)[::-1][:300]:
+            if size[p] * k2 < 0.01:
+                break
+            m = patch == p
+            x, y = cls_src.transform * (float(c["col"][m].mean()) + 0.5, float(c["row"][m].mean()) + 0.5)
+            lon, lat = to_lonlat(x, y)
+            t = tambons[int(np.bincount(c["tambon"][m]).argmax()) - 1] if c["tambon"][m].max() > 0 else None
+            all_bits = int(np.bitwise_or.reduce(c["bits"][m]))
+            big.append({"km2": round(float(size[p]) * k2, 3), "lon": round(lon, 5), "lat": round(lat, 5),
+                        "tambon_code": t["code"] if t else None, "tambon": t["name_en"] if t else None,
+                        "gistda_years": [first + i for i in range(last - first + 1) if (all_bits >> i) & 1],
+                        "median_height_above_stream_m": None if np.isnan(c["hand"][m]).all()
+                        else round(float(np.nanmedian(c["hand"][m])), 1),
+                        "buildings": int(round(float(c["buildings"][m].sum()))),
+                        "beside_our_classes_pct": round(100 * float(c["edge"][m].mean())),
+                        "our_radar_flagged_once_pct": round(100 * float((c["vv"][m] >= 1).mean()))})
+        result["largest_patches"] = big[:25]
+        km2_t = np.bincount(c["tambon"], minlength=len(tambons) + 1) * k2
+        bld_t = np.bincount(c["tambon"], weights=c["buildings"], minlength=len(tambons) + 1)
+        for i in np.argsort(km2_t[1:])[::-1]:
+            if km2_t[i + 1] > 0:
+                by_tambon.append({"tambon_code": tambons[i]["code"], "tambon_en": tambons[i]["name_en"],
+                                  "tambon_th": tambons[i]["name_th"], "km2": round(float(km2_t[i + 1]), 2),
+                                  "buildings": int(round(float(bld_t[i + 1])))})
+        result["tambons_with_most"] = by_tambon[:15]
+    root = output_dir(cfg)
+    (root / f"minimal_{cfg['radar_hash']}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+    with open(root / f"minimal_by_tambon_{cfg['radar_hash']}.csv", "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.DictWriter(f, fieldnames=list(by_tambon[0]))
+        w.writeheader()
+        w.writerows(by_tambon)
+    geo = {"type": "FeatureCollection", "features": [
+        {"type": "Feature", "geometry": {"type": "Point", "coordinates": [p["lon"], p["lat"]]},
+         "properties": {k: (", ".join(map(str, v)) if isinstance(v, list) else v) for k, v in p.items() if k not in ("lon", "lat")}}
+        for p in big]}
+    (root / f"minimal_patches_{cfg['radar_hash']}.geojson").write_text(json.dumps(geo, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps({k: v for k, v in result.items() if k not in ("largest_patches", "tambons_with_most")}, indent=1))
+    for p in result["largest_patches"]:
+        print(p)
+    for t in result["tambons_with_most"]:
+        print(t["tambon_code"], t["tambon_en"], t["km2"], t["buildings"])
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="gistda", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("command", choices=["fetch", "burn", "compare"])
+    parser.add_argument("command", choices=["fetch", "burn", "compare", "minimal"])
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)       # httpx logs whole request lines
     cfg = load_config()
-    {"fetch": cmd_fetch, "burn": cmd_burn, "compare": cmd_compare}[args.command](cfg)
+    {"fetch": cmd_fetch, "burn": cmd_burn, "compare": cmd_compare, "minimal": cmd_minimal}[args.command](cfg)
     return 0
 
 

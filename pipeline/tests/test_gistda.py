@@ -104,3 +104,16 @@ def test_near_agreement_and_cross():
     ours, theirs = np.array([[0, 1, 2, 2]]), np.array([[0, 0, 1, 2]])
     where = np.array([[True, True, True, False]])
     assert compare.cross(ours, theirs, where, 3, 3).tolist() == [[1, 0, 0], [1, 0, 0], [0, 1, 0]]
+
+
+def test_minimal_patches_bands_and_shares():
+    from gistda import minimal
+
+    # two cells touching by a corner, one far away, and one at the row's end that must not wrap round
+    rows, cols = np.array([0, 1, 5, 2, 3]), np.array([0, 1, 5, 9, 0])
+    patch = minimal.patches(rows, cols, 10)
+    assert patch[0] == patch[1] and len(set(patch.tolist())) == 4
+    hand = np.array([0.5, 2.0, 4.9, 7.0, 30.0, np.nan], dtype="float32")
+    assert minimal.hand_band(hand).tolist() == [0, 1, 1, 2, 3, 4]
+    out = minimal.shares(["a", "b"], np.array([0, 0, 1]), 0.5, np.array([1.0, 2.0, 4.4]))
+    assert out == {"a": {"km2": 1.0, "buildings": 3}, "b": {"km2": 0.5, "buildings": 4}}

@@ -107,6 +107,47 @@ GISTDA flags 1,482 km² of the classed land in at least one year 2011 to 2024.
 **GISTDA's layer is as blind in the towns as our radar.** It can neither support nor contradict the
 built-up rule of the hazard classes; that still rests on elevation and on what residents report.
 
+### The land GISTDA flags that we call Minimal (`minimal`)
+
+Minimal on our map means both: the cell is 2 m or more above its nearest stream (5 m in built-up or
+unobserved land), and our radar flagged it in at most one season. GISTDA flags 103.8 km² of it at
+least once in 2011 to 2024, in 14,534 patches, with about 11,300 buildings.
+
+| Read by | | km² | Buildings |
+|---|---|---|---|
+| Years GISTDA flags it | one | 89.0 | 10,247 |
+| | two | 10.6 | 895 |
+| | three or more | 4.2 | 185 |
+| When | only before 2017 (no radar of ours to compare) | 42.0 | 5,560 |
+| | only since 2017 | 53.8 | 5,308 |
+| Position | within 60 m of land we class Low or higher | 71.8 | 10,002 |
+| | further away | 32.1 | 1,325 |
+| Height above nearest stream | 2 to 5 m | 47.0 | 6,563 |
+| | 5 to 10 m | 19.9 | 3,362 |
+| | 10 m or more | 36.8 | 1,402 |
+| Our radar there | saw it and never flagged it | 38.0 | 6,269 |
+| | cannot see it (terrain mask) | 33.9 | 1,487 |
+| | flagged it in VH only | 19.0 | 2,199 |
+| | flagged it in one season (VV) | 13.0 | 1,372 |
+| Patch size | under 1 ha | 30.3 | 4,089 |
+| | 1 to 10 ha | 45.0 | 5,079 |
+| | 10 ha or more | 28.5 | 2,158 |
+
+Two different things are in it:
+
+- **The rim of our own flood-prone land** (72 km², 88% of the buildings): thin bands beside land we
+  already class, mostly 2 to 10 m above the stream, mostly flagged in a single year. This is where a
+  miss on our side is plausible: a big flood reaching a little higher than our 2 m line.
+- **Patches on high ground** (the 31 km² that is away from our classes and in patches of a hectare or
+  more: 25 km² of it is 10 m or more above its stream, 24 km² is land our terrain mask removes;
+  medians of 50 to 180 m in the largest). River flooding is not credible there. It is either a
+  terrain artefact in their radar reading, the kind our mask exists to remove, or water that is not
+  a river flood (hill reservoirs, ponds, wet terraces). Not checked on imagery.
+
+Nothing is changed in the classes. `minimal_by_tambon_<run>.csv` lists the tambons (most: Khok
+Khian 3.7 km², Tha Chang 3.0, Na Thap 2.5, Ban Klang 2.4, Pa Semat 2.3) and
+`minimal_patches_<run>.geojson` the 300 largest patches as points, for a look in ArcGIS Pro.
+
 ## Limits
 
 - Agreement is between two satellite products, not with the ground.
@@ -124,4 +165,5 @@ built-up rule of the hazard classes; that still rests on elevation and on what r
 uv run python -m gistda fetch      # about 20 minutes, resumable
 uv run python -m gistda burn       # about 7 minutes
 uv run python -m gistda compare    # about 1 minute
+uv run python -m gistda minimal    # about 2 minutes
 ```
