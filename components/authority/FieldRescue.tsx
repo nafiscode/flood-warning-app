@@ -4,11 +4,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { Journey } from "@/components/journey/Journey";
 import { pickName } from "@/lib/area";
+import { flushFields, keepField, sendField, waitingFields } from "@/lib/field-queue";
 import {
   checkFieldForm,
   FIELD_URL,
   fieldJourney,
-  toFieldResult,
   type FieldFormError,
   type FieldResult,
   type MyFieldRescue,
@@ -27,7 +27,6 @@ import {
   label,
   notice,
 } from "@/lib/ui";
-import { uploadFieldPhotos } from "@/lib/upload";
 import { useLocation } from "@/lib/use-sending";
 
 export type FieldRescueViewProps = {
@@ -39,6 +38,11 @@ export type FieldRescueViewProps = {
   error: FieldFormError | "upload" | "stale" | "outside" | "not_team" | "failed" | null;
   result: FieldResult | null;
   rescues: MyFieldRescue[];
+  /** Records kept on this phone because there was no signal. */
+  waiting?: number;
+  /** The record just made was kept on the phone rather than sent. */
+  saved?: boolean;
+  onFlush?: () => void;
   onSend: (form: {
     people: number;
     vulnerable: Vulnerable[];
@@ -95,7 +99,27 @@ export function FieldRescueView(props: FieldRescueViewProps) {
         <li>{t("rules.review")}</li>
       </ul>
 
-      {result ? (
+      {(props.waiting ?? 0) > 0 && (
+        <section className={notice} data-field-waiting={props.waiting}>
+          <p className="font-bold">{t("later.waiting", { count: props.waiting ?? 0 })}</p>
+          <p className={hint}>{t("later.waitingHint")}</p>
+          {props.onFlush && (
+            <button type="button" className={`${buttonSecondary} mt-2`} onClick={props.onFlush}>
+              {t("later.sendNow")}
+            </button>
+          )}
+        </section>
+      )}
+
+      {props.saved ? (
+        <section className={card} role="status" data-field-result="saved">
+          <h2 className="text-body font-bold text-jaga-ink">{t("later.saved")}</h2>
+          <p>{t("later.savedBody")}</p>
+          <button type="button" className={buttonSecondary} onClick={props.onAnother}>
+            {t("another")}
+          </button>
+        </section>
+      ) : result ? (
         <section className={card} role="status" data-field-result={result.status}>
           <h2 className="text-body font-bold text-jaga-ink">
             {result.status === "counted" ? t("result.counted") : t("result.pending")}
@@ -283,6 +307,8 @@ export function FieldRescue({ unitId }: { unitId: string }) {
   const [result, setResult] = useState<FieldResult | null>(null);
   const [rescues, setRescues] = useState<MyFieldRescue[]>([]);
   const [round, setRound] = useState(0);
+  const [waiting, setWaiting] = useState(0);
+  const [saved, setSaved] = useState(false);
 
   const { point, state, locate } = gps;
 
@@ -298,54 +324,62 @@ export function FieldRescue({ unitId }: { unitId: string }) {
     load();
   }, [load]);
 
+  const flush = useCallback(() => {
+    void flushFields().then(async (done) => {
+      setWaiting((await waitingFields()).length);
+      if (done.sent > 0) load();
+    });
+  }, [load]);
+
+  // What was recorded without a signal goes out when the page opens and when the signal returns.
+  useEffect(() => {
+    flush();
+    window.addEventListener("online", flush);
+    return () => window.removeEventListener("online", flush);
+  }, [flush]);
+
   const send: FieldRescueViewProps["onSend"] = async (form) => {
     setBusy(true);
     setError(null);
+    setSaved(false);
     try {
       const here = await freshPosition();
       if (!here) {
         setError("position");
         return;
       }
-      const id = crypto.randomUUID();
-      const uploaded = await uploadFieldPhotos(unitId, id, form.photos);
-      if (uploaded.photos.length === 0) {
-        setError("upload");
-        return;
-      }
-      const response = await fetch(FIELD_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          lat: here.coords.latitude,
-          lon: here.coords.longitude,
-          accuracy: Number.isFinite(here.coords.accuracy) ? here.coords.accuracy : null,
-          // Some phones stamp a position with a clock of their own; never later than now.
-          locatedAt: new Date(Math.min(here.timestamp, Date.now())).toISOString(),
-          people: form.people,
-          vulnerable: form.vulnerable,
-          phone: form.phone,
-          note: form.note,
-          photos: uploaded.photos,
-        }),
-      });
-      const body = (await response.json().catch(() => null)) as {
-        result?: Record<string, unknown>;
-        error?: string;
-      } | null;
-      const done = toFieldResult(body?.result);
-      if (!response.ok || !done) {
+      const record = {
+        id: crypto.randomUUID(),
+        unitId,
+        lat: here.coords.latitude,
+        lon: here.coords.longitude,
+        accuracy: Number.isFinite(here.coords.accuracy) ? here.coords.accuracy : null,
+        // Some phones stamp a position with a clock of their own; never later than now.
+        locatedAt: new Date(Math.min(here.timestamp, Date.now())).toISOString(),
+        people: form.people,
+        vulnerable: form.vulnerable,
+        phone: form.phone,
+        note: form.note,
+      };
+      const outcome = navigator.onLine
+        ? await sendField({ ...record, photos: form.photos })
+        : ({ kind: "later" } as const);
+      if (outcome.kind === "sent") {
+        setResult(outcome.result);
+        load();
+      } else if (outcome.kind === "later") {
+        // No signal: everything taken here stays on the phone and is sent when it can be.
+        await keepField(record, form.photos);
+        setWaiting((await waitingFields()).length);
+        setSaved(true);
+      } else {
         const known = ["position", "phone", "people", "photo", "stale", "outside", "not_team"];
         setError(
-          known.includes(body?.error ?? "")
-            ? (body!.error as FieldRescueViewProps["error"])
+          known.includes(outcome.error)
+            ? (outcome.error as FieldRescueViewProps["error"])
             : "failed",
         );
-        return;
       }
-      setResult(done);
-      load();
     } catch {
       setError("failed");
     } finally {
@@ -363,9 +397,13 @@ export function FieldRescue({ unitId }: { unitId: string }) {
       error={error}
       result={result}
       rescues={rescues}
+      waiting={waiting}
+      saved={saved}
+      onFlush={flush}
       onSend={send}
       onAnother={() => {
         setResult(null);
+        setSaved(false);
         setError(null);
         setRound((n) => n + 1);
         locate();

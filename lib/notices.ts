@@ -12,7 +12,7 @@
 import type { Area } from "@/lib/area";
 import type { AlertLevel } from "@/lib/brand/tokens";
 import { fieldNews, type MyFieldRescue } from "@/lib/field-rescue";
-import { unitNews, type UnitRequest } from "@/lib/journey";
+import { unitNews, type FieldWaiting, type UnitRequest } from "@/lib/journey";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import type { MyPlaces } from "@/lib/me";
 import type { SosTimeline } from "@/lib/sos";
@@ -64,6 +64,7 @@ export type NoticeItem = Base &
       }
     | { kind: "unit"; event: "verified" | "suspended"; unitName: string }
     | { kind: "field"; event: "approved" | "rejected" }
+    | { kind: "fieldWaiting"; count: number }
   );
 
 /** One row of public_notices(), as /api/public/notices gives it. */
@@ -198,12 +199,15 @@ export function buildNotices(input: {
   units?: UnitRequest[];
   /** Rescues their team found by itself, for news of an admin's decision. */
   field?: MyFieldRescue[];
+  /** For an admin: field rescues waiting to be checked. */
+  fieldWaiting?: FieldWaiting | null;
   now: number;
   /** The word for the person's own home, and how to name a chosen area, both translated. */
   homeLabel: string;
   areaLabel: (area: Area) => string;
 }): NoticeItem[] {
   const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
+  const { fieldWaiting } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -290,6 +294,18 @@ export function buildNotices(input: {
       places: [],
       event: news.event,
       unitName: unit.name,
+    });
+  }
+
+  // One item for the admins, new again each time a newer record starts waiting. Not held to
+  // the fourteen days: it stays while something waits.
+  if (fieldWaiting && fieldWaiting.count > 0) {
+    items.push({
+      kind: "fieldWaiting",
+      id: `fieldwait:${fieldWaiting.newestId}`,
+      at: isoOrNull(fieldWaiting.newestAt) ?? new Date(now).toISOString(),
+      places: [],
+      count: fieldWaiting.count,
     });
   }
 

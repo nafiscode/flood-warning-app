@@ -107,7 +107,11 @@ export default async function FieldRescues({
       <div className="grid gap-5 lg:grid-cols-2">
         {rows.map((r) => {
           const id = String(r.rescue_id);
-          const checks = (r.checks ?? {}) as { holds?: unknown; evidence?: unknown };
+          const checks = (r.checks ?? {}) as {
+            holds?: unknown;
+            evidence?: unknown;
+            located_at?: unknown;
+          };
           const holds = FIELD_HOLDS.filter(
             (h) => Array.isArray(checks.holds) && checks.holds.includes(h),
           );
@@ -161,6 +165,11 @@ export default async function FieldRescues({
                 </p>
               )}
               {typeof r.note === "string" && r.note && <p>{r.note}</p>}
+              {holds.includes("sent_later") && typeof checks.located_at === "string" && (
+                <p className="font-medium">
+                  {t("field.takenAt")} <DualTime iso={checks.located_at} />
+                </p>
+              )}
 
               {holds.length > 0 && (
                 <div className="flex flex-col gap-1 rounded-xl border-2 border-jaga-edge p-3">

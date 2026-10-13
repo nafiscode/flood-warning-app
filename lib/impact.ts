@@ -69,6 +69,15 @@ export type CoverageGap = {
   province: ProvinceCode;
 };
 
+export type FieldImpact = {
+  /** Counted at once or approved by an admin. */
+  counted: number;
+  people: number;
+  teams: number;
+  waiting: number;
+  refused: number;
+};
+
 export type ImpactSeason = {
   from: string;
   to: string;
@@ -82,6 +91,12 @@ export type ImpactSeason = {
   provinces: ProvinceRow[];
   units: UnitImpact[];
   gaps: CoverageGap[];
+  /**
+   * Rescues teams found by themselves, with no request in the app (the owner, 14 Oct). Kept
+   * apart from everything above: they are the teams' own reports, worth half, and never added
+   * to the requests Jaga carried.
+   */
+  field?: FieldImpact;
 };
 
 /** Rounded percentage; 0 rather than NaN when there is nothing yet. */

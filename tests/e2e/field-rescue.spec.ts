@@ -40,6 +40,7 @@ const UNIT = `E2E field team ${run}`;
 const digits = String(Number.parseInt(run, 16) % 10_000_000).padStart(7, "0");
 const PHONE_A = `081${digits}`;
 const PHONE_B = `082${digits}`;
+const PHONE_C = `083${digits}`;
 
 /** The smallest real picture there is: the phone shrinks whatever it is given before sending. */
 const PHOTO = {
@@ -220,11 +221,43 @@ test.describe("a team records, an admin decides", () => {
       await sql("select 1 from public.hero_points where field_rescue_id = $1", [secondId]),
     ).toHaveLength(0);
 
+    // No signal at the next house: the record is kept on the phone, and sent when it returns.
+    await page.locator("[data-field-result] button").click();
+    await expect(page.locator('[data-field-position="found"]')).toBeVisible();
+    await context.setOffline(true);
+    await page.locator("#field-people").fill("1");
+    await page.locator("#field-phone").fill(PHONE_C);
+    await page.locator("[data-field-photos]").setInputFiles(PHOTO);
+    await page.locator("[data-field-send]").click();
+    await expect(page.locator('[data-field-result="saved"]')).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator("[data-field-waiting]")).toHaveAttribute("data-field-waiting", "1");
+    expect(
+      await sql(
+        "select 1 from public.field_rescue_contacts c join public.field_rescues f on f.id = c.rescue_id where f.unit_id = $1 and c.contact_phone = $2",
+        [unitId, PHONE_C],
+      ),
+    ).toHaveLength(0);
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event("online")));
+    await expect(page.locator("[data-field-waiting]")).toHaveCount(0, { timeout: 60_000 });
+    const [kept] = await sql(
+      `select f.status, cardinality(f.photos) as photos, f.checks ->> 'located_at' as taken
+         from public.field_rescues f join public.field_rescue_contacts c on c.rescue_id = f.id
+        where f.unit_id = $1 and c.contact_phone = $2`,
+      [unitId, PHONE_C],
+    );
+    expect(kept).toMatchObject({ photos: 1 });
+    expect(kept!.taken).toBeTruthy();
+
     // An admin sees why it waits, looks at the number (logged), and approves.
     const desk = await browser.newContext({ serviceWorkers: "block" });
     const admin = await desk.newPage();
     await signIn(admin, adminEmail);
     await admin.goto("/admin/field-rescues");
+    // The admins' bell says records are waiting, and leads here.
+    await admin.locator("[data-notice-bell]").click();
+    await expect(admin.locator("[data-notice-panel]")).toContainText(th.notices.fieldWaiting.title);
+    await admin.keyboard.press("Escape");
     const held = admin.locator(`[data-field-rescue="${secondId}"]`);
     await expect(held).toContainText(UNIT);
     await expect(held.locator("[data-holds]")).toHaveAttribute("data-holds", /repeat_nearby/);

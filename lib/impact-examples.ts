@@ -199,6 +199,8 @@ export const EXAMPLE_IMPACT: ImpactSeason = {
     { province: "90", requests: 65, confirmed: 34, teams: 3, openedApp: 11230 },
   ],
   units: UNITS,
+  // Invented, like the rest: what teams recorded for people who never sent a request.
+  field: { counted: 57, people: 163, teams: 7, waiting: 4, refused: 3 },
   gaps: [
     { tambon: "950204", name: "อัยเยอร์เวง", district: "เบตง", province: "95" },
     { tambon: "960904", name: "ภูเขาทอง", district: "สุคิริน", province: "96" },

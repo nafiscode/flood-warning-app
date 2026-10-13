@@ -292,6 +292,25 @@ export function Impact({ season, locale }: { season: ImpactSeason; locale: strin
         ))}
       </section>
 
+      {/* Rescues teams found themselves: a line of its own, never added to the requests above. */}
+      {season.field && (
+        <section className={card} data-impact-field={season.field.counted}>
+          <h2 className="text-body font-bold">{t("field.title")}</h2>
+          <p className={hint}>{t("field.note")}</p>
+          <p className="text-h3 font-bold text-jaga-ink tabular-nums">
+            {t("field.counted", { count: season.field.counted })}
+            <span className="ms-3 text-body font-medium">
+              {t("field.people", { count: season.field.people })} ·{" "}
+              {t("field.teams", { count: season.field.teams })}
+            </span>
+          </p>
+          <p className={hint}>
+            {t("field.waiting", { count: season.field.waiting })} ·{" "}
+            {t("field.refused", { count: season.field.refused })}
+          </p>
+        </section>
+      )}
+
       {/* 8. Where no rescue team covers, as an invitation rather than a complaint. */}
       <section className={card}>
         <h2 className="text-body font-bold">{t("gaps.title")}</h2>

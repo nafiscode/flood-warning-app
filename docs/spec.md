@@ -308,7 +308,7 @@ A case does not wait to be noticed. It is offered to the teams covering its tamb
 - The leaderboard per province is visible to authorities and admins. Public visibility is an open item.
 
 ### 5.5a Rescues a team found by itself
-Built 14 Oct 2026 (`/authority/field-rescue`, `/admin/field-rescues`). For people a team helps who never sent an SOS. Recorded at the place and at the moment: the phone's own position, a phone number for the rescued person and a photo are all required. Worth half the points of an SOS rescue, never as much. Counted at once where a flood is known or expected and nothing looks repeated; otherwise held for an admin to approve or refuse. The rescued person's number is never listed: an admin asks for it, and each look is logged. Tables `field_rescues`, `field_rescue_contacts`; `hero_points.field_rescue_id`.
+Built 14 Oct 2026 (`/authority/field-rescue`, `/admin/field-rescues`). For people a team helps who never sent an SOS. Recorded at the place and at the moment: the phone's own position, a phone number for the rescued person and a photo are all required. Worth half the points of an SOS rescue, never as much. Counted at once where a flood is known or expected and nothing looks repeated; otherwise held for an admin to approve or refuse. The rescued person's number is never listed: an admin asks for it, and each look is logged. Tables `field_rescues`, `field_rescue_contacts`; `hero_points.field_rescue_id`. With no signal the phone keeps the record and sends it later; a late arrival always waits for an admin. A held record is pushed to the admins once and shows in their bell.
 
 ### 5.6 Responsibility map
 - Coverage per unit and capability, shown to authorities and admins.

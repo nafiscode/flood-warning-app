@@ -27,7 +27,16 @@ export async function GET() {
     .order("created_at", { ascending: false })
     .limit(20);
   if (error) return answer({ error: "unavailable" }, 503);
+  // For an admin: how many field rescues wait for them. The function refuses everyone else,
+  // which simply leaves this out.
+  const waiting = await supabase.rpc("admin_field_waiting");
+  const row = Array.isArray(waiting.data) ? (waiting.data[0] as Record<string, unknown>) : null;
+  const fieldWaiting =
+    !waiting.error && row && Number(row.waiting) > 0 && typeof row.newest_id === "string"
+      ? { count: Number(row.waiting), newestId: row.newest_id, newestAt: String(row.newest_at) }
+      : null;
   return answer({
+    fieldWaiting,
     units: ((data ?? []) as Record<string, unknown>[])
       .map(toUnitRequest)
       .filter((u): u is UnitRequest => u !== null),

@@ -242,3 +242,62 @@ export async function runPushTick(): Promise<PushOutcome> {
     return { skipped: "error" };
   }
 }
+
+const FIELD_WORDS: Record<string, { title: string; body: string }> = {
+  th: th.adminTools.field.push,
+  ms: ms.adminTools.field.push,
+  en: en.adminTools.field.push,
+};
+
+/**
+ * Tell the admins' phones that a rescue a team found by itself is waiting for them (the owner,
+ * 14 Oct). Asked with the server's own token, like the per-minute tick: a team's session is never
+ * handed the admins' push addresses. The database hands them out once per record. It names the
+ * team and the tambon, never the place or the person. Never throws: the record is on the
+ * admins' Waiting list whether or not a notification leaves.
+ */
+export async function pushFieldHeld(rescueId: string): Promise<PushOutcome> {
+  try {
+    const token = gateToken();
+    if (!token || !configured()) return { skipped: "no_keys" };
+    const supabase = createPublicClient();
+    const { data, error } = await supabase.rpc("push_field_held", {
+      p_token: token,
+      p_rescue: rescueId,
+    });
+    if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
+    type Row = Target & { unit_name: string; tambon_th: string; tambon_en: string };
+    const gone: string[] = [];
+    let sent = 0;
+    let failed = 0;
+    for (const row of data as Row[]) {
+      const words = FIELD_WORDS[row.locale] ?? FIELD_WORDS.th!;
+      const place = row.locale === "th" || !row.tambon_en ? row.tambon_th : row.tambon_en;
+      const payload = {
+        // The service worker's plain kind: a title, words, and a page of this app to open.
+        kind: "announcement",
+        title: words.title,
+        body: words.body.replace("{unit}", row.unit_name).replace("{place}", place),
+        url: `${row.locale === "th" ? "" : `/${row.locale}`}/admin/field-rescues`,
+        tag: `field-${rescueId}`,
+        sticky: false,
+      };
+      try {
+        await webpush.sendNotification(
+          { endpoint: row.endpoint, keys: row.keys },
+          JSON.stringify(payload),
+          { TTL: 24 * 3600, urgency: "normal" },
+        );
+        sent++;
+      } catch (e) {
+        const status = (e as { statusCode?: number }).statusCode;
+        if (status === 404 || status === 410) gone.push(row.endpoint);
+        else failed++;
+      }
+    }
+    if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
+    return { sent, failed, gone: gone.length };
+  } catch {
+    return { skipped: "error" };
+  }
+}

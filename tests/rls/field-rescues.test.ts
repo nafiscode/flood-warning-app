@@ -37,6 +37,7 @@ async function record(
     lat?: number;
     lon?: number;
     accuracy?: number | null;
+    minutesAgo?: number;
     people?: number;
     vulnerable?: Record<string, boolean>;
     phone?: string;
@@ -47,7 +48,8 @@ async function record(
   await as(db, { uid: w.yalaRescue.user });
   const [r] = await rows<Result>(
     db,
-    `select * from authority_record_field_rescue($1, $2, $3, $4, now() - interval '1 minute',
+    `select * from authority_record_field_rescue($1, $2, $3, $4,
+                                                 now() - make_interval(mins => $9),
                                                  $5, $6::jsonb, $7, $8, null)`,
     [
       id,
@@ -58,6 +60,7 @@ async function record(
       JSON.stringify(over.vulnerable ?? {}),
       over.phone ?? `08${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`,
       photos,
+      over.minutesAgo ?? 1,
     ],
   );
   return { ...r!, id };
@@ -140,8 +143,8 @@ describe("who may record, and with what", () => {
     // A path that was never uploaded, and a photo filed under another team.
     await refused("0812345678", [`${w.yalaRescue.id}/${id}/never.jpg`], 1);
     await refused("0812345678", [`${w.songkhlaRescue.id}/${id}/1.jpg`], 1);
-    // Recorded later from somewhere else is not "at the moment".
-    await refused("0812345678", [path], 45);
+    // A position more than a day old is not a record of anything.
+    await refused("0812345678", [path], 60 * 30);
     await refused("0812345678", [path], 1, null);
   });
 
@@ -254,6 +257,104 @@ describe("counted at once, or held for an admin", () => {
       w.yala2,
     ]);
     expect((await record({ lat: spot.lat - 0.005 })).holds).toContain("outside_coverage");
+  });
+});
+
+describe("recorded with no signal, sent later", () => {
+  it("is accepted for a day, keeps the time it was taken, and always waits for an admin", async () => {
+    await asOwner(db);
+    await floodReportHere();
+    const late = await record({ minutesAgo: 180 });
+    expect(late.status).toBe("pending");
+    expect(late.holds).toEqual(["sent_later"]);
+    expect(late.points).toBe(0);
+    await asOwner(db);
+    const [row] = await rows<{ taken: Date; created_at: Date }>(
+      db,
+      "select (checks ->> 'located_at')::timestamptz as taken, created_at from field_rescues where id = $1",
+      [late.id],
+    );
+    const gap = row!.created_at.getTime() - row!.taken.getTime();
+    expect(Math.round(gap / 60_000)).toBe(180);
+  });
+
+  it("sent within minutes is not late", async () => {
+    await asOwner(db);
+    await floodReportHere();
+    expect((await record({ minutesAgo: 10 })).status).toBe("counted");
+  });
+});
+
+describe("telling the admins", () => {
+  const TOKEN = "t".repeat(40);
+  const KEYS = JSON.stringify({ p256dh: "k".repeat(40), auth: "a".repeat(16) });
+
+  it("counts what is waiting, for admins only", async () => {
+    const held = await record();
+    await as(db, { uid: w.yalaRescue.user });
+    await expectDenied(db, "select * from admin_field_waiting()");
+    await as(db, { uid: w.admin });
+    const [n] = await rows<{ waiting: number; newest_id: string }>(
+      db,
+      "select waiting, newest_id from admin_field_waiting()",
+    );
+    expect(n).toEqual({ waiting: 1, newest_id: held.id });
+  });
+
+  it("hands the admins' phones to Jaga's own server once, and to nobody without the token", async () => {
+    await asOwner(db);
+    await db.query(
+      `insert into push_gate (id, token) values (true, $1)
+       on conflict (id) do update set token = excluded.token`,
+      [TOKEN],
+    );
+    await db.query("delete from push_subscriptions");
+    await as(db, { uid: w.admin });
+    await db.query("select push_subscribe($1, $2::jsonb, '{}', 'en')", [
+      "https://fcm.googleapis.com/fcm/send/admin-phone",
+      KEYS,
+    ]);
+    await as(db, { uid: w.yalaRescue.user });
+    await db.query("select push_subscribe($1, $2::jsonb, '{}', 'th')", [
+      "https://fcm.googleapis.com/fcm/send/team-phone",
+      KEYS,
+    ]);
+    const held = await record();
+
+    // A team's own session cannot ask whom to push to.
+    await as(db, { uid: w.yalaRescue.user });
+    await expectDenied(db, "select * from push_field_held('wrong-token', $1)", [held.id]);
+
+    await as(db, "anon");
+    const first = await rows<{ endpoint: string; locale: string; unit_name: string }>(
+      db,
+      "select endpoint, locale, unit_name from push_field_held($1, $2)",
+      [TOKEN, held.id],
+    );
+    expect(first).toEqual([
+      {
+        endpoint: "https://fcm.googleapis.com/fcm/send/admin-phone",
+        locale: "en",
+        unit_name: "Yala rescue",
+      },
+    ]);
+    // Once: a second ask sends nobody a second notification.
+    expect(await rows(db, "select 1 from push_field_held($1, $2)", [TOKEN, held.id])).toEqual([]);
+  });
+
+  it("does not notify about a record that counted at once", async () => {
+    await asOwner(db);
+    await db.query(
+      `insert into push_gate (id, token) values (true, $1)
+       on conflict (id) do update set token = excluded.token`,
+      [TOKEN],
+    );
+    await floodReportHere();
+    const counted = await record();
+    await as(db, "anon");
+    expect(await rows(db, "select 1 from push_field_held($1, $2)", [TOKEN, counted.id])).toEqual(
+      [],
+    );
   });
 });
 

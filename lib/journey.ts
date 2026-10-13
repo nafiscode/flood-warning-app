@@ -227,4 +227,7 @@ export function unitNews(
   return { id: `unit:${unit.id}:${unit.status}:${at}`, event: unit.status, at };
 }
 
+/** For an admin: field rescues waiting to be checked, and the newest of them. */
+export type FieldWaiting = { count: number; newestId: string; newestAt: string };
+
 export const REQUESTS_URL = "/api/me/requests";

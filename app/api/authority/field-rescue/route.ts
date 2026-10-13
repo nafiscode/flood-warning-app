@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import {
   cleanPhone,
   toFieldResult,
@@ -5,6 +6,7 @@ import {
   vulnerableFlags,
   type MyFieldRescue,
 } from "@/lib/field-rescue";
+import { pushFieldHeld } from "@/lib/push-server";
 import { VULNERABLE, type Vulnerable } from "@/lib/sos";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
@@ -98,5 +100,8 @@ export async function POST(request: Request) {
   }
   const result = toFieldResult(Array.isArray(data) ? (data[0] as Record<string, unknown>) : null);
   if (!result) return answer({ error: "failed" }, 502);
+  // A record that waits for an admin reaches the admins' phones, once, after the answer has
+  // gone back to the team: the team never waits on a notification.
+  if (result.status === "pending") after(() => void pushFieldHeld(id));
   return answer({ result });
 }

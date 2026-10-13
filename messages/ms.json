@@ -670,6 +670,11 @@
       "approved": "Pentadbir meluluskan rekod penyelamatan pasukan anda. Mata telah diberikan.",
       "rejected": "Pentadbir tidak meluluskan rekod penyelamatan pasukan anda. Lihat sebabnya pada halaman rekod.",
       "see": "Lihat rekod"
+    },
+    "fieldWaiting": {
+      "title": "Untuk pentadbir",
+      "body": "{count} rekod penyelamatan yang ditemui pasukan menunggu semakan anda",
+      "see": "Buka halaman semakan"
     }
   },
   "placeFinder": {
@@ -1860,6 +1865,15 @@
       "legendGap": "Tambon tanpa pasukan penyelamat",
       "note": "Peta ini paling terperinci pada peringkat wilayah. Bulatan mewakili seluruh wilayah, bukan tempat seseorang meminta bantuan, dan tiada tanda pada peta ini ialah rumah atau permintaan sesiapa.",
       "bubble": "{province}: {requests} permintaan, {confirmed} disahkan"
+    },
+    "field": {
+      "title": "Penyelamatan yang ditemui pasukan sendiri",
+      "note": "Bukan daripada permintaan dalam aplikasi. Direkod oleh pasukan di tempat penyelamatan; dikira berasingan daripada angka di atas dan tidak dicampur.",
+      "counted": "{count} dikira",
+      "people": "{count} orang",
+      "waiting": "{count} menunggu semakan pentadbir",
+      "refused": "{count} ditolak",
+      "teams": "daripada {count} pasukan"
     }
   },
   "devBrand": {
@@ -2687,6 +2701,11 @@
         "reason": "Sebab diperlukan.",
         "gone": "Rekod ini telah diputuskan.",
         "save": "Tidak berjaya disimpan. Cuba lagi."
+      },
+      "takenAt": "Diambil di tempat kejadian pada",
+      "push": {
+        "title": "Jaga: rekod penyelamatan menunggu semakan",
+        "body": "{unit} merekod penyelamatan di {place}. Menunggu kelulusan anda."
       }
     }
   },
@@ -2955,7 +2974,8 @@
       "repeat_nearby": "Pasukan baru sahaja merekod penyelamatan berhampiran tempat ini.",
       "many_today": "Pasukan merekod banyak penyelamatan dalam sehari.",
       "phone_used_before": "Nombor telefon ini pernah digunakan dalam rekod lain.",
-      "open_request_here": "Ada permintaan SOS yang masih terbuka berhampiran; selesaikan melalui permintaan itu."
+      "open_request_here": "Ada permintaan SOS yang masih terbuka berhampiran; selesaikan melalui permintaan itu.",
+      "sent_later": "Direkod tanpa isyarat dan dihantar kemudian."
     },
     "error": {
       "position": "Belum ada kedudukan daripada telefon; tidak dapat direkod.",
@@ -2975,6 +2995,13 @@
       "points": "{points} mata",
       "noPoints": "Belum ada mata",
       "adminNote": "Pentadbir: {note}"
+    },
+    "later": {
+      "saved": "Disimpan dalam telefon",
+      "savedBody": "Tiada isyarat sekarang. Kedudukan, masa, nombor telefon dan gambar disimpan dalam telefon ini dan akan dihantar sendiri apabila ada isyarat. Rekod yang dihantar kemudian sentiasa menunggu semakan pentadbir.",
+      "waiting": "{count} rekod dalam telefon ini belum dihantar",
+      "waitingHint": "Ia dihantar sendiri apabila ada isyarat dan Jaga dibuka. Jangan padam data aplikasi sebelum dihantar.",
+      "sendNow": "Cuba hantar sekarang"
     }
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQueue } from "@/lib/use-sending";
 
 /**
@@ -9,5 +10,22 @@ import { useQueue } from "@/lib/use-sending";
  */
 export function QueueRunner() {
   useQueue();
+  // A team's field rescues recorded without a signal (the owner, 14 Oct). The code that sends
+  // them is only fetched on a phone that actually has some waiting, so nobody else pays for it.
+  useEffect(() => {
+    const flush = async () => {
+      try {
+        const list = await indexedDB.databases?.();
+        if (!list?.some((db) => db.name === "jaga-field")) return;
+        const { flushFields } = await import("@/lib/field-queue");
+        await flushFields();
+      } catch {
+        // No IndexedDB here, or it is switched off: there is nothing waiting to send.
+      }
+    };
+    void flush();
+    window.addEventListener("online", flush);
+    return () => window.removeEventListener("online", flush);
+  }, []);
   return null;
 }

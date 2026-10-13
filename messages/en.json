@@ -670,6 +670,11 @@
       "approved": "An admin approved your team's rescue record. The points have been awarded.",
       "rejected": "An admin did not approve your team's rescue record. The reason is on the record.",
       "see": "See the record"
+    },
+    "fieldWaiting": {
+      "title": "For admins",
+      "body": "{count, plural, one {# field rescue is} other {# field rescues are}} waiting for you to check",
+      "see": "Open the review page"
     }
   },
   "placeFinder": {
@@ -1860,6 +1865,15 @@
       "legendGap": "Tambon with no rescue team",
       "note": "A province is the finest grain on this map. A circle stands for the whole province, not for a place where someone asked for help, and no mark here is anybody's home or request.",
       "bubble": "{province}: {requests} requests, {confirmed} confirmed"
+    },
+    "field": {
+      "title": "Rescues teams found themselves",
+      "note": "Not from a request in the app. Recorded by the team at the place of the rescue; counted apart from the figures above and never added to them.",
+      "counted": "{count} counted",
+      "people": "{count, plural, one {# person} other {# people}}",
+      "waiting": "{count} waiting for an admin",
+      "refused": "{count} refused",
+      "teams": "from {count, plural, one {# team} other {# teams}}"
     }
   },
   "devBrand": {
@@ -2687,6 +2701,11 @@
         "reason": "A reason is required.",
         "gone": "This record has already been decided.",
         "save": "That could not be saved. Try again."
+      },
+      "takenAt": "Taken at the place at",
+      "push": {
+        "title": "Jaga: a rescue record is waiting",
+        "body": "{unit} recorded a rescue in {place}. It is waiting for your approval."
       }
     }
   },
@@ -2955,7 +2974,8 @@
       "repeat_nearby": "Your team recorded another rescue close to this spot recently.",
       "many_today": "Your team has recorded many rescues in one day.",
       "phone_used_before": "This phone number was used on another record.",
-      "open_request_here": "An SOS is still open close to this spot; finish it through that request."
+      "open_request_here": "An SOS is still open close to this spot; finish it through that request.",
+      "sent_later": "It was recorded without signal and sent later."
     },
     "error": {
       "position": "There is no position from the phone yet, so it cannot be recorded.",
@@ -2975,6 +2995,13 @@
       "points": "{points} points",
       "noPoints": "No points yet",
       "adminNote": "Admin: {note}"
+    },
+    "later": {
+      "saved": "Kept on this phone",
+      "savedBody": "There is no signal right now. The position, the time, the phone number and the photo are kept on this phone and will be sent by themselves when the signal returns. A record sent later always waits for an admin first.",
+      "waiting": "{count, plural, one {# record} other {# records}} on this phone not sent yet",
+      "waitingHint": "They are sent by themselves when there is signal and Jaga is open. Do not clear the app's data before then.",
+      "sendNow": "Try sending now"
     }
   }
 }
