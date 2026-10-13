@@ -772,12 +772,14 @@
     },
     "returnToApp": {
       "title": "Go back to the Jaga app",
-      "done": "LINE has confirmed you.",
-      "open": "Open Jaga from your home screen again. It signs you in by itself within a few seconds.",
+      "done": "LINE has confirmed you. One step left.",
+      "open": "The app signs you in by itself within a few seconds.",
       "stuck": "If the app still shows a LINE page, tap “Done” or the back button to close it first.",
       "soon": "Go back to the app within a few minutes. After that you would have to sign in again.",
-      "why": "This page opened in your browser because the LINE app cannot return to an app on the home screen. This browser is not signed in.",
-      "here": "Sign in here in this browser instead"
+      "why": "A browser cannot open an app on the home screen for you, so you have to open it yourself. This page opened because the LINE app always comes back to the browser, and this browser is not signed in.",
+      "here": "Sign in here in this browser instead",
+      "leave": "Leave this browser and go to your home screen.",
+      "tap": "Tap the Jaga icon, like the one above."
     }
   },
   "watched": {
