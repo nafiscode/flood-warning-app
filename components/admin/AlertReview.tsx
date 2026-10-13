@@ -24,7 +24,7 @@ const LOCALES = ["th", "ms", "en"] as const;
  *
  * It sits inside the form and reads the form's own fields, so the form stays plain HTML.
  */
-export function AlertReview({ bangkokLabel }: { bangkokLabel: string }) {
+export function AlertReview() {
   const t = useTranslations("alertConsole.review");
   const root = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State>({ kind: "idle" });
@@ -127,7 +127,7 @@ export function AlertReview({ bangkokLabel }: { bangkokLabel: string }) {
           <p>
             <span className={`block ${hint}`}>{t("nextUpdate")}</span>
             <span className="font-medium">
-              <DualTime iso={ready.nextUpdateAt} bangkokLabel={bangkokLabel} />
+              <DualTime iso={ready.nextUpdateAt} />
             </span>
           </p>
           <p>

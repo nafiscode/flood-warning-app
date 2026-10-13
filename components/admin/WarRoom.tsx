@@ -159,8 +159,7 @@ export function WarRoom({
         <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <p className={hint}>
-            {t("updated")}{" "}
-            <DualTime iso={new Date(board.now).toISOString()} bangkokLabel={t("bangkok")} />
+            {t("updated")} <DualTime iso={new Date(board.now).toISOString()} />
           </p>
           {pollUrl && (
             <button

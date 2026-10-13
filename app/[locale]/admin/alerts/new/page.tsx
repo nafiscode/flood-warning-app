@@ -240,7 +240,7 @@ export default async function NewAlert({
         {WINDOW_FIELDS.map((field) => (
           <div key={field} className="flex flex-col gap-1">
             <label htmlFor={field} className={label}>
-              {t(`form.windows.${field}`)} {tAdmin("bangkokTime")}
+              {t(`form.windows.${field}`)}
             </label>
             <input id={field} name={field} type="datetime-local" className={input} />
           </div>
@@ -248,7 +248,7 @@ export default async function NewAlert({
       </details>
 
       <NextIntlClientProvider messages={alertReviewMessages(await getMessages())}>
-        <AlertReview bangkokLabel={tAdmin("bangkokTime")} />
+        <AlertReview />
       </NextIntlClientProvider>
     </form>
   );

@@ -19,10 +19,12 @@ const local = new Intl.DateTimeFormat("en-GB", {
 const subscribe = () => () => {};
 
 /**
- * Admin console time: Bangkok time, plus the viewer's own time when it differs (CLAUDE.md).
+ * Admin console time: Thailand's, plus the viewer's own time when it differs (CLAUDE.md).
+ * Thailand's carries no label (the owner, 13 Oct: everyone knows which time Jaga keeps); the
+ * viewer's own carries its zone, which is what tells the two apart.
  * The local part is added in the browser, so server and browser render the same first HTML.
  */
-export function DualTime({ iso, bangkokLabel }: { iso: string; bangkokLabel: string }) {
+export function DualTime({ iso }: { iso: string }) {
   const date = new Date(iso);
   const localText = useSyncExternalStore(
     subscribe,
@@ -32,7 +34,7 @@ export function DualTime({ iso, bangkokLabel }: { iso: string; bangkokLabel: str
   const sameZone = localText !== "" && new Date().getTimezoneOffset() === -420;
   return (
     <time dateTime={iso} className="tabular-nums">
-      {bangkok.format(date)} {bangkokLabel}
+      {bangkok.format(date)}
       {localText !== "" && !sameZone && ` · ${localText}`}
     </time>
   );

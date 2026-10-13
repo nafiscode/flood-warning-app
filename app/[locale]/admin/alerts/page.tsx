@@ -63,7 +63,6 @@ export default async function AdminAlerts({
   const session = await getSessionProfile();
   if (!session || !isAdminRole(session.role)) return null;
   const t = await getTranslations("alertConsole");
-  const tAdmin = await getTranslations("admin");
   const [alerts, areas] = await Promise.all([readAlerts(100), readAreas()]);
   const names = new Map(
     areas.tambons.map((tb) => [tb.code, locale === "th" || !tb.name_en ? tb.name_th : tb.name_en]),
@@ -72,7 +71,6 @@ export default async function AdminAlerts({
   const ended = alerts.filter((a) => alertState(a) !== "inForce");
   const done = DONE.find((d) => d === query.done);
   const error = ERRORS.find((e) => e === query.error);
-  const bangkok = tAdmin("bangkokTime");
 
   const areaText = (a: AdminAlert) => {
     const shown = a.tambons.slice(0, NAMES_SHOWN).map((code) => names.get(code) ?? code);
@@ -112,30 +110,28 @@ export default async function AdminAlerts({
       </p>
       <p lang={a.messages[locale] ? locale : "th"}>{a.messages[locale] ?? a.messages.th}</p>
       <p className={hint}>
-        {t("card.issued", { name: a.issuedBy ?? "–" })}{" "}
-        <DualTime iso={a.issuedAt} bangkokLabel={bangkok} />
+        {t("card.issued", { name: a.issuedBy ?? "–" })} <DualTime iso={a.issuedAt} />
       </p>
       {alertState(a) === "inForce" ? (
         <p className="font-medium">
-          {t("card.nextUpdate")} <DualTime iso={a.nextUpdateAt} bangkokLabel={bangkok} />
+          {t("card.nextUpdate")} <DualTime iso={a.nextUpdateAt} />
         </p>
       ) : (
         a.endedAt && (
           <p className={hint}>
-            {t("card.ended")} <DualTime iso={a.endedAt} bangkokLabel={bangkok} />
+            {t("card.ended")} <DualTime iso={a.endedAt} />
           </p>
         )
       )}
       {a.onset && (
         <p className={hint}>
-          {t("card.onset")} <DualTime iso={a.onset[0]} bangkokLabel={bangkok} /> –{" "}
-          <DualTime iso={a.onset[1]} bangkokLabel={bangkok} />
+          {t("card.onset")} <DualTime iso={a.onset[0]} /> – <DualTime iso={a.onset[1]} />
         </p>
       )}
       {a.returnWindow && (
         <p className={hint}>
-          {t("card.returnWindow")} <DualTime iso={a.returnWindow[0]} bangkokLabel={bangkok} /> –{" "}
-          <DualTime iso={a.returnWindow[1]} bangkokLabel={bangkok} />
+          {t("card.returnWindow")} <DualTime iso={a.returnWindow[0]} /> –{" "}
+          <DualTime iso={a.returnWindow[1]} />
         </p>
       )}
       <details>
@@ -154,7 +150,7 @@ export default async function AdminAlerts({
                 {" · "}
                 {e.by ?? "–"}
                 {" · "}
-                <DualTime iso={e.at} bangkokLabel={bangkok} />
+                <DualTime iso={e.at} />
                 {note && <span className="block">{note}</span>}
               </li>
             );

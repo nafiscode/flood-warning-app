@@ -119,7 +119,7 @@ export function WarRoomPeople({ page, watched, reveal, path }: Props) {
                   {p.sosSent}
                 </span>
                 <span className="text-small text-jaga-text-2">
-                  <DualTime iso={p.createdAt} bangkokLabel={t("bangkok")} />
+                  <DualTime iso={p.createdAt} />
                 </span>
                 <span>
                   {reveal?.userId === p.userId ? (

@@ -77,7 +77,7 @@ export function Impact({ season, locale }: { season: ImpactSeason; locale: strin
         <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
         <p className={hint}>
           {t("period", { from: date(season.from), to: date(season.to) })} · {t("computed")}{" "}
-          <DualTime iso={season.computedAt} bangkokLabel={t("bangkok")} />
+          <DualTime iso={season.computedAt} />
         </p>
         <p className="max-w-prose font-medium">{t("carriedNotSaved")}</p>
       </header>

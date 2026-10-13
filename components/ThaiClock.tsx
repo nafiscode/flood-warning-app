@@ -17,20 +17,19 @@ export function thaiTime(now: number): string {
 /**
  * The time in the service area, in the header (the owner, 13 Oct). Every time Jaga shows - an
  * alert's issue time, a reading's age - is Thailand's, so someone abroad, or with a wrong clock,
- * can see what "now" is on that scale. It is words and numbers only, and asks nothing of the
- * server: `useNow` moves on twice a minute. Until the page is alive in the browser it draws a
- * blank of the same width, so the server's HTML and the first paint agree.
+ * can see what "now" is on that scale. It is the number alone: the people Jaga is for are in
+ * Thailand and know whose time it is (the owner, 13 Oct), so the word is kept only for a screen
+ * reader and the tooltip, where a bare "14:05" would say nothing. It asks nothing of the server:
+ * `useNow` moves on twice a minute. Until the page is alive in the browser it draws a blank of
+ * the same width, so the server's HTML and the first paint agree.
  */
 export function ThaiClock({
-  short,
-  long,
+  label,
   size = "wide",
   className = "",
 }: {
-  /** The few letters that fit on a phone: "ไทย", "TH". */
-  short: string;
-  /** What it is, in full: "Thailand time". Shown on a wide screen and read to a screen reader. */
-  long: string;
+  /** What the number is, for a screen reader and the tooltip only: "Time". */
+  label: string;
   size?: "wide" | "small";
   className?: string;
 }) {
@@ -39,13 +38,12 @@ export function ThaiClock({
   return (
     <span
       data-clock={size}
-      title={long}
+      title={label}
       className={`whitespace-nowrap font-medium tabular-nums text-white ${
         size === "small" ? "text-[12px] leading-none" : "text-small"
       } ${className}`}
     >
-      <span className="sr-only">{long} </span>
-      <span aria-hidden="true">{size === "small" ? short : long} </span>
+      <span className="sr-only">{label} </span>
       {time || <span className="invisible">00:00</span>}
     </span>
   );

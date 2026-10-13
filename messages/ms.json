@@ -587,8 +587,7 @@
     "en": "English"
   },
   "nav": {
-    "clockShort": "TH",
-    "clockLong": "Waktu Thailand",
+    "clock": "Masa",
     "home": "Utama",
     "account": "Akaun",
     "map": "Peta",
@@ -1217,7 +1216,6 @@
   "admin": {
     "title": "Pentadbir",
     "signedInAs": "Log masuk sebagai {name}",
-    "bangkokTime": "(waktu Thai)",
     "nav": {
       "label": "Menu pentadbir",
       "home": "Utama",
@@ -1333,14 +1331,14 @@
       "title": "Hantar notis pelepasan empangan",
       "lead": "Notis ini sampai kepada semua orang di laluan air di hilir empangan. Teksnya datang daripada templat yang telah disemak dalam tiga bahasa; anda mengisi angka dan masa sahaja.",
       "dam": "Empangan",
-      "gatesOpenAt": "Pintu dibuka pada (waktu Thailand)",
+      "gatesOpenAt": "Pintu dibuka pada",
       "gatesHint": "Masa pintu benar-benar dibuka, bukan masa anda mengisi borang ini. Masa ketibaan air dikira daripadanya.",
       "releaseCms": "Kadar pelepasan (m³/s)",
       "releaseHint": "Angka daripada pengendali empangan, termasuk limpahan dan janakuasa.",
       "expectedEnd": "Dijangka berakhir (jika diketahui)",
       "level": "Tahap amaran",
       "levelHint": "Anda yang memilih, bukan sistem.",
-      "nextUpdate": "Kemas kini seterusnya sebelum (waktu Thailand)",
+      "nextUpdate": "Kemas kini seterusnya sebelum",
       "zone": "Dihantar ke {count} mukim di laluan air. Kawasan ini tidak boleh diubah.",
       "arrivals": "Masa ketibaan: mukim pertama kira-kira {firstFrom}–{firstTo} jam, mukim terakhir kira-kira {lastFrom}–{lastTo} jam selepas pintu dibuka.",
       "preview": "Teks yang akan dihantar",
@@ -1368,7 +1366,6 @@
   "warRoom": {
     "title": "Bilik gerakan",
     "subtitle": "Gambaran kejadian, permintaan tolong, dan orang yang mendaftar",
-    "bangkok": "(Bangkok)",
     "updated": "Data pada",
     "liveOn": "Kemas kini sendiri",
     "liveOff": "Berhenti sebentar",
@@ -1641,7 +1638,6 @@
     "title": "Rekod bantuan yang Jaga sampaikan",
     "period": "Tempoh {from} – {to}",
     "computed": "Dikira pada",
-    "bangkok": "(waktu Thai)",
     "carriedNotSaved": "Jaga menyampaikan permintaan kepada pasukan; penyelamatan dilakukan oleh orang di lapangan. Angka di halaman ini ialah kerja pasukan dan organisasi itu.",
     "casesWithPercent": "{count} kes ({percent}%)",
     "example": {
@@ -2295,7 +2291,7 @@
       },
       "windows": {
         "summary": "Tempoh jangkaan (pilihan)",
-        "hint": "Sentiasa dipaparkan sebagai julat dan anggaran. Masukkan waktu Thailand; mula dan tamat kedua-duanya diperlukan.",
+        "hint": "Sentiasa dipaparkan sebagai julat dan anggaran. Mula dan tamat kedua-duanya diperlukan.",
         "onsetFrom": "Air dijangka tiba, dari",
         "onsetTo": "Air dijangka tiba, hingga",
         "returnFrom": "Dijangka boleh pulang, dari",

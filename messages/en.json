@@ -587,8 +587,7 @@
     "en": "English"
   },
   "nav": {
-    "clockShort": "TH",
-    "clockLong": "Thailand time",
+    "clock": "Time",
     "home": "Home",
     "account": "Account",
     "map": "Map",
@@ -1217,7 +1216,6 @@
   "admin": {
     "title": "Admin",
     "signedInAs": "Signed in as {name}",
-    "bangkokTime": "(Bangkok)",
     "nav": {
       "label": "Admin menu",
       "home": "Home",
@@ -1333,14 +1331,14 @@
       "title": "Send a dam release notice",
       "lead": "This reaches everyone on the water path below the dam. The words come from a reviewed template in all three languages; you fill in the figures and the times.",
       "dam": "Dam",
-      "gatesOpenAt": "Gates opened at (Bangkok time)",
+      "gatesOpenAt": "Gates opened at",
       "gatesHint": "When the gates actually opened, not when you fill this in. The arrival times are counted from it.",
       "releaseCms": "Release (m³/s)",
       "releaseHint": "The figure from the dam operator, spillway and generators together.",
       "expectedEnd": "Expected to end (if known)",
       "level": "Alert level",
       "levelHint": "You choose it, not the system.",
-      "nextUpdate": "Next update before (Bangkok time)",
+      "nextUpdate": "Next update before",
       "zone": "Goes to {count} tambons on the water path. The area cannot be changed.",
       "arrivals": "Arrival ranges: the first tambon about {firstFrom}–{firstTo} hours, the last about {lastFrom}–{lastTo} hours after the gates open.",
       "preview": "The text that will be sent",
@@ -1368,7 +1366,6 @@
   "warRoom": {
     "title": "War room",
     "subtitle": "What is happening, who is waiting for help, and who has registered where",
-    "bangkok": "(Bangkok)",
     "updated": "Data from",
     "liveOn": "Refreshing itself",
     "liveOff": "Paused",
@@ -1641,7 +1638,6 @@
     "title": "The help Jaga carried",
     "period": "{from} – {to}",
     "computed": "Computed",
-    "bangkok": "(Bangkok)",
     "carriedNotSaved": "Jaga carried requests to a team; the people on the ground did the rescues. Every figure on this page is their work.",
     "casesWithPercent": "{count, plural, one {# case} other {# cases}} ({percent}%)",
     "example": {
@@ -2295,7 +2291,7 @@
       },
       "windows": {
         "summary": "Expected times (optional)",
-        "hint": "Always shown as a range and as an estimate. Enter Thailand time; a window needs both its start and its end.",
+        "hint": "Always shown as a range and as an estimate. A window needs both its start and its end.",
         "onsetFrom": "Flooding expected, from",
         "onsetTo": "Flooding expected, to",
         "returnFrom": "Return expected, from",

@@ -89,7 +89,7 @@ export default async function AdminInvitations({
             <p className="break-all font-medium">{invitation.email_or_phone}</p>
             <p className={hint}>
               {t(`role.${invitation.role}`)} · {t(`invitations.status.${invitation.status}`)} ·{" "}
-              <DualTime iso={invitation.created_at} bangkokLabel={t("bangkokTime")} />
+              <DualTime iso={invitation.created_at} />
             </p>
             {invitation.status === "pending" && (
               <form action={revokeInvitation}>

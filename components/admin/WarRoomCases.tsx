@@ -197,7 +197,7 @@ function CaseCard({
       <p className="font-bold text-jaga-ink">{place || t("case.noArea")}</p>
       {c.locationText && <p className={hint}>{t("case.typedPlace", { text: c.locationText })}</p>}
       <p className={hint}>
-        {t("case.sentAt")} <DualTime iso={c.createdAt} bangkokLabel={t("bangkok")} />
+        {t("case.sentAt")} <DualTime iso={c.createdAt} />
         {c.accuracyM != null ? ` · ${t("case.accuracy", { m: Math.round(c.accuracyM) })}` : ""}
       </p>
 
@@ -387,7 +387,7 @@ function CaseCard({
         <ol className="flex flex-col gap-2 border-t border-jaga-line pt-3">
           {history.rows.map((r, i) => (
             <li key={i} className="text-small">
-              <DualTime iso={r.at} bangkokLabel={t("bangkok")} />{" "}
+              <DualTime iso={r.at} />{" "}
               <b>{t.has(`event.${r.event}`) ? t(`event.${r.event}`) : r.event}</b>
               {r.unitName ? ` · ${r.unitName}` : ""}
               {r.actorName ? ` · ${r.actorName}` : ""}

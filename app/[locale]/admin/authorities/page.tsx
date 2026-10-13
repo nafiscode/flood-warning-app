@@ -101,8 +101,7 @@ export default async function AdminAuthorities({
       </p>
       <p>{summary(unit)}</p>
       <p className={hint}>
-        {t("authorities.registered")}{" "}
-        <DualTime iso={unit.created_at} bangkokLabel={t("bangkokTime")} />
+        {t("authorities.registered")} <DualTime iso={unit.created_at} />
       </p>
     </>
   );

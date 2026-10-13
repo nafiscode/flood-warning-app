@@ -111,11 +111,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   */}
                   <WeatherChip where="header" className="hidden lg:inline-flex" />
                   {/* Thailand's time, beside the weather where there is room (the owner, 13 Oct). */}
-                  <ThaiClock
-                    short={tNav("clockShort")}
-                    long={tNav("clockLong")}
-                    className="hidden lg:inline"
-                  />
+                  <ThaiClock label={tNav("clock")} className="hidden lg:inline" />
                 </div>
 
                 {/*
@@ -132,8 +128,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   {/* A tablet has room for the time up here; a phone has it by the languages. */}
                   <ThaiClock
                     size="small"
-                    short={tNav("clockShort")}
-                    long={tNav("clockLong")}
+                    label={tNav("clock")}
                     className="hidden sm:inline lg:hidden"
                   />
                   <WeatherChip where="row" className="inline-flex lg:hidden" />
@@ -181,12 +176,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     for someone who has not chosen a place yet the pill says "weather" in words,
                     and the two together pushed the top row onto a fourth line.
                   */}
-                  <ThaiClock
-                    size="small"
-                    short={tNav("clockShort")}
-                    long={tNav("clockLong")}
-                    className="-me-1 sm:hidden"
-                  />
+                  <ThaiClock size="small" label={tNav("clock")} className="-me-1 sm:hidden" />
                 </div>
               </div>
             </header>

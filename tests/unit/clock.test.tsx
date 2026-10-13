@@ -1,6 +1,9 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { thaiTime, ThaiClock } from "@/components/ThaiClock";
+import en from "@/messages/en.json";
+import ms from "@/messages/ms.json";
+import th from "@/messages/th.json";
 
 describe("Thailand's time in the header (owner, 13 Oct)", () => {
   it("is Bangkok's clock, whatever zone the device is in", () => {
@@ -9,15 +12,29 @@ describe("Thailand's time in the header (owner, 13 Oct)", () => {
     expect(thaiTime(Date.UTC(2026, 9, 13, 7, 0))).toBe("14:00");
   });
 
-  it("says which country's time it is: in full on a wide screen, in a few letters on a phone", () => {
-    const wide = render(<ThaiClock short="TH" long="Thailand time" />).container;
-    expect(wide.querySelector("[data-clock='wide']")!.textContent).toMatch(
-      /Thailand time .*\d\d:\d\d$/,
-    );
-    const small = render(<ThaiClock size="small" short="TH" long="Thailand time" />).container;
-    const clock = small.querySelector("[data-clock='small']")!;
-    expect(clock.querySelector("[aria-hidden]")!.textContent).toBe("TH ");
-    // A screen reader still hears the whole name.
-    expect(clock.querySelector(".sr-only")!.textContent).toContain("Thailand time");
+  it("shows the number alone, at both sizes; the word is only for a screen reader", () => {
+    for (const size of ["wide", "small"] as const) {
+      const { container } = render(<ThaiClock size={size} label="Time" />);
+      const clock = container.querySelector(`[data-clock='${size}']`)!;
+      expect(clock.querySelector(".sr-only")!.textContent).toBe("Time ");
+      clock.querySelector(".sr-only")!.remove();
+      expect(clock.textContent).toMatch(/^\d\d:\d\d$/);
+    }
+  });
+
+  it("nowhere in the app says whose time it is: the users are in Thailand", () => {
+    const named = /thailand time|bangkok|เวลาไทย|เวลาประเทศไทย|กรุงเทพ|waktu thai/i;
+    for (const messages of [th, ms, en]) {
+      const found: string[] = [];
+      const walk = (node: unknown, path: string) => {
+        if (typeof node === "string") {
+          if (named.test(node)) found.push(path);
+        } else if (node && typeof node === "object") {
+          for (const [key, value] of Object.entries(node)) walk(value, `${path}.${key}`);
+        }
+      };
+      walk(messages, "");
+      expect(found).toEqual([]);
+    }
   });
 });

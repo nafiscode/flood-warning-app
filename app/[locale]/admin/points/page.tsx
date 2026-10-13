@@ -75,7 +75,7 @@ export default async function AdminPoints({
               </p>
             </div>
             <p className={hint}>
-              <DualTime iso={r.createdAt} bangkokLabel={t("bangkokTime")} />
+              <DualTime iso={r.createdAt} />
               {place ? ` · ${place}` : ""}
               {r.sosId ? ` · #${r.sosId.slice(0, 8)}` : ""}
             </p>
