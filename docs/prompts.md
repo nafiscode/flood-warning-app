@@ -400,6 +400,11 @@ Read docs/science-plan.md Module 3 and docs/spec.md section 6.3.
 Acceptance: live data for the priority zones; a simulated source outage handled gracefully; suggested levels shown with their reasons.
 ```
 
+**A8 first slice done** (14 Oct): `gauges_fetch()` every 15 minutes into `stations` / `observations`
+(migration `a8_gauges_live`), zones, gauges and provisional thresholds from the generated seed
+`46_zones_gauges_thresholds.sql` (`pipeline/thresholds seed`). Open: forecast rain, GloFAS and tide
+feeds, the admins' signal dashboard with its suggested level, and editing a threshold from a screen.
+
 ### A9: Offline and language hardening
 ```text
 Read CLAUDE.md safety rule 7 and docs/spec.md sections 4.1, 7 and 10.

@@ -11,6 +11,9 @@ Commands
                every season, and the provisional proposal. Writes <output_dir>/hindcast.json,
                and report.md and thresholds.yaml there and beside this code.
 
+  seed         the warning zones, the gauges of the four provinces and the provisional thresholds
+               as supabase/seed/46_zones_gauges_thresholds.sql, for the app (A8). Needs `hindcast`.
+
 Settings: thresholds/config.yaml. See docs/science-plan.md Module 3 and METHODS.md.
 """
 
@@ -24,9 +27,9 @@ from pathlib import Path
 
 import yaml
 
-from ingest_thaiwater.settings import PIPELINE_DIR, data_dir, env_value
+from ingest_thaiwater.settings import PIPELINE_DIR, REPO_DIR, data_dir, env_value
 
-from . import basins, report, sources
+from . import basins, report, seed, sources
 
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 log = logging.getLogger("thresholds")
@@ -125,6 +128,19 @@ def cmd_hindcast(cfg: dict) -> int:
     return 0
 
 
+def cmd_seed(cfg: dict) -> int:
+    import pandas as pd
+
+    out = output_dir(cfg)
+    result = json.loads((out / "hindcast.json").read_text(encoding="utf-8"))
+    stations = pd.read_csv(data_dir() / "stations.csv")
+    text, counts = seed.sql(cfg, result, read_basins(out), stations)
+    dest = REPO_DIR / "supabase" / "seed" / "46_zones_gauges_thresholds.sql"
+    seed.write(dest, text)
+    print(f"wrote {dest} ({dest.stat().st_size // 1024} kB): {counts}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="thresholds", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -133,6 +149,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("rain").add_argument("--season", type=int, action="append")
     sub.add_parser("glofas")
     sub.add_parser("hindcast")
+    sub.add_parser("seed")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -142,6 +159,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_rain(cfg, args.season)
     if args.command == "glofas":
         return cmd_glofas(cfg)
+    if args.command == "seed":
+        return cmd_seed(cfg)
     return cmd_hindcast(cfg)
 
 
