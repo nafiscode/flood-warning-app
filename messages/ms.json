@@ -2228,7 +2228,7 @@
     "title": "Amaran",
     "intro": "Setiap amaran dikeluarkan oleh pentadbir sahaja. Sistem tidak mengeluarkan amaran sendiri. Setiap tindakan di halaman ini direkodkan.",
     "new": "Keluarkan amaran baharu",
-    "drillMode": "Perkhidmatan belum dibuka: setiap amaran dari halaman ini disimpan sebagai “latihan”. Orang awam tidak akan melihatnya di peta, halaman utama atau loceng pemberitahuan.",
+    "drillMode": "Perkhidmatan belum dibuka: pada langkah semakan anda memilih sama ada menyimpan sebagai “latihan” (orang awam tidak nampak) atau mengeluarkan “amaran sebenar” (semua orang di kawasan itu nampak). Pilihan asal ialah latihan.",
     "drillTag": "Latihan",
     "damNote": "Amaran ini dihantar dari panel empangan, jadi tidak boleh digantikan di sini. Ia boleh dilanjutkan atau dibatalkan.",
     "hours": "dalam {hours} jam",
@@ -2344,8 +2344,8 @@
       "loading": "Sedang menyediakan…",
       "back": "Kembali untuk mengubah",
       "title": "Semakan: amaran akan dikeluarkan seperti ini",
-      "drill": "Latihan: orang awam tidak akan melihat amaran ini kerana perkhidmatan belum dibuka.",
-      "real": "Amaran sebenar: penduduk di kawasan ini akan melihatnya dalam kira-kira 1 minit.",
+      "drill": "Latihan: orang awam tidak akan melihat amaran ini; hanya pentadbir yang nampak.",
+      "real": "Amaran sebenar: sesiapa yang membuka aplikasi di kawasan ini akan melihatnya dalam kira-kira 1 minit, dan aplikasi yang sedang dibuka akan berbunyi bagi tahap Amaran dan Pindah.",
       "tambons": "{count} mukim",
       "nextUpdate": "Kemas kini seterusnya",
       "reason": "Sebab",
@@ -2372,6 +2372,13 @@
         "template": "Pilih tahap dan teks dahulu.",
         "nextUpdate": "Pilih masa kemas kini seterusnya dahulu.",
         "unavailable": "Semakan tidak dapat disediakan. Tiada amaran dikeluarkan. Cuba lagi."
+      },
+      "mode": {
+        "legend": "Latihan atau amaran sebenar",
+        "drill": "Latihan",
+        "drillHint": "Orang awam tidak nampak; tiada bunyi.",
+        "real": "Amaran sebenar",
+        "realHint": "Dipaparkan pada peta, halaman utama dan loceng semua orang di kawasan itu, walaupun perkhidmatan belum dibuka."
       }
     }
   }

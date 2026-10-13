@@ -15,9 +15,9 @@ const HOUR = 3_600_000;
  * passes through here at all; the database also checks the caller is an admin, that the area and
  * the next-update time are there, and that Evacuate was confirmed a second time.
  *
- * Until the service is switched on at launch every alert is saved as a drill, which the public
- * cannot see (decision 2026-10-13). That is decided here from the deployment's own switch, never
- * from the form, so no tick box can make a test real or a real alert a test.
+ * Until the service is switched on at launch an alert is a drill, which the public cannot see,
+ * unless the admin chose "real alert" at the review step (the owner, 13 Oct: real alerts may be
+ * tested before launch). Drill is the default, so a real one is always a deliberate choice.
  */
 export async function publishAlert(locale: string, form: FormData) {
   const supersedes = isUuid(form.get("supersedes")) ? String(form.get("supersedes")) : null;
@@ -39,6 +39,12 @@ export async function publishAlert(locale: string, form: FormData) {
   );
   if (tambons.length === 0) redirect(`${back}area`);
 
+  // Once the service is on, every new alert is real. Before that the admin chooses at the review
+  // step, and anything but an explicit "real" is a drill. A replacement keeps the kind of the
+  // alert it replaces; the database refuses a mismatch.
+  const mode = form.get("mode");
+  const drill = supersedes ? mode === "drill" : inService() ? false : mode !== "real";
+
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_publish_alert", {
     p_template: template,
@@ -50,7 +56,7 @@ export async function publishAlert(locale: string, form: FormData) {
     p_return_from: returning.range?.[0] ?? null,
     p_return_to: returning.range?.[1] ?? null,
     p_supersedes: supersedes,
-    p_drill: !inService(),
+    p_drill: drill,
     p_confirm_evacuate: form.get("confirmEvacuate") === "yes",
   });
   if (error) {

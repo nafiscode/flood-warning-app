@@ -175,7 +175,7 @@ describe("the review step", () => {
     );
 
   it("offers no publish button until the review has been read", async () => {
-    answer({ preview: PREVIEW, drill: true });
+    answer({ preview: PREVIEW, launched: false });
     const { container } = renderWithIntl(form(), "en");
     expect(container.querySelector("[data-publish]")).toBeNull();
     fireEvent.click(container.querySelector("[data-review]")!);
@@ -193,7 +193,7 @@ describe("the review step", () => {
   });
 
   it("asks for a second yes before an Evacuate, and only then", async () => {
-    answer({ preview: PREVIEW, drill: false });
+    answer({ preview: PREVIEW, launched: true });
     const { container } = renderWithIntl(form(), "en");
     fireEvent.click(container.querySelector("[data-review]")!);
     await waitFor(() => expect(container.querySelector("[data-publish]")).not.toBeNull());
@@ -207,8 +207,52 @@ describe("the review step", () => {
     expect(container.querySelector("[data-publish]")).not.toBeNull();
   });
 
+  it("starts on drill before launch, and a real alert is a choice made at the review", async () => {
+    answer({ preview: { ...PREVIEW, level: "warning" }, launched: false });
+    const { container } = renderWithIntl(form(), "en");
+    fireEvent.click(container.querySelector("[data-review]")!);
+    await waitFor(() => expect(container.querySelector("[data-publish]")).not.toBeNull());
+    const real = container.querySelector<HTMLInputElement>("input[name='mode'][value='real']")!;
+    expect(real.checked).toBe(false);
+    expect(container.querySelector("[data-publish]")!.textContent).toBe("Save as a drill");
+    fireEvent.click(real);
+    // Choosing does not throw the review away, and the button says what will happen.
+    expect(container.querySelector("[data-publish]")!.textContent).toBe("Publish the alert");
+    expect(container.querySelector("[data-drill='false']")).not.toBeNull();
+  });
+
+  it("offers no choice once the service is on, nor when replacing an alert", async () => {
+    answer({ preview: { ...PREVIEW, level: "warning" }, launched: true });
+    const live = renderWithIntl(form(), "en");
+    fireEvent.click(live.container.querySelector("[data-review]")!);
+    await waitFor(() => expect(live.container.querySelector("[data-publish]")).not.toBeNull());
+    expect(live.container.querySelector("input[type='radio'][name='mode']")).toBeNull();
+    expect(
+      live.container.querySelector<HTMLInputElement>("input[type='hidden'][name='mode']")!.value,
+    ).toBe("real");
+    live.unmount();
+
+    answer({ preview: { ...PREVIEW, level: "warning" }, launched: false });
+    const replacing = renderWithIntl(
+      <form>
+        <input type="radio" name="template" value="t1" defaultChecked />
+        <select name="hours" defaultValue="3">
+          <option value="3">3</option>
+        </select>
+        <AlertReview fixedMode="real" />
+      </form>,
+      "en",
+    );
+    fireEvent.click(replacing.container.querySelector("[data-review]")!);
+    await waitFor(() => expect(replacing.container.querySelector("[data-publish]")).not.toBeNull());
+    expect(replacing.container.querySelector("input[type='radio'][name='mode']")).toBeNull();
+    expect(replacing.container.querySelector("[data-publish]")!.textContent).toBe(
+      "Publish the alert",
+    );
+  });
+
   it("has no Evacuate tick on any other level", async () => {
-    answer({ preview: { ...PREVIEW, level: "watch" }, drill: true });
+    answer({ preview: { ...PREVIEW, level: "watch" }, launched: false });
     const { container } = renderWithIntl(form(), "en");
     fireEvent.click(container.querySelector("[data-review]")!);
     await waitFor(() => expect(container.querySelector("[data-publish]")).not.toBeNull());
@@ -216,7 +260,7 @@ describe("the review step", () => {
   });
 
   it("takes the publish button away again when the form changes", async () => {
-    answer({ preview: PREVIEW, drill: true });
+    answer({ preview: PREVIEW, launched: false });
     const { container } = renderWithIntl(form(), "en");
     fireEvent.click(container.querySelector("[data-review]")!);
     await waitFor(() => expect(container.querySelector("[data-publish]")).not.toBeNull());

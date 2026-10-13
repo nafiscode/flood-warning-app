@@ -247,7 +247,7 @@ export default async function NewAlert({
       </details>
 
       <NextIntlClientProvider messages={alertReviewMessages(await getMessages())}>
-        <AlertReview />
+        <AlertReview fixedMode={old ? (old.drill ? "drill" : "real") : undefined} />
       </NextIntlClientProvider>
     </form>
   );

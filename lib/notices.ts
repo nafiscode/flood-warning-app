@@ -273,3 +273,36 @@ export function keepRead(read: readonly string[], items: NoticeItem[]): string[]
   const live = new Set(items.map((item) => item.id));
   return [...new Set(read.filter((id) => live.has(id)))].sort();
 }
+
+/**
+ * Which sound, if any, the notices call for right now (docs/brand.md "Sound"): an alert at
+ * Warning or Evacuate, or a dam release notice, that is still in force, has not been read and
+ * has not rung on this phone before. Watch, Safe to return, announcements and anything already
+ * lifted are silent. A dam release outranks the plain alert tone: its water is already coming.
+ *
+ * `ids` is everything this ring answers for, so each alert rings once on a phone and no more.
+ */
+export function ringFor(
+  items: readonly NoticeItem[],
+  read: readonly string[],
+  rung: readonly string[],
+): { sound: "alert" | "damRelease" | null; ids: string[] } {
+  const ended = new Set(items.flatMap((i) => (i.kind === "alertEnded" ? [i.alertId] : [])));
+  const seen = new Set([...read, ...rung]);
+  const due = items.filter(
+    (i): i is Extract<NoticeItem, { kind: "alert" }> =>
+      i.kind === "alert" &&
+      !ended.has(i.alertId) &&
+      !seen.has(i.id) &&
+      (i.level === "warning" || i.level === "evacuate" || isDamRelease(i.source)),
+  );
+  if (due.length === 0) return { sound: null, ids: [] };
+  return {
+    sound: due.some((i) => isDamRelease(i.source)) ? "damRelease" : "alert",
+    ids: due.map((i) => i.id),
+  };
+}
+
+function isDamRelease(source: string | null): boolean {
+  return !!source && source.startsWith("dam_release");
+}

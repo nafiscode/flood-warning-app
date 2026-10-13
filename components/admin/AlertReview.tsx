@@ -11,7 +11,7 @@ type State =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "error"; error: "area" | "template" | "nextUpdate" | "unavailable" }
-  | { kind: "ready"; preview: AlertPreview; drill: boolean; nextUpdateAt: string };
+  | { kind: "ready"; preview: AlertPreview; launched: boolean; nextUpdateAt: string };
 
 const LOCALES = ["th", "ms", "en"] as const;
 
@@ -24,10 +24,13 @@ const LOCALES = ["th", "ms", "en"] as const;
  *
  * It sits inside the form and reads the form's own fields, so the form stays plain HTML.
  */
-export function AlertReview() {
+export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
   const t = useTranslations("alertConsole.review");
   const root = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State>({ kind: "idle" });
+  // Before launch the admin chooses, each time, between a drill nobody else sees and a real
+  // alert (the owner, 13 Oct). It starts on drill, so a real one is never sent by default.
+  const [chosen, setChosen] = useState<"drill" | "real">("drill");
 
   useEffect(() => {
     const form = root.current?.closest("form");
@@ -68,7 +71,7 @@ export function AlertReview() {
       const body = (await response.json()) as {
         error?: string;
         preview?: unknown;
-        drill?: boolean;
+        launched?: boolean;
       };
       const preview = toPreview(body.preview);
       if (!response.ok || !preview) {
@@ -79,7 +82,7 @@ export function AlertReview() {
       setState({
         kind: "ready",
         preview,
-        drill: body.drill !== false,
+        launched: body.launched === true,
         nextUpdateAt: new Date(Date.now() + hours * 3_600_000).toISOString(),
       });
     } catch {
@@ -88,6 +91,9 @@ export function AlertReview() {
   }
 
   const ready = state.kind === "ready" ? state : null;
+  // Replacing an alert keeps its kind: a drill never takes a real alert off the map.
+  const mode = fixedMode ?? (ready?.launched ? "real" : chosen);
+  const canChoose = !!ready && !fixedMode && !ready.launched;
   const quota = ready ? lineQuotaAfter(ready.preview) : null;
 
   return (
@@ -115,8 +121,31 @@ export function AlertReview() {
           aria-live="polite"
         >
           <h2 className="text-body font-bold text-jaga-ink">{t("title")}</h2>
-          <p className={errorNotice} data-drill={ready.drill}>
-            {ready.drill ? t("drill") : t("real")}
+          {canChoose ? (
+            <fieldset className="flex flex-col rounded-xl border-2 border-jaga-edge px-3 py-1">
+              <legend className="px-1 font-bold">{t("mode.legend")}</legend>
+              {(["drill", "real"] as const).map((m) => (
+                <label key={m} className={checkRow}>
+                  <input
+                    type="radio"
+                    name="mode"
+                    value={m}
+                    checked={chosen === m}
+                    onChange={() => setChosen(m)}
+                    className={checkBox}
+                  />
+                  <span>
+                    <span className="font-bold">{t(`mode.${m}`)}</span>
+                    <span className={`block ${hint}`}>{t(`mode.${m}Hint`)}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+          ) : (
+            <input type="hidden" name="mode" value={mode} />
+          )}
+          <p className={errorNotice} data-drill={mode === "drill"}>
+            {mode === "drill" ? t("drill") : t("real")}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <AlertBadge level={ready.preview.level} />
@@ -186,7 +215,7 @@ export function AlertReview() {
           )}
 
           <button type="submit" className={buttonPrimary} data-publish="true">
-            {ready.drill ? t("publishDrill") : t("publish")}
+            {mode === "drill" ? t("publishDrill") : t("publish")}
           </button>
           <button
             type="button"

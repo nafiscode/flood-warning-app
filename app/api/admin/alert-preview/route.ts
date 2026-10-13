@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const note = typeof input.note === "string" ? input.note.trim().slice(0, 400) : "";
     const preview = await previewAlert(input.template, tambons, note);
     if (!preview) return answer({ error: "unavailable" }, 502);
-    return answer({ preview, drill: !inService() });
+    return answer({ preview, launched: inService() });
   } catch {
     return answer({ error: "unavailable" }, 502);
   }

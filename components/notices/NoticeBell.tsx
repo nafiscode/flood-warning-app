@@ -8,6 +8,7 @@ import { setIconBadge } from "@/lib/app-badge";
 import type { Area } from "@/lib/area";
 import { badgeText } from "@/lib/notices";
 import { useStored } from "@/lib/phone-store";
+import { useAlertRing } from "@/lib/use-alert-ring";
 import { useNotices } from "@/lib/use-notices";
 import { useNow } from "@/lib/use-public";
 import { NoticeList } from "./NoticeList";
@@ -91,6 +92,9 @@ export function NoticeBell({ className = "" }: { className?: string }) {
   useEffect(() => {
     if (now > 0) setIconBadge(unread);
   }, [now, unread]);
+
+  // A new Warning, Evacuate or dam release for their places rings once (the owner, 13 Oct).
+  useAlertRing(items, read, { quiet: QUIET.test(pathname), ready: now > 0 });
 
   const badge = badgeText(unread);
   return (

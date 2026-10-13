@@ -2228,7 +2228,7 @@
     "title": "Alerts",
     "intro": "Every alert is published by an admin. The system never publishes one by itself. Everything done on this page is logged.",
     "new": "New alert",
-    "drillMode": "The service is not switched on yet: every alert from this page is saved as a drill. The public will not see it on the map, the home screen or the bell.",
+    "drillMode": "The service is not switched on yet: at the review step you choose between a drill (the public does not see it) and a real alert (everyone in the area sees it). It starts on drill.",
     "drillTag": "Drill",
     "damNote": "This notice was sent from the dam panel, so it cannot be replaced here. It can be extended or cancelled.",
     "hours": "{hours, plural, one {in # hour} other {in # hours}}",
@@ -2344,8 +2344,8 @@
       "loading": "Preparing…",
       "back": "Go back and change it",
       "title": "Review: this is what will be published",
-      "drill": "Drill: the public will not see this alert, because the service is not switched on yet.",
-      "real": "Real alert: people in this area will see it within about 1 minute.",
+      "drill": "Drill: the public will not see this alert; only admins do.",
+      "real": "Real alert: anyone who opens the app in this area sees it within about 1 minute, and an open app rings for Warning and Evacuate.",
       "tambons": "{count, plural, one {# tambon} other {# tambons}}",
       "nextUpdate": "Next update",
       "reason": "Reason",
@@ -2372,6 +2372,13 @@
         "template": "Choose a level and text first.",
         "nextUpdate": "Choose when the next update is due first.",
         "unavailable": "The review could not be prepared. No alert was published. Try again."
+      },
+      "mode": {
+        "legend": "Drill or real alert",
+        "drill": "Drill",
+        "drillHint": "The public does not see it; nothing rings.",
+        "real": "Real alert",
+        "realHint": "Shown on the map, the home screen and the bell of everyone in the area, even though the service is not switched on yet."
       }
     }
   }
