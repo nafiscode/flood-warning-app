@@ -1,0 +1,21 @@
+# GISTDA's open flood layers as a second opinion on Jaga's radar flood maps and hazard classes
+# (decisions 2026-10-09 and 2026-10-13). Free, needs the key GISTDA_API_KEY in .env.local.
+#
+# GISTDA's answers repeat the caller's key inside `links`: only `features` are ever kept or printed.
+
+output_dir: out/gistda
+api_base: https://api-gateway.gistda.or.th/api/2.0/resources/features
+user_agent: "jaga-pipeline/0.1 (+https://github.com/nafiscode/flood-warning-app; {contact})"
+provinces: ["90", "94", "95", "96"]      # Songkhla, Pattani, Yala, Narathiwat (DOPA codes)
+page_size: 5000
+pause_s: 1.0
+
+# Their repeated-flood layer carries one yes-or-no per calendar year.
+their_years: [2011, 2024]
+# Ours: the season maxima of this radar run (season Y = 1 Oct Y to 31 Jan Y+1).
+radar_hash: c97e0bf
+season_scale_m: 20
+seasons: [2017, 2024]                    # the seasons both sources have
+# "Near" in the agreement figures: within this many 20 m cells of the other map's flood.
+near_cells: 3
+strip_rows: 1024                         # rows handled at a time (the laptop has little free memory)

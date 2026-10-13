@@ -151,4 +151,5 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - `npm run test:rls`: RLS policy tests. On the laptop they run against `jaga-dev` (`SUPABASE_DB_URL`); in CI against a throwaway Supabase on the GitHub runner. Each test runs in a transaction that is rolled back.
 - `cd pipeline && uv run <script>`: science pipeline; `uv run pytest` for its tests
 - `cd pipeline && uv run python -m ingest_thaiwater refresh`: refresh the ThaiWater archive in `pipeline/data/` (also `waterlevel`, `rain-daily`, `rain-hourly`, `backfill`, `coverage`, `snapshot`)
+- `cd pipeline && uv run python -m gistda fetch`: GISTDA's repeated-flood polygons for the four provinces (needs `GISTDA_API_KEY`); then `burn` and `compare` set them against the radar seasons and the hazard classes (see `pipeline/gistda/METHODS.md`)
 - `cd pipeline && uv run python -m r2sync check`: test the R2 connection; also `push`, `ls`, `manifest` (see `pipeline/README.md`)
