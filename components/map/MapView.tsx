@@ -14,6 +14,9 @@ import {
   emphasis,
   MAIN_WIDTH,
   RESERVOIR_FILL_OPACITY,
+  ZONE_HATCH_RATIO,
+  zoneHatch,
+  zoneHatchName,
   RESERVOIR_LINE_WIDTH,
   TRIBUTARY_DASH,
   TRIBUTARY_WIDTH,
@@ -151,6 +154,7 @@ const DAM_REACHES = "jaga-dam-reaches";
 const DAM_ZONE_SOURCE = "jaga-dam-zone";
 const DAM_ZONE_FILL = "jaga-dam-zone-fill";
 const DAM_ZONE_LINE = "jaga-dam-zone-line";
+const DAM_ZONE_CASING = "jaga-dam-zone-casing";
 const DAM_ZONE_OUTER = "jaga-dam-zone-outer";
 const DAM_POINTS = "jaga-dam-points";
 const DAM_RESERVOIR_FILL = "jaga-dam-reservoir-fill";
@@ -465,19 +469,40 @@ export function MapView({
          * above the alert fill, so the river can be followed across coloured tambons, and below
          * the safe places and the person's own pins, which are what they came to tap.
          */
+        // The hatching is an image, and a change of basemap drops the map's images.
+        const ensureHatch = () => {
+          const name = zoneHatchName(paint.water);
+          if (!m.hasImage(name)) {
+            const picture = zoneHatch(paint.water);
+            if (picture) m.addImage(name, picture, { pixelRatio: ZONE_HATCH_RATIO });
+          }
+        };
         if (!m.getLayer(DAM_RESERVOIR_FILL)) {
           /*
-           * The land a rise in the river can reach (lib/dam.ts, DamZone). Kept faint, and the
-           * outer band an outline only, so the flood-risk classes and the alert levels under and
-           * over it still read. It is not a flood extent and the legend says so.
+           * The land a rise in the river can reach (lib/dam.ts, DamZone). Hatched, with a cased
+           * outline, and the outer band an outline only: it has to be seen over the flood-risk
+           * classes without hiding them (lib/dam-map.ts, zoneHatch). It is not a flood extent and
+           * the legend says so.
            */
+          ensureHatch();
           m.addLayer(
             {
               id: DAM_ZONE_FILL,
               type: "fill",
               source: DAM_ZONE_SOURCE,
               filter: ["==", ["get", "band"], "zone"],
-              paint: { "fill-color": paint.water, "fill-opacity": 0.2 },
+              paint: { "fill-pattern": zoneHatchName(paint.water), "fill-opacity": 0.85 },
+            },
+            above,
+          );
+          // A pale casing under the outline, so it carries over the flood-risk colours.
+          m.addLayer(
+            {
+              id: DAM_ZONE_CASING,
+              type: "line",
+              source: DAM_ZONE_SOURCE,
+              filter: ["==", ["get", "band"], "zone"],
+              paint: { "line-color": paint.casing, "line-width": 4, "line-opacity": 0.85 },
             },
             above,
           );
@@ -487,7 +512,7 @@ export function MapView({
               type: "line",
               source: DAM_ZONE_SOURCE,
               filter: ["==", ["get", "band"], "zone"],
-              paint: { "line-color": paint.water, "line-width": 1, "line-opacity": 0.8 },
+              paint: { "line-color": paint.water, "line-width": 2 },
             },
             above,
           );
@@ -499,9 +524,9 @@ export function MapView({
               filter: ["==", ["get", "band"], "outer"],
               paint: {
                 "line-color": paint.water,
-                "line-width": 1,
-                "line-opacity": 0.7,
-                "line-dasharray": [2, 2],
+                "line-width": 1.5,
+                "line-opacity": 0.9,
+                "line-dasharray": [3, 2],
               },
             },
             above,
@@ -721,8 +746,10 @@ export function MapView({
          * into the dark basemap after sunset, and the page turns itself dark at sunset without
          * reloading (components/DaylightTheme.tsx).
          */
+        ensureHatch();
         for (const [layer, property, value] of [
-          [DAM_ZONE_FILL, "fill-color", paint.water],
+          [DAM_ZONE_FILL, "fill-pattern", zoneHatchName(paint.water)],
+          [DAM_ZONE_CASING, "line-color", paint.casing],
           [DAM_ZONE_LINE, "line-color", paint.water],
           [DAM_ZONE_OUTER, "line-color", paint.water],
           [DAM_RESERVOIR_FILL, "fill-color", paint.water],
@@ -742,6 +769,7 @@ export function MapView({
         const damOn = dams.length > 0 ? "visible" : "none";
         for (const layer of [
           DAM_ZONE_FILL,
+          DAM_ZONE_CASING,
           DAM_ZONE_LINE,
           DAM_ZONE_OUTER,
           DAM_RESERVOIR_FILL,

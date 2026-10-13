@@ -140,3 +140,38 @@ export function damMarks(
     { kind: "outlet", point: dam.outletPoint, label: text.outlet },
   ];
 }
+
+/**
+ * The hatching of the dam's zone (lib/dam.ts, DamZone). A flat tint vanished over the flood-risk
+ * colours (the owner, 14 Oct 2026), and a stronger tint would have hidden them. Diagonal lines
+ * read over any colour and leave what is under them visible between the strokes. One image per
+ * colour, so a change of theme gets its own.
+ */
+export const ZONE_HATCH_SIZE = 12;
+export const ZONE_HATCH_RATIO = 2;
+
+export function zoneHatchName(color: string): string {
+  return `jaga-dam-hatch-${color.replace(/[^0-9a-z]/gi, "")}`;
+}
+
+/** A square that tiles: lines running up to the right, one every `ZONE_HATCH_SIZE` CSS pixels. */
+export function zoneHatch(color: string): ImageData | null {
+  if (typeof document === "undefined") return null;
+  const side = ZONE_HATCH_SIZE * ZONE_HATCH_RATIO;
+  const canvas = document.createElement("canvas");
+  canvas.width = side;
+  canvas.height = side;
+  const c = canvas.getContext("2d");
+  if (!c) return null;
+  c.strokeStyle = color;
+  c.lineWidth = 3;
+  c.lineCap = "square";
+  // Three strokes, so the ends meet across the edges when the square is repeated.
+  for (const shift of [-side, 0, side]) {
+    c.beginPath();
+    c.moveTo(shift, side);
+    c.lineTo(shift + side, 0);
+    c.stroke();
+  }
+  return c.getImageData(0, 0, side, side);
+}

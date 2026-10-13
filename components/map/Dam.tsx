@@ -383,7 +383,11 @@ export function DamLegend({ dam }: { dam: Dam }) {
       <li className="flex items-center gap-2">
         <span
           aria-hidden="true"
-          className="inline-block h-3 w-5 shrink-0 rounded-sm border border-dashed border-jaga-dam bg-jaga-dam/20"
+          className="inline-block h-3 w-5 shrink-0 rounded-sm border border-jaga-dam"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(135deg, var(--jaga-dam) 0 1.5px, transparent 1.5px 5px)",
+          }}
         />
         {t("legend.tributary")}
       </li>
