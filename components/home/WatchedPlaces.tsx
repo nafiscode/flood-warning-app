@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { areaName } from "@/lib/area";
 import type { WatchedPlace } from "@/lib/me";
 import { AlertDetails, type HeroStatus } from "./AlertHero";
+import { Checklist } from "./Checklist";
 import { buttonSecondary, card, hint } from "@/lib/ui";
 
 export type WatchedStatus = { place: WatchedPlace; status: HeroStatus | { kind: "outside" } };
@@ -60,6 +61,9 @@ function PlaceAlert({ status }: { status: WatchedStatus["status"] }) {
       </summary>
       <div className="flex flex-col gap-3 pt-1">
         <AlertDetails alert={status.alert} />
+        {/* What to do at this level, for the person at that place: the same list the home area
+            gets, ticked off on this phone. */}
+        <Checklist level={status.alert.level} listId={status.alert.id} forPlace />
       </div>
     </details>
   );

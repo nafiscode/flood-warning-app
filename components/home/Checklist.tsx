@@ -18,13 +18,15 @@ type Props = {
   level: AlertLevel;
   /** Ticks belong to one alert (or to "normal"); a new alert starts with an empty list. */
   listId: string;
+  /** The list inside a watched place's alert: marked apart from the home area's own list. */
+  forPlace?: boolean;
 };
 
 /**
  * What to do at this level (spec section 7), as a list the person can tick off. The ticks are
  * remembered on this phone only (decision 2026-09-29) and are never sent anywhere.
  */
-export function Checklist({ level, listId }: Props) {
+export function Checklist({ level, listId, forPlace = false }: Props) {
   const t = useTranslations("home");
   const tItem = useTranslations(`alert.checklist.flood.${level}`);
   const key = `checklist.${listId}`;
@@ -39,7 +41,10 @@ export function Checklist({ level, listId }: Props) {
   }
 
   return (
-    <section className={card} data-checklist={level}>
+    <section
+      className={card}
+      {...(forPlace ? { "data-place-checklist": level } : { "data-checklist": level })}
+    >
       <h2 className="text-body font-bold">{t("checklistTitle")}</h2>
       <ul className="flex flex-col">
         {items.map((item) => (

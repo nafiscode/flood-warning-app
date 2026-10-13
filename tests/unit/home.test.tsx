@@ -239,7 +239,7 @@ describe("watched places (spec 4.1, 4.9)", () => {
     // The home hero stays directly below with its own level.
     expect(c.querySelector('[data-hero="alert"] [data-level="watch"]')).not.toBeNull();
     // The other watched place has no alert: Normal, since the service is running here.
-    expect(c.querySelectorAll("[data-watched] li")).toHaveLength(2);
+    expect(c.querySelectorAll("[data-watched] > ul > li")).toHaveLength(2);
   });
 
   it("an alert for a watched place can be opened to read all of it", () => {
@@ -255,6 +255,9 @@ describe("watched places (spec 4.1, 4.9)", () => {
       expect(text).toContain(term);
     }
     expect(text).toContain(th.alert.summary.evacuate);
+    // And what to do at that level, as on the home area's own alert.
+    expect(details.querySelector('[data-place-checklist="evacuate"]')).not.toBeNull();
+    expect(text).toContain(th.alert.checklist.flood.evacuate.a);
     // A place with no alert has nothing to open.
     expect(c.querySelectorAll("[data-watched] details[data-place-alert]").length).toBeLessThan(2);
   });
@@ -265,7 +268,7 @@ describe("watched places (spec 4.1, 4.9)", () => {
       status: exampleStatus([exampleAlert("evacuate", ["940111"])], false),
       me: example.me,
     });
-    const quiet = c.querySelectorAll("[data-watched] li")[1]!;
+    const quiet = c.querySelectorAll("[data-watched] > ul > li")[1]!;
     expect(quiet.querySelector("[data-level]")).toBeNull();
     expect(quiet.querySelector('[data-no-level="notInService"]')).not.toBeNull();
   });
