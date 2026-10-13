@@ -100,8 +100,8 @@ describe("the console's arithmetic", () => {
     const all = EXAMPLE_AUTHORITY_BOARD.cases;
     const open = filterCases(all, { scope: "open", tambon: null, vulnerableOnly: false });
     expect(open.every((c) => caseState(c) !== "closed")).toBe(true);
-    // A rescue nobody has confirmed is still open work, not history.
-    expect(open.length).toBe(6);
+    // A rescue nobody has confirmed is still open work, not history. One is a supply request.
+    expect(open.length).toBe(7);
     expect(filterCases(all, { scope: "closed", tambon: null, vulnerableOnly: false }).length).toBe(
       1,
     );

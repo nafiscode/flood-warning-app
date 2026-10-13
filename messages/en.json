@@ -249,7 +249,8 @@
       "released": "The team couldn't continue. Looking for another team.",
       "rescued_by_team": "The team says you have been rescued",
       "confirmed": "The rescue was confirmed",
-      "not_rescued": "You said you have not been rescued"
+      "not_rescued": "You said you have not been rescued",
+      "needs_rescue": "Changed to a rescue request"
     },
     "details": {
       "title": "Add details (optional)",
@@ -327,6 +328,82 @@
       "no": "No, I still need help",
       "noHint": "If you say no, your request goes straight back to looking for a team.",
       "failed": "That couldn't be sent. If it is urgent, call 1784 or 1669 now."
+    },
+    "needs": {
+      "water": "Drinking water",
+      "food": "Food",
+      "baby": "Baby items (milk, nappies)",
+      "medicine": "Medicine",
+      "clothes": "Clothes, blankets",
+      "hygiene": "Hygiene items (sanitary pads, soap)",
+      "light": "Torch, candles, power bank",
+      "other": "Something else"
+    },
+    "supplies": {
+      "label": "Request food and water",
+      "homeHint": "Safe, but cut off and running out",
+      "title": "Request food, water and essentials",
+      "intro": "For people who are safe where they are but cut off by the water, with food or drinking water running out. Your request goes to the teams that deliver supplies in your area.",
+      "notRescue": "In danger, or is someone ill or hurt? Don't use this page.",
+      "sosInstead": "Send an SOS instead",
+      "send": "Send request",
+      "sending": "Sending…",
+      "needsLabel": "What do you need?",
+      "needsHint": "Choose everything that applies.",
+      "peopleLabel": "How many people",
+      "leftLabel": "How long will what you have last?",
+      "left": {
+        "none": "Nothing left",
+        "today": "Enough for today",
+        "days": "Enough for a few days"
+      },
+      "noteLabel": "More detail (optional)",
+      "noteHint": "For example clothes sizes, a child's age, the name of a medicine, or how to reach the house.",
+      "medicineHint": "If someone needs medicine urgently, call 1669 or send an SOS.",
+      "scope": "Jaga passes your request only to verified teams. Jaga itself holds no goods and collects no donations. Delivery depends on the teams in your area and may take time.",
+      "soonTitle": "Requests for food and water aren't open yet",
+      "sentBody": "Your request has been received. Keep this page to see when a team accepts it.",
+      "statusTitle": "Your request for food and water",
+      "asked": "What you asked for",
+      "closed": "This request is closed. If you need more, send a new request.",
+      "status": {
+        "received": "Looking for a team to deliver",
+        "accepted": "A team accepted your request",
+        "assigned": "{unit} accepted your request",
+        "en_route": "A team is on its way with your supplies",
+        "on_site": "The team has arrived",
+        "rescued": "Supplies received",
+        "rescued_by_team": "The team says it has delivered your supplies",
+        "confirmed": "The delivery was confirmed",
+        "safe_cancelled": "You said you no longer need this",
+        "not_rescued": "You said nothing has arrived",
+        "released": "The team couldn't continue. Looking for another team."
+      },
+      "confirm": {
+        "title": "{unit} says it has delivered your supplies",
+        "titleNoUnit": "The team says it has delivered your supplies",
+        "body": "Is that right? Your answer is what closes this request.",
+        "yes": "Yes, I received them",
+        "no": "No, nothing has arrived",
+        "noHint": "If you say no, your request goes straight back to looking for a team."
+      },
+      "escalate": {
+        "button": "It got worse: I need rescue",
+        "hint": "This turns your request into an SOS at once, and rescue teams are called.",
+        "failed": "That couldn't be sent. Call 1669 or 1784 now.",
+        "done": "This is now a rescue request. Rescue teams are being called."
+      },
+      "cancel": "I no longer need this",
+      "cancelHint": "Press this if you got what you needed another way.",
+      "gotIt": "I have received the supplies",
+      "team": {
+        "searching": "Looking for a team to deliver",
+        "searchingBody": "The teams that deliver supplies in your area are being asked one after another. This can take longer than a rescue request.",
+        "exhausted": "No team has accepted yet",
+        "exhaustedBody": "Your request is now with Jaga's admins, who are looking for a team. If things get worse, press the rescue button below.",
+        "accepted": "A team will bring your supplies",
+        "urgent": "If things get worse, don't wait: press the rescue button below, or call."
+      }
     }
   },
   "hotlines": {
@@ -813,7 +890,11 @@
       },
       "support": {
         "name": "Support",
-        "hint": "Food, shelter, medicine or transport"
+        "hint": "Shelter, medicine or transport"
+      },
+      "supplies": {
+        "name": "Food and water distribution",
+        "hint": "Brings food, drinking water and essentials to people cut off by the water, and receives their requests"
       }
     },
     "coverage": {
@@ -869,7 +950,13 @@
       "closed": "Closed ({count})",
       "tambon": "Tambon",
       "allTambons": "All tambons",
-      "vulnerable": "Only cases with vulnerable people"
+      "vulnerable": "Only cases with vulnerable people",
+      "kind": {
+        "label": "Kind of request",
+        "all": "All",
+        "rescue": "Rescue",
+        "supplies": "Food and water"
+      }
     },
     "empty": {
       "open": "No open cases in your area.",
@@ -1064,7 +1151,8 @@
       "showContact": "Show this team's contact number",
       "contact": "Contact: {name}",
       "contactNone": "This team has no contact number on file.",
-      "contactFailed": "The number can't be shown. It is open only to teams sharing coverage with yours."
+      "contactFailed": "The number can't be shown. It is open only to teams sharing coverage with yours.",
+      "supplies": "Tambons with a food and water team: {count} of {total}"
     },
     "points": {
       "mine": "Your team: {points} points from {cases, plural, one {# confirmed rescue} other {# confirmed rescues}}",
@@ -1093,6 +1181,37 @@
       "onBehalf": "Registered by a relative",
       "updated": "updated {date}",
       "noPhone": "This household gave no phone number."
+    },
+    "supplies": {
+      "mark": "Food and water request (not a rescue)",
+      "accept": "Accept this delivery",
+      "offerHint": "Not an emergency. Its sound plays once and it never rings the alarm.",
+      "left": {
+        "none": "Nothing left",
+        "today": "Enough for today",
+        "days": "Enough for a few days"
+      },
+      "note": "Detail: {text}",
+      "status": {
+        "en_route": "On the way with supplies",
+        "rescued": "Delivered"
+      },
+      "complete": {
+        "open": "Report: delivered",
+        "title": "Report the delivery",
+        "hint": "Attach at least one photo. The request closes when the person confirms it on their own phone.",
+        "send": "Send: delivered"
+      },
+      "confirm": {
+        "open": "Confirm this delivery for the person",
+        "title": "Confirm this delivery for the person",
+        "hint": "The person has not confirmed within the waiting time. Confirm only if you have checked that the supplies really arrived.",
+        "send": "Confirm and close the request"
+      },
+      "awaiting": {
+        "mine": "Your team reported this delivery. Waiting for the person to confirm it.",
+        "other": "{unit} reported this delivery. Waiting for the person to confirm it."
+      }
     }
   },
   "admin": {
@@ -1340,7 +1459,8 @@
       "coordination": "Coordination",
       "rescue": "Rescue",
       "planning": "Planning",
-      "support": "Support"
+      "support": "Support",
+      "supplies": "Food and water"
     },
     "role": {
       "user": "User",
@@ -1511,6 +1631,10 @@
       "done": "Confirmed. The case is closed.",
       "refused": "That couldn't be confirmed. It may already be confirmed, or the photo didn't arrive.",
       "upload": "The photo couldn't be sent, so nothing was saved. Try again."
+    },
+    "supplies": {
+      "mark": "Food and water",
+      "open": "Food and water requests open: {count}"
     }
   },
   "impact": {

@@ -194,6 +194,10 @@ describe("building the list", () => {
       photos: 0,
       hasVoice: false,
       team: null,
+      kind: "rescue",
+      needs: [],
+      needsNote: null,
+      suppliesLeft: null,
       events: [
         { event: "received", at: daysAgo(2), note: null, unit: null },
         { event: "details_added", at: daysAgo(2), note: null, unit: null },

@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { durationMs, SOUNDS, soundForAlertLevel, type SoundName } from "@/lib/sounds";
 
-const NAMES: SoundName[] = ["offer", "accepted", "rescued", "alert", "damRelease"];
+const NAMES: SoundName[] = ["offer", "supplyOffer", "accepted", "rescued", "alert", "damRelease"];
 
 describe("Jaga's sounds", () => {
-  it("has five and no more", () => {
-    // docs/brand.md: five sounds and no others. A sixth needs a decision, not a commit.
+  it("has six and no more", () => {
+    // docs/brand.md: six sounds and no others (the sixth, for a request for food and water, was
+    // decided on 13 October). A seventh needs a decision, not a commit.
     expect(Object.keys(SOUNDS).sort()).toEqual([...NAMES].sort());
   });
 

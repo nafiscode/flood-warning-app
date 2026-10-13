@@ -1,5 +1,5 @@
 import { sosSendingEnabled } from "@/lib/features";
-import type { SendSos, SentSos, SosStatus } from "@/lib/sos";
+import { cleanNeeds, SUPPLIES_LEFT, type SendSos, type SentSos, type SosStatus } from "@/lib/sos";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     return answer({ error: "no_location" }, 400);
   }
 
+  const supplies = input.kind === "supplies";
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("submit_sos", {
     p_lat: lat,
@@ -46,6 +47,16 @@ export async function POST(request: Request) {
     p_on_behalf_note: text(input.onBehalfNote, 200),
     p_on_site_phone: text(input.onSitePhone, 20),
     p_battery_pct: battery(input.battery),
+    // A request for food and water travels the same road (spec 4.10). Anything that is not
+    // plainly one is a rescue, and nothing in these fields can make the database refuse.
+    p_kind: supplies ? "supplies" : "rescue",
+    p_needs: supplies ? cleanNeeds(input.needs) : null,
+    p_needs_note: supplies ? text(input.needsNote, 500) : null,
+    p_supplies_left:
+      supplies && SUPPLIES_LEFT.includes(input.suppliesLeft as (typeof SUPPLIES_LEFT)[number])
+        ? input.suppliesLeft
+        : null,
+    p_people_count: people(input.peopleCount),
   });
   const row = Array.isArray(data) ? data[0] : data;
   if (error || !row) {
@@ -66,6 +77,12 @@ function text(value: unknown, max: number): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim().slice(0, max);
   return trimmed === "" ? null : trimmed;
+}
+
+function people(value: unknown): number | null {
+  const n = Number(value);
+  if (value === null || value === undefined || !Number.isFinite(n) || n < 1) return null;
+  return Math.min(500, Math.round(n));
 }
 
 function battery(value: unknown): number | null {

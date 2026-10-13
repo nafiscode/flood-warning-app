@@ -7,6 +7,7 @@ import {
   CheckIcon,
   ClockIcon,
   LifebuoyIcon,
+  ParcelIcon,
   PhoneIcon,
   PinIcon,
   WaveIcon,
@@ -169,9 +170,21 @@ function CaseCard({
   return (
     <article
       className={`flex flex-col gap-3 rounded-2xl bg-jaga-surface p-4 ${
-        state === "overdue" ? "border-2 border-sos" : "border border-jaga-line"
+        state === "overdue" && c.kind !== "supplies"
+          ? "border-2 border-sos"
+          : "border border-jaga-line"
       }`}
+      data-case-kind={c.kind}
     >
+      {c.kind === "supplies" && (
+        <p
+          className="inline-flex items-center gap-2 self-start rounded-lg border-2 border-jaga-teal-ink px-2 py-1 font-bold text-jaga-ink"
+          data-supplies-mark="true"
+        >
+          <ParcelIcon size={20} />
+          {t("supplies.mark")}
+        </p>
+      )}
       <header className="flex flex-wrap items-center justify-between gap-2">
         <StateBadge
           state={state}
@@ -189,6 +202,11 @@ function CaseCard({
       </p>
 
       <div className="flex flex-wrap gap-2">
+        {c.needs.map((need) => (
+          <Chip key={need} strong>
+            {tSos.has(`needs.${need}`) ? tSos(`needs.${need}` as "needs.water") : need}
+          </Chip>
+        ))}
         {c.peopleCount != null && <Chip strong>{t("case.people", { count: c.peopleCount })}</Chip>}
         {c.depth && (
           <Chip strong>

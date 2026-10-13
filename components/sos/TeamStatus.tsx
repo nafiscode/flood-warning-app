@@ -10,6 +10,8 @@ type Props = {
   team: SosTeam;
   /** When the request was sent, for "waiting 12 min". */
   createdAt: string;
+  /** A request for food and water: the same facts in a delivery's words (spec 4.10). */
+  supplies?: boolean;
   /** 0 until the browser's clock is known. */
   now: number;
   /** The team's number once the sender asked for it; "failed" when the asking did not work. */
@@ -26,8 +28,17 @@ type Props = {
  * gives its arrival estimate as a range with the time it was given (never a clock time: safety
  * rule 8), and offers one button to call the people actually coming.
  */
-export function TeamStatus({ team, createdAt, now, phone, asking, onAskPhone }: Props) {
+export function TeamStatus({
+  team,
+  createdAt,
+  supplies = false,
+  now,
+  phone,
+  asking,
+  onAskPhone,
+}: Props) {
   const t = useTranslations("sos");
+  const base = supplies ? "supplies.team" : "team";
 
   if (team.searching) {
     const minutes = now > 0 ? Math.max(0, Math.floor((now - Date.parse(createdAt)) / 60_000)) : 0;
@@ -39,11 +50,11 @@ export function TeamStatus({ team, createdAt, now, phone, asking, onAskPhone }: 
       >
         <h2 className="flex items-center gap-2 text-h3 font-bold text-jaga-ink">
           <ClockIcon size={24} />
-          {team.exhausted ? t("team.exhausted") : t("team.searching")}
+          {team.exhausted ? t(`${base}.exhausted`) : t(`${base}.searching`)}
         </h2>
         {now > 0 && <p className="font-medium">{t("team.waited", { minutes })}</p>}
-        <p>{team.exhausted ? t("team.exhaustedBody") : t("team.searchingBody")}</p>
-        <p className="font-bold">{t("team.callNow")}</p>
+        <p>{team.exhausted ? t(`${base}.exhaustedBody`) : t(`${base}.searchingBody`)}</p>
+        <p className="font-bold">{supplies ? t("supplies.team.urgent") : t("team.callNow")}</p>
         <CallNow />
       </section>
     );
@@ -56,7 +67,7 @@ export function TeamStatus({ team, createdAt, now, phone, asking, onAskPhone }: 
     >
       <h2 className="flex items-center gap-2 text-h3 font-bold text-jaga-ink">
         <LifebuoyIcon size={24} />
-        {t("team.accepted")}
+        {t(`${base}.accepted`)}
       </h2>
       <p className="flex flex-col">
         <span className="font-bold">{team.unitName}</span>

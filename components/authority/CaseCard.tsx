@@ -6,6 +6,7 @@ import {
   CheckIcon,
   ClockIcon,
   LifebuoyIcon,
+  ParcelIcon,
   PhoneIcon,
   PinIcon,
   TriangleIcon,
@@ -135,6 +136,13 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
 
   const state = caseState(c);
   const Icon = STATE_ICON[state];
+  // A request for food and water (spec 4.10): nobody is in danger, so it never wears the red.
+  const supplies = c.kind === "supplies";
+  const urgent = !supplies && (state === "offered_to_me" || state === "unanswered");
+  const statusWord = (status: string) =>
+    supplies && t.has(`supplies.status.${status}`)
+      ? t(`supplies.status.${status}`)
+      : t(`status.${status}`);
   const left = state === "offered_to_me" ? (secondsLeft(c, now) ?? 0) : null;
   // A rescue waiting for its confirmation is over for the crew: no navigating, no phone.
   const open = state !== "closed" && state !== "awaiting";
@@ -173,15 +181,31 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
     <article
       data-case={c.sosId}
       data-case-state={state}
+      data-case-kind={c.kind}
       className={`flex flex-col gap-3 rounded-2xl bg-jaga-surface p-4 ${
-        state === "offered_to_me" || state === "unanswered"
+        urgent
           ? "border-2 border-sos"
-          : "border border-jaga-line"
+          : supplies && state === "offered_to_me"
+            ? "border-2 border-jaga-teal-ink"
+            : "border border-jaga-line"
       }`}
     >
+      {supplies && (
+        <p
+          className="inline-flex items-center gap-2 self-start rounded-lg border-2 border-jaga-teal-ink px-2 py-1 font-bold text-jaga-ink"
+          data-supplies-mark="true"
+        >
+          <ParcelIcon size={20} />
+          {t("supplies.mark")}
+        </p>
+      )}
       <header className="flex flex-wrap items-center justify-between gap-2">
         <span
-          className={`inline-flex min-h-tap items-center gap-2 rounded-xl px-3 py-1 font-bold ${STATE_CLASS[state]}`}
+          className={`inline-flex min-h-tap items-center gap-2 rounded-xl px-3 py-1 font-bold ${
+            supplies && (state === "offered_to_me" || state === "unanswered")
+              ? STATE_CLASS.mine
+              : STATE_CLASS[state]
+          }`}
         >
           <Icon size={20} />
           {words}
@@ -194,7 +218,7 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
           <p className="text-h3 font-bold tabular-nums text-jaga-ink" data-countdown={left}>
             {t("countdown", { time: clockText(left) })}
           </p>
-          <p className={hint}>{t("countdownHint")}</p>
+          <p className={hint}>{supplies ? t("supplies.offerHint") : t("countdownHint")}</p>
         </div>
       )}
 
@@ -207,10 +231,26 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
           {c.accuracyM != null ? ` · ${t("case.accuracy", { m: Math.round(c.accuracyM) })}` : ""}
         </p>
         {state !== "closed" && c.status !== "received" && (
-          <p className="font-medium">{t(`status.${c.status}`)}</p>
+          <p className="font-medium">{statusWord(c.status)}</p>
         )}
-        {state === "closed" && <p className="font-medium">{t(`status.${c.status}`)}</p>}
+        {state === "closed" && <p className="font-medium">{statusWord(c.status)}</p>}
       </div>
+
+      {c.needs.length > 0 && (
+        <div className="flex flex-wrap gap-2" data-case-needs={c.needs.join(",")}>
+          {c.needs.map((need) => (
+            <Chip key={need} strong>
+              {tSos.has(`needs.${need}`) ? tSos(`needs.${need}` as "needs.water") : need}
+            </Chip>
+          ))}
+          {c.suppliesLeft && t.has(`supplies.left.${c.suppliesLeft}`) && (
+            <Chip strong={c.suppliesLeft === "none"}>
+              {t(`supplies.left.${c.suppliesLeft}` as "supplies.left.none")}
+            </Chip>
+          )}
+        </div>
+      )}
+      {c.needsNote && <p>{t("supplies.note", { text: c.needsNote })}</p>}
 
       <div className="flex flex-wrap gap-2">
         {c.hazard !== "unknown" && tSos.has(`hazard.${c.hazard}`) && (
@@ -256,7 +296,7 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
             data-accept="true"
             className={`${buttonPrimary} min-h-16 text-h3 font-bold`}
           >
-            {busy ? t("act.working") : t("act.accept")}
+            {busy ? t("act.working") : supplies ? t("supplies.accept") : t("act.accept")}
           </button>
           {state === "offered_to_me" && asking !== "decline" && (
             <button
@@ -363,6 +403,7 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
         (asking === "complete" ? (
           <PhotoForm
             kind="complete"
+            supplies={supplies}
             busy={busy}
             onSend={(photos, note) => actions.complete(c.sosId, photos, note)}
             onCancel={() => setAsking(null)}
@@ -376,7 +417,9 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
             className={buttonSecondary}
           >
             <CheckIcon size={20} />
-            <span className="ms-2">{t("finish.complete.open")}</span>
+            <span className="ms-2">
+              {supplies ? t("supplies.complete.open") : t("finish.complete.open")}
+            </span>
           </button>
         ))}
 
@@ -384,8 +427,10 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
         <div className="flex flex-col gap-2" data-awaiting={c.canConfirm ? "confirm" : "wait"}>
           <p className="font-medium">
             {c.claimedIsMine
-              ? t("finish.awaiting.mine")
-              : t("finish.awaiting.other", { unit: c.claimedByName ?? "" })}
+              ? t(supplies ? "supplies.awaiting.mine" : "finish.awaiting.mine")
+              : t(supplies ? "supplies.awaiting.other" : "finish.awaiting.other", {
+                  unit: c.claimedByName ?? "",
+                })}
           </p>
           <p className={hint}>
             {t("finish.awaiting.since", { hours: hoursSince(c.completedAt, now) })}
@@ -396,6 +441,7 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
             (asking === "confirm" ? (
               <PhotoForm
                 kind="confirm"
+                supplies={supplies}
                 busy={busy}
                 onSend={(photos, note) => actions.confirm(c.sosId, photos, note)}
                 onCancel={() => setAsking(null)}
@@ -408,7 +454,7 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
                 data-confirm="true"
                 className={buttonPrimary}
               >
-                {t("finish.confirm.open")}
+                {supplies ? t("supplies.confirm.open") : t("finish.confirm.open")}
               </button>
             ))}
         </div>

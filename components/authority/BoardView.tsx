@@ -10,10 +10,13 @@ import {
   sortCases,
   tambonsOnBoard,
   type AuthorityBoard,
+  type BoardKind,
   type BoardScope,
   type CaseMedia,
 } from "@/lib/dispatch";
 import { buttonPrimary, card, checkBox, checkRow, hint, input } from "@/lib/ui";
+
+const BOARD_KINDS: BoardKind[] = ["all", "rescue", "supplies"];
 
 /**
  * The authority console as it is drawn (spec 5.1, 5.2): the alarm's own switch, the team's
@@ -105,15 +108,21 @@ export function BoardView({
   const [scope, setScope] = useState<BoardScope>("open");
   const [tambon, setTambon] = useState<string | null>(null);
   const [vulnerableOnly, setVulnerableOnly] = useState(false);
+  const [kind, setKind] = useState<BoardKind>("all");
 
   const sorted = sortCases(board.cases);
   const openCount = sorted.filter((c) => caseState(c) !== "closed").length;
   const closedCount = sorted.length - openCount;
   const tambons = tambonsOnBoard(board.cases);
-  const shown = filterCases(sorted, { scope, tambon, vulnerableOnly });
+  const shown = filterCases(sorted, { scope, tambon, vulnerableOnly, kind });
+  // Only a rescue case rings; a request for food and water has its own soft sound (spec 4.10).
   const ringing = sorted.filter(
-    (c) => caseState(c) === "offered_to_me" && Date.parse(c.offerExpiresAt ?? "") > now,
+    (c) =>
+      c.kind !== "supplies" &&
+      caseState(c) === "offered_to_me" &&
+      Date.parse(c.offerExpiresAt ?? "") > now,
   ).length;
+  const hasSupplies = sorted.some((c) => c.kind === "supplies");
 
   const tab = (key: BoardScope, text: string) => (
     <button
@@ -292,6 +301,23 @@ export function BoardView({
                 {tambons.map((x) => (
                   <option key={x.code} value={x.code}>
                     {locale === "th" ? x.th : `${x.th} (${x.en})`}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {hasSupplies && (
+            <label className="flex flex-col gap-1">
+              <span className="sr-only">{t("filter.kind.label")}</span>
+              <select
+                className={input}
+                value={kind}
+                data-filter-kind="true"
+                onChange={(e) => setKind(e.target.value as BoardKind)}
+              >
+                {BOARD_KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {t(`filter.kind.${k}`)}
                   </option>
                 ))}
               </select>

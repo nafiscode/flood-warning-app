@@ -2,7 +2,7 @@
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
-import { MapIcon, PhoneIcon, WaveIcon } from "@/components/icons";
+import { MapIcon, ParcelIcon, PhoneIcon, WaveIcon } from "@/components/icons";
 import { SafePlaces } from "@/components/places/SafePlaces";
 import { SOSButton } from "@/components/sos/SOSButton";
 import { getPathname, Link } from "@/i18n/navigation";
@@ -71,6 +71,7 @@ export function heroStatusFor(
 export function HomeView(props: HomeViewProps) {
   const { ready, status, checkedAt, failed, me, places, placesState, now } = props;
   const t = useTranslations("home");
+  const tSos = useTranslations("sos");
   const locale = useLocale();
   const format = useFormatter();
   const [choosing, setChoosing] = useState(false);
@@ -251,6 +252,20 @@ export function HomeView(props: HomeViewProps) {
         >
           <WaveIcon size={30} />
           {t("report")}
+        </Link>
+
+        {/* For someone safe but cut off (spec 4.10). Quieter than SOS and never in its way. */}
+        <Link
+          href="/supplies"
+          prefetch={false}
+          data-supplies-link="true"
+          className={`${buttonSecondary} min-h-16 gap-3`}
+        >
+          <ParcelIcon size={30} />
+          <span className="flex flex-col items-start leading-tight">
+            <span className="text-h3 font-bold">{tSos("supplies.label")}</span>
+            <span className="text-small font-normal">{tSos("supplies.homeHint")}</span>
+          </span>
         </Link>
 
         {props.projectLine && (

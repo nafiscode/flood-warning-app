@@ -27,7 +27,7 @@ const ERRORS = [
   "save",
 ] as const;
 const ORG_TYPES = ["government", "private", "nonprofit", "volunteer"] as const;
-const CAPABILITIES = ["coordination", "rescue", "planning", "support"] as const;
+const CAPABILITIES = ["coordination", "rescue", "supplies", "planning", "support"] as const;
 
 type Area = { code: string; name_th: string; name_en: string };
 type District = Area & { province_code: string };

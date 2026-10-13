@@ -82,7 +82,8 @@ export function warRoomMessages(messages: AbstractIntlMessages): AbstractIntlMes
     // The dam's state chip is the same component the public card wears, so it reads its own
     // words: four of them, not the whole namespace (12 Oct).
     dam: { state: (all.dam as Messages).state! },
-    sos: { vulnerable: (all.sos as Messages).vulnerable! },
+    // What a request for food and water asks for reads the same as on the sender's form.
+    sos: { vulnerable: (all.sos as Messages).vulnerable!, needs: (all.sos as Messages).needs! },
     report: { depths: (all.report as Messages).depths! },
   };
 }
@@ -98,7 +99,7 @@ export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlM
     ...pick(messages, ["authority"]),
     // The capability names are the war room's, so a team and an admin read the same words.
     warRoom: { capability: (all.warRoom as Messages).capability! },
-    sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard! },
+    sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard!, needs: sos.needs! },
     report: {
       depths: (all.report as Messages).depths!,
       trends: (all.report as Messages).trends!,

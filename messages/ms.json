@@ -249,7 +249,8 @@
       "released": "Pasukan itu tidak dapat teruskan. Sedang mencari pasukan lain.",
       "rescued_by_team": "Pasukan kata anda sudah diselamatkan",
       "confirmed": "Penyelamatan sudah disahkan",
-      "not_rescued": "Anda kata anda belum diselamatkan"
+      "not_rescued": "Anda kata anda belum diselamatkan",
+      "needs_rescue": "Ditukar kepada permintaan menyelamat"
     },
     "details": {
       "title": "Tambah butiran (pilihan)",
@@ -327,6 +328,82 @@
       "no": "Tidak, saya masih perlukan bantuan",
       "noHint": "Jika anda jawab tidak, permintaan anda terus dicarikan pasukan semula.",
       "failed": "Tidak dapat dihantar. Jika cemas, telefon 1784 atau 1669 sekarang."
+    },
+    "needs": {
+      "water": "Air minuman",
+      "food": "Makanan",
+      "baby": "Barang bayi (susu, lampin)",
+      "medicine": "Ubat",
+      "clothes": "Pakaian, selimut",
+      "hygiene": "Barang kebersihan (tuala wanita, sabun)",
+      "light": "Lampu suluh, lilin, bank kuasa",
+      "other": "Lain-lain"
+    },
+    "supplies": {
+      "label": "Minta makanan dan air",
+      "homeHint": "Selamat, tetapi terkepung dan bekalan hampir habis",
+      "title": "Minta makanan, air dan barang keperluan",
+      "intro": "Untuk orang yang selamat di tempatnya tetapi terkepung air, dan makanan atau air minuman hampir habis. Permintaan anda dihantar kepada pasukan yang menghantar bekalan di kawasan anda.",
+      "notRescue": "Dalam bahaya, atau ada orang sakit atau cedera? Jangan guna halaman ini.",
+      "sosInstead": "Hantar SOS",
+      "send": "Hantar permintaan",
+      "sending": "Sedang menghantar…",
+      "needsLabel": "Apa yang anda perlukan?",
+      "needsHint": "Pilih semua yang berkenaan.",
+      "peopleLabel": "Berapa orang",
+      "leftLabel": "Berapa lama bekalan yang ada boleh bertahan?",
+      "left": {
+        "none": "Sudah habis",
+        "today": "Cukup untuk hari ini",
+        "days": "Cukup untuk beberapa hari"
+      },
+      "noteLabel": "Butiran lanjut (pilihan)",
+      "noteHint": "Contohnya saiz pakaian, umur anak, nama ubat, atau cara sampai ke rumah.",
+      "medicineHint": "Jika ada orang perlukan ubat dengan segera, telefon 1669 atau hantar SOS.",
+      "scope": "Jaga menyampaikan permintaan anda hanya kepada pasukan yang telah disahkan. Jaga sendiri tidak menyimpan barang dan tidak mengutip derma. Penghantaran bergantung kepada pasukan di kawasan anda dan mungkin mengambil masa.",
+      "soonTitle": "Permintaan makanan dan air belum dibuka",
+      "sentBody": "Permintaan anda telah diterima. Simpan halaman ini untuk melihat bila pasukan menerimanya.",
+      "statusTitle": "Permintaan makanan dan air anda",
+      "asked": "Apa yang anda minta",
+      "closed": "Permintaan ini telah ditutup. Jika perlu lagi, hantar permintaan baharu.",
+      "status": {
+        "received": "Sedang mencari pasukan untuk menghantar",
+        "accepted": "Satu pasukan menerima permintaan anda",
+        "assigned": "{unit} menerima permintaan anda",
+        "en_route": "Pasukan dalam perjalanan membawa bekalan anda",
+        "on_site": "Pasukan sudah sampai",
+        "rescued": "Bekalan diterima",
+        "rescued_by_team": "Pasukan mengatakan bekalan anda telah dihantar",
+        "confirmed": "Penghantaran telah disahkan",
+        "safe_cancelled": "Anda mengatakan tidak perlu lagi",
+        "not_rescued": "Anda mengatakan belum ada yang sampai",
+        "released": "Pasukan tidak dapat meneruskan. Sedang mencari pasukan lain."
+      },
+      "confirm": {
+        "title": "{unit} mengatakan bekalan anda telah dihantar",
+        "titleNoUnit": "Pasukan mengatakan bekalan anda telah dihantar",
+        "body": "Betulkah? Jawapan anda yang menutup permintaan ini.",
+        "yes": "Ya, saya sudah terima",
+        "no": "Tidak, belum ada yang sampai",
+        "noHint": "Jika anda jawab tidak, permintaan anda terus dicarikan pasukan semula."
+      },
+      "escalate": {
+        "button": "Keadaan bertambah buruk: saya perlu diselamatkan",
+        "hint": "Permintaan ini terus ditukar kepada SOS, dan pasukan penyelamat dipanggil.",
+        "failed": "Tidak dapat dihantar. Telefon 1669 atau 1784 sekarang.",
+        "done": "Ini kini permintaan menyelamat. Pasukan penyelamat sedang dipanggil."
+      },
+      "cancel": "Saya tidak perlu lagi",
+      "cancelHint": "Tekan jika anda sudah dapat bekalan dengan cara lain.",
+      "gotIt": "Saya sudah terima bekalan",
+      "team": {
+        "searching": "Sedang mencari pasukan untuk menghantar",
+        "searchingBody": "Pasukan yang menghantar bekalan di kawasan anda sedang ditanya satu demi satu. Ini mungkin lebih lama daripada permintaan menyelamat.",
+        "exhausted": "Belum ada pasukan yang menerima",
+        "exhaustedBody": "Permintaan anda kini bersama pentadbir Jaga, yang sedang mencari pasukan. Jika keadaan bertambah buruk, tekan butang menyelamat di bawah.",
+        "accepted": "Satu pasukan akan membawa bekalan anda",
+        "urgent": "Jika keadaan bertambah buruk, jangan tunggu: tekan butang menyelamat di bawah, atau telefon."
+      }
     }
   },
   "hotlines": {
@@ -813,7 +890,11 @@
       },
       "support": {
         "name": "Sokongan",
-        "hint": "Makanan, tempat tinggal, ubat atau pengangkutan"
+        "hint": "Tempat berteduh, ubat atau pengangkutan"
+      },
+      "supplies": {
+        "name": "Agihan makanan dan air",
+        "hint": "Menghantar makanan, air minuman dan barang keperluan kepada orang yang terkepung air, dan menerima permintaan mereka"
       }
     },
     "coverage": {
@@ -869,7 +950,13 @@
       "closed": "Sudah ditutup ({count})",
       "tambon": "Tambon",
       "allTambons": "Semua tambon",
-      "vulnerable": "Hanya kes dengan golongan rentan"
+      "vulnerable": "Hanya kes dengan golongan rentan",
+      "kind": {
+        "label": "Jenis permintaan",
+        "all": "Semua",
+        "rescue": "Menyelamat",
+        "supplies": "Makanan dan air"
+      }
     },
     "empty": {
       "open": "Tiada kes terbuka di kawasan anda.",
@@ -1064,7 +1151,8 @@
       "showContact": "Lihat nombor penyelaras pasukan ini",
       "contact": "Penyelaras: {name}",
       "contactNone": "Pasukan ini tiada nombor penyelaras dalam sistem.",
-      "contactFailed": "Nombor tidak dapat dipaparkan. Ia hanya dibuka kepada pasukan yang berkongsi kawasan dengan pasukan anda."
+      "contactFailed": "Nombor tidak dapat dipaparkan. Ia hanya dibuka kepada pasukan yang berkongsi kawasan dengan pasukan anda.",
+      "supplies": "Tambon yang ada pasukan makanan dan air: {count} daripada {total}"
     },
     "points": {
       "mine": "Pasukan anda: {points} mata daripada {cases} penyelamatan yang disahkan",
@@ -1093,6 +1181,37 @@
       "onBehalf": "Didaftarkan oleh saudara",
       "updated": "dikemas kini {date}",
       "noPhone": "Isi rumah ini tidak beri nombor telefon."
+    },
+    "supplies": {
+      "mark": "Permintaan makanan dan air (bukan menyelamat)",
+      "accept": "Terima penghantaran ini",
+      "offerHint": "Bukan kecemasan. Bunyinya sekali sahaja dan tidak membunyikan penggera.",
+      "left": {
+        "none": "Bekalan sudah habis",
+        "today": "Cukup untuk hari ini",
+        "days": "Cukup untuk beberapa hari"
+      },
+      "note": "Butiran: {text}",
+      "status": {
+        "en_route": "Dalam perjalanan membawa bekalan",
+        "rescued": "Sudah dihantar"
+      },
+      "complete": {
+        "open": "Lapor: sudah dihantar",
+        "title": "Lapor penghantaran",
+        "hint": "Lampirkan sekurang-kurangnya satu gambar. Permintaan ditutup apabila orang itu mengesahkannya di telefonnya sendiri.",
+        "send": "Hantar: sudah dihantar"
+      },
+      "confirm": {
+        "open": "Sahkan penghantaran ini bagi pihak orang itu",
+        "title": "Sahkan penghantaran ini bagi pihak orang itu",
+        "hint": "Orang itu belum mengesahkan dalam masa menunggu. Sahkan hanya jika anda telah memeriksa bahawa bekalan benar-benar sampai.",
+        "send": "Sahkan dan tutup permintaan"
+      },
+      "awaiting": {
+        "mine": "Pasukan anda melaporkan penghantaran ini. Menunggu orang itu mengesahkannya.",
+        "other": "{unit} melaporkan penghantaran ini. Menunggu orang itu mengesahkannya."
+      }
     }
   },
   "admin": {
@@ -1340,7 +1459,8 @@
       "coordination": "Penyelarasan",
       "rescue": "Penyelamat",
       "planning": "Perancangan",
-      "support": "Sokongan"
+      "support": "Sokongan",
+      "supplies": "Makanan dan air"
     },
     "role": {
       "user": "Pengguna",
@@ -1511,6 +1631,10 @@
       "done": "Sudah disahkan. Kes ditutup.",
       "refused": "Tidak dapat disahkan. Mungkin sudah disahkan, atau gambar belum sampai.",
       "upload": "Gambar tidak dapat dihantar, jadi belum disimpan. Cuba lagi."
+    },
+    "supplies": {
+      "mark": "Makanan dan air",
+      "open": "Permintaan makanan dan air yang masih terbuka: {count}"
     }
   },
   "impact": {

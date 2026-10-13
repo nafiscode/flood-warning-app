@@ -70,6 +70,10 @@ const base: SosCase = {
   lastEvent: "received",
   lastEventAt: null,
   unitsCovering: 2,
+  kind: "rescue",
+  needs: [],
+  needsNote: null,
+  suppliesLeft: null,
 };
 
 const a = (id: string, more: Partial<SosCase>): SosCase => ({ ...base, ...more, id });

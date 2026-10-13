@@ -135,6 +135,12 @@ export function CoverageView({
             gaps: totals.gaps,
           })}
         </p>
+        <p className={hint} data-coverage-supplies="true">
+          {t("coverage.supplies", {
+            count: coverage.filter((r) => r.suppliesUnits > 0).length,
+            total: totals.tambons,
+          })}
+        </p>
         <p className={hint}>{t("coverage.mine", { count: totals.mine })}</p>
       </section>
 

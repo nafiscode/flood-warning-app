@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
+import { LifebuoyIcon } from "@/components/icons";
 import { SosDetailsForm } from "@/components/sos/SosDetailsForm";
 import { TeamStatus } from "@/components/sos/TeamStatus";
 import { Link } from "@/i18n/navigation";
@@ -56,6 +57,9 @@ export function CaseStatus({ id, merged }: Props) {
   // The team has reported the rescue and the case waits for this person's word (spec 5.4).
   const pending = timeline?.status === "rescued" && !timeline.closedAt;
   const [disputeFailed, setDisputeFailed] = useState(false);
+  // A request for food and water (spec 4.10) says "delivered" where a rescue says "rescued".
+  const supplies = timeline?.kind === "supplies";
+  const [escalated, setEscalated] = useState<"done" | "failed" | null>(null);
   const gps = useLocation({ start: false, watch: open && state === "ok" });
   const battery = useBattery();
   useQueue();
@@ -91,7 +95,9 @@ export function CaseStatus({ id, merged }: Props) {
           if (sound) play(sound);
           // A team that gave the case back takes its number with it.
           if (!next.hasTeam) setTeamPhone(null);
-          setTimeline(answer);
+          // An answer written before requests had kinds is a rescue with nothing asked for: this
+          // screen must never fall over on the shape of what it was sent.
+          setTimeline({ ...answer, kind: answer.kind ?? "rescue", needs: answer.needs ?? [] });
           setState("ok");
           setCheckedAt(new Date());
           rememberCase({ id, token, status: answer.status, createdAt: answer.createdAt });
@@ -247,6 +253,50 @@ export function CaseStatus({ id, merged }: Props) {
       .finally(() => setClosing(false));
   }
 
+  /**
+   * "It got worse, I need rescue": the request becomes a rescue case and the rescue teams are
+   * called at once. Like a dispute it is never queued: if it cannot be sent the screen says so
+   * immediately, with the SOS button and the hotlines under it.
+   */
+  function needRescue() {
+    setClosing(true);
+    setEscalated(null);
+    fetch(`/api/sos/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "x-jaga-sos-token": token } : {}),
+      },
+      body: JSON.stringify({ action: "need_rescue", token }),
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return (await response.json()) as { status: SosStatus };
+      })
+      .then(
+        (answer) => {
+          shown.current = { status: answer.status, hasTeam: false };
+          setTeamPhone(null);
+          setTimeline((current) =>
+            current
+              ? { ...current, kind: "rescue", status: answer.status, closedAt: null, team: null }
+              : current,
+          );
+          setEscalated("done");
+          load();
+        },
+        () => setEscalated("failed"),
+      )
+      .finally(() => setClosing(false));
+  }
+
+  // The words for one status or event: the delivery's own where it has them.
+  const word = (key: string, values?: Record<string, string>) =>
+    supplies && t.has(`supplies.status.${key}`)
+      ? t(`supplies.status.${key}`, values)
+      : t(`status.${key}`, values);
+
   if (!ready || state === "loading") {
     return <p role="status">{t("status.title")}</p>;
   }
@@ -271,23 +321,46 @@ export function CaseStatus({ id, merged }: Props) {
   }
 
   return (
-    <section className="flex flex-col gap-4" data-case-state={timeline?.status ?? "unknown"}>
-      <h1 className="text-h3 font-bold text-jaga-ink">{t("status.title")}</h1>
+    <section
+      className="flex flex-col gap-4"
+      data-case-state={timeline?.status ?? "unknown"}
+      data-case-kind={timeline?.kind ?? "rescue"}
+    >
+      <h1 className="text-h3 font-bold text-jaga-ink">
+        {supplies ? t("supplies.statusTitle") : t("status.title")}
+      </h1>
       {merged && <p className={notice}>{t("sent.merged")}</p>}
-      {!merged && <p>{t("sent.body")}</p>}
+      {!merged && <p>{supplies ? t("supplies.sentBody") : t("sent.body")}</p>}
+      {escalated === "done" && (
+        <p role="status" className={`${notice} font-bold`} data-escalated="true">
+          {t("supplies.escalate.done")}
+        </p>
+      )}
 
       {timeline && (
         <div className={card}>
           <p className="text-h3 font-bold text-jaga-ink" data-case-status={timeline.status}>
             {pending
-              ? t("status.rescued_by_team")
+              ? word("rescued_by_team")
               : timeline.status === "assigned"
                 ? timeline.unitName
-                  ? t("status.assigned", { unit: timeline.unitName })
-                  : t("status.accepted")
-                : t(`status.${timeline.status}`)}
+                  ? word("assigned", { unit: timeline.unitName })
+                  : word("accepted")
+                : word(timeline.status)}
           </p>
-          {timeline.status === "received" && !timeline.team && <p>{t("status.waiting")}</p>}
+          {timeline.status === "received" && !timeline.team && !supplies && (
+            <p>{t("status.waiting")}</p>
+          )}
+          {timeline.needs.length > 0 && (
+            <div className="flex flex-col gap-1" data-case-needs={timeline.needs.join(",")}>
+              <h2 className="font-bold">{t("supplies.asked")}</h2>
+              <p>{timeline.needs.map((need) => t(`needs.${need}`)).join(" · ")}</p>
+              {timeline.suppliesLeft && (
+                <p className={hint}>{t(`supplies.left.${timeline.suppliesLeft}`)}</p>
+              )}
+              {timeline.needsNote && <p>{timeline.needsNote}</p>}
+            </div>
+          )}
           {timeline.unitName && !timeline.team && (
             <p>{t("status.unit", { unit: timeline.unitName })}</p>
           )}
@@ -304,9 +377,9 @@ export function CaseStatus({ id, merged }: Props) {
                   <span className="font-medium">
                     {event.event === "assigned" || event.event === "accepted"
                       ? event.unit
-                        ? t("status.assigned", { unit: event.unit })
-                        : t("status.accepted")
-                      : t(`status.${event.event}`)}
+                        ? word("assigned", { unit: event.unit })
+                        : word("accepted")
+                      : word(event.event)}
                   </span>
                   <span className={hint}>{time(event.at)}</span>
                 </li>
@@ -322,10 +395,12 @@ export function CaseStatus({ id, merged }: Props) {
         >
           <h2 className="text-h3 font-bold text-jaga-ink">
             {timeline?.unitName
-              ? t("confirm.title", { unit: timeline.unitName })
-              : t("confirm.titleNoUnit")}
+              ? t(supplies ? "supplies.confirm.title" : "confirm.title", {
+                  unit: timeline.unitName,
+                })
+              : t(supplies ? "supplies.confirm.titleNoUnit" : "confirm.titleNoUnit")}
           </h2>
-          <p>{t("confirm.body")}</p>
+          <p>{t(supplies ? "supplies.confirm.body" : "confirm.body")}</p>
           <button
             type="button"
             onClick={() => void close(true)}
@@ -333,7 +408,7 @@ export function CaseStatus({ id, merged }: Props) {
             data-confirm-yes="true"
             className={buttonPrimary}
           >
-            {closing ? t("status.closing") : t("confirm.yes")}
+            {closing ? t("status.closing") : t(supplies ? "supplies.confirm.yes" : "confirm.yes")}
           </button>
           <button
             type="button"
@@ -342,9 +417,9 @@ export function CaseStatus({ id, merged }: Props) {
             data-confirm-no="true"
             className={buttonSecondary}
           >
-            {t("confirm.no")}
+            {t(supplies ? "supplies.confirm.no" : "confirm.no")}
           </button>
-          <p className={hint}>{t("confirm.noHint")}</p>
+          <p className={hint}>{t(supplies ? "supplies.confirm.noHint" : "confirm.noHint")}</p>
           {disputeFailed && (
             <p role="alert" className="font-bold">
               {t("confirm.failed")}
@@ -357,6 +432,7 @@ export function CaseStatus({ id, merged }: Props) {
         <TeamStatus
           team={timeline.team}
           createdAt={timeline.createdAt}
+          supplies={supplies}
           now={now}
           phone={teamPhone}
           asking={askingPhone}
@@ -369,9 +445,39 @@ export function CaseStatus({ id, merged }: Props) {
         {t("status.refresh")}
       </button>
 
+      {/* Safe an hour ago is not safe now: one tap turns the request into a rescue (spec 4.10). */}
+      {supplies && (open || pending) && (
+        <section
+          className="flex flex-col gap-2 rounded-2xl border-2 border-sos bg-jaga-surface p-5"
+          data-need-rescue="true"
+        >
+          <button
+            type="button"
+            onClick={needRescue}
+            disabled={closing}
+            data-need-rescue-button="true"
+            className="flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-sos px-4 py-3 text-h3 font-bold text-sos-fg active:translate-y-px disabled:opacity-70"
+          >
+            <LifebuoyIcon size={30} />
+            {closing ? t("status.closing") : t("supplies.escalate.button")}
+          </button>
+          <p className={hint}>{t("supplies.escalate.hint")}</p>
+          {escalated === "failed" && (
+            <>
+              <p role="alert" className="font-bold">
+                {t("supplies.escalate.failed")}
+              </p>
+              <Link href="/sos" className={buttonPrimary}>
+                {t("send")}
+              </Link>
+            </>
+          )}
+        </section>
+      )}
+
       {open && (
         <>
-          <SosDetailsForm id={id} token={token} />
+          {!supplies && <SosDetailsForm id={id} token={token} />}
           <div className={card}>
             <button
               type="button"
@@ -380,9 +486,13 @@ export function CaseStatus({ id, merged }: Props) {
               data-case-safe="true"
               className={buttonSecondary}
             >
-              {closing ? t("status.closing") : t("status.safeNow")}
+              {closing
+                ? t("status.closing")
+                : supplies
+                  ? t("supplies.cancel")
+                  : t("status.safeNow")}
             </button>
-            <p className={hint}>{t("status.safeConfirm")}</p>
+            <p className={hint}>{supplies ? t("supplies.cancelHint") : t("status.safeConfirm")}</p>
             <button
               type="button"
               onClick={() => void close(true)}
@@ -390,7 +500,7 @@ export function CaseStatus({ id, merged }: Props) {
               data-case-rescued="true"
               className={buttonSecondary}
             >
-              {t("status.rescuedNow")}
+              {supplies ? t("supplies.gotIt") : t("status.rescuedNow")}
             </button>
           </div>
         </>
@@ -398,7 +508,7 @@ export function CaseStatus({ id, merged }: Props) {
 
       {!open && !pending && (
         <div className="flex flex-col gap-3">
-          <p className={notice}>{t("status.closed")}</p>
+          <p className={notice}>{supplies ? t("supplies.closed") : t("status.closed")}</p>
           <Link href="/" className={buttonSecondary}>
             {t("back")}
           </Link>
@@ -437,6 +547,7 @@ const KNOWN_EVENTS = [
   "rescued_by_team",
   "confirmed",
   "not_rescued",
+  "needs_rescue",
   "safe_cancelled",
   "dismissed",
   "repeat_merged",

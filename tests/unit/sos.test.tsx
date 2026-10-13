@@ -198,6 +198,10 @@ describe("the requester's view of a case", () => {
     hasVoice: false,
     events: [{ event: "received", at: new Date().toISOString(), note: null, unit: null }],
     team: null,
+    kind: "rescue",
+    needs: [],
+    needsNote: null,
+    suppliesLeft: null,
     ...more,
   });
 

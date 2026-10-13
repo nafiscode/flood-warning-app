@@ -61,6 +61,13 @@ export type BoardCase = {
   proofCount: number;
   /** The waiting time has passed and this caller is not the reporting team (spec 5.4). */
   canConfirm: boolean;
+  /** A rescue, or a request for food, water and essentials from someone who is safe (spec 4.10). */
+  kind: "rescue" | "supplies";
+  /** What a supply request asks for, from the fixed list in lib/sos.ts. */
+  needs: string[];
+  needsNote: string | null;
+  /** How long what they have will last: "none", "today" or "days". */
+  suppliesLeft: string | null;
 };
 
 /** What a card shows once its photos and voice note were asked for: short-lived links. */
@@ -113,6 +120,13 @@ export function sortCases(cases: BoardCase[]): BoardCase[] {
     awaiting: 4.5,
     closed: 5,
   };
+  // A supply request nobody holds comes after every rescue case nobody holds: on a board that
+  // has both, the lives are read first.
+  const waitingSupplies: Partial<Record<CaseState, number>> = {
+    offered_to_me: 2.1,
+    unanswered: 2.2,
+    searching: 2.3,
+  };
   // A case this team has just accepted and not yet given an estimate for stays right under the
   // ringing one: the card is asking a question, and it must not drop out of sight to be asked.
   // A reported rescue this team may now confirm is a job waiting for it, so it rises too.
@@ -121,7 +135,9 @@ export function sortCases(cases: BoardCase[]): BoardCase[] {
       ? 0.5
       : caseState(c) === "awaiting" && c.canConfirm
         ? 2.5
-        : rank[caseState(c)];
+        : c.kind === "supplies"
+          ? (waitingSupplies[caseState(c)] ?? rank[caseState(c)])
+          : rank[caseState(c)];
   return [...cases].sort((a, b) => {
     const byState = place(a) - place(b);
     if (byState !== 0) return byState;
@@ -168,11 +184,25 @@ export function splitMinutes(total: number): { hours: number; minutes: number } 
 }
 
 /**
- * Whether the console should be making a noise: only while a case is actually being offered to
- * this unit, and only while there is time left on it.
+ * Whether the console should be making a noise: only while a rescue case is actually being
+ * offered to this unit, and only while there is time left on it. A supply request never rings
+ * the alarm (decision of 13 October): it has a sound of its own, played once.
  */
 export function shouldAlarm(cases: BoardCase[], now: number): boolean {
-  return cases.some((c) => caseState(c) === "offered_to_me" && (secondsLeft(c, now) ?? 0) > 0);
+  return cases.some(
+    (c) =>
+      c.kind !== "supplies" && caseState(c) === "offered_to_me" && (secondsLeft(c, now) ?? 0) > 0,
+  );
+}
+
+/** The supply requests being offered to this unit now, for the one soft sound each gets. */
+export function supplyOffers(cases: BoardCase[], now: number): string[] {
+  return cases
+    .filter(
+      (c) =>
+        c.kind === "supplies" && caseState(c) === "offered_to_me" && (secondsLeft(c, now) ?? 0) > 0,
+    )
+    .map((c) => c.sosId);
 }
 
 /** How stale a reading is allowed to be before the board says so, in milliseconds. */
@@ -227,15 +257,25 @@ export function clockText(seconds: number): string {
 }
 
 export type BoardScope = "open" | "closed";
+export type BoardKind = "all" | "rescue" | "supplies";
 
-/** The board's own filter (spec 5.1): open or closed cases, one tambon, vulnerable people only. */
+/**
+ * The board's own filter (spec 5.1): open or closed cases, one tambon, vulnerable people only,
+ * and one kind of request.
+ */
 export function filterCases(
   cases: BoardCase[],
-  filter: { scope: BoardScope; tambon: string | null; vulnerableOnly: boolean },
+  filter: {
+    scope: BoardScope;
+    tambon: string | null;
+    vulnerableOnly: boolean;
+    kind?: BoardKind;
+  },
 ): BoardCase[] {
   return cases.filter((c) => {
     const closed = caseState(c) === "closed";
     if ((filter.scope === "closed") !== closed) return false;
+    if (filter.kind && filter.kind !== "all" && c.kind !== filter.kind) return false;
     if (filter.tambon && c.tambon !== filter.tambon) return false;
     if (filter.vulnerableOnly && vulnerableKeys(c.vulnerableFlags).length === 0) return false;
     return true;

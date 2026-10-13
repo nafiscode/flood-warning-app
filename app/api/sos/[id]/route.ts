@@ -1,5 +1,12 @@
 import { sosSendingEnabled } from "@/lib/features";
-import type { SosEtaBand, SosStatus, SosTeam, SosTimeline } from "@/lib/sos";
+import {
+  cleanNeeds,
+  SUPPLIES_LEFT,
+  type SosEtaBand,
+  type SosStatus,
+  type SosTeam,
+  type SosTimeline,
+} from "@/lib/sos";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -69,6 +76,12 @@ export async function GET(request: Request, context: RouteContext<"/api/sos/[id]
     hasVoice: row.has_voice === true,
     events: Array.isArray(row.events) ? (row.events as SosTimeline["events"]) : [],
     team,
+    kind: row.kind === "supplies" ? "supplies" : "rescue",
+    needs: cleanNeeds(row.needs),
+    needsNote: (row.needs_note as string | null) ?? null,
+    suppliesLeft: SUPPLIES_LEFT.includes(row.supplies_left as (typeof SUPPLIES_LEFT)[number])
+      ? (row.supplies_left as SosTimeline["suppliesLeft"])
+      : null,
   };
   return answer(timeline);
 }
@@ -86,7 +99,8 @@ type Action =
   | { action: "close"; token?: string | null; rescued?: boolean; note?: string | null }
   | { action: "media"; token?: string | null; photos?: string[]; voice?: string | null }
   | { action: "team_phone"; token?: string | null }
-  | { action: "not_rescued"; token?: string | null };
+  | { action: "not_rescued"; token?: string | null }
+  | { action: "need_rescue"; token?: string | null };
 
 export async function POST(request: Request, context: RouteContext<"/api/sos/[id]">) {
   const { id } = await context.params;
@@ -155,6 +169,17 @@ export async function POST(request: Request, context: RouteContext<"/api/sos/[id
     // The team reported a rescue and the sender says it did not happen: the case goes back to
     // looking for a team at once (spec 5.4). The database function checks whose case it is.
     const { data, error } = await supabase.rpc("sos_dispute_rescue", {
+      p_sos_id: id,
+      p_token: token,
+    });
+    if (error) return refused(error.code);
+    return answer({ ok: true, status: data as SosStatus });
+  }
+
+  if (input.action === "need_rescue") {
+    // "It got worse, I need rescue": a request for food and water becomes a rescue case and
+    // goes into the rescue relay at once (spec 4.10). The database checks whose case it is.
+    const { data, error } = await supabase.rpc("sos_need_rescue", {
       p_sos_id: id,
       p_token: token,
     });

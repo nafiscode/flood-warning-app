@@ -13,6 +13,8 @@ export type CoverageRow = {
   rescueUnits: number;
   /** Verified coordinators covering it that are not rescue teams themselves. */
   coordinationUnits: number;
+  /** Verified teams that deliver food, water and essentials here (spec 4.10). */
+  suppliesUnits: number;
   /** One of the caller's own verified teams covers it. */
   mine: boolean;
 };

@@ -143,6 +143,16 @@ export function PinIcon(props: IconProps) {
   );
 }
 
+/** A request for food, water and essentials: a parcel. */
+export function ParcelIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 8l9-4 9 4v9l-9 4-9-4z" />
+      <path d="M3 8l9 4 9-4M12 12v9M7.5 6l9 4" />
+    </Icon>
+  );
+}
+
 /** Report flooding: water with waves. */
 export function WaveIcon(props: IconProps) {
   return (

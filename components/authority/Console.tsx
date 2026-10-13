@@ -18,7 +18,7 @@ import type {
   TeamReport,
   UnitContact,
 } from "@/lib/coverage";
-import { shouldAlarm, type AuthorityBoard, type CaseMedia } from "@/lib/dispatch";
+import { shouldAlarm, supplyOffers, type AuthorityBoard, type CaseMedia } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
 import { uploadProof } from "@/lib/upload";
 
@@ -120,6 +120,18 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
     const playing = play("offer");
     return () => playing.stop();
   }, [ringing]);
+
+  // A request for food and water never rings the alarm: one soft sound when it is first offered
+  // to this team, and then only the card (decision of 13 October).
+  const supplyKey = supplyOffers(board.cases, now).join(",");
+  const announced = useRef(new Set<string>());
+  useEffect(() => {
+    if (alarm !== "on" || supplyKey === "") return;
+    const fresh = supplyKey.split(",").filter((id) => !announced.current.has(id));
+    if (fresh.length === 0) return;
+    for (const id of fresh) announced.current.add(id);
+    play("supplyOffer");
+  }, [alarm, supplyKey]);
 
   const onArm = useCallback(() => {
     void arm().then((ok) => setAlarm(ok ? "on" : "none"));

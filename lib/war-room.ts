@@ -9,7 +9,7 @@ import type { DamSignal } from "@/lib/dam";
  */
 
 export type SosCaseStatus =
-  "received" | "assigned" | "en_route" | "rescued" | "safe_cancelled" | "dismissed";
+  "received" | "assigned" | "en_route" | "on_site" | "rescued" | "safe_cancelled" | "dismissed";
 
 /** A case on the board, as /api/admin/war-room sends it. */
 export type SosCase = {
@@ -53,6 +53,11 @@ export type SosCase = {
   lastEvent: string | null;
   lastEventAt: string | null;
   unitsCovering: number;
+  /** A rescue, or a request for food, water and essentials (spec 4.10). */
+  kind: "rescue" | "supplies";
+  needs: string[];
+  needsNote: string | null;
+  suppliesLeft: string | null;
 };
 
 export type Overview = {
@@ -205,7 +210,16 @@ export type UnitOption = {
  */
 export type CaseState = "overdue" | "waiting" | "working" | "closed";
 
-const OPEN: SosCaseStatus[] = ["received", "assigned", "en_route"];
+const OPEN: SosCaseStatus[] = ["received", "assigned", "en_route", "on_site"];
+
+/**
+ * A supply request is given longer before it counts as overdue: each team holds its offer for
+ * ten minutes, not one, and nobody's life hangs on it. Four times the rescue setting, and never
+ * less than an hour.
+ */
+export function overdueAfter(c: SosCase, unclaimedMinutes: number): number {
+  return c.kind === "supplies" ? Math.max(60, unclaimedMinutes * 4) : unclaimedMinutes;
+}
 
 export function isOpen(c: SosCase): boolean {
   return OPEN.includes(c.status);
@@ -226,7 +240,7 @@ export function waitingMinutes(c: SosCase, now: number): number {
 export function caseState(c: SosCase, now: number, unclaimedMinutes: number): CaseState {
   if (!isOpen(c)) return "closed";
   if (c.unitId) return "working";
-  return waitingMinutes(c, now) >= unclaimedMinutes ? "overdue" : "waiting";
+  return waitingMinutes(c, now) >= overdueAfter(c, unclaimedMinutes) ? "overdue" : "waiting";
 }
 
 /**
@@ -240,6 +254,8 @@ export function sortCases(cases: SosCase[], now: number, unclaimedMinutes: numbe
     const byState =
       rank[caseState(a, now, unclaimedMinutes)] - rank[caseState(b, now, unclaimedMinutes)];
     if (byState !== 0) return byState;
+    // Within a state the rescue cases are read first.
+    if (a.kind !== b.kind) return a.kind === "supplies" ? 1 : -1;
     const byWait = waitingMinutes(b, now) - waitingMinutes(a, now);
     if (byWait !== 0) return byWait;
     if (b.priority !== a.priority) return b.priority - a.priority;

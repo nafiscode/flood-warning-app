@@ -93,7 +93,9 @@ export default async function AdminAuthorities({
         {" · "}
         {unit.capabilities
           .map((c) =>
-            tRegister(`capability.${c as "coordination" | "rescue" | "planning" | "support"}.name`),
+            tRegister(
+              `capability.${c as "coordination" | "rescue" | "supplies" | "planning" | "support"}.name`,
+            ),
           )
           .join(", ")}
       </p>

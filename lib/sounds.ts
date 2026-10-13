@@ -1,5 +1,5 @@
 /**
- * Jaga's five sounds (docs/brand.md "Sound", spec 4.8, decision of 9 Oct).
+ * Jaga's six sounds (docs/brand.md "Sound", spec 4.8, decision of 9 Oct).
  *
  * They are generated here with the Web Audio API rather than loaded as files: nothing to
  * download on a bad connection, nothing to cache for offline, nothing to licence, and a few
@@ -17,7 +17,7 @@
  *    which is why `arm()` exists and why the authority console asks once.
  */
 
-export type SoundName = "offer" | "accepted" | "rescued" | "alert" | "damRelease";
+export type SoundName = "offer" | "supplyOffer" | "accepted" | "rescued" | "alert" | "damRelease";
 
 type Tone = {
   /** Hz. */
@@ -60,6 +60,18 @@ export const SOUNDS: Record<SoundName, SoundSpec> = {
     })),
     repeatEveryMs: 1300,
     vibrate: [120, 60, 120, 60, 120, 60, 120],
+  },
+  // A team is being offered a request for food and water (spec 4.10). Nobody is in danger, so it
+  // is everything the alarm is not: low, round, three unhurried notes, played once. A crew with
+  // both jobs must never take one for the other by ear.
+  supplyOffer: {
+    tones: [
+      { freq: 523, at: 0, ms: 220, gain: 0.55 },
+      { freq: 523, at: 300, ms: 220, gain: 0.55 },
+      { freq: 659, at: 600, ms: 420, gain: 0.55 },
+    ],
+    repeatEveryMs: null,
+    vibrate: [200, 150, 200],
   },
   // A team accepted: the requester's screen. Relief, not celebration.
   accepted: {

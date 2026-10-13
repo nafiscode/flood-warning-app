@@ -66,6 +66,10 @@ const blank: BoardCase = {
   closedAt: null,
   completedAt: null,
   proofCount: 0,
+  kind: "rescue",
+  needs: [],
+  needsNote: null,
+  suppliesLeft: null,
   canConfirm: false,
 };
 
@@ -114,6 +118,26 @@ export const EXAMPLE_AUTHORITY_BOARD: AuthorityBoard = {
       priorityScore: 4,
       offerExhausted: true,
       myResponse: "timed_out",
+    },
+    // Someone safe upstairs and out of drinking water: offered to this team, never ringing.
+    {
+      ...blank,
+      sosId: "88888888-0000-4000-8000-000000000008",
+      createdAt: at(-14),
+      waitingMinutes: 14,
+      lat: 6.8655,
+      lon: 101.2533,
+      peopleCount: 5,
+      priorityScore: 6,
+      hasPhone: true,
+      kind: "supplies",
+      needs: ["water", "food", "baby"],
+      needsNote: "บ้านสองชั้นหลังมัสยิด เด็กอายุ 8 เดือน ต้องการนมผง",
+      suppliesLeft: "none",
+      offeredTo: MY_UNIT,
+      offeredToName: "ทีมกู้ภัยตัวอย่าง บานา",
+      offeredIsMine: true,
+      offerExpiresAt: at(6),
     },
     {
       ...blank,
@@ -228,6 +252,7 @@ export const EXAMPLE_COVERAGE: CoverageRow[] = COVER.map(
     province: "94",
     rescueUnits,
     coordinationUnits,
+    suppliesUnits: mine ? 1 : 0,
     mine,
   }),
 );

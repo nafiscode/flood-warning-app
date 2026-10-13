@@ -71,6 +71,10 @@ function toCase(r: Row): SosCase {
     lastEvent: text(r.last_event),
     lastEventAt: text(r.last_event_at),
     unitsCovering: int(r.units_covering),
+    kind: r.kind === "supplies" ? "supplies" : "rescue",
+    needs: Array.isArray(r.needs) ? (r.needs as string[]) : [],
+    needsNote: text(r.needs_note),
+    suppliesLeft: text(r.supplies_left),
   };
 }
 

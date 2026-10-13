@@ -19,13 +19,16 @@ import { buttonPrimary, buttonSecondary, hint, input } from "@/lib/ui";
 type FormProps = {
   /** "complete": the team's own report. "confirm": the fallback by a second team. */
   kind: "complete" | "confirm";
+  /** A delivery of food and water, which is reported in its own words (spec 4.10). */
+  supplies?: boolean;
   busy: boolean;
   onSend: (photos: File[], note: string) => void;
   onCancel: () => void;
 };
 
-export function PhotoForm({ kind, busy, onSend, onCancel }: FormProps) {
+export function PhotoForm({ kind, supplies = false, busy, onSend, onCancel }: FormProps) {
   const t = useTranslations("authority");
+  const words = supplies ? (`supplies.${kind}` as const) : (`finish.${kind}` as const);
   const [photos, setPhotos] = useState<File[]>([]);
   const [note, setNote] = useState("");
   const needsNote = kind === "confirm";
@@ -36,8 +39,8 @@ export function PhotoForm({ kind, busy, onSend, onCancel }: FormProps) {
       className="flex flex-col gap-3 rounded-xl border-2 border-jaga-teal-ink p-3"
       data-finish-form={kind}
     >
-      <legend className="px-1 font-bold text-jaga-ink">{t(`finish.${kind}.title`)}</legend>
-      <p className={hint}>{t(`finish.${kind}.hint`)}</p>
+      <legend className="px-1 font-bold text-jaga-ink">{t(`${words}.title`)}</legend>
+      <p className={hint}>{t(`${words}.hint`)}</p>
 
       <label className={`${buttonSecondary} cursor-pointer`}>
         {photos.length > 0
@@ -74,7 +77,7 @@ export function PhotoForm({ kind, busy, onSend, onCancel }: FormProps) {
         data-finish-send="true"
         className={buttonPrimary}
       >
-        {busy ? t("finish.sending") : t(`finish.${kind}.send`)}
+        {busy ? t("finish.sending") : t(`${words}.send`)}
       </button>
       {!ready && <p className={hint}>{needsNote ? t("finish.needBoth") : t("finish.needPhoto")}</p>}
       <button

@@ -36,6 +36,36 @@ export const VULNERABLE = [
 ] as const;
 export type Vulnerable = (typeof VULNERABLE)[number];
 
+/**
+ * What a request asks for (spec 4.10). A request is a rescue unless it plainly says otherwise;
+ * "supplies" is for people who are safe where they are and cut off from food and water.
+ */
+export const SOS_KINDS = ["rescue", "supplies"] as const;
+export type SosKind = (typeof SOS_KINDS)[number];
+
+/** What a supply request may ask for: a fixed list, so a team reads it at a glance. */
+export const NEEDS = [
+  "water",
+  "food",
+  "baby",
+  "medicine",
+  "clothes",
+  "hygiene",
+  "light",
+  "other",
+] as const;
+export type Need = (typeof NEEDS)[number];
+
+/** How long what they have will last. */
+export const SUPPLIES_LEFT = ["none", "today", "days"] as const;
+export type SuppliesLeft = (typeof SUPPLIES_LEFT)[number];
+
+/** The needs in the list's own order, without anything that is not on it. */
+export function cleanNeeds(value: unknown): Need[] {
+  if (!Array.isArray(value)) return [];
+  return NEEDS.filter((n) => value.includes(n));
+}
+
 export const SOS_STATUSES = [
   "received",
   "assigned",
@@ -65,6 +95,12 @@ export type SendSos = {
   battery?: number | null;
   /** When the SOS was written on the phone, which may be long before it reaches the server. */
   sentAt?: string | null;
+  /** Left out for a rescue SOS, which is what a request is unless it says "supplies". */
+  kind?: SosKind;
+  needs?: Need[];
+  needsNote?: string | null;
+  suppliesLeft?: SuppliesLeft | null;
+  peopleCount?: number | null;
 };
 
 export type SentSos = {
@@ -137,6 +173,10 @@ export type SosTimeline = {
   events: TimelineEntry[];
   /** Null when the question could not be asked; the screen then says only what the status says. */
   team: SosTeam | null;
+  kind: SosKind;
+  needs: Need[];
+  needsNote: string | null;
+  suppliesLeft: SuppliesLeft | null;
 };
 
 export type SosDetails = {

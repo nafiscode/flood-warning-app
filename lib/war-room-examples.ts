@@ -183,6 +183,10 @@ const emptyCase: Omit<SosCase, "id" | "createdAt" | "status"> = {
   lastEvent: "received",
   lastEventAt: null,
   unitsCovering: 2,
+  kind: "rescue",
+  needs: [],
+  needsNote: null,
+  suppliesLeft: null,
 };
 
 const jitter = spread(7);

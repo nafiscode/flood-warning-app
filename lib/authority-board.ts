@@ -68,6 +68,10 @@ function toCase(r: Row): BoardCase {
     completedAt: text(r.completed_at),
     proofCount: Number(r.proof_count ?? 0),
     canConfirm: Boolean(r.can_confirm),
+    kind: r.kind === "supplies" ? "supplies" : "rescue",
+    needs: Array.isArray(r.needs) ? (r.needs as string[]) : [],
+    needsNote: text(r.needs_note),
+    suppliesLeft: text(r.supplies_left),
   };
 }
 
@@ -263,6 +267,7 @@ export async function readCoverage(): Promise<CoverageRow[]> {
     province: String(r.province_code ?? ""),
     rescueUnits: Number(r.rescue_units ?? 0),
     coordinationUnits: Number(r.coordination_units ?? 0),
+    suppliesUnits: Number(r.supplies_units ?? 0),
     mine: Boolean(r.mine),
   }));
 }
