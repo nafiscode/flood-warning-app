@@ -10,6 +10,7 @@
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { ExpirationPlugin, NetworkFirst, NetworkOnly, Serwist } from "serwist";
+import { readPayload } from "@/lib/push";
 import { flush, SYNC_TAG } from "@/lib/queue";
 
 declare global {
@@ -71,4 +72,54 @@ self.addEventListener("sync", (event) => {
   const sync = event as SyncEvent;
   if (sync.tag !== SYNC_TAG) return;
   sync.waitUntil(flush());
+});
+
+/**
+ * Web push (A7): an alert a person published, arriving with the app closed. The message carries
+ * the level and the reviewed words; the notification is shown at once, because a push that shows
+ * nothing loses the browser's permission to be sent. One alert is one notification: a
+ * replacement with the same tag takes the old one's place and still makes itself heard.
+ */
+self.addEventListener("push", (event) => {
+  let raw: unknown = null;
+  try {
+    raw = event.data?.json();
+  } catch {
+    // Not JSON: not one of ours.
+  }
+  const payload = readPayload(raw);
+  if (!payload) return;
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      tag: payload.tag,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url: payload.url },
+      // An evacuation stays on the screen until the person has dealt with it.
+      requireInteraction: payload.level === "evacuate",
+      ...({ renotify: true } as object),
+    }),
+  );
+});
+
+/** A tap on the notification opens Jaga on the home screen, in the window it already has. */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(
+    (event.notification.data as { url?: string } | null)?.url ?? "/",
+    self.location.origin,
+  ).href;
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of windows) {
+        if ("focus" in client) {
+          await client.navigate(url).catch(() => null);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    })(),
+  );
 });

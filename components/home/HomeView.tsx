@@ -52,6 +52,8 @@ export type HomeViewProps = {
   reports?: TambonReports[] | null;
   /** The person's own standing reports, with the button that ends one. */
   myReports?: ReactNode;
+  /** "Turn on notifications": drawn while there is something for the person to do about it. */
+  push?: ReactNode;
   /** The "put Jaga on your home screen" card. Drawn last, and not at Warning or Evacuate. */
   install?: ReactNode;
 };
@@ -335,6 +337,9 @@ export function HomeView(props: HomeViewProps) {
         {home && !loading && (
           <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />
         )}
+
+        {/* Notifications are offered at any level: a warning is when they matter most. */}
+        {!loading && !choosing && props.push}
 
         {!loading && !choosing && !tense && props.install}
       </div>

@@ -2638,5 +2638,18 @@
       "expired": "Sudah 72 jam. Jika masih banjir, lapor semula.",
       "hidden": "Pentadbir menyembunyikan laporan ini"
     }
+  },
+  "push": {
+    "title": "Terima pemberitahuan pada telefon ini",
+    "body": "Apabila ada amaran untuk kawasan anda atau tempat yang anda pantau, Jaga akan memberitahu telefon ini walaupun aplikasi ditutup.",
+    "noArea": "Pilih kawasan anda di halaman utama dahulu, supaya Jaga tahu kawasan mana yang perlu diberitahu.",
+    "button": "Hidupkan pemberitahuan",
+    "busy": "Sedang menghidupkan…",
+    "on": "Pemberitahuan dihidupkan pada telefon ini",
+    "off": "Matikan pemberitahuan pada telefon ini",
+    "needsInstall": "Pada iPhone dan iPad, tambah Jaga ke Skrin Utama dahulu dan buka Jaga daripada ikon itu, kemudian pemberitahuan boleh dihidupkan.",
+    "blocked": "Telefon ini menyekat pemberitahuan Jaga. Benarkan semula dalam tetapan telefon atau pelayar.",
+    "failed": "Belum dapat dihidupkan. Cuba lagi.",
+    "note": "Bunyinya ialah bunyi pemberitahuan telefon, dan mungkin tidak berbunyi dalam mod senyap atau Jangan Ganggu. Kecemasan: hubungi 1784 atau 1669."
   }
 }

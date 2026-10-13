@@ -14,7 +14,7 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
   const all = messages as Messages;
   const dam = all.dam as Messages;
   return {
-    ...pick(messages, ["home", "alert", "sos", "places", "hotlines", "install"]),
+    ...pick(messages, ["home", "alert", "sos", "places", "hotlines", "install", "push"]),
     // The area chooser's province list.
     map: { province: all.map!.province! },
     // Residents' flood reports near the person (13 Oct), with the report form's own words for
@@ -60,7 +60,7 @@ export function sosMessages(messages: AbstractIntlMessages): AbstractIntlMessage
 
 /** The "put Jaga on your home screen" card, where it stands by itself (the Account page). */
 export function installMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
-  return pick(messages, ["install"]);
+  return pick(messages, ["install", "push"]);
 }
 
 export function reportMessages(messages: AbstractIntlMessages): AbstractIntlMessages {

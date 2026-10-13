@@ -2638,5 +2638,18 @@
       "expired": "72 hours have passed. If it is still flooded, report again.",
       "hidden": "An admin has hidden this report"
     }
+  },
+  "push": {
+    "title": "Get notifications on this phone",
+    "body": "When an alert is issued for your area or a place you watch, Jaga notifies this phone, even with the app closed.",
+    "noArea": "Choose your area on the home screen first, so Jaga knows which area to notify you about.",
+    "button": "Turn on notifications",
+    "busy": "Turning on…",
+    "on": "Notifications are on for this phone",
+    "off": "Turn notifications off on this phone",
+    "needsInstall": "On an iPhone or iPad, add Jaga to the Home Screen first and open it from that icon. Then notifications can be turned on.",
+    "blocked": "This phone is blocking Jaga's notifications. Allow them again in the phone's or the browser's settings.",
+    "failed": "Could not turn them on yet. Try again.",
+    "note": "The sound is the phone's own notification sound, and may stay silent on mute or Do Not Disturb. In an emergency call 1784 or 1669."
   }
 }

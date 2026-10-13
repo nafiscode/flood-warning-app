@@ -1,10 +1,12 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { readAreas, zoneMap } from "@/lib/admin-alerts";
 import { areaChoice, chosenTambons, isUuid, updateHours, windowOf } from "@/lib/alert-console";
 import { localePath } from "@/lib/auth";
 import { inService } from "@/lib/features";
+import { pushAlert } from "@/lib/push-server";
 import { createClient } from "@/lib/supabase/server";
 
 const HOUR = 3_600_000;
@@ -46,7 +48,7 @@ export async function publishAlert(locale: string, form: FormData) {
   const drill = supersedes ? mode === "drill" : inService() ? false : mode !== "real";
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_publish_alert", {
+  const { data: published, error } = await supabase.rpc("admin_publish_alert", {
     p_template: template,
     p_tambons: tambons,
     p_next_update_at: new Date(Date.now() + hours * HOUR).toISOString(),
@@ -69,6 +71,16 @@ export async function publishAlert(locale: string, form: FormData) {
             ? "drillMix"
             : "save";
     redirect(`${back}${why}`);
+  }
+  /*
+   * The phones following these tambons are told (A7). After the answer has gone back to the
+   * admin, so a slow push service never holds up the publishing; a drill is not pushed, and the
+   * alert stands in the app, on the map and in the bell whether or not a notification leaves.
+   */
+  if (!drill && typeof published === "string") {
+    after(async () => {
+      await pushAlert(supabase, published);
+    });
   }
   redirect(`${localePath(locale, "/admin/alerts")}?done=published`);
 }
