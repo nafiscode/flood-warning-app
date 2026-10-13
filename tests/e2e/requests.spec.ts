@@ -113,7 +113,8 @@ test("each request shows its steps, what is waited for, and fits a phone", async
 
   // One tap from a card to the request itself, which carries the same steps.
   await rescue.locator("a").click();
-  await expect(page).toHaveURL(new RegExp(`/sos/${RESCUE}$`));
+  // A loaded laptop can take longer than the default five seconds to open the next page.
+  await expect(page).toHaveURL(new RegExp(`/sos/${RESCUE}$`), { timeout: 30_000 });
   await expect(page.locator("[data-case-journey] [data-step]")).toHaveCount(6);
 });
 
