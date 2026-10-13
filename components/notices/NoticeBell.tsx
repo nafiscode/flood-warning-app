@@ -114,9 +114,13 @@ export function NoticeBell({ className = "" }: { className?: string }) {
         <span className="relative inline-flex">
           <BellIcon size={24} />
           {badge && (
-            // Not colour alone: the number itself is the message, and the button's label says it
-            // in words for a screen reader.
-            <span className="absolute -end-2 -top-1 min-w-5 rounded-full bg-alert-warning px-1 text-center text-small font-bold leading-5 text-alert-warning-fg">
+            // A white number on a filled red circle, as people know it from other apps (the owner,
+            // 13 Oct). Not colour alone: the number itself is the message, and the button's label
+            // says it in words for a screen reader.
+            <span
+              data-badge="true"
+              className="absolute -end-2 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-sos px-1 text-small font-bold leading-none text-sos-fg ring-2 ring-jaga-slate"
+            >
               {badge}
             </span>
           )}
