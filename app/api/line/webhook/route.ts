@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { handleLineEvents, lineSignatureOk } from "@/lib/line-server";
+import { handleLineEvents, lineSignatureOk, lineTokenState } from "@/lib/line-server";
 import { NO_STORE } from "@/lib/supabase/public";
 
 /**
@@ -24,6 +24,11 @@ export async function POST(request: Request) {
   }
   if (Array.isArray(events) && events.length > 0) {
     after(() => handleLineEvents(events as Parameters<typeof handleLineEvents>[0]));
+  }
+  // An empty, signed delivery is a check of the set-up (LINE's "Verify", or ours): it is also
+  // told whether this server's access token can send, since nothing else shows a wrong one.
+  if (Array.isArray(events) && events.length === 0) {
+    return answer({ ok: true, token: await lineTokenState() });
   }
   return answer({ ok: true });
 }

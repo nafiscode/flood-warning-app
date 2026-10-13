@@ -156,6 +156,20 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
   }
 }
 
+/**
+ * Whether LINE accepts this server's access token: "ok", "none" when there is no token here, or
+ * the status LINE refused it with (401 for a wrong or cut-short token). Says nothing else.
+ */
+export async function lineTokenState(): Promise<"ok" | "none" | number> {
+  if (!accessToken()) return "none";
+  try {
+    const r = await call("/info");
+    return r.ok ? "ok" : r.status;
+  } catch {
+    return 0;
+  }
+}
+
 /** Whether a webhook body really came from LINE: its signature, made with the channel secret. */
 export function lineSignatureOk(body: string, signature: string | null): boolean {
   const secret = channelSecret();
