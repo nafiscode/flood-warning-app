@@ -1674,7 +1674,7 @@
       "stale": "These figures are later than usual. Check the dam is still publishing.",
       "awaiting": "One reading alone meets a rule; {readings} in a row are needed before it counts.",
       "noFigures": "No figures from the dam yet",
-      "tambons": "The path runs through {main} tambons along the main river and {tributary} on its tributaries",
+      "tambons": "The zone covers {main} tambons the river runs through and {tributary} more with low land its water can reach",
       "reviewTitle": "Nothing has been sent to anybody",
       "reviewBody": "The code confirmed a release and told you. The people on the river see only a quiet note that says it is not an alert. Issuing one is a person's job.",
       "raisedAt": "Raised at {time}",
@@ -2218,7 +2218,7 @@
         "body": "By the dam's own published figures, outflow is above the normal operating range. The water flows down the {river}. Watch the water near your home, move a car to higher ground, and put your important things together."
       },
       "where": "{tambon} is on the {river} downstream of the dam",
-      "whereTributary": "{tambon} is on a tributary flowing into this river. When the main river rises, the tributary drains slowly and can back up.",
+      "whereTributary": "{tambon} is not on the river's bank, but it has low land that the river's water can reach when the river stands high: up the side streams and across the plain.",
       "openMap": "See the map of the water's path"
     },
     "disclaimer": {
@@ -2257,16 +2257,16 @@
     },
     "path": {
       "title": "The path water takes when the dam releases",
-      "tambons": "Through {count, plural, one {# tambon} other {# tambons}} along the main river, and {tributary, plural, one {# more} other {# more}} on the lower reaches of the tributaries that join it",
+      "tambons": "Through {count, plural, one {# tambon} other {# tambons}}, and {tributary, plural, one {# more} other {# more}} with low land the river's water can reach",
       "limits": "The line on the map is the course of the river, not a flood extent. Areas off the line can still flood.",
       "spillwayNotMapped": "The spillway discharge channel is not in the map data, so it is shown as a point rather than a line.",
-      "credit": "River and reservoir from OpenStreetMap. Only the tributaries somebody has already mapped are shown."
+      "credit": "River and reservoir from OpenStreetMap. The shaded land is what the river has been high enough to reach, worked out from a 30 m elevation model and the river gauges; the dashed line is one metre higher. It is not a flood map and not a forecast."
     },
     "legend": {
       "open": "See {dam}'s figures and charts",
       "reservoir": "{dam} reservoir",
       "river": "{river} downstream of the dam",
-      "tributary": "Lower reaches of the tributaries joining the main river"
+      "tributary": "Land the river's water can reach when it stands high (dashed line: one metre higher). Not a flood map."
     },
     "arrival": {
       "title": "When the water arrives",
@@ -2284,7 +2284,7 @@
         "hours": "Along the river, water starts rising about {from}–{to} hours after the gates open, depending on the distance from the dam.",
         "days": "Along the river, water starts rising about {from}–{to} days after the gates open, depending on the distance from the dam."
       },
-      "tributary": "Your area is on a side stream. When the main river rises it backs water up into the stream, and the times shown are those of the junction.",
+      "tributary": "Your area is not on the river's bank. The times shown are for the nearest point of the river. Water spreading over land or backing up a side stream may take longer to reach you; do not count on that extra time.",
       "basis": "These ranges are estimated from the river gauges (the generators releasing, and the floods since 2020). They are not a forecast, and there is no hydraulic model behind them."
     },
     "release": {
