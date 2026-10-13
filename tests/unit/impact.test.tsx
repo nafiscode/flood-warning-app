@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { Impact } from "@/components/admin/Impact";
 import {
+  areaPath,
   barPercent,
   byProvince,
+  chartPoints,
   confirmedShare,
+  cumulativeWaits,
+  dotGrid,
   earnedMilestones,
   honours,
+  linePath,
   MILESTONES,
   nextMilestone,
   percent,
@@ -157,6 +162,49 @@ describe("the example season", () => {
   });
 });
 
+describe("the charts' arithmetic", () => {
+  it("draws one mark per request, and a request nobody accepted as large as a rescue", () => {
+    const grid = dotGrid(EXAMPLE_IMPACT.outcomes);
+    expect(grid.unit).toBe(1);
+    expect(grid.groups.map((g) => g.dots)).toEqual([268, 71, 48, 25]);
+  });
+
+  it("lets one mark stand for several when there are too many, without losing an outcome", () => {
+    const grid = dotGrid(
+      [
+        { outcome: "confirmed", cases: 4000 },
+        { outcome: "unconfirmed", cases: 900 },
+        { outcome: "cancelled", cases: 0 },
+        { outcome: "noTeam", cases: 3 },
+      ],
+      420,
+    );
+    expect(grid.unit).toBe(12);
+    const dots = Object.fromEntries(grid.groups.map((g) => [g.outcome, g.dots]));
+    // Three requests nobody accepted still get their mark; none at all gets none.
+    expect(dots.noTeam).toBe(1);
+    expect(dots.cancelled).toBe(0);
+    expect(dots.confirmed).toBe(333);
+  });
+
+  it("accumulates the waiting bands, and always ends at everyone who was accepted", () => {
+    const steps = cumulativeWaits(EXAMPLE_IMPACT.waits);
+    expect(steps.map((s) => s.share)).toEqual([22, 59, 84, 97, 100]);
+    expect(cumulativeWaits([]).map((s) => s.share)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it("starts every axis at zero and keeps a value inside its box", () => {
+    const points = chartPoints([0, 50, 100, 140], 100);
+    expect(points.map((p) => p.y)).toEqual([100, 50, 0, 0]);
+    expect(points.map((p) => p.x)).toEqual([12.5, 37.5, 62.5, 87.5]);
+    // Nothing to scale against: everything sits on the floor, never NaN.
+    expect(chartPoints([3], 0)[0]!.y).toBe(100);
+    expect(linePath(points)).toBe("M12.5 100 L37.5 50 L62.5 0 L87.5 0");
+    expect(areaPath(points).endsWith("L87.5 100 L12.5 100 Z")).toBe(true);
+    expect(areaPath([])).toBe("");
+  });
+});
+
 describe("the dashboard", () => {
   it("says it is made up before anything else", () => {
     const { container } = renderWithIntl(<Impact season={EXAMPLE_IMPACT} locale="th" />);
@@ -198,5 +246,28 @@ describe("the dashboard", () => {
   it("shows the gaps where no rescue team covers", () => {
     const { container } = renderWithIntl(<Impact season={EXAMPLE_IMPACT} locale="th" />);
     expect(container.textContent).toContain(EXAMPLE_IMPACT.gaps[0]!.name);
+  });
+
+  it("gives a cup only to the month's honours, and never in gold", () => {
+    const { container } = renderWithIntl(<Impact season={EXAMPLE_IMPACT} locale="th" />);
+    // Three on the honours cards, and the same three beside their names in the list of teams.
+    expect(container.querySelectorAll("[data-cup]")).toHaveLength(6);
+    expect(container.innerHTML).not.toMatch(/yellow|amber|gold/);
+  });
+
+  it("draws every request as one mark, and still says each outcome in words", () => {
+    const { container } = renderWithIntl(<Impact season={EXAMPLE_IMPACT} locale="th" />);
+    const marks = container.querySelector("[data-outcome-dots]")!;
+    expect(marks.children).toHaveLength(EXAMPLE_IMPACT.totals.requestsCarried);
+    expect(marks.getAttribute("aria-hidden")).toBe("true");
+    expect(container.textContent).toContain(th.impact.outcomes.noTeam);
+    expect(container.textContent).toContain(th.impact.outcomes.noTeamNote);
+  });
+
+  it("keeps the true headline figures in the page while the counting copy moves", () => {
+    const { container } = renderWithIntl(<Impact season={EXAMPLE_IMPACT} locale="en" />, "en");
+    const panel = container.querySelector("[data-impact-panel]")!;
+    expect(panel.querySelector(".sr-only")!.textContent).toBe("412");
+    expect(panel.textContent).toContain("1,147");
   });
 });

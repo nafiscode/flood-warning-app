@@ -1667,7 +1667,9 @@
       "cancelledNote": "They pressed “I'm safe now” themselves",
       "noTeam": "No team accepted",
       "noTeamNote": "Handed to the admins to find a team by phone",
-      "unanswered": "{percent}% of requests were accepted by nobody. That is the figure to bring down before any other."
+      "unanswered": "{percent}% of requests were accepted by nobody. That is the figure to bring down before any other.",
+      "dotOne": "Each mark is one request",
+      "dotMany": "Each mark is about {count} requests"
     },
     "waits": {
       "title": "How long until a team accepted",
@@ -1677,18 +1679,32 @@
       "to15": "5–15 minutes",
       "to60": "15–60 minutes",
       "over60": "Over an hour",
-      "medianLongest": "Median {median} min · longest {longest} min"
+      "medianLongest": "Median {median} min · longest {longest} min",
+      "by": {
+        "under1": "1 min",
+        "to5": "5 min",
+        "to15": "15 min",
+        "to60": "1 hr",
+        "over60": "> 1 hr"
+      },
+      "curveNote": "The line shows the share of accepted requests that already had a team by each time. Only requests a team accepted are counted.",
+      "tip": "Within {by}: {percent}% of accepted requests",
+      "tableCaption": "See the numbers",
+      "band": "Time to accept",
+      "cases": "Cases",
+      "cumulative": "Accepted by then"
     },
     "season": {
       "title": "Through the season",
-      "note": "One bar per week; the coloured part is the cases a team confirmed",
+      "note": "One point per week; the filled area is the cases a team confirmed, the dashed line is every request",
       "week": "Week of",
       "requests": "Requests",
       "confirmed": "Confirmed",
       "weekTip": "Week of {week}: {requests} requests, {confirmed} confirmed",
       "legendConfirmed": "Rescues confirmed",
-      "legendRest": "Other requests that week",
-      "tableCaption": "See the numbers"
+      "legendRest": "All requests that week",
+      "tableCaption": "See the numbers",
+      "peak": "Peak: {count} requests"
     },
     "provinces": {
       "title": "Province by province",
@@ -1699,7 +1715,8 @@
       "province": "Province",
       "teams": "Teams",
       "opened": "Openings",
-      "usageNote": "Usage is counted per province per day. Jaga counts it with its own code and changes the device code every day, so one phone cannot be followed from day to day, and no outside analytics service is used."
+      "usageNote": "Usage is counted per province per day. Jaga counts it with its own code and changes the device code every day, so one phone cannot be followed from day to day, and no outside analytics service is used.",
+      "ringNote": "Each ring is the share of that province's requests a team confirmed"
     },
     "province": {
       "90": "Songkhla",
@@ -1721,7 +1738,8 @@
       "people": "People reached",
       "upOnLast": "{count} more than last season (+{percent}%)",
       "downOnLast": "{count} fewer than last season",
-      "firstSeason": "This team's first season. Thank you for joining."
+      "firstSeason": "This team's first season. Thank you for joining.",
+      "thanked": "One of the teams to thank this month"
     },
     "capability": {
       "rescue": "Rescue",

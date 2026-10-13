@@ -368,3 +368,14 @@ export function MenuDotsIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Thanks to a team that did the most this month: a plain cup. In brand teal, never gold. */
+export function TrophyIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 4h8v5a4 4 0 0 1-8 0z" />
+      <path d="M8 5.5H5.5a2.5 2.5 0 0 0 2.6 3.4M16 5.5h2.5a2.5 2.5 0 0 1-2.6 3.4" />
+      <path d="M12 13v4M8.5 20h7M10 17h4" />
+    </Icon>
+  );
+}

@@ -216,3 +216,65 @@ export function unansweredShare(outcomes: OutcomeCount[]): number {
   const none = outcomes.find((o) => o.outcome === "noTeam")?.cases ?? 0;
   return percent(none, total);
 }
+
+/**
+ * The requests as marks, one outcome after another: a picture in which a request nobody accepted
+ * is exactly as large as one that ended in a rescue. One mark is one request until there are more
+ * than fit, then one mark stands for `unit` requests - and an outcome that happened at all never
+ * rounds away to no mark.
+ */
+export type DotGrid = { unit: number; groups: { outcome: Outcome; dots: number }[] };
+
+export function dotGrid(outcomes: OutcomeCount[], maxDots = 420): DotGrid {
+  const total = sumBy(outcomes, (o) => o.cases);
+  const unit = Math.max(1, Math.ceil(total / Math.max(1, maxDots)));
+  return {
+    unit,
+    groups: OUTCOMES.map((outcome) => {
+      const cases = outcomes.find((o) => o.outcome === outcome)?.cases ?? 0;
+      return { outcome, dots: cases <= 0 ? 0 : Math.max(1, Math.round(cases / unit)) };
+    }),
+  };
+}
+
+export type WaitStep = { band: WaitBand; cases: number; share: number };
+
+/**
+ * Of the requests a team accepted, the share that had its team by the end of each band. The last
+ * step is always 100: requests nobody accepted are not in this curve, they are in the outcomes.
+ */
+export function cumulativeWaits(waits: WaitCount[]): WaitStep[] {
+  const total = sumBy(waits, (w) => w.cases);
+  let running = 0;
+  return WAIT_BANDS.map((band) => {
+    const cases = waits.find((w) => w.band === band)?.cases ?? 0;
+    running += cases;
+    return { band, cases, share: percent(running, total) };
+  });
+}
+
+/**
+ * Where a series sits in a chart box of 100 by 100: evenly spaced across, zero on the floor and
+ * `max` on the ceiling (y grows downwards, as in SVG). The axis always starts at zero.
+ */
+export function chartPoints(values: number[], max: number): { x: number; y: number }[] {
+  const step = 100 / Math.max(1, values.length);
+  return values.map((value, i) => ({
+    x: step * (i + 0.5),
+    y: max <= 0 ? 100 : 100 - (100 * Math.min(Math.max(value, 0), max)) / max,
+  }));
+}
+
+const round = (n: number) => Math.round(n * 100) / 100;
+
+export function linePath(points: { x: number; y: number }[]): string {
+  return points.map((p, i) => `${i === 0 ? "M" : "L"}${round(p.x)} ${round(p.y)}`).join(" ");
+}
+
+/** The same line closed down to the floor, for the wash under it. */
+export function areaPath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return "";
+  const first = points[0]!;
+  const last = points[points.length - 1]!;
+  return `${linePath(points)} L${round(last.x)} 100 L${round(first.x)} 100 Z`;
+}

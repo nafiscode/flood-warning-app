@@ -1,0 +1,213 @@
+/*
+ * How the impact dashboard moves. CSS only, and only what a cheap phone draws on the GPU or
+ * cheaply: transforms, opacity, stroke offsets and one clip. Three rules:
+ *
+ *  - **The resting state is the finished chart.** Every animation is written as a `from` only,
+ *    so with no JavaScript, with reduced motion, or in a test, the page is simply complete.
+ *  - **A chart moves once, when it is first seen** (`.seen`, set by Reveal in ImpactBits.tsx),
+ *    or straight away for the panel at the top (`.now`). Only the panel's slow scan and its dial
+ *    keep going, and both stop under reduced motion.
+ *  - **No colour is made here that the brand does not have**: glows and washes are mixes of the
+ *    brand teal with nothing, never an alert hue.
+ */
+
+/* ── The panel at the top: a navy console with a drawn grid and a slow scan ── */
+
+.console {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      120% 90% at 0% 0%,
+      color-mix(in oklab, var(--jaga-teal) 26%, transparent),
+      transparent 60%
+    ),
+    var(--jaga-slate);
+}
+
+.console::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, black, transparent 95%);
+}
+
+.console::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: -1;
+  width: 40%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklab, var(--jaga-teal-light) 14%, transparent),
+    transparent
+  );
+  transform: translateX(-120%);
+  animation: scan 9s ease-in-out infinite;
+}
+
+@keyframes scan {
+  0%,
+  20% {
+    transform: translateX(-120%);
+  }
+  70%,
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+/* The dial's outer ring of ticks turns slowly; the lit arc glows. */
+.ticks {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: turn 60s linear infinite;
+}
+
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.glow {
+  filter: drop-shadow(0 0 5px color-mix(in oklab, var(--jaga-teal-light) 70%, transparent));
+}
+
+/* ── One-time entrances ── */
+
+/* An arc of a ring: drawn with pathLength 100 and a dash of its own length (--len). */
+:is(.seen, .now) .sweep {
+  animation: sweep 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes sweep {
+  from {
+    stroke-dashoffset: var(--len, 100);
+  }
+}
+
+/*
+ * A line and the area under it, uncovered along the time axis. A clip and not a drawn dash: a
+ * dash measured by pathLength comes out in pieces on a stretched, non-scaling stroke.
+ */
+:is(.seen, .now) .wipe {
+  animation: wipe 1.6s ease-out both;
+}
+
+@keyframes wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* A mark arriving: one of many, each a moment after the one before (--i). */
+:is(.seen, .now) .pop {
+  animation: pop 0.4s ease-out both;
+  animation-delay: calc(var(--i, 0) * 3ms);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+}
+
+/* A label or a tile settling into place after its mark (--i steps of 90 ms). */
+:is(.seen, .now) .rise {
+  animation: rise 0.6s ease-out both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* A progress fill growing from its start. */
+:is(.seen, .now) .grow {
+  transform-origin: left;
+  animation: grow 1s ease-out both;
+}
+
+[dir="rtl"] :is(.seen, .now) .grow {
+  transform-origin: right;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* The cup: one quiet tilt when it is first seen. Never a loop. */
+:is(.seen, .now) .cup {
+  transform-origin: 50% 90%;
+  animation: cup 0.9s ease-out 0.3s both;
+}
+
+@keyframes cup {
+  0% {
+    transform: scale(0.6) rotate(-14deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* A card that answers the pointer, where there is one. */
+@media (hover: hover) {
+  .lift {
+    transition:
+      transform 160ms ease-out,
+      box-shadow 160ms ease-out,
+      border-color 160ms ease-out;
+  }
+
+  .lift:hover {
+    transform: translateY(-2px);
+    border-color: var(--jaga-teal-ink);
+    box-shadow: 0 8px 24px -12px color-mix(in oklab, var(--jaga-teal-ink) 60%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .console::after,
+  .ticks,
+  .sweep,
+  .wipe,
+  .pop,
+  .rise,
+  .grow,
+  .cup {
+    animation: none !important;
+  }
+
+  .console::after {
+    display: none;
+  }
+
+  .lift {
+    transition: none;
+  }
+}

@@ -1667,7 +1667,9 @@
       "cancelledNote": "Pemohon sendiri menekan “Saya sudah selamat”",
       "noTeam": "Tiada pasukan menerima",
       "noTeamNote": "Diserahkan kepada pentadbir untuk mencari pasukan sendiri",
-      "unanswered": "{percent}% permintaan tidak diterima sesiapa. Inilah angka yang perlu turun dahulu."
+      "unanswered": "{percent}% permintaan tidak diterima sesiapa. Inilah angka yang perlu turun dahulu.",
+      "dotOne": "Setiap tanda ialah satu permintaan",
+      "dotMany": "Setiap tanda kira-kira {count} permintaan"
     },
     "waits": {
       "title": "Berapa lama sebelum sebuah pasukan menerima",
@@ -1677,18 +1679,32 @@
       "to15": "5–15 minit",
       "to60": "15–60 minit",
       "over60": "Lebih sejam",
-      "medianLongest": "Median {median} minit · paling lama {longest} minit"
+      "medianLongest": "Median {median} minit · paling lama {longest} minit",
+      "by": {
+        "under1": "1 min",
+        "to5": "5 min",
+        "to15": "15 min",
+        "to60": "1 jam",
+        "over60": "> 1 jam"
+      },
+      "curveNote": "Garis menunjukkan bahagian permintaan yang sudah diterima pasukan pada setiap masa. Hanya permintaan yang diterima dikira.",
+      "tip": "Dalam {by}: {percent}% daripada permintaan yang diterima",
+      "tableCaption": "Lihat sebagai jadual",
+      "band": "Masa hingga diterima",
+      "cases": "Kes",
+      "cumulative": "Diterima setakat itu"
     },
     "season": {
       "title": "Sepanjang musim",
-      "note": "Setiap batang satu minggu; bahagian berwarna ialah kes yang pasukan sahkan",
+      "note": "Satu titik setiap minggu; kawasan berwarna ialah kes yang pasukan sahkan, garis putus-putus ialah semua permintaan",
       "week": "Minggu mula",
       "requests": "Permintaan",
       "confirmed": "Disahkan",
       "weekTip": "Minggu {week}: {requests} permintaan, {confirmed} disahkan",
       "legendConfirmed": "Penyelamatan disahkan",
-      "legendRest": "Permintaan lain minggu itu",
-      "tableCaption": "Lihat sebagai jadual"
+      "legendRest": "Semua permintaan minggu itu",
+      "tableCaption": "Lihat sebagai jadual",
+      "peak": "Puncak: {count} permintaan"
     },
     "provinces": {
       "title": "Mengikut wilayah",
@@ -1699,7 +1715,8 @@
       "province": "Wilayah",
       "teams": "Pasukan",
       "opened": "Dibuka",
-      "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri dan menukar kod peranti setiap hari, jadi satu telefon tidak boleh diikut dari hari ke hari; tiada perkhidmatan analitik syarikat lain digunakan."
+      "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri dan menukar kod peranti setiap hari, jadi satu telefon tidak boleh diikut dari hari ke hari; tiada perkhidmatan analitik syarikat lain digunakan.",
+      "ringNote": "Gelang menunjukkan bahagian permintaan wilayah itu yang disahkan oleh pasukan"
     },
     "province": {
       "90": "Songkhla",
@@ -1721,7 +1738,8 @@
       "people": "Orang dibantu",
       "upOnLast": "{count} lebih daripada musim lalu (+{percent}%)",
       "downOnLast": "{count} kurang daripada musim lalu",
-      "firstSeason": "Musim pertama pasukan ini. Terima kasih kerana menyertai."
+      "firstSeason": "Musim pertama pasukan ini. Terima kasih kerana menyertai.",
+      "thanked": "Antara pasukan yang dihargai bulan ini"
     },
     "capability": {
       "rescue": "Penyelamatan",
