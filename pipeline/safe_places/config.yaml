@@ -67,6 +67,9 @@ parking:
   # again, often hardly at all. A tambon with enough candidates gets none of these.
   road:
     fill_to: 3
+    # 500 m apart, and 500 m from the parking already picked (owner, 15 Oct 2026): at 1 km six small
+    # tambons had no room for a third point.
+    spacing_m: 500
     tiers:
       - kinds: [secondary]
         assumed_fill_m: 1.0

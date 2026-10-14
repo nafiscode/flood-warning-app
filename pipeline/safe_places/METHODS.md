@@ -92,9 +92,11 @@ The 37 points: freeboard (with the assumed fill) from −1.2 to 4.8 m, median 1.
 
 Six of the eight are short only because of the 1 km spacing in small tambons (a 500 m spacing for this tier would probably fill most of them; not done, it would put parking points close together). Tha Hin and Phang Yang (the Sathing Phra peninsula and Ranot) have only residential and unclassified roads in OpenStreetMap; nothing in these rules can serve them, and they need the official shelter list or a volunteer. `summary.json` lists them under `tambons_under_3_why`.
 
+**Spacing 500 m for this tier (owner, 15 Oct 2026).** The owner chose to let the smaller-road points stand 500 m apart, and 500 m from the parking already picked (`parking.road.spacing_m`; the highway and terrain points keep 1 km). Result: 41 road points (17 secondary, 24 tertiary), 2,607 candidates; tambons with fewer than three **8 to 5**, with none still 2. Still short: Tha Hin and Phang Yang (0; no road a rule can use), Bo Daeng (2; only a short stretch of highway, which keeps its 1 km spacing), Daen Sa-Nguan (2; a few hundred metres of dry tertiary road) and Bang Tawa (2; the same).
+
 ## Not met, and other limits
 
-- **The acceptance line "every populated tambon has at least 3 candidates" is not met: 8 of 377 tambons have fewer, 2 of them none** (50 and 11 before the highway embankments, 29 and 5 before the smaller roads). See the table above.
+- **The acceptance line "every populated tambon has at least 3 candidates" is not met: 5 of 377 tambons have fewer, 2 of them none** (50 and 11 before the highway embankments, 29 and 5 before the smaller roads, 8 and 2 with them 1 km apart). See the table above.
 - Nothing has been checked on the ground. Half the named buildings are flagged low ground, which on these plains is as likely FABDEM's error as the truth.
 - Capacity, facilities and whether a building may be used as a shelter at all are unknown.
 - A parking spot is a cell of terrain beside a road, not a place known to hold cars.

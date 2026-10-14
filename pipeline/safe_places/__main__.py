@@ -193,11 +193,12 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
     # Then the smaller roads, lower tier, only where a tambon still has fewer than `fill_to` candidates.
     need = gaps(sites, on_fill + picked, pc["road"]["fill_to"], to_xy, transform, shape, r["tambon_index"], len(r["tambons"]))
     on_road: list[tuple[int, int, str, float]] = []
+    road_spacing = int(round(pc["road"].get("spacing_m", pc["spacing_m"]) / transform.a))
     for tier in pc["road"]["tiers"]:
         if not need:
             break
         rr_, rc_ = features.road_cells(ways, tier["kinds"], to_xy, transform, shape, r["land"], flood_any)
-        got = features.pick_cells(rr_, rc_, weight, r["tambon_index"], pc["road"]["fill_to"], spacing,
+        got = features.pick_cells(rr_, rc_, weight, r["tambon_index"], pc["road"]["fill_to"], road_spacing,
                                   taken=on_fill + picked + [(a, b) for a, b, _, _ in on_road], quota=need)
         for row_, col_ in got:
             t = int(r["tambon_index"][row_, col_])
