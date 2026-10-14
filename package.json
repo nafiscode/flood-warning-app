@@ -30,6 +30,7 @@
     "admin:super": "node scripts/admin.mjs super-admin",
     "admin:invite": "node scripts/admin.mjs invite",
     "push:gate": "node scripts/push-gate.mjs",
+    "line:menu": "node scripts/line-richmenu.mjs",
     "postinstall": "node scripts/vendor-maplibre.mjs"
   },
   "dependencies": {
