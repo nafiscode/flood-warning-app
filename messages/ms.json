@@ -1441,6 +1441,27 @@
     "tools": {
       "title": "Alat pentadbir yang lain",
       "note": "Semakan laporan, tempat selamat, permintaan berulang, pengumuman, nota serah tugas, eksport dan log akses ada dalam menu di atas."
+    },
+    "menu": {
+      "waiting": "{count} menunggu",
+      "groups": {
+        "watch": {
+          "title": "Pantau keadaan",
+          "note": "Apa yang berlaku sekarang: permintaan bantuan yang masih terbuka, paras sungai dan hujan, serta kerja pasukan."
+        },
+        "warn": {
+          "title": "Amaran kepada orang ramai",
+          "note": "Semua yang sampai kepada orang ramai: amaran, notis pelepasan air empangan dan pengumuman umum."
+        },
+        "review": {
+          "title": "Menunggu semakan admin",
+          "note": "Perkara yang menunggu keputusan admin. Nombor ialah bilangan yang sedang menunggu."
+        },
+        "records": {
+          "title": "Rekod dan pasukan",
+          "note": "Maklumat isi rumah, mata, catatan serah tugas, eksport dan log akses. Setiap kali maklumat peribadi dibuka, ia direkodkan."
+        }
+      }
     }
   },
   "warRoom": {

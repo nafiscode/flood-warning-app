@@ -1,0 +1,57 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { MenuGroup } from "@/components/admin/AdminMenu";
+import {
+  ADMIN_GROUPS,
+  countText,
+  itemsOf,
+  waitingIn,
+  type AdminCount,
+  type AdminCounts,
+  type AdminGroup,
+} from "@/lib/admin-menu";
+
+/**
+ * How many wait for an admin, for the menu's counts. Three head counts, run side by side as the
+ * signed-in admin: row-level security lets an admin read these tables, and a count that fails is
+ * simply left out rather than shown as nought.
+ */
+export async function readAdminCounts(supabase: SupabaseClient): Promise<AdminCounts> {
+  const pending = (table: string, column: string) =>
+    supabase.from(table).select("id", { count: "exact", head: true }).eq(column, "pending");
+  const answers = await Promise.all([
+    pending("authority_units", "status"),
+    pending("field_rescues", "status"),
+    pending("reports", "moderation_status"),
+  ]);
+  const names: AdminCount[] = ["units", "fieldRescues", "reports"];
+  const counts: AdminCounts = {};
+  answers.forEach((a, i) => {
+    if (!a.error && typeof a.count === "number") counts[names[i]!] = a.count;
+  });
+  return counts;
+}
+
+type Translate = (key: string, values?: Record<string, number>) => string;
+
+/** The menu as the layout and the admin home draw it, in the reader's language. */
+export function menuGroups(t: Translate, counts: AdminCounts, superAdmin: boolean): MenuGroup[] {
+  return ADMIN_GROUPS.map((group: AdminGroup) => {
+    const waiting = waitingIn(group, counts, superAdmin);
+    return {
+      key: group,
+      title: t(`menu.groups.${group}.title`),
+      waiting: countText(waiting),
+      waitingLabel: waiting > 0 ? t("menu.waiting", { count: waiting }) : null,
+      items: itemsOf(group, superAdmin).map((item) => {
+        const n = item.count ? (counts[item.count] ?? 0) : 0;
+        return {
+          key: item.key,
+          href: item.href,
+          label: t(`nav.${item.key}`),
+          waiting: countText(n),
+          waitingLabel: n > 0 ? t("menu.waiting", { count: n }) : null,
+        };
+      }),
+    };
+  });
+}

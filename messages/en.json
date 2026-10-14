@@ -1441,6 +1441,27 @@
     "tools": {
       "title": "The other admin tools",
       "note": "Report moderation, safe places, duplicate requests, announcements, handover notes, exports and the access log are in the menu above."
+    },
+    "menu": {
+      "waiting": "{count} waiting",
+      "groups": {
+        "watch": {
+          "title": "Watch the situation",
+          "note": "What is happening now: open requests for help, river levels and rain, and what the teams have done."
+        },
+        "warn": {
+          "title": "Warn people",
+          "note": "Everything that reaches the public: alerts, the dam release notice and general announcements."
+        },
+        "review": {
+          "title": "Needs your review",
+          "note": "Things waiting for an admin's decision. The number is how many are waiting."
+        },
+        "records": {
+          "title": "Records and team",
+          "note": "Household details, points, shift notes, exports and the access log. Every look at personal details is logged."
+        }
+      }
     }
   },
   "warRoom": {
