@@ -32,7 +32,7 @@ import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { boundsAround, darkNow, PROVINCE_BOUNDS, SERVICE_BOUNDS } from "@/lib/map";
+import { boundsAround, darkNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
@@ -400,13 +400,19 @@ export function DashboardView(props: DashboardViewProps) {
   const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
 
   /*
-   * Where the map looks: close around the person's own area while that is what is chosen, the
-   * whole province once they pick one from the list, and all four when they clear it. The box is
-   * about 22 by 17 km, which holds a tambon and its neighbours.
+   * Where the map looks: the whole province of the person's chosen area, together with the
+   * provinces of their home and of every place they watch (the owner, 15 Oct: someone in Pattani
+   * who watches a place in Narathiwat opens on both provinces in full); the one province once
+   * they pick one from the list; and all four when they clear it or have no place yet.
    */
   const mapBounds: [number, number, number, number] | undefined =
-    chosenProvince === null && props.area
-      ? [props.area.lon - 0.1, props.area.lat - 0.08, props.area.lon + 0.1, props.area.lat + 0.08]
+    chosenProvince === null
+      ? provincesBox([
+          props.area?.code,
+          ...(props.me?.signedIn
+            ? [props.me.home?.code, ...props.me.places.map((place) => place.area?.code)]
+            : []),
+        ])
       : PROVINCE_BOUNDS[province];
 
   /*
