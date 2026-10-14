@@ -13,6 +13,7 @@ import { QueueRunner } from "@/components/QueueRunner";
 import { SignInFinisher } from "@/components/SignInFinisher";
 import { NoticeBell } from "@/components/notices/NoticeBell";
 import { ThaiClock } from "@/components/ThaiClock";
+import { UsageBeacon } from "@/components/UsageBeacon";
 import { WeatherChip } from "@/components/weather/WeatherChip";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -219,6 +220,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             </footer>
             <QueueRunner />
             <SignInFinisher />
+            {/* Counts that Jaga is in use, for the admins (14 Oct). Never waits, never on the way. */}
+            <UsageBeacon />
             <DaylightTheme />
           </NextIntlClientProvider>
         </SerwistProvider>

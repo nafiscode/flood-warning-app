@@ -35,7 +35,7 @@
       "notCovered": "Jaga belum meliputi wilayah {province}. Kecemasan: telefon 1784 atau 1669.",
       "outside": "Lokasi ini di luar kawasan liputan Jaga. Kecemasan: telefon 1784 atau 1669.",
       "listFailed": "Senarai kawasan tidak dapat dimuat. Cuba lagi.",
-      "privacy": "Kawasan yang dipilih disimpan dalam telefon ini sahaja.",
+      "privacy": "Kawasan yang dipilih disimpan dalam telefon ini. Jaga hanya mengira berapa telefon memilih setiap tambon, bukan milik siapa.",
       "fromAccount": "Rumah yang disimpan dalam akaun anda"
     },
     "status": {
@@ -1352,7 +1352,8 @@
         "supplies": "Pasukan makanan dan air",
         "pending": "Pasukan menunggu pengesahan",
         "operator": "Pengendali empangan"
-      }
+      },
+      "usage": "Penggunaan aplikasi"
     },
     "role": {
       "admin": "Pentadbir",
@@ -3333,6 +3334,272 @@
       "notYet": "Belum ada sesiapa boleh mendaftar sebagai pengendali empangan sehingga wakil di empangan bersetuju.",
       "send": "Hantar notis pelepasan air",
       "sent": "Pratonton: tiada apa-apa dihantar. Pada skrin sebenar, notis ini akan sampai kepada semua orang dalam zon serta-merta, dan pentadbir akan melihatnya pada masa yang sama."
+    }
+  },
+  "usage": {
+    "title": "Penggunaan aplikasi",
+    "subtitle": "Siapa yang sedang membuka Jaga sekarang, menggunakan apa, dari mana, dan berapa banyak ia digunakan. Bilangan sahaja: tiada nama, tiada nombor telefon dan tiada kedudukan tepat.",
+    "example": "Contoh: semua angka di halaman ini rekaan, untuk menunjukkan reka bentuk.",
+    "failed": "Angka penggunaan tidak dapat dibaca. Muat semula halaman sebentar lagi.",
+    "updated": "Angka pada",
+    "pause": "Henti muat semula",
+    "resume": "Muat semula lagi",
+    "pollFailed": "Muat semula terakhir tidak berjaya. Ini angka terakhir yang diterima.",
+    "now": {
+      "tag": "LANGSUNG",
+      "unit": "telefon sedang membuka Jaga",
+      "signedIn": "{count, plural, =0 {Tiada yang log masuk} other {# log masuk}}",
+      "installed": "{count, plural, =0 {Tiada dari ikon skrin utama} other {# dari ikon skrin utama}}",
+      "noArea": "{count, plural, =0 {Semua sudah memilih kawasan} other {# belum memilih kawasan}}",
+      "topScreen": "Kebanyakan di: {screen} ({count})",
+      "pulse": "Telefon pada skrin, setiap 5 minit dalam 3 jam terakhir",
+      "pulseTip": "{count} telefon"
+    },
+    "today": {
+      "devices": "telefon hari ini",
+      "sessions": "lawatan hari ini",
+      "newDevices": "telefon baharu hari ini",
+      "minutes": "minit dalam aplikasi hari ini"
+    },
+    "ever": {
+      "title": "SEJAK MULA",
+      "since": "SEJAK {date}",
+      "devices": "telefon",
+      "sessions": "lawatan",
+      "views": "skrin dibuka",
+      "hours": "jam dalam aplikasi"
+    },
+    "window": {
+      "1": "Hari ini",
+      "7": "7 hari",
+      "30": "30 hari",
+      "90": "90 hari",
+      "label": "Tempoh"
+    },
+    "insights": {
+      "title": "Apa kata angka",
+      "good": "Tanda baik",
+      "note": "Patut dilihat",
+      "slowNet": {
+        "title": "{share}% telefon menggunakan sambungan perlahan (3G atau lebih perlahan).",
+        "do": "Kekalkan skrin utama ringan dan peta sebagai pilihan: itulah yang boleh dimuatkan oleh kebanyakan orang."
+      },
+      "lowMemory": {
+        "title": "{share}% telefon mempunyai memori 2 GB atau kurang.",
+        "do": "Uji pada telefon Android murah sebelum setiap keluaran; animasi dan peta paling berat."
+      },
+      "inApp": {
+        "title": "{share}% membuka Jaga di dalam pelayar aplikasi lain (kebanyakannya {app}).",
+        "do": "Log masuk dan pemberitahuan kurang berfungsi di situ. Kad pemasangan sudah menerangkan cara membukanya dengan betul."
+      },
+      "noArea": {
+        "title": "{share}% belum memilih kawasan mereka.",
+        "do": "Tanpa kawasan, mereka tidak nampak amaran untuk tempat mereka. Permudahkan pemilihan pada skrin pertama."
+      },
+      "pushGap": {
+        "title": "{share}% orang yang memasang Jaga menutup pemberitahuan.",
+        "do": "Amaran hanya sampai ketika aplikasi dibuka. Ingatkan mereka pada skrin utama."
+      },
+      "abroad": {
+        "title": "{count, plural, other {# telefon di luar Thailand memantau tempat di sini.}}",
+        "do": "Keluarga di luar negara menjaga kampung halaman: patut disebut dalam promosi Jaga."
+      },
+      "malay": {
+        "title": "{share}% menggunakan Jaga dalam bahasa Melayu.",
+        "do": "Semakan bahasa Melayu bagi teks keselamatan penting kepada mereka dahulu."
+      },
+      "slowFirstScreen": {
+        "title": "Bagi suku yang paling perlahan, skrin pertama mengambil {seconds} saat.",
+        "do": "Melebihi bajet 3 saat dalam spesifikasi. Lihat apa yang dimuatkan sebelum status amaran."
+      },
+      "comeBack": {
+        "title": "{share}% telefon baharu kembali dalam masa seminggu.",
+        "do": "Lawatan berulang membuatkan amaran sampai. Bandingkan selepas setiap promosi."
+      },
+      "alertLift": {
+        "title": "Selepas amaran, {ratio}× lebih ramai orang membuka Jaga.",
+        "do": "Orang memang beralih kepada aplikasi apabila penting. Pastikan masa kemas kini seterusnya ditepati."
+      },
+      "more": "{count, plural, other {Tunjuk # lagi}}"
+    },
+    "map": {
+      "title": "Di mana Jaga digunakan",
+      "layer": "Apa yang ditunjukkan peta",
+      "layers": {
+        "areas": "Kawasan dipilih",
+        "watched": "Tempat dipantau dan rumah",
+        "ip": "Lokasi internet"
+      },
+      "note": {
+        "areas": "Setiap tambon diwarnakan mengikut bilangan telefon yang memilihnya dalam aplikasi, dalam tempoh ini. Lebih gelap bermakna lebih ramai.",
+        "watched": "Tempat yang dipantau dan rumah yang disimpan, semua akaun, sebagai kepadatan. Bilangan setiap tambon sahaja, tiada pin bagi setiap tempat.",
+        "ip": "Bandar anggaran sambungan internet setiap telefon (kira-kira 11 km), dalam tempoh ini. Rangkaian mudah alih sering menunjukkan bandar yang jauh dari orangnya."
+      },
+      "live": "Langsung",
+      "view": {
+        "area": "Kawasan perkhidmatan",
+        "world": "Seluruh dunia"
+      },
+      "loading": "Memuatkan peta…",
+      "failed": "Peta tidak dapat dimuatkan. Senarai di bawah mengandungi angka yang sama.",
+      "liveLabel": "{place}: {count} sedang membuka",
+      "topLive": "Sedang membuka sekarang",
+      "noneLive": "Tiada sesiapa membuka aplikasi sekarang.",
+      "topAreas": "Kawasan paling banyak dipilih",
+      "topWatched": "Paling banyak dipantau",
+      "noneYet": "Belum ada yang dikira.",
+      "watchedNote": "{abroad, plural, =0 {Tiada telefon di luar Thailand memantau tempat di sini.} other {# telefon di luar Thailand memantau tempat di sini.}}"
+    },
+    "days": {
+      "title": "Telefon setiap hari, {days, plural, =1 {hari ini} other {# hari terakhir}}",
+      "note": "Setiap bar ialah telefon yang membuka Jaga pada hari itu. ▲ menandakan hari ada amaran.",
+      "tip": "{devices} telefon, {fresh} baharu, {sessions} lawatan",
+      "alertDay": "▲ Amaran dikeluarkan",
+      "today": "Hari ini {devices}",
+      "table": "Angka dalam jadual",
+      "col": {
+        "day": "Hari",
+        "devices": "Telefon",
+        "new": "Baharu",
+        "sessions": "Lawatan",
+        "views": "Skrin"
+      }
+    },
+    "hours": {
+      "title": "48 jam terakhir",
+      "note": "Telefon yang membuka aplikasi setiap jam. Garis dengan ▲ ialah amaran dikeluarkan.",
+      "tip": "{count} telefon",
+      "lift": "{level}: {after} telefon dalam jam berikutnya, {ratio}× jam sebelumnya.",
+      "liftFromNothing": "{level}: {after} telefon dalam jam berikutnya, daripada tiada sebelumnya.",
+      "noAlerts": "Tiada amaran dalam 48 jam ini."
+    },
+    "rhythm": {
+      "title": "Bila orang membuka Jaga",
+      "note": "Lawatan mengikut hari dan jam dalam tempoh ini. Berguna untuk tahu bila hendak menyiarkan dan bila pentadbir perlu bertugas.",
+      "tip": "{day} {hour}:00 · {count} lawatan",
+      "less": "Kurang",
+      "more": "Lebih",
+      "peak": "Paling sibuk: {day} sekitar {hour}:00",
+      "empty": "Belum ada lawatan dikira."
+    },
+    "funnel": {
+      "title": "Dari membuka Jaga hingga memantau",
+      "note": "Telefon dalam tempoh ini, dan berapa yang mengambil setiap langkah supaya amaran sampai kepada mereka.",
+      "steps": {
+        "opened": "Membuka Jaga",
+        "area": "Memilih kawasan",
+        "installed": "Menambah ke skrin utama",
+        "push": "Menghidupkan pemberitahuan",
+        "signedIn": "Log masuk",
+        "watching": "Memantau tempat untuk orang lain"
+      }
+    },
+    "engagement": {
+      "title": "Adakah orang kembali?",
+      "comeBack": "{share}% daripada {cohort} telefon yang mula membuka Jaga lebih seminggu lalu kembali dalam minggu pertama.",
+      "tooNew": "Sejarah belum cukup: perlukan telefon yang mula dilihat lebih seminggu lalu.",
+      "visit": "Lawatan biasa",
+      "visitValue": "{m} min {s} s",
+      "pages": "Skrin setiap lawatan",
+      "perPhone": "Lawatan setiap telefon",
+      "perPhoneNote": "dalam {days, plural, =1 {hari ini} other {# hari}}",
+      "sticky": "Bahagian harian",
+      "stickyNote": "telefon hari biasa, daripada sebulan",
+      "still": "Masih menggunakan selepas seminggu",
+      "stillNote": "daripada telefon yang mula dilihat lebih seminggu lalu",
+      "mau": "Telefon dalam 30 hari terakhir"
+    },
+    "actions": {
+      "title": "Apa yang orang lakukan, {days, plural, =1 {hari ini} other {# hari terakhir}}",
+      "note": "Daripada rekod Jaga sendiri, bukan daripada pembilang.",
+      "sos": "Permintaan bantuan",
+      "reports": "Laporan banjir",
+      "accounts": "Akaun baharu",
+      "watchedPlaces": "Tempat ditambah untuk dipantau",
+      "pushSubs": "Pemberitahuan dihidupkan",
+      "lineFollows": "Rakan LINE ditambah"
+    },
+    "mix": {
+      "device": "Peranti",
+      "os": "Sistem",
+      "browser": "Pelayar",
+      "locale": "Bahasa",
+      "net": "Sambungan",
+      "memory": "Memori telefon",
+      "inApp": "Dibuka di dalam aplikasi lain",
+      "inAppNote": "Facebook, Messenger, LINE dan lain-lain membuka pautan dalam pelayar sendiri, di mana log masuk dan pemberitahuan kurang berfungsi.",
+      "inAppNone": "Tiada dalam tempoh ini.",
+      "country": "Negara (lokasi internet)",
+      "rest": "Lain-lain",
+      "unknownPlace": "Tidak diketahui",
+      "names": {
+        "device": {
+          "phone": "Telefon",
+          "tablet": "Tablet",
+          "desktop": "Komputer",
+          "other": "Lain-lain"
+        },
+        "os": {
+          "other": "Lain-lain"
+        },
+        "browser": {
+          "other": "Lain-lain"
+        },
+        "locale": {
+          "th": "Thai",
+          "ms": "Melayu",
+          "en": "Inggeris",
+          "none": "Tidak diketahui"
+        },
+        "net": {
+          "slow-2g": "Sangat perlahan (2G)",
+          "2g": "2G",
+          "3g": "3G",
+          "4g": "4G atau lebih pantas",
+          "unknown": "Tidak dilaporkan"
+        },
+        "memory": {
+          "le2": "2 GB atau kurang",
+          "le4": "Sehingga 4 GB",
+          "gt4": "Lebih 4 GB",
+          "unknown": "Tidak dilaporkan"
+        }
+      }
+    },
+    "speed": {
+      "title": "Seberapa pantas skrin pertama muncul",
+      "note": "Diukur pada {count} lawatan sebenar. Bar gelap ialah telefon biasa, bar pucat suku yang paling perlahan; garis ialah bajet 3 saat dalam spesifikasi.",
+      "fcp": "Skrin pertama dilukis",
+      "ready": "Halaman sedia",
+      "values": "{p50} s biasa · {p75} s suku paling perlahan",
+      "none": "Belum diukur",
+      "budget": "3 s"
+    },
+    "screens": {
+      "title": "Skrin dibuka",
+      "note": "Setiap skrin yang dibuka dalam tempoh ini, tanpa kod pengenalan.",
+      "entries": "Di mana lawatan bermula",
+      "entriesNote": "Skrin pertama setiap lawatan: pautan yang dikongsi, ikon skrin utama atau pemberitahuan.",
+      "names": {
+        "_": "Laman utama",
+        "_map": "Peta",
+        "_sos": "SOS",
+        "_sos__id": "Kes SOS",
+        "_report": "Laporan banjir",
+        "_supplies": "Makanan dan air",
+        "_requests": "Permintaan saya",
+        "_account": "Akaun",
+        "_account_places": "Tempat yang saya pantau",
+        "_weather": "Cuaca",
+        "_sign-in": "Log masuk",
+        "_authority": "Konsol pasukan"
+      }
+    },
+    "privacy": {
+      "title": "Apa yang dikira halaman ini, dan apa yang tidak sekali-kali",
+      "counted": "Dikira: kod rawak yang dibuat pada telefon (tidak pernah dikaitkan dengan akaun, nama atau nombor), tambon yang dipilih dalam aplikasi, bandar anggaran sambungan internet, jenis telefon dan pelayar, dan skrin yang dibuka.",
+      "never": "Tidak sekali-kali: GPS, nama, nombor telefon, alamat internet itu sendiri, atau apa-apa daripada borang SOS dan laporan. Pelayar yang meminta tidak dijejaki tidak dikira.",
+      "keep": "Baris mentah dipadam selepas 90 hari; hanya jumlah harian yang kekal."
     }
   }
 }

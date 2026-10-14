@@ -132,6 +132,12 @@ export function impactMessages(messages: AbstractIntlMessages): AbstractIntlMess
   return pick(messages, ["impact"]);
 }
 
+/** The usage dashboard (14 Oct): its own words, and the alert level names it marks alerts with. */
+export function usageMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  return { ...pick(messages, ["usage"]), alert: { level: (all.alert as Messages).level! } };
+}
+
 /**
  * The layout, on every page: the language switcher's text, the few lines the weather chip in the
  * header needs, and the bell's list. The weather page's own text is not sent with it, so a page

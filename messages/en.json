@@ -35,7 +35,7 @@
       "notCovered": "Jaga doesn't cover {province} province yet. In an emergency call 1784 or 1669.",
       "outside": "This location is outside the area Jaga covers. In an emergency call 1784 or 1669.",
       "listFailed": "Couldn't load the list of areas. Try again.",
-      "privacy": "The area you choose is kept on this phone only.",
+      "privacy": "The area you choose is kept on this phone. Jaga only counts how many phones chose each tambon, never whose.",
       "fromAccount": "The home saved in your account"
     },
     "status": {
@@ -1352,7 +1352,8 @@
         "supplies": "Food & water team",
         "pending": "Team awaiting verification",
         "operator": "Dam operator"
-      }
+      },
+      "usage": "App usage"
     },
     "role": {
       "admin": "Admin",
@@ -3333,6 +3334,272 @@
       "notYet": "Nobody can register as a dam operator yet: this waits for a contact at the dam to agree.",
       "send": "Send the release notice",
       "sent": "Preview: nothing was sent. On the real screen this notice would now reach everyone in the zone, and the admins would see it at once."
+    }
+  },
+  "usage": {
+    "title": "App usage",
+    "subtitle": "Who has Jaga open right now, on what, from where, and how much it is used. Counts only: no person, no phone number and no exact position.",
+    "example": "Example: every figure on this page is made up, to show the design.",
+    "failed": "The usage figures could not be read. Refresh the page in a moment.",
+    "updated": "Figures from",
+    "pause": "Pause refresh",
+    "resume": "Refresh again",
+    "pollFailed": "The last refresh did not get through. These are the last figures that arrived.",
+    "now": {
+      "tag": "LIVE",
+      "unit": "phones with Jaga open",
+      "signedIn": "{count, plural, =0 {Nobody signed in} other {# signed in}}",
+      "installed": "{count, plural, =0 {None from the home-screen icon} other {# from the home-screen icon}}",
+      "noArea": "{count, plural, =0 {All have chosen an area} other {# have not chosen an area yet}}",
+      "topScreen": "Most are on: {screen} ({count})",
+      "pulse": "Phones on screen, each 5 minutes of the last 3 hours",
+      "pulseTip": "{count} phones"
+    },
+    "today": {
+      "devices": "phones today",
+      "sessions": "visits today",
+      "newDevices": "new phones today",
+      "minutes": "minutes in the app today"
+    },
+    "ever": {
+      "title": "SINCE THE START",
+      "since": "SINCE {date}",
+      "devices": "phones",
+      "sessions": "visits",
+      "views": "screens opened",
+      "hours": "hours in the app"
+    },
+    "window": {
+      "1": "Today",
+      "7": "7 days",
+      "30": "30 days",
+      "90": "90 days",
+      "label": "Period"
+    },
+    "insights": {
+      "title": "What the figures say",
+      "good": "Good sign",
+      "note": "Worth a look",
+      "slowNet": {
+        "title": "{share}% of phones are on a slow connection (3G or worse).",
+        "do": "Keep the home screen light and the map optional: it is what most people can load."
+      },
+      "lowMemory": {
+        "title": "{share}% of phones have 2 GB of memory or less.",
+        "do": "Test on a low-end Android before each release; animations and the map cost most."
+      },
+      "inApp": {
+        "title": "{share}% open Jaga inside another app's browser (mostly {app}).",
+        "do": "Sign-in and notifications work worse there. The install card already explains how to open it properly."
+      },
+      "noArea": {
+        "title": "{share}% have not chosen their area.",
+        "do": "Without an area they see no alert for their place. Make choosing it easier on the first screen."
+      },
+      "pushGap": {
+        "title": "{share}% of people who installed Jaga have notifications off.",
+        "do": "An alert only reaches them while the app is open. Remind them on the home screen."
+      },
+      "abroad": {
+        "title": "{count, plural, other {# phones outside Thailand watch places here.}}",
+        "do": "Family abroad keeping watch on home: worth saying in Jaga's outreach."
+      },
+      "malay": {
+        "title": "{share}% use Jaga in Malay.",
+        "do": "The Malay review of the safety wording matters to them first."
+      },
+      "slowFirstScreen": {
+        "title": "For the slowest quarter, the first screen takes {seconds} s.",
+        "do": "Over the 3-second budget of the spec. Look at what loads before the alert status."
+      },
+      "comeBack": {
+        "title": "{share}% of new phones came back within a week.",
+        "do": "Return visits are what make an alert land. Compare this after each outreach."
+      },
+      "alertLift": {
+        "title": "After an alert, {ratio}× as many people opened Jaga.",
+        "do": "People do turn to the app when it matters. Check that the alert's next-update time was kept."
+      },
+      "more": "{count, plural, one {Show # more} other {Show # more}}"
+    },
+    "map": {
+      "title": "Where Jaga is used",
+      "layer": "What the map shows",
+      "layers": {
+        "areas": "Chosen area",
+        "watched": "Watched places and homes",
+        "ip": "Internet location"
+      },
+      "note": {
+        "areas": "Each tambon shaded by how many phones chose it in the app, over the period. Darker is more.",
+        "watched": "Where places are watched and homes are saved, all accounts, as a heat. Counts per tambon only, never a pin per place.",
+        "ip": "The rough city of each phone's internet connection (about 11 km), over the period. Mobile networks often show a city far from the person."
+      },
+      "live": "Live now",
+      "view": {
+        "area": "Service area",
+        "world": "Everywhere"
+      },
+      "loading": "Loading the map…",
+      "failed": "The map could not be loaded. The lists below hold the same figures.",
+      "liveLabel": "{place}: {count} on screen now",
+      "topLive": "On screen now",
+      "noneLive": "Nobody has the app open right now.",
+      "topAreas": "Areas chosen most",
+      "topWatched": "Watched most",
+      "noneYet": "Nothing counted yet.",
+      "watchedNote": "{abroad, plural, =0 {No phone outside Thailand watches a place here.} other {# phones outside Thailand watch places here.}}"
+    },
+    "days": {
+      "title": "Phones each day, last {days, plural, =1 {day} other {# days}}",
+      "note": "Each bar is the phones that opened Jaga that day. ▲ marks a day with an alert.",
+      "tip": "{devices} phones, {fresh} new, {sessions} visits",
+      "alertDay": "▲ An alert was issued",
+      "today": "Today {devices}",
+      "table": "The figures as a table",
+      "col": {
+        "day": "Day",
+        "devices": "Phones",
+        "new": "New",
+        "sessions": "Visits",
+        "views": "Screens"
+      }
+    },
+    "hours": {
+      "title": "The last 48 hours",
+      "note": "Phones with the app open each hour. A line with ▲ is an alert going out.",
+      "tip": "{count} phones",
+      "lift": "{level}: {after} phones in the hour after, {ratio}× the hours before.",
+      "liftFromNothing": "{level}: {after} phones in the hour after, from nobody before.",
+      "noAlerts": "No alert went out in these 48 hours."
+    },
+    "rhythm": {
+      "title": "When people open Jaga",
+      "note": "Visits by weekday and hour, over the period. Good to know when to post and when admins should be on shift.",
+      "tip": "{day} {hour}:00 · {count} visits",
+      "less": "Fewer",
+      "more": "More",
+      "peak": "Busiest: {day} around {hour}:00",
+      "empty": "No visits counted yet."
+    },
+    "funnel": {
+      "title": "From opening Jaga to keeping watch",
+      "note": "Phones in the period, and how many took each step that makes an alert reach them.",
+      "steps": {
+        "opened": "Opened Jaga",
+        "area": "Chose their area",
+        "installed": "Added it to the home screen",
+        "push": "Turned notifications on",
+        "signedIn": "Signed in",
+        "watching": "Watch a place for someone"
+      }
+    },
+    "engagement": {
+      "title": "Do people come back?",
+      "comeBack": "{share}% of the {cohort} phones that first opened Jaga more than a week ago came back within their first week.",
+      "tooNew": "Not enough history yet: this needs phones first seen more than a week ago.",
+      "visit": "Typical visit",
+      "visitValue": "{m} min {s} s",
+      "pages": "Screens per visit",
+      "perPhone": "Visits per phone",
+      "perPhoneNote": "over {days, plural, =1 {today} other {# days}}",
+      "sticky": "Daily share",
+      "stickyNote": "an average day's phones, of the month's",
+      "still": "Still using after a week",
+      "stillNote": "of phones first seen over a week ago",
+      "mau": "Phones in the last 30 days"
+    },
+    "actions": {
+      "title": "What people did, last {days, plural, =1 {day} other {# days}}",
+      "note": "From Jaga's own records, not from the counter.",
+      "sos": "Requests for help",
+      "reports": "Flood reports",
+      "accounts": "New accounts",
+      "watchedPlaces": "Places added to watch",
+      "pushSubs": "Notifications turned on",
+      "lineFollows": "LINE friends added"
+    },
+    "mix": {
+      "device": "Device",
+      "os": "System",
+      "browser": "Browser",
+      "locale": "Language",
+      "net": "Connection",
+      "memory": "Phone memory",
+      "inApp": "Opened inside another app",
+      "inAppNote": "Facebook, Messenger, LINE and others open links in their own browser, where sign-in and notifications work less well.",
+      "inAppNone": "None in this period.",
+      "country": "Country (internet location)",
+      "rest": "Others",
+      "unknownPlace": "Not known",
+      "names": {
+        "device": {
+          "phone": "Phone",
+          "tablet": "Tablet",
+          "desktop": "Computer",
+          "other": "Other"
+        },
+        "os": {
+          "other": "Other"
+        },
+        "browser": {
+          "other": "Other"
+        },
+        "locale": {
+          "th": "Thai",
+          "ms": "Malay",
+          "en": "English",
+          "none": "Not known"
+        },
+        "net": {
+          "slow-2g": "Very slow (2G)",
+          "2g": "2G",
+          "3g": "3G",
+          "4g": "4G or faster",
+          "unknown": "Not reported"
+        },
+        "memory": {
+          "le2": "2 GB or less",
+          "le4": "Up to 4 GB",
+          "gt4": "More than 4 GB",
+          "unknown": "Not reported"
+        }
+      }
+    },
+    "speed": {
+      "title": "How fast the first screen comes",
+      "note": "Measured on {count} real visits. The dark bar is the typical phone, the pale one the slowest quarter; the line is the spec's 3-second budget.",
+      "fcp": "First screen drawn",
+      "ready": "Page ready",
+      "values": "{p50} s typical · {p75} s slowest quarter",
+      "none": "Not measured yet",
+      "budget": "3 s"
+    },
+    "screens": {
+      "title": "Screens opened",
+      "note": "Every screen opened in the period, ids left out.",
+      "entries": "Where visits start",
+      "entriesNote": "The first screen of each visit: a shared link, the home-screen icon or a notification.",
+      "names": {
+        "_": "Home",
+        "_map": "Map",
+        "_sos": "SOS",
+        "_sos__id": "An SOS case",
+        "_report": "Flood report",
+        "_supplies": "Food and water",
+        "_requests": "My requests",
+        "_account": "Account",
+        "_account_places": "Places I watch",
+        "_weather": "Weather",
+        "_sign-in": "Sign in",
+        "_authority": "Team console"
+      }
+    },
+    "privacy": {
+      "title": "What this page counts, and what it never does",
+      "counted": "Counted: a random code made on the phone (never joined to an account, a name or a number), the tambon chosen in the app, the rough city of the internet connection, the kind of phone and browser, and which screens are opened.",
+      "never": "Never: GPS, names, phone numbers, the internet address itself, or anything from the SOS and report forms. A browser that asks not to be tracked is not counted.",
+      "keep": "The raw rows are deleted after 90 days; only the daily totals stay."
     }
   }
 }

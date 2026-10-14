@@ -30,6 +30,7 @@ export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "warRoom", href: "/admin/war-room", group: "watch" },
   { key: "signals", href: "/admin/signals", group: "watch" },
   { key: "impact", href: "/admin/impact", group: "watch" },
+  { key: "usage", href: "/admin/usage", group: "watch" },
   { key: "alerts", href: "/admin/alerts", group: "warn" },
   { key: "damRelease", href: "/admin/dam-release", group: "warn" },
   { key: "announcements", href: "/admin/announcements", group: "warn" },

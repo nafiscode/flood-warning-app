@@ -542,6 +542,7 @@ These tables are created in phase A11 only, not with the initial schema.
 | Any personal phone number | never | own | as above, logged | as above, logged |
 | Coverage / responsibility map | none | none | read | read |
 | Audit log | none | none | none | read |
+| App usage counts (install code, chosen tambon, rough city, device; 14 Oct) | none | none | none | counts only, via `admin_usage()`; never one phone's row |
 | Monthly finance summary, opted-in donor wall | read | read | read | read |
 | Donation records (amount, name, message) | none | own | none | read/write if finance permission |
 | Transfer slips | none | own (upload) | none | read if finance permission; deleted 30 days after verification |
@@ -854,6 +855,8 @@ Added 9 Oct 2026 (decision of that date), built after launch (A13) on the first 
 - **No individual is ever named.** Credit goes to the unit and its organisation. A volunteer did not sign up to be a public figure, and a name beside rescue places and times is a safety matter in these provinces.
 - **Alerts:** how many were issued per level, the tambons covered, how many people were notified, how much was delivered, and the lead time before the water where that can be measured.
 - **Usage, per province per day:** devices that opened the app, alerts delivered, SOS sent, reports filed, safe-place lookups. Counted by Jaga's own code, never by a third-party analytics service: no cost, no visitor's address leaving us. A device is counted through a **salted hash that changes every day**, so the same phone cannot be followed from one day to the next; the raw rows are dropped once the day is counted.
+
+**The admins' usage dashboard (added 14 Oct 2026, owner's request; decision of that date).** Before A13, an admin page `/admin/usage` shows who has Jaga open now, on what, from where and how engaged people are. It is fed by Jaga's own counter: a random install code made on the phone (never joined to an account, name or number), the tambon chosen in the app, the rough city of the internet connection (0.1 degree; the address itself is never stored), the kind of phone and browser, and the screens opened. Raw rows are kept 90 days, then only day totals (`usage_daily`). A browser that sends Global Privacy Control is not counted. This replaces, for the admin console only, the "device hash salted per day" above; the public `/impact` page stays at province and day.
 
 **Privacy (on top of section 9):**
 - Aggregates only. Never a point, a name, a phone number or an exact time.
