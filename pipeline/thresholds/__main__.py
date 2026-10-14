@@ -216,6 +216,17 @@ def cmd_forecast(cfg: dict) -> int:
     return 0
 
 
+def cmd_plots(cfg: dict) -> int:
+    """One figure per flood at each key gauge (thresholds/plots.py), after hindcast, gauges and forecast."""
+    from . import plots
+
+    out = output_dir(cfg)
+    written = plots.run(cfg, out, data_dir() / "tidy", sources.read_rain(out), report.gauge)
+    for zone, names in written.items():
+        print(f"{zone}: {len(names)} figures in {out / 'plots'}")
+    return 0
+
+
 def cmd_gauges(cfg: dict) -> int:
     """Watch, Warning and Evacuate for every gauge with a bank level (thresholds/gauges.py)."""
     import pandas as pd
@@ -251,6 +262,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("gauges")
     sub.add_parser("tide")
     sub.add_parser("forecast")
+    sub.add_parser("plots")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -268,6 +280,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_tide(cfg)
     if args.command == "forecast":
         return cmd_forecast(cfg)
+    if args.command == "plots":
+        return cmd_plots(cfg)
     return cmd_hindcast(cfg)
 
 

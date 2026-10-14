@@ -111,3 +111,7 @@ What it says:
 - **Lower thresholds for forecast rain** give lead but cost false alarms, and with six floods the best model and figure differ from zone to zone (Pattani: GFS 80 mm, 2/2, 1 false, 65 h; Kolok: ECMWF 100 mm, 2/3, 2 false, 37 h; Hat Yai: ICON 40 mm, 1/1, 0 false, 107 h). Picking per zone would be fitting six events.
 - **The wettest of the five models each hour, 150 mm over the next 72 hours**: Pattani 2/2 with 2 false alarms and a median lead of 51 hours; Hat Yai 1/1, 1 false, 54 hours; Kolok 1/3, 4 false. Taking the hourly maximum inflates totals, which is what lets a high figure work.
 - Nothing here changes the live rule yet: that is the owner's choice (decision log).
+
+## Figures (14 Oct 2026)
+
+`uv run python -m thresholds plots` (`thresholds/plots.py`, after `hindcast`, `gauges` and `forecast`) draws one figure per flood at each key gauge, five days before to three days after the onset, in Bangkok time: the key gauge and the upstream gauge with their Watch, Warning and Evacuate lines, and the basin rain with its 72-hour total, the Watch threshold and (from 2024) the next 72 hours as the default model forecast them three days before. Output in `out/thresholds/plots/` (22 figures and one contact sheet per zone); matplotlib was added to the pipeline for it. What they show, in the two floods that mattered most: rain already fallen crossed the Watch threshold half a day to a day before the river left its bank, the upstream gauge reached its Warning level several hours before the key gauge, and the forecast line stayed low.
