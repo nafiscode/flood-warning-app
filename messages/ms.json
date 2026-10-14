@@ -2427,6 +2427,9 @@
       "dial": "Isipadu simpanan berbanding kapasiti maksimum",
       "fromDay": "angka terkini bagi {day}",
       "dayMean": "purata {hours} jam {cms, number} m³/s"
+    },
+    "operators": {
+      "rid": "Jabatan Pengairan Diraja (RID)"
     }
   },
   "alertConsole": {

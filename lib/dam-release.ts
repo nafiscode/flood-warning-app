@@ -1,4 +1,5 @@
 import type { DamArrival } from "@/lib/dam-arrival";
+import { operatorName } from "@/lib/dam";
 
 /**
  * The dam release notice (docs/spec.md section 15): the words an admin sends when the gates open.
@@ -51,7 +52,8 @@ export function releaseText(say: Say, time: SayTime, input: ReleaseInput): strin
   }
   parts.push(say("release.act"));
   parts.push(say("release.estimate"));
-  parts.push(say("release.issuer", { operator: input.operator }));
+  // The agency in full, in the language this copy of the notice is being written in.
+  parts.push(say("release.issuer", { operator: operatorName(input.operator, say) }));
   return parts.join("\n\n");
 }
 

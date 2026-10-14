@@ -2427,6 +2427,9 @@
       "dial": "Storage against maximum capacity",
       "fromDay": "latest figure for {day}",
       "dayMean": "{hours} h mean {cms, number} m³/s"
+    },
+    "operators": {
+      "rid": "Royal Irrigation Department (RID)"
     }
   },
   "alertConsole": {

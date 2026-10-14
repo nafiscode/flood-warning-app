@@ -42,6 +42,8 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       arrival: dam.arrival!,
       // The card's button into the dam's whole report wears the same words as the map's legend.
       legend: dam.legend!,
+      // The notice says whose figures these are, in full (the owner, 14 Oct).
+      operators: dam.operators!,
     },
   };
 }
@@ -169,7 +171,7 @@ export function damReleaseMessages(messages: AbstractIntlMessages): AbstractIntl
   const dam = all.dam as Messages;
   return {
     admin: { damRelease: admin.damRelease! },
-    dam: { release: dam.release! },
+    dam: { release: dam.release!, operators: dam.operators! },
     alert: { level: (all.alert as Messages).level! },
   };
 }

@@ -295,6 +295,20 @@ describe("the notice an admin sends", () => {
     }
   });
 
+  it("names the agency in full in each language it is written in", () => {
+    // The notice goes out in three languages at once; each copy names the agency its own way.
+    for (const [locale, messages] of [
+      ["th", th],
+      ["ms", ms],
+      ["en", en],
+    ] as const) {
+      const say = sayFor(locale, messages);
+      const text = releaseText(say, time, { ...input, operator: "RID" });
+      expect(text).toContain(messages.dam.operators.rid);
+      expect(text).not.toMatch(/[{}]/);
+    }
+  });
+
   it("leaves out the end time when nobody knows it, and keeps everything else", () => {
     const say = sayFor("th", th);
     const open = releaseText(say, time, { ...input, expectedEndAt: null });

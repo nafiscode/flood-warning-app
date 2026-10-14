@@ -9,6 +9,7 @@ import {
   dailyPart,
   damLevel,
   flow,
+  operatorName,
   pathMapped,
   trend,
   volume,
@@ -283,7 +284,7 @@ export function DamNotice({
         ) : (
           <p>{t("disclaimer.noArrivalTime")}</p>
         )}
-        <p className={hint}>{t("source", { operator: dam.operator })}</p>
+        <p className={hint}>{t("source", { operator: operatorName(dam.operator, t) })}</p>
         <Link href="/map" prefetch={false} className="min-h-tap self-start underline">
           {t("notice.openMap")}
         </Link>
@@ -317,7 +318,7 @@ export function DamCard({
           {localName(dam.name, locale)}
         </p>
         <p className={hint}>
-          {t("panel.operator", { operator: dam.operator })} ·{" "}
+          {t("panel.operator", { operator: operatorName(dam.operator, t) })} ·{" "}
           {t("panel.river", { river: localName(dam.river, locale) })}
         </p>
       </div>
@@ -397,7 +398,7 @@ export function DamCard({
       ) : (
         <p>{t("disclaimer.noArrivalTime")}</p>
       )}
-      <p className={hint}>{t("source", { operator: dam.operator })}</p>
+      <p className={hint}>{t("source", { operator: operatorName(dam.operator, t) })}</p>
     </section>
   );
 }

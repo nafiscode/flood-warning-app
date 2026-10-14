@@ -58,6 +58,11 @@ import {
 } from "@/lib/dev-examples";
 import { EXAMPLE_DAMS } from "@/lib/war-room-examples";
 import { readFileSync } from "node:fs";
+import { NextIntlClientProvider } from "next-intl";
+import { render } from "@testing-library/react";
+import { homeMessages, damReleaseMessages } from "@/lib/messages";
+import en from "@/messages/en.json";
+import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
 
@@ -295,6 +300,65 @@ describe("the notice is not an alert", () => {
     );
     expect(container.textContent).toContain("EGAT");
     expect(container.textContent).toContain("ThaiWater");
+  });
+
+  it("names the agency in full, in this language, with the short form in brackets", () => {
+    /*
+     * "RID" on its own says nothing to someone who has not met it (the owner, 14 Oct). An
+     * operator Jaga has no name for keeps the code it was given, so EGAT above still reads EGAT.
+     */
+    const rid = { ...DAM, operator: "RID" };
+    const card = renderWithIntl(<DamCard dam={rid} now={EXAMPLE_NOW} />).container;
+    expect(card.textContent).toContain(th.dam.operators.rid);
+    expect(th.dam.operators.rid).toBe("กรมชลประทาน (RID)");
+    const notice = renderWithIntl(
+      <DamNotice
+        dam={{ ...rid, signal: exampleDamSignal("releasing") }}
+        via="main"
+        tambonName="บานา"
+        now={EXAMPLE_NOW}
+      />,
+    ).container;
+    expect(notice.textContent).toContain(th.dam.operators.rid);
+    // The code is written in the database however it is typed there.
+    const lower = renderWithIntl(
+      <DamCard dam={{ ...DAM, operator: " rid " }} now={EXAMPLE_NOW} />,
+    ).container;
+    expect(lower.textContent).toContain(th.dam.operators.rid);
+  });
+
+  it("the home screen is sent the agency's name, not only the sentence that holds it", () => {
+    /*
+     * The home screen is sent a few groups of the dam's words, not all of them, because it has a
+     * slow-3G budget. A group left out of that slice does not fail quietly: next-intl prints the
+     * message key on the screen. So the notice is rendered here with exactly what the home screen
+     * sends it.
+     */
+    const { container } = render(
+      <NextIntlClientProvider
+        locale="th"
+        messages={homeMessages(th) as never}
+        timeZone="Asia/Bangkok"
+      >
+        <DamNotice
+          dam={{ ...DAM, operator: "RID", signal: exampleDamSignal("releasing") }}
+          via="main"
+          tambonName="บานา"
+          now={EXAMPLE_NOW}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(container.textContent).toContain(th.dam.operators.rid);
+    expect(container.textContent).not.toContain("dam.operators");
+    // The release preview on the admin screen writes the notice itself, so it needs them too.
+    expect((damReleaseMessages(th) as { dam: { operators?: unknown } }).dam.operators).toBeTruthy();
+  });
+
+  it("every language has the agency's full name, with RID in brackets", () => {
+    for (const m of [th, ms, en] as const) {
+      expect(m.dam.operators.rid).toContain("(RID)");
+      expect(m.dam.operators.rid.length).toBeGreaterThan("(RID)".length + 8);
+    }
   });
 });
 

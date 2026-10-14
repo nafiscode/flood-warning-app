@@ -316,6 +316,21 @@ export function damForFigure(dams: readonly Dam[], tambonCodes: readonly string[
   );
 }
 
+/**
+ * The agencies whose figures Jaga republishes, by the code `dams.operator` stores.
+ *
+ * The owner asked on 14 Oct 2026 that a screen name the agency in full in the reader's own
+ * language, with the short form in brackets - "RID" alone says nothing to someone who has not met
+ * it. An operator Jaga has no name for keeps the code it was given, so a new dam's row can never
+ * come out blank.
+ */
+const OPERATOR_KEYS: Record<string, string> = { RID: "rid" };
+
+export function operatorName(operator: string, say: (key: string) => string): string {
+  const key = OPERATOR_KEYS[operator.trim().toUpperCase()];
+  return key ? say(`operators.${key}`) : operator;
+}
+
 /** True where OSM has no channel below the reservoir, so the app can say so instead of guessing. */
 export function pathMapped(dam: Dam): boolean {
   return dam.geometryNote.path_mapped !== false && dam.reaches.length > 0;
