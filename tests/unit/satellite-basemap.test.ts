@@ -3,7 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   BASEMAPS,
   ESRI_FAILS_BEFORE_FALLBACK,
+  ESRI_SOURCE_PREFIX,
   esriImageryTiles,
+  esriTerrainStyle,
+  esriTerrainStyleUrl,
   isPhotoBasemap,
   satelliteProvider,
   satelliteSource,
@@ -98,5 +101,90 @@ describe("satellite with the terrain shaded over it", () => {
     const style = styleFor("satellite");
     expect(style.layers.map((l) => l.id)).toEqual(["jaga-base-satellite"]);
     expect(style.sources["jaga-base-dem"]).toBeUndefined();
+  });
+});
+
+describe("the terrain background", () => {
+  it("asks Esri for its terrain style in the page's language, with the key", () => {
+    const url = esriTerrainStyleUrl("k+y/1", "th");
+    expect(url).toContain("basemapstyles-api.arcgis.com");
+    expect(url).toContain("/styles/arcgis/terrain?language=th&");
+    expect(url).toContain("token=k%2By%2F1");
+  });
+
+  it("keeps Jaga's font server and renames Esri's sources so a basemap change drops them", () => {
+    const raw = {
+      version: 8,
+      glyphs: "https://basemaps-api.arcgis.com/fonts/{fontstack}/{range}.pbf?token=x",
+      sources: {
+        esri: {
+          type: "vector",
+          url: "https://basemaps-api.arcgis.com/x",
+          attribution: "Sources: Esri, TomTom",
+        },
+        abc123: {
+          type: "raster",
+          url: "https://ibasemaps-api.arcgis.com/h",
+          attribution: "Esri hillshade",
+        },
+      },
+      layers: [
+        { id: "Land", type: "fill", source: "esri", "source-layer": "Land" },
+        { id: "Hillshade", type: "raster", source: "abc123" },
+        {
+          id: "Road/label",
+          type: "symbol",
+          source: "esri",
+          "source-layer": "Road",
+          layout: { "text-font": ["Arial Bold"] },
+        },
+        {
+          id: "Place/label",
+          type: "symbol",
+          source: "esri",
+          "source-layer": "Place",
+          layout: { "text-font": ["Arial Unicode MS Regular"] },
+        },
+        {
+          id: "Water/label",
+          type: "symbol",
+          source: "esri",
+          "source-layer": "Water",
+          layout: { "text-font": ["Arial Italic"] },
+        },
+      ],
+    } as unknown as StyleSpecification;
+    const style = esriTerrainStyle(raw);
+    expect(style.glyphs).toContain("tiles.openfreemap.org");
+    expect(Object.keys(style.sources)).toEqual([ESRI_SOURCE_PREFIX, `${ESRI_SOURCE_PREFIX}-1`]);
+    expect(style.layers.map((l) => ("source" in l ? l.source : null))).toEqual([
+      ESRI_SOURCE_PREFIX,
+      `${ESRI_SOURCE_PREFIX}-1`,
+      ESRI_SOURCE_PREFIX,
+      ESRI_SOURCE_PREFIX,
+      ESRI_SOURCE_PREFIX,
+    ]);
+    const fonts = style.layers
+      .filter((l) => l.type === "symbol")
+      .map((l) => (l as { layout: Record<string, unknown> }).layout["text-font"]);
+    expect(fonts).toEqual([["Noto Sans Bold"], ["Noto Sans Regular"], ["Noto Sans Italic"]]);
+    // Esri's own credit, led once by the "Powered by Esri" Esri asks for.
+    const credit = (id: string) => (style.sources[id] as { attribution?: string }).attribution;
+    expect(credit(ESRI_SOURCE_PREFIX)).toMatch(/^Powered by .*Esri.*\| Sources: Esri, TomTom$/);
+    expect(credit(`${ESRI_SOURCE_PREFIX}-1`)).toBe("Esri hillshade");
+    // A source without a credit of its own gets Esri's full line.
+    const bare = esriTerrainStyle({
+      ...raw,
+      sources: { esri: { type: "vector", url: "x" } },
+    } as StyleSpecification);
+    expect((bare.sources[ESRI_SOURCE_PREFIX] as { attribution?: string }).attribution).toMatch(
+      /^Powered by .*Esri.*TomTom/,
+    );
+  });
+
+  it("without a key it is the open street map with the hills shaded", () => {
+    const style = styleFor("terrain");
+    expect(style.layers.map((l) => l.id)).toEqual(["jaga-base-hillshade"]);
+    expect(style.sources["jaga-base-dem"]).toMatchObject({ encoding: "terrarium" });
   });
 });

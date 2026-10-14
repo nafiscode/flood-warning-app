@@ -15,8 +15,11 @@ export function darkNow(): boolean {
 /**
  * The basemaps a person can choose (the owner, 12 Oct 2026). All free and without a key:
  *   streets    OpenFreeMap, light by day and dark at night; the default.
- *   terrain    the same streets with the hills shaded from open elevation tiles (Mapzen's
- *              Terrarium set on AWS), so it follows day and night as well.
+ *   terrain    by day, Esri's own terrain map (the owner, 15 Oct 2026): its vector map with names
+ *              in the reader's language over its hill shading, with the ArcGIS key the satellite
+ *              picture uses. Esri has no night version, so after dark, without a key, or once Esri
+ *              stops answering, the street map with the hills shaded from open elevation tiles
+ *              (Mapzen's Terrarium set on AWS), which follows day and night.
  *   satellite  Esri World Imagery when Jaga has an ArcGIS key (the owner, 14 Oct 2026): satellite
  *              and aerial pictures down to about half a metre in towns, so single houses show.
  *              Without a key, or once Esri stops answering (the free allowance is 2 million tiles
@@ -85,6 +88,83 @@ export function satelliteSource(provider: SatelliteProvider, key: string = ARCGI
         attribution: SATELLITE_CREDIT,
       };
 }
+/*
+ * Esri's terrain map, from the ArcGIS Basemap Styles service (the same key and the same free
+ * allowance as the satellite picture). Its labels ask for Arial fonts from Esri's own font server,
+ * which has none of the font Jaga's own labels use, so the map keeps OpenFreeMap's fonts and the
+ * Esri labels are drawn in the Noto Sans of matching weight (it covers Thai and Malay).
+ */
+export function esriTerrainStyleUrl(key: string, language: string): string {
+  return `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/terrain?language=${encodeURIComponent(language)}&token=${encodeURIComponent(key)}`;
+}
+const POWERED_BY_ESRI =
+  'Powered by <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
+const ESRI_TERRAIN_CREDIT = `${POWERED_BY_ESRI} | Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community`;
+/** Esri's own source ids are renamed under jaga-base-esri, so a basemap change drops them. */
+export const ESRI_SOURCE_PREFIX = "jaga-base-esri";
+const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
+const notoFor = (font: string) =>
+  /bold/i.test(font)
+    ? "Noto Sans Bold"
+    : /italic/i.test(font)
+      ? "Noto Sans Italic"
+      : "Noto Sans Regular";
+
+/** Esri's terrain style made fit to sit under Jaga's layers: our font server, our source names. */
+export function esriTerrainStyle(raw: StyleSpecification): StyleSpecification {
+  const names = new Map(
+    Object.keys(raw.sources).map((id, i) => [
+      id,
+      i === 0 ? ESRI_SOURCE_PREFIX : `${ESRI_SOURCE_PREFIX}-${i}`,
+    ]),
+  );
+  // Esri's own credit where it gives one, led by the "Powered by Esri" Esri asks for, once.
+  const sources = Object.fromEntries(
+    Object.entries(raw.sources).map(([id, source], i) => {
+      const own = (source as { attribution?: string }).attribution;
+      const attribution = !own
+        ? ESRI_TERRAIN_CREDIT
+        : i === 0 && !/powered by/i.test(own)
+          ? `${POWERED_BY_ESRI} | ${own}`
+          : own;
+      return [names.get(id)!, { ...source, attribution }];
+    }),
+  ) as StyleSpecification["sources"];
+  const layers = raw.layers.map((layer) => {
+    const named =
+      "source" in layer && typeof layer.source === "string" && names.has(layer.source)
+        ? { ...layer, source: names.get(layer.source)! }
+        : layer;
+    if (named.type !== "symbol") return named;
+    const font = named.layout?.["text-font"];
+    if (!Array.isArray(font) || !font.every((f) => typeof f === "string")) return named;
+    return {
+      ...named,
+      layout: { ...named.layout, "text-font": [notoFor((font as string[])[0] ?? "")] },
+    };
+  }) as StyleSpecification["layers"];
+  return { ...raw, glyphs: GLYPHS, sources, layers };
+}
+
+/** Esri's terrain style for one language, fetched once a visit; null when Esri will not give it. */
+const esriTerrainCache = new Map<string, Promise<StyleSpecification | null>>();
+function fetchEsriTerrain(language: string): Promise<StyleSpecification | null> {
+  let ask = esriTerrainCache.get(language);
+  if (!ask) {
+    ask = fetch(esriTerrainStyleUrl(ARCGIS_KEY, language))
+      .then((r) => (r.ok ? (r.json() as Promise<StyleSpecification>) : null))
+      .then((raw) => (raw && Array.isArray(raw.layers) ? esriTerrainStyle(raw) : null))
+      .catch(() => null);
+    esriTerrainCache.set(language, ask);
+  }
+  return ask;
+}
+/** The page's language, which Esri's names follow. */
+const esriLanguage = () => {
+  const lang = typeof document === "undefined" ? "th" : document.documentElement.lang || "th";
+  return ["th", "ms", "en"].includes(lang) ? lang : "th";
+};
+
 const TERRAIN_TILES = "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
 const TERRAIN_CREDIT = "Elevation: Mapzen terrain tiles on AWS (SRTM, GMTED and others)";
 
@@ -169,6 +249,7 @@ export const TAMBON_SELECTED_LAYER = "jaga-tambon-selected";
 /** Parts of a basemap that are ours to add and must not be carried from one basemap to the next. */
 const BASE_PARTS = ["jaga-ground", "jaga-base-satellite", "jaga-base-hillshade"];
 const BASE_SOURCES = ["jaga-base-satellite", "jaga-base-dem"];
+const isBaseSource = (id: string) => BASE_SOURCES.includes(id) || id.startsWith(ESRI_SOURCE_PREFIX);
 
 /** The satellite picture as a whole style: one raster layer, and the font server our labels need. */
 const satelliteStyle = (): StyleSpecification => ({
@@ -229,33 +310,58 @@ function withHillshade(
 export function setBasemap(map: MapLibreMap, basemap: Basemap): void {
   chosen = basemap;
   const dark = mapIsDark();
+  if (basemap === "terrain" && !dark && satelliteProvider() === "esri") {
+    // Esri's terrain by day. Until its style arrives the map keeps what it shows; if Esri will
+    // not give it, the open terrain instead, for the rest of the visit.
+    void fetchEsriTerrain(esriLanguage()).then((style) => {
+      if (chosen !== "terrain") return;
+      if (style) {
+        map.setStyle(style, { transformStyle: (previous, next) => carryOwn(previous, next) });
+        return;
+      }
+      giveUpOnEsri();
+      setBasemap(map, "terrain");
+    });
+    return;
+  }
   const photo = isPhotoBasemap(basemap);
   const style = photo ? satelliteStyle() : dark ? BASEMAP_STYLE_DARK : BASEMAP_STYLE;
   map.setStyle(style, {
-    transformStyle: (previous, next) => {
-      const base: StyleSpecification =
+    transformStyle: (previous, next) =>
+      carryOwn(
+        previous,
         basemap === "terrain"
           ? withHillshade(next, dark ? "mapDark" : "map")
           : basemap === "satelliteTerrain"
             ? withHillshade(next, "photo")
-            : next;
-      if (!previous) return base;
-      const own = previous.layers.filter(
-        (l) => l.id.startsWith("jaga-") && !BASE_PARTS.includes(l.id),
-      );
-      // Every source of ours comes along, with whatever data it holds by now.
-      const ownSources = Object.fromEntries(
-        Object.entries(previous.sources).filter(
-          ([id]) => id.startsWith("jaga-") && !BASE_SOURCES.includes(id),
-        ),
-      );
-      return {
-        ...base,
-        sources: { ...base.sources, ...ownSources },
-        layers: [...base.layers, ...own],
-      };
-    },
+            : next,
+      ),
   });
+}
+
+/** Everything of ours (sources with the data they hold, layers in their order) on a new base. */
+function carryOwn(
+  previous: StyleSpecification | undefined,
+  base: StyleSpecification,
+): StyleSpecification {
+  if (!previous) return base;
+  const own = previous.layers.filter((l) => l.id.startsWith("jaga-") && !BASE_PARTS.includes(l.id));
+  // Every source of ours comes along, with whatever data it holds by now.
+  const ownSources = Object.fromEntries(
+    Object.entries(previous.sources).filter(([id]) => id.startsWith("jaga-") && !isBaseSource(id)),
+  );
+  return {
+    ...base,
+    sources: { ...base.sources, ...ownSources },
+    layers: [...base.layers, ...own],
+  };
+}
+
+/** Esri stopped answering: EOX and the open terrain for the rest of the visit. */
+function giveUpOnEsri(): void {
+  if (esriFailed) return;
+  esriFailed = true;
+  for (const listener of satelliteListeners) listener();
 }
 
 let pmtilesReady = false;
@@ -304,13 +410,13 @@ export async function createServiceAreaMap(
    */
   let esriErrors = 0;
   map.on("error", (event) => {
-    const source = (event as { sourceId?: string }).sourceId;
-    if (source !== "jaga-base-satellite" || satelliteProvider() !== "esri") return;
+    const source = (event as { sourceId?: string }).sourceId ?? "";
+    const esri = source === "jaga-base-satellite" || source.startsWith(ESRI_SOURCE_PREFIX);
+    if (!esri || satelliteProvider() !== "esri") return;
     esriErrors += 1;
     if (esriErrors < ESRI_FAILS_BEFORE_FALLBACK) return;
-    esriFailed = true;
-    if (isPhotoBasemap(chosen)) setBasemap(map, chosen);
-    for (const listener of satelliteListeners) listener();
+    giveUpOnEsri();
+    if (isPhotoBasemap(chosen) || chosen === "terrain") setBasemap(map, chosen);
   });
   map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
 
