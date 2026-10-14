@@ -11,6 +11,7 @@ import {
   plainPath,
   waitingIn,
 } from "@/lib/admin-menu";
+import { PREVIEW_ROLES } from "@/lib/role-preview";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
@@ -44,9 +45,12 @@ describe("the admin pages, in groups", () => {
   it("puts every admin page in exactly one group, and lists no page that does not exist", () => {
     const pages = readdirSync(ADMIN_DIR, { withFileTypes: true })
       .filter((d) => d.isDirectory() && existsSync(join(ADMIN_DIR, d.name, "page.tsx")))
-      .map((d) => `/admin/${d.name}`)
-      .sort();
-    expect(ADMIN_ITEMS.map((i) => i.href).sort()).toEqual(pages);
+      .map((d) => `/admin/${d.name}`);
+    // The role previews are one page with the role in its address (/admin/preview/[role]).
+    const previews = existsSync(join(ADMIN_DIR, "preview", "[role]", "page.tsx"))
+      ? PREVIEW_ROLES.map((r) => `/admin/preview/${r}`)
+      : [];
+    expect(ADMIN_ITEMS.map((i) => i.href).sort()).toEqual([...pages, ...previews].sort());
     expect(new Set(ADMIN_ITEMS.map((i) => i.key)).size).toBe(ADMIN_ITEMS.length);
   });
 
@@ -100,7 +104,7 @@ describe("the menu", () => {
       .container;
   }
 
-  it("has Home and the four groups, all shut", async () => {
+  it("has Home and every group, all shut", async () => {
     const c = await show("/en/admin/log");
     const groups = [...c.querySelectorAll("[data-admin-group]")];
     expect(groups.map((g) => g.getAttribute("data-admin-group"))).toEqual([...ADMIN_GROUPS]);
@@ -146,7 +150,10 @@ describe("the words", () => {
       }
       expect(m.admin.menu.waiting).toContain("{count}");
       for (const item of ADMIN_ITEMS) {
-        expect((m.admin.nav as Record<string, string>)[item.key], item.key).toBeTruthy();
+        const name = item.key
+          .split(".")
+          .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], m.admin.nav);
+        expect(typeof name === "string" && name.length > 0, item.key).toBe(true);
       }
     }
   });

@@ -7,9 +7,10 @@
  * - warn: everything that reaches the public
  * - review: things that wait for an admin's decision, each with a count of what is waiting
  * - records: people's details, points, notes between shifts, exports, the access log, the admins
+ * - preview: each role's own screens with made-up data (the owner, 14 Oct; lib/role-preview.ts)
  */
 
-export const ADMIN_GROUPS = ["watch", "warn", "review", "records"] as const;
+export const ADMIN_GROUPS = ["watch", "warn", "review", "records", "preview"] as const;
 export type AdminGroup = (typeof ADMIN_GROUPS)[number];
 
 /** What a review page counts: how many are waiting for an admin. */
@@ -43,6 +44,12 @@ export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "exports", href: "/admin/exports", group: "records" },
   { key: "log", href: "/admin/log", group: "records" },
   { key: "invitations", href: "/admin/invitations", group: "records", superOnly: true },
+  { key: "preview.visitor", href: "/admin/preview/visitor", group: "preview" },
+  { key: "preview.resident", href: "/admin/preview/resident", group: "preview" },
+  { key: "preview.rescue", href: "/admin/preview/rescue", group: "preview" },
+  { key: "preview.supplies", href: "/admin/preview/supplies", group: "preview" },
+  { key: "preview.pending", href: "/admin/preview/pending", group: "preview" },
+  { key: "preview.operator", href: "/admin/preview/operator", group: "preview" },
 ];
 
 /** The pages of one group this admin may open. */

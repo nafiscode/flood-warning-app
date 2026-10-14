@@ -1,5 +1,5 @@
 /**
- * The admin console's menu (14 Oct): the pages in four groups, shut until tapped, with a count of
+ * The admin console's menu (14 Oct): the pages in groups, shut until tapped, with a count of
  * what waits for an admin on the review group - in a real browser at phone width, signed in as
  * a real admin against a real database. The test's admin and its waiting report are removed
  * afterwards.
@@ -87,7 +87,7 @@ test.describe("the admin menu", () => {
     await signIn(page);
     await page.goto("/en/admin");
     const menu = page.locator("[data-admin-menu]");
-    await expect(menu.locator("[data-admin-group]")).toHaveCount(4);
+    await expect(menu.locator("[data-admin-group]")).toHaveCount(5);
     // The test's own report is waiting, so the review group counts at least one.
     await expect(menu.locator('[data-admin-waiting="review"]')).toBeVisible();
 
@@ -115,7 +115,7 @@ test.describe("the admin menu", () => {
     // The admin home lists every group with what it is for; an admin is not offered the admins
     // page, which is the super admin's.
     await page.goto("/en/admin");
-    await expect(page.locator("[data-admin-home-group]")).toHaveCount(4);
+    await expect(page.locator("[data-admin-home-group]")).toHaveCount(5);
     await expect(page.locator('[data-admin-home-link="invitations"]')).toHaveCount(0);
     await page.screenshot({ path: "test-results/admin-menu-home.png", fullPage: true });
     await page.locator('[data-admin-group="watch"] summary').click();

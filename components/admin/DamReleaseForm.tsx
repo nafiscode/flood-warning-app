@@ -46,9 +46,17 @@ export function DamReleaseForm({
   send,
   nowValue,
   nextUpdateValue,
+  operatorSend,
 }: {
   dams: DamForRelease[];
   send: (form: FormData) => void;
+  /**
+   * The dam operator's own screen (spec 15; previewed for admins on 14 Oct): their one dam, and
+   * only what an operator enters - when the gates open, how much, until when. The level is the one
+   * decided for every release (Warning, 13 Oct) and the next update is set for them. The words
+   * are this button's label.
+   */
+  operatorSend?: string;
   /** Bangkok wall-clock defaults, computed on the server so the first paint matches. */
   nowValue: string;
   nextUpdateValue: string;
@@ -85,15 +93,28 @@ export function DamReleaseForm({
       : null;
 
   return (
-    <form action={send} className="flex flex-col gap-4" data-dam-release-form>
+    <form
+      action={send}
+      className="flex flex-col gap-4"
+      data-dam-release-form
+      data-operator={operatorSend ? "true" : undefined}
+    >
       <input type="hidden" name="notice" value={dam.noticeId ?? ""} />
-      <div className="flex flex-col gap-1">
+      {operatorSend && (
+        <>
+          <input type="hidden" name="dam" value={dam.code} />
+          <input type="hidden" name="level" value={DEFAULT_RELEASE_LEVEL} />
+          <input type="hidden" name="nextUpdate" value={nextUpdateValue} />
+          <p className="font-bold text-jaga-ink">{localName(dam.name, locale)}</p>
+        </>
+      )}
+      <div className={`flex flex-col gap-1 ${operatorSend ? "hidden" : ""}`}>
         <label className={label} htmlFor="dam">
           {t("damRelease.dam")}
         </label>
         <select
           id="dam"
-          name="dam"
+          name={operatorSend ? undefined : "dam"}
           className={input}
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -155,13 +176,13 @@ export function DamReleaseForm({
         />
       </div>
 
-      <fieldset className="flex flex-col gap-2">
+      <fieldset className={`flex flex-col gap-2 ${operatorSend ? "hidden" : ""}`}>
         <legend className={label}>{t("damRelease.level")}</legend>
         {RELEASE_LEVELS.map((l) => (
           <label key={l} className="flex min-h-tap items-center gap-3">
             <input
               type="radio"
-              name="level"
+              name={operatorSend ? undefined : "level"}
               value={l}
               checked={level === l}
               onChange={() => setLevel(l)}
@@ -173,15 +194,15 @@ export function DamReleaseForm({
         <p className={hint}>{t("damRelease.levelHint")}</p>
       </fieldset>
 
-      <div className="flex flex-col gap-1">
+      <div className={`flex flex-col gap-1 ${operatorSend ? "hidden" : ""}`}>
         <label className={label} htmlFor="nextUpdate">
           {t("damRelease.nextUpdate")}
         </label>
         <input
           id="nextUpdate"
-          name="nextUpdate"
+          name={operatorSend ? undefined : "nextUpdate"}
           type="datetime-local"
-          required
+          required={!operatorSend}
           className={input}
           defaultValue={nextUpdateValue}
         />
@@ -219,7 +240,7 @@ export function DamReleaseForm({
       </div>
 
       <button type="submit" className={`${buttonPrimary} self-start`} disabled={!preview}>
-        {t("damRelease.send")}
+        {operatorSend ?? t("damRelease.send")}
       </button>
     </form>
   );

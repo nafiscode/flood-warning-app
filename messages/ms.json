@@ -1344,7 +1344,15 @@
       "exports": "Eksport",
       "log": "Log akses",
       "fieldRescues": "Penyelamatan ditemui sendiri",
-      "signals": "Isyarat"
+      "signals": "Isyarat",
+      "preview": {
+        "visitor": "Pelawat",
+        "resident": "Penduduk",
+        "rescue": "Pasukan penyelamat",
+        "supplies": "Pasukan makanan dan air",
+        "pending": "Pasukan menunggu pengesahan",
+        "operator": "Pengendali empangan"
+      }
     },
     "role": {
       "admin": "Pentadbir",
@@ -1502,6 +1510,10 @@
         "records": {
           "title": "Rekod dan pasukan",
           "note": "Maklumat isi rumah, mata, catatan serah tugas, eksport dan log akses. Setiap kali maklumat peribadi dibuka, ia direkodkan."
+        },
+        "preview": {
+          "title": "Lihat sebagai peranan lain",
+          "note": "Skrin setiap peranan dengan data rekaan, untuk melihat apa yang mereka alami. Tiada data sebenar dibaca atau dihantar."
         }
       }
     }
@@ -3285,5 +3297,42 @@
     "ok": "Mesej LINE bulan ini: {used} daripada {limit} digunakan",
     "warn": "Mesej LINE bulan ini sudah {used} daripada {limit}, hampir habis. Setiap amaran menggunakan satu mesej bagi setiap orang.",
     "full": "Mesej LINE bulan ini sudah habis ({limit}). LINE tidak akan menghantar lagi sehingga bulan depan. Amaran masih sampai melalui pemberitahuan telefon, aplikasi dan loceng."
+  },
+  "rolePreview": {
+    "banner": "Pratonton: anda melihat Jaga sebagai {role}. Semua angka dan permintaan adalah rekaan; tiada data sebenar dibaca atau dihantar.",
+    "switch": "Lihat sebagai",
+    "headerNote": "Bar di bahagian paling atas masih milik anda sebagai pentadbir.",
+    "role": {
+      "visitor": "pelawat yang belum log masuk",
+      "resident": "penduduk",
+      "rescue": "pasukan penyelamat",
+      "supplies": "pasukan makanan dan air",
+      "pending": "pasukan yang menunggu pengesahan",
+      "operator": "pengendali empangan (EGAT)"
+    },
+    "visitor": {
+      "note": "Seseorang yang membuka Jaga buat kali pertama, belum log masuk dan belum memilih kawasan."
+    },
+    "resident": {
+      "note": "Penduduk yang telah log masuk, dengan rumah dan dua tempat yang dipantau.",
+      "home": "Laman utama",
+      "map": "Peta"
+    },
+    "rescue": {
+      "note": "Ketik \"Buka bunyi amaran\" untuk mendengar bunyi apabila permintaan ditawarkan kepada pasukan. Terima, beri anggaran masa tiba atau pulangkan; contoh ini bertindak balas sendiri."
+    },
+    "supplies": {
+      "note": "Pasukan makanan dan air hanya melihat permintaan bekalan; permintaan menyelamat tidak pernah ditawarkan kepadanya."
+    },
+    "pending": {
+      "note": "Apa yang dilihat pasukan yang baru mendaftar pada halaman akaun dan konsol, sehingga pentadbir menelefon nombor rasminya dan mengesahkannya."
+    },
+    "operator": {
+      "note": "Skrin yang akan digunakan oleh pengendali empangan untuk memberi notis pelepasan air.",
+      "lead": "Pengendali mengisi bila pintu air dibuka, berapa banyak air dilepaskan, dan bila dijangka tamat; ayatnya datang daripada templat yang telah disemak. Notis dihantar serta-merta kepada semua orang dalam zon hilir empangan, dan pentadbir Jaga dimaklumkan pada masa yang sama serta boleh melanjutkan atau membatalkannya.",
+      "notYet": "Belum ada sesiapa boleh mendaftar sebagai pengendali empangan sehingga wakil di empangan bersetuju.",
+      "send": "Hantar notis pelepasan air",
+      "sent": "Pratonton: tiada apa-apa dihantar. Pada skrin sebenar, notis ini akan sampai kepada semua orang dalam zon serta-merta, dan pentadbir akan melihatnya pada masa yang sama."
+    }
   }
 }

@@ -1344,7 +1344,15 @@
       "exports": "Exports",
       "log": "Access log",
       "fieldRescues": "Field rescues",
-      "signals": "Signals"
+      "signals": "Signals",
+      "preview": {
+        "visitor": "Visitor",
+        "resident": "Resident",
+        "rescue": "Rescue team",
+        "supplies": "Food & water team",
+        "pending": "Team awaiting verification",
+        "operator": "Dam operator"
+      }
     },
     "role": {
       "admin": "Admin",
@@ -1502,6 +1510,10 @@
         "records": {
           "title": "Records and team",
           "note": "Household details, points, shift notes, exports and the access log. Every look at personal details is logged."
+        },
+        "preview": {
+          "title": "View as another role",
+          "note": "Each role's own screens with made-up data, to see what they experience. Nothing real is read or sent."
         }
       }
     }
@@ -3285,5 +3297,42 @@
     "ok": "LINE messages this month: {used} of {limit} used",
     "warn": "LINE messages this month: {used} of {limit} used, close to the limit. Each alert uses one message per person reached.",
     "full": "This month's {limit} LINE messages are used up. LINE will send no more until next month. Alerts still reach people by phone notification, in the app and in the bell."
+  },
+  "rolePreview": {
+    "banner": "Preview: you are seeing Jaga as {role}. All figures and requests are made up; nothing real is read or sent.",
+    "switch": "View as",
+    "headerNote": "The bar at the very top is still yours, as an admin.",
+    "role": {
+      "visitor": "a visitor who has not signed in",
+      "resident": "a resident",
+      "rescue": "a rescue team",
+      "supplies": "a food and water team",
+      "pending": "a team waiting for verification",
+      "operator": "a dam operator (EGAT)"
+    },
+    "visitor": {
+      "note": "Someone opening Jaga for the first time, not signed in, with no area chosen yet."
+    },
+    "resident": {
+      "note": "A signed-in resident with a home and two watched places.",
+      "home": "Home",
+      "map": "Map"
+    },
+    "rescue": {
+      "note": "Tap \"Turn on the alarm sound\" to hear a request being offered to the team. Accept, give an arrival estimate or hand it back; the example answers by itself."
+    },
+    "supplies": {
+      "note": "A food and water team sees only requests for supplies; a request for rescue is never offered to it."
+    },
+    "pending": {
+      "note": "What a newly registered team sees on its account page and on the console, until an admin has called its official number and verified it."
+    },
+    "operator": {
+      "note": "The screen a dam operator would use to announce a release.",
+      "lead": "The operator enters when the gates open, how much water is released and when it is expected to end; the words come from the reviewed template. The notice goes out at once to everyone in the zone below the dam, and Jaga's admins are told at the same moment and can extend or cancel it.",
+      "notYet": "Nobody can register as a dam operator yet: this waits for a contact at the dam to agree.",
+      "send": "Send the release notice",
+      "sent": "Preview: nothing was sent. On the real screen this notice would now reach everyone in the zone, and the admins would see it at once."
+    }
   }
 }

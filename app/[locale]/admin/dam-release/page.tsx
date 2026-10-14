@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getFormatter, getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { DamReleaseForm, type DamForRelease } from "@/components/admin/DamReleaseForm";
+import { DamReleaseForm } from "@/components/admin/DamReleaseForm";
 import { readDamReleases } from "@/lib/admin-board";
 import { getSessionProfile, isAdminRole } from "@/lib/auth";
 import { damReleaseMessages } from "@/lib/messages";
-import type { DamArrival } from "@/lib/dam-arrival";
 import { bangkokValue } from "@/lib/dam-release";
+import { readDamsForRelease } from "@/lib/dam-release-data";
 import { createClient } from "@/lib/supabase/server";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonSecondary, card, errorNotice, hint, notice } from "@/lib/ui";
@@ -61,71 +61,7 @@ export default async function AdminDamRelease({
   if (!session || !isAdminRole(session.role)) notFound();
 
   const supabase = await createClient();
-  const [map, arrivals, state, notices, inForce] = await Promise.all([
-    supabase.rpc("dam_map"),
-    supabase
-      .from("dam_arrivals")
-      .select("dam_code, tambon_code, via, km_from_dam, warn_from_h, earliest_h, latest_h")
-      .order("km_from_dam"),
-    supabase.rpc("dam_state"),
-    supabase.rpc("admin_dam_board"),
-    readDamReleases(),
-  ]);
-
-  type Row = Record<string, unknown>;
-  const byDam = new Map<string, DamArrival[]>();
-  for (const row of (arrivals.data ?? []) as Row[]) {
-    const code = String(row.dam_code);
-    const list = byDam.get(code) ?? [];
-    list.push({
-      tambon: String(row.tambon_code),
-      via: row.via as DamArrival["via"],
-      kmFromDam: Number(row.km_from_dam ?? 0),
-      warnFromH: Number(row.warn_from_h ?? 0),
-      earliestH: Number(row.earliest_h ?? 0),
-      latestH: Number(row.latest_h ?? 0),
-      peakEarliestH: 0,
-      peakLatestH: 0,
-      source: "",
-    });
-    byDam.set(code, list);
-  }
-  const outflow = new Map<string, number | null>(
-    ((state.data ?? []) as Row[]).map((row) => {
-      const signal = row.signal as Row | null;
-      const cms = signal && typeof signal.outflow_cms === "number" ? signal.outflow_cms : null;
-      return [String(row.code), cms];
-    }),
-  );
-  // An open war-room row, so sending from here closes the loop the feed opened.
-  const openNotice = new Map<string, string | null>(
-    ((notices.data ?? []) as Row[]).map((row) => [
-      String(row.code),
-      row.notice_status === "open" ? String(row.notice_id) : null,
-    ]),
-  );
-
-  /*
-   * Only a dam with a zone can be sent (14 Oct 2026): `admin_send_dam_release` refuses one with
-   * no tambons, and offering it here would be offering a button that cannot work. A reservoir
-   * whose channel nobody has mapped keeps its figures on the map and nothing more.
-   */
-  const dams: DamForRelease[] = ((map.data ?? []) as Row[])
-    .filter((row) => Number(row.tambons ?? 0) > 0)
-    .map((row) => {
-      const code = String(row.code);
-      const list = byDam.get(code) ?? [];
-      return {
-        code,
-        name: (row.name ?? {}) as Record<string, string>,
-        river: (row.river ?? {}) as Record<string, string>,
-        operator: String(row.operator ?? ""),
-        tambons: list.length,
-        arrivals: list,
-        outflowCms: outflow.get(code) ?? null,
-        noticeId: openNotice.get(code) ?? null,
-      };
-    });
+  const [dams, inForce] = await Promise.all([readDamsForRelease(supabase), readDamReleases()]);
 
   const now = new Date();
   return (

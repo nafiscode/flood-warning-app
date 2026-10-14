@@ -21,7 +21,7 @@ import {
   type ExampleTap,
 } from "@/lib/authority-examples";
 import type { UnitContact } from "@/lib/coverage";
-import { shouldAlarm } from "@/lib/dispatch";
+import { shouldAlarm, type AuthorityBoard } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
 
 /**
@@ -30,8 +30,10 @@ import { arm, play } from "@/lib/sounds";
  * it is nobody's again. The clock starts at a fixed moment and then runs, so the countdown moves
  * and the alarm stops by itself when the offer runs out. Nothing is read or written anywhere.
  */
-export function AuthorityExample() {
-  const [board, setBoard] = useState(EXAMPLE_AUTHORITY_BOARD);
+export function AuthorityExample({
+  start = EXAMPLE_AUTHORITY_BOARD,
+}: { start?: AuthorityBoard } = {}) {
+  const [board, setBoard] = useState(start);
   const [now, setNow] = useState(EXAMPLE_NOW);
   const [alarm, setAlarm] = useState<AlarmState>("off");
   const [notice, setNotice] = useState<BoardNotice | null>(null);
