@@ -2,8 +2,8 @@
   "app": {
     "name": "Jaga",
     "nameThai": "จากา",
-    "tagline": "Jaga diri, jaga jiran",
-    "pwaName": "Jaga – Amaran dan bantuan kecemasan",
+    "tagline": "Jaga satu sama lain",
+    "pwaName": "Jaga – Amaran dan minta bantuan",
     "description": "Amaran banjir dan minta bantuan untuk Patani, Yala, Narathiwat dan Songkhla",
     "skipToContent": "Langkau ke kandungan"
   },
@@ -12,7 +12,7 @@
     "loading": "Sedang memuat status amaran…",
     "notInService": {
       "title": "Jaga belum beroperasi",
-      "body": "Jaga mula beroperasi pada 25 Oktober 2026. Sekarang belum ada sesiapa yang mengeluarkan amaran dalam aplikasi ini. Tiada amaran tidak bermakna tiada risiko. Ikuti amaran rasmi daripada DDPM dan pihak berkuasa tempatan.",
+      "body": "Jaga akan mula beroperasi pada 25 Oktober 2026. Sekarang belum ada sesiapa yang mengeluarkan amaran dalam aplikasi ini. Tiada amaran tidak bermakna tiada risiko. Ikuti amaran rasmi daripada DDPM dan pihak berkuasa tempatan.",
       "emergency": "Kecemasan: telefon 1784 atau 1669",
       "short": "Belum beroperasi"
     },
@@ -35,7 +35,7 @@
       "notCovered": "Jaga belum meliputi wilayah {province}. Kecemasan: telefon 1784 atau 1669.",
       "outside": "Lokasi ini di luar kawasan liputan Jaga. Kecemasan: telefon 1784 atau 1669.",
       "listFailed": "Senarai kawasan tidak dapat dimuat. Cuba lagi.",
-      "privacy": "Kawasan yang dipilih disimpan dalam telefon ini. Jaga hanya mengira berapa telefon memilih setiap tambon, bukan milik siapa.",
+      "privacy": "Kawasan yang dipilih disimpan dalam telefon ini. Jaga hanya mengira berapa telefon memilih setiap tambon, tidak pernah tahu milik siapa.",
       "fromAccount": "Rumah yang disimpan dalam akaun anda"
     },
     "status": {
@@ -152,7 +152,7 @@
       "watch": "Bersedia: siapkan beg kecemasan dan rancang laluan.",
       "warning": "Banjir dijangka di sini dalam kira-kira 24–48 jam. Pindahkan orang yang lemah dan kereta ke tempat selamat sekarang.",
       "evacuate": "Banjir hampir tiba atau sudah bermula. Pergi ke tempat selamat sekarang. Jika terperangkap, tekan SOS.",
-      "return": "Air sudah surut di kawasan ini. Balik dengan berhati-hati."
+      "return": "Air sudah surut di kawasan ini. Balik rumah dengan berhati-hati."
     },
     "checklist": {
       "flood": {
@@ -174,15 +174,15 @@
         },
         "evacuate": {
           "a": "Pergi ke tempat selamat sekarang.",
-          "b": "Tutup suis utama elektrik sebelum keluar, jika selamat untuk dibuat.",
+          "b": "Tutup suis utama elektrik sebelum keluar rumah, jika selamat.",
           "c": "Jangan berjalan atau memandu meredah air deras.",
           "d": "Jika tidak dapat keluar rumah, tekan SOS."
         },
         "return": {
-          "a": "Balik dengan berhati-hati. Jalan dan jambatan mungkin rosak.",
+          "a": "Balik rumah dengan berhati-hati. Jalan dan jambatan mungkin rosak.",
           "b": "Jangan hidupkan elektrik sehingga pasti plag dan wayar sudah kering.",
           "c": "Awas binatang berbisa dan air kotor.",
-          "d": "Ambil gambar kerosakan sebelum membersihkan rumah."
+          "d": "Ambil gambar kerosakan sebelum membersihkannya."
         }
       }
     },
@@ -192,40 +192,40 @@
     "label": "SOS",
     "action": "Minta bantuan",
     "title": "Minta bantuan",
-    "intro": "Tekan butang merah untuk menghantar permintaan. Lokasi anda dihantar serta-merta. Tiada log masuk diperlukan.",
+    "intro": "Tekan butang merah untuk menghantar permintaan. Lokasi anda akan dihantar serta-merta. Tidak perlu log masuk.",
     "send": "Hantar SOS",
     "sending": "Menghantar…",
     "phoneLabel": "Nombor telefon (pilihan)",
     "phoneHint": "Tanpa nombor, penyelamat tidak dapat menelefon anda.",
-    "phoneBad": "Nombor itu tidak sah, tetapi permintaan anda tetap dihantar.",
+    "phoneBad": "Nombor ini tidak betul, tetapi permintaan anda dihantar seperti biasa.",
     "location": {
       "locating": "Mencari lokasi…",
-      "found": "Lokasi diperoleh (lebih kurang {meters} m)",
-      "failed": "Lokasi tidak diperoleh. Tandakan pada peta atau taip nama tempat.",
+      "found": "Lokasi diperoleh (mungkin tersasar lebih kurang {meters} m)",
+      "failed": "Tidak dapat cari lokasi. Tandakan pada peta atau taip nama tempat.",
       "useMap": "Tandakan pada peta",
       "hideMap": "Tutup peta",
-      "mapHint": "Ketik peta pada tempat anda berada.",
-      "mapFailed": "Peta tidak dapat dimuatkan. Taip nama tempat.",
-      "textLabel": "Terangkan lokasi anda",
-      "textHint": "Contohnya nombor rumah, nama kampung, masjid atau tanda lain.",
-      "needed": "Permintaan perlukan lokasi. Guna GPS, tandakan pada peta, atau pilih daerah anda.",
-      "area": "Pilih daerah anda"
+      "mapHint": "Sentuh peta pada tempat anda berada.",
+      "mapFailed": "Peta tidak dapat dimuatkan. Taip nama tempat sebagai ganti.",
+      "textLabel": "Beritahu lokasi dengan teks",
+      "textHint": "Contohnya nombor rumah, nama kampung, masjid atau tanda tempat.",
+      "needed": "Mesti ada lokasi sebelum boleh hantar. Guna GPS, tandakan pada peta, atau pilih kawasan.",
+      "area": "Pilih kawasan anda"
     },
     "forPlace": {
       "title": "Minta bantuan untuk orang di {place}",
       "note": "Beritahu penyelamat tentang orang di sana (pilihan)",
       "sitePhone": "Nombor orang di sana (pilihan)",
       "yourPhone": "Nombor anda (pilihan)",
-      "locationHint": "Lokasi yang dihantar ialah tempat itu, bukan tempat anda berada."
+      "locationHint": "Lokasi yang dihantar ialah lokasi tempat ini, bukan lokasi anda."
     },
     "sent": {
       "title": "Permintaan dihantar",
-      "body": "Penyelamat di daerah anda menerima permintaan ini. Ikuti statusnya di halaman ini.",
+      "body": "Penyelamat di kawasan anda telah menerima permintaan ini. Ikuti status di halaman ini.",
       "merged": "Permintaan ini digabungkan dengan permintaan anda yang masih terbuka. Maklumat terbaru anda telah ditambah.",
-      "queuedTitle": "Belum dapat dihantar, masih mencuba",
-      "queuedBody": "Tiada sambungan internet. Permintaan anda disimpan dalam telefon dan akan dihantar sebaik sahaja ada sambungan. Jangan tutup aplikasi. Jika terdesak, telefon atau hantar SMS di bawah.",
-      "failedTitle": "Permintaan tidak dapat dihantar",
-      "failedBody": "Telefon bantuan di bawah sekarang.",
+      "queuedTitle": "Belum dapat dihantar, sedang cuba lagi",
+      "queuedBody": "Tiada isyarat internet. Permintaan anda disimpan dalam telefon dan akan dihantar sebaik sahaja ada isyarat. Jangan tutup aplikasi. Jika kecemasan, telefon atau hantar SMS guna butang di bawah.",
+      "failedTitle": "Tidak berjaya dihantar",
+      "failedBody": "Telefon minta bantuan guna nombor di bawah dengan segera.",
       "retry": "Cuba hantar lagi",
       "smsInstead": "Hantar SMS",
       "smsHint": "Membuka aplikasi mesej dengan koordinat anda."
@@ -234,30 +234,30 @@
       "title": "Permintaan anda",
       "sentAt": "Dihantar {time}",
       "received": "Permintaan diterima",
-      "assigned": "Diberikan kepada {unit}",
-      "en_route": "Sedang menuju kepada anda",
+      "assigned": "Ditugaskan kepada {unit}",
+      "en_route": "Sedang dalam perjalanan ke tempat anda",
       "rescued": "Sudah diselamatkan",
-      "safe_cancelled": "Anda memberitahu bahawa anda selamat",
+      "safe_cancelled": "Anda memberitahu bahawa anda sudah selamat",
       "dismissed": "Permintaan ini ditutup",
-      "waiting": "Belum ada unit mengambilnya. Penyelamat sudah melihat permintaan anda.",
-      "repeat_merged": "Permintaan berulang ditambah ke dalam kes ini",
-      "details_added": "Butiran ditambah",
+      "waiting": "Belum ada unit menerima permintaan. Penyelamat sudah melihat permintaan anda.",
+      "repeat_merged": "Permintaan berulang ditambah ke dalam permintaan ini",
+      "details_added": "Butiran sudah ditambah",
       "unit": "Unit bertanggungjawab: {unit}",
       "refresh": "Kemas kini status",
       "updated": "Dikemas kini {time}",
       "loadFailed": "Status tidak dapat dimuatkan. Periksa sambungan dan cuba lagi.",
-      "notFound": "Permintaan itu tidak dijumpai dalam telefon ini.",
-      "timeline": "Apa yang berlaku",
+      "notFound": "Permintaan ini tidak dijumpai dalam telefon ini.",
+      "timeline": "Urutan kejadian",
       "safeNow": "Saya selamat sekarang",
       "safeConfirm": "Sahkan bahawa anda selamat dan tidak lagi perlukan bantuan.",
-      "rescuedNow": "Sahkan saya diselamatkan",
+      "rescuedNow": "Sahkan sudah diselamatkan",
       "closing": "Menyimpan…",
-      "closed": "Permintaan ditutup. Jika anda perlukan bantuan lagi, hantar SOS baharu.",
+      "closed": "Permintaan sudah ditutup. Jika anda perlukan bantuan lagi, boleh hantar SOS baharu dengan segera.",
       "openCase": "Anda ada permintaan yang masih terbuka.",
       "openCaseLink": "Lihat status permintaan anda",
-      "on_site": "Pasukan sudah sampai",
-      "accepted": "Ada pasukan terima permintaan",
-      "released": "Pasukan itu tidak dapat teruskan. Sedang mencari pasukan lain.",
+      "on_site": "Pasukan bantuan sudah sampai",
+      "accepted": "Ada pasukan sudah terima permintaan",
+      "released": "Pasukan asal tidak dapat teruskan. Sedang mencari pasukan baharu.",
       "rescued_by_team": "Pasukan kata anda sudah diselamatkan",
       "confirmed": "Penyelamatan sudah disahkan",
       "not_rescued": "Anda kata anda belum diselamatkan",
@@ -271,15 +271,15 @@
       "people": "Berapa orang",
       "vulnerable": "Ada sesiapa perlukan bantuan khas",
       "depth": "Paras air",
-      "injuries": "Ada yang cedera",
+      "injuries": "Ada orang cedera atau tidak",
       "text": "Perkara lain yang penyelamat patut tahu",
-      "photos": "Gambar (sampai 3)",
+      "photos": "Gambar (tidak lebih 3 keping)",
       "voice": "Rakaman suara",
       "save": "Simpan butiran",
       "saving": "Menyimpan…",
-      "saved": "Butiran disimpan",
+      "saved": "Butiran sudah disimpan",
       "saveFailed": "Tidak dapat disimpan. Cuba lagi; permintaan anda masih ada.",
-      "mediaFailed": "{count} fail gambar atau suara tidak dapat dihantar. Cuba lagi nanti."
+      "mediaFailed": "{count} fail gambar atau suara tidak berjaya dihantar. Cuba lagi apabila isyarat lebih baik."
     },
     "hazards": {
       "flood": "Banjir",
@@ -293,24 +293,24 @@
     "vulnerable": {
       "elderly": "Orang tua",
       "bedridden": "Pesakit terlantar",
-      "infant_child": "Bayi atau kanak-kanak",
+      "infant_child": "Bayi atau kanak-kanak kecil",
       "pregnant": "Ibu mengandung",
       "disability": "Orang kurang upaya",
-      "needs_medicine": "Perlukan ubat",
+      "needs_medicine": "Perlu ubat berterusan",
       "needs_oxygen": "Perlukan oksigen",
-      "needs_dialysis": "Perlukan dialisis"
+      "needs_dialysis": "Perlu cuci buah pinggang"
     },
     "offline": {
       "title": "Tiada sambungan internet",
       "body": "Permintaan disimpan dan dihantar sebaik sahaja ada sambungan."
     },
     "back": "Kembali ke halaman utama",
-    "soonTitle": "Butang SOS belum berfungsi",
+    "soonTitle": "Butang SOS belum boleh digunakan",
     "soonBody": "Permintaan bantuan melalui Jaga akan dibuka sebelum musim banjir. Sekarang tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera.",
     "team": {
-      "searching": "Sedang mencari pasukan",
+      "searching": "Sedang mencari pasukan bantuan",
       "searchingBody": "Belum ada pasukan terima permintaan anda. Permintaan sedang ditawarkan kepada pasukan di kawasan anda, satu demi satu.",
-      "exhausted": "Belum ada pasukan terima",
+      "exhausted": "Belum ada pasukan terima permintaan",
       "exhaustedBody": "Pasukan di kawasan anda belum terima permintaan ini. Ia sudah sampai kepada pentadbir Jaga, dan pasukan di kawasan anda masih boleh terima bila-bila masa.",
       "waited": "Sudah menunggu {minutes} minit",
       "callNow": "Jika cemas, telefon sekarang. Jangan tunggu.",
@@ -320,13 +320,13 @@
         "to30": "Dijangka sampai dalam 15–30 minit",
         "to60": "Dijangka sampai dalam 30–60 minit",
         "over60": "Dijangka ambil masa lebih 60 minit",
-        "unknown": "Pasukan belum boleh kata bila akan sampai"
+        "unknown": "Pasukan belum boleh beritahu bila akan sampai"
       },
       "etaGiven": "Ini anggaran, diberitahu pasukan pada {time}.",
       "etaEstimate": "Ini anggaran.",
       "etaNone": "Pasukan belum beritahu bila dijangka sampai.",
       "call": "Telefon pasukan yang sedang datang",
-      "phonePoc": "Pasukan yang terima permintaan anda",
+      "phonePoc": "Nombor pasukan yang terima permintaan anda",
       "phoneOrg": "Nombor rasmi organisasi",
       "phoneNone": "Pasukan ini tiada nombor telefon dalam sistem. Jika cemas, telefon 1784 atau 1669.",
       "phoneFailed": "Nombor belum dapat dipaparkan. Cuba lagi."
@@ -337,72 +337,72 @@
       "body": "Betulkah? Jawapan anda yang menutup permintaan ini.",
       "yes": "Ya, saya sudah diselamatkan",
       "no": "Tidak, saya masih perlukan bantuan",
-      "noHint": "Jika anda jawab tidak, permintaan anda terus dicarikan pasukan semula.",
+      "noHint": "Jika tekan \"Tidak\", permintaan anda akan kembali mencari pasukan bantuan serta-merta.",
       "failed": "Tidak dapat dihantar. Jika cemas, telefon 1784 atau 1669 sekarang."
     },
     "needs": {
       "water": "Air minuman",
       "food": "Makanan",
-      "baby": "Barang bayi (susu, lampin)",
+      "baby": "Barang bayi (susu tepung, lampin)",
       "medicine": "Ubat",
       "clothes": "Pakaian, selimut",
       "hygiene": "Barang kebersihan (tuala wanita, sabun)",
-      "light": "Lampu suluh, lilin, bank kuasa",
+      "light": "Lampu suluh, lilin, power bank",
       "other": "Lain-lain"
     },
     "supplies": {
       "label": "Minta makanan dan air",
-      "homeHint": "Selamat, tetapi terkepung dan bekalan hampir habis",
+      "homeHint": "Selamat, tetapi tidak boleh keluar dan barang hampir habis",
       "title": "Minta makanan, air dan barang keperluan",
-      "intro": "Untuk orang yang selamat di tempatnya tetapi terkepung air, dan makanan atau air minuman hampir habis. Permintaan anda dihantar kepada pasukan yang menghantar bekalan di kawasan anda.",
-      "notRescue": "Dalam bahaya, atau ada orang sakit atau cedera? Jangan guna halaman ini.",
+      "intro": "Untuk orang yang berada di tempat selamat tetapi tidak boleh keluar kerana banjir, dan makanan atau air minuman hampir habis. Permintaan akan dihantar kepada pasukan yang menghantar barang di kawasan anda.",
+      "notRescue": "Jika dalam bahaya, atau ada orang sakit atau cedera, jangan guna halaman ini.",
       "sosInstead": "Hantar SOS",
       "send": "Hantar permintaan",
       "sending": "Sedang menghantar…",
       "needsLabel": "Apa yang anda perlukan?",
-      "needsHint": "Pilih semua yang berkenaan.",
+      "needsHint": "Boleh pilih lebih daripada satu.",
       "peopleLabel": "Berapa orang",
-      "leftLabel": "Berapa lama bekalan yang ada boleh bertahan?",
+      "leftLabel": "Barang yang ada cukup sampai bila?",
       "left": {
         "none": "Sudah habis",
         "today": "Cukup untuk hari ini",
-        "days": "Cukup untuk beberapa hari"
+        "days": "Cukup untuk 2–3 hari lagi"
       },
       "noteLabel": "Butiran lanjut (pilihan)",
       "noteHint": "Contohnya saiz pakaian, umur anak, nama ubat, atau cara sampai ke rumah.",
       "medicineHint": "Jika ada orang perlukan ubat dengan segera, telefon 1669 atau hantar SOS.",
       "scope": "Jaga menyampaikan permintaan anda hanya kepada pasukan yang telah disahkan. Jaga sendiri tidak menyimpan barang dan tidak mengutip derma. Penghantaran bergantung kepada pasukan di kawasan anda dan mungkin mengambil masa.",
-      "soonTitle": "Permintaan makanan dan air belum dibuka",
-      "sentBody": "Permintaan anda telah diterima. Simpan halaman ini untuk melihat bila pasukan menerimanya.",
+      "soonTitle": "Belum boleh minta makanan dan air melalui Jaga",
+      "sentBody": "Permintaan anda telah diterima. Biarkan halaman ini terbuka untuk melihat pasukan mana yang menerima permintaan anda.",
       "statusTitle": "Permintaan makanan dan air anda",
       "asked": "Apa yang anda minta",
-      "closed": "Permintaan ini telah ditutup. Jika perlu lagi, hantar permintaan baharu.",
+      "closed": "Permintaan ini telah ditutup. Jika perlu lagi, boleh hantar permintaan baharu.",
       "status": {
         "received": "Sedang mencari pasukan untuk menghantar",
-        "accepted": "Satu pasukan menerima permintaan anda",
-        "assigned": "{unit} menerima permintaan anda",
+        "accepted": "Ada pasukan sudah menerima permintaan anda",
+        "assigned": "{unit} sudah menerima permintaan anda",
         "en_route": "Pasukan dalam perjalanan membawa bekalan anda",
         "on_site": "Pasukan sudah sampai",
-        "rescued": "Bekalan diterima",
+        "rescued": "Barang sudah diterima",
         "rescued_by_team": "Pasukan mengatakan bekalan anda telah dihantar",
-        "confirmed": "Penghantaran telah disahkan",
+        "confirmed": "Penerimaan barang telah disahkan",
         "safe_cancelled": "Anda mengatakan tidak perlu lagi",
-        "not_rescued": "Anda mengatakan belum ada yang sampai",
+        "not_rescued": "Anda memberitahu belum terima bekalan",
         "released": "Pasukan tidak dapat meneruskan. Sedang mencari pasukan lain."
       },
       "confirm": {
         "title": "{unit} mengatakan bekalan anda telah dihantar",
         "titleNoUnit": "Pasukan mengatakan bekalan anda telah dihantar",
         "body": "Betulkah? Jawapan anda yang menutup permintaan ini.",
-        "yes": "Ya, saya sudah terima",
-        "no": "Tidak, belum ada yang sampai",
-        "noHint": "Jika anda jawab tidak, permintaan anda terus dicarikan pasukan semula."
+        "yes": "Ya, saya sudah terima bekalan",
+        "no": "Tidak, belum terima lagi",
+        "noHint": "Jika anda jawab tidak, permintaan anda akan kembali mencari pasukan baharu serta-merta."
       },
       "escalate": {
         "button": "Keadaan bertambah buruk: saya perlu diselamatkan",
-        "hint": "Permintaan ini terus ditukar kepada SOS, dan pasukan penyelamat dipanggil.",
+        "hint": "Permintaan ini akan ditukar kepada SOS serta-merta, dan pasukan penyelamat akan diberitahu.",
         "failed": "Tidak dapat dihantar. Telefon 1669 atau 1784 sekarang.",
-        "done": "Ini kini permintaan menyelamat. Pasukan penyelamat sedang dipanggil."
+        "done": "Sudah ditukar kepada permintaan menyelamat. Pasukan penyelamat sedang diberitahu."
       },
       "cancel": "Saya tidak perlu lagi",
       "cancelHint": "Tekan jika anda sudah dapat bekalan dengan cara lain.",
@@ -410,9 +410,9 @@
       "team": {
         "searching": "Sedang mencari pasukan untuk menghantar",
         "searchingBody": "Pasukan yang menghantar bekalan di kawasan anda sedang ditanya satu demi satu. Ini mungkin lebih lama daripada permintaan menyelamat.",
-        "exhausted": "Belum ada pasukan yang menerima",
+        "exhausted": "Belum ada pasukan yang menerima permintaan",
         "exhaustedBody": "Permintaan anda kini bersama pentadbir Jaga, yang sedang mencari pasukan. Jika keadaan bertambah buruk, tekan butang menyelamat di bawah.",
-        "accepted": "Satu pasukan akan membawa bekalan anda",
+        "accepted": "Ada pasukan sudah setuju membawa bekalan kepada anda",
         "urgent": "Jika keadaan bertambah buruk, jangan tunggu: tekan butang menyelamat di bawah, atau telefon."
       }
     }
@@ -430,9 +430,9 @@
     "parkingTitle": "Tempat tinggi untuk letak kereta",
     "none": "Belum ada senarai tempat selamat berhampiran kawasan ini dalam aplikasi. Tanya ketua kampung atau pejabat tambon, atau telefon 1784.",
     "unavailable": "Senarai tempat selamat tidak dapat dimuat.",
-    "loading": "Sedang memuat tempat selamat…",
+    "loading": "Sedang memuat senarai tempat selamat…",
     "navigate": "Tunjuk arah",
-    "navigateWith": "Buka arah dengan aplikasi mana?",
+    "navigateWith": "Buka laluan dengan aplikasi mana?",
     "navigateApp": {
       "google": "Google Maps",
       "waze": "Waze",
@@ -446,14 +446,14 @@
       "mosque": "Masjid",
       "temple": "Wat",
       "government": "Bangunan kerajaan",
-      "high_ground_parking": "Tempat tinggi untuk kereta",
+      "high_ground_parking": "Tempat tinggi untuk letak kereta",
       "other": "Tempat lain"
     },
     "status": {
       "open": "Dibuka",
       "full": "Penuh",
       "closed": "Ditutup",
-      "unknown": "Belum diketahui sama ada dibuka"
+      "unknown": "Belum tahu buka atau tidak"
     },
     "verified": "Sudah disahkan",
     "unverified": "Belum disahkan",
@@ -461,7 +461,7 @@
     "m": "{value} m",
     "straight": "jarak garis lurus",
     "walk": "kira-kira {minutes} minit berjalan kaki",
-    "drive": "kira-kira {minutes} minit memandu",
+    "drive": "kira-kira {minutes} minit bawa kereta",
     "freeboard": "Kira-kira {value} m lebih tinggi daripada banjir tertinggi yang lalu",
     "floodedBoth": "Pernah banjir pada 2024 dan 2025",
     "flooded2024": "Pernah banjir pada 2024",
@@ -645,7 +645,7 @@
   },
   "offline": {
     "title": "Tiada sambungan internet",
-    "body": "Talian kecemasan di bawah masih boleh dihubungi. Aplikasi akan dimuat semula apabila dalam talian.",
+    "body": "Talian kecemasan di bawah masih boleh dihubungi. Aplikasi akan dimuat semula apabila kembali online.",
     "retry": "Cuba lagi"
   },
   "language": {
