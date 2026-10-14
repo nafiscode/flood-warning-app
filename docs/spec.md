@@ -685,7 +685,7 @@ These tables are created in phase A11 only, not with the initial schema.
 
 ## 14. Open items (owner to decide)
 
-1. Script for Patani Malay: Rumi (Latin), Jawi (Arabic script, RTL), or Thai-script Malay.
+1. Decided 14 Oct 2026: the Malay screens use Rumi (Latin letters). Jawi stays possible later, so layouts stay RTL-safe.
 2. The project SOS phone line for SMS and call fallback, and who staffs it.
 3. SMS provider (a Thai local provider is preferred for cost). Deferred until after launch (30 Sep); phone sign-in goes live once it is chosen. Decided fallback: LINE Login for authorities, with the POC phone verified by an admin call.
 4. Hero score weights. Decided 9 Oct 2026: the hero score and its leaderboard stay inside the authority and admin consoles; the public impact page of section 16 shows every unit's volume of help without any ranking.
