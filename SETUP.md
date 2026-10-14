@@ -214,7 +214,7 @@ Sign-in settings live in the LINE and Supabase dashboards, not in migrations, so
    - Scopes `openid, profile`
    - **Allow users without email: on.** LINE gives no email; with it off, sign-in ends in "Error getting user email from external provider".
 5. *Authentication → URL Configuration → Redirect URLs*: `http://localhost:3000/**` and the deployed address.
-6. Same page, **Site URL**: the deployed address (for `jaga-dev`: `https://jaga-neon.vercel.app`), not Supabase's default `http://localhost:3000`. Supabase sends a sign-in it cannot place there (for one, a LINE sign-in whose state is unknown or already used); the app then shows "sign-in didn't work" instead of a dead page.
+6. Same page, **Site URL**: the deployed address (`https://jagaapp.org`; before 14 Oct 2026 it was `https://jaga-neon.vercel.app`), not Supabase's default `http://localhost:3000`. Supabase sends a sign-in it cannot place there (for one, a LINE sign-in whose state is unknown or already used); the app then shows "sign-in didn't work" instead of a dead page.
 6. While the LINE Login channel is in **Developing** status, only LINE accounts with a role on it can sign in ("User need to have developer role" otherwise): *Roles → Invite by email*, role **Tester**, and accept the invitation while logged in as that person's own LINE account. Publishing the channel is a launch step.
 
 ## One-time: email for admin sign-in links
@@ -225,13 +225,26 @@ Supabase's built-in email only delivers to members of the Supabase organisation,
 2. Supabase dashboard → *Authentication → Emails → SMTP Settings* → enable custom SMTP: sender email and username = the project email, sender name `Jaga`, host `smtp.gmail.com`, port `465` (or `587`), password = the app password.
 3. Invite an admin from the laptop with `npm run admin:invite -- <email>`; the person then asks for the link at `/sign-in` under "For admins". An address that was not invited gets no email, by design.
 
+## One-time: the domain (jagaapp.org)
+
+Registered at Cloudflare on 14 Oct 2026 under the project account (two-factor on, auto-renew, registrar lock, DNSSEC, SPF `-all` + DMARC `reject` + null MX because Jaga sends no mail from it). The click-by-click version is the tracker's "Domain switch" tab. What points at it:
+
+- `tiles.jagaapp.org` → R2 bucket `jaga-tiles` (custom domain), with a cache rule "Hostname equals tiles.jagaapp.org → eligible for cache, edge TTL from the file's own header", and *Caching → Configuration → Browser Cache TTL → Respect Existing Headers* (the zone default of 4 hours would hold `manifest.json` in phones far longer than its 5 minutes).
+- `jagaapp.org` (and `www`, redirected to it) → Vercel: *Settings → Domains*, DNS records exactly as Vercel shows them, **proxy off (DNS only)** so Vercel issues the certificate.
+- Vercel environment: `NEXT_PUBLIC_SITE_URL=https://jagaapp.org`, `NEXT_PUBLIC_TILES_BASE_URL=https://tiles.jagaapp.org`, then a redeploy (`NEXT_PUBLIC_` values are fixed at build time).
+- Supabase: *Site URL* `https://jagaapp.org`, *Redirect URLs* `https://jagaapp.org/**` beside the others (repeat on the live project at launch).
+- Run once after the site answers on the domain: `npm run push:gate -- https://jagaapp.org`, `npm run line:menu -- publish https://jagaapp.org`, and point LINE's webhook at `https://jagaapp.org/api/line/webhook`.
+- The ArcGIS key's referrers include `https://jagaapp.org/*`.
+
+A phone that installed Jaga from the old address keeps a separate app there (its own storage, its own notification subscription): remove that icon, turn its notifications off first, and add Jaga again from `https://jagaapp.org`.
+
 ## One-time: Cloudflare R2 for tiles and rasters
 
 Large pipeline outputs (PMTiles, COG rasters) live in Cloudflare R2, not in git or on the laptop. A click-by-click version is in the build tracker ("Approvals & Cloudflare" tab); in short:
 
 1. Cloudflare dashboard → **R2 Object Storage** → add R2 (asks for a payment method; the free tier covers Jaga). Plain R2 only: no Workers or other paid products.
 2. Create two buckets, location hint **Asia-Pacific**, storage class **Standard**:
-   - `jaga-tiles`: public. *Settings → Public Development URL → Enable*. Copy the `https://pub-….r2.dev` URL → `NEXT_PUBLIC_TILES_BASE_URL`. Before launch this switches to a custom domain (`tiles.<domain>`).
+   - `jaga-tiles`: public. *Settings → Custom Domains → Connect Domain* → `tiles.jagaapp.org` → `NEXT_PUBLIC_TILES_BASE_URL=https://tiles.jagaapp.org` (since 14 Oct 2026). The `https://pub-….r2.dev` development URL is switched off once every app reads the custom domain.
    - `jaga-rasters`: private. Leave public access off.
 3. `jaga-tiles` → *Settings → CORS Policy* → paste the policy from `pipeline/r2sync/cors-jaga-tiles.json`, adding the Vercel and live addresses once they exist.
 4. R2 overview → **Manage API tokens** → **Create Account API token**: name `jaga-pipeline`, permission **Object Read & Write**, applied to `jaga-tiles` and `jaga-rasters` only. Copy the Access Key ID, Secret Access Key and S3 endpoint into `.env.local` (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`; the account ID is the first part of the endpoint → `R2_ACCOUNT_ID`).

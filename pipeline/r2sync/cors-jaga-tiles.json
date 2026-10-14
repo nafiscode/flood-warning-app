@@ -1,6 +1,11 @@
 [
   {
-    "AllowedOrigins": ["http://localhost:3000", "https://jaga-neon.vercel.app"],
+    "AllowedOrigins": [
+      "https://jagaapp.org",
+      "https://www.jagaapp.org",
+      "https://jaga-neon.vercel.app",
+      "http://localhost:3000"
+    ],
     "AllowedMethods": ["GET", "HEAD"],
     "AllowedHeaders": ["Range", "If-Match", "If-None-Match"],
     "ExposeHeaders": ["ETag", "Content-Length", "Content-Range", "Accept-Ranges"],
