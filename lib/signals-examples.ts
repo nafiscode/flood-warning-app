@@ -24,6 +24,8 @@ const rising: Zone = {
   basin: "pattani_river",
   name: { th: "แม่น้ำปัตตานี", ms: "Sungai Patani", en: "Pattani River" },
   key: {
+    id: "example-X.40A",
+    auto: true,
     code: "X.40A",
     thaiwaterId: 2583,
     name: { th: "บ้านท่าสาบ", en: null },
@@ -33,6 +35,8 @@ const rising: Zone = {
     series: hourly(-96, -1, (h) => 12.6 + (h > -30 ? ((h + 30) / 29) ** 1.6 * 3.6 : 0)),
   },
   upstream: {
+    id: "example-X.77",
+    auto: false,
     code: "X.77",
     thaiwaterId: 1095877,
     name: { th: "บ้านหัวสะพาน", en: null },
@@ -111,9 +115,60 @@ const quiet: Zone = {
   forecastIssuedAt: EXAMPLE_SIGNALS_NOW - 0.5 * HOUR,
 };
 
+const place = (
+  gauge: Zone["key"] | undefined,
+  lon: number,
+  lat: number,
+  zoneId: string,
+  auto = false,
+) => ({
+  ...gauge!,
+  id: `example-${gauge!.code}`,
+  auto,
+  lon,
+  lat,
+  zoneId,
+});
+
 export const EXAMPLE_SIGNALS: Signals = {
   now: EXAMPLE_SIGNALS_NOW,
   zones: [rising, quiet],
+  auto: { graceMinutes: 20, maxAgeH: 3, mode: "drill" },
+  events: [
+    {
+      id: "00000000-0000-4000-8000-0000000000e1",
+      zoneId: rising.id,
+      gauge: "X.40A",
+      level: "warning",
+      value: 16.2,
+      threshold: 16,
+      observedAt: EXAMPLE_SIGNALS_NOW - HOUR,
+      createdAt: EXAMPLE_SIGNALS_NOW - 0.2 * HOUR,
+      deadline: EXAMPLE_SIGNALS_NOW + 0.13 * HOUR,
+      status: "pending",
+      alertId: null,
+    },
+  ],
+  allGauges: [
+    place(rising.key, 101.266294, 6.552798, rising.id, true),
+    place(rising.upstream, 101.268219, 6.262033, rising.id),
+    place(rising.others[0], 101.252129, 6.866, rising.id),
+    place(quiet.key, 101.9749, 6.0226, quiet.id),
+    {
+      code: "X.44",
+      id: "example-X.44",
+      thaiwaterId: 2591,
+      name: { th: "บ้านหาดใหญ่ใน", en: null },
+      agency: "RID",
+      bank: 7.4,
+      watch: null,
+      series: hourly(-48, -1, () => 0.9),
+      auto: false,
+      lon: 100.4561,
+      lat: 7.0022,
+      zoneId: null,
+    },
+  ],
   feeds: {
     gauges: { at: EXAMPLE_SIGNALS_NOW - 0.1 * HOUR, ok: true, error: null },
     signals: { at: EXAMPLE_SIGNALS_NOW - 0.5 * HOUR, ok: true, error: null },

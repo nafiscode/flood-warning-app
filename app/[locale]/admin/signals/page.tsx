@@ -5,7 +5,7 @@ import { isAdminHere } from "@/lib/admin-guard";
 import { toSignals } from "@/lib/signals";
 import { createClient } from "@/lib/supabase/server";
 import { hint } from "@/lib/ui";
-import { setThreshold } from "./actions";
+import { dismissAutoAlarm, setAutoAlarm, setAutoMode, setThreshold } from "./actions";
 
 export async function generateMetadata({
   params,
@@ -36,11 +36,11 @@ export default async function SignalsPage({
   const { data, error } = await supabase.rpc("admin_signals");
   if (error) return <p className={hint}>{t("noZones")}</p>;
   const saved = typeof query.saved === "string" ? query.saved : null;
-  const notice = saved
-    ? t("thresholds.saved")
-    : query.error === "threshold"
-      ? t("thresholds.error")
-      : null;
+  const autoNotice =
+    query.autosaved === "1" ? t("auto.saved") : query.error === "auto" ? t("auto.error") : null;
+  const notice =
+    autoNotice ??
+    (saved ? t("thresholds.saved") : query.error === "threshold" ? t("thresholds.error") : null);
   return (
     <SignalsView
       data={toSignals(data)}
@@ -49,6 +49,11 @@ export default async function SignalsPage({
       action={setThreshold.bind(null, locale)}
       notice={notice}
       savedZone={saved}
+      view={query.view === "map" ? "map" : "cards"}
+      autoAction={setAutoAlarm.bind(null, locale)}
+      allAction={setAutoAlarm.bind(null, locale)}
+      modeAction={setAutoMode.bind(null, locale)}
+      dismissAction={dismissAutoAlarm.bind(null, locale)}
     />
   );
 }

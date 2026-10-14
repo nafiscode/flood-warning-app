@@ -47,6 +47,11 @@ const WINDOW_FIELDS = ["onsetFrom", "onsetTo", "returnFrom", "returnTo"] as cons
  * review has been read (components/admin/AlertReview).
  *
  * With `?supersedes=<id>` the new alert replaces one in force and starts from its area.
+ *
+ * From the signal dashboard (`?zone=<id>&level=<level>&note=<text>`) it starts as a draft: the
+ * template of the suggested level chosen, the zone's tambons ticked, and the readings behind the
+ * suggestion as the note. All of it can be changed, and nothing is sent until the review has been
+ * read and the admin presses send (safety rule 2).
  */
 export default async function NewAlert({
   params,
@@ -66,7 +71,11 @@ export default async function NewAlert({
     isUuid(query.supersedes) ? readAlerts(500) : Promise.resolve([]),
   ]);
   const old = alerts.find((a) => a.id === query.supersedes && alertState(a) === "inForce") ?? null;
-  const preset = new Set(old?.tambons ?? []);
+  const fromZone = old ? null : (areas.zones.find((z) => z.id === query.zone) ?? null);
+  const draftLevel = ISSUABLE_LEVELS.find((l) => l === query.level) ?? null;
+  const draftTemplate = draftLevel ? templates.find((tpl) => tpl.level === draftLevel) : undefined;
+  const draftNote = typeof query.note === "string" ? query.note.slice(0, 400) : "";
+  const preset = new Set([...(old?.tambons ?? []), ...(fromZone?.tambons ?? [])]);
   const error = ERRORS.find((e) => e === query.error);
   const name = (area: { name_th: string; name_en: string }) =>
     locale === "th" || !area.name_en ? area.name_th : area.name_en;
@@ -88,6 +97,11 @@ export default async function NewAlert({
       {error && (
         <p role="alert" className={errorNotice}>
           {t(`form.error.${error}`)}
+        </p>
+      )}
+      {fromZone && (
+        <p className={notice} data-from-signals={fromZone.id}>
+          {t("form.fromSignals", { zone: words(fromZone.name), count: fromZone.tambons.length })}
         </p>
       )}
       {old && (
@@ -112,6 +126,7 @@ export default async function NewAlert({
                 name="template"
                 value={tpl.id}
                 required
+                defaultChecked={tpl.id === draftTemplate?.id}
                 className={checkBox}
                 data-template={tpl.code}
               />
@@ -144,7 +159,13 @@ export default async function NewAlert({
             <p className="font-bold">{t("form.area.zones")}</p>
             {areas.zones.map((zone) => (
               <label key={zone.id} className={checkRow}>
-                <input type="checkbox" name="zone" value={zone.id} className={checkBox} />
+                <input
+                  type="checkbox"
+                  name="zone"
+                  value={zone.id}
+                  defaultChecked={zone.id === fromZone?.id}
+                  className={checkBox}
+                />
                 <span>
                   {words(zone.name)}
                   <span className={`block ${hint}`}>
@@ -215,7 +236,7 @@ export default async function NewAlert({
         <label htmlFor="note" className={label}>
           {t("form.note.label")}
         </label>
-        <input id="note" name="note" maxLength={400} className={input} />
+        <input id="note" name="note" maxLength={400} defaultValue={draftNote} className={input} />
         <p className={hint}>{t("form.note.hint")}</p>
 
         <label htmlFor="hours" className={label}>

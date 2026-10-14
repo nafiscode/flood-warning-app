@@ -37,6 +37,8 @@ export const CASE_KINDS = [
   "rescued",
   // Not about a case, but the same shape: a title, words, and a page of this app to open.
   "announcement",
+  // To the admins: a gauge set to automatic crossed its threshold and a draft is waiting.
+  "auto_alarm",
 ] as const;
 export type CaseKind = (typeof CASE_KINDS)[number];
 export type CasePayload = {
@@ -101,7 +103,13 @@ const CLOCK = new Intl.DateTimeFormat("en-GB", {
  */
 export function casePayload(row: DueRow, words: Record<string, string>): CasePayload | null {
   const kind = CASE_KINDS.find((k) => k === row.kind);
-  if (!kind || kind === "announcement" || !/^[0-9a-f-]{36}$/i.test(row.sos_id)) return null;
+  if (
+    !kind ||
+    kind === "announcement" ||
+    kind === "auto_alarm" ||
+    !/^[0-9a-f-]{36}$/i.test(row.sos_id)
+  )
+    return null;
   const data = row.data ?? {};
   const supplies = data.request === "supplies";
   const prefix = row.locale === "th" ? "" : `/${row.locale}`;

@@ -236,11 +236,98 @@ export async function runPushTick(): Promise<PushOutcome> {
       }
     };
     await Promise.all(Array.from({ length: 8 }, worker));
+    const auto = await autoAlarmTick(supabase, token, gone);
     if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
-    return { sent, failed, gone: gone.length };
+    return { sent: sent + auto.sent, failed: failed + auto.failed, gone: gone.length };
   } catch {
     return { skipped: "error" };
   }
+}
+
+const AUTO_WORDS: Record<string, { title: string; body: string }> = {
+  th: th.signals.push,
+  ms: ms.signals.push,
+  en: en.signals.push,
+};
+
+/**
+ * The automated alarm's pushes (the owner's decision of 14 Oct 2026): to every admin, a gauge set
+ * to automatic has crossed its threshold and a draft is waiting, with the time it will be sent by
+ * itself; and, once a draft has been published because nobody acted, the alert to the phones that
+ * follow its tambons. The database decides what is owed and hands each out once.
+ */
+async function autoAlarmTick(
+  supabase: ReturnType<typeof createPublicClient>,
+  token: string,
+  gone: string[],
+): Promise<{ sent: number; failed: number }> {
+  const { data, error } = await supabase.rpc("auto_alarm_push_due", { p_token: token });
+  if (error || !Array.isArray(data)) return { sent: 0, failed: 0 };
+  let sent = 0;
+  let failed = 0;
+  for (const row of data as {
+    kind: string;
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+    locale: string;
+    data: Record<string, unknown>;
+  }[]) {
+    let payload: unknown = null;
+    if (row.kind === "auto_alarm") {
+      const words = AUTO_WORDS[row.locale] ?? AUTO_WORDS.th!;
+      const d = row.data;
+      const zone =
+        ((d.zone ?? {}) as Record<string, string>)[row.locale] ??
+        (d.zone as Record<string, string>)?.th ??
+        "";
+      const level = levelName(d.level as PushLevel, row.locale);
+      const deadline = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Bangkok",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date(String(d.deadline)));
+      const fill = (text: string) =>
+        text
+          .replace("{level}", level)
+          .replace("{zone}", zone)
+          .replace("{gauge}", String(d.gauge ?? ""))
+          .replace("{value}", String(d.value ?? ""))
+          .replace("{time}", deadline);
+      payload = {
+        kind: "auto_alarm",
+        title: fill(words.title),
+        body: fill(words.body),
+        url: row.locale === "th" ? "/admin/signals" : `/${row.locale}/admin/signals`,
+        tag: `auto-${String(d.event)}`,
+        sticky: true,
+      };
+    } else if (row.kind === "alert") {
+      payload = alertPayload(
+        row.data as unknown as PushAlert,
+        row.locale,
+        levelName,
+        yourArea(row.locale),
+      );
+    }
+    if (!payload) continue;
+    try {
+      await webpush.sendNotification(
+        { endpoint: row.endpoint, keys: row.keys },
+        JSON.stringify(payload),
+        {
+          TTL: 6 * 3600,
+          urgency: "high",
+        },
+      );
+      sent++;
+    } catch (e) {
+      const status = (e as { statusCode?: number }).statusCode;
+      if (status === 404 || status === 410) gone.push(row.endpoint);
+      else failed++;
+    }
+  }
+  return { sent, failed };
 }
 
 const FIELD_WORDS: Record<string, { title: string; body: string }> = {

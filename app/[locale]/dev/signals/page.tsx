@@ -14,11 +14,15 @@ export const dynamic = "force-dynamic";
  * (development and preview only, lib/dev-pages.ts). The real one is /admin/signals. The threshold
  * forms are shown without their save button here: there is nothing to save to.
  */
-export default async function SignalsExamplePage({ params }: PageProps<"/[locale]/dev/signals">) {
+export default async function SignalsExamplePage({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/dev/signals">) {
   if (!devPagesEnabled()) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("signals");
+  const query = await searchParams;
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
@@ -27,6 +31,7 @@ export default async function SignalsExamplePage({ params }: PageProps<"/[locale
       </header>
       <SignalsView
         data={EXAMPLE_SIGNALS}
+        view={query.view === "map" ? "map" : "cards"}
         locale={locale}
         t={(key, values) => t(key as never, values as never)}
       />

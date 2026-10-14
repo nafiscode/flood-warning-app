@@ -27,6 +27,9 @@ export type Threshold = {
 };
 
 export type Gauge = {
+  id?: string;
+  /** Set to the automated alarm (the owner's decision of 14 Oct 2026). */
+  auto?: boolean;
   code: string;
   thaiwaterId: number | null;
   name: Record<string, string | null>;
@@ -49,10 +52,37 @@ export type Zone = {
   discharge: Point[];
   tide: Point[];
   forecastIssuedAt: number | null;
+  tambonCount?: number;
+  outline?: GeoJSON.Geometry | null;
+};
+
+/** A gauge on the map of all gauges: where it is and which zone holds it. */
+export type MapGauge = Gauge & { lon: number; lat: number; zoneId: string | null };
+
+export type AutoSettings = { graceMinutes: number; maxAgeH: number; mode: "drill" | "real" };
+export type AutoEvent = {
+  id: string;
+  zoneId: string;
+  gauge: string | null;
+  level: "warning" | "evacuate";
+  value: number;
+  threshold: number;
+  observedAt: number | null;
+  createdAt: number | null;
+  deadline: number | null;
+  status: "pending" | "sent" | "dismissed" | "auto_published" | "lapsed" | "replaced";
+  alertId: string | null;
 };
 
 export type Feed = { at: number; ok: boolean; error: string | null } | null;
-export type Signals = { now: number; zones: Zone[]; feeds: { gauges: Feed; signals: Feed } };
+export type Signals = {
+  now: number;
+  zones: Zone[];
+  feeds: { gauges: Feed; signals: Feed };
+  auto?: AutoSettings;
+  events?: AutoEvent[];
+  allGauges?: MapGauge[];
+};
 
 const HOUR = 3_600_000;
 /** A gauge silent for longer than this cannot speak for the river as it is now. */
@@ -78,6 +108,8 @@ const numberOrNull = (v: unknown) => (typeof v === "number" && Number.isFinite(v
 
 function toGauge(row: Row): Gauge {
   return {
+    id: typeof row.id === "string" ? row.id : undefined,
+    auto: row.auto === true,
     code: String(row.code ?? ""),
     thaiwaterId: numberOrNull(row.thaiwaterId),
     name: (row.name ?? {}) as Gauge["name"],
@@ -133,11 +165,45 @@ export function toSignals(raw: unknown): Signals {
       discharge: points(z.discharge),
       tide: points(z.tide),
       forecastIssuedAt: time(z.issuedAt),
+      tambonCount: numberOrNull(z.tambons) ?? 0,
+      outline: (z.outline ?? null) as GeoJSON.Geometry | null,
     };
   });
+  const auto = (data.auto ?? {}) as Row;
+  const events = (Array.isArray(data.events) ? data.events : []).map((e: Row): AutoEvent => ({
+    id: String(e.id ?? ""),
+    zoneId: String(e.zoneId ?? ""),
+    gauge: typeof e.gauge === "string" ? e.gauge : null,
+    level: e.level === "evacuate" ? "evacuate" : "warning",
+    value: Number(e.value ?? 0),
+    threshold: Number(e.threshold ?? 0),
+    observedAt: time(e.observedAt),
+    createdAt: time(e.createdAt),
+    deadline: time(e.deadline),
+    status:
+      (["pending", "sent", "dismissed", "auto_published", "lapsed", "replaced"] as const).find(
+        (x) => x === e.status,
+      ) ?? "lapsed",
+    alertId: typeof e.alertId === "string" ? e.alertId : null,
+  }));
+  const allGauges = (Array.isArray(data.allGauges) ? data.allGauges : [])
+    .map((g: Row): MapGauge | null => {
+      const lon = Number(g.lon);
+      const lat = Number(g.lat);
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+      return { ...toGauge(g), lon, lat, zoneId: typeof g.zoneId === "string" ? g.zoneId : null };
+    })
+    .filter((g): g is MapGauge => g !== null);
   return {
     now: time(data.now) ?? 0,
     zones,
+    auto: {
+      graceMinutes: numberOrNull(auto.grace_minutes) ?? 20,
+      maxAgeH: numberOrNull(auto.max_age_h) ?? 3,
+      mode: auto.mode === "real" ? "real" : "drill",
+    },
+    events,
+    allGauges,
     feeds: {
       gauges: toFeed((data.feeds as Row | undefined)?.gauges),
       signals: toFeed((data.feeds as Row | undefined)?.signals),
@@ -354,4 +420,48 @@ export function linePath(
     prev = t;
   }
   return d;
+}
+
+/**
+ * Where one gauge stands, for the map's colour and its words. A zone's key gauge is measured
+ * against that zone's Warning and Evacuate levels; any other gauge against its own bank. Silent
+ * for six hours: `stale`, whatever it last read.
+ */
+export type GaugeState = "evacuate" | "warning" | "near" | "normal" | "stale" | "nolevels";
+export const GAUGE_STATES: GaugeState[] = [
+  "evacuate",
+  "warning",
+  "near",
+  "normal",
+  "stale",
+  "nolevels",
+];
+
+export function gaugeState(
+  gauge: Gauge,
+  now: number,
+  keyLevels?: Partial<Record<Level, number>>,
+): GaugeState {
+  const st = gaugeNow(gauge, now);
+  if (!st || st.stale) return "stale";
+  const evacuate = keyLevels?.evacuate ?? gauge.bank;
+  const warning = keyLevels?.warning ?? null;
+  if (evacuate === null && warning === null) return "nolevels";
+  if (keyLevels?.evacuate !== undefined && st.value >= keyLevels.evacuate) return "evacuate";
+  if (warning !== null && st.value >= warning) return "warning";
+  if (keyLevels?.evacuate === undefined && gauge.bank !== null && st.value >= gauge.bank)
+    return "warning";
+  if (gauge.bank !== null && st.value >= gauge.bank - 0.5) return "near";
+  return "normal";
+}
+
+/** The key gauge's levels for a map gauge, when it is one. */
+export function keyLevelsFor(
+  gauge: MapGauge,
+  zones: Zone[],
+): Partial<Record<Level, number>> | undefined {
+  const zone = zones.find(
+    (z) => z.key && gauge.thaiwaterId !== null && z.key.thaiwaterId === gauge.thaiwaterId,
+  );
+  return zone?.thresholds.find((t) => t.signal === "key_level_m")?.levels;
 }

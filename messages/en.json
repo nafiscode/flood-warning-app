@@ -2426,7 +2426,8 @@
         "evacuate": "Evacuate must be confirmed a second time at the review step.",
         "drillMix": "A drill and a real alert cannot replace each other.",
         "save": "That could not be saved. No alert was published. Try again."
-      }
+      },
+      "fromSignals": "A draft from the signal dashboard for {zone}: the suggested level's template, its {count} tambons and the readings as the note. Check the area and the words, change what is wrong, then review. Nothing is sent until you send it."
     },
     "review": {
       "button": "Review before publishing",
@@ -3110,6 +3111,61 @@
       "error": "The threshold was not saved. Each level must be a number above nought, and at least one is needed."
     },
     "devTitle": "Signals: an example",
-    "devNote": "Made-up figures: a river rising towards its bank with heavy rain forecast. For looking at the screen without signing in. Development only."
+    "devNote": "Made-up figures: a river rising towards its bank with heavy rain forecast. For looking at the screen without signing in. Development only.",
+    "push": {
+      "title": "Jaga · {level} suggested: {zone}",
+      "body": "Gauge {gauge} reads {value} m. A draft alert is waiting. Send it, change it or dismiss it; if nobody acts it is sent by itself at {time}."
+    },
+    "auto": {
+      "title": "Automated alarm",
+      "rule": "For a gauge with the box ticked: when its last two readings, both less than {age} hours old, reach its threshold, every admin's phone rings with a draft alert. If no admin sends or dismisses it within {grace} minutes, it is published by itself and marked as not reviewed. If the river has gone back below by then, nothing is published.",
+      "modeDrill": "Before launch it publishes drills only: nobody outside the admins sees them.",
+      "modeReal": "It publishes real alerts to the residents of the zone's tambons.",
+      "toReal": "Publish real alerts",
+      "toDrill": "Publish drills only",
+      "allOn": "Turn on for every river gauge",
+      "allOff": "Turn off for every river gauge",
+      "count": "{on} of {all} gauges in a zone are set to automatic.",
+      "gauge": "Automated alarm for this gauge",
+      "gaugeHint": "Applies only to gauges inside a warning zone; a gauge outside every zone has no tambons to alert.",
+      "save": "Save",
+      "pending": "Waiting for an admin",
+      "pendingLine": "{level} for {zone}: gauge {gauge} {value} m (threshold {threshold} m). Sent by itself at {time} unless someone acts.",
+      "openDraft": "Open the draft",
+      "dismiss": "Dismiss",
+      "dismissNote": "Why (for the log)",
+      "recent": "In the last three days",
+      "status": {
+        "pending": "waiting",
+        "sent": "an admin sent an alert",
+        "dismissed": "dismissed",
+        "auto_published": "published by itself, not reviewed",
+        "lapsed": "the river went back below: nothing sent",
+        "replaced": "replaced by a higher level"
+      },
+      "saved": "Saved.",
+      "error": "That did not work. Try again, or check you are still signed in as an admin."
+    },
+    "view": {
+      "cards": "Zones",
+      "map": "Map of all gauges",
+      "label": "View"
+    },
+    "map": {
+      "title": "All river gauges",
+      "hint": "Tap a gauge for its readings and its automated alarm. Colours follow each gauge's own reading against its own levels; the words in the panel say the same.",
+      "state": {
+        "evacuate": "At or over its bank level for Evacuate",
+        "warning": "At or over its Warning level",
+        "near": "Within half a metre of its bank",
+        "normal": "Below its levels",
+        "stale": "No reading in 6 hours",
+        "nolevels": "No bank level known"
+      },
+      "close": "Close",
+      "zone": "Zone: {zone}",
+      "noZone": "Outside every warning zone",
+      "auto": "automated alarm on"
+    }
   }
 }

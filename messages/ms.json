@@ -2426,7 +2426,8 @@
         "evacuate": "Amaran pindah mesti disahkan sekali lagi pada langkah semakan.",
         "drillMix": "Amaran latihan dan amaran sebenar tidak boleh menggantikan satu sama lain.",
         "save": "Tidak berjaya disimpan. Tiada amaran dikeluarkan. Cuba lagi."
-      }
+      },
+      "fromSignals": "Draf daripada halaman isyarat untuk {zone}: templat tahap yang dicadangkan, {count} mukimnya dan bacaan sebagai nota. Semak kawasan dan perkataan, ubah yang salah, kemudian semak semula. Tiada apa-apa dihantar sehingga anda sendiri menghantarnya."
     },
     "review": {
       "button": "Semak sebelum mengeluarkan",
@@ -3110,6 +3111,61 @@
       "error": "Had tidak disimpan. Setiap tahap mesti nombor lebih daripada sifar, dan sekurang-kurangnya satu diperlukan."
     },
     "devTitle": "Isyarat: contoh",
-    "devNote": "Angka rekaan: sungai sedang naik menghampiri tebing dengan ramalan hujan lebat. Untuk melihat skrin tanpa log masuk. Pembangunan sahaja."
+    "devNote": "Angka rekaan: sungai sedang naik menghampiri tebing dengan ramalan hujan lebat. Untuk melihat skrin tanpa log masuk. Pembangunan sahaja.",
+    "push": {
+      "title": "Jaga · {level} dicadangkan: {zone}",
+      "body": "Stesen {gauge} mencatat {value} m. Draf amaran sedang menunggu. Hantar, ubah atau tolak; jika tiada siapa bertindak, ia dihantar sendiri pada {time}."
+    },
+    "auto": {
+      "title": "Penggera automatik",
+      "rule": "Bagi stesen yang ditanda: apabila dua bacaan terakhirnya, kedua-duanya kurang daripada {age} jam, mencapai had, telefon setiap pentadbir berbunyi dengan draf amaran. Jika tiada pentadbir menghantar atau menolaknya dalam {grace} minit, ia diterbitkan sendiri dan ditanda sebagai belum disemak. Jika paras sungai sudah turun semula ketika itu, tiada apa-apa diterbitkan.",
+      "modeDrill": "Sebelum pelancaran ia hanya menerbitkan latihan: tiada sesiapa selain pentadbir melihatnya.",
+      "modeReal": "Ia menerbitkan amaran sebenar kepada penduduk mukim dalam zon itu.",
+      "toReal": "Terbitkan amaran sebenar",
+      "toDrill": "Terbitkan latihan sahaja",
+      "allOn": "Hidupkan bagi semua stesen sungai",
+      "allOff": "Matikan bagi semua stesen sungai",
+      "count": "{on} daripada {all} stesen dalam zon ditetapkan automatik.",
+      "gauge": "Penggera automatik bagi stesen ini",
+      "gaugeHint": "Hanya bagi stesen dalam zon amaran; stesen di luar semua zon tiada mukim untuk diberi amaran.",
+      "save": "Simpan",
+      "pending": "Menunggu pentadbir",
+      "pendingLine": "{level} bagi {zone}: stesen {gauge} {value} m (had {threshold} m). Dihantar sendiri pada {time} jika tiada siapa bertindak.",
+      "openDraft": "Buka draf",
+      "dismiss": "Tolak",
+      "dismissNote": "Sebab (untuk log)",
+      "recent": "Dalam tiga hari lepas",
+      "status": {
+        "pending": "menunggu",
+        "sent": "pentadbir menghantar amaran",
+        "dismissed": "ditolak",
+        "auto_published": "diterbitkan sendiri, belum disemak",
+        "lapsed": "paras sungai turun semula: tiada dihantar",
+        "replaced": "diganti dengan tahap lebih tinggi"
+      },
+      "saved": "Disimpan.",
+      "error": "Itu tidak berjaya. Cuba lagi, atau pastikan anda masih log masuk sebagai pentadbir."
+    },
+    "view": {
+      "cards": "Zon",
+      "map": "Peta semua stesen",
+      "label": "Paparan"
+    },
+    "map": {
+      "title": "Semua stesen sungai",
+      "hint": "Ketik stesen untuk bacaannya dan penggera automatiknya. Warna mengikut bacaan setiap stesen berbanding parasnya sendiri; perkataan dalam panel menyatakan perkara yang sama.",
+      "state": {
+        "evacuate": "Pada atau melebihi paras tebing (Pindah)",
+        "warning": "Pada atau melebihi paras Amaran",
+        "near": "Kurang setengah meter dari tebing",
+        "normal": "Di bawah parasnya",
+        "stale": "Tiada bacaan dalam 6 jam",
+        "nolevels": "Paras tebing tidak diketahui"
+      },
+      "close": "Tutup",
+      "zone": "Zon: {zone}",
+      "noZone": "Di luar semua zon amaran",
+      "auto": "penggera automatik hidup"
+    }
   }
 }

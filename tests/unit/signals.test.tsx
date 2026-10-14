@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { SignalsView } from "@/components/admin/Signals";
 import {
   gaugeNow,
+  gaugeState,
   linePath,
   rainBetween,
   rainNow,
@@ -273,5 +274,57 @@ describe("the screen", () => {
     expect(plain.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(0);
     const live = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} action={() => {}} />);
     expect(live.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(8);
+  });
+});
+
+describe("the automated alarm", () => {
+  const t = translator(en.signals as Record<string, unknown>);
+
+  it("puts the switch for every gauge at the top, and a tick per gauge in a zone", () => {
+    const fn = () => {};
+    const { container } = render(
+      <SignalsView
+        data={EXAMPLE_SIGNALS}
+        locale="en"
+        t={t}
+        autoAction={fn}
+        allAction={fn}
+        modeAction={fn}
+        dismissAction={fn}
+      />,
+    );
+    const panel = container.querySelector("[data-signals-auto]")!;
+    expect(panel.getAttribute("data-signals-auto")).toBe("drill");
+    // Above the first zone card.
+    const first = container.querySelector("[data-signal-zone]")!;
+    expect(panel.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(panel.querySelector("[data-signals-all-on]")).not.toBeNull();
+    expect(panel.querySelector("[data-signals-all-off]")).not.toBeNull();
+    expect(panel.querySelector("[data-signals-pending]")!.textContent).toContain("X.40A");
+    expect(container.querySelectorAll("[data-signal-auto]").length).toBeGreaterThan(0);
+  });
+
+  it("offers no buttons without the actions (the example page)", () => {
+    const { container } = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} />);
+    expect(container.querySelector("[data-signals-all-on]")).toBeNull();
+  });
+});
+
+describe("a gauge's state on the map", () => {
+  const g = (value: number, ageH = 0.5, bank: number | null = 10) => ({
+    ...rising.key!,
+    bank,
+    series: [[now - ageH * HOUR, value]] as Point[],
+  });
+
+  it("measures a key gauge against its zone's levels and others against their bank", () => {
+    const levels = { warning: 16, evacuate: 16.5 };
+    expect(gaugeState(g(16.6), now, levels)).toBe("evacuate");
+    expect(gaugeState(g(16.1), now, levels)).toBe("warning");
+    expect(gaugeState(g(10.2), now)).toBe("warning");
+    expect(gaugeState(g(9.7), now)).toBe("near");
+    expect(gaugeState(g(5), now)).toBe("normal");
+    expect(gaugeState(g(5, 7), now)).toBe("stale");
+    expect(gaugeState(g(5, 0.5, null), now)).toBe("nolevels");
   });
 });

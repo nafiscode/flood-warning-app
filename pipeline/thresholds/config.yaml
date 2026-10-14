@@ -50,7 +50,15 @@ zones:
       - {name: below_dam, outlet: [101.266294, 6.552798], minus: above_dam}
       - {name: above_dam, outlet: [101.2764, 6.1604]}
       - {name: dam_to_x77, outlet: [101.268219, 6.262033], minus: above_dam}
+      # The whole river to the sea at Pattani Bay: a high river at Yala reaches Yarang and Pattani
+      # town in one to three days, so they belong to the zone an alert is written for.
+      - {name: alert_area, outlet: [101.2442, 6.9041], snap_cells: 150}
     rain_basin: below_dam
+    alert_basin: alert_area
+    # Also: every tambon of the dam's release zone (the land the river has been high enough to
+    # reach), and the flood-prone tambons of Pattani town, where the river meets the bay.
+    alert_include_csv: out/dam_release/zone_by_tambon.csv
+    alert_include_districts: ["9401"]
     dam: {hourly_id: 50}
     tide_point: [101.27, 6.96]        # off the mouth of the Pattani River
   kolok:
@@ -61,7 +69,11 @@ zones:
       - {code: X.119, id: 505052, bank_m: 7.0, place: "Ban Muno"}
     basins:
       - {name: above_key, outlet: [101.9749, 6.0226]}
+      # To the sea at Tak Bai, where the river leaves the gauge's reach.
+      - {name: alert_area, outlet: [102.0890, 6.2560], snap_cells: 150}
     rain_basin: above_key
+    alert_basin: alert_area
+    alert_include_districts: ["9602", "9613"]     # Tak Bai and Sungai Kolok
     tide_point: [102.10, 6.27]        # off Tak Bai, where the Kolok meets the sea
   u_taphao:
     name: {th: "คลองอู่ตะเภา", ms: "Khlong U-Taphao", en: "Khlong U-Taphao"}
@@ -75,6 +87,8 @@ zones:
       # The listed position of X.44 is 1.2 km from the channel the elevation model drains by.
       - {name: above_key, outlet: [100.4561, 7.0022], snap_cells: 40}
     rain_basin: above_key
+    # Hat Yai town sits at the gauge, so most of its land is below the catchment that ends there.
+    alert_include_districts: ["9011"]
     tide_point: [100.62, 7.25]        # off Songkhla, at the lake's outlet, where the U-Taphao's water ends up
 
 # The live feeds the app's database asks for every hour (A8; migration a8_signals). All three are
@@ -86,6 +100,15 @@ feeds:
   marine_url: https://marine-api.open-meteo.com/v1/marine
   rain_grid_deg: 0.1
   rain_points_max: 16
+
+# Which tambons an alert for a zone is drafted for (the alert console's "zone" choice): those with
+# at least `min_share` of their land inside the zone's alert basin and at least `min_flood_prone_km2`
+# of it in the flood-hazard classes High or Medium (hazard_by_tambon). The admin edits the list
+# before sending; it is a starting point, not a forecast of who gets wet.
+alert_tambons:
+  hazard_csv: out/hazard/tambons/hazard_by_tambon_c97e0bf.csv
+  min_share: 0.3
+  min_flood_prone_km2: 1.0
 
 # Threshold candidates the hindcast scores. The proposal takes, per level, the candidate that
 # catches every flood the gauge recorded with the fewest false alarms (ties: the longer lead).

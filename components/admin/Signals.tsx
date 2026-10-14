@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import { SignalsMap, type MapPoint } from "@/components/admin/SignalsMap";
 import {
   FORECAST_STALE_H,
   gaugeNow,
+  gaugeState,
+  keyLevelsFor,
   LEVELS,
   linePath,
   rainNow,
@@ -10,6 +13,7 @@ import {
   span,
   suggest,
   thresholdOf,
+  type AutoEvent,
   type Feed,
   type Gauge,
   type Point,
@@ -214,6 +218,7 @@ function GaugeBlock({
   now,
   locale,
   t,
+  autoAction,
 }: {
   gauge: Gauge;
   role: "key" | "upstream";
@@ -221,6 +226,7 @@ function GaugeBlock({
   now: number;
   locale: string;
   t: T;
+  autoAction?: (form: FormData) => void;
 }) {
   const state = gaugeNow(gauge, now);
   const refs: Ref[] = [];
@@ -282,6 +288,7 @@ function GaugeBlock({
       {gauge.series.length > 0 && gauge.series.length < 3 ? (
         <p className={hint}>{t("gauge.few", { count: gauge.series.length })}</p>
       ) : null}
+      {gauge.id ? <AutoTick gauge={gauge} t={t} action={autoAction} /> : null}
     </section>
   );
 }
@@ -310,12 +317,43 @@ function FeedLine({
   );
 }
 
+/**
+ * The readings behind a suggestion, as the alert's note. The note is shown as typed in every
+ * language, so it is figures and gauge codes only: "X.40A 16.20 m (+0.94 m / 6 h) 26/11 09:00 ·
+ * rain 72 h 240 mm".
+ */
+export function draftNote(zone: Zone, now: number, locale: string): string {
+  const parts: string[] = [];
+  const stamp = (at: number) =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: BKK,
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+      .format(new Date(at))
+      .replace(",", "");
+  for (const gauge of [zone.key, zone.upstream]) {
+    const st = gaugeNow(gauge, now);
+    if (!gauge || !st || st.stale) continue;
+    const rise = st.riseM === null ? "" : ` (${st.riseM >= 0 ? "+" : ""}${fix(st.riseM)} m / 6 h)`;
+    parts.push(`${gauge.code} ${fix(st.value)} m${rise} ${stamp(st.at)}`);
+  }
+  const rain = rainNow(zone.rain, now);
+  if (rain.hasPast) parts.push(`rain 72 h ${fix(rain.past72, 0)} mm`);
+  void locale;
+  return parts.join(" · ").slice(0, 400);
+}
+
 function ZoneCard({
   zone,
   now,
   locale,
   t,
   action,
+  autoAction,
   saved,
 }: {
   zone: Zone;
@@ -323,6 +361,7 @@ function ZoneCard({
   locale: string;
   t: T;
   action?: (form: FormData) => void;
+  autoAction?: (form: FormData) => void;
   saved: boolean;
 }) {
   const s = suggest(zone, now);
@@ -368,14 +407,33 @@ function ZoneCard({
             </ul>
           )}
           <p className={hint}>{t("suggestion.onlyAdvice")}</p>
-          <Link href="/admin/alerts/new" className={`${buttonSecondary} self-start`}>
+          <Link
+            href={{
+              pathname: "/admin/alerts/new",
+              query: {
+                zone: zone.id,
+                ...(s.level ? { level: s.level } : {}),
+                note: draftNote(zone, now, locale),
+              },
+            }}
+            className={`${buttonSecondary} self-start`}
+            data-draft-alert
+          >
             {t("suggestion.toAlerts")}
           </Link>
         </div>
       </header>
 
       {zone.key ? (
-        <GaugeBlock gauge={zone.key} role="key" zone={zone} now={now} locale={locale} t={t} />
+        <GaugeBlock
+          gauge={zone.key}
+          role="key"
+          zone={zone}
+          now={now}
+          locale={locale}
+          t={t}
+          autoAction={autoAction}
+        />
       ) : (
         <p className={hint}>{t("gauge.noKey")}</p>
       )}
@@ -387,6 +445,7 @@ function ZoneCard({
           now={now}
           locale={locale}
           t={t}
+          autoAction={autoAction}
         />
       ) : null}
       {zone.others.length > 0 && (
@@ -542,6 +601,191 @@ function ZoneCard({
   );
 }
 
+function AutoTick({ gauge, t, action }: { gauge: Gauge; t: T; action?: (form: FormData) => void }) {
+  return (
+    <form
+      action={action}
+      className="flex flex-wrap items-center gap-3 rounded-xl border border-jaga-line p-2"
+      data-signal-auto={gauge.code}
+    >
+      <input type="hidden" name="station" value={gauge.id} />
+      <label className="flex min-h-tap items-center gap-2">
+        <input type="checkbox" name="enabled" defaultChecked={gauge.auto} className="h-6 w-6" />
+        <span className="font-medium">{t("auto.gauge")}</span>
+      </label>
+      {action ? (
+        <button type="submit" className={`${buttonSecondary} w-auto px-4`}>
+          {t("auto.save")}
+        </button>
+      ) : null}
+    </form>
+  );
+}
+
+function AutoPanel({
+  data,
+  locale,
+  t,
+  allAction,
+  modeAction,
+  dismissAction,
+}: {
+  data: Signals;
+  locale: string;
+  t: T;
+  allAction?: (form: FormData) => void;
+  modeAction?: (form: FormData) => void;
+  dismissAction?: (form: FormData) => void;
+}) {
+  const auto = data.auto ?? { graceMinutes: 20, maxAgeH: 3, mode: "drill" as const };
+  const inZones = (data.allGauges ?? []).filter((g) => g.zoneId);
+  const on = inZones.filter((g) => g.auto).length;
+  const events = data.events ?? [];
+  const pending = events.filter((e) => e.status === "pending");
+  const zoneName = (id: string) =>
+    localName(data.zones.find((z) => z.id === id)?.name ?? {}, locale);
+  const draftHref = (e: AutoEvent) => ({
+    pathname: "/admin/alerts/new" as const,
+    query: {
+      zone: e.zoneId,
+      level: e.level,
+      note: `${e.gauge ?? ""} ${fix(e.value)} m (${fix(e.threshold)} m)`,
+    },
+  });
+  return (
+    <section className={`${card} border-2 border-jaga-edge`} data-signals-auto={auto.mode}>
+      <h2 className="text-h3 font-bold text-jaga-ink">{t("auto.title")}</h2>
+      <p>{t("auto.rule", { age: auto.maxAgeH, grace: auto.graceMinutes })}</p>
+      <p className="font-bold" data-signals-auto-mode>
+        {auto.mode === "real" ? t("auto.modeReal") : t("auto.modeDrill")}
+      </p>
+      <p className={hint}>{t("auto.count", { on, all: inZones.length })}</p>
+      {allAction || modeAction ? (
+        <div className="flex flex-wrap gap-2">
+          {allAction ? (
+            <>
+              <form action={allAction}>
+                <input type="hidden" name="station" value="all" />
+                <input type="hidden" name="enabled" value="on" />
+                <button
+                  type="submit"
+                  className={`${buttonPrimary} w-auto px-4`}
+                  data-signals-all-on
+                >
+                  {t("auto.allOn")}
+                </button>
+              </form>
+              <form action={allAction}>
+                <input type="hidden" name="station" value="all" />
+                <button
+                  type="submit"
+                  className={`${buttonSecondary} w-auto px-4`}
+                  data-signals-all-off
+                >
+                  {t("auto.allOff")}
+                </button>
+              </form>
+            </>
+          ) : null}
+          {modeAction ? (
+            <form action={modeAction}>
+              <input type="hidden" name="mode" value={auto.mode === "real" ? "drill" : "real"} />
+              <button type="submit" className={`${buttonSecondary} w-auto px-4`}>
+                {auto.mode === "real" ? t("auto.toDrill") : t("auto.toReal")}
+              </button>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
+      {pending.length > 0 && (
+        <div className="flex flex-col gap-2" data-signals-pending={pending.length}>
+          <h3 className="font-bold text-jaga-ink">{t("auto.pending")}</h3>
+          {pending.map((e) => (
+            <div
+              key={e.id}
+              className="flex flex-col gap-2 rounded-xl border-2 border-jaga-edge p-3"
+            >
+              <p>
+                {t("auto.pendingLine", {
+                  level: t(`level.${e.level}`),
+                  zone: zoneName(e.zoneId),
+                  gauge: e.gauge ?? "",
+                  value: fix(e.value),
+                  threshold: fix(e.threshold),
+                  time: e.deadline ? when(locale, e.deadline) : "",
+                })}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link href={draftHref(e)} className={`${buttonPrimary} w-auto px-4`}>
+                  {t("auto.openDraft")}
+                </Link>
+                {dismissAction ? (
+                  <form action={dismissAction} className="flex flex-wrap items-end gap-2">
+                    <input type="hidden" name="event" value={e.id} />
+                    <label className="flex flex-col gap-1">
+                      <span className={hint}>{t("auto.dismissNote")}</span>
+                      <input name="note" maxLength={300} className={input} />
+                    </label>
+                    <button type="submit" className={`${buttonSecondary} w-auto px-4`}>
+                      {t("auto.dismiss")}
+                    </button>
+                  </form>
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {events.some((e) => e.status !== "pending") && (
+        <details>
+          <summary className="min-h-tap cursor-pointer font-bold text-jaga-ink">
+            {t("auto.recent")}
+          </summary>
+          <ul className="list-disc ps-5">
+            {events
+              .filter((e) => e.status !== "pending")
+              .map((e) => (
+                <li key={e.id}>
+                  {e.createdAt ? when(locale, e.createdAt) : ""} · {t(`level.${e.level}`)} ·{" "}
+                  {zoneName(e.zoneId)} · {e.gauge} {fix(e.value)} m · {t(`auto.status.${e.status}`)}
+                </li>
+              ))}
+          </ul>
+        </details>
+      )}
+    </section>
+  );
+}
+
+/** The map view's marks, built on the server from the same read as the cards. */
+function mapPoints(data: Signals, locale: string): MapPoint[] {
+  return (data.allGauges ?? []).map((g) => {
+    const levels = keyLevelsFor(g, data.zones);
+    const st = gaugeNow(g, data.now);
+    return {
+      id: g.id ?? null,
+      code: g.code,
+      name: localName(g.name, locale),
+      agency: g.agency,
+      zone: g.zoneId
+        ? localName(data.zones.find((z) => z.id === g.zoneId)?.name ?? {}, locale)
+        : null,
+      lon: g.lon,
+      lat: g.lat,
+      state: gaugeState(g, data.now, levels),
+      value: st ? st.value : null,
+      at: st ? when(locale, st.at) : null,
+      ageH: st ? st.ageH : null,
+      rise: st ? st.riseM : null,
+      bank: g.bank,
+      warning: levels?.warning ?? null,
+      auto: g.auto === true,
+      canAuto: g.zoneId !== null,
+      series: g.series,
+    };
+  });
+}
+
 export function SignalsView({
   data,
   locale,
@@ -549,6 +793,11 @@ export function SignalsView({
   action,
   notice,
   savedZone,
+  view = "cards",
+  autoAction,
+  allAction,
+  modeAction,
+  dismissAction,
 }: {
   data: Signals;
   locale: string;
@@ -556,11 +805,29 @@ export function SignalsView({
   action?: (form: FormData) => void;
   notice?: string | null;
   savedZone?: string | null;
+  view?: "cards" | "map";
+  autoAction?: (form: FormData) => void;
+  allAction?: (form: FormData) => void;
+  modeAction?: (form: FormData) => void;
+  dismissAction?: (form: FormData) => void;
 }) {
   return (
-    <div className="flex flex-col gap-5" data-signals={data.zones.length}>
+    <div className="flex flex-col gap-5" data-signals={data.zones.length} data-signals-view={view}>
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={hint}>{t("intro")}</p>
+      <nav aria-label={t("view.label")} className="flex gap-2">
+        {(["cards", "map"] as const).map((v) => (
+          <Link
+            key={v}
+            href={{ pathname: "/admin/signals", query: v === "map" ? { view: "map" } : {} }}
+            aria-current={view === v ? "page" : undefined}
+            className={`${view === v ? buttonPrimary : buttonSecondary} w-auto px-4`}
+            data-signals-switch={v}
+          >
+            {t(`view.${v}`)}
+          </Link>
+        ))}
+      </nav>
       {notice ? (
         <p
           role="status"
@@ -590,8 +857,58 @@ export function SignalsView({
         </ul>
         <p className={hint}>{t("feed.lag")}</p>
       </section>
-      {data.zones.length === 0 ? <p>{t("noZones")}</p> : null}
-      {data.zones.map((zone) => (
+      <AutoPanel
+        data={data}
+        locale={locale}
+        t={t}
+        allAction={allAction}
+        modeAction={modeAction}
+        dismissAction={dismissAction}
+      />
+      {view === "map" ? (
+        <SignalsMap
+          points={mapPoints(data, locale)}
+          zones={{
+            type: "FeatureCollection",
+            features: data.zones
+              .filter((z) => z.outline)
+              .map((z) => ({
+                type: "Feature",
+                geometry: z.outline!,
+                properties: { name: localName(z.name, locale) },
+              })),
+          }}
+          action={autoAction}
+          words={{
+            title: t("map.title"),
+            hint: t("map.hint"),
+            states: {
+              evacuate: t("map.state.evacuate"),
+              warning: t("map.state.warning"),
+              near: t("map.state.near"),
+              normal: t("map.state.normal"),
+              stale: t("map.state.stale"),
+              nolevels: t("map.state.nolevels"),
+            },
+            close: t("map.close"),
+            zone: t("map.zone", { zone: "{zone}" }),
+            noZone: t("map.noZone"),
+            autoOn: t("map.auto"),
+            autoLabel: t("auto.gauge"),
+            autoHint: t("auto.gaugeHint"),
+            save: t("auto.save"),
+            level: t("gauge.level"),
+            measured: t("gauge.measured"),
+            rise: t("gauge.rise"),
+            bank: t("gauge.toBank"),
+            warning: t("level.warning"),
+            unknown: t("unknown"),
+            notIssued: t("suggestion.onlyAdvice"),
+          }}
+        />
+      ) : null}
+      {view === "map" ? null : data.zones.length === 0 ? <p>{t("noZones")}</p> : null}
+      {(view === "map" ? [] : data.zones).map((zone) => (
         <ZoneCard
           key={zone.id}
           zone={zone}
@@ -599,6 +916,7 @@ export function SignalsView({
           locale={locale}
           t={t}
           action={action}
+          autoAction={autoAction}
           saved={savedZone === zone.id}
         />
       ))}
