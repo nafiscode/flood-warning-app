@@ -144,6 +144,61 @@ def test_the_score_leaves_out_what_is_unknown_and_flags_never_remove_a_site():
     assert score.total({k: None for k in CFG["weights"]}, CFG["weights"])[0] is None
     assert score.components({"freeboard_m": 99.0, "capacity": 5000}, CFG, 30)["freeboard"] == 1.0
     assert score.flags({"fill_m": 2.0, "houses": 10}, CFG) == ["highway_shoulder"]
+    assert score.flags({"fill_m": 2.0, "houses": 10, "source": "jaga-highway"}, CFG) == ["highway_shoulder"]
+    assert score.flags({"fill_m": 1.0, "houses": 10, "source": "jaga-road"}, CFG) == ["road_shoulder"]
+    assert score.flags({"fill_m": None, "houses": 10, "source": "jaga-terrain"}, CFG) == []
+
+
+def _ways(points):
+    """Road arrays as `roads.load_tiles` gives them, from [(way id, kind, bridge, [(lon, lat), ...]), ...]."""
+    elements = [{"id": w, "nodes": list(range(100 * w, 100 * w + len(pts))),
+                 "geometry": [{"lon": x, "lat": y} for x, y in pts],
+                 "tags": {"highway": kind, **({"bridge": "yes"} if bridge else {})}} for w, kind, bridge, pts in points]
+    a = osm.road_arrays(elements)
+    a["way_of_point"] = np.repeat(np.arange(len(a["way_id"])), np.diff(a["start"]))
+    return a
+
+
+def test_smaller_roads_only_fill_the_gaps_and_skip_what_the_radar_saw_flooded():
+    from safe_places.__main__ import gaps
+
+    t = from_origin(0, 300, 30, 30)                                   # 10 x 10 cells; lon/lat used as metres here
+    same = lambda lon, lat: (np.asarray(lon, float), np.asarray(lat, float))   # noqa: E731
+    tambon = np.ones((10, 10), dtype="uint16")
+    tambon[:, 5:] = 2                                                  # two tambons, left and right
+    land = np.ones((10, 10), dtype=bool)
+    flooded = np.zeros((10, 10), dtype=bool)
+    flooded[0, :] = True                                               # the top row was under water
+    ways = _ways([
+        (1, "secondary", False, [(15, 285), (15, 255), (15, 195), (15, 105), (15, 15)]),   # down column 0 of tambon 1
+        (2, "secondary", True, [(45, 105), (45, 75)]),                                    # a bridge: never a candidate
+        (3, "tertiary", False, [(195, 105), (225, 105)]),                                  # in tambon 2
+        (4, "residential", False, [(45, 15), (75, 15)]),                                   # not a tier at all
+    ])
+    rows, cols = features.road_cells(ways, ["secondary"], same, t, (10, 10), land, flooded)
+    assert list(zip(rows.tolist(), cols.tolist())) == [(1, 0), (3, 0), (6, 0), (9, 0)]   # row 0 flooded, bridge left out
+    rows_all, _ = features.road_cells(ways, ["secondary"], same, t, (10, 10), land, None)
+    assert len(rows_all) == 5                                          # counting keeps the flooded cell
+    assert len(features.road_cells(ways, ["primary"], same, t, (10, 10), land, flooded)[0]) == 0
+    # Tambon 1 already has two candidates (a school and a highway point), tambon 2 has three: only
+    # tambon 1 is short, by one.
+    school = {"lon": 100.0, "lat": 100.0}
+    need = gaps([school], [(9, 2), (2, 6), (5, 7), (8, 8)], 3, same, t, (10, 10), tambon, 2)
+    assert need == {1: 1}
+    weight = np.zeros((10, 10))
+    weight[3, 0], weight[9, 0], weight[6, 0] = 5, 9, 7
+    got = features.pick_cells(rows, cols, weight, tambon, 3, 3, taken=[(9, 2)], quota=need)
+    assert got == [(6, 0)]                    # (9, 0) is heavier but within 3 cells of the highway point at (9, 2)
+    assert features.pick_cells(rows, cols, weight, tambon, 3, 3, quota={}) == []        # nobody short, nothing added
+    assert len(features.pick_cells(rows, cols, weight, tambon, 3, 3, quota={1: 5})) == 3  # never more than per_tambon
+    # The tertiary tier is asked only for what is still missing, and only where it is missing.
+    t_rows, t_cols = features.road_cells(ways, ["tertiary"], same, t, (10, 10), land, flooded)
+    assert features.pick_cells(t_rows, t_cols, weight, tambon, 3, 3, quota={1: 1}) == []   # its road is in tambon 2
+    assert features.pick_cells(t_rows, t_cols, weight, tambon, 3, 3, quota={2: 1}) == [(6, 6)]
+    # The mask form gives what the cell form gives.
+    mask = np.zeros((10, 10), dtype=bool)
+    mask[rows, cols] = True
+    assert features.pick_parking(mask, weight, tambon, 3, 3, taken=[(9, 2)], quota=need) == got
 
 
 def test_the_table_row_starts_unverified_and_the_seed_only_replaces_its_own_rows():
@@ -156,7 +211,7 @@ def test_the_table_row_starts_unverified_and_the_seed_only_replaces_its_own_rows
     assert row["facilities"] == {"source": "osm", "osm": "node/7"}
     sql = seed_sql([s])
     assert "delete from public.safe_places where verification_status = 'unverified'" in sql
-    assert "facilities->>'source' in ('osm', 'jaga-terrain', 'jaga-highway', 'official-list')" in sql
+    assert "facilities->>'source' in ('osm', 'jaga-terrain', 'jaga-highway', 'jaga-road', 'official-list')" in sql
     assert "It''s a mosque" in sql and "st_makepoint(101.25, 6.87)" in sql and ", null, " in sql
     assert json.loads(sql.split("'::jsonb")[0].split("('")[-1].replace("''", "'"))["th"] == "มัสยิด"
     assert "insert into" not in seed_sql([])

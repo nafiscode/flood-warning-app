@@ -60,5 +60,10 @@ def flags(site: dict, cfg: dict) -> list[str]:
     if site.get("freeboard_basis") == "stream":
         out.append("no_flood_edge_near")
     if site.get("fill_m"):
-        out.append("highway_shoulder")
+        # Parking on a road's fill: whether cars may stand there is for the road's authority to say.
+        out.append(EMBANKMENT_FLAGS.get(site.get("source"), "highway_shoulder"))
     return out
+
+
+# The flag an embankment point carries, by its source: a main highway, or a smaller road (gap filler).
+EMBANKMENT_FLAGS = {"jaga-highway": "highway_shoulder", "jaga-road": "road_shoulder"}

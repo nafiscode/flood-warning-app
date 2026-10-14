@@ -89,28 +89,66 @@ def box_sum(a: np.ndarray, radius_cells: int) -> np.ndarray:
 
 
 def pick_parking(ok: np.ndarray, weight: np.ndarray, tambon_index: np.ndarray, per_tambon: int,
-                 spacing_cells: int, taken: list[tuple[int, int]] | None = None) -> list[tuple[int, int]]:
+                 spacing_cells: int, taken: list[tuple[int, int]] | None = None,
+                 quota: dict[int, int] | None = None) -> list[tuple[int, int]]:
     """Up to `per_tambon` cells in every tambon from the cells where `ok`, heaviest `weight` first,
     no two closer than `spacing_cells`, and none that close to a cell already `taken`. Returns
-    (row, col)."""
-    rows, cols = np.nonzero(ok & (tambon_index > 0))
+    (row, col). With `quota` (tambon index -> how many it still needs) only those tambons are served,
+    each with at most its quota."""
+    rows, cols = np.nonzero(ok)
+    return pick_cells(rows, cols, weight, tambon_index, per_tambon, spacing_cells, taken, quota)
+
+
+def pick_cells(rows: np.ndarray, cols: np.ndarray, weight: np.ndarray, tambon_index: np.ndarray, per_tambon: int,
+               spacing_cells: int, taken: list[tuple[int, int]] | None = None,
+               quota: dict[int, int] | None = None) -> list[tuple[int, int]]:
+    """`pick_parking` for cells given as (row, col) arrays rather than a mask over the whole grid
+    (a road's points are a few thousand cells; a mask is a hundred million). The cells should be
+    unique and in row-major order, which is the order `np.nonzero` gives, so that ties in weight fall
+    the same way as in `pick_parking`."""
+    rows, cols = np.asarray(rows, dtype="int64"), np.asarray(cols, dtype="int64")
+    tambons = tambon_index[rows, cols].astype("int64") if len(rows) else np.zeros(0, dtype="int64")
+    keep = tambons > 0
+    if quota is not None:
+        wanted = np.array([t for t, n in quota.items() if n > 0], dtype="int64")
+        keep &= np.isin(tambons, wanted)
+    rows, cols, tambons = rows[keep], cols[keep], tambons[keep]
     if len(rows) == 0:
         return []
-    order = np.lexsort((-weight[rows, cols], tambon_index[rows, cols]))
-    rows, cols, tambons = rows[order], cols[order], tambon_index[rows, cols][order]
+    order = np.lexsort((-weight[rows, cols], tambons))
+    rows, cols, tambons = rows[order], cols[order], tambons[order]
     taken_by: dict[int, list[tuple[int, int]]] = {}
     for tr, tc in taken or []:
         taken_by.setdefault(int(tambon_index[tr, tc]), []).append((tr, tc))
     picked: list[tuple[int, int]] = []
     start = 0
     for end in list(np.nonzero(np.diff(tambons))[0] + 1) + [len(tambons)]:
+        tambon = int(tambons[start])
+        most = per_tambon if quota is None else min(per_tambon, quota[tambon])
         mine: list[tuple[int, int]] = []
-        near = taken_by.get(int(tambons[start]), [])
+        near = taken_by.get(tambon, [])
         for r, c in zip(rows[start:end].tolist(), cols[start:end].tolist()):
+            if len(mine) == most:
+                break
             if all(max(abs(r - pr), abs(c - pc)) >= spacing_cells for pr, pc in mine + near):
                 mine.append((r, c))
-                if len(mine) == per_tambon:
-                    break
         picked += mine
         start = end
     return picked
+
+
+def road_cells(ways: dict[str, np.ndarray], kinds: list[str], to_xy, transform, shape: tuple[int, int],
+               land: np.ndarray, flooded: np.ndarray | None) -> tuple[np.ndarray, np.ndarray]:
+    """The cells (row, col; unique, row-major) holding points of roads of the given OSM `kinds`, not
+    on a bridge or in a tunnel, on land the radar did not see flooded. Embankment parking is picked
+    from these: a raised road stays dry where the land beside it floods, but a stretch the radar saw
+    under water was not high enough there. `flooded` None keeps flooded cells too (for counting)."""
+    on = np.isin(ways["kind"], kinds)[ways["way_of_point"]] & ~ways["bridge"][ways["way_of_point"]]
+    if not on.any():
+        return np.zeros(0, dtype="int64"), np.zeros(0, dtype="int64")
+    x, y = to_xy(ways["lon"][on], ways["lat"][on])
+    rows, cols, inside = cell(transform, np.asarray(x), np.asarray(y), shape)
+    flat = np.unique(rows[inside] * shape[1] + cols[inside])
+    rows, cols = flat // shape[1], flat % shape[1]
+    keep = land[rows, cols] if flooded is None else land[rows, cols] & ~flooded[rows, cols]
+    return rows[keep], cols[keep]

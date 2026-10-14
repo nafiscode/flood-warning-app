@@ -36,7 +36,7 @@ from . import features, osm, roads, score
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 SHELTERS = Path(__file__).with_name("official_shelters.csv")
 log = logging.getLogger("safe_places")
-SOURCES = ("osm", "jaga-terrain", "jaga-highway", "official-list")
+SOURCES = ("osm", "jaga-terrain", "jaga-highway", "jaga-road", "official-list")
 
 
 def load_config(path: Path = CONFIG_PATH) -> dict:
@@ -185,24 +185,41 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
     spacing = int(round(pc["spacing_m"] / transform.a))
     # The highway embankments first: points of the main roads (not their bridges) the radar saw dry.
     hw = pc["highway"]
-    on_highway = np.isin(ways["kind"], hw["kinds"])[ways["way_of_point"]] & ~ways["bridge"][ways["way_of_point"]]
-    hx, hy = to_xy(ways["lon"][on_highway], ways["lat"][on_highway])
-    hr_, hc_, hin = features.cell(transform, hx, hy, shape)
-    highway_cell = np.zeros(shape, dtype=bool)
-    highway_cell[hr_[hin], hc_[hin]] = True
-    on_fill = features.pick_parking(highway_cell & r["land"] & ~flood_any, weight, r["tambon_index"], hw["per_tambon"], spacing)
+    hr_, hc_ = features.road_cells(ways, hw["kinds"], to_xy, transform, shape, r["land"], flood_any)
+    on_fill = features.pick_cells(hr_, hc_, weight, r["tambon_index"], hw["per_tambon"], spacing)
     picked = features.pick_parking(ok, weight, r["tambon_index"], pc["per_tambon"], spacing, taken=on_fill)
+    del ok
     log.info("parking: %d points on highway embankments, %d on high terrain", len(on_fill), len(picked))
-    for cells, source, th, en in ((on_fill, "jaga-highway", "คันทางหลวง", "Highway embankment"),
-                                  (picked, "jaga-terrain", "ที่สูงริมถนน", "High ground by the road")):
+    # Then the smaller roads, lower tier, only where a tambon still has fewer than `fill_to` candidates.
+    need = gaps(sites, on_fill + picked, pc["road"]["fill_to"], to_xy, transform, shape, r["tambon_index"], len(r["tambons"]))
+    on_road: list[tuple[int, int, str, float]] = []
+    for tier in pc["road"]["tiers"]:
+        if not need:
+            break
+        rr_, rc_ = features.road_cells(ways, tier["kinds"], to_xy, transform, shape, r["land"], flood_any)
+        got = features.pick_cells(rr_, rc_, weight, r["tambon_index"], pc["road"]["fill_to"], spacing,
+                                  taken=on_fill + picked + [(a, b) for a, b, _, _ in on_road], quota=need)
+        for row_, col_ in got:
+            t = int(r["tambon_index"][row_, col_])
+            need[t] -= 1
+            on_road.append((row_, col_, "/".join(tier["kinds"]), float(tier["assumed_fill_m"])))
+        need = {t: n for t, n in need.items() if n > 0}
+        log.info("parking: %d points on %s roads to fill gaps; %d tambons still short", len(got),
+                 "/".join(tier["kinds"]), len(need))
+    tiers = (
+        ([(a, b, None, float(hw["assumed_fill_m"])) for a, b in on_fill], "jaga-highway", "คันทางหลวง", "Highway embankment"),
+        ([(a, b, None, 0.0) for a, b in picked], "jaga-terrain", "ที่สูงริมถนน", "High ground by the road"),
+        (on_road, "jaga-road", "คันถนน", "Road embankment"),
+    )
+    for cells, source, th, en in tiers:
         numbers: dict[int, int] = {}
-        for row, col in cells:
+        for row, col, road_class, fill in cells:
             t = r["tambons"][int(r["tambon_index"][row, col]) - 1]
             numbers[id(t)] = numbers.get(id(t), 0) + 1
             lon, lat = to_lonlat(transform.c + (col + 0.5) * transform.a, transform.f + (row + 0.5) * transform.e)
             sites.append({"osm": None, "source": source, "type": "high_ground_parking", "capacity": None, "parking": True,
                           "name": {"th": f"{th} ต.{t['name_th']} {numbers[id(t)]}", "en": f"{en}, {t['name_en']} {numbers[id(t)]}"},
-                          "lon": float(lon), "lat": float(lat)})
+                          "lon": float(lon), "lat": float(lat), "fill_m": fill or None, "road_class": road_class})
     x, y = to_xy(np.array([s["lon"] for s in sites]), np.array([s["lat"] for s in sites]))
     row, col, inside = features.cell(transform, x, y, shape)
     in_tambon = np.zeros(len(sites), dtype="int64")
@@ -236,7 +253,7 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
         source = int(ids[mode][node[mode][n]]) if node[mode][n] >= 0 else -1
         got = roads.served(g, source, minutes * 60, speed, g.drive if mode == "drive" else g.walk, houses_at[mode])
         t = r["tambons"][int(in_tambon[i]) - 1]
-        fill = float(pc["highway"]["assumed_fill_m"]) if s["source"] == "jaga-highway" else 0.0
+        fill = float(s.get("fill_m") or 0.0)
         site = {**s, **got, "tambon": t["code"], "tambon_th": t["name_th"], "tambon_en": t["name_en"], "mode": mode,
                 "elevation_m": None if np.isnan(height[n]) else round(float(height[n]), 1),
                 "freeboard_m": None if np.isnan(fb[n]) else round(float(fb[n]) + fill, 1), "freeboard_basis": str(basis[n]),
@@ -251,12 +268,17 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
                                     "houses_within_reach": got["houses"], "houses_reaching_on_dry_roads": got["houses_dry"],
                                     "mean_minutes_on_dry_roads": got["mean_minutes_dry"],
                                     "freeboard_from": site["freeboard_basis"], "radar_run": cfg["radar_hash"],
-                                    **({"embankment_fill_assumed_m": fill} if fill else {})}
+                                    **({"embankment_fill_assumed_m": fill} if fill else {}),
+                                    **({"embankment_road_class": s["road_class"]} if s.get("road_class") else {})}
         rows.append(site)
         if (n + 1) % 1000 == 0:
             log.info("%d of %d scored", n + 1, len(keep))
 
     summary = summarise(rows, r["tambons"], r["tambon_index"], r["houses"])
+    if not limit:
+        summary["tambons_under_3_why"] = why_short(summary["tambons_under_3_codes"], ways, pc, to_xy, transform, shape,
+                                                   r, flood_any)
+    summary.pop("tambons_under_3_codes", None)
     summary["minutes"] = round((time.time() - started) / 60, 1)
     write_csv(out / "safe_places.csv", rows)
     write_field_sheet(out / "field_sheet.csv", rows)
@@ -265,10 +287,25 @@ def cmd_run(cfg: dict, limit: int | None) -> int:
         seed = REPO_DIR / "supabase" / "seed" / "50_safe_places.sql"
         seed.write_text(seed_sql(rows), encoding="utf-8", newline="\n")
         print(f"seed {seed} ({seed.stat().st_size / 1e6:.1f} MB)")
-    print(json.dumps({k: v for k, v in summary.items() if k != "tambons_under_3"}, ensure_ascii=False, indent=1))
+    print(json.dumps({k: v for k, v in summary.items() if not k.startswith("tambons_under_3")}, ensure_ascii=False, indent=1))
     if not limit:
         print("tambons with houses and fewer than 3 candidates:", summary["tambons_under_3"] or "none")
     return 0
+
+
+def gaps(sites: list[dict], cells: list[tuple[int, int]], fill_to: int, to_xy, transform, shape: tuple[int, int],
+         tambon_index: np.ndarray, n_tambons: int) -> dict[int, int]:
+    """Tambon index -> how many more candidates it needs to have `fill_to`, counting every candidate
+    found so far: the `sites` (named buildings, official shelters) by where they stand, and the parking
+    `cells` already picked. Only tambons that are short are listed."""
+    count = np.zeros(n_tambons + 1, dtype="int64")
+    if sites:
+        x, y = to_xy(np.array([s["lon"] for s in sites]), np.array([s["lat"] for s in sites]))
+        row, col, inside = features.cell(transform, np.asarray(x), np.asarray(y), shape)
+        np.add.at(count, tambon_index[row[inside], col[inside]].astype("int64"), 1)
+    for row, col in cells:
+        count[int(tambon_index[row, col])] += 1
+    return {t: fill_to - int(count[t]) for t in range(1, n_tambons + 1) if count[t] < fill_to}
 
 
 def summarise(rows: list[dict], tambons: list[dict], tambon_index: np.ndarray, houses: np.ndarray) -> dict:
@@ -282,10 +319,47 @@ def summarise(rows: list[dict], tambons: list[dict], tambon_index: np.ndarray, h
     under = [f"{t['code']} {t['name_en']} ({per_tambon.get(t['code'], 0)})" for t, p in zip(tambons, populated)
              if p and per_tambon.get(t["code"], 0) < 3]
     scores = [s["score"] for s in rows if s["score"] is not None]
-    return {"candidates": len(rows), "by_type": dict(sorted(by_type.items())), "flags": dict(sorted(by_flag.items())),
+    by_source: dict[str, int] = {}
+    for s in rows:
+        by_source[s["source"]] = by_source.get(s["source"], 0) + 1
+    return {"candidates": len(rows), "by_source": dict(sorted(by_source.items())),
+            "by_type": dict(sorted(by_type.items())), "flags": dict(sorted(by_flag.items())),
             "without_any_flag": sum(1 for s in rows if not s["flags"]), "scored": len(scores),
             "score_quartiles": [round(float(np.percentile(scores, q)), 2) for q in (25, 50, 75)] if scores else None,
-            "populated_tambons": int(populated.sum()), "tambons_under_3": under}
+            "populated_tambons": int(populated.sum()), "tambons_under_3": under,
+            "tambons_with_none": sum(1 for t, p in zip(tambons, populated) if p and not per_tambon.get(t["code"])),
+            "tambons_under_3_codes": [(i + 1, per_tambon.get(t["code"], 0)) for i, (t, p) in enumerate(zip(tambons, populated))
+                                      if p and per_tambon.get(t["code"], 0) < 3]}
+
+
+PROVINCES = {"90": "Songkhla", "94": "Pattani", "95": "Yala", "96": "Narathiwat"}
+
+
+def why_short(short: list[tuple[int, int]], ways: dict, pc: dict, to_xy, transform, shape, r: dict,
+              flood_any: np.ndarray) -> list[dict]:
+    """For every tambon still short of three candidates: how many 30 m cells of each road tier it has,
+    and how many of them the radar saw dry, so the reason can be read (no such road, or all of it
+    flooded, or too short for points 1 km apart)."""
+    if not short:
+        return []
+    tiers = [("main", pc["highway"]["kinds"])] + [("/".join(t["kinds"]), t["kinds"]) for t in pc["road"]["tiers"]]
+    counts: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+    for name, kinds in tiers:
+        rows, cols = features.road_cells(ways, kinds, to_xy, transform, shape, r["land"], None)
+        t = r["tambon_index"][rows, cols].astype("int64")
+        dry = ~flood_any[rows, cols]
+        counts[name] = (np.bincount(t, minlength=len(r["tambons"]) + 1), np.bincount(t[dry], minlength=len(r["tambons"]) + 1))
+    houses = np.bincount(r["tambon_index"].ravel(), weights=r["houses"].ravel(), minlength=len(r["tambons"]) + 1)
+    out = []
+    for index, n in short:
+        t = r["tambons"][index - 1]
+        row = {"code": t["code"], "name_en": t["name_en"], "name_th": t["name_th"], "province": PROVINCES.get(t["code"][:2], ""),
+               "candidates": n, "houses": int(round(houses[index]))}
+        for name, _ in tiers:
+            row[f"{name}_road_cells"] = int(counts[name][0][index])
+            row[f"{name}_road_cells_dry"] = int(counts[name][1][index])
+        out.append(row)
+    return out
 
 
 COLUMNS = ("name", "type", "lon", "lat", "tambon", "elevation_m", "freeboard_m", "flood_freq", "flooded_2024",

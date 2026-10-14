@@ -58,6 +58,20 @@ parking:
     kinds: [motorway, trunk, primary]
     per_tambon: 3
     assumed_fill_m: 2.0              # added to the freeboard the elevation model gives, and said so in the row
+  # Smaller roads as a second, lower tier, only to fill gaps (added 15 Oct 2026): where a tambon still
+  # has fewer than `fill_to` candidates of any kind (named buildings, official shelters, highway and
+  # terrain parking), points on secondary roads, then tertiary ones, are added until it has `fill_to`,
+  # by the same rule (not on a bridge, on cells the radar saw dry in both events, most houses within
+  # 1 km first, 1 km apart and 1 km from the parking already picked). Their fill is ASSUMED, not
+  # surveyed: secondary roads here are usually raised less than the highways and tertiary roads less
+  # again, often hardly at all. A tambon with enough candidates gets none of these.
+  road:
+    fill_to: 3
+    tiers:
+      - kinds: [secondary]
+        assumed_fill_m: 1.0
+      - kinds: [tertiary]
+        assumed_fill_m: 0.5
 
 # S = sum of weight x component. A component nobody knows yet (capacity, or a route for a site off
 # the road network) is left out and the other weights are scaled up, and the row says which.
