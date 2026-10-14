@@ -101,7 +101,35 @@ describe("gauge levels", () => {
       "select levels from public.thresholds where zone_id = $1 and signal = 'key_level_m'",
       [zone],
     );
-    expect(t!.levels).toEqual({ warning: 16.1, evacuate: 16.6 });
+    expect(t!.levels).toEqual({ watch: 15.7, warning: 16.1, evacuate: 16.6 });
+  });
+
+  it("the upstream gauge's levels are the zone's upstream threshold, and an admin's own is kept", async () => {
+    await asOwner(db);
+    const read = async () =>
+      (
+        await rows<{ levels: Record<string, number>; provisional: boolean }>(
+          db,
+          "select levels, provisional from public.thresholds where zone_id = $1 and signal = 'upstream_level_m'",
+          [zone],
+        )
+      )[0];
+    // Loaded with the suggestions.
+    expect((await read())!.levels).toHaveProperty("evacuate");
+    await as(db, { uid: w.admin });
+    await set(other, 37.2, 38.0, 39.6);
+    await asOwner(db);
+    expect(await read()).toEqual({
+      levels: { watch: 37.2, warning: 38, evacuate: 39.6 },
+      provisional: false,
+    });
+    // A later sync of the suggestions leaves the admin's figure alone.
+    await db.query(
+      "update public.gauge_levels set warning_m = 38.5, provisional = true where station_id = $1",
+      [other],
+    );
+    await db.query("select public.gauge_levels_to_zone($1, null)", [other]);
+    expect((await read())!.levels.warning).toBe(38);
   });
 
   it("the automated alarm raises Warning at another gauge's own Evacuate level", async () => {

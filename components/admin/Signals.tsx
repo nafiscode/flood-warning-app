@@ -17,6 +17,7 @@ import {
   type AutoEvent,
   type Feed,
   type Gauge,
+  type Level,
   type Point,
   type Signals,
   type Zone,
@@ -233,9 +234,13 @@ function GaugeBlock({
   const refs: Ref[] = [];
   if (gauge.bank !== null)
     refs.push({ value: gauge.bank, text: t("ref.bank", { value: fix(gauge.bank) }) });
-  const warning = role === "key" ? thresholdOf(zone, "key_level_m", "warning") : null;
+  const warning =
+    role === "key" ? thresholdOf(zone, "key_level_m", "warning") : (gauge.levels?.warning ?? null);
   if (warning !== null && warning !== gauge.bank)
     refs.push({ value: warning, text: t("ref.warning", { value: fix(warning) }) });
+  const watch =
+    role === "key" ? thresholdOf(zone, "key_level_m", "watch") : (gauge.levels?.watch ?? null);
+  if (watch !== null) refs.push({ value: watch, text: t("ref.watch", { value: fix(watch) }) });
   return (
     <section className="flex flex-col gap-2" data-signal-gauge={gauge.code}>
       <h3 className="font-bold text-jaga-ink">
@@ -355,6 +360,7 @@ function ZoneCard({
   t,
   action,
   autoAction,
+  levelsAction,
   saved,
 }: {
   zone: Zone;
@@ -363,6 +369,7 @@ function ZoneCard({
   t: T;
   action?: (form: FormData) => void;
   autoAction?: (form: FormData) => void;
+  levelsAction?: (form: FormData) => void;
   saved: boolean;
 }) {
   const s = suggest(zone, now);
@@ -552,7 +559,7 @@ function ZoneCard({
         </summary>
         <div className="flex flex-col gap-4 pt-2">
           <p className={hint}>{t("thresholds.intro")}</p>
-          {SIGNAL_KEYS.map((signal) => {
+          {SIGNAL_KEYS.filter((k) => k.startsWith("rain")).map((signal) => {
             const th = zone.thresholds.find((x) => x.signal === signal);
             return (
               <form
@@ -596,9 +603,102 @@ function ZoneCard({
               </form>
             );
           })}
+          <p className="border-t border-jaga-line pt-3 font-bold text-jaga-ink">
+            {t("thresholds.gauges")}
+          </p>
+          <p className={hint}>{t("thresholds.gaugesIntro")}</p>
+          {(
+            [
+              ...(zone.key ? [[zone.key, "key"] as const] : []),
+              ...(zone.upstream ? [[zone.upstream, "upstream"] as const] : []),
+              ...zone.others.map((g) => [g, "other"] as const),
+            ] as const
+          ).map(([gauge, role]) => (
+            <GaugeLevelsBox
+              key={gauge.code}
+              gauge={gauge}
+              role={role}
+              zone={zone}
+              locale={locale}
+              t={t}
+              action={levelsAction}
+            />
+          ))}
         </div>
       </details>
     </article>
+  );
+}
+
+/**
+ * One gauge's Watch, Warning and Evacuate, prefilled with what is stored (the pipeline's suggestion
+ * or an admin's own figure). For the key and upstream gauge these are the zone's own level
+ * thresholds: saving here changes both, so there is one value, not two.
+ */
+function GaugeLevelsBox({
+  gauge,
+  role,
+  zone,
+  locale,
+  t,
+  action,
+}: {
+  gauge: Gauge;
+  role: "key" | "upstream" | "other";
+  zone: Zone;
+  locale: string;
+  t: T;
+  action?: (form: FormData) => void;
+}) {
+  const signal = role === "key" ? "key_level_m" : role === "upstream" ? "upstream_level_m" : null;
+  const th = signal ? zone.thresholds.find((x) => x.signal === signal) : undefined;
+  const value = (level: Level) =>
+    (signal ? thresholdOf(zone, signal, level) : null) ?? gauge.levels?.[level] ?? null;
+  const provisional = th ? th.provisional : (gauge.levels?.provisional ?? true);
+  const stored = LEVELS.some((l) => value(l) !== null);
+  return (
+    <form
+      action={action}
+      className="flex flex-col gap-2 border-t border-jaga-line pt-3"
+      data-gauge-levels-box={gauge.code}
+    >
+      <input type="hidden" name="station" value={gauge.id ?? ""} />
+      <input type="hidden" name="zone" value={zone.id} />
+      <p className="font-bold">
+        {t(`thresholds.role.${role}`, { code: gauge.code, name: localName(gauge.name, locale) })}{" "}
+        <span className={`${hint} font-normal`}>
+          {!stored
+            ? t("thresholds.unset")
+            : provisional
+              ? t("thresholds.suggested")
+              : t("thresholds.byHand", {
+                  time: th?.updatedAt ? when(locale, th.updatedAt) : "",
+                })}
+        </span>
+      </p>
+      {gauge.levels?.bankSuspect ? (
+        <p className={`${hint} font-bold`}>{t("thresholds.bankSuspect")}</p>
+      ) : null}
+      <div className="grid grid-cols-3 gap-2">
+        {LEVELS.map((level) => (
+          <label key={level} className="flex flex-col gap-1">
+            <span className={label}>{t(`level.${level}`)}</span>
+            <input
+              className={input}
+              name={level}
+              inputMode="decimal"
+              defaultValue={value(level) === null ? "" : fix(value(level)!)}
+              data-level={level}
+            />
+          </label>
+        ))}
+      </div>
+      {action && gauge.id ? (
+        <button type="submit" className={`${buttonPrimary} self-start`}>
+          {t("thresholds.saveGauge")}
+        </button>
+      ) : null}
+    </form>
   );
 }
 
@@ -949,6 +1049,7 @@ export function SignalsView({
           t={t}
           action={action}
           autoAction={autoAction}
+          levelsAction={levelsAction}
           saved={savedZone === zone.id}
         />
       ))}

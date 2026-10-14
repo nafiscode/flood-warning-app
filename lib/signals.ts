@@ -37,6 +37,8 @@ export type Gauge = {
   bank: number | null;
   watch: number | null;
   series: Point[];
+  /** The gauge's own three levels (gauge_levels), when the database holds them. */
+  levels?: GaugeLevels | null;
 };
 
 export type Zone = {
@@ -61,8 +63,6 @@ export type MapGauge = Gauge & {
   lon: number;
   lat: number;
   zoneId: string | null;
-  /** The gauge's own three levels (gauge_levels), when the database holds them. */
-  levels?: GaugeLevels | null;
 };
 
 /** Watch, Warning and Evacuate for one gauge, suggested by the pipeline or set by an admin. */
@@ -78,9 +78,9 @@ export type GaugeLevels = {
   note: string | null;
 };
 
-/** `admin_gauge_levels()` rows, joined onto the map's gauges by station id. */
+/** `admin_gauge_levels()` rows, joined onto every gauge (the map's and the zones') by station id. */
 export function withGaugeLevels(data: Signals, rows: unknown): Signals {
-  if (!Array.isArray(rows) || !data.allGauges) return data;
+  if (!Array.isArray(rows)) return data;
   const byId = new Map<string, GaugeLevels>();
   for (const r of rows as Row[]) {
     const m = (r.method ?? {}) as Row;
@@ -96,9 +96,16 @@ export function withGaugeLevels(data: Signals, rows: unknown): Signals {
       note: typeof m.note === "string" ? m.note : null,
     });
   }
+  const put = <G extends Gauge>(g: G): G => ({ ...g, levels: (g.id && byId.get(g.id)) || null });
   return {
     ...data,
-    allGauges: data.allGauges.map((g) => ({ ...g, levels: (g.id && byId.get(g.id)) || null })),
+    zones: data.zones.map((z) => ({
+      ...z,
+      key: z.key ? put(z.key) : null,
+      upstream: z.upstream ? put(z.upstream) : null,
+      others: z.others.map(put),
+    })),
+    allGauges: data.allGauges?.map(put),
   };
 }
 
@@ -323,6 +330,7 @@ export function rainNow(rain: Point[], now: number): RainNow {
 export type ReasonKind =
   | "keyAtBank"
   | "keyNearBank"
+  | "keyAtWatch"
   | "upstreamOverBank"
   | "rain72"
   | "rain72Forecast"
@@ -389,6 +397,17 @@ export function suggest(zone: Zone, now: number): Suggestion {
         threshold: warning,
         at: key.at,
       });
+    else {
+      const watch = thresholdOf(zone, "key_level_m", "watch");
+      if (watch !== null && key.value >= watch)
+        reasons.push({
+          kind: "keyAtWatch",
+          level: "watch",
+          value: key.value,
+          threshold: watch,
+          at: key.at,
+        });
+    }
   }
 
   const up = gaugeNow(zone.upstream, now);

@@ -277,5 +277,9 @@ def seed_sql(rows: list[dict]) -> str:
         "      method = excluded.method, updated_at = now()",
         "  where public.gauge_levels.provisional;",
         "",
+        "-- A zone's key and upstream gauges: their levels are the zone's own threshold boxes",
+        "-- (key_level_m, upstream_level_m). Provisional thresholds only; an admin's are kept.",
+        "select public.gauge_levels_to_zone(station_id, null) from public.gauge_levels;",
+        "",
     ]
     return "\n".join(out)

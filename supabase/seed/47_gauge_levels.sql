@@ -56,3 +56,7 @@ on conflict (station_id) do update
   set watch_m = excluded.watch_m, warning_m = excluded.warning_m, evacuate_m = excluded.evacuate_m,
       method = excluded.method, updated_at = now()
   where public.gauge_levels.provisional;
+
+-- A zone's key and upstream gauges: their levels are the zone's own threshold boxes
+-- (key_level_m, upstream_level_m). Provisional thresholds only; an admin's are kept.
+select public.gauge_levels_to_zone(station_id, null) from public.gauge_levels;

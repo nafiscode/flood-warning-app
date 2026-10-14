@@ -3100,7 +3100,8 @@
     },
     "ref": {
       "bank": "bank {value} m",
-      "warning": "Warning {value} m"
+      "warning": "Warning {value} m",
+      "watch": "Watch {value} m"
     },
     "gauge": {
       "key": "Key gauge",
@@ -3133,7 +3134,8 @@
       "rain72": "{value} mm of rain over the basin in the last 72 hours, against a threshold of {threshold} mm: {level}.",
       "rain72Forecast": "The forecast holds {value} mm in 72 hours by {time}, against a threshold of {threshold} mm. A forecast, so no more than {level}.",
       "rain24": "{value} mm of rain over the basin in the last 24 hours, against a threshold of {threshold} mm: {level}.",
-      "rain24Forecast": "The forecast holds {value} mm in the next 24 hours, against a threshold of {threshold} mm. A forecast, so no more than {level}."
+      "rain24Forecast": "The forecast holds {value} mm in the next 24 hours, against a threshold of {threshold} mm. A forecast, so no more than {level}.",
+      "keyAtWatch": "The key gauge reads {value} m, at or over its Watch level ({threshold} m), measured {time}: {level}."
     },
     "blind": {
       "keyGaugeStale": "The key gauge's newest reading is more than 6 hours old, so the river as it is now is not judged here.",
@@ -3181,7 +3183,17 @@
       "unset": "not set",
       "save": "Save this threshold",
       "saved": "The threshold is saved.",
-      "error": "The threshold was not saved. Each level must be a number above nought, and at least one is needed."
+      "error": "The threshold was not saved. Each level must be a number above nought, and at least one is needed.",
+      "gauges": "Levels at each gauge (m MSL)",
+      "gaugesIntro": "Filled in with Jaga's suggestions: Evacuate is the bank; Warning and Watch were tested against past floods at that gauge, or set from how fast its river rises where it had too few floods. Change any box and save. The key and upstream gauges' levels are this zone's own level thresholds, so saving here changes those too.",
+      "role": {
+        "key": "Key gauge {code} {name}",
+        "upstream": "Upstream gauge {code} {name}",
+        "other": "{code} {name}"
+      },
+      "suggested": "suggested by Jaga, provisional",
+      "bankSuspect": "The listed bank looks too low to mark a flood here: the river stands within 0.3 m of it more than a tenth of the time. Someone who knows this gauge should set these.",
+      "saveGauge": "Save this gauge's levels"
     },
     "devTitle": "Signals: an example",
     "devNote": "Made-up figures: a river rising towards its bank with heavy rain forecast. For looking at the screen without signing in. Development only.",

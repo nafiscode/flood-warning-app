@@ -108,5 +108,8 @@ export async function setGaugeLevels(locale: string, form: FormData) {
     p_evacuate: evacuate,
     p_note: note || null,
   });
-  redirect(`${back}${join}${error ? "error=levels" : "levels=1"}`);
+  // From a zone's threshold boxes: open that zone's boxes again on return.
+  const zone = String(form.get("zone") ?? "");
+  const again = /^[0-9a-f-]{36}$/i.test(zone) ? `&saved=${zone}` : "";
+  redirect(`${back}${join}${error ? "error=levels" : `levels=1${again}`}`);
 }

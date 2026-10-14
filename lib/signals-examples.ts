@@ -47,6 +47,7 @@ const rising: Zone = {
   },
   others: [
     {
+      id: "example-X.10A",
       code: "X.10A",
       thaiwaterId: 2587,
       name: { th: "สะพานเดชานุชิต", en: null },
@@ -60,7 +61,13 @@ const rising: Zone = {
     { signal: "rain_72h_mm", levels: { watch: 180 }, provisional: true, updatedAt: null },
     {
       signal: "key_level_m",
-      levels: { warning: 16, evacuate: 16.5 },
+      levels: { watch: 15.75, warning: 16, evacuate: 16.5 },
+      provisional: true,
+      updatedAt: null,
+    },
+    {
+      signal: "upstream_level_m",
+      levels: { watch: 37.4, warning: 38.15, evacuate: 39.7 },
       provisional: true,
       updatedAt: null,
     },

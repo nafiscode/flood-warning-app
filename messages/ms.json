@@ -3100,7 +3100,8 @@
     },
     "ref": {
       "bank": "tebing {value} m",
-      "warning": "Amaran {value} m"
+      "warning": "Amaran {value} m",
+      "watch": "Berjaga-jaga {value} m"
     },
     "gauge": {
       "key": "Stesen utama",
@@ -3133,7 +3134,8 @@
       "rain72": "{value} mm hujan purata lembangan dalam 72 jam lepas, berbanding had {threshold} mm: {level}.",
       "rain72Forecast": "Ramalan memberi {value} mm dalam 72 jam menjelang {time}, berbanding had {threshold} mm. Ini ramalan, jadi tidak lebih daripada {level}.",
       "rain24": "{value} mm hujan purata lembangan dalam 24 jam lepas, berbanding had {threshold} mm: {level}.",
-      "rain24Forecast": "Ramalan memberi {value} mm dalam 24 jam akan datang, berbanding had {threshold} mm. Ini ramalan, jadi tidak lebih daripada {level}."
+      "rain24Forecast": "Ramalan memberi {value} mm dalam 24 jam akan datang, berbanding had {threshold} mm. Ini ramalan, jadi tidak lebih daripada {level}.",
+      "keyAtWatch": "Stesen utama mencatat {value} m, pada atau melebihi paras Berjaga-jaga ({threshold} m), diukur {time}: {level}."
     },
     "blind": {
       "keyGaugeStale": "Bacaan terbaharu stesen utama berumur lebih 6 jam, jadi keadaan sungai sekarang tidak dinilai di sini.",
@@ -3181,7 +3183,17 @@
       "unset": "belum ditetapkan",
       "save": "Simpan had ini",
       "saved": "Had telah disimpan.",
-      "error": "Had tidak disimpan. Setiap tahap mesti nombor lebih daripada sifar, dan sekurang-kurangnya satu diperlukan."
+      "error": "Had tidak disimpan. Setiap tahap mesti nombor lebih daripada sifar, dan sekurang-kurangnya satu diperlukan.",
+      "gauges": "Paras di setiap stesen (m MSL)",
+      "gaugesIntro": "Diisi dengan cadangan Jaga: Pindah ialah paras tebing; Amaran dan Berjaga-jaga diuji dengan banjir lalu di stesen itu, atau ditetapkan daripada kelajuan sungainya naik jika banjirnya terlalu sedikit. Ubah mana-mana kotak dan simpan. Paras stesen utama dan hulu ialah had paras zon ini sendiri, jadi menyimpan di sini turut mengubahnya.",
+      "role": {
+        "key": "Stesen utama {code} {name}",
+        "upstream": "Stesen hulu {code} {name}",
+        "other": "{code} {name}"
+      },
+      "suggested": "dicadangkan oleh Jaga, sementara",
+      "bankSuspect": "Paras tebing dalam senarai kelihatan terlalu rendah sebagai penanda banjir di sini: sungai berada dalam 0.3 m daripadanya lebih sepersepuluh masa. Orang yang mengenali stesen ini patut menetapkannya.",
+      "saveGauge": "Simpan paras stesen ini"
     },
     "devTitle": "Isyarat: contoh",
     "devNote": "Angka rekaan: sungai sedang naik menghampiri tebing dengan ramalan hujan lebat. Untuk melihat skrin tanpa log masuk. Pembangunan sahaja.",

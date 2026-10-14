@@ -273,7 +273,48 @@ describe("the screen", () => {
     const plain = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} />);
     expect(plain.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(0);
     const live = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} action={() => {}} />);
-    expect(live.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(8);
+    // Rain per zone (two signals, two zones); the levels are in each gauge's own box.
+    expect(live.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(4);
+  });
+
+  it("fills every gauge's box in the zone with its stored levels, and saves them per gauge", async () => {
+    const { withGaugeLevels } = await import("@/lib/signals");
+    const { EXAMPLE_GAUGE_LEVELS } = await import("@/lib/signals-examples");
+    const t = translator(en.signals as Record<string, unknown>);
+    const fn = () => {};
+    const { container } = render(
+      <SignalsView
+        data={withGaugeLevels(EXAMPLE_SIGNALS, EXAMPLE_GAUGE_LEVELS)}
+        locale="en"
+        t={t}
+        action={fn}
+        levelsAction={fn}
+      />,
+    );
+    const zone = container.querySelector('[data-signal-zone="pattani_river"]')!;
+    const box = (code: string) => zone.querySelector(`[data-gauge-levels-box="${code}"]`)!;
+    const values = (code: string) =>
+      [...box(code).querySelectorAll<HTMLInputElement>("input[data-level]")].map((i) => i.value);
+    expect(values("X.40A")).toEqual(["15.75", "16.00", "16.50"]);
+    expect(values("X.77")).toEqual(["37.40", "38.15", "39.70"]);
+    // A gauge that is neither key nor upstream has a box of its own, from its stored levels.
+    expect(values("X.10A")).toEqual(["0.85", "1.05", "1.15"]);
+    expect(box("X.10A").querySelector<HTMLInputElement>('input[name="station"]')!.value).toBe(
+      "example-X.10A",
+    );
+    expect(box("X.10A").querySelector("button")).not.toBeNull();
+  });
+
+  it("suggests Watch when the key gauge reaches its Watch level", () => {
+    const z = {
+      ...rising,
+      key: { ...rising.key!, series: [[now - HOUR / 2, 15.8]] as Point[] },
+      upstream: null,
+      rain: [],
+    };
+    const s = suggest(z, now);
+    expect(s.level).toBe("watch");
+    expect(s.reasons.map((r) => r.kind)).toContain("keyAtWatch");
   });
 });
 
