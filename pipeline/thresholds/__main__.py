@@ -147,6 +147,34 @@ def cmd_seed(cfg: dict) -> int:
     return 0
 
 
+def cmd_tide(cfg: dict) -> int:
+    """Open-Meteo's modelled sea level at each zone's tide point against the gauges near the mouths."""
+    import pandas as pd
+
+    from dam_release.travel import read_hourly
+
+    from . import tide
+
+    out = output_dir(cfg)
+    tc = cfg["tide_check"]
+    stations = pd.read_csv(data_dir() / "stations.csv")
+    rows = []
+    for zone, z in cfg["zones"].items():
+        model = tide.fetch_sea_level(tuple(z["tide_point"]), tc["first"], tc["last"], out / "tide" / zone, cfg["user_agent"])
+        for code in tc["gauges"].get(zone, []):
+            st = stations[stations["old_code"] == code].iloc[0]
+            bank = None if pd.isna(st.min_bank_m) else float(st.min_bank_m)
+            level = read_hourly(data_dir() / "tidy", "water_level_msl", int(st.station_id)).dropna()
+            if bank is not None:
+                level = level[level < bank + 15]
+            rows.append({"zone": zone, "code": code, **tide.compare(model, level, bank)})
+    (out / "tide_check.json").write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
+    text = tide.markdown(rows)
+    (out / "tide_check.md").write_text(text, encoding="utf-8", newline="\n")
+    print(text)
+    return 0
+
+
 def cmd_gauges(cfg: dict) -> int:
     """Watch, Warning and Evacuate for every gauge with a bank level (thresholds/gauges.py)."""
     import pandas as pd
@@ -180,6 +208,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("hindcast")
     sub.add_parser("seed")
     sub.add_parser("gauges")
+    sub.add_parser("tide")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -193,6 +222,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_seed(cfg)
     if args.command == "gauges":
         return cmd_gauges(cfg)
+    if args.command == "tide":
+        return cmd_tide(cfg)
     return cmd_hindcast(cfg)
 
 

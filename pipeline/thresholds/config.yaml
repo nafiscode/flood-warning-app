@@ -110,6 +110,16 @@ alert_tambons:
   min_share: 0.3
   min_flood_prone_km2: 1.0
 
+# The tide check (thresholds/tide.py): Open-Meteo's modelled sea level at each zone's tide point
+# against the gauges the tide may reach. ThaiWater's public API has no tide series to test instead.
+tide_check:
+  first: "2022-01-01"
+  last: "2026-10-10"
+  gauges:
+    pattani_river: [X.10A, BLGTD05, X.275]
+    kolok: [X.119]
+    u_taphao: [ONE038, ONE037, SLA005, X.44]
+
 # Threshold candidates the hindcast scores. The proposal takes, per level, the candidate that
 # catches every flood the gauge recorded with the fewest false alarms (ties: the longer lead).
 candidates:

@@ -136,3 +136,27 @@ def test_a_level_the_river_sits_above_for_weeks_is_lifted():
     out = gs.suggest(series(tide, start="2018-01-01"), 0.7, CFG)
     assert gs.share_above(series(tide, start="2018-01-01"), out["warning"]) <= 0.031
     assert out["bank_suspect"]
+
+
+def test_tide_split_and_match_find_a_lagged_damped_tide():
+    from thresholds import tide
+
+    hours = np.arange(24 * 60)
+    sea = series(0.5 * np.sin(hours * 2 * np.pi / 12.42) + 0.1 * np.sin(hours * 2 * np.pi / (24 * 15)))
+    # A lake: half the range, two hours late, and a river on top that rises slowly.
+    lake = series(0.25 * np.sin((hours - 2) * 2 * np.pi / 12.42) + np.linspace(0, 1, len(hours)))
+    m_tide, _ = tide.split(sea)
+    g_tide, _ = tide.split(lake)
+    best = tide.best_match(m_tide, g_tide)
+    assert best["lag_h"] == 2 and best["r"] > 0.95
+    assert 0.45 < best["spread_ratio"] < 0.55
+    assert tide.verdict({"tidal": best}) == "tidal, follows the model"
+
+
+def test_tide_over_bank_counts_hours_the_tide_alone_explains():
+    from thresholds import tide
+
+    hours = np.arange(24 * 20)
+    level = series(0.9 + 0.4 * np.sin(hours * 2 * np.pi / 12.42))
+    out = tide.tide_over_bank(level, 1.2)
+    assert out["hours_over"] > 0 and out["tide_only"] == out["hours_over"]

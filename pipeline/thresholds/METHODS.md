@@ -64,3 +64,28 @@ The owner asked for Watch, Warning and Evacuate at every river gauge, not only t
 - **The key gauges keep what the owner accepted for their zones** (X.40A Warning 16.0, Evacuate 16.5; X.119A 8.8 and 9.3; X.44 Evacuate 7.4) and gain only a level-based Watch below them. In the app the key gauge's levels and its zone's `key_level_m` threshold are one value: saving either changes both.
 - **Nine gauges are flagged "bank looks too low"**: the river stands within 0.3 m of the listed bank more than a tenth of the time (X.275, FOP041, JNA001, JNA002, ONE037, ONE038, ONE039, SLA005, SLA007 — mostly tidal reaches). There the listed bank is no flood marker and the levels need someone who knows the gauge. **Two gauges never reached their listed bank** in the record (BLGTD01, MOU454). BLGTU05 and BLGTU06 have no bank and no levels.
 - The automated alarm reads them: a ticked gauge other than its zone's key gauge raises Warning (never more on its own) at its own Evacuate level.
+
+## The tide check (14 Oct 2026)
+
+The A8 phase prompt asked for ThaiWater's own tide and storm-surge data to be evaluated before Open-Meteo Marine was taken. **ThaiWater's public API has no tide or surge series**: its summary call (`public/thailand_main`) carries `wave` and `storm`, and both are pictures (SWAN wave-height maps from HII, storm-track images), not numbers; no tide-station listing answers. The only observed sea-driven water level in the four provinces is at the river gauges the tide reaches, so they were the yardstick.
+
+`uv run python -m thresholds tide` (`thresholds/tide.py`) fetches Open-Meteo's hourly `sea_level_height_msl` at each zone's `tide_point` for 2022 to October 2026 (cached in `out/thresholds/tide/`), splits each series with a centred 25-hour mean into the **tidal band** and the **slow part** (river, surge, monsoon set-up), and correlates gauge with model at the best lag. Output: `out/thresholds/tide_check.json` and `.md`.
+
+| Zone | Gauge | Tidal band: r, lag, spread gauge/model | Tidal range gauge / model (m) | Slow part: r, lag | Over bank: hours, by tide alone | Reading |
+|---|---|---|---|---|---|---|
+| Pattani | X.10A (Pattani town) | 0.80, 1 h, 1.07 | 0.48 / 0.50 | 0.83, 2 h | 668, 23 | tidal, follows the model |
+| Pattani | BLGTD05 (Pattani town, EGAT) | 0.90, 1 h, 1.02 | 0.50 / 0.50 | 0.85, 2 h | 602, 14 | tidal, follows the model |
+| Pattani | X.275 (Ban Brido) | 0.62, 2 h, 0.68 | 0.32 / 0.50 | 0.61, 12 h | 3,844, 78 | partly tidal |
+| Kolok | X.119 (Ban Muno) | 0.06 | 0.12 / 0.91 | 0.47, 23 h | 239, 6 | above the tide's reach |
+| U-Taphao | ONE038 (Songkhla lake) | 0.90, 1 h, 0.56 | 0.30 / 0.52 | 0.92, 1 h | 634, 128 | tidal, damped by the lake |
+| U-Taphao | ONE037 (U-Taphao at the lake) | 0.87, 3 h, 0.38 | 0.20 / 0.52 | 0.90, 10 h | 1,262, 238 | tidal, damped |
+| U-Taphao | SLA005 (Pak Ro) | 0.84, 3 h, 0.31 | 0.16 / 0.52 | 0.88, 12 h | 2,847, 384 | tidal, damped |
+| U-Taphao | X.44 (Hat Yai) | 0.38, 5 h | 0.25 / 0.52 | 0.55, 7 h | 133, 13 | above the tide's reach |
+
+What it says:
+
+- **Open-Meteo Marine is kept.** At Pattani town, 5 km from the mouth, the model's tide matches the gauges in phase (1 hour) and range (within 7%), and its slow part follows theirs (r 0.83 to 0.85). There is nothing in ThaiWater's public data to prefer.
+- **Songkhla lake damps the sea**: the tide inside the lake is a third to a half of the open sea's, one to three hours late, while the lake's slow level follows the sea's closely (r 0.88 to 0.92). The U-Taphao zone's sea figure is the sea at the lake's outlet, not the water in Hat Yai, and the dashboard's caveat says the tide is a model.
+- **The Kolok has no tidal gauge to check against**: Ban Muno is 25 km up the river and above the tide's reach. The model's range off Tak Bai (0.91 m) is unverified.
+- **At the gauges near the sea, most hours over the listed bank are not the tide alone** (23 of 668 at X.10A, 78 of 3,844 at X.275): the river's own slow level stands above those banks for long spells. That is why `thresholds gauges` flags their banks as too low to mark a flood, rather than a tide problem.
+- Not tested: whether the model catches a storm surge. None of these years had a surge large enough to tell apart from the monsoon set-up in the slow part.
