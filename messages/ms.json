@@ -598,7 +598,8 @@
       "terrain": "Rupa bumi",
       "satellite": "Satelit",
       "satelliteNote": "Gambar satelit tahun 2020, kira-kira 10 meter setiap titik: sungai, sawah dan bandar kelihatan, tetapi rumah satu per satu tidak, dan ia bukan gambar semasa.",
-      "satelliteNoteEsri": "Imej satelit dan udara daripada Esri dan rakan kongsinya, sehingga kira-kira setengah meter setiap titik di bandar, jadi rumah satu persatu kelihatan. Ia bukan imej langsung, dan tarikh imej berbeza mengikut kawasan."
+      "satelliteNoteEsri": "Imej satelit dan udara daripada Esri dan rakan kongsinya, sehingga kira-kira setengah meter setiap titik di bandar, jadi rumah satu persatu kelihatan. Ia bukan imej langsung, dan tarikh imej berbeza mengikut kawasan.",
+      "satelliteTerrain": "Satelit + rupa bumi"
     },
     "satellite": {
       "toggle": "Tunjukkan banjir yang dikesan satelit (GISTDA)",

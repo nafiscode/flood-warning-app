@@ -9,7 +9,13 @@ import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/H
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { HAZARD_CLASSES, hazardColor, hazardKey } from "@/lib/hazard-layer";
-import { BASEMAPS, satelliteProvider, subscribeSatellite, type Basemap } from "@/lib/map";
+import {
+  BASEMAPS,
+  isPhotoBasemap,
+  satelliteProvider,
+  subscribeSatellite,
+  type Basemap,
+} from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
 import { PhoneIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
@@ -371,7 +377,7 @@ export function DashboardView(props: DashboardViewProps) {
   const placesOnOffer = layers.includes("places") && !!data && data.places.length > 0;
   const hazardOnOffer = layers.includes("hazard") && !!props.hazardTiles;
   // The map is dark at night except on the satellite picture; the legend shows the shades in use.
-  const nightMap = dark && basemap !== "satellite";
+  const nightMap = dark && !isPhotoBasemap(basemap);
   // The newest gauge reading, for the legend's "live" line.
   const newestGauge = (data?.gauges ?? []).reduce<string | null>(
     (best, g) => (g.observedAt && (!best || g.observedAt > best) ? g.observedAt : best),
@@ -817,7 +823,7 @@ export function DashboardView(props: DashboardViewProps) {
                     </button>
                   ))}
                 </div>
-                {basemap === "satellite" && (
+                {isPhotoBasemap(basemap) && (
                   <p className={hint} data-satellite-note={satellite}>
                     {t(
                       satellite === "esri" ? "basemap.satelliteNoteEsri" : "basemap.satelliteNote",

@@ -1,9 +1,13 @@
+import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
 import { describe, expect, it } from "vitest";
 import {
+  BASEMAPS,
   ESRI_FAILS_BEFORE_FALLBACK,
   esriImageryTiles,
+  isPhotoBasemap,
   satelliteProvider,
   satelliteSource,
+  setBasemap,
 } from "@/lib/map";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
@@ -38,5 +42,61 @@ describe("the satellite background", () => {
       expect(m.map.basemap.satelliteNote).toBeTruthy();
       expect(m.map.basemap.satelliteNoteEsri).toBeTruthy();
     }
+  });
+});
+
+/** The style setBasemap would give MapLibre, for a basemap chosen on an empty map. */
+function styleFor(basemap: (typeof BASEMAPS)[number]): StyleSpecification {
+  let made: StyleSpecification | undefined;
+  const map = {
+    setStyle: (
+      style: StyleSpecification | string,
+      options: {
+        transformStyle: (
+          p: StyleSpecification | undefined,
+          n: StyleSpecification,
+        ) => StyleSpecification;
+      },
+    ) => {
+      const next: StyleSpecification =
+        typeof style === "string" ? { version: 8, sources: {}, layers: [] } : style;
+      made = options.transformStyle(undefined, next);
+    },
+  } as unknown as MapLibreMap;
+  setBasemap(map, basemap);
+  return made!;
+}
+
+describe("satellite with the terrain shaded over it", () => {
+  it("is a photograph basemap like the plain satellite one", () => {
+    expect(BASEMAPS).toContain("satelliteTerrain");
+    expect(isPhotoBasemap("satelliteTerrain")).toBe(true);
+    expect(isPhotoBasemap("satellite")).toBe(true);
+    expect(isPhotoBasemap("terrain")).toBe(false);
+    expect(isPhotoBasemap("streets")).toBe(false);
+  });
+
+  it("lays see-through hill shading over the satellite picture", () => {
+    const style = styleFor("satelliteTerrain");
+    expect(style.layers.map((l) => l.id)).toEqual(["jaga-base-satellite", "jaga-base-hillshade"]);
+    expect(style.sources["jaga-base-dem"]).toMatchObject({
+      type: "raster-dem",
+      encoding: "terrarium",
+    });
+    const shade = style.layers[1] as { paint: Record<string, unknown> };
+    // Only light and shadow, never a solid colour that would hide the picture.
+    for (const key of [
+      "hillshade-shadow-color",
+      "hillshade-highlight-color",
+      "hillshade-accent-color",
+    ]) {
+      expect(String(shade.paint[key])).toMatch(/^rgba\(/);
+    }
+  });
+
+  it("the plain satellite basemap has no shading", () => {
+    const style = styleFor("satellite");
+    expect(style.layers.map((l) => l.id)).toEqual(["jaga-base-satellite"]);
+    expect(style.sources["jaga-base-dem"]).toBeUndefined();
   });
 });

@@ -445,19 +445,30 @@ describe("map dashboard (spec 4.2)", () => {
     expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,gauges");
   });
 
-  it("offers three map backgrounds, opens on the terrain, and says what the satellite picture is", () => {
+  it("offers four map backgrounds, opens on the terrain, and says what the satellite picture is", () => {
     const c = dashboard({ status: exampleStatus([]) });
     const choices = [...c.querySelectorAll<HTMLButtonElement>("[data-basemap-choice]")];
     expect(choices.map((b) => b.dataset.basemapChoice)).toEqual([
       "streets",
       "terrain",
       "satellite",
+      "satelliteTerrain",
     ]);
-    expect(choices.map((b) => b.getAttribute("aria-pressed"))).toEqual(["false", "true", "false"]);
+    expect(choices.map((b) => b.getAttribute("aria-pressed"))).toEqual([
+      "false",
+      "true",
+      "false",
+      "false",
+    ]);
     expect(c.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("terrain");
     expect(c.textContent).not.toContain(th.map.basemap.satelliteNote);
     fireEvent.click(choices[2]!);
     expect(c.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("satellite");
+    expect(c.textContent).toContain(th.map.basemap.satelliteNote);
+    // Satellite with the hills shaded over it is still the same picture, so it says the same.
+    fireEvent.click(choices[3]!);
+    expect(c.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("satelliteTerrain");
+    expect(choices[3]!.textContent).toBe(th.map.basemap.satelliteTerrain);
     expect(c.textContent).toContain(th.map.basemap.satelliteNote);
   });
 

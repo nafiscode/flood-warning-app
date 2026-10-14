@@ -23,9 +23,15 @@ export function darkNow(): boolean {
  *              a month; past it the tiles stop, since pay-as-you-go is left off), Sentinel-2
  *              cloudless by EOX: a cloud-free picture of 2020 at about 10 m. A photograph has no
  *              night version, so it always looks like day.
+ *   satelliteTerrain  the same picture with the hills shaded over it from the same elevation tiles
+ *              (the owner, 15 Oct 2026), so slopes and valleys read where the photograph alone looks
+ *              flat. Light and shadow are see-through, so the picture stays a picture.
  */
-export const BASEMAPS = ["streets", "terrain", "satellite"] as const;
+export const BASEMAPS = ["streets", "terrain", "satellite", "satelliteTerrain"] as const;
 export type Basemap = (typeof BASEMAPS)[number];
+/** The basemaps that are a photograph: always day-like, and fed by the satellite source. */
+export const isPhotoBasemap = (basemap: Basemap): boolean =>
+  basemap === "satellite" || basemap === "satelliteTerrain";
 const SATELLITE_TILES =
   "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg";
 const SATELLITE_CREDIT =
@@ -84,7 +90,7 @@ const TERRAIN_CREDIT = "Elevation: Mapzen terrain tiles on AWS (SRTM, GMTED and 
 
 let chosen: Basemap = "streets";
 /** Whether the map itself is dark right now: at night, except on the satellite picture. */
-export const mapIsDark = () => darkNow() && chosen !== "satellite";
+export const mapIsDark = () => darkNow() && !isPhotoBasemap(chosen);
 
 /**
  * The colours our own layers draw with. On a dark map the outlines and dots turn light, or they
@@ -174,6 +180,47 @@ const satelliteStyle = (): StyleSpecification => ({
   layers: [{ id: "jaga-base-satellite", type: "raster", source: "jaga-base-satellite" }],
 });
 
+/** Hill shading from the open elevation tiles, tuned for the ground it lies on. */
+function withHillshade(
+  style: StyleSpecification,
+  look: "map" | "mapDark" | "photo",
+): StyleSpecification {
+  const paint =
+    look === "photo"
+      ? {
+          // Over a photograph: see-through light and shadow only, a little stronger than on the
+          // street map because the picture's own colours hide gentle slopes.
+          "hillshade-exaggeration": 0.7,
+          "hillshade-shadow-color": "rgba(0, 0, 0, 0.55)",
+          "hillshade-highlight-color": "rgba(255, 255, 255, 0.22)",
+          "hillshade-accent-color": "rgba(0, 0, 0, 0.25)",
+        }
+      : {
+          "hillshade-exaggeration": 0.55,
+          "hillshade-shadow-color": look === "mapDark" ? "#000000" : "#3b4a57",
+          "hillshade-highlight-color": look === "mapDark" ? "#5d7382" : "#ffffff",
+          "hillshade-accent-color": look === "mapDark" ? "#0b1117" : "#6b7780",
+        };
+  return {
+    ...style,
+    sources: {
+      ...style.sources,
+      "jaga-base-dem": {
+        type: "raster-dem",
+        tiles: [TERRAIN_TILES],
+        tileSize: 256,
+        maxzoom: 13,
+        encoding: "terrarium",
+        attribution: TERRAIN_CREDIT,
+      },
+    },
+    layers: [
+      ...style.layers,
+      { id: "jaga-base-hillshade", type: "hillshade", source: "jaga-base-dem", paint },
+    ],
+  };
+}
+
 /**
  * Put another basemap under our own layers. Everything of ours (sources with the data they hold,
  * and the layers in their order) is carried across; only the basemap's own parts are replaced.
@@ -182,41 +229,16 @@ const satelliteStyle = (): StyleSpecification => ({
 export function setBasemap(map: MapLibreMap, basemap: Basemap): void {
   chosen = basemap;
   const dark = mapIsDark();
-  const style =
-    basemap === "satellite" ? satelliteStyle() : dark ? BASEMAP_STYLE_DARK : BASEMAP_STYLE;
+  const photo = isPhotoBasemap(basemap);
+  const style = photo ? satelliteStyle() : dark ? BASEMAP_STYLE_DARK : BASEMAP_STYLE;
   map.setStyle(style, {
     transformStyle: (previous, next) => {
       const base: StyleSpecification =
         basemap === "terrain"
-          ? {
-              ...next,
-              sources: {
-                ...next.sources,
-                "jaga-base-dem": {
-                  type: "raster-dem",
-                  tiles: [TERRAIN_TILES],
-                  tileSize: 256,
-                  maxzoom: 13,
-                  encoding: "terrarium",
-                  attribution: TERRAIN_CREDIT,
-                },
-              },
-              layers: [
-                ...next.layers,
-                {
-                  id: "jaga-base-hillshade",
-                  type: "hillshade",
-                  source: "jaga-base-dem",
-                  paint: {
-                    "hillshade-exaggeration": 0.55,
-                    "hillshade-shadow-color": dark ? "#000000" : "#3b4a57",
-                    "hillshade-highlight-color": dark ? "#5d7382" : "#ffffff",
-                    "hillshade-accent-color": dark ? "#0b1117" : "#6b7780",
-                  },
-                },
-              ],
-            }
-          : next;
+          ? withHillshade(next, dark ? "mapDark" : "map")
+          : basemap === "satelliteTerrain"
+            ? withHillshade(next, "photo")
+            : next;
       if (!previous) return base;
       const own = previous.layers.filter(
         (l) => l.id.startsWith("jaga-") && !BASE_PARTS.includes(l.id),
@@ -287,7 +309,7 @@ export async function createServiceAreaMap(
     esriErrors += 1;
     if (esriErrors < ESRI_FAILS_BEFORE_FALLBACK) return;
     esriFailed = true;
-    if (chosen === "satellite") setBasemap(map, "satellite");
+    if (isPhotoBasemap(chosen)) setBasemap(map, chosen);
     for (const listener of satelliteListeners) listener();
   });
   map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
