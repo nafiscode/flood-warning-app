@@ -10,6 +10,7 @@ import {
   mapLevels,
   LEVELS,
   linePath,
+  rainBetween,
   rainNow,
   SIGNAL_KEYS,
   span,
@@ -486,6 +487,13 @@ function ZoneCard({
           <Figure name={t("rain.past24")}>{t("mm", { value: fix(rain.past24, 0) })}</Figure>
           <Figure name={t("rain.past72")}>{t("mm", { value: fix(rain.past72, 0) })}</Figure>
           <Figure name={t("rain.next24")}>{t("mm", { value: fix(rain.next24, 0) })}</Figure>
+          {zone.rainWettest && zone.rainWettest.length > 0 ? (
+            <Figure name={t("rain.nextWettest")}>
+              {t("mm", {
+                value: fix(rainBetween(zone.rainWettest, now, now + 72 * HOUR), 0),
+              })}
+            </Figure>
+          ) : null}
           <Figure name={t("rain.peak72")}>
             {t("mm", { value: fix(rain.peak72, 0) })}
             {rain.peak72At ? (
@@ -584,17 +592,19 @@ function ZoneCard({
                   </span>
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  {LEVELS.map((level) => (
-                    <label key={level} className="flex flex-col gap-1">
-                      <span className={label}>{t(`level.${level}`)}</span>
-                      <input
-                        className={input}
-                        name={level}
-                        inputMode="decimal"
-                        defaultValue={th?.levels[level] ?? ""}
-                      />
-                    </label>
-                  ))}
+                  {(signal === "rain_72h_forecast_mm" ? (["watch"] as const) : LEVELS).map(
+                    (level) => (
+                      <label key={level} className="flex flex-col gap-1">
+                        <span className={label}>{t(`level.${level}`)}</span>
+                        <input
+                          className={input}
+                          name={level}
+                          inputMode="decimal"
+                          defaultValue={th?.levels[level] ?? ""}
+                        />
+                      </label>
+                    ),
+                  )}
                 </div>
                 {action ? (
                   <button type="submit" className={`${buttonPrimary} self-start`}>

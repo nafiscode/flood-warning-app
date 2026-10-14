@@ -11,10 +11,12 @@
 export type Point = [at: number, value: number];
 export type Level = "watch" | "warning" | "evacuate";
 export const LEVELS: Level[] = ["watch", "warning", "evacuate"];
-export type SignalKey = "rain_72h_mm" | "rain_24h_mm" | "key_level_m" | "upstream_level_m";
+export type SignalKey =
+  "rain_72h_mm" | "rain_24h_mm" | "rain_72h_forecast_mm" | "key_level_m" | "upstream_level_m";
 export const SIGNAL_KEYS: SignalKey[] = [
   "rain_72h_mm",
   "rain_24h_mm",
+  "rain_72h_forecast_mm",
   "key_level_m",
   "upstream_level_m",
 ];
@@ -51,6 +53,8 @@ export type Zone = {
   thresholds: Threshold[];
   /** Hourly basin rain from a weather model: hours behind `now` are its analysis, ahead its forecast. */
   rain: Point[];
+  /** The wettest of five weather models each hour (the forecast rule, 14 Oct 2026). */
+  rainWettest?: Point[];
   discharge: Point[];
   tide: Point[];
   forecastIssuedAt: number | null;
@@ -335,7 +339,8 @@ export type ReasonKind =
   | "rain72"
   | "rain72Forecast"
   | "rain24"
-  | "rain24Forecast";
+  | "rain24Forecast"
+  | "rain72Wettest";
 
 export type Reason = {
   kind: ReasonKind;
@@ -425,6 +430,19 @@ export function suggest(zone: Zone, now: number): Suggestion {
   if (!rain.hasPast) blind.push("rainMissing");
   if (zone.forecastIssuedAt === null || now - zone.forecastIssuedAt > FORECAST_STALE_H * HOUR)
     blind.push("forecastStale");
+  const forecastWatch = thresholdOf(zone, "rain_72h_forecast_mm", "watch");
+  const wettest = zone.rainWettest ?? [];
+  if (forecastWatch !== null && wettest.some(([t]) => t > now)) {
+    const next72 = rainBetween(wettest, now, now + 72 * HOUR);
+    if (next72 >= forecastWatch)
+      reasons.push({
+        kind: "rain72Wettest",
+        level: "watch",
+        value: next72,
+        threshold: forecastWatch,
+        at: now + 72 * HOUR,
+      });
+  }
   for (const [signal, past, ahead, kinds] of [
     ["rain_72h_mm", rain.past72, rain.peak72, ["rain72", "rain72Forecast"]],
     ["rain_24h_mm", rain.past24, rain.next24, ["rain24", "rain24Forecast"]],
@@ -441,7 +459,8 @@ export function suggest(zone: Zone, now: number): Suggestion {
         threshold: levels[reached]!,
         at: now,
       });
-    } else if (rain.hasForecast) {
+    } else if (rain.hasForecast && !(signal === "rain_72h_mm" && forecastWatch !== null)) {
+      // The 72-hour forecast has its own rule above once its threshold exists.
       const lowest = LEVELS.find((l) => levels[l] !== undefined);
       if (lowest && ahead >= levels[lowest]!)
         reasons.push({
@@ -542,4 +561,25 @@ export function keyLevelsFor(
     (z) => z.key && gauge.thaiwaterId !== null && z.key.thaiwaterId === gauge.thaiwaterId,
   );
   return zone?.thresholds.find((t) => t.signal === "key_level_m")?.levels;
+}
+
+/** `admin_signal_wettest()`: { zone id: [[time, mm], ...] }, joined onto the zones. */
+export function withWettest(data: Signals, raw: unknown): Signals {
+  if (!raw || typeof raw !== "object") return data;
+  const byZone = raw as Record<string, unknown>;
+  return {
+    ...data,
+    zones: data.zones.map((z) => {
+      const rows = byZone[z.id];
+      if (!Array.isArray(rows)) return z;
+      const series: Point[] = [];
+      for (const r of rows) {
+        if (!Array.isArray(r)) continue;
+        const t = Date.parse(String(r[0]));
+        const v = Number(r[1]);
+        if (Number.isFinite(t) && Number.isFinite(v)) series.push([t, v]);
+      }
+      return { ...z, rainWettest: series.sort((a, b) => a[0] - b[0]) };
+    }),
+  };
 }

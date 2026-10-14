@@ -3120,7 +3120,8 @@
       "rain_72h_mm": "Hujan purata lembangan dalam 72 jam (mm)",
       "rain_24h_mm": "Hujan purata lembangan dalam 24 jam (mm)",
       "key_level_m": "Paras di stesen utama (m aras laut purata)",
-      "upstream_level_m": "Paras di stesen hulu (m aras laut purata)"
+      "upstream_level_m": "Paras di stesen hulu (m aras laut purata)",
+      "rain_72h_forecast_mm": "Hujan ramalan 72 jam akan datang, model paling basah daripada lima (mm; Berjaga-jaga sahaja)"
     },
     "ref": {
       "bank": "tebing {value} m",
@@ -3159,7 +3160,8 @@
       "rain72Forecast": "Ramalan memberi {value} mm dalam 72 jam menjelang {time}, berbanding had {threshold} mm. Ini ramalan, jadi tidak lebih daripada {level}.",
       "rain24": "{value} mm hujan purata lembangan dalam 24 jam lepas, berbanding had {threshold} mm: {level}.",
       "rain24Forecast": "Ramalan memberi {value} mm dalam 24 jam akan datang, berbanding had {threshold} mm. Ini ramalan, jadi tidak lebih daripada {level}.",
-      "keyAtWatch": "Stesen utama mencatat {value} m, pada atau melebihi paras Berjaga-jaga ({threshold} m), diukur {time}: {level}."
+      "keyAtWatch": "Stesen utama mencatat {value} m, pada atau melebihi paras Berjaga-jaga ({threshold} m), diukur {time}: {level}.",
+      "rain72Wettest": "Model cuaca paling basah daripada lima menjangka {value} mm di atas lembangan dalam 72 jam akan datang, berbanding had {threshold} mm. Ramalan, jadi tidak lebih daripada {level}; dalam banjir lalu setiap model terlalu kering."
     },
     "blind": {
       "keyGaugeStale": "Bacaan terbaharu stesen utama berumur lebih 6 jam, jadi keadaan sungai sekarang tidak dinilai di sini.",
@@ -3177,7 +3179,8 @@
       "by": "menjelang {time}",
       "none": "Angka hujan belum diambil.",
       "thresholds": "Had: 72 jam: {r72}. 24 jam: {r24}.",
-      "caveat": "Hujan setiap jam daripada model cuaca (Open-Meteo), dipuratakan daripada beberapa titik di seluruh lembangan. Bar pekat ialah catatan model bagi masa lepas, bar pudar ialah ramalannya. Had ditetapkan berdasarkan hujan satelit, iaitu ukuran yang berbeza: gunakan jumlah ini sebagai panduan, bukan sebagai angka yang sama."
+      "caveat": "Hujan setiap jam daripada model cuaca (Open-Meteo), dipuratakan daripada beberapa titik di seluruh lembangan. Bar pekat ialah catatan model bagi masa lepas, bar pudar ialah ramalannya. Had ditetapkan berdasarkan hujan satelit, iaitu ukuran yang berbeza: gunakan jumlah ini sebagai panduan, bukan sebagai angka yang sama.",
+      "nextWettest": "72 jam akan datang, model paling basah"
     },
     "discharge": {
       "title": "Kadar alir sungai daripada model (GloFAS, m³/s)",

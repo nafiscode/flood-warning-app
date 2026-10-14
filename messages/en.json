@@ -3120,7 +3120,8 @@
       "rain_72h_mm": "Rain over the basin in 72 hours (mm)",
       "rain_24h_mm": "Rain over the basin in 24 hours (mm)",
       "key_level_m": "Level at the key gauge (m MSL)",
-      "upstream_level_m": "Level at the upstream gauge (m MSL)"
+      "upstream_level_m": "Level at the upstream gauge (m MSL)",
+      "rain_72h_forecast_mm": "Forecast rain in the next 72 hours, wettest of five models (mm; Watch only)"
     },
     "ref": {
       "bank": "bank {value} m",
@@ -3159,7 +3160,8 @@
       "rain72Forecast": "The forecast holds {value} mm in 72 hours by {time}, against a threshold of {threshold} mm. A forecast, so no more than {level}.",
       "rain24": "{value} mm of rain over the basin in the last 24 hours, against a threshold of {threshold} mm: {level}.",
       "rain24Forecast": "The forecast holds {value} mm in the next 24 hours, against a threshold of {threshold} mm. A forecast, so no more than {level}.",
-      "keyAtWatch": "The key gauge reads {value} m, at or over its Watch level ({threshold} m), measured {time}: {level}."
+      "keyAtWatch": "The key gauge reads {value} m, at or over its Watch level ({threshold} m), measured {time}: {level}.",
+      "rain72Wettest": "The wettest of five weather models holds {value} mm over the basin in the next 72 hours, against a threshold of {threshold} mm. A forecast, so no more than {level}; in past floods every model was too dry."
     },
     "blind": {
       "keyGaugeStale": "The key gauge's newest reading is more than 6 hours old, so the river as it is now is not judged here.",
@@ -3177,7 +3179,8 @@
       "by": "by {time}",
       "none": "No rain figures fetched yet.",
       "thresholds": "Thresholds: 72 hours: {r72}. 24 hours: {r24}.",
-      "caveat": "Hourly rain from a weather model (Open-Meteo), averaged over points across the catchment. Solid bars are the model's account of the past, pale bars its forecast. The thresholds were set on satellite rain, which is a different measurement: read the totals as a guide, not as the same number."
+      "caveat": "Hourly rain from a weather model (Open-Meteo), averaged over points across the catchment. Solid bars are the model's account of the past, pale bars its forecast. The thresholds were set on satellite rain, which is a different measurement: read the totals as a guide, not as the same number.",
+      "nextWettest": "Next 72 h, wettest of five models"
     },
     "discharge": {
       "title": "Modelled river flow (GloFAS, m³/s)",

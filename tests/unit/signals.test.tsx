@@ -279,8 +279,12 @@ describe("the screen", () => {
     const plain = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} />);
     expect(plain.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(0);
     const live = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} action={() => {}} />);
-    // Rain per zone (two signals, two zones); the levels are in each gauge's own box.
-    expect(live.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(4);
+    // Rain per zone (fallen 72 h and 24 h, forecast 72 h; two zones); levels are in each gauge's box.
+    expect(live.container.querySelectorAll("[data-threshold-form] button")).toHaveLength(6);
+    // The forecast threshold is Watch only.
+    const fc = live.container.querySelector('[data-threshold-form="rain_72h_forecast_mm"]')!;
+    expect(fc.querySelectorAll("input[name=watch]")).toHaveLength(1);
+    expect(fc.querySelectorAll("input[name=warning], input[name=evacuate]")).toHaveLength(0);
   });
 
   it("fills every gauge's box in the zone with its stored levels, and saves them per gauge", async () => {
@@ -434,5 +438,57 @@ describe("the dashboard reads itself again", () => {
     expect(live.container.querySelector("[data-signals-refresh]")!.textContent).toContain(
       "every 5 minutes",
     );
+  });
+});
+
+describe("forecast rain, the wettest of the models", () => {
+  const z = (ahead: number, watch: number | null) => ({
+    ...rising,
+    key: null,
+    upstream: null,
+    rain: [],
+    thresholds: [
+      {
+        signal: "rain_72h_mm" as const,
+        levels: { watch: 180 },
+        provisional: true,
+        updatedAt: null,
+      },
+      ...(watch === null
+        ? []
+        : [
+            {
+              signal: "rain_72h_forecast_mm" as const,
+              levels: { watch },
+              provisional: true,
+              updatedAt: null,
+            },
+          ]),
+    ],
+    // `ahead` mm spread over the next 72 hours.
+    rainWettest: Array.from({ length: 72 }, (_, i): Point => [now + (i + 1) * HOUR, ahead / 72]),
+  });
+
+  it("suggests Watch at its own threshold, never more", () => {
+    const s = suggest(z(160, 150), now);
+    expect(s.level).toBe("watch");
+    expect(s.reasons.map((r) => r.kind)).toEqual(["rain72Wettest"]);
+    expect(suggest(z(140, 150), now).level).toBeNull();
+    expect(suggest(z(900, 150), now).level).toBe("watch");
+  });
+
+  it("is joined onto the zones from the database's answer", async () => {
+    const { withWettest } = await import("@/lib/signals");
+    const data = withWettest(EXAMPLE_SIGNALS, {
+      [rising.id]: [
+        ["2026-11-26T04:00:00Z", 2.5],
+        ["2026-11-26T05:00:00Z", 3],
+      ],
+    });
+    expect(data.zones[0]!.rainWettest).toEqual([
+      [Date.parse("2026-11-26T04:00:00Z"), 2.5],
+      [Date.parse("2026-11-26T05:00:00Z"), 3],
+    ]);
+    expect(data.zones[1]!.rainWettest).toBeUndefined();
   });
 });

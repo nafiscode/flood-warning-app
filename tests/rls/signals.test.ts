@@ -122,3 +122,36 @@ describe("admin_set_threshold", () => {
     await expectDenied(db, set, [ZONE, "rain_72h_mm", JSON.stringify({ watch: 1 })]);
   });
 });
+
+describe("forecast rain, the wettest of the models", () => {
+  const set = "select public.admin_set_threshold($1, $2, $3::jsonb, 'test')";
+
+  it("its threshold is Watch only", async () => {
+    await as(db, { uid: w.admin });
+    await db.query(set, [ZONE, "rain_72h_forecast_mm", JSON.stringify({ watch: 140 })]);
+    await expectDenied(db, set, [
+      ZONE,
+      "rain_72h_forecast_mm",
+      JSON.stringify({ watch: 140, warning: 200 }),
+    ]);
+  });
+
+  it("its series is read by admins only", async () => {
+    await asOwner(db);
+    await db.query(
+      `insert into public.forecasts (source, zone_id, issued_at, valid_at, variable, value)
+       values ('open_meteo', $1, now(), now() + interval '1 hour', 'rain_1h_mm_wettest', 4.2)`,
+      [ZONE],
+    );
+    await as(db, { uid: w.admin });
+    const got = await rows<{ d: Record<string, [string, number][]> }>(
+      db,
+      "select public.admin_signal_wettest() d",
+    );
+    expect(got[0]!.d[ZONE]).toHaveLength(1);
+    await as(db, "anon");
+    await expectDenied(db, "select public.admin_signal_wettest()");
+    await as(db, { uid: w.requester });
+    await expectDenied(db, "select public.admin_signal_wettest()");
+  });
+});

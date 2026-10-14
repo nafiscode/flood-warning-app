@@ -141,6 +141,7 @@ def feed_setting(cfg: dict, basins: dict, glofas_cells: dict) -> dict:
             "gauges": {"key": int(z["key"]["id"]), "upstream": int(z["upstream"]["id"])},
         }
     return {"rain_url": f["rain_url"], "flood_url": f["flood_url"], "marine_url": f["marine_url"],
+            "rain_models": list(f.get("rain_models") or ["best_match"]),
             "timeout_s": 25, "zones": zones}
 
 
@@ -185,6 +186,10 @@ def sql(cfg: dict, result: dict, basins: dict, stations: pd.DataFrame, glofas_ce
             row = p.get(level)
             if row:
                 by_signal.setdefault(row["signal"], {})[level] = row["threshold"]
+        # The forecast rule (owner's choice, 14 Oct 2026): the wettest of the models, Watch only.
+        fwatch = (cfg.get("forecast_check") or {}).get("watch_mm")
+        if fwatch:
+            by_signal["rain_72h_forecast_mm"] = {"watch": fwatch}
         for signal, levels in by_signal.items():
             n += 1
             out.append(f"insert into public.thresholds (zone_id, signal, levels, provisional) values ('{zone_id(zone)}', '{signal}', "

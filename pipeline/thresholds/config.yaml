@@ -100,6 +100,8 @@ feeds:
   marine_url: https://marine-api.open-meteo.com/v1/marine
   rain_grid_deg: 0.1
   rain_points_max: 16
+  # The first is the chart's; the wettest of all of them each hour is the forecast rule's (14 Oct 2026).
+  rain_models: [best_match, ecmwf_ifs025, gfs_seamless, icon_seamless, jma_seamless]
 
 # Which tambons an alert for a zone is drafted for (the alert console's "zone" choice): those with
 # at least `min_share` of their land inside the zone's alert basin and at least `min_flood_prone_km2`
@@ -125,6 +127,8 @@ tide_check:
 forecast_check:
   seasons: [2024, 2025]
   fallback_mm: 180     # a zone whose Watch is not on 72-hour rain is checked against this
+  # The owner's choice, 14 Oct 2026: Watch when the wettest model holds this much in the next 72 hours.
+  watch_mm: 150
   # Open-Meteo's default (what the live feed asked for) and four of the models behind it.
   models: [best_match, ecmwf_ifs025, gfs_seamless, icon_seamless, jma_seamless]
 
