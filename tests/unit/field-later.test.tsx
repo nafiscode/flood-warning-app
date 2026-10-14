@@ -64,7 +64,7 @@ describe("the recording screen without a signal", () => {
     );
     const waiting = container.querySelector("[data-field-waiting]")!;
     expect(waiting.getAttribute("data-field-waiting")).toBe("2");
-    expect(waiting.textContent).toContain("2 records on this phone not sent yet");
+    expect(waiting.textContent).toContain("2 records on this device not sent yet");
     waiting.querySelector("button")!.click();
     expect(tried).toBe(1);
   });

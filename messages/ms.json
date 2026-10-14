@@ -35,7 +35,7 @@
       "notCovered": "Jaga belum meliputi wilayah {province}. Kecemasan: telefon 1784 atau 1669.",
       "outside": "Lokasi ini di luar kawasan liputan Jaga. Kecemasan: telefon 1784 atau 1669.",
       "listFailed": "Senarai kawasan tidak dapat dimuat. Cuba lagi.",
-      "privacy": "Kawasan yang dipilih disimpan dalam telefon ini. Jaga hanya mengira berapa telefon memilih setiap tambon, tidak pernah tahu milik siapa.",
+      "privacy": "Kawasan yang dipilih disimpan dalam peranti ini. Jaga hanya mengira berapa peranti memilih setiap tambon, tidak pernah tahu milik siapa.",
       "fromAccount": "Rumah yang disimpan dalam akaun anda"
     },
     "status": {
@@ -57,7 +57,7 @@
     "range": "{from} hingga {to}",
     "estimate": "Anggaran, boleh berubah",
     "checklistTitle": "Apa yang perlu dibuat sekarang",
-    "checklistNote": "Tanda disimpan dalam telefon ini sahaja.",
+    "checklistNote": "Tanda disimpan dalam peranti ini sahaja.",
     "report": "Lapor banjir",
     "watched": {
       "title": "Tempat yang anda jaga",
@@ -223,7 +223,7 @@
       "body": "Penyelamat di kawasan anda telah menerima permintaan ini. Ikuti status di halaman ini.",
       "merged": "Permintaan ini digabungkan dengan permintaan anda yang masih terbuka. Maklumat terbaru anda telah ditambah.",
       "queuedTitle": "Belum dapat dihantar, sedang cuba lagi",
-      "queuedBody": "Tiada isyarat internet. Permintaan anda disimpan dalam telefon dan akan dihantar sebaik sahaja ada isyarat. Jangan tutup aplikasi. Jika kecemasan, telefon atau hantar SMS guna butang di bawah.",
+      "queuedBody": "Tiada isyarat internet. Permintaan anda disimpan dalam peranti dan akan dihantar sebaik sahaja ada isyarat. Jangan tutup aplikasi. Jika kecemasan, telefon atau hantar SMS guna butang di bawah.",
       "failedTitle": "Tidak berjaya dihantar",
       "failedBody": "Telefon minta bantuan guna nombor di bawah dengan segera.",
       "retry": "Cuba hantar lagi",
@@ -246,7 +246,7 @@
       "refresh": "Kemas kini status",
       "updated": "Dikemas kini {time}",
       "loadFailed": "Status tidak dapat dimuatkan. Periksa sambungan dan cuba lagi.",
-      "notFound": "Permintaan ini tidak dijumpai dalam telefon ini.",
+      "notFound": "Permintaan ini tidak dijumpai dalam peranti ini.",
       "timeline": "Urutan kejadian",
       "safeNow": "Saya selamat sekarang",
       "safeConfirm": "Sahkan bahawa anda selamat dan tidak lagi perlukan bantuan.",
@@ -437,7 +437,7 @@
       "google": "Google Maps",
       "waze": "Waze",
       "apple": "Apple Maps",
-      "other": "Aplikasi lain dalam telefon ini"
+      "other": "Aplikasi lain dalam peranti ini"
     },
     "navigateNote": "Aplikasi peta tidak tahu jalan mana yang banjir. Jika ada air di atas jalan, jangan redah. Cari jalan lain.",
     "type": {
@@ -1873,7 +1873,7 @@
       "province": "Wilayah",
       "teams": "Pasukan",
       "opened": "Dibuka",
-      "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri dan menukar kod peranti setiap hari, jadi satu telefon tidak boleh diikut dari hari ke hari; tiada perkhidmatan analitik syarikat lain digunakan.",
+      "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri dan menukar kod peranti setiap hari, jadi satu peranti tidak boleh diikut dari hari ke hari; tiada perkhidmatan analitik syarikat lain digunakan.",
       "ringNote": "Gelang menunjukkan bahagian permintaan wilayah itu yang disahkan oleh pasukan",
       "share": "{percent}% disahkan"
     },
@@ -2043,7 +2043,7 @@
     "roadAccess": "Bolehkah jalan dilalui",
     "text": "Butiran lain (pilihan)",
     "photos": "Gambar (sampai 3)",
-    "photosHint": "Gambar dikecilkan dalam telefon sebelum dihantar, dan hanya ditunjukkan kepada umum selepas disemak.",
+    "photosHint": "Gambar dikecilkan dalam peranti sebelum dihantar, dan hanya ditunjukkan kepada umum selepas disemak.",
     "voice": "Rakaman suara (sampai 60 saat)",
     "record": "Mula merakam",
     "stopRecording": "Berhenti merakam",
@@ -2141,7 +2141,7 @@
       "noResults": "Tempat itu tidak dijumpai. Cuba nama lain.",
       "searchFailed": "Carian gagal. Cuba lagi.",
       "cancel": "Batal",
-      "privacy": "Tempat yang dipilih disimpan dalam telefon ini sahaja.",
+      "privacy": "Tempat yang dipilih disimpan dalam peranti ini sahaja.",
       "yourLocation": "Lokasi anda"
     },
     "rain": {
@@ -2864,21 +2864,21 @@
     }
   },
   "push": {
-    "title": "Terima pemberitahuan pada telefon ini",
-    "body": "Apabila ada amaran untuk kawasan anda atau tempat yang anda pantau, Jaga akan memberitahu telefon ini walaupun aplikasi ditutup.",
+    "title": "Terima pemberitahuan pada peranti ini",
+    "body": "Apabila ada amaran untuk kawasan anda atau tempat yang anda pantau, Jaga akan memberitahu peranti ini walaupun aplikasi ditutup.",
     "noArea": "Pilih kawasan anda di halaman utama dahulu, supaya Jaga tahu kawasan mana yang perlu diberitahu.",
     "button": "Hidupkan pemberitahuan",
     "busy": "Sedang menghidupkan…",
-    "on": "Pemberitahuan dihidupkan pada telefon ini",
-    "off": "Matikan pemberitahuan pada telefon ini",
+    "on": "Pemberitahuan dihidupkan pada peranti ini",
+    "off": "Matikan pemberitahuan pada peranti ini",
     "needsInstall": "Pada iPhone dan iPad, tambah Jaga ke Skrin Utama dahulu dan buka Jaga daripada ikon itu, kemudian pemberitahuan boleh dihidupkan.",
-    "blocked": "Telefon ini menyekat pemberitahuan Jaga. Benarkan semula dalam tetapan telefon atau pelayar.",
+    "blocked": "Peranti ini menyekat pemberitahuan Jaga. Benarkan semula dalam tetapan peranti atau pelayar.",
     "failed": "Belum dapat dihidupkan. Cuba lagi.",
-    "note": "Bunyinya ialah bunyi pemberitahuan telefon, dan mungkin tidak berbunyi dalam mod senyap atau Jangan Ganggu. Kecemasan: hubungi 1784 atau 1669.",
-    "teamTitle": "Terima pemberitahuan kes pada telefon ini",
-    "teamBody": "Apabila ada permintaan bantuan yang ditawarkan kepada pasukan anda, Jaga memberitahu telefon ini walaupun papan ditutup.",
+    "note": "Bunyinya ialah bunyi pemberitahuan peranti, dan mungkin tidak berbunyi dalam mod senyap atau Jangan Ganggu. Kecemasan: hubungi 1784 atau 1669.",
+    "teamTitle": "Terima pemberitahuan kes pada peranti ini",
+    "teamBody": "Apabila ada permintaan bantuan yang ditawarkan kepada pasukan anda, Jaga memberitahu peranti ini walaupun papan ditutup.",
     "caseTitle": "Terima pemberitahuan apabila pasukan menerima permintaan",
-    "caseBody": "Jaga memberitahu telefon ini apabila pasukan menerima permintaan anda, dalam perjalanan atau sudah tiba, walaupun aplikasi ditutup.",
+    "caseBody": "Jaga memberitahu peranti ini apabila pasukan menerima permintaan anda, dalam perjalanan atau sudah tiba, walaupun aplikasi ditutup.",
     "send": {
       "somewhere": "di kawasan anda",
       "aTeam": "Pasukan bantuan",
@@ -3012,7 +3012,7 @@
       "title": "Permintaan saya",
       "intro": "Semua yang anda hantar kepada Jaga dan menunggu tindakan orang lain, dengan langkah-langkahnya. Loceng akan memaklumkan anda apabila setiap langkah selesai.",
       "loading": "Memuatkan…",
-      "none": "Belum ada permintaan daripada telefon ini.",
+      "none": "Belum ada permintaan daripada peranti ini.",
       "unread": "{count} permintaan tidak dapat dibaca sekarang. Semak sambungan dan cuba lagi.",
       "sent": "Dihantar {time}",
       "inProgress": "Sedang berjalan",
@@ -3067,7 +3067,7 @@
     "link": "Rekod penyelamatan yang ditemui sendiri (bukan daripada SOS)",
     "intro": "Untuk mangsa yang ditemui dan dibantu oleh pasukan sendiri, tanpa menekan SOS dalam aplikasi.",
     "rules": {
-      "now": "Mesti direkod semasa berada di tempat penyelamatan. Kedudukan diambil daripada telefon anda pada ketika itu.",
+      "now": "Mesti direkod semasa berada di tempat penyelamatan. Kedudukan diambil daripada peranti anda pada ketika itu.",
       "proof": "Nombor telefon orang yang diselamatkan (atau saudaranya) dan sekurang-kurangnya satu gambar diperlukan.",
       "half": "Bernilai separuh mata penyelamatan daripada SOS.",
       "review": "Jika kawasan itu ada amaran, laporan banjir berhampiran atau ialah kawasan berisiko banjir, ia dikira serta-merta. Jika tidak, atau jika nampak berulang, pentadbir menyemaknya dahulu."
@@ -3105,7 +3105,7 @@
     "holds": {
       "no_flood_evidence": "Tiada amaran, laporan banjir atau data kawasan berisiko di sini.",
       "outside_coverage": "Tempat ini di luar kawasan liputan pasukan.",
-      "vague_position": "Kedudukan daripada telefon kurang tepat.",
+      "vague_position": "Kedudukan daripada peranti kurang tepat.",
       "repeat_nearby": "Pasukan baru sahaja merekod penyelamatan berhampiran tempat ini.",
       "many_today": "Pasukan merekod banyak penyelamatan dalam sehari.",
       "phone_used_before": "Nombor telefon ini pernah digunakan dalam rekod lain.",
@@ -3113,7 +3113,7 @@
       "sent_later": "Direkod tanpa isyarat dan dihantar kemudian."
     },
     "error": {
-      "position": "Belum ada kedudukan daripada telefon; tidak dapat direkod.",
+      "position": "Belum ada kedudukan daripada peranti; tidak dapat direkod.",
       "people": "Nyatakan bilangan orang yang diselamatkan (1–200).",
       "phone": "Nombor telefon orang yang diselamatkan diperlukan.",
       "photo": "Sekurang-kurangnya satu gambar diperlukan.",
@@ -3132,9 +3132,9 @@
       "adminNote": "Pentadbir: {note}"
     },
     "later": {
-      "saved": "Disimpan dalam telefon",
-      "savedBody": "Tiada isyarat sekarang. Kedudukan, masa, nombor telefon dan gambar disimpan dalam telefon ini dan akan dihantar sendiri apabila ada isyarat. Rekod yang dihantar kemudian sentiasa menunggu semakan pentadbir.",
-      "waiting": "{count} rekod dalam telefon ini belum dihantar",
+      "saved": "Disimpan dalam peranti",
+      "savedBody": "Tiada isyarat sekarang. Kedudukan, masa, nombor telefon dan gambar disimpan dalam peranti ini dan akan dihantar sendiri apabila ada isyarat. Rekod yang dihantar kemudian sentiasa menunggu semakan pentadbir.",
+      "waiting": "{count} rekod dalam peranti ini belum dihantar",
       "waitingHint": "Ia dihantar sendiri apabila ada isyarat dan Jaga dibuka. Jangan padam data aplikasi sebelum dihantar.",
       "sendNow": "Cuba hantar sekarang"
     }
@@ -3267,7 +3267,7 @@
     },
     "auto": {
       "title": "Penggera automatik",
-      "rule": "Bagi stesen yang ditanda: apabila dua bacaan terakhirnya, kedua-duanya kurang daripada {age} jam, mencapai had, telefon setiap pentadbir berbunyi dengan draf amaran. Jika tiada pentadbir menghantar atau menolaknya dalam {grace} minit, ia diterbitkan sendiri dan ditanda sebagai belum disemak. Jika paras sungai sudah turun semula ketika itu, tiada apa-apa diterbitkan.",
+      "rule": "Bagi stesen yang ditanda: apabila dua bacaan terakhirnya, kedua-duanya kurang daripada {age} jam, mencapai had, peranti setiap pentadbir berbunyi dengan draf amaran. Jika tiada pentadbir menghantar atau menolaknya dalam {grace} minit, ia diterbitkan sendiri dan ditanda sebagai belum disemak. Jika paras sungai sudah turun semula ketika itu, tiada apa-apa diterbitkan.",
       "modeDrill": "Sebelum pelancaran ia hanya menerbitkan latihan: tiada sesiapa selain pentadbir melihatnya.",
       "modeReal": "Ia menerbitkan amaran sebenar kepada penduduk mukim dalam zon itu.",
       "toReal": "Terbitkan amaran sebenar",
@@ -3336,7 +3336,7 @@
   "lineQuota": {
     "ok": "Mesej LINE bulan ini: {used} daripada {limit} digunakan",
     "warn": "Mesej LINE bulan ini sudah {used} daripada {limit}, hampir habis. Setiap amaran menggunakan satu mesej bagi setiap orang.",
-    "full": "Mesej LINE bulan ini sudah habis ({limit}). LINE tidak akan menghantar lagi sehingga bulan depan. Amaran masih sampai melalui pemberitahuan telefon, aplikasi dan loceng."
+    "full": "Mesej LINE bulan ini sudah habis ({limit}). LINE tidak akan menghantar lagi sehingga bulan depan. Amaran masih sampai melalui pemberitahuan peranti, aplikasi dan loceng."
   },
   "rolePreview": {
     "banner": "Pratonton: anda melihat Jaga sebagai {role}. Semua angka dan permintaan adalah rekaan; tiada data sebenar dibaca atau dihantar.",
@@ -3386,24 +3386,24 @@
     "pollFailed": "Muat semula terakhir tidak berjaya. Ini angka terakhir yang diterima.",
     "now": {
       "tag": "LANGSUNG",
-      "unit": "telefon sedang membuka Jaga",
+      "unit": "peranti sedang membuka Jaga",
       "signedIn": "{count, plural, =0 {Tiada yang log masuk} other {# log masuk}}",
       "installed": "{count, plural, =0 {Tiada dari ikon skrin utama} other {# dari ikon skrin utama}}",
       "noArea": "{count, plural, =0 {Semua sudah memilih kawasan} other {# belum memilih kawasan}}",
       "topScreen": "Kebanyakan di: {screen} ({count})",
-      "pulse": "Telefon pada skrin, setiap 5 minit dalam 3 jam terakhir",
-      "pulseTip": "{count} telefon"
+      "pulse": "Peranti pada skrin, setiap 5 minit dalam 3 jam terakhir",
+      "pulseTip": "{count} peranti"
     },
     "today": {
-      "devices": "telefon hari ini",
+      "devices": "peranti hari ini",
       "sessions": "lawatan hari ini",
-      "newDevices": "telefon baharu hari ini",
+      "newDevices": "peranti baharu hari ini",
       "minutes": "minit dalam aplikasi hari ini"
     },
     "ever": {
       "title": "SEJAK MULA",
       "since": "SEJAK {date}",
-      "devices": "telefon",
+      "devices": "peranti",
       "sessions": "lawatan",
       "views": "skrin dibuka",
       "hours": "jam dalam aplikasi"
@@ -3420,11 +3420,11 @@
       "good": "Tanda baik",
       "note": "Patut dilihat",
       "slowNet": {
-        "title": "{share}% telefon menggunakan sambungan perlahan (3G atau lebih perlahan).",
+        "title": "{share}% peranti menggunakan sambungan perlahan (3G atau lebih perlahan).",
         "do": "Kekalkan skrin utama ringan dan peta sebagai pilihan: itulah yang boleh dimuatkan oleh kebanyakan orang."
       },
       "lowMemory": {
-        "title": "{share}% telefon mempunyai memori 2 GB atau kurang.",
+        "title": "{share}% peranti mempunyai memori 2 GB atau kurang.",
         "do": "Uji pada telefon Android murah sebelum setiap keluaran; animasi dan peta paling berat."
       },
       "inApp": {
@@ -3440,7 +3440,7 @@
         "do": "Amaran hanya sampai ketika aplikasi dibuka. Ingatkan mereka pada skrin utama."
       },
       "abroad": {
-        "title": "{count, plural, other {# telefon di luar Thailand memantau tempat di sini.}}",
+        "title": "{count, plural, other {# peranti di luar Thailand memantau tempat di sini.}}",
         "do": "Keluarga di luar negara menjaga kampung halaman: patut disebut dalam promosi Jaga."
       },
       "malay": {
@@ -3452,7 +3452,7 @@
         "do": "Melebihi bajet 3 saat dalam spesifikasi. Lihat apa yang dimuatkan sebelum status amaran."
       },
       "comeBack": {
-        "title": "{share}% telefon baharu kembali dalam masa seminggu.",
+        "title": "{share}% peranti baharu kembali dalam masa seminggu.",
         "do": "Lawatan berulang membuatkan amaran sampai. Bandingkan selepas setiap promosi."
       },
       "alertLift": {
@@ -3470,9 +3470,9 @@
         "ip": "Lokasi internet"
       },
       "note": {
-        "areas": "Setiap tambon diwarnakan mengikut bilangan telefon yang memilihnya dalam aplikasi, dalam tempoh ini. Lebih gelap bermakna lebih ramai.",
+        "areas": "Setiap tambon diwarnakan mengikut bilangan peranti yang memilihnya dalam aplikasi, dalam tempoh ini. Lebih gelap bermakna lebih ramai.",
         "watched": "Tempat yang dipantau dan rumah yang disimpan, semua akaun, sebagai kepadatan. Bilangan setiap tambon sahaja, tiada pin bagi setiap tempat.",
-        "ip": "Bandar anggaran sambungan internet setiap telefon (kira-kira 11 km), dalam tempoh ini. Rangkaian mudah alih sering menunjukkan bandar yang jauh dari orangnya."
+        "ip": "Bandar anggaran sambungan internet setiap peranti (kira-kira 11 km), dalam tempoh ini. Rangkaian mudah alih sering menunjukkan bandar yang jauh dari orangnya."
       },
       "live": "Langsung",
       "view": {
@@ -3487,18 +3487,18 @@
       "topAreas": "Kawasan paling banyak dipilih",
       "topWatched": "Paling banyak dipantau",
       "noneYet": "Belum ada yang dikira.",
-      "watchedNote": "{abroad, plural, =0 {Tiada telefon di luar Thailand memantau tempat di sini.} other {# telefon di luar Thailand memantau tempat di sini.}}"
+      "watchedNote": "{abroad, plural, =0 {Tiada peranti di luar Thailand memantau tempat di sini.} other {# peranti di luar Thailand memantau tempat di sini.}}"
     },
     "days": {
-      "title": "Telefon setiap hari, {days, plural, =1 {hari ini} other {# hari terakhir}}",
-      "note": "Setiap bar ialah telefon yang membuka Jaga pada hari itu. ▲ menandakan hari ada amaran.",
-      "tip": "{devices} telefon, {fresh} baharu, {sessions} lawatan",
+      "title": "Peranti setiap hari, {days, plural, =1 {hari ini} other {# hari terakhir}}",
+      "note": "Setiap bar ialah peranti yang membuka Jaga pada hari itu. ▲ menandakan hari ada amaran.",
+      "tip": "{devices} peranti, {fresh} baharu, {sessions} lawatan",
       "alertDay": "▲ Amaran dikeluarkan",
       "today": "Hari ini {devices}",
       "table": "Angka dalam jadual",
       "col": {
         "day": "Hari",
-        "devices": "Telefon",
+        "devices": "Peranti",
         "new": "Baharu",
         "sessions": "Lawatan",
         "views": "Skrin"
@@ -3506,10 +3506,10 @@
     },
     "hours": {
       "title": "48 jam terakhir",
-      "note": "Telefon yang membuka aplikasi setiap jam. Garis dengan ▲ ialah amaran dikeluarkan.",
-      "tip": "{count} telefon",
-      "lift": "{level}: {after} telefon dalam jam berikutnya, {ratio}× jam sebelumnya.",
-      "liftFromNothing": "{level}: {after} telefon dalam jam berikutnya, daripada tiada sebelumnya.",
+      "note": "Peranti yang membuka aplikasi setiap jam. Garis dengan ▲ ialah amaran dikeluarkan.",
+      "tip": "{count} peranti",
+      "lift": "{level}: {after} peranti dalam jam berikutnya, {ratio}× jam sebelumnya.",
+      "liftFromNothing": "{level}: {after} peranti dalam jam berikutnya, daripada tiada sebelumnya.",
       "noAlerts": "Tiada amaran dalam 48 jam ini."
     },
     "rhythm": {
@@ -3523,7 +3523,7 @@
     },
     "funnel": {
       "title": "Dari membuka Jaga hingga memantau",
-      "note": "Telefon dalam tempoh ini, dan berapa yang mengambil setiap langkah supaya amaran sampai kepada mereka.",
+      "note": "Peranti dalam tempoh ini, dan berapa yang mengambil setiap langkah supaya amaran sampai kepada mereka.",
       "steps": {
         "opened": "Membuka Jaga",
         "area": "Memilih kawasan",
@@ -3535,18 +3535,18 @@
     },
     "engagement": {
       "title": "Adakah orang kembali?",
-      "comeBack": "{share}% daripada {cohort} telefon yang mula membuka Jaga lebih seminggu lalu kembali dalam minggu pertama.",
-      "tooNew": "Sejarah belum cukup: perlukan telefon yang mula dilihat lebih seminggu lalu.",
+      "comeBack": "{share}% daripada {cohort} peranti yang mula membuka Jaga lebih seminggu lalu kembali dalam minggu pertama.",
+      "tooNew": "Sejarah belum cukup: perlukan peranti yang mula dilihat lebih seminggu lalu.",
       "visit": "Lawatan biasa",
       "visitValue": "{m} min {s} s",
       "pages": "Skrin setiap lawatan",
-      "perPhone": "Lawatan setiap telefon",
+      "perPhone": "Lawatan setiap peranti",
       "perPhoneNote": "dalam {days, plural, =1 {hari ini} other {# hari}}",
       "sticky": "Bahagian harian",
-      "stickyNote": "telefon hari biasa, daripada sebulan",
+      "stickyNote": "peranti hari biasa, daripada sebulan",
       "still": "Masih menggunakan selepas seminggu",
-      "stillNote": "daripada telefon yang mula dilihat lebih seminggu lalu",
-      "mau": "Telefon dalam 30 hari terakhir"
+      "stillNote": "daripada peranti yang mula dilihat lebih seminggu lalu",
+      "mau": "Peranti dalam 30 hari terakhir"
     },
     "actions": {
       "title": "Apa yang orang lakukan, {days, plural, =1 {hari ini} other {# hari terakhir}}",
@@ -3564,7 +3564,7 @@
       "browser": "Pelayar",
       "locale": "Bahasa",
       "net": "Sambungan",
-      "memory": "Memori telefon",
+      "memory": "Memori peranti",
       "inApp": "Dibuka di dalam aplikasi lain",
       "inAppNote": "Facebook, Messenger, LINE dan lain-lain membuka pautan dalam pelayar sendiri, di mana log masuk dan pemberitahuan kurang berfungsi.",
       "inAppNone": "Tiada dalam tempoh ini.",
@@ -3607,7 +3607,7 @@
     },
     "speed": {
       "title": "Seberapa pantas skrin pertama muncul",
-      "note": "Diukur pada {count} lawatan sebenar. Bar gelap ialah telefon biasa, bar pucat suku yang paling perlahan; garis ialah bajet 3 saat dalam spesifikasi.",
+      "note": "Diukur pada {count} lawatan sebenar. Bar gelap ialah peranti biasa, bar pucat suku yang paling perlahan; garis ialah bajet 3 saat dalam spesifikasi.",
       "fcp": "Skrin pertama dilukis",
       "ready": "Halaman sedia",
       "values": "{p50} s biasa · {p75} s suku paling perlahan",
@@ -3636,7 +3636,7 @@
     },
     "privacy": {
       "title": "Apa yang dikira halaman ini, dan apa yang tidak sekali-kali",
-      "counted": "Dikira: kod rawak yang dibuat pada telefon (tidak pernah dikaitkan dengan akaun, nama atau nombor), tambon yang dipilih dalam aplikasi, bandar anggaran sambungan internet, jenis telefon dan pelayar, dan skrin yang dibuka.",
+      "counted": "Dikira: kod rawak yang dibuat pada peranti (tidak pernah dikaitkan dengan akaun, nama atau nombor), tambon yang dipilih dalam aplikasi, bandar anggaran sambungan internet, jenis peranti dan pelayar, dan skrin yang dibuka.",
       "never": "Tidak sekali-kali: GPS, nama, nombor telefon, alamat internet itu sendiri, atau apa-apa daripada borang SOS dan laporan. Pelayar yang meminta tidak dijejaki tidak dikira.",
       "keep": "Baris mentah dipadam selepas 90 hari; hanya jumlah harian yang kekal."
     }
