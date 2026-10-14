@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { Dashboard } from "@/components/map/Dashboard";
+import { SeasonOutlook } from "@/components/map/SeasonOutlook";
 import { donationsEnabled } from "@/lib/features";
 import { mapMessages } from "@/lib/messages";
 
@@ -29,6 +30,12 @@ export default async function MapPage({ params }: PageProps<"/[locale]/map">) {
       <Suspense>
         <Dashboard transparency={donationsEnabled()} />
       </Suspense>
+      {/*
+       * The season outlook (science plan Module 9; the owner chose to show it, 14 Oct 2026): below
+       * the map and its legend, closed until opened, and nowhere else - never on the home screen
+       * or beside an alert level.
+       */}
+      <SeasonOutlook />
     </NextIntlClientProvider>
   );
 }

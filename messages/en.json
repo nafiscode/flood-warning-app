@@ -610,6 +610,28 @@
       "asked": "Jaga asked at {asked}",
       "truncated": "There is more than this map can show; only part is drawn.",
       "note": "Source: GISTDA. Each hexagon is about 0.12 km². It marks where a satellite saw water on the day of the image, not how deep, and not what is flooded now. This is not a warning."
+    },
+    "outlook": {
+      "title": "Rainy-season outlook (Nov–Jan)",
+      "loading": "Loading the outlook…",
+      "failed": "The rainy-season outlook can't be loaded right now.",
+      "noneIssued": "There is no outlook for this season yet.",
+      "lean": {
+        "none": "No clear lean this season.",
+        "dry": "Leaning towards less rain than usual.",
+        "normal": "Leaning towards about the usual rain.",
+        "wet": "Leaning towards more rain than usual."
+      },
+      "pacific": {
+        "el_nino": "An El Niño in the Pacific points to less rain than usual.",
+        "la_nina": "A La Niña in the Pacific points to more rain than usual.",
+        "neutral": "The Pacific gives no hint either way."
+      },
+      "skill": "Seasonal outlooks like this have been right here only about {n} times in 10.",
+      "bursts": "The worst floods come from a few days of heavy rain that cannot be foreseen this far ahead. Prepare as for any year.",
+      "alerts": "Alerts for your area come from Jaga's admins and from DDPM, not from this outlook.",
+      "issued": "Issued {date}",
+      "source": "From 45 seasons of rain (CHIRPS, ERA5-Land), the ENSO index and NOAA's seasonal forecasts."
     }
   },
   "attribution": {

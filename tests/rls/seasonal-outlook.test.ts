@@ -33,8 +33,12 @@ afterEach(async () => {
 });
 
 const count = async () =>
-  (await rows<{ n: number }>(db, "select count(*)::int n from public.seasonal_outlooks where season = 1999"))[0]!
-    .n;
+  (
+    await rows<{ n: number }>(
+      db,
+      "select count(*)::int n from public.seasonal_outlooks where season = 1999",
+    )
+  )[0]!.n;
 
 describe("seasonal_outlooks", () => {
   it("is read by an admin and a super admin", async () => {
@@ -59,7 +63,10 @@ describe("seasonal_outlooks", () => {
         `insert into public.seasonal_outlooks (season, issued_on, method, lean, usable, note)
          values (1999, '1999-10-15', 'summary', 'none', false, 'x')`,
       );
-      await expectDenied(db, "update public.seasonal_outlooks set lean = 'wet' where season = 1999");
+      await expectDenied(
+        db,
+        "update public.seasonal_outlooks set lean = 'wet' where season = 1999",
+      );
       await expectDenied(db, "delete from public.seasonal_outlooks where season = 1999");
     }
   });

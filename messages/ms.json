@@ -610,6 +610,28 @@
       "asked": "Jaga meminta data pada {asked}",
       "truncated": "Kawasan lebih besar daripada yang dapat ditunjukkan di peta ini; hanya sebahagian ditunjukkan.",
       "note": "Sumber: GISTDA. Setiap heksagon kira-kira 0.12 km². Ia menunjukkan tempat satelit nampak air pada hari imej diambil, bukan kedalamannya dan bukan keadaan sekarang. Ini bukan amaran."
+    },
+    "outlook": {
+      "title": "Tinjauan musim hujan (Nov–Jan)",
+      "loading": "Sedang memuatkan tinjauan…",
+      "failed": "Tinjauan musim hujan tidak dapat dimuatkan sekarang.",
+      "noneIssued": "Belum ada tinjauan untuk musim ini.",
+      "lean": {
+        "none": "Tiada kecenderungan yang jelas musim ini.",
+        "dry": "Cenderung kurang hujan daripada biasa.",
+        "normal": "Cenderung hujan seperti biasa.",
+        "wet": "Cenderung lebih banyak hujan daripada biasa."
+      },
+      "pacific": {
+        "el_nino": "El Niño di Lautan Pasifik menunjukkan hujan mungkin kurang daripada biasa.",
+        "la_nina": "La Niña di Lautan Pasifik menunjukkan hujan mungkin lebih daripada biasa.",
+        "neutral": "Keadaan Lautan Pasifik tidak menunjukkan sebarang arah."
+      },
+      "skill": "Ramalan musim seperti ini hanya betul di kawasan ini kira-kira {n} kali daripada 10.",
+      "bursts": "Banjir paling teruk datang daripada hujan lebat beberapa hari yang tidak dapat diramal sejauh ini. Bersedialah seperti setiap tahun.",
+      "alerts": "Amaran untuk kawasan anda datang daripada pentadbir Jaga dan DDPM, bukan daripada tinjauan ini.",
+      "issued": "Dikeluarkan {date}",
+      "source": "Daripada data hujan 45 musim (CHIRPS, ERA5-Land), indeks ENSO dan ramalan musim NOAA."
     }
   },
   "attribution": {

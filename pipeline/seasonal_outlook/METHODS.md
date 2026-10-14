@@ -152,9 +152,11 @@ each third so a small count never reads as certainty. The rows are in the table
 `seasonal_outlooks` (admins only; migration `20261014150000_s8_seasonal_outlook`, seed
 `supabase/seed/60_seasonal_outlook.sql`), for the signal dashboard to read. Nothing public.
 
-## Step 4: a public version (proposal only, not built)
+## Step 4: the public version (built 14 Oct 2026, the owner's choice)
 
-My recommendation: **admins only this season.** The skill is close to chance, this year's answer is
+The owner chose to show it ("outlook public"), against my recommendation below, which is kept for the record. Built as proposed: a closed fold "Season outlook" under the map on the map page (`components/map/SeasonOutlook.tsx`), fetched only when opened (`/api/public/outlook`, from the function `public_seasonal_outlook()`, which gives visitors the summary, the Pacific's phase and the skill of the methods used; the table stays admins only). Shown until the end of January of its season. The wording is in `messages/*.json` under `map.outlook`.
+
+My recommendation was: **admins only this season.** The skill is close to chance, this year's answer is
 "no reliable lean", and a public line saying "drier than usual" during the flood season could be read
 as an all-clear. Score this season's outlook in February and decide again before the 2027 season.
 
