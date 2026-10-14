@@ -1,0 +1,86 @@
+# S6, docs/science-plan.md Module 4: which land is under water at a given level of a key gauge.
+# Every number here is a starting value; the reasons and the results are in METHODS.md. The output
+# is an estimate the app labels as such, never a forecast and never an alert (safety rules 2 and 8).
+
+output_dir: out/stage_extent
+
+# What the analysis reads (all local, relative to pipeline/).
+inputs:
+  hand: out/hazard/burned/hand.tif              # the decided HAND (8 Oct 2026), height above the nearest stream
+  surface: out/hazard/work/dem_utm.tif          # the UNBURNED FABDEM on the same grid (burned/ has rivers cut 10 m in)
+  pointer: out/hazard/burned/d8_pointer.tif     # D8 directions from the burned DEM (routing follows mapped rivers)
+  accumulation: out/hazard/burned/d8_accum.tif
+  classes: out/hazard/classes/hazard_classes_c97e0bf.tif   # > 0 inside the four provinces: the land drawn
+  buildings: out/hazard/buildings/buildings_2023_30m.tif   # band 1 presence 0..1, band 2 building count
+  radar_dir: out/sar_floods/drive
+  radar_hash: c97e0bf                           # the second radar run only; cd222f1 is never read
+  tidy: data/tidy                               # the ThaiWater archive (pipeline/data, the private data repo)
+
+# The reach of a gauge: the main stem from `up_km` above the gauge to `down_km` below it (river km
+# along the D8 path, upstream following the largest inflow), and the land whose flow path reaches
+# that stretch of main stem before any other way out of the window. Height is then measured above
+# the main-stem cell the path reaches (see METHODS.md "The reach").
+reach:
+  up_km: 12
+  down_km: 12
+  margin_km: 12          # the window read around the gauge reaches this far beyond the reach ends
+  # A cell up a tributary may stand this much higher above the main river than the main river's
+  # depth and still be wet (its own stream is high too). One value for all three gauges, chosen on
+  # the paired passes from 0, 1, 2, 3, 4, 6, 8 m and "HAND only" (METHODS.md "The height").
+  tributary_allowance_m: 2.0
+  allowance_candidates: [0, 1, 2, 3, 4, 6, 8, null]     # null: HAND alone (every stream in the reach rises as much)
+  max_height_m: 15       # heights above this are never wet within the stage range (one histogram bin)
+  low_height_m: 3        # "low land" for the observed-share test below
+
+gauges:
+  X.40A: {zone: pattani_river, id: 2583, bank_m: 16.5, place: "Yala town (Tha Sap)", point: [101.266294, 6.552798], snap_cells: 12}
+  X.119A: {zone: kolok, id: 2559, bank_m: 9.3, place: "Sungai Kolok (Lantu bridge)", point: [101.9749, 6.0226], snap_cells: 12}
+  # The listed position of X.44 is 1.2 km from the channel the elevation model drains by (thresholds).
+  # Only one pass of the second radar run found X.44 within 1 m of its bank (23 Nov 2025, 7.9 m), so
+  # its calibration takes every pass from bank - 4.5 m (2.9 m) up: six passes in three seasons.
+  X.44: {zone: u_taphao, id: 2591, bank_m: 7.4, place: "Hat Yai (Ban Hat Yai Nai)", point: [100.4561, 7.0022], snap_cells: 40,
+         min_stage_below_bank_m: 4.5}
+
+# Pairing a radar pass with the gauge.
+pairing:
+  max_offset_h: 1.0          # nearest reading within this of the pass, else the pass is skipped
+  max_above_bank_m: 4.0      # readings higher than bank + this are broken sensors (X.119A once read 22.8 m)
+  min_observed_share: 0.5    # the radar saw at least this share of the reach's low land (not mask, not no data)
+
+# Scoring the radar against the model.
+scoring:
+  flooded_codes: [1, 3]      # VV flood, VV and VH
+  dry_codes: [0, 2]          # dry, VH only (VH-only is not counted as flood, as in the hazard classes)
+  min_known_share: 0.5       # a 30 m cell is known when at least this share of its radar pixels is known
+  flood_share: 0.5           # and flooded when at least this share of its known pixels is
+  built_min_presence: 0.10   # built-up cells (mean presence over 5 x 5 cells) are left out of the score:
+  built_window_cells: 5      #   the radar cannot see water between buildings (hazard METHODS)
+  bin_m: 0.05                # height histogram step; z0 is searched on the same step
+
+# Which passes calibrate z0: the river at most this far below its bank. Lower passes show paddies and
+# rain ponding more than the river, and the map only matters near and above the bank.
+calibration:
+  min_stage_below_bank_m: 1.0
+  z0_below_bank_m: [15.0, -2.0]     # search z0 from bank - 15 m to bank + 2 m
+
+# The layers for the app.
+bands:
+  step_m: 0.25
+  from_below_bank_m: 2.0           # lowest band: bank - 2 m (rounded down to the step)
+  above_record_m: 1.0              # highest band: the highest good reading + 1 m (rounded up)
+
+# As the hazard tiles (hazard/config.yaml): at zoom 11 a tile pixel is about 19 m, finer than the
+# 30 m cells, and MapLibre stretches the deepest tiles further in.
+tiles:
+  min_zoom: 8
+  max_zoom: 11
+  tile_px: 1024
+  buffer_px: 8
+  smooth_sigma_px: 1.5
+  smooth_cut: 0.40
+  simplify_px: 0.6
+  coarse_min_share: 0.25
+  layer: stage_extent
+  description: "Land under water at a given level of a river gauge (Yala X.40A, Sungai Kolok X.119A, Hat Yai X.44), from height above the river and Sentinel-1 radar passes paired with the gauge. An estimate, not a forecast; show from_m <= the gauge level."
+  attribution: "Jaga; FABDEM (Hawker et al. 2022); Copernicus Sentinel-1; ThaiWater (HII); Google Open Buildings"
+  licence: "CC BY-NC-SA 4.0"
