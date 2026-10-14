@@ -48,6 +48,7 @@ import { Link } from "@/i18n/navigation";
 import { checkBox, checkRow } from "@/lib/ui";
 import { DamPeek, GaugePeek, PlacePeek } from "./MapPeek";
 import { MapView, type MapSelection, type MinePlace, type PeekTarget } from "./MapView";
+import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
 import { SignInHint } from "@/components/account/SignInOffer";
@@ -1023,11 +1024,7 @@ export function DashboardView(props: DashboardViewProps) {
                           className="flex items-center gap-2"
                           data-mine-legend={place.id}
                         >
-                          <span
-                            aria-hidden="true"
-                            style={{ backgroundColor: place.color }}
-                            className="size-4 shrink-0 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,.15)]"
-                          />
+                          <MineGlyph home={place.home} color={place.color} />
                           <span>{place.label}</span>
                         </li>
                       ))}

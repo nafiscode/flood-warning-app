@@ -576,7 +576,7 @@
       "note": "Hanya anda yang nampak titik ini; ia tidak ditunjukkan kepada orang lain.",
       "manage": "Urus tempat yang saya pantau",
       "person": "Hubungi: {name}",
-      "hint": "Tuding atau ketik titik untuk melihat nama dan alamatnya."
+      "hint": "Rumah anda ialah pin bergambar rumah; tempat yang anda pantau ialah titik dalam bingkai. Tuding atau ketik untuk melihat nama dan alamatnya."
     },
     "places": {
       "toggle": "Tunjukkan tempat selamat pada peta ({count})",

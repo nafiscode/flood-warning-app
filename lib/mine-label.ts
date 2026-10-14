@@ -42,6 +42,8 @@ export function minePlaceFeature(place: MinePlace) {
       id: place.id,
       home: place.home ? 1 : 0,
       color: place.color,
+      // The colour as the map's picture names carry it (lib/mine-marks.ts, mineImageName).
+      hex: place.color.replace("#", "").toLowerCase(),
       label: place.label,
     },
   };

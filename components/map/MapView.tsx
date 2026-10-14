@@ -1,7 +1,13 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { GeoJSONSource, Map as MapLibreMap, PointLike, Popup } from "maplibre-gl";
+import type {
+  GeoJSONSource,
+  Map as MapLibreMap,
+  PointLike,
+  Popup,
+  ExpressionSpecification,
+} from "maplibre-gl";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { MapLayer } from "@/lib/hazards";
@@ -23,6 +29,7 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
+import { HOME_TIP_DY, MINE_IMAGE_RATIO, mineImage, mineImageName } from "@/lib/mine-marks";
 import {
   HAZARD_OPACITY,
   HAZARD_OPACITY_NIGHT,
@@ -828,21 +835,48 @@ export function MapView({
         m.setPaintProperty(GAUGE_LABEL, "text-color", gp.rim);
         m.setPaintProperty(GAUGE_LABEL, "text-halo-color", gp.halo);
         m.setPaintProperty(GAUGE_LABEL, "text-halo-width", 1.8);
+        /*
+         * The person's own places: a pin with a house for their home, and focus brackets around
+         * a dot for each watched place, each moving slowly (lib/mine-marks.ts). Their own shapes,
+         * so they are never mistaken for the round gauges. One picture per colour and theme.
+         */
+        for (const place of mine) {
+          const kind = place.home ? "home" : "watch";
+          const name = mineImageName(kind, place.color, night);
+          if (!m.hasImage(name)) {
+            const picture = mineImage(kind, place.color, night, moving);
+            if (picture) m.addImage(name, picture, { pixelRatio: MINE_IMAGE_RATIO });
+          }
+        }
+        const isHome: ExpressionSpecification = ["==", ["get", "home"], 1];
+        const mineIcon = [
+          "concat",
+          "jaga-mine-",
+          ["case", isHome, "home", "watch"],
+          "-",
+          ["get", "hex"],
+          night ? "-night" : "-day",
+        ] as unknown as string;
+        if (m.getLayer(MINE) && m.getLayer(MINE)!.type !== "symbol") m.removeLayer(MINE);
         if (!m.getLayer(MINE)) {
           // On top of the public layers: these few points are what the person came to find.
           m.addLayer({
             id: MINE,
-            type: "circle",
+            type: "symbol",
             source: MINE,
-            paint: {
-              "circle-radius": ["case", ["==", ["get", "home"], 1], 10, 8],
-              "circle-color": ["get", "color"],
-              // A white ring keeps every shade readable on the basemap and on a coloured tambon.
-              "circle-stroke-color": "#ffffff",
-              "circle-stroke-width": 3,
+            layout: {
+              "icon-image": mineIcon,
+              "icon-size": ["interpolate", ["linear"], ["zoom"], 7, 0.8, 12, 1],
+              // The pin's tip, not its middle, stands on the home.
+              "icon-offset": ["case", isHome, ["literal", [0, -HOME_TIP_DY]], ["literal", [0, 0]]],
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
+              // The home on top of a watched place that shares its spot.
+              "symbol-sort-key": ["case", isHome, 2, 1],
             },
           });
         }
+        m.setLayoutProperty(MINE, "icon-image", mineIcon);
         if (!m.getLayer(MINE_LABEL)) {
           /*
            * The name of each place, written on the map itself, so they can be read at a glance
@@ -858,7 +892,13 @@ export function MapView({
               "text-font": ["Noto Sans Regular"],
               "text-size": 13,
               "text-anchor": "top",
-              "text-offset": [0, 0.8],
+              // Under the pin's tip for the home; clear of the brackets for a watched place.
+              "text-offset": [
+                "case",
+                ["==", ["get", "home"], 1],
+                ["literal", [0, 0.5]],
+                ["literal", [0, 1.7]],
+              ],
               "text-max-width": 9,
               /*
                * Always drawn. Our layer is added after the basemap's, so MapLibre would give the

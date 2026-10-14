@@ -576,12 +576,11 @@ describe("telling the watched places apart", () => {
     const c = dashboard({ me: EXAMPLE_ME });
     const rows = [...c.querySelectorAll("[data-mine-legend]")];
     expect(rows.map((r) => r.textContent)).toEqual(["บ้านแม่", "ร้านที่ตลาด"]);
-    // The browser gives the colour back as rgb(), so compare it that way.
-    const rgb = (hex: string) =>
-      `rgb(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)})`;
-    expect(c.querySelector('[data-mine-legend="w1"] span')?.getAttribute("style")).toContain(
-      rgb(MINE_COLORS[0]),
-    );
+    // Each with the same shape the map draws: brackets in the place's own colour for a watched
+    // place (lib/mine-marks.ts), never a plain dot like a gauge.
+    const glyph = c.querySelector('[data-mine-legend="w1"] [data-mine-glyph]');
+    expect(glyph?.getAttribute("data-mine-glyph")).toBe("watch");
+    expect(glyph?.innerHTML).toContain(`stroke="${MINE_COLORS[0]}"`);
   });
 
   it("a pin's label carries the name, the person there and the address", () => {
