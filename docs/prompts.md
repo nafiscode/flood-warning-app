@@ -542,6 +542,24 @@ Acceptance: no published figure identifies a person or a household (test); re-ru
 
 Spec 4.10. A second kind of request beside the rescue SOS, for people who are safe and cut off, and a `supplies` capability for the teams that deliver. Built on the SOS record and the A5 relay. Still to do when A7 lands: the push notification for a supply offer uses the phone's ordinary notification sound, never the alarm channel.
 
+### A15: Experience rating and feedback (after launch)
+
+Added 15 Oct 2026 (owner's request).
+```text
+Read docs/spec.md sections 17 and 9, and CLAUDE.md safety rules 1, 5 and 9.
+
+1. Migration: the feedback table of spec section 8 with RLS. Anyone (anon included) sends through a function that rate-limits per phone and per account and never raises for anything the sender can get wrong; a signed-in sender reads and deletes their own; admins read and triage. The contact is shown only through a function that writes to audit_log.
+2. The form: rating 1-5 as faces with a word under each (icon + word, never colour alone), an optional topic and comment, an optional "you may contact me" tick with its contact field and recorded consent. Thai first, then Malay and English. Tap targets 48 px, works at 360 px, queued offline like a report.
+3. Where it appears: Account, About and the footer always. The quiet asks after a closed and confirmed request, an ended report, and a team's finished case; once per phone per 30 days. Never in SOS, food-and-water, report or alert screens, never in a notification, never on home while the person's area or a watched place is at Warning or Evacuate (test this).
+4. Context captured automatically: screen, language, app version, kind of phone, role, chosen district (never tambon, never GPS), and for a post-request rating the case id (admins only).
+5. LINE: a rich-menu entry and a reply that store into the same table.
+6. Admin page /admin/feedback (add it to ADMIN_ITEMS in the review group): list with filters, triage statuses (new, read, planned, done, won't do, hidden), a note, and a link to the decision or commit; trend charts per month, screen and language (load the dataviz skill first); CSV export without contacts.
+7. Retention: comments anonymised after 12 months and contacts cleared on close, by a nightly job; ratings kept as figures.
+8. A season review checklist in docs/runbook.md (new file): lowest-rated screens, most frequent problems, what changed, whether the rating moved; summary into docs/decisions.md.
+
+Acceptance: an anonymous visitor can send a rating offline and it arrives later; no feedback prompt appears in any SOS, report or alert flow or during Warning/Evacuate (test); a visitor cannot read anyone's feedback and a contact reveal is logged (RLS tests); the admin page shows the trends and every item can be traced to its outcome.
+```
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.

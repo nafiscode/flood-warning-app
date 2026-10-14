@@ -484,6 +484,7 @@ Admins decide. The system never auto-publishes, with one exception (owner, 14 Oc
 - `impact_daily` (A13): one row per province per day — app openings, alerts delivered, SOS sent and their outcomes, reports, safe-place lookups, waiting-time medians and spreads. Written by a nightly job; the raw rows it counts are dropped.
 - `impact_unit_totals` (A13): per verified unit — cases accepted, confirmed rescues, people reached, seasons active. Volume of help only; no score and no per-unit times.
 - `usage_events` (A13): the short-lived raw counter rows, with a device hash that is salted per day so a phone cannot be followed across days. Deleted once the day is aggregated.
+- `feedback` (A15, section 17): `kind` (rating, problem, idea, other), `rating` (1–5, optional), `topic`, `screen`, `locale`, `app_version`, `device_kind`, `district_code` (optional, never finer), `role_at_time` (visitor, resident, authority, admin), `user_id` (optional), `message` (optional), `contact_ok` and `contact` (only with consent; cleared when the item is closed), `moment` (where it was asked: menu, after a closed request, after an ended report, after a finished case), `status` (new, read, planned, done, wont_do, hidden), `admin_note`, `handled_by`, `handled_at`, `change_ref` (the decision entry or commit it led to).
 
 ### Dam release (section 15)
 All public to read and written only by the hourly job and the seed; the one exception is the
@@ -543,6 +544,7 @@ These tables are created in phase A11 only, not with the initial schema.
 | Coverage / responsibility map | none | none | read | read |
 | Audit log | none | none | none | read |
 | App usage counts (install code, chosen tambon, rough city, device; 14 Oct) | none | none | none | counts only, via `admin_usage()`; never one phone's row |
+| Ratings and feedback (section 17) | write only (send) | send; read and delete own | send; read and delete own | read, triage and reply; the contact given for a reply is shown on a logged tap |
 | Monthly finance summary, opted-in donor wall | read | read | read | read |
 | Donation records (amount, name, message) | none | own | none | read/write if finance permission |
 | Transfer slips | none | own (upload) | none | read if finance permission; deleted 30 days after verification |
@@ -878,4 +880,35 @@ Added 9 Oct 2026 (decision of that date), built after launch (A13) on the first 
 **Where it lives:** its own public page, `/impact`, open without an account, linked from About and the footer. It is **not** on the home screen, **not** a tab on the map dashboard, and it never sends a notification or shows a badge. Nothing links to it from an SOS, report or alert screen. The same discipline as the donation rules (safety rule 9): nothing competes with a request for help.
 
 **Export:** the published aggregates can be downloaded as CSV and JSON, so anyone can check the arithmetic and a funder can reuse it without asking.
+
+## 17. Experience rating and feedback (after launch)
+
+Added 15 Oct 2026 (owner's request), built after launch (A15). People who use Jaga rate it and say what worked and what did not, and every answer is kept in the database with what the team did about it, so the app improves season by season on evidence rather than guesses.
+
+**Never in the way of help.** The same discipline as the donation rules (safety rule 9):
+- No rating prompt, star bar or feedback link inside the SOS, food-and-water, report or alert screens, in a notification, or on the home screen while the person's area or a watched place is at Warning or Evacuate.
+- Never while a request is open. A request is asked about only after it has closed, and the ask is one line that can be ignored.
+- Nothing is ever required: no rating before a feature works, no sign-in to send one, no "rate us" pop-up over a page.
+
+**Where people can give it:**
+- Always: "Rate Jaga / tell us something" on the Account page, in About and in the footer, for visitors and signed-in people alike.
+- At a few quiet moments, asked once and never repeated within 30 days on that phone (the phone remembers): after the person's own request has closed and been confirmed; after their flood report has ended; for a team, after it has finished a case. Admins see an ask after their first week and then once a season.
+- In LINE: a reply to a short question in the rich menu ("How is Jaga for you?") lands in the same table.
+
+**What is asked:** a rating from 1 to 5 shown as faces with a word under each (never colour alone, never stars only, readable by people who read little), an optional topic (alerts, map, safe places, requests for help, reports, language, speed, other) and an optional comment. Thai, Patani Malay and English. A short voice note (60 s or less) may be added later for people who would rather speak than type.
+
+**What is stored with it, automatically:** the screen, language, app version, kind of phone (as the usage counter reads it), the role at the time, and the district the person chose, never the tambon, never GPS. A rating sent after a request carries the link to that case for admins only, so a bad experience can be looked into; the public never sees it.
+
+**Privacy (on top of section 9):**
+- Anonymous is allowed. A signed-in person's feedback carries their account so they can read and delete it.
+- A contact (phone, LINE or email) is stored only if they tick "you may contact me about this" (consent recorded with its purpose), shown to an admin only on a logged tap, and cleared when the item is closed.
+- Comments are free text and may contain personal details: admins only. Comments are anonymised after 12 months; ratings and topics are kept as figures.
+- Rate-limited per phone and per account. Abusive or spam items are hidden by an admin, never deleted silently.
+
+**The record for continuous improvement:**
+- An admin page lists every item with filters (rating, topic, screen, language, role, status) and a trend view: average rating per month, per screen and per language, and the share of each topic. Charts follow the dataviz skill.
+- Each item is triaged: new → read → planned / done / won't do, with a short note. "Planned" and "done" items name the decision entry or commit that came from them, so a change can be traced back to the people who asked for it.
+- After each season (and before the next one starts) the admins review the record: the lowest-rated screens, the most frequent problems, what was changed and whether the rating moved. The summary goes into `docs/decisions.md`.
+- A person who left a contact and whose item is done gets one short message saying what changed.
+- Optional, owner to decide when built: a public "You said, we did" list on About, written by admins, with no one's words quoted without their consent.
 
