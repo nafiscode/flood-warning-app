@@ -3332,6 +3332,29 @@
         "error": "Paras tidak disimpan. Pastikan ia nombor yang naik daripada Berjaga-jaga ke Amaran ke Pindah, dan anda masih log masuk sebagai pentadbir.",
         "none": "Belum ada paras ditetapkan bagi stesen ini: ia diukur berbanding tebingnya."
       }
+    },
+    "recession": {
+      "title": "Berapa cepat air surut dalam banjir lalu",
+      "intro": "Daripada rekod paras air setiap jam sejak 2020, Oktober hingga Mac: jam dari puncak hingga air turun di bawah tebing atau di bawah paras amaran dan kekal di bawahnya 12 jam berturut-turut. Untuk membantu menulis tempoh pulang dalam amaran. Ini bukan ramalan; tulis selalu sebagai julat.",
+      "role": {
+        "key": "Stesen utama",
+        "upstream": "Stesen hulu",
+        "other": "Stesen lain di kawasan ini"
+      },
+      "events": "Air sampai paras amaran {count} kali, melimpah tebing {overBank} kali (musim {from}–{to})",
+      "toBank": "Dari puncak hingga di bawah tebing: biasanya {median} (kebanyakan {range})",
+      "toWarning": "Dari puncak hingga di bawah paras amaran, selepas melimpah tebing: biasanya {median} (kebanyakan {range})",
+      "tooFew": "Terlalu sedikit banjir lalu untuk memberi julat",
+      "hours": "{n} jam",
+      "days": "{n} hari",
+      "hoursRange": "{from}–{to} jam",
+      "daysRange": "{from}–{to} hari",
+      "mixedRange": "{from} hingga {to}",
+      "tidal": "Stesen ini dipengaruhi pasang surut; air boleh surut lebih lambat ketika air pasang.",
+      "lake": "Stesen ini surut mengikut Tasik Songkhla, yang surut perlahan.",
+      "bankSuspect": "Paras tebing yang disenaraikan kelihatan terlalu rendah.",
+      "censored": "{count} kali lagi rekod terputus sebelum air surut dan tidak dikira, jadi angka ini mungkin terlalu pendek.",
+      "notUsable": "Angka stesen ini tidak patut digunakan."
     }
   },
   "lineQuota": {

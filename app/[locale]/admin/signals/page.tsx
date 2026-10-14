@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SignalsView } from "@/components/admin/Signals";
 import { isAdminHere } from "@/lib/admin-guard";
-import { toSignals, withGaugeLevels, withWettest } from "@/lib/signals";
+import { toSignals, withGaugeLevels, withRecession, withWettest } from "@/lib/signals";
 import { createClient } from "@/lib/supabase/server";
 import { hint } from "@/lib/ui";
 import {
@@ -42,10 +42,12 @@ export default async function SignalsPage({
   if (!(await isAdminHere())) return null;
   const t = await getTranslations("signals");
   const supabase = await createClient();
-  const [{ data, error }, levels, wettest] = await Promise.all([
+  const [{ data, error }, levels, wettest, recession] = await Promise.all([
     supabase.rpc("admin_signals"),
     supabase.rpc("admin_gauge_levels"),
     supabase.rpc("admin_signal_wettest"),
+    // Missing until the migration is applied: then `data` is null and the block is simply not drawn.
+    supabase.rpc("admin_gauge_recession"),
   ]);
   if (error) return <p className={hint}>{t("noZones")}</p>;
   const saved = typeof query.saved === "string" ? query.saved : null;
@@ -64,7 +66,10 @@ export default async function SignalsPage({
     (saved ? t("thresholds.saved") : query.error === "threshold" ? t("thresholds.error") : null);
   return (
     <SignalsView
-      data={withWettest(withGaugeLevels(toSignals(data), levels.data), wettest.data)}
+      data={withRecession(
+        withWettest(withGaugeLevels(toSignals(data), levels.data), wettest.data),
+        recession.data,
+      )}
       locale={locale}
       t={(key, values) => t(key as never, values as never)}
       action={setThreshold.bind(null, locale)}

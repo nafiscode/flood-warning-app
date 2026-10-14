@@ -41,7 +41,97 @@ export type Gauge = {
   series: Point[];
   /** The gauge's own three levels (gauge_levels), when the database holds them. */
   levels?: GaugeLevels | null;
+  /** How fast its past floods fell back (gauge_recession, science plan Module 5). */
+  recession?: Recession | null;
 };
+
+/** Hours from a flood's peak to staying below a line, over the gauge's past floods. */
+export type Spread = { p25: number; p50: number; p75: number };
+
+/** One gauge's record of past floods falling back (science plan Module 5, 15 Oct 2026). */
+export type Recession = {
+  events: number;
+  overBank: number;
+  censored: number;
+  /** Peak to below the bank, floods that went over it. */
+  toBank: Spread | null;
+  /** Peak to below Warning, floods that went over the bank: the figure to read after an Evacuate. */
+  toWarningOverBank: Spread | null;
+  /** Peak to below Warning, every flood that reached Warning. */
+  toWarning: Spread | null;
+  firstSeason: number | null;
+  lastSeason: number | null;
+  tidal: boolean;
+  lake: boolean;
+  bankSuspect: boolean;
+  usable: boolean;
+};
+
+function spread(p25: unknown, p50: unknown, p75: unknown): Spread | null {
+  const [a, b, c] = [numberOrNull(p25), numberOrNull(p50), numberOrNull(p75)];
+  return a === null || b === null || c === null ? null : { p25: a, p50: b, p75: c };
+}
+
+/** `admin_gauge_recession()` rows, joined onto every gauge by station id. */
+export function withRecession(data: Signals, rows: unknown): Signals {
+  if (!Array.isArray(rows)) return data;
+  const byId = new Map<string, Recession>();
+  for (const r of rows as Row[]) {
+    const m = (r.method ?? {}) as Row;
+    const flags = (m.flags ?? {}) as Row;
+    const ob = (m.to_warning_h_over_bank ?? {}) as Row;
+    byId.set(String(r.station_id), {
+      events: numberOrNull(r.events) ?? 0,
+      overBank: numberOrNull(m.over_bank) ?? 0,
+      censored: numberOrNull(r.censored) ?? 0,
+      toBank: spread(r.to_bank_h_p25, r.to_bank_h_p50, r.to_bank_h_p75),
+      toWarningOverBank: spread(ob.p25, ob.p50, ob.p75),
+      toWarning: spread(r.to_warning_h_p25, r.to_warning_h_p50, r.to_warning_h_p75),
+      firstSeason: numberOrNull(r.first_season),
+      lastSeason: numberOrNull(r.last_season),
+      tidal: flags.tidal === true,
+      lake: flags.lake === true,
+      bankSuspect: flags.bank_suspect === true,
+      usable: m.usable === true,
+    });
+  }
+  const put = <G extends Gauge>(g: G): G => ({
+    ...g,
+    recession: (g.id && byId.get(g.id)) || null,
+  });
+  return {
+    ...data,
+    zones: data.zones.map((z) => ({
+      ...z,
+      key: z.key ? put(z.key) : null,
+      upstream: z.upstream ? put(z.upstream) : null,
+      others: z.others.map(put),
+    })),
+    allGauges: data.allGauges?.map(put),
+  };
+}
+
+/**
+ * A duration the way an admin writes a return window: whole hours under two days, then days to the
+ * nearest half (the range is widened outward, so a window is never narrower than the record).
+ */
+export function returnSpan(
+  hours: number,
+  side: "low" | "high" | "mid" = "mid",
+): {
+  unit: "hours" | "days";
+  value: number;
+} {
+  if (hours < 48) {
+    const v =
+      side === "low" ? Math.floor(hours) : side === "high" ? Math.ceil(hours) : Math.round(hours);
+    return { unit: "hours", value: Math.max(0, v) };
+  }
+  const halves = hours / 12;
+  const v =
+    side === "low" ? Math.floor(halves) : side === "high" ? Math.ceil(halves) : Math.round(halves);
+  return { unit: "days", value: v / 2 };
+}
 
 export type Zone = {
   id: string;

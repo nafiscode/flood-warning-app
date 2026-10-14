@@ -492,3 +492,60 @@ describe("forecast rain, the wettest of the models", () => {
     expect(data.zones[1]!.rainWettest).toBeUndefined();
   });
 });
+
+describe("how fast past floods fell back (Module 5)", () => {
+  it("writes a return span in hours under two days, then in half days, widened outward", async () => {
+    const { returnSpan } = await import("@/lib/signals");
+    expect(returnSpan(34)).toEqual({ unit: "hours", value: 34 });
+    expect(returnSpan(22.8, "low")).toEqual({ unit: "hours", value: 22 });
+    expect(returnSpan(60.5, "high")).toEqual({ unit: "days", value: 3 });
+    expect(returnSpan(49, "low")).toEqual({ unit: "days", value: 2 });
+    expect(returnSpan(86.5)).toEqual({ unit: "days", value: 3.5 });
+  });
+
+  it("joins the record onto the zone's gauges and shows it beside the charts, never as a level", async () => {
+    const { withRecession } = await import("@/lib/signals");
+    const data = withRecession(EXAMPLE_SIGNALS, [
+      {
+        station_id: "example-X.40A",
+        events: 11,
+        to_bank_h_p25: 22.8,
+        to_bank_h_p50: 34,
+        to_bank_h_p75: 60.5,
+        to_warning_h_p25: 14.8,
+        to_warning_h_p50: 43,
+        to_warning_h_p75: 68,
+        censored: 1,
+        first_season: 2020,
+        last_season: 2025,
+        method: {
+          over_bank: 9,
+          usable: true,
+          flags: { tidal: false },
+          to_warning_h_over_bank: { p25: 32.8, p50: 49.5, p75: 84.5 },
+        },
+      },
+      { station_id: "example-X.10A", events: 2, censored: 0, method: { flags: { tidal: true } } },
+    ]);
+    const key = data.zones[0]!.key!;
+    expect(key.recession).toMatchObject({ events: 11, overBank: 9, usable: true });
+    expect(key.recession!.toWarningOverBank).toEqual({ p25: 32.8, p50: 49.5, p75: 84.5 });
+    expect(data.zones[0]!.upstream!.recession).toBeNull();
+
+    const t = translator(th.signals as Record<string, unknown>);
+    const { container } = render(<SignalsView data={data} locale="th" t={t} />);
+    const block = container.querySelector("[data-signal-recession]")!;
+    const x40 = block.querySelector('[data-recession-gauge="X.40A"]')!;
+    expect(x40.querySelector('[data-recession="bank"]')!.textContent).toContain("34 ชั่วโมง");
+    expect(x40.querySelector('[data-recession="bank"]')!.textContent).toContain(
+      "22 ชั่วโมง ถึง 3 วัน",
+    );
+    expect(x40.querySelector('[data-recession="warning"]')!.textContent).toContain(
+      "32 ชั่วโมง ถึง 4 วัน",
+    );
+    const x10 = block.querySelector('[data-recession-gauge="X.10A"]')!;
+    expect(x10.textContent).toContain(th.signals.recession.tooFew);
+    expect(x10.textContent).toContain(th.signals.recession.tidal);
+    expect(block.className).not.toMatch(/alert|sos/);
+  });
+});

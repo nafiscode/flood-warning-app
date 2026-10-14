@@ -12,6 +12,7 @@ import {
   linePath,
   rainBetween,
   rainNow,
+  returnSpan,
   SIGNAL_KEYS,
   span,
   suggest,
@@ -558,6 +559,8 @@ function ZoneCard({
         <p className={hint}>{t("forecastAt", { time: when(locale, zone.forecastIssuedAt) })}</p>
       ) : null}
 
+      <RecessionBlock zone={zone} t={t} />
+
       <details
         className="rounded-xl border border-jaga-line p-3"
         data-signal-thresholds
@@ -646,6 +649,101 @@ function ZoneCard({
  * or an admin's own figure). For the key and upstream gauge these are the zone's own level
  * thresholds: saving here changes both, so there is one value, not two.
  */
+function spanText(t: T, low: number, high: number): string {
+  const a = returnSpan(low, "low");
+  const b = returnSpan(high, "high");
+  if (a.unit === b.unit) return t(`recession.${a.unit}Range`, { from: a.value, to: b.value });
+  return t("recession.mixedRange", {
+    from: t(`recession.${a.unit}`, { n: a.value }),
+    to: t(`recession.${b.unit}`, { n: b.value }),
+  });
+}
+
+function median(t: T, hours: number): string {
+  const m = returnSpan(hours);
+  return t(`recession.${m.unit}`, { n: m.value });
+}
+
+/**
+ * How fast past floods fell back at the zone's gauges (science plan Module 5): the record an admin
+ * reads before writing a Return alert's window. Never a forecast, so no colour and no level.
+ */
+function RecessionBlock({ zone, t }: { zone: Zone; t: T }) {
+  const gauges = [
+    ...(zone.key ? [[zone.key, "key"] as const] : []),
+    ...(zone.upstream ? [[zone.upstream, "upstream"] as const] : []),
+    ...zone.others.map((g) => [g, "other"] as const),
+  ].filter(([g]) => g.recession && g.recession.events > 0);
+  if (gauges.length === 0) return null;
+  return (
+    <details className="rounded-xl border border-jaga-line p-3" data-signal-recession>
+      <summary className="min-h-tap cursor-pointer font-bold text-jaga-ink">
+        {t("recession.title")}
+      </summary>
+      <div className="flex flex-col gap-3 pt-2">
+        <p className={hint}>{t("recession.intro")}</p>
+        <ul className="flex flex-col gap-3">
+          {gauges.map(([g, role]) => {
+            const r = g.recession!;
+            const notes = [
+              r.tidal ? t("recession.tidal") : null,
+              r.lake ? t("recession.lake") : null,
+              r.bankSuspect ? t("recession.bankSuspect") : null,
+              r.censored > 0 ? t("recession.censored", { count: r.censored }) : null,
+            ].filter(Boolean);
+            return (
+              <li
+                key={g.code}
+                className="flex flex-col gap-1 border-t border-jaga-line pt-2"
+                data-recession-gauge={g.code}
+              >
+                <p className="font-bold">
+                  {g.code} · {g.name.th ?? g.name.en ?? ""}{" "}
+                  <span className={`${hint} font-normal`}>{t(`recession.role.${role}`)}</span>
+                </p>
+                <p className={hint}>
+                  {t("recession.events", {
+                    count: r.events,
+                    overBank: r.overBank,
+                    from: r.firstSeason ?? "",
+                    to: r.lastSeason ?? "",
+                  })}
+                </p>
+                {r.toBank ? (
+                  <p data-recession="bank">
+                    {t("recession.toBank", {
+                      median: median(t, r.toBank.p50),
+                      range: spanText(t, r.toBank.p25, r.toBank.p75),
+                    })}
+                  </p>
+                ) : null}
+                {r.toWarningOverBank ? (
+                  <p data-recession="warning">
+                    {t("recession.toWarning", {
+                      median: median(t, r.toWarningOverBank.p50),
+                      range: spanText(t, r.toWarningOverBank.p25, r.toWarningOverBank.p75),
+                    })}
+                  </p>
+                ) : null}
+                {!r.toBank && !r.toWarningOverBank ? (
+                  <p className={hint}>{t("recession.tooFew")}</p>
+                ) : null}
+                {notes.length > 0 || !r.usable ? (
+                  <p className={hint}>
+                    {[...notes, !r.usable ? t("recession.notUsable") : null]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </p>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </details>
+  );
+}
+
 function GaugeLevelsBox({
   gauge,
   role,

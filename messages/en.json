@@ -3332,6 +3332,29 @@
         "error": "The levels were not saved. Check they are numbers rising from Watch to Warning to Evacuate, and that you are still signed in as an admin.",
         "none": "No levels set for this gauge yet: it is measured against its bank."
       }
+    },
+    "recession": {
+      "title": "How fast the water fell back in past floods",
+      "intro": "From the hourly gauge record since 2020, October to March: hours from the peak until the river fell below its bank, or below Warning, and stayed below for 12 hours. To help write a Return alert's window. It is the record of past floods, not a forecast: always give the window as a range.",
+      "role": {
+        "key": "key gauge",
+        "upstream": "upstream gauge",
+        "other": "other gauge in the zone"
+      },
+      "events": "Reached Warning {count, plural, one {once} other {# times}}, over the bank {overBank, plural, one {once} other {# times}} (seasons {from}–{to})",
+      "toBank": "Peak to below the bank: typically {median} (most often {range})",
+      "toWarning": "Peak to below Warning, after an over-bank flood: typically {median} (most often {range})",
+      "tooFew": "Too few past floods to give a range",
+      "hours": "{n, plural, one {# hour} other {# hours}}",
+      "days": "{n} days",
+      "hoursRange": "{from}–{to} hours",
+      "daysRange": "{from}–{to} days",
+      "mixedRange": "{from} to {to}",
+      "tidal": "This gauge is tidal: the water can fall back more slowly when a fall meets a high tide.",
+      "lake": "This gauge falls with Songkhla Lake, which falls slowly.",
+      "bankSuspect": "Its listed bank looks too low.",
+      "censored": "{count, plural, one {One more flood} other {# more floods}} lost the record before the water fell and {count, plural, one {is} other {are}} not counted, so these figures may be short.",
+      "notUsable": "Do not use this gauge's figures."
     }
   },
   "lineQuota": {

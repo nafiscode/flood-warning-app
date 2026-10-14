@@ -1,0 +1,61 @@
+# Module 5 of docs/science-plan.md: the safe-return window. How long each river gauge took to fall
+# back after its past floods, for the admins who write a Return alert's window (a range). Nothing here
+# publishes anything or sets a window: it is the record, shown beside the admin's choice.
+
+output_dir: out/safe_return
+
+# The levels as loaded into the app (seed 47, `thresholds gauges`): Warning and Evacuate (= the bank)
+# per gauge, keyed by ThaiWater station id. The zones (key, upstream, downstream gauges) come from
+# the thresholds config, so the two packages never disagree about which gauge is which.
+levels_sql: ../supabase/seed/47_gauge_levels.sql
+zones_config: thresholds/config.yaml
+
+events:
+  # A flood event: the level at or above the gauge's Warning level for at least this many hours in a row.
+  min_hours: 3
+  # Back below = below the level and staying below for this many hours, every one of them observed.
+  # Spells above Warning closer than this are one event, so an event ends exactly when the river
+  # has stayed below Warning that long: a short dip (a low tide, a pause in the rain) is not a return.
+  stay_below_h: 12
+  # Gaps of up to this many hours are bridged by a straight line; longer ones stay gaps.
+  bridge_h: 3
+  # An event with a gap within this many hours of its highest reading is dropped: its peak is unknown.
+  peak_guard_h: 6
+  # A reading this far above the bank is a broken sensor, not a flood (as in S6: X.119A once read
+  # 22.8 m against a bank of 9.3 m, X.10A 12.84 m against 1.15 m).
+  max_above_bank_m: 4.0
+  # Seasons are named by the October they start in (an event in January 2025 is season 2024).
+  season_start_month: 10
+  # Only events peaking in these months count: the north-east monsoon's floods, October to January,
+  # with their tails (the flood of late February 2022 peaked at Pattani town on 2 March).
+  months: [10, 11, 12, 1, 2, 3]
+
+# Known periods without a flood that still cross a gauge's Warning line; events peaking inside are
+# listed as `excluded` and left out of the figures.
+exclude:
+  - code: X.77
+    from: "2026-03-01"
+    to: "2026-06-01"
+    why: >-
+      Bang Lang's daily turbine pulses: from late March 2026 X.77 crossed its Warning (38.15 m) about
+      once a day, peaking near 01:00 Bangkok, while the EGAT gauge beside it (BLGTD02) shows the same
+      daily rise from about 35 m to 36.6 m and nothing else. No flood; in 2025 the same months stayed
+      under 37.5 m at X.77.
+
+summary:
+  # Fewer complete events than this and no median or range is given (the durations are still listed).
+  min_events: 3
+  # A typical range is the 25th to 75th percentile, widened outward to whole hours, or to half days
+  # when its upper end is beyond this.
+  half_days_from_h: 48
+
+# Gauges where "falls below" does not mean the river has drained.
+caveats:
+  # Measured to follow the sea's tide (thresholds tide_check, 14 Oct 2026): the level falls below a
+  # line at each low tide; staying below for `stay_below_h` needs the high tide below it too.
+  tidal: [X.10A, BLGTD05, X.275, ONE038, ONE037, SLA005]
+  # On Songkhla Lake or its shore channels: the lake drains slowly through one outlet to the sea,
+  # so these gauges fall with the lake, not with their own stream, and the wind piles water on them.
+  lake: [ONE037, ONE038, ONE039, SLA005, SLA007, PTTEP4]
+  # Near a river mouth, not checked against the tide.
+  coastal_unchecked: [ONE036, JNA001]
