@@ -247,10 +247,11 @@ export function DashboardView(props: DashboardViewProps) {
   const [showPlaces, setShowPlaces] = useState(false);
   // The flood-risk areas start on (the owner, 12 Oct 2026) and can be switched off to read the
   // ground underneath; the basemap is the person's choice for as long as this page is open. It
-  // opens on the terrain (the owner, 13 Oct 2026): where the hills are says most about where
-  // water goes.
+  // opens on the satellite picture with the hills shaded over it (the owner, 15 Oct 2026, after
+  // the terrain from 13 Oct): the real ground people recognise, and where the hills are, which
+  // says most about where water goes.
   const [showHazard, setShowHazard] = useState(true);
-  const [basemap, setBasemapChoice] = useState<Basemap>("terrain");
+  const [basemap, setBasemapChoice] = useState<Basemap>("satelliteTerrain");
   // Esri's picture, or EOX's once Esri stops answering (lib/map.ts): the note says which.
   const satellite = useSyncExternalStore(subscribeSatellite, satelliteProvider, satelliteProvider);
   /*
