@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { DamBoard } from "@/components/admin/DamBoard";
-import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
+import { DamCard, DamLegendKeys, DamLegendRow, DamNotice } from "@/components/map/Dam";
 import { alert as alertColors } from "@/lib/brand/tokens";
 import {
   ageHours,
@@ -68,6 +68,7 @@ const DAM: Dam = {
   name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
   river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
   operator: "EGAT",
+  feed: "hourly" as const,
   point: { type: "Point", coordinates: [101.2721, 6.1551] },
   spillwayPoint: { type: "Point", coordinates: [101.2764, 6.1501] },
   outletPoint: { type: "Point", coordinates: [101.273, 6.1536] },
@@ -963,17 +964,29 @@ describe("how it is drawn", () => {
     expect(order).toEqual(["tributary", "tributary", "outlet", "main"]);
   });
 
-  it("the legend names the reservoir, the river and the land its water can reach", () => {
+  /*
+   * With six reservoirs (14 Oct 2026) the legend explains each mark once and then lists the
+   * reservoirs: the same text per dam was 1,494 px of legend on a 360 px screen.
+   */
+  it("explains the marks once, for every reservoir", () => {
     const { container } = renderWithIntl(
       <ul>
-        <DamLegend dam={DAM} />
+        <DamLegendKeys />
       </ul>,
     );
     expect(container.textContent).toContain("อ่างเก็บน้ำ");
-    expect(container.textContent).toContain("แม่น้ำปัตตานี");
     expect(container.textContent).toContain("น้ำจากลำน้ำเอ่อถึงได้");
     // The shaded land is not a flood extent, and the legend has to say so (safety rule 8).
     expect(container.textContent).toContain("ไม่ใช่แผนที่น้ำท่วม");
+    // No dam name in it: naming one here would say the marks belong to that one.
+    expect(container.textContent).not.toContain("บางลาง");
+  });
+
+  it("names each reservoir with its river and its size", () => {
+    const { container } = renderWithIntl(<DamLegendRow dam={DAM} />);
+    expect(container.textContent).toContain("เขื่อนบางลาง");
+    expect(container.textContent).toContain("แม่น้ำปัตตานี");
+    expect(container.textContent).toContain("1,590"); // million m3, rounded
   });
 });
 

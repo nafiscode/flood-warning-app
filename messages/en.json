@@ -2230,7 +2230,8 @@
       "above_turbines": "Total outflow exceeds turbine discharge capacity, so a spillway gate is open",
       "above_normal_high": "Storage is above the capacity at normal high water level",
       "inflow_high": "Inflow to the reservoir is high",
-      "rising_fast": "Reservoir storage has risen sharply over the last {hours} hours"
+      "rising_fast": "Reservoir storage has risen sharply over the last {hours} hours",
+      "release_high": "The release is high for the size of this reservoir."
     },
     "awaiting": {
       "release_unconfirmed": "A single reading indicates a high release rate. Waiting for the next hourly reading to confirm it, because the record contains clearly erroneous hourly values.",
@@ -2239,7 +2240,6 @@
     "figure": {
       "cardTitle": "{dam}: how it stands",
       "cardWhereOnPath": "Your area is on the {river}, which carries the water released from the dam. Shown for information.",
-      "cardWhere": "Water released from the dam flows into the {river}. Shown for information, even where your own area is not on that river.",
       "caption": "Releasing {cms} m³/s · reservoir {percent}% of maximum capacity",
       "section": {
         "about": "Shows cause and effect at once: the reservoir against its normal high water line, and the water leaving",
@@ -2280,7 +2280,9 @@
         "outflow": "Mean outflow {cms, number} m³/s · volume released {mcm, number} million m³ (from {hours, plural, one {# hourly reading} other {# hourly readings}})",
         "spilled": "of which {mcm, number} million m³ over the spillway",
         "inflow": "Mean inflow to the reservoir {cms, number} m³/s · volume {mcm, number} million m³ (from {hours, plural, one {# hourly reading} other {# hourly readings}})"
-      }
+      },
+      "observedDay": "Figures for {day}",
+      "oncePerDay": "This reservoir is reported once a day, so these are the day's means, not the latest hour."
     },
     "notice": {
       "awaiting": {
@@ -2338,13 +2340,18 @@
       "tambons": "Through {count, plural, one {# tambon} other {# tambons}}, and {tributary, plural, one {# more} other {# more}} with low land the river's water can reach",
       "limits": "The line on the map is the course of the river, not a flood extent. Areas off the line can still flood.",
       "spillwayNotMapped": "The spillway discharge channel is not in the map data, so it is shown as a point rather than a line.",
-      "credit": "River and reservoir from OpenStreetMap. The shaded land is what the river has been high enough to reach, worked out from a 30 m elevation model and the river gauges; the dashed line is one metre higher. It is not a flood map and not a forecast."
+      "credit": "River and reservoir from OpenStreetMap. The shaded land is what the river has been high enough to reach, worked out from a 30 m elevation model and the river gauges; the dashed line is one metre higher. It is not a flood map and not a forecast.",
+      "notMapped": "No channel below this reservoir is in the map database yet, so Jaga cannot yet show where released water goes."
     },
     "legend": {
       "open": "See {dam}'s figures and charts",
       "reservoir": "{dam} reservoir",
       "river": "{river} downstream of the dam",
-      "tributary": "Land the river's water can reach when it stands high (dashed line: one metre higher). Not a flood map."
+      "tributary": "Land the river's water can reach when it stands high (dashed line: one metre higher). Not a flood map.",
+      "anyReservoir": "Reservoir",
+      "anyRiver": "River that carries released water",
+      "rowRiver": "into the {river}",
+      "rowCapacity": "{mcm, number} million m³"
     },
     "arrival": {
       "title": "When the water arrives",

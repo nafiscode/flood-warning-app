@@ -157,6 +157,7 @@ export async function GET() {
         name: (row.name ?? {}) as Record<string, string>,
         river: (row.river ?? {}) as Record<string, string>,
         operator: String(row.operator ?? ""),
+        feed: row.feed === "daily" ? "daily" : "hourly",
         point: (row.point ?? null) as Dam["point"],
         spillwayPoint: (row.spillway_point ?? null) as Dam["point"],
         outletPoint: (row.outlet_point ?? null) as Dam["point"],

@@ -22,13 +22,47 @@ SOURCE = "osm"
 CREDIT = "Rivers and reservoir: (c) OpenStreetMap contributors, ODbL"
 
 
-def build(dam: dict, cfg: dict, out_dir: Path, pipeline_dir: Path) -> dict:
-    """Everything the map and the database need for one dam, as plain Python."""
-    ways = osm.load_waterways((pipeline_dir / cfg["waterway_cache"]).resolve())
-    relation = osm.fetch_relation(dam["reservoir_relation"], cfg["overpass_url"],
-                                  cfg["user_agent"], out_dir / "osm")
-    reservoir = osm.relation_polygon(relation)
+def _reservoir(dam: dict, cfg: dict, out_dir: Path):
+    """The lake, however OSM happens to draw it - or nothing at all.
 
+    Bang Lang's is a multipolygon relation. The RID's medium reservoirs are single closed ways,
+    and Khlong Sadao's is not mapped at all (checked 14 Oct 2026): the column is nullable, so a
+    dam with no outline still gets its mark, its figures and its path.
+    """
+    if dam.get("reservoir_relation"):
+        return osm.relation_polygon(osm.fetch_relation(
+            dam["reservoir_relation"], cfg["overpass_url"], cfg["user_agent"], out_dir / "osm"))
+    if dam.get("reservoir_way"):
+        return osm.way_polygon(osm.fetch_way(
+            dam["reservoir_way"], cfg["overpass_url"], cfg["user_agent"], out_dir / "osm"))
+    return None
+
+
+def build(dam: dict, cfg: dict, out_dir: Path, pipeline_dir: Path) -> dict:
+    """Everything the map and the database need for one dam, as plain Python.
+
+    A dam whose outflow nobody has mapped (`outlet_way: null`) is built without a path: it keeps
+    its mark on the map and its live figures, and the app says plainly that the channel below it
+    is not mapped. Inventing a line there would be inventing a warning zone.
+    """
+    reservoir = _reservoir(dam, cfg, out_dir)
+    simplify_m = cfg["simplify_m"]
+    reservoir_simple = None
+    if reservoir is not None:
+        reservoir_simple = reservoir.simplify(simplify_m / 111_320.0, preserve_topology=True)
+        if reservoir_simple.geom_type == "Polygon":
+            reservoir_simple = MultiPolygon([reservoir_simple])
+
+    if not dam.get("outlet_way"):
+        log.info("built %s: figures only (no mapped outflow)", dam["code"])
+        return {
+            "dam": dam, "source": SOURCE, "credit": CREDIT,
+            "reservoir": reservoir_simple,
+            "reservoir_km2": round(osm.area_km2(reservoir_simple), 2) if reservoir_simple else 0.0,
+            "outlet": None, "main": None, "tributaries": [],
+        }
+
+    ways = osm.load_waterways((pipeline_dir / cfg["waterway_cache"]).resolve())
     chain = network.walk_downstream(ways, dam["outlet_way"])
     if len(chain) < 2:
         raise RuntimeError(
@@ -41,18 +75,14 @@ def build(dam: dict, cfg: dict, out_dir: Path, pipeline_dir: Path) -> dict:
                                   dam["tributaries"]["min_network_km"],
                                   dam["tributaries"]["lower_reach_km"])
 
-    simplify_m = cfg["simplify_m"]
     simple = lambda pts: network.simplify(pts, simplify_m)  # noqa: E731
-    reservoir_simple = reservoir.simplify(simplify_m / 111_320.0, preserve_topology=True)
-    if reservoir_simple.geom_type == "Polygon":
-        reservoir_simple = MultiPolygon([reservoir_simple])
 
     result = {
         "dam": dam,
         "source": SOURCE,
         "credit": CREDIT,
         "reservoir": reservoir_simple,
-        "reservoir_km2": round(osm.area_km2(reservoir_simple), 1),
+        "reservoir_km2": round(osm.area_km2(reservoir_simple), 1) if reservoir_simple else 0.0,
         # Where the released water first shows up on the map: the channel OSM maps leaving the
         # dam. The spillway's own channel is not mapped, so it stays a point, not a drawn line.
         "outlet": {"pts": simple(outlet["pts"]), "length_km": round(network.length_km(outlet["pts"]), 2),
@@ -85,10 +115,15 @@ def write_geojson(built: dict, folder: Path) -> list[Path]:
     code = dam["code"]
     name_en = dam["name"]["en"]
 
-    reservoir = _feature(mapping(built["reservoir"]),
-                         {"layer": "reservoir", "dam": code, "name": name_en,
-                          "area_km2": built["reservoir_km2"], "source": SOURCE})
-    reaches = [
+    # A reservoir OSM has not drawn, or a dam with no mapped channel below it, simply has no
+    # feature here: the look shows what exists, never a line nobody has mapped.
+    reservoir = (
+        _feature(mapping(built["reservoir"]),
+                 {"layer": "reservoir", "dam": code, "name": name_en,
+                  "area_km2": built["reservoir_km2"], "source": SOURCE})
+        if built["reservoir"] is not None else None
+    )
+    reaches = [] if built["outlet"] is None else [
         _feature(_line(built["outlet"]["pts"]),
                  {"layer": "reach", "kind": "outlet", "dam": code,
                   "name": f"{name_en} outlet channel",
@@ -110,23 +145,29 @@ def write_geojson(built: dict, folder: Path) -> list[Path]:
         _feature({"type": "Point", "coordinates": list(dam["dam_point"])},
                  {"layer": "point", "kind": "dam", "dam": code, "name": name_en,
                   "source": "owner"}),
-        _feature({"type": "Point", "coordinates": list(dam["spillway_point"])},
-                 {"layer": "point", "kind": "spillway", "dam": code,
-                  "name": f"{name_en} main spillway", "source": "owner",
-                  "note": "its own channel is not mapped in OpenStreetMap"}),
-        _feature({"type": "Point", "coordinates": list(built["outlet"]["pts"][0])},
-                 {"layer": "point", "kind": "outlet", "dam": code,
-                  "name": f"{name_en} outlet (powerhouse tailwater)", "source": SOURCE,
-                  "note": "head of the mapped outlet channel, approximate"}),
-        _feature({"type": "Point", "coordinates": list(built["main"]["mouth"])},
-                 {"layer": "point", "kind": "mouth", "dam": code,
-                  "name": f"{dam['river']['en']} mouth", "source": SOURCE}),
     ]
+    if dam.get("spillway_point"):
+        points.append(_feature(
+            {"type": "Point", "coordinates": list(dam["spillway_point"])},
+            {"layer": "point", "kind": "spillway", "dam": code,
+             "name": f"{name_en} main spillway", "source": "owner",
+             "note": "its own channel is not mapped in OpenStreetMap"}))
+    if built["outlet"] is not None:
+        points += [
+            _feature({"type": "Point", "coordinates": list(built["outlet"]["pts"][0])},
+                     {"layer": "point", "kind": "outlet", "dam": code,
+                      "name": f"{name_en} outlet", "source": SOURCE,
+                      "note": "head of the mapped outlet channel, approximate"}),
+            _feature({"type": "Point", "coordinates": list(built["main"]["mouth"])},
+                     {"layer": "point", "kind": "mouth", "dam": code,
+                      "name": f"{dam['river']['en']} mouth", "source": SOURCE}),
+        ]
 
     written = []
-    for name, features in (("reservoir", [reservoir]), ("reach", reaches),
+    lake = [reservoir] if reservoir is not None else []
+    for name, features in (("reservoir", lake), ("reach", reaches),
                            ("tributaries", tributaries), ("points", points),
-                           ("all", [reservoir, *reaches, *tributaries, *points])):
+                           ("all", [*lake, *reaches, *tributaries, *points])):
         path = folder / f"{code}_{name}.geojson"
         path.write_text(json.dumps(
             {"type": "FeatureCollection", "credit": CREDIT,
@@ -190,6 +231,7 @@ def write_seed(built_all: list[dict], grades: dict, path: Path) -> Path:
     for built in built_all:
         dam = built["dam"]
         code = _sql_text(dam["code"])
+        has_path = built["outlet"] is not None
         note = {
             "source": SOURCE,
             "credit": CREDIT,
@@ -198,12 +240,20 @@ def write_seed(built_all: list[dict], grades: dict, path: Path) -> Path:
                 "it spreads, and only the tributaries somebody has mapped."
             ),
             "mapped_tributaries": len(built["tributaries"]),
-            "reach_km": built["main"]["length_km"],
+            "reach_km": built["main"]["length_km"] if has_path else 0.0,
             "spillway_channel_mapped": False,
             "outlet_point": "head of the mapped outlet channel, approximate",
         }
+        if not has_path:
+            # Said in the data, because the screens have to say it in words: nobody has mapped the
+            # channel below this reservoir, so there is no path and no zone for it.
+            note["path_mapped"] = False
+            note["limits_en"] = (
+                "OpenStreetMap has no channel mapped below this reservoir, so Jaga shows its "
+                "figures but cannot show where released water would go."
+            )
         lines += [
-            "insert into public.dams (code, name, river, operator, province_code,",
+            "insert into public.dams (code, name, river, operator, province_code, feed, grades,",
             "    thaiwater_hourly_id, thaiwater_daily_id, point, spillway_point, outlet_point,",
             "    reservoir, storage_max_mcm, storage_normal_mcm, geometry_source, geometry_note)",
             "  values (",
@@ -212,17 +262,21 @@ def write_seed(built_all: list[dict], grades: dict, path: Path) -> Path:
             f"    {_sql_json(dam['river'])},",
             f"    {_sql_text(dam['operator'])},",
             f"    {_sql_text(dam['province'])},",
-            f"    {dam['thaiwater']['hourly_id']}, {dam['thaiwater']['daily_id']},",
+            f"    {_sql_text(dam.get('feed', 'hourly'))},",
+            f"    {_sql_json(dam['grades']) if dam.get('grades') else 'null'},",
+            f"    {dam['thaiwater'].get('hourly_id') or 'null'},"
+            f" {dam['thaiwater'].get('daily_id') or 'null'},",
             f"    {_geom(_wkt_point(dam['dam_point']))},",
-            f"    {_geom(_wkt_point(dam['spillway_point']))},",
-            f"    {_geom(_wkt_point(built['outlet']['pts'][0]))},",
-            f"    {_geom(_wkt_multipolygon(built['reservoir']))},",
+            f"    {_geom(_wkt_point(dam['spillway_point'])) if dam.get('spillway_point') else 'null'},",
+            f"    {_geom(_wkt_point(built['outlet']['pts'][0])) if has_path else 'null'},",
+            f"    {_geom(_wkt_multipolygon(built['reservoir'])) if built['reservoir'] else 'null'},",
             f"    {dam['storage']['max_mcm']}, {dam['storage']['normal_mcm']},",
             f"    {_sql_text(SOURCE)}, {_sql_json(note)}",
             "  )",
             "  on conflict (code) do update set",
             "    name = excluded.name, river = excluded.river, operator = excluded.operator,",
-            "    province_code = excluded.province_code,",
+            "    province_code = excluded.province_code, feed = excluded.feed,",
+            "    grades = excluded.grades,",
             "    thaiwater_hourly_id = excluded.thaiwater_hourly_id,",
             "    thaiwater_daily_id = excluded.thaiwater_daily_id,",
             "    point = excluded.point, spillway_point = excluded.spillway_point,",
@@ -233,6 +287,8 @@ def write_seed(built_all: list[dict], grades: dict, path: Path) -> Path:
             "    geometry_note = excluded.geometry_note, updated_at = now();",
             "",
         ]
+        if not has_path:
+            continue
         rows = [
             ("outlet", 0, {"en": f"{dam['name']['en']} outlet channel"}, 0.0,
              built["outlet"]["length_km"], built["outlet"]["pts"]),

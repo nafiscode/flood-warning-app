@@ -17,7 +17,7 @@ import { buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
 import { DamFigureCard } from "@/components/dam/DamFigureCard";
 import { DamNotice } from "@/components/map/Dam";
-import { attention, onPath, showsDamFigure, type Dam } from "@/lib/dam";
+import { attention, damForFigure, onPath, type Dam } from "@/lib/dam";
 import { AlertHero, type HeroStatus } from "./AlertHero";
 import { AreaChooser } from "./AreaChooser";
 import { Checklist } from "./Checklist";
@@ -119,17 +119,19 @@ export function HomeView(props: HomeViewProps) {
         x.hit !== null && attention(x.dam.signal) !== "none",
     );
   /*
-   * The dam's figure goes wider than that notice (the owner, 12 Oct): everyone in Yala, Pattani
-   * and Narathiwat sees it, and Songkhla does not, because the released water runs down the
-   * Pattani River and ends in Pattani Bay - see `showsDamFigure`. It is drawn for everyone the
-   * notice is not drawn for, **including someone on the river on a quiet day**: without that they
-   * would see less of their own dam than a neighbour a province away (seen in a browser, 13 Oct).
+   * The dam's figure goes wider than that notice (the owner, 12 Oct): it reaches the provinces
+   * each dam's own water can reach - see `showsDamFigure`. It is drawn for everyone the notice is
+   * not drawn for, **including someone on the river on a quiet day**: without that they would see
+   * less of their own dam than a neighbour a province away (seen in a browser, 13 Oct).
+   *
+   * **One dam, not six** (the owner, 14 Oct, when five more reservoirs arrived): the river they
+   * are on, else the largest that can reach them. The rest are a tap away on the map.
    */
-  const damsNearMe = (props.dams ?? [])
-    .filter(
-      (dam) => showsDamFigure(dam, myCodes) && !damsOnMyPath.some((x) => x.dam.code === dam.code),
-    )
-    .map((dam) => ({ dam, hit: onPath(dam, myCodes) }));
+  const pickedDam = damForFigure(
+    (props.dams ?? []).filter((dam) => !damsOnMyPath.some((x) => x.dam.code === dam.code)),
+    myCodes,
+  );
+  const damsNearMe = pickedDam ? [{ dam: pickedDam, hit: onPath(pickedDam, myCodes) }] : [];
   const areaNameOf = (code: string) => {
     const found = myAreas.find((a) => a.code === code);
     return found ? areaName(locale, found) : code;
@@ -324,7 +326,6 @@ export function HomeView(props: HomeViewProps) {
           <DamFigureCard
             key={dam.code}
             dam={dam}
-            onRiver={hit !== null}
             tambonCode={hit?.code ?? null}
             tambonName={hit ? areaNameOf(hit.code) : null}
           />

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DamDialFigure, DamRiverFigure, DamSectionFigure } from "@/components/dam/DamFigures";
-import { DAM_FIGURE_PROVINCES, showsDamFigure, type Dam } from "@/lib/dam";
+import { damForFigure, showsDamFigure, type Dam } from "@/lib/dam";
 import { cycleFor, damFigure, RECORD_OUTFLOW_CMS, TURBINE_MAX_CMS } from "@/lib/dam-figure";
 import { exampleDamSignal } from "@/lib/dev-examples";
 import th from "@/messages/th.json";
@@ -17,6 +17,7 @@ const DAM: Dam = {
   name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
   river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
   operator: "EGAT",
+  feed: "hourly" as const,
   point: null,
   spillwayPoint: null,
   outletPoint: null,
@@ -168,26 +169,71 @@ describe("whose home screen the figure reaches", () => {
     ],
   };
 
-  it("reaches someone whose own area is on the river", () => {
+  it("reaches someone whose own area is on the dam's path", () => {
     expect(showsDamFigure(onRiver, ["950801"])).toBe(true);
+    expect(showsDamFigure(onRiver, ["940104"])).toBe(true);
   });
 
-  it("reaches the three provinces the dam's water belongs to, river or no river", () => {
-    // A tambon in each, none of them on the dam's own path.
-    expect(showsDamFigure(onRiver, ["950299"])).toBe(true); // Yala
-    expect(showsDamFigure(onRiver, ["940999"])).toBe(true); // Pattani
-    expect(showsDamFigure(onRiver, ["960501"])).toBe(true); // Narathiwat
-    expect([...DAM_FIGURE_PROVINCES].sort()).toEqual(["94", "95", "96"]);
-  });
-
-  it("does not reach Songkhla, which is the other side of the divide", () => {
-    expect(showsDamFigure(onRiver, ["900101"])).toBe(false);
-    // Nor anywhere else in the country.
-    expect(showsDamFigure(onRiver, ["100101"])).toBe(false);
-  });
-
-  it("one place in the region is enough, and no places at all is not", () => {
-    expect(showsDamFigure(onRiver, ["900101", "960501"])).toBe(true);
+  /*
+   * The owner narrowed this on 14 Oct 2026: only a reservoir that can really reach their area or
+   * one of their watched places belongs on the home screen. Being in the same province is not
+   * being in the water's way, and the five reservoirs added that day would otherwise have put a
+   * card about somebody else's valley above the SOS button.
+   */
+  it("reaches nobody who is merely in the same province", () => {
+    expect(showsDamFigure(onRiver, ["950299"])).toBe(false); // Yala, off the path
+    expect(showsDamFigure(onRiver, ["940999"])).toBe(false); // Pattani, off the path
+    expect(showsDamFigure(onRiver, ["960501"])).toBe(false); // Narathiwat
+    expect(showsDamFigure(onRiver, ["900101"])).toBe(false); // Songkhla
     expect(showsDamFigure(onRiver, [])).toBe(false);
+  });
+
+  it("one watched place in the water's way is enough", () => {
+    // Their home is in Songkhla, a place they watch is on the river.
+    expect(showsDamFigure(onRiver, ["900101", "940104"])).toBe(true);
+  });
+
+  /*
+   * With six reservoirs a home screen still takes one of them: where two can reach the same
+   * place, the larger reservoir is the one that can do the most.
+   */
+  describe("and which one of several", () => {
+    const sadao: Dam = {
+      ...DAM,
+      code: "khlong_sadao",
+      storageMaxMcm: 56.7,
+      tambons: [
+        { code: "901101", via: "main", kmFromDam: 12 },
+        { code: "901102", via: "main", kmFromDam: 30 },
+      ],
+    };
+    const la: Dam = {
+      ...DAM,
+      code: "khlong_la",
+      storageMaxMcm: 21.4,
+      tambons: [{ code: "901102", via: "main", kmFromDam: 3 }],
+    };
+    // No channel mapped below it, so it has no tambons and can be nobody's card.
+    const unmapped: Dam = { ...DAM, code: "ban_baik", storageMaxMcm: 1.2, tambons: [] };
+    const all = [onRiver, sadao, la, unmapped];
+
+    it("gives a place below two reservoirs the larger one", () => {
+      expect(damForFigure(all, ["901102"])?.code).toBe("khlong_sadao");
+    });
+
+    it("gives a place below one of them that one", () => {
+      expect(damForFigure(all, ["901101"])?.code).toBe("khlong_sadao");
+      expect(damForFigure(all, ["950801"])?.code).toBe("bang_lang");
+    });
+
+    it("gives nothing to a place no reservoir can reach", () => {
+      expect(damForFigure(all, ["950299"])).toBeNull();
+      expect(damForFigure(all, ["100101"])).toBeNull();
+      expect(damForFigure(all, [])).toBeNull();
+    });
+
+    it("never gives a reservoir whose channel is not mapped", () => {
+      expect(damForFigure([unmapped], ["950299"])).toBeNull();
+    });
   });
 });

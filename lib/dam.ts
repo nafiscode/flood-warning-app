@@ -103,6 +103,8 @@ export type Dam = {
   name: Record<string, string>;
   river: Record<string, string>;
   operator: string;
+  /** 'hourly' is EGAT's feed; 'daily' is the one figure a day the RID publishes. */
+  feed: "hourly" | "daily";
   point: DamPoint | null;
   spillwayPoint: DamPoint | null;
   /** Head of the mapped outlet channel, roughly the powerhouse tailwater. Approximate. */
@@ -123,6 +125,8 @@ export type Dam = {
   /** The zone's outlines, joined on by the map once its own request has answered. */
   zones?: DamZone[];
   geometryNote: {
+    /** False where OpenStreetMap maps no channel below the reservoir (14 Oct 2026). */
+    path_mapped?: boolean;
     source?: string;
     credit?: string;
     limits_en?: string;
@@ -280,14 +284,41 @@ export function damFrame(dam: Dam): { lon: number; lat: number }[] {
  * water there; a figure of this dam on a Songkhla home screen would be noise at best and a
  * frightening irrelevance at worst.
  */
-export const DAM_FIGURE_PROVINCES = ["94", "95", "96"] as const;
-
+/**
+ * Whether this dam belongs on **this** person's home screen.
+ *
+ * The rule is the dam's own path: their area, or a place they watch, is one of the tambons the
+ * released water can reach (for Bang Lang that is S7's zone, the river and the low land beside
+ * it; for the others the mapped channel below the reservoir).
+ *
+ * It was wider until 14 Oct 2026 - everyone in Yala, Pattani and Narathiwat saw Bang Lang - and
+ * the owner narrowed it the day five more reservoirs arrived: a reservoir that cannot reach you
+ * is not news on your home screen, it is noise in front of the SOS button. Every dam is still a
+ * tap away on the map.
+ */
 export function showsDamFigure(dam: Dam, tambonCodes: readonly string[]): boolean {
   if (tambonCodes.length === 0) return false;
-  if (onPath(dam, tambonCodes)) return true;
-  return tambonCodes.some((code) =>
-    (DAM_FIGURE_PROVINCES as readonly string[]).includes(code.slice(0, 2)),
+  return onPath(dam, tambonCodes) !== null;
+}
+
+/**
+ * The one dam a home screen carries (the owner, 14 Oct 2026, when five more reservoirs arrived).
+ *
+ * Every dam that can reach them is a candidate; where two can - a place below Khlong La's stream
+ * is also below Khlong Sadao's river - the larger reservoir wins, because it is the one that can
+ * do the most. A screen with several dam cards on it is a screen nobody reads.
+ */
+export function damForFigure(dams: readonly Dam[], tambonCodes: readonly string[]): Dam | null {
+  const mine = dams.filter((dam) => showsDamFigure(dam, tambonCodes));
+  if (mine.length === 0) return null;
+  return mine.reduce((best, dam) =>
+    (dam.storageMaxMcm ?? 0) > (best.storageMaxMcm ?? 0) ? dam : best,
   );
+}
+
+/** True where OSM has no channel below the reservoir, so the app can say so instead of guessing. */
+export function pathMapped(dam: Dam): boolean {
+  return dam.geometryNote.path_mapped !== false && dam.reaches.length > 0;
 }
 
 /** The reaches that carry released water, in drawing order: tributaries first, river on top. */

@@ -10,8 +10,9 @@ import { localName } from "@/lib/places";
 import { buttonQuiet, card, hint } from "@/lib/ui";
 
 /**
- * The dam's figure on the home screen (the owner's choice of 12 Oct: everyone in Yala, Pattani
- * and Narathiwat sees it, Songkhla does not - see `showsDamFigure` for why).
+ * The dam's figure on the home screen, for someone the released water can actually reach - their
+ * own area or a place they watch is on this dam's path (the owner, 14 Oct 2026; see
+ * `showsDamFigure`). Somebody a province away gets nothing here; the map has every reservoir.
  *
  * It is deliberately not the quiet notice: nothing here says water is coming. It says where the
  * dam is, what it is doing, and that these are the dam's own published figures and not an alert
@@ -19,18 +20,15 @@ import { buttonQuiet, card, hint } from "@/lib/ui";
  * of charts and the river - on the map, the same one the map's own legend opens (owner, 13 Oct).
  * Someone on the river gets the notice instead **while
  * the dam has something to say**; on an ordinary day the notice is silent, so they get this card
- * too, with `onRiver` so the sentence beneath the drawing tells them the truth about where they
- * live.
+ * too.
  */
 export function DamFigureCard({
   dam,
-  onRiver = false,
   tambonCode = null,
   tambonName = null,
 }: {
   dam: Dam;
-  onRiver?: boolean;
-  /** Their own tambon when they are on the river: the arrival time is read for that one. */
+  /** Their own tambon on this dam's path: the arrival time is read for that one. */
   tambonCode?: string | null;
   tambonName?: string | null;
 }) {
@@ -38,21 +36,22 @@ export function DamFigureCard({
   const locale = useLocale();
   const name = localName(dam.name, locale);
   return (
-    <section className={card} data-dam-figure-card={dam.code} data-dam-on-river={onRiver}>
+    <section className={card} data-dam-figure-card={dam.code}>
       <p className="text-h3 font-bold text-jaga-ink">{t("figure.cardTitle", { dam: name })}</p>
       <DamSectionFigure dam={dam} />
-      <p className={hint}>
-        {t(onRiver ? "figure.cardWhereOnPath" : "figure.cardWhere", {
-          river: localName(dam.river, locale),
-        })}
-      </p>
+      <p className={hint}>{t("figure.cardWhereOnPath", { river: localName(dam.river, locale) })}</p>
       {/*
        * On a quiet day this card is the only thing someone on the river sees, so it carries the
        * hours their own water needs - the same lines the notice would have shown them.
        */}
-      {onRiver && tambonCode && dam.arrivals.length > 0 && (
+      {tambonCode && dam.arrivals.length > 0 && (
         <DamArrivalLines dam={dam} tambonCodes={[tambonCode]} tambonName={tambonName} />
       )}
+      {/*
+       * "Releasing 1 m3/s" from a reservoir reported once a day is a whole day's mean, and the
+       * card is the only place some people will read it. Said here as well as in the full report.
+       */}
+      {dam.feed === "daily" && <p className={hint}>{t("figures.oncePerDay")}</p>}
       <p className={hint}>{t("disclaimer.notAnAlert")}</p>
       {/*
        * The dam's code travels in the address, so the map arrives with the report already open

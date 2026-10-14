@@ -77,6 +77,42 @@ def fetch_relation(relation_id: int, endpoint: str, user_agent: str, cache: Path
     return elements[0]
 
 
+def fetch_way(way_id: int, endpoint: str, user_agent: str, cache: Path,
+              attempts: int = 4) -> dict:
+    """One OSM way with its geometry, cached as the raw answer.
+
+    Bang Lang's reservoir is a relation; the RID's medium reservoirs (added 14 Oct 2026) are each
+    drawn as a single closed way, so both shapes have to be readable.
+    """
+    cache.mkdir(parents=True, exist_ok=True)
+    path = cache / f"way_{way_id}.json"
+    if not path.exists():
+        query = f"[out:json][timeout:180];way({way_id});out geom;"
+        with httpx.Client(timeout=240, headers={"User-Agent": user_agent}) as client:
+            for attempt in range(attempts):
+                answer = client.post(endpoint, data={"data": query})
+                if answer.status_code == 200 and answer.text.lstrip().startswith("{"):
+                    break
+                log.warning("overpass %s for way %s, retrying", answer.status_code, way_id)
+                time.sleep(30 * (attempt + 1))
+            answer.raise_for_status()
+            path.write_text(answer.text, encoding="utf-8")
+    elements = json.loads(path.read_text(encoding="utf-8")).get("elements") or []
+    if not elements:
+        raise RuntimeError(f"OSM way {way_id} is empty or gone.")
+    return elements[0]
+
+
+def way_polygon(way: dict) -> MultiPolygon:
+    """A closed way as a polygon. A way that does not close is not a lake, and says so."""
+    pts = [(p["lon"], p["lat"]) for p in way.get("geometry") or []]
+    if len(pts) < 4:
+        raise RuntimeError(f"OSM way {way.get('id')} has too few points to be a reservoir.")
+    if pts[0] != pts[-1]:
+        raise RuntimeError(f"OSM way {way.get('id')} is not closed; it cannot be a reservoir.")
+    return MultiPolygon([Polygon(pts)])
+
+
 def relation_polygon(relation: dict) -> MultiPolygon:
     """An OSM multipolygon relation as one shape: the outer rings with their islands cut out.
 

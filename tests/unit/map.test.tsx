@@ -79,6 +79,7 @@ const EXAMPLE_DAM: Dam = {
   name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
   river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
   operator: "EGAT",
+  feed: "hourly" as const,
   point: { type: "Point", coordinates: [101.2721, 6.1551] },
   spillwayPoint: null,
   outletPoint: null,

@@ -23,6 +23,9 @@ dams:
     river: {th: "แม่น้ำปัตตานี", ms: "Sungai Patani", en: "Pattani River"}
     operator: EGAT
     province: "95"
+    # EGAT publishes Bang Lang hourly; ThaiWater's dam_hourly_graph is where that comes from.
+    feed: hourly
+    # Whose home screen carries its figure (the owner, 12 Oct): Yala, Pattani and Narathiwat.
     # ThaiWater lists the same dam twice: EGAT's hourly feed and the RID's daily report.
     thaiwater: {hourly_id: 50, daily_id: 26}
     # Positions given by the owner, 9 Oct 2026.
@@ -45,6 +48,146 @@ dams:
       # How far up from the junction counts as the "lower reach" that a rising main stem backs
       # water into (spec section 15).
       lower_reach_km: 5
+
+  # --- The Royal Irrigation Department's reservoirs (added 14 Oct 2026, the owner's request that
+  # --- every reservoir that matters to the flood be treated like Bang Lang).
+  #
+  # They are a different kind of dam and it shows in every field below:
+  #   * ThaiWater publishes them **once a day**, in the dam_medium list of /analyst/dam, and has
+  #     no history endpoint for them at all - so `feed: daily`, and the archive starts the day
+  #     Jaga starts asking.
+  #   * There are no turbines, so "above the turbines" means nothing. Each carries its own grade
+  #     rules, scaled to its own capacity, and they are **provisional**: with no archive there is
+  #     nothing to measure a percentile against, so the rules are stated in plain proportions
+  #     (METHODS.md, "The RID reservoirs") and should be revisited after a season of readings.
+  #   * `normal_storage` from ThaiWater is the capacity at normal high water, which is also the
+  #     figure its percentage is of; we have no separate spillway-crest capacity for them, so
+  #     max and normal are the same number and "above normal high" means above 100%.
+  - code: khlong_sadao
+    name: {th: "อ่างเก็บน้ำคลองสะเดา", ms: "Empangan Khlong Sadao", en: "Khlong Sadao Reservoir"}
+    river: {th: "คลองอู่ตะเภา", ms: "Sungai U-Taphao", en: "Khlong U-Taphao"}
+    operator: RID
+    province: "90"
+    feed: daily
+    thaiwater: {hourly_id: null, daily_id: 791}
+    dam_point: [100.496316, 6.583822]
+    spillway_point: null
+    # Not mapped in OpenStreetMap (Overpass, 14 Oct 2026): the reservoir has no outline, which the
+    # database allows. The release path below it is mapped, and that is what matters.
+    reservoir_relation: null
+    reservoir_way: null
+    outlet_way: 1055050832
+    storage: {max_mcm: 56.741, normal_mcm: 56.741}
+    tributaries: {min_network_km: 5, lower_reach_km: 5}
+    grades:
+      # A day's release worth more than a tenth of the reservoir: 5.7 Mm3 = 66 m3/s down a
+      # channel that runs through Hat Yai.
+      turbine_max_cms: 65.7
+      release_reason: release_high
+      inflow_high_cms: 131.0      # a fifth of the reservoir arriving in a day
+      rise_mcm_per_h: 0.118       # a twentieth of the reservoir in a day
+      rise_window_h: 1            # one reading back, which on a daily feed is yesterday
+      min_consecutive_h: 1        # a daily figure is already a day's mean; two would be two days
+      stale_after_h: 48
+
+  - code: khlong_la
+    name: {th: "อ่างเก็บน้ำคลองหลา", ms: "Empangan Khlong La", en: "Khlong La Reservoir"}
+    river: {th: "คลองหลา", ms: "Sungai La", en: "Khlong La"}
+    operator: RID
+    province: "90"
+    feed: daily
+    thaiwater: {hourly_id: null, daily_id: 600}
+    dam_point: [100.32696, 6.879715]
+    spillway_point: null
+    reservoir_way: 154336910
+    reservoir_relation: null
+    # OSM maps 8 km of this stream and then stops, 6 km short of Khlong U-Taphao (measured
+    # 14 Oct 2026). The path shown is what is mapped; it is not the whole way the water travels.
+    outlet_way: 1501952725
+    storage: {max_mcm: 21.42, normal_mcm: 21.42}
+    tributaries: {min_network_km: 5, lower_reach_km: 5}
+    grades:
+      turbine_max_cms: 24.8
+      release_reason: release_high
+      inflow_high_cms: 49.6
+      rise_mcm_per_h: 0.045
+      rise_window_h: 1
+      min_consecutive_h: 1
+      stale_after_h: 48
+
+  - code: khlong_chamrai
+    name: {th: "อ่างเก็บน้ำคลองจำไหร", ms: "Empangan Khlong Chamrai", en: "Khlong Chamrai Reservoir"}
+    river: {th: "คลองจำไหร", ms: "Sungai Chamrai", en: "Khlong Chamrai"}
+    operator: RID
+    province: "90"
+    feed: daily
+    thaiwater: {hourly_id: null, daily_id: 599}
+    dam_point: [100.334122, 6.829716]
+    spillway_point: null
+    reservoir_way: 154336927
+    reservoir_relation: null
+    # No channel mapped below it (Overpass and the cached network, 14 Oct 2026): figures only.
+    outlet_way: null
+    storage: {max_mcm: 6.0, normal_mcm: 6.0}
+    tributaries: {min_network_km: 5, lower_reach_km: 5}
+    grades:
+      turbine_max_cms: 6.9
+      release_reason: release_high
+      inflow_high_cms: 13.9
+      rise_mcm_per_h: 0.0125
+      rise_window_h: 1
+      min_consecutive_h: 1
+      stale_after_h: 48
+
+  - code: klai_ban
+    name: {th: "อ่างเก็บน้ำใกล้บ้าน", ms: "Empangan Klai Ban", en: "Klai Ban Reservoir"}
+    river: {th: "คลองใกล้บ้าน", ms: "Sungai Klai Ban", en: "Klai Ban stream"}
+    operator: RID
+    province: "96"
+    feed: daily
+    thaiwater: {hourly_id: null, daily_id: 794}
+    dam_point: [101.864788, 6.384195]
+    spillway_point: null
+    reservoir_way: 174680726
+    reservoir_relation: null
+    # The nearest mapped stream starts 2 km from the wall, which is not close enough to call it
+    # this reservoir's outflow. Figures only until somebody maps the channel.
+    outlet_way: null
+    storage: {max_mcm: 3.73, normal_mcm: 3.73}
+    tributaries: {min_network_km: 5, lower_reach_km: 5}
+    grades:
+      turbine_max_cms: 4.3
+      release_reason: release_high
+      inflow_high_cms: 8.6
+      rise_mcm_per_h: 0.0078
+      rise_window_h: 1
+      min_consecutive_h: 1
+      stale_after_h: 48
+
+  - code: ban_baik
+    name: {th: "อ่างเก็บน้ำบ้านไบก์", ms: "Empangan Ban Baik", en: "Ban Baik Reservoir"}
+    river: {th: "ลำน้ำท้ายอ่างบ้านไบก์", ms: "Sungai hilir Ban Baik", en: "stream below Ban Baik"}
+    operator: RID
+    province: "95"
+    feed: daily
+    thaiwater: {hourly_id: null, daily_id: 58796}
+    dam_point: [101.312051, 6.462641]
+    spillway_point: null
+    reservoir_way: null
+    reservoir_relation: null
+    outlet_way: null
+    # ThaiWater publishes no capacity for it; 1.2 Mm3 is what its own percentage implies
+    # (0.15 Mm3 at 12.33% on 14 Oct 2026). The smallest of the six by a long way.
+    storage: {max_mcm: 1.2, normal_mcm: 1.2}
+    tributaries: {min_network_km: 5, lower_reach_km: 5}
+    grades:
+      turbine_max_cms: 1.4
+      release_reason: release_high
+      inflow_high_cms: 2.8
+      rise_mcm_per_h: 0.0025
+      rise_window_h: 1
+      min_consecutive_h: 1
+      stale_after_h: 48
 
 # Travel times (travel.py, METHODS.md "Travel times"). Hours after the gates open, as ranges.
 travel:

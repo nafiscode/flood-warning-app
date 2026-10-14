@@ -121,6 +121,51 @@ not constants. Re-run `thresholds` after changing them to see what the change wo
 - The powerhouse position, and whether the spillway channel should be digitised by hand.
 - A contact at EGAT Bang Lang (the owner).
 
+## The RID reservoirs (14 Oct 2026)
+
+The owner asked for every reservoir that matters to the flood in the four provinces, not only Bang
+Lang. What exists, and what each one allows:
+
+**What was found.** ThaiWater's `/analyst/dam` answer carries four lists; in provinces 90, 94, 95
+and 96 it serves **one hourly dam** (Bang Lang, EGAT) and **five daily reservoirs**, all the Royal
+Irrigation Department's: Khlong Sadao (57 Mm3, Songkhla), Khlong La (21), Khlong Chamrai (6), Klai
+Ban (3.7, Narathiwat) and Ban Baik (1.2, Yala). Its `dam_small_tele` list has nothing here, and two
+further points in the medium list are nameless with no figures. The gated barrages were looked for
+in `/public/watergate_load` and that list came back empty.
+
+**Why these matter.** Khlong Sadao sits on the upper Khlong U-Taphao: the walk downstream from it
+runs 123 km **through Hat Yai** to Songkhla Lake, which is the owner's own benchmark flood. A tenth
+of that reservoir released in a day is 66 m3/s into that channel. Khlong La is on the same system.
+The other three are small and their water reaches a town only through channels nobody has mapped.
+
+**What is not there.**
+
+* No history. `dam_medium_graph` answers with an empty series for every one of them (tried with
+  both the row id and the dam id), and `dam_daily_graph` with nothing. So there is no archive to
+  measure a threshold against, and Jaga's own record of them begins the day the feed starts.
+* No spill figure. The medium list publishes storage, inflow and release, so "water over the
+  spillway" can never be the reason a RID reservoir grades as releasing.
+* No channel below three of them. The walk needs a mapped waterway starting at the dam
+  (`dam_release find`); Khlong Chamrai, Klai Ban and Ban Baik have none within 5 km, and Khlong La's
+  stops 6 km short of the river it must join. Nothing is drawn where nothing is mapped.
+* No reservoir outline for Khlong Sadao or Ban Baik: Overpass has no water polygon near either
+  (it answered 504 for Khlong Sadao for an hour and then returned no shapes). The column is
+  nullable; the dam keeps its mark, its figures and its path.
+
+**The grade rules, and why they are provisional.** Bang Lang's thresholds come from its own
+fifteen-year archive (above). These five have no archive, so each carries rules in proportion to
+its own capacity, which is the only honest scale available:
+
+| Rule | Proportion | Khlong Sadao | Khlong La | Khlong Chamrai | Klai Ban | Ban Baik |
+| --- | --- | --- | --- | --- | --- | --- |
+| releasing, m3/s | a tenth of capacity in a day | 65.7 | 24.8 | 6.9 | 4.3 | 1.4 |
+| watchful inflow, m3/s | a fifth in a day | 131 | 49.6 | 13.9 | 8.6 | 2.8 |
+| watchful rise, Mm3/h | a twentieth in a day | 0.118 | 0.045 | 0.013 | 0.008 | 0.003 |
+
+Also per dam: the rise is measured one reading back (a day), one reading grades (two would be two
+days, and a daily figure is already a day's mean), and the figures are called stale after 48 hours.
+**Revisit these after a season of readings**: the first flood they see is the first evidence.
+
 ## Travel times (12 Oct 2026, not validated)
 
 `uv run python -m dam_release travel` measures how long water takes between the gauges and writes the arrival range for every tambon on the path (`out/dam_release/arrival_by_tambon.csv`, `supabase/seed/41_dam_arrivals.sql`, table `dam_arrivals`).

@@ -72,6 +72,8 @@ function damAnswer(grade: "quiet" | "watchful" | "releasing") {
         name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
         river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
         operator: "EGAT",
+        // EGAT publishes hourly; the RID's five reservoirs (14 Oct 2026) publish once a day.
+        feed: "hourly",
         point: { type: "Point", coordinates: [101.2721, 6.1551] },
         spillwayPoint: { type: "Point", coordinates: [101.2764, 6.1501] },
         outletPoint: { type: "Point", coordinates: [101.273, 6.1536] },
@@ -378,9 +380,41 @@ test.describe("what /api/public/dam gives out", () => {
     const body = await response.json();
     test.skip(body.dams.length === 0, "no dam is seeded in this database");
     for (const dam of body.dams) {
-      expect(dam.geometrySource).toBeTruthy();
-      expect(dam.geometryNote.limits_en).toMatch(/not how far/i);
-      expect(dam.tambons.length).toBeGreaterThan(0);
+      expect(dam.geometrySource, dam.code).toBeTruthy();
+      expect(typeof dam.geometryNote.limits_en, dam.code).toBe("string");
+      if (dam.geometryNote.path_mapped === false) {
+        /*
+         * A reservoir nobody has mapped a channel below (14 Oct 2026): it has no path, no
+         * tambons and no zone, and its note says so in place of the usual limits. Showing a
+         * guessed line there would be showing a guessed warning (safety rule 8).
+         */
+        expect(dam.reaches.length, dam.code).toBe(0);
+        expect(dam.tambons.length, dam.code).toBe(0);
+        expect(dam.geometryNote.limits_en, dam.code).toMatch(/no channel/i);
+      } else {
+        expect(dam.geometryNote.limits_en, dam.code).toMatch(/not how far/i);
+        expect(dam.tambons.length, dam.code).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  /*
+   * The five reservoirs added on 14 Oct 2026 are reported once a day, and a day's volume read as
+   * an hour's would make a release look twenty-four times smaller than it is.
+   */
+  test("says how often each reservoir reports, and the daily ones read as a day", async ({
+    request,
+  }) => {
+    const response = await request.get("/api/public/dam");
+    test.skip(response.status() === 503, "needs a Supabase project");
+    const body = await response.json();
+    test.skip(body.dams.length < 2, "only one dam is seeded in this database");
+    for (const dam of body.dams) {
+      expect(["hourly", "daily"], dam.code).toContain(dam.feed);
+      if (dam.feed === "daily" && dam.daily) {
+        // One reading a day means the day's figures rest on 24 hours, not on one.
+        expect([0, 24], dam.code).toContain(dam.daily.outflowHours);
+      }
     }
   });
 });

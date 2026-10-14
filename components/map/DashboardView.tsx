@@ -21,7 +21,7 @@ import {
   type AreaDirectory,
 } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
-import { DamCard, DamLegend, DamNotice } from "@/components/map/Dam";
+import { DamCard, DamLegendKeys, DamLegendRow, DamNotice } from "@/components/map/Dam";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
@@ -993,10 +993,9 @@ export function DashboardView(props: DashboardViewProps) {
                 {dams.length > 0 && (
                   <div className="flex flex-col gap-1" data-dam-legend="true">
                     <p className="font-medium">{tDam("path.title")}</p>
+                    {/* The marks mean the same on every reservoir, so they are explained once. */}
                     <ul className="flex flex-col gap-1">
-                      {dams.map((dam) => (
-                        <DamLegend key={dam.code} dam={dam} />
-                      ))}
+                      <DamLegendKeys />
                     </ul>
                     <p className={hint}>{tDam("path.limits")}</p>
                     {/*
@@ -1020,10 +1019,13 @@ export function DashboardView(props: DashboardViewProps) {
                           const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
                           if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
                         }}
-                        className={`${buttonQuiet} self-start`}
+                        className={`${buttonQuiet} w-full justify-between text-start`}
                       >
+                        <DamLegendRow dam={dam} />
                         <WaveIcon size={20} aria-hidden="true" />
-                        {tDam("legend.open", { dam: localName(dam.name, locale) })}
+                        <span className="sr-only">
+                          {tDam("legend.open", { dam: localName(dam.name, locale) })}
+                        </span>
                       </button>
                     ))}
                   </div>

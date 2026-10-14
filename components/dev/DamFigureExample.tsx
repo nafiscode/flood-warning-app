@@ -31,6 +31,7 @@ const DAM: Dam = {
   name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
   river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
   operator: "EGAT",
+  feed: "hourly" as const,
   point: null,
   spillwayPoint: null,
   outletPoint: null,

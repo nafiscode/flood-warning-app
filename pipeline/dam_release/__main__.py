@@ -36,7 +36,7 @@ import yaml
 
 from ingest_thaiwater.settings import PIPELINE_DIR, REPO_DIR, data_dir, env_value
 
-from . import build, thresholds, travel, zone
+from . import build, find, osm, thresholds, travel, zone
 
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 log = logging.getLogger("dam_release")
@@ -65,7 +65,12 @@ def cmd_geometry(cfg: dict, dry_run: bool) -> int:
     for built in built_all:
         dam = built["dam"]
         print(f"\n{dam['name']['en']} ({dam['code']})")
-        print(f"  reservoir          {built['reservoir_km2']:.1f} km2")
+        print(f"  reservoir          {built['reservoir_km2']:.1f} km2"
+              + ("" if built["reservoir"] is not None else "  (not mapped in OSM)"))
+        if built["outlet"] is None:
+            # A reservoir whose outflow nobody has mapped: figures only, and the app says so.
+            print("  release path       none mapped in OpenStreetMap - figures only")
+            continue
         print(f"  outlet channel     {built['outlet']['length_km']:.2f} km "
               f"(OSM way {built['outlet']['osm_way']})")
         print(f"  river to the sea   {built['main']['length_km']:.1f} km "
@@ -81,9 +86,9 @@ def cmd_geometry(cfg: dict, dry_run: bool) -> int:
     summary = {
         b["dam"]["code"]: {
             "reservoir_km2": b["reservoir_km2"],
-            "outlet_km": b["outlet"]["length_km"],
-            "reach_km": b["main"]["length_km"],
-            "mouth": list(b["main"]["mouth"]),
+            "outlet_km": b["outlet"]["length_km"] if b["outlet"] else None,
+            "reach_km": b["main"]["length_km"] if b["main"] else None,
+            "mouth": list(b["main"]["mouth"]) if b["main"] else None,
             "tributaries": [{k: v for k, v in t.items() if k != "pts"} for t in b["tributaries"]],
         } for b in built_all
     }
@@ -98,6 +103,23 @@ def cmd_geometry(cfg: dict, dry_run: bool) -> int:
     print(f"\nGeoJSON in {out / 'geojson'}  (open the *_all.geojson in ArcGIS Pro, "
           "or one file per layer)")
     print(f"seed      {REPO_DIR / 'supabase' / 'seed' / '40_dams.sql'}")
+    return 0
+
+
+def cmd_find(cfg: dict, lon: float, lat: float) -> int:
+    """Which mapped channel leaves a reservoir (find.py). Prints candidates for config.yaml."""
+    ways = osm.load_waterways((PIPELINE_DIR / str(cfg["waterway_cache"])).resolve())
+    rows = find.candidates(ways, (lon, lat))
+    if not rows:
+        print("no mapped channel starts within "
+              f"{find.SEARCH_KM} km of {lat}, {lon} and runs {find.MIN_CHAIN_KM} km or more.")
+        print("Either OSM has not mapped the outflow, or the point is wrong.")
+        return 1
+    print(f"channels leaving {lat}, {lon} (best first; outlet_way for config.yaml):")
+    for row in rows:
+        print(f"  way {row['way']:>12}  {row['class']:<7} {row['chain_km']:>6.1f} km "
+              f"in {row['chain_ways']:>3} ways  starts {row['starts_km_from_dam']:.2f} km away, "
+              f"heads {row['heads']:<2}  ends {row['ends_at']}  {row['name']}")
     return 0
 
 
@@ -282,6 +304,11 @@ def main(argv: list[str] | None = None) -> int:
     geometry = sub.add_parser("geometry", help="the release path from OpenStreetMap")
     geometry.add_argument("--dry-run", action="store_true")
     sub.add_parser("thresholds", help="what the archive says about the grade criteria")
+    finder = sub.add_parser("find", help="which mapped channel leaves a reservoir, for config.yaml")
+    finder.add_argument("lon", type=float)
+    finder.add_argument("lat", type=float)
+    finder.add_argument("--within", type=float, default=None, help="search radius in km")
+    finder.add_argument("--min-km", type=float, default=None, help="shortest chain worth printing")
     sub.add_parser("travel", help="travel times and arrival ranges per tambon").add_argument("--dry-run", action="store_true")
     sub.add_parser("zone", help="the land a rise in the river can reach, from the elevation model").add_argument(
         "--seed", action="store_true", help="also write supabase/seed/42_dam_zone.sql (the zone as the dam's geometry)")
@@ -294,6 +321,12 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_travel(cfg, args.dry_run)
     if args.command == "zone":
         return cmd_zone(cfg, args.seed)
+    if args.command == "find":
+        if args.within is not None:
+            find.SEARCH_KM = args.within
+        if args.min_km is not None:
+            find.MIN_CHAIN_KM = args.min_km
+        return cmd_find(cfg, args.lon, args.lat)
     return cmd_thresholds(cfg)
 
 

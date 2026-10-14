@@ -700,9 +700,44 @@ These tables are created in phase A11 only, not with the initial schema.
 
 Decided on 28 September 2026 (details in docs/decisions.md): SOS phone optional; SOS never rejected (merge + suspected-spam flag); phone privacy and org opt-in; household access by capability; stale marker; no eye icons; 77 provinces seeded; tide source chosen in A8; budget about $45/month off-season.
 
-## 15. Dam release warnings (Bang Lang)
+## 15. Dam and reservoir release warnings
 
 Added 9 Oct 2026 (decision of that date). Releases from Bang Lang dam flood land along the Pattani River, often with little warning. Jaga gives the dam's operator a direct way to warn the people downstream.
+
+**Six reservoirs, not one** (added 14 Oct 2026, the owner's request). Bang Lang is the largest by
+a factor of thirty, but it is not the only reservoir upstream of a town in the four provinces.
+ThaiWater serves five more, all the Royal Irrigation Department's, and Jaga treats them the same
+way as far as their data allows:
+
+| Reservoir | Province | Capacity | Below it |
+| --- | --- | --- | --- |
+| Bang Lang (EGAT) | Yala | 1,590 Mm³ | the Pattani River, 134 km, 55 tambons |
+| Khlong Sadao | Songkhla | 57 Mm³ | Khlong U-Taphao through **Hat Yai**, 123 km, 17 tambons |
+| Khlong La | Songkhla | 21 Mm³ | 8 km of stream, then OpenStreetMap stops |
+| Khlong Chamrai | Songkhla | 6 Mm³ | no channel mapped |
+| Klai Ban | Narathiwat | 3.7 Mm³ | no channel mapped |
+| Ban Baik | Yala | 1.2 Mm³ | no channel mapped |
+
+Three things follow from the differences, and each is visible on the screens:
+
+- **The RID reservoirs publish once a day**, in ThaiWater's `dam_medium` list, and there is no
+  history endpoint for them at all (checked 14 Oct 2026). A reading therefore carries the window
+  it covers (`dam_readings.window_h`), every flow divides by that window, and the screens say "this
+  reservoir is reported once a day" rather than showing a day's mean as if it were the latest hour.
+- **Each dam is graded by its own rules** (`dams.grades`, merged over the shared defaults). Bang
+  Lang's thresholds are measured against fifteen years of its own archive; the RID reservoirs have
+  no archive at all, so theirs are stated as plain proportions of their own capacity - a release of
+  a tenth of the reservoir in a day, a fifth arriving in a day, a twentieth of rise - and are
+  **provisional** until a season of readings exists. A reservoir with no power station says "the
+  release is high for the size of this reservoir", never "above the turbines".
+- **A reservoir with no mapped channel below it keeps its figures and gets no path**: no release
+  zone, nobody to warn, no release notice to send, and the screens say that OpenStreetMap has no
+  channel there rather than drawing a guess (safety rule 8).
+
+**Whose home screen a reservoir reaches** (narrowed by the owner on 14 Oct 2026): only someone
+whose own area, or one of the places they watch, is on that reservoir's own path. Being in the same
+province is not being in the water's way. Where two reservoirs can reach the same place, the home
+screen carries the larger one, and every reservoir is one tap away in the map's legend.
 
 - **Role.** A dam operator is an authority unit of its own kind, verified by an admin like any other unit. It has one power the other units lack: it can send a dam release notice.
 - **The notice.** The operator enters when the gates open (or opened), the release in cubic metres per second, and optionally when it is expected to end. Nothing else is free text: the message comes from a reviewed template in Thai, Malay and English.

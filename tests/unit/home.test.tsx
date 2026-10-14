@@ -51,6 +51,7 @@ describe("the dam's figure on the home screen", () => {
     name: { th: "เขื่อนบางลาง", en: "Bang Lang Dam" },
     river: { th: "แม่น้ำปัตตานี", en: "Pattani River" },
     operator: "EGAT",
+    feed: "hourly" as const,
     point: null,
     spillwayPoint: null,
     outletPoint: null,
@@ -77,18 +78,30 @@ describe("the dam's figure on the home screen", () => {
     expect(c.querySelector("[data-dam-figure-card]")).toBeNull();
   });
 
-  it("someone else in the three provinces gets the drawing, and nothing that says water is coming", () => {
-    for (const code of ["950299", "940999", "960501"]) {
+  /*
+   * Narrowed by the owner on 14 Oct 2026, the day five more reservoirs arrived: the home screen
+   * carries a reservoir only when it can really reach this person's area or one of the places
+   * they watch. A province in common is not the water's way.
+   */
+  it("gives nothing to someone the water cannot reach, however near they live", () => {
+    for (const code of ["950299", "940999", "960501", "900101"]) {
       const c = home("normal", { dams: [DAM], area: area(code) });
-      const card = c.querySelector("[data-dam-figure-card]")!;
-      expect(card, code).toBeTruthy();
-      expect(card.querySelector("[data-dam-figure='section']")).toBeTruthy();
-      expect(c.querySelector("[data-dam-notice]")).toBeNull();
-      // It says what it is, and what it is not.
-      expect(card.textContent).toContain(th.dam.disclaimer.notAnAlert);
-      expect(card.getAttribute("data-dam-on-river")).toBe("false");
-      expect(card.textContent).toContain(th.dam.figure.cardWhere.replace("{river}", DAM.river.th!));
+      expect(c.querySelector("[data-dam-figure-card]"), code).toBeNull();
+      expect(c.querySelector("[data-dam-notice]"), code).toBeNull();
     }
+  });
+
+  it("reaches someone whose watched place is on the river, wherever they live themselves", () => {
+    const c = home("normal", {
+      dams: [{ ...DAM, signal: exampleDamSignal("quiet") }],
+      area: area("900101"),
+      me: {
+        signedIn: true,
+        home: null,
+        places: [{ id: "p1", label: "สวนยาง", area: BANA, contactName: null, contactPhone: null }],
+      },
+    });
+    expect(c.querySelector("[data-dam-figure-card]")).toBeTruthy();
   });
 
   /*
@@ -103,8 +116,6 @@ describe("the dam's figure on the home screen", () => {
     const card = c.querySelector("[data-dam-figure-card]")!;
     expect(card).toBeTruthy();
     expect(card.querySelector("[data-dam-figure='section']")).toBeTruthy();
-    // And it tells them the truth about where they live, rather than the other card's sentence.
-    expect(card.getAttribute("data-dam-on-river")).toBe("true");
     expect(card.textContent).toContain(
       th.dam.figure.cardWhereOnPath.replace("{river}", DAM.river.th!),
     );
@@ -116,7 +127,7 @@ describe("the dam's figure on the home screen", () => {
    * than leaving somebody to find a mark a few pixels wide.
    */
   it("sits directly above the map button and opens the dam's whole report", () => {
-    const c = home("normal", { dams: [DAM], area: area("950299") });
+    const c = home("normal", { dams: [{ ...DAM, signal: exampleDamSignal("quiet") }], area: BANA });
     const card = c.querySelector("[data-dam-figure-card]")!;
     const map = c.querySelector("[data-map-link]")!;
     expect(card.nextElementSibling).toBe(map);

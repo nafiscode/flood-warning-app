@@ -2230,7 +2230,8 @@
       "above_turbines": "Jumlah pelepasan air melebihi keupayaan lepasan turbin, bermakna pintu alur limpah dibuka",
       "above_normal_high": "Isipadu simpanan melebihi kapasiti pada paras simpanan penuh biasa",
       "inflow_high": "Kadar alir masuk ke takungan berada pada paras tinggi",
-      "rising_fast": "Isipadu simpanan takungan meningkat dengan cepat dalam {hours} jam lepas"
+      "rising_fast": "Isipadu simpanan takungan meningkat dengan cepat dalam {hours} jam lepas",
+      "release_high": "Kadar pelepasan tinggi berbanding kapasiti takungan."
     },
     "awaiting": {
       "release_unconfirmed": "Satu bacaan sahaja menunjukkan kadar pelepasan yang tinggi. Menunggu bacaan jam berikutnya untuk pengesahan, kerana rekod lalu mengandungi nilai sejam yang jelas tidak munasabah.",
@@ -2239,7 +2240,6 @@
     "figure": {
       "cardTitle": "Keadaan {dam}",
       "cardWhereOnPath": "Kawasan anda terletak di {river}, yang menerima air yang dilepaskan dari empangan. Ditunjukkan sebagai maklumat.",
-      "cardWhere": "Air yang dilepaskan dari empangan mengalir ke {river}. Ditunjukkan sebagai maklumat, walaupun kawasan anda tidak terletak di sungai itu.",
       "caption": "Pelepasan {cms} m³/s · takungan {percent}% daripada kapasiti maksimum",
       "section": {
         "about": "Menunjukkan punca dan kesan sekali gus: paras takungan berbanding paras simpanan penuh biasa, dan air yang dilepaskan",
@@ -2280,7 +2280,9 @@
         "outflow": "Kadar pelepasan air purata {cms, number} m³/s · isipadu air dilepaskan {mcm, number} juta m³ (daripada {hours} bacaan sejam)",
         "spilled": "termasuk {mcm, number} juta m³ melalui alur limpah",
         "inflow": "Kadar alir masuk purata ke takungan {cms, number} m³/s · isipadu {mcm, number} juta m³ (daripada {hours} bacaan sejam)"
-      }
+      },
+      "observedDay": "Angka bagi {day}",
+      "oncePerDay": "Takungan ini dilaporkan sekali sehari, jadi angka ini purata sehari penuh dan bukan jam terakhir."
     },
     "notice": {
       "awaiting": {
@@ -2338,13 +2340,18 @@
       "tambons": "Melalui {count} mukim, dan {tributary} mukim lagi yang mempunyai tanah rendah yang boleh dicapai air sungai",
       "limits": "Garis di peta ialah laluan sungai, bukan sempadan kawasan banjir. Kawasan di luar garis pun boleh dilanda banjir.",
       "spillwayNotMapped": "Saluran pelepasan dari alur limpah belum ada dalam data peta, jadi ia ditunjukkan sebagai titik bukan garis.",
-      "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Kawasan berlorek ialah tanah yang pernah dicapai paras sungai, dianggar daripada model ketinggian 30 m dan stesen paras air; garis putus-putus ialah satu meter lebih tinggi. Ini bukan peta banjir dan bukan ramalan."
+      "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Kawasan berlorek ialah tanah yang pernah dicapai paras sungai, dianggar daripada model ketinggian 30 m dan stesen paras air; garis putus-putus ialah satu meter lebih tinggi. Ini bukan peta banjir dan bukan ramalan.",
+      "notMapped": "Tiada saluran di hilir takungan ini dalam pangkalan data peta, jadi Jaga belum boleh menunjukkan ke mana air yang dilepaskan mengalir."
     },
     "legend": {
       "open": "Lihat data {dam} dan carta 14 hari",
       "reservoir": "Takungan {dam}",
       "river": "{river} di hilir empangan",
-      "tributary": "Tanah yang boleh dicapai air sungai apabila parasnya tinggi (garis putus-putus: satu meter lebih tinggi). Bukan peta banjir."
+      "tributary": "Tanah yang boleh dicapai air sungai apabila parasnya tinggi (garis putus-putus: satu meter lebih tinggi). Bukan peta banjir.",
+      "anyReservoir": "Takungan",
+      "anyRiver": "Sungai yang menerima air yang dilepaskan",
+      "rowRiver": "ke {river}",
+      "rowCapacity": "kapasiti {mcm, number} juta m³"
     },
     "arrival": {
       "title": "Bila air sampai",

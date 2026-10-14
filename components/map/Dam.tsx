@@ -9,6 +9,7 @@ import {
   dailyPart,
   damLevel,
   flow,
+  pathMapped,
   trend,
   volume,
   type Dam,
@@ -20,7 +21,7 @@ import { DamSectionFigure } from "@/components/dam/DamFigures";
 import { DamArrivalLines } from "@/components/map/DamArrival";
 import { DamHistory } from "@/components/map/DamHistory";
 import { localName } from "@/lib/places";
-import { BANGKOK_DATE_TIME } from "@/lib/time";
+import { BANGKOK_DATE_TIME, BANGKOK_DAY } from "@/lib/time";
 import { card, hint, notice } from "@/lib/ui";
 
 /**
@@ -119,6 +120,7 @@ function Figures({
   const t = useTranslations("dam");
   const format = useFormatter();
   const signal = dam.signal;
+  const dailyFeed = dam.feed === "daily";
   if (!signal) return <p className={hint}>{t("figures.none")}</p>;
   const age = ageHours(signal, now);
   const outflow = flow(signal.outflowCms);
@@ -178,14 +180,28 @@ function Figures({
           )}
         </div>
       )}
+      {/*
+       * A reservoir the RID publishes once a day (14 Oct 2026) has no hour to show, and a clock
+       * time beside a day's figure would read as "as of 00:00 tonight". It gets the day and a
+       * line saying the figures come once a day; the hourly dams are unchanged.
+       */}
       <p className={`${hint} flex items-center gap-1.5`}>
         <ClockIcon size={18} aria-hidden="true" />
-        {t("figures.observed", {
-          time: format.dateTime(new Date(signal.observedAt), BANGKOK_DATE_TIME),
-        })}{" "}
-        {/* "0 hours ago" is not something anybody says. */}·{" "}
-        {age < 1 ? t("figures.ageRecent") : t("figures.age", { hours: Math.round(age) })}
+        {dailyFeed ? (
+          t("figures.observedDay", {
+            day: format.dateTime(new Date(signal.observedAt), BANGKOK_DAY),
+          })
+        ) : (
+          <>
+            {t("figures.observed", {
+              time: format.dateTime(new Date(signal.observedAt), BANGKOK_DATE_TIME),
+            })}{" "}
+            {/* "0 hours ago" is not something anybody says. */}·{" "}
+            {age < 1 ? t("figures.ageRecent") : t("figures.age", { hours: Math.round(age) })}
+          </>
+        )}
       </p>
+      {dailyFeed && <p className={hint}>{t("figures.oncePerDay")}</p>}
       {signal.stale && (
         <p role="status" className={hint}>
           {t("figures.stale")}
@@ -331,12 +347,18 @@ export function DamCard({
 
       <div className="flex flex-col gap-1">
         <p className="font-medium">{t("path.title")}</p>
-        <p>
-          {t("path.tambons", {
-            count: dam.tambons.filter((x) => x.via === "main").length,
-            tributary: dam.tambons.filter((x) => x.via === "tributary").length,
-          })}
-        </p>
+        {pathMapped(dam) ? (
+          <p>
+            {t("path.tambons", {
+              count: dam.tambons.filter((x) => x.via === "main").length,
+              tributary: dam.tambons.filter((x) => x.via === "tributary").length,
+            })}
+          </p>
+        ) : (
+          /* Nobody has mapped the channel below this reservoir, so there is nothing to draw and
+             nobody to warn. Said plainly rather than shown as an empty path (safety rule 10). */
+          <p data-dam-no-path>{t("path.notMapped")}</p>
+        )}
         {/*
          * Safety rule 8 and rule 10 together: a layer never travels without what it does not
          * say. These lines are a river's course, not a flood extent, and the tributaries are
@@ -364,9 +386,15 @@ export function DamCard({
 }
 
 /** The dam's rows in the map legend, so the lines can be read without tapping them. */
-export function DamLegend({ dam }: { dam: Dam }) {
+/**
+ * What the dam colours mean - said once for every reservoir, not once per reservoir.
+ *
+ * It used to repeat itself per dam, which was fine for one and 1,494 px of legend for six
+ * (measured at 360 px, 14 Oct 2026). The three marks mean the same thing on every dam, so they
+ * are explained once; the reservoirs themselves are listed by name underneath.
+ */
+export function DamLegendKeys() {
   const t = useTranslations("dam");
-  const locale = useLocale();
   return (
     <>
       <li className="flex items-center gap-2">
@@ -374,11 +402,11 @@ export function DamLegend({ dam }: { dam: Dam }) {
           aria-hidden="true"
           className="inline-block h-3 w-5 shrink-0 rounded-sm border border-jaga-dam bg-jaga-dam/30"
         />
-        {t("legend.reservoir", { dam: localName(dam.name, locale) })}
+        {t("legend.anyReservoir")}
       </li>
       <li className="flex items-center gap-2">
         <span aria-hidden="true" className="inline-block h-1.5 w-5 shrink-0 rounded bg-jaga-dam" />
-        {t("legend.river", { river: localName(dam.river, locale) })}
+        {t("legend.anyRiver")}
       </li>
       <li className="flex items-center gap-2">
         <span
@@ -392,5 +420,21 @@ export function DamLegend({ dam }: { dam: Dam }) {
         {t("legend.tributary")}
       </li>
     </>
+  );
+}
+
+/** One reservoir in the legend's list: its name, its river, and how big it is. */
+export function DamLegendRow({ dam }: { dam: Dam }) {
+  const t = useTranslations("dam");
+  const locale = useLocale();
+  return (
+    <span className="flex flex-col">
+      <span className="font-medium">{localName(dam.name, locale)}</span>
+      <span className={hint}>
+        {t("legend.rowRiver", { river: localName(dam.river, locale) })}
+        {dam.storageMaxMcm !== null &&
+          ` · ${t("legend.rowCapacity", { mcm: Math.round(dam.storageMaxMcm) })}`}
+      </span>
+    </span>
   );
 }

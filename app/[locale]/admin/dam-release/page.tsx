@@ -105,20 +105,27 @@ export default async function AdminDamRelease({
     ]),
   );
 
-  const dams: DamForRelease[] = ((map.data ?? []) as Row[]).map((row) => {
-    const code = String(row.code);
-    const list = byDam.get(code) ?? [];
-    return {
-      code,
-      name: (row.name ?? {}) as Record<string, string>,
-      river: (row.river ?? {}) as Record<string, string>,
-      operator: String(row.operator ?? ""),
-      tambons: list.length,
-      arrivals: list,
-      outflowCms: outflow.get(code) ?? null,
-      noticeId: openNotice.get(code) ?? null,
-    };
-  });
+  /*
+   * Only a dam with a zone can be sent (14 Oct 2026): `admin_send_dam_release` refuses one with
+   * no tambons, and offering it here would be offering a button that cannot work. A reservoir
+   * whose channel nobody has mapped keeps its figures on the map and nothing more.
+   */
+  const dams: DamForRelease[] = ((map.data ?? []) as Row[])
+    .filter((row) => Number(row.tambons ?? 0) > 0)
+    .map((row) => {
+      const code = String(row.code);
+      const list = byDam.get(code) ?? [];
+      return {
+        code,
+        name: (row.name ?? {}) as Record<string, string>,
+        river: (row.river ?? {}) as Record<string, string>,
+        operator: String(row.operator ?? ""),
+        tambons: list.length,
+        arrivals: list,
+        outflowCms: outflow.get(code) ?? null,
+        noticeId: openNotice.get(code) ?? null,
+      };
+    });
 
   const now = new Date();
   return (

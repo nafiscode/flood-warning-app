@@ -7,3 +7,10 @@ export const BANGKOK_DATE_TIME = {
   hourCycle: "h23",
   timeZone: "Asia/Bangkok",
 } as const satisfies Intl.DateTimeFormatOptions;
+
+/** "14 Oct": a day with no clock time, for a reservoir whose figures come once a day. */
+export const BANGKOK_DAY = {
+  day: "numeric",
+  month: "short",
+  timeZone: "Asia/Bangkok",
+} as const satisfies Intl.DateTimeFormatOptions;
