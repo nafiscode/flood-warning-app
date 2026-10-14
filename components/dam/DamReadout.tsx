@@ -58,15 +58,21 @@ function Cell({
   value,
   unit,
   notes,
+  tall = false,
 }: {
   step: number;
   label: string;
   value: string;
   unit: string;
   notes?: ReactNode;
+  /** The storage cell carries the most under it; it takes two rows so the rest close up. */
+  tall?: boolean;
 }) {
   return (
-    <div className={styles.cell} style={{ "--step": step } as CSSProperties}>
+    <div
+      className={`${styles.cell} ${tall ? "sm:row-span-2" : ""}`}
+      style={{ "--step": step } as CSSProperties}
+    >
       <dt className="text-small text-white/70">{label}</dt>
       <dd className="flex flex-col">
         <span>
@@ -193,6 +199,7 @@ export function DamReadout({ dam }: { dam: Dam }) {
           {storage && (
             <Cell
               step={step++}
+              tall
               label={t("storage")}
               value={mcmText(format, storage.mcm)}
               unit={t("unit.mcm")}
