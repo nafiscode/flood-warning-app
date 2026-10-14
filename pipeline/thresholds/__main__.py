@@ -175,6 +175,47 @@ def cmd_tide(cfg: dict) -> int:
     return 0
 
 
+def cmd_forecast(cfg: dict) -> int:
+    """How much warning the rain forecast gave before the 2024 and 2025 floods (thresholds/forecast.py)."""
+    import pandas as pd
+
+    from . import forecast as fc
+
+    out = output_dir(cfg)
+    fcfg = cfg["forecast_check"]
+    result = json.loads((out / "hindcast.json").read_text(encoding="utf-8"))
+    basins = read_basins(out)
+    rain = sources.read_rain(out)
+    s = cfg["seasons"]
+    windows = [sources.season_window(y, s["start_month"], s["end_month"]) for y in fcfg["seasons"]]
+    rows = {}
+    for zone, z in cfg["zones"].items():
+        geoms = [basins[f"{zone}.{z['rain_basin']}"]["geometry"]]
+        points = seed.rain_points(geoms, float(cfg["feeds"]["rain_grid_deg"]), int(cfg["feeds"]["rain_points_max"]))
+        column = f"{zone}.{z['rain_basin']}"
+        observed = rain[column] if column in rain else pd.Series(dtype=float)
+        zres = result["zones"][zone]
+        onsets = [pd.Timestamp(f["onset"]) for f in zres["floods"] if f.get("season") in fcfg["seasons"]]
+        watch = (zres["proposal"].get("watch") or {})
+        threshold = float(watch["threshold"]) if watch.get("signal") == "rain_72h_mm" else float(fcfg["fallback_mm"])
+        frames_by_model = []
+        for model in fcfg["models"]:
+            frames = [fc.fetch(points, str(a.date()), str((b - pd.Timedelta(days=1)).date()), out / "forecast" / zone,
+                               cfg["user_agent"], None if model == "best_match" else model)
+                      for a, b in windows]
+            forecast = pd.concat(frames).sort_index()
+            rows[f"{zone} · {model}"] = fc.zone_check(forecast, observed, onsets, threshold, windows, cfg["alarm"])
+            frames_by_model.append(forecast)
+        # The wettest of the models each hour: no model has to be picked on six floods.
+        wettest = pd.concat(frames_by_model).groupby(level=0).max()
+        rows[f"{zone} · wettest"] = fc.zone_check(wettest, observed, onsets, threshold, windows, cfg["alarm"])
+    (out / "forecast_check.json").write_text(json.dumps(rows, indent=2, default=str) + "\n", encoding="utf-8")
+    text = fc.markdown(rows)
+    (out / "forecast_check.md").write_text(text, encoding="utf-8", newline="\n")
+    print(text)
+    return 0
+
+
 def cmd_gauges(cfg: dict) -> int:
     """Watch, Warning and Evacuate for every gauge with a bank level (thresholds/gauges.py)."""
     import pandas as pd
@@ -209,6 +250,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("seed")
     sub.add_parser("gauges")
     sub.add_parser("tide")
+    sub.add_parser("forecast")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -224,6 +266,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_gauges(cfg)
     if args.command == "tide":
         return cmd_tide(cfg)
+    if args.command == "forecast":
+        return cmd_forecast(cfg)
     return cmd_hindcast(cfg)
 
 

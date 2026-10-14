@@ -89,3 +89,25 @@ What it says:
 - **The Kolok has no tidal gauge to check against**: Ban Muno is 25 km up the river and above the tide's reach. The model's range off Tak Bai (0.91 m) is unverified.
 - **At the gauges near the sea, most hours over the listed bank are not the tide alone** (23 of 668 at X.10A, 78 of 3,844 at X.275): the river's own slow level stands above those banks for long spells. That is why `thresholds gauges` flags their banks as too low to mark a flood, rather than a tide problem.
 - Not tested: whether the model catches a storm surge. None of these years had a surge large enough to tell apart from the monsoon set-up in the slow part.
+
+## Forecast rain before the floods (14 Oct 2026)
+
+`uv run python -m thresholds forecast` (`thresholds/forecast.py`) asks Open-Meteo's archive of past forecasts (`previous-runs-api`, which starts during 2024, so only seasons 2024 and 2025) for the rain each model forecast over the zone's rain points, averaged as the live feed does. `precipitation_previous_dayN` at an hour is the forecast for that hour made about N days earlier; summing `previous_day3` over the 72 hours from t gives a three-day forecast that was all issued by t. The rule the signal dashboard uses ("the next 72 hours hold the Watch threshold" -> Watch) and lower thresholds for forecast rain were scored like every other threshold, against the floods at the key gauges (Pattani 2, Kolok 3, Hat Yai 1). Output: `out/thresholds/forecast_check.json` and `.md`.
+
+**What the models saw coming, 72 hours of basin rain before each flood (mm):**
+
+| Flood | Satellite (GSMaP) | Default (= ICON here) 1 / 2 / 3 days ahead | ECMWF IFS | GFS | JMA |
+|---|---|---|---|---|---|
+| Pattani, 27 Nov 2024 | 411 | 9 / 3 / 11 | 28 / 33 / 34 | 45 / 39 / 10 | 18 / 5 / 13 |
+| Pattani, 23 Nov 2025 | 647 | 97 / 37 / 39 | 108 / 45 / 62 | 30 / 27 / 107 | 101 / 48 / 30 |
+| Kolok, 26 Nov 2024 | 324 | 46 / 31 / 34 | 49 / 71 / 58 | 64 / 74 / 36 | 43 / 37 / 35 |
+| Kolok, 26 Nov 2025 | 320 | 132 / 103 / 74 | 112 / 97 / 89 | 295 / 87 / 70 | 93 / 74 / 67 |
+| Hat Yai, 22 Nov 2025 | 286 | 86 / 62 / 85 | 90 / 48 / 77 | 64 / 27 / 29 | 142 / 87 / 66 |
+
+(The Kolok flood of 30 Dec 2024 came with 12 mm of satellite rain: the river rose from rain over Malaysia or from the sea, not from the basin above the gauge.)
+
+- **Every model was far too dry**, by a factor of 2 to 40 against the satellite. GSMaP (gauge-adjusted) may itself read high, but the floods happened and the gauges agree. Open-Meteo's default model for this place behaves like DWD's ICON, the driest of the five in 2024.
+- **At the same threshold as rain already fallen, the forecast rule caught almost nothing**: Pattani 0 of 2, Hat Yai 0 of 1, Kolok 1 of 3. So the live dashboard's "forecast -> Watch" reason will rarely fire, and when it does not, that is not reassurance.
+- **Lower thresholds for forecast rain** give lead but cost false alarms, and with six floods the best model and figure differ from zone to zone (Pattani: GFS 80 mm, 2/2, 1 false, 65 h; Kolok: ECMWF 100 mm, 2/3, 2 false, 37 h; Hat Yai: ICON 40 mm, 1/1, 0 false, 107 h). Picking per zone would be fitting six events.
+- **The wettest of the five models each hour, 150 mm over the next 72 hours**: Pattani 2/2 with 2 false alarms and a median lead of 51 hours; Hat Yai 1/1, 1 false, 54 hours; Kolok 1/3, 4 false. Taking the hourly maximum inflates totals, which is what lets a high figure work.
+- Nothing here changes the live rule yet: that is the owner's choice (decision log).

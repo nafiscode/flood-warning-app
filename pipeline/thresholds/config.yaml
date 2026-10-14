@@ -120,6 +120,14 @@ tide_check:
     kolok: [X.119]
     u_taphao: [ONE038, ONE037, SLA005, X.44]
 
+# The forecast check (thresholds/forecast.py): Open-Meteo's archive of past forecasts starts in
+# 2024, so only these seasons can be scored.
+forecast_check:
+  seasons: [2024, 2025]
+  fallback_mm: 180     # a zone whose Watch is not on 72-hour rain is checked against this
+  # Open-Meteo's default (what the live feed asked for) and four of the models behind it.
+  models: [best_match, ecmwf_ifs025, gfs_seamless, icon_seamless, jma_seamless]
+
 # Threshold candidates the hindcast scores. The proposal takes, per level, the candidate that
 # catches every flood the gauge recorded with the fewest false alarms (ties: the longer lead).
 candidates:

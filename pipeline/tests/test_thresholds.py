@@ -160,3 +160,32 @@ def test_tide_over_bank_counts_hours_the_tide_alone_explains():
     level = series(0.9 + 0.4 * np.sin(hours * 2 * np.pi / 12.42))
     out = tide.tide_over_bank(level, 1.2)
     assert out["hours_over"] > 0 and out["tide_only"] == out["hours_over"]
+
+
+def test_forecast_ahead_and_behind_sum_the_right_hours():
+    from thresholds import forecast as fc
+
+    rain = series([1.0] * 100)
+    rain.iloc[50] = 11.0
+    # From hour 0 the next 72 hours hold hour 50: 71 x 1 + 11.
+    assert fc.ahead(rain).iloc[0] == 82.0
+    # Hours 0 to 71 hold hour 50 too; before 65 hours of record there is no total yet.
+    assert fc.behind(rain).iloc[71] == 82.0
+    assert pd.isna(fc.behind(rain).iloc[40])
+
+
+def test_forecast_check_scores_a_rule_that_sees_the_flood_coming():
+    from thresholds import forecast as fc
+
+    idx = pd.date_range("2024-11-01", periods=24 * 30, freq="1h", tz="UTC")
+    day3 = pd.Series(0.0, index=idx)
+    day3["2024-11-20":"2024-11-22"] = 3.0          # 216 mm forecast for these three days
+    forecast = pd.DataFrame({"day1": day3, "day2": day3, "day3": day3})
+    observed = pd.Series(0.0, index=idx)
+    observed["2024-11-20":"2024-11-22"] = 4.0
+    onset = pd.Timestamp("2024-11-22 18:00", tz="UTC")
+    out = fc.zone_check(forecast, observed, [onset], 180.0, [(idx[0], idx[-1])],
+                        {"merge_gap_h": 48, "hit_window_h": 120})
+    assert out["forecast_rule"]["detected"] == 1
+    assert out["forecast_rule"]["median_lead_h"] > out["observed_rule"]["median_lead_h"]
+    assert out["floods"][0]["forecast_day1_mm"] == 198.0
