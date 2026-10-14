@@ -41,6 +41,8 @@ import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
 import { Link } from "@/i18n/navigation";
 import { checkBox, checkRow } from "@/lib/ui";
 import { MapView, type MapSelection, type MinePlace } from "./MapView";
+import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
+import { gaugeLook, trendOf } from "@/lib/gauge-marks";
 
 /** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
 function PlaceMark({ size }: { size: number }) {
@@ -82,6 +84,8 @@ export type DashboardViewProps = {
   directoryState: LoadState;
   data: MapData | null;
   dataState: LoadState;
+  /** When the gauges were last asked for again (0: not yet); the legend's "live" line. */
+  gaugesAskedAt?: number;
   /** The dams and their release path. Null while loading, or if the answer can't be had. */
   dams?: Dam[] | null;
   /** The `pmtiles://` address of the flood-hazard classes; null while there is none to draw. */
@@ -341,6 +345,11 @@ export function DashboardView(props: DashboardViewProps) {
   const hazardOnOffer = layers.includes("hazard") && !!props.hazardTiles;
   // The map is dark at night except on the satellite picture; the legend shows the shades in use.
   const nightMap = dark && basemap !== "satellite";
+  // The newest gauge reading, for the legend's "live" line.
+  const newestGauge = (data?.gauges ?? []).reduce<string | null>(
+    (best, g) => (g.observedAt && (!best || g.observedAt > best) ? g.observedAt : best),
+    null,
+  );
   const mapLayers = layers.filter(
     (l) => (l !== "places" || showPlaces) && (l !== "hazard" || showHazard || !hazardOnOffer),
   );
@@ -459,12 +468,39 @@ export function DashboardView(props: DashboardViewProps) {
     const gauge = data?.gauges.find((g) => g.id === selection.id);
     selected = gauge ? (
       <section className={card} data-selected="gauge">
-        <p className="font-bold">{localName(gauge.name, locale)}</p>
-        <p>{t(`gauge.${gauge.status}`)}</p>
+        <div className="flex items-center gap-2">
+          <GaugeGlyph look={gaugeLook(gauge.status)} dark={nightMap} size={36} />
+          <div>
+            <p className="font-bold">{localName(gauge.name, locale)}</p>
+            {gauge.code && <p className={hint}>{t("gauge.code", { code: gauge.code })}</p>}
+          </div>
+        </div>
+        <p className="font-medium" data-gauge-state={gauge.status}>
+          {t(`gauge.${gauge.status}`)}
+        </p>
         {gauge.value !== null && <p>{t("gauge.level", { value: gauge.value.toFixed(2) })}</p>}
+        {gauge.status !== "no_recent_data" &&
+          gauge.value !== null &&
+          gauge.bank != null &&
+          (gauge.value >= gauge.bank ? (
+            <p>{t("gauge.overBank", { value: (gauge.value - gauge.bank).toFixed(2) })}</p>
+          ) : (
+            <p>{t("gauge.belowBank", { value: (gauge.bank - gauge.value).toFixed(2) })}</p>
+          ))}
+        {gauge.bank != null && (
+          <p className={hint}>{t("gauge.bank", { value: gauge.bank.toFixed(2) })}</p>
+        )}
+        {gauge.status !== "no_recent_data" && gauge.rise3h != null && (
+          <p data-gauge-trend={trendOf(gauge.rise3h, gaugeLook(gauge.status))}>
+            {t(`gauge.rise.${trendOf(gauge.rise3h, gaugeLook(gauge.status))}`, {
+              value: Math.abs(gauge.rise3h).toFixed(2),
+            })}
+          </p>
+        )}
         {gauge.observedAt && (
           <p className={hint}>{t("gauge.at", { time: time(gauge.observedAt) })}</p>
         )}
+        <p className={hint}>{t("gauge.notAlert")}</p>
       </section>
     ) : null;
   }
@@ -628,6 +664,7 @@ export function DashboardView(props: DashboardViewProps) {
                   boundsKey={focus?.key ?? (askedBox ? 1 : 0)}
                   onSelect={setSelection}
                   text={{ loading: t("loading"), failed: t("failed") }}
+                  gaugeWords={{ near: t("gauge.nearShort"), over: t("gauge.overShort") }}
                   mine={mine}
                   showMine={showMine}
                   dams={dams}
@@ -814,6 +851,45 @@ export function DashboardView(props: DashboardViewProps) {
                             {t("risk.note")}
                           </span>
                         </li>
+                      ) : layer === "gauges" ? (
+                        <li key={layer} className="flex flex-col gap-1" data-layer={layer}>
+                          <span className="flex flex-wrap items-center gap-2 font-medium">
+                            {t("layers.gauges")}
+                            <span
+                              className="inline-flex items-center gap-1 text-small font-bold uppercase tracking-wide"
+                              data-gauges-live="true"
+                            >
+                              <LiveDot dark={nightMap} />
+                              {t("gauge.live")}
+                            </span>
+                          </span>
+                          <ul className="flex flex-col gap-1">
+                            {(
+                              [
+                                ["over", "above_warning"],
+                                ["near", "above_watch"],
+                                ["normal", "normal"],
+                                ["quiet", "no_recent_data"],
+                              ] as const
+                            ).map(([look, status]) => (
+                              <li
+                                key={look}
+                                className="flex items-center gap-2"
+                                data-gauge-legend={look}
+                              >
+                                <GaugeGlyph look={look} dark={nightMap} />
+                                {t(`gauge.${status}`)}
+                              </li>
+                            ))}
+                          </ul>
+                          <span className={hint}>{t("gauge.legendFull")}</span>
+                          <span className={hint}>{t("gauge.legendTrend")}</span>
+                          {newestGauge && (
+                            <span className={hint} data-gauges-updated="true">
+                              {t("gauge.updated", { time: time(newestGauge) })}
+                            </span>
+                          )}
+                        </li>
                       ) : (
                         <li key={layer} className="flex items-center gap-2" data-layer={layer}>
                           {layer === "places" ? (
@@ -822,11 +898,9 @@ export function DashboardView(props: DashboardViewProps) {
                             <span
                               aria-hidden="true"
                               className={
-                                layer === "gauges"
-                                  ? "size-4 shrink-0 rounded-full border-4 border-jaga-edge bg-white"
-                                  : layer === "reports"
-                                    ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
-                                    : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
+                                layer === "reports"
+                                  ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
+                                  : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
                               }
                             />
                           )}

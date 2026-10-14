@@ -1,4 +1,4 @@
-import type { MapData } from "@/lib/map-data";
+import { toGauge, type MapData } from "@/lib/map-data";
 import { toSafePlace } from "@/lib/places";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/public";
@@ -55,15 +55,7 @@ export async function GET() {
       deepest: (row.deepest as string | null) ?? null,
       latest: String(row.latest),
     })),
-    gauges: ((gauges.data ?? []) as Record<string, unknown>[]).map((row) => ({
-      id: String(row.id),
-      name: (row.name ?? {}) as Record<string, string>,
-      lat: Number(row.lat),
-      lon: Number(row.lon),
-      value: typeof row.value === "number" ? row.value : null,
-      observedAt: typeof row.observed_at === "string" ? row.observed_at : null,
-      status: row.status as MapData["gauges"][number]["status"],
-    })),
+    gauges: ((gauges.data ?? []) as Record<string, unknown>[]).map(toGauge),
   };
   return Response.json(body, { headers: { "Cache-Control": CACHE_60S } });
 }

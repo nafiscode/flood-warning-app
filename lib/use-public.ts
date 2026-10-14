@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { coarse } from "@/lib/area";
 import { withoutPhones, type MyPlaces } from "@/lib/me";
 import { readStored, useStored, writeStored } from "@/lib/phone-store";
+import type { GaugeData } from "@/lib/map-data";
 import type { NearbyPlaces } from "@/lib/places";
 import { STATUS_URL, type PublicStatus } from "@/lib/public-status";
 import { isSessionCookie } from "@/lib/supabase/env";
@@ -205,4 +206,45 @@ export function useNow(): number {
     () => Math.floor(Date.now() / TICK_MS) * TICK_MS,
     () => 0,
   );
+}
+
+/** How often an open map asks for the gauges again (the budget's five minutes; CLAUDE.md). */
+export const GAUGES_POLL_MS = 5 * 60_000;
+
+/**
+ * The river gauges, asked for when the map opens, every five minutes while the page is visible,
+ * and at once when the person comes back to it. A failed ask keeps the last answer: a gauge goes
+ * grey by its own reading's age, never because one request failed.
+ */
+export function useLiveGauges(url: string): { data: GaugeData | null; askedAt: number } {
+  const [state, setState] = useState<{ data: GaugeData | null; askedAt: number }>({
+    data: null,
+    askedAt: 0,
+  });
+  useEffect(() => {
+    let cancelled = false;
+    let last = 0;
+    const ask = () => {
+      if (document.visibilityState !== "visible") return;
+      last = Date.now();
+      getJson<GaugeData>(url).then(
+        (data) => {
+          if (!cancelled) setState({ data, askedAt: Date.now() });
+        },
+        () => {},
+      );
+    };
+    ask();
+    const timer = window.setInterval(ask, GAUGES_POLL_MS);
+    const back = () => {
+      if (Date.now() - last > 60_000) ask();
+    };
+    document.addEventListener("visibilitychange", back);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", back);
+    };
+  }, [url]);
+  return state;
 }

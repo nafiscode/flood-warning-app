@@ -544,13 +544,29 @@
       "roof": "up to the roof"
     },
     "gauge": {
-      "normal": "Below the watch level",
-      "above_watch": "Above the watch level",
-      "above_warning": "Above the warning level",
+      "normal": "Below its bank",
+      "above_watch": "Close to its bank",
+      "above_warning": "At or over its bank",
       "no_levels": "No reference levels for this station yet",
       "no_recent_data": "No data in the last 6 hours",
       "level": "Water level {value} m MSL",
-      "at": "Measured {time}"
+      "at": "Measured {time}",
+      "nearShort": "near bank",
+      "overShort": "over bank",
+      "rise": {
+        "up": "Rose {value} m in about 3 hours",
+        "down": "Fell {value} m in about 3 hours",
+        "flat": "About steady over 3 hours"
+      },
+      "bank": "Bank level {value} m MSL",
+      "belowBank": "{value} m below the bank",
+      "overBank": "{value} m over the bank",
+      "code": "Station {code}",
+      "notAlert": "A measurement, not an alert. Alerts come only from Jaga's admins.",
+      "live": "Live",
+      "updated": "Newest reading {time} · checked again every 5 minutes",
+      "legendTrend": "Chevron: risen or fallen in the last 3 hours",
+      "legendFull": "The fuller the glass, the closer the river is to its bank"
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
     "mine": {

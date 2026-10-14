@@ -92,4 +92,30 @@ describe("the gauges", () => {
     expect((await rows(db, "select 1 from public.gauge_feed_log")).length).toBeGreaterThan(0);
     await expectDenied(db, "delete from public.gauge_feed_log");
   });
+  it("tells a visitor the rise over about three hours and the bank, and calls a gauge near its bank half a metre below it", async () => {
+    await asOwner(db);
+    await db.query("update public.stations set watch_m = null where id = $1", [station]);
+    for (const [age, value] of [
+      ["3 hours 10 minutes", 9.1],
+      ["1 hour", 9.4],
+      ["5 minutes", 9.6],
+    ] as const) {
+      await db.query(
+        "insert into public.observations (station_id, ts, variable, value) values ($1, now() - $2::interval, 'water_level_msl', $3)",
+        [station, age, value],
+      );
+    }
+    await as(db, "anon");
+    const row = (
+      await rows<{ status: string; rise_3h: number; bank_m: number; code: string }>(
+        db,
+        "select status, rise_3h, bank_m, code from public.station_status() where id = $1",
+        [station],
+      )
+    )[0]!;
+    expect(row.status).toBe("above_watch");
+    expect(row.rise_3h).toBeCloseTo(0.5, 5);
+    expect(row.bank_m).toBe(10);
+    expect(row.code).toBe("T.1");
+  });
 });

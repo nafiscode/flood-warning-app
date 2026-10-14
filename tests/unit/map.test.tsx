@@ -368,7 +368,7 @@ describe("map dashboard (spec 4.2)", () => {
     expect(dashboard().querySelector("[data-map]")?.textContent).toContain("alerts");
     const quiet = dashboard({ status: exampleStatus([]) });
     // Safe places are drawn only once the person asks for them (the owner, 12 Oct).
-    expect(quiet.querySelector("[data-map]")?.textContent).toBe("hazard");
+    expect(quiet.querySelector("[data-map]")?.textContent).toBe("hazard,gauges");
     expect(quiet.querySelector('[data-pending-layer="hazard"]')).not.toBeNull();
   });
 
@@ -402,12 +402,12 @@ describe("map dashboard (spec 4.2)", () => {
     });
     const toggle = c.querySelector<HTMLInputElement>("[data-hazard-toggle] input")!;
     expect(toggle.checked).toBe(true);
-    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard");
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,gauges");
     fireEvent.click(toggle);
-    expect(c.querySelector("[data-map]")?.textContent).toBe("");
+    expect(c.querySelector("[data-map]")?.textContent).toBe("gauges");
     expect(c.querySelector("[data-hazard-class]")).toBeNull();
     fireEvent.click(toggle);
-    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard");
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,gauges");
   });
 
   it("offers three map backgrounds, opens on the terrain, and says what the satellite picture is", () => {
@@ -435,11 +435,11 @@ describe("map dashboard (spec 4.2)", () => {
     );
     expect(c.querySelector('[data-layer="places"]')).toBeNull();
     fireEvent.click(toggle);
-    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,places");
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,gauges,places");
     expect(c.querySelector('[data-layer="places"]')?.textContent).toContain(th.map.layers.places);
     expect(c.textContent).toContain(th.map.places.hint);
     fireEvent.click(toggle);
-    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard");
+    expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,gauges");
     // With no place to show there is nothing to switch on.
     const none = dashboard({ status: exampleStatus([]), data: { ...EXAMPLE_MAP, places: [] } });
     expect(none.querySelector("[data-places-toggle]")).toBeNull();
@@ -734,5 +734,45 @@ describe("the map opens where the person already is", () => {
     expect(c.querySelector("[data-selected-panel]")).not.toBeNull();
     fireEvent.click(c.querySelector("[data-selected-panel] button")!);
     expect(c.querySelector("[data-selected-panel]")).toBeNull();
+  });
+});
+
+describe("river gauges on the public map (A8 item 4)", () => {
+  it("names the look, the trend and the words beside a gauge near or over its bank", async () => {
+    const { gaugeLook, trendOf, gaugeLabels } = await import("@/lib/gauge-marks");
+    expect(gaugeLook("above_warning")).toBe("over");
+    expect(gaugeLook("above_watch")).toBe("near");
+    expect(gaugeLook("no_recent_data")).toBe("quiet");
+    expect(trendOf(0.3, "normal")).toBe("up");
+    expect(trendOf(-0.3, "near")).toBe("down");
+    expect(trendOf(0.02, "normal")).toBe("flat");
+    // A silent gauge has no trend to show, whatever its last two readings did.
+    expect(trendOf(0.5, "quiet")).toBe("flat");
+    const words = { near: "near bank", over: "over bank" };
+    expect(gaugeLabels({ value: 16.62, status: "above_warning" }, words)).toEqual({
+      short: "over bank",
+      long: "16.62 m · over bank",
+    });
+    expect(gaugeLabels({ value: 3.1, status: "normal" }, words)).toEqual({
+      short: "",
+      long: "3.10 m",
+    });
+    expect(gaugeLabels({ value: 3.1, status: "no_recent_data" }, words).long).toBe("");
+  });
+
+  it("draws gauges in water colour, far from every alert colour", async () => {
+    const { gaugePaint } = await import("@/lib/gauge-marks");
+    const { alert } = await import("@/lib/brand/tokens");
+    const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    for (const dark of [false, true]) {
+      const water = rgb(gaugePaint(dark).water);
+      for (const level of ["normal", "watch", "warning", "evacuate", "return"] as const) {
+        const other = rgb(alert[level].bg);
+        const distance = Math.hypot(...water.map((v, k) => v - other[k]!));
+        // The map's own water colour (the dam's river): nearest to Return's blue, ~69 apart by day. The
+        // glass shape and the written state carry the meaning, never the colour alone.
+        expect(distance, level).toBeGreaterThan(60);
+      }
+    }
   });
 });

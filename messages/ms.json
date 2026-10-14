@@ -544,13 +544,29 @@
       "roof": "sampai bumbung"
     },
     "gauge": {
-      "normal": "Di bawah paras berjaga-jaga",
-      "above_watch": "Melebihi paras berjaga-jaga",
-      "above_warning": "Melebihi paras amaran",
+      "normal": "Di bawah paras tebing",
+      "above_watch": "Hampir paras tebing",
+      "above_warning": "Pada atau melebihi paras tebing",
       "no_levels": "Stesen ini belum ada paras rujukan",
       "no_recent_data": "Tiada data dalam 6 jam yang lalu",
       "level": "Paras air {value} m MSL",
-      "at": "Diukur pada {time}"
+      "at": "Diukur pada {time}",
+      "nearShort": "hampir tebing",
+      "overShort": "melimpahi tebing",
+      "rise": {
+        "up": "Naik {value} m dalam kira-kira 3 jam",
+        "down": "Turun {value} m dalam kira-kira 3 jam",
+        "flat": "Hampir tidak berubah dalam 3 jam"
+      },
+      "bank": "Paras tebing {value} m MSL",
+      "belowBank": "{value} m di bawah tebing",
+      "overBank": "{value} m melebihi tebing",
+      "code": "Stesen {code}",
+      "notAlert": "Ini ukuran, bukan amaran. Amaran hanya dikeluarkan oleh pentadbir Jaga.",
+      "live": "Langsung",
+      "updated": "Bacaan terbaru {time} · disemak semula setiap 5 minit",
+      "legendTrend": "Anak panah: naik atau turun dalam 3 jam lepas",
+      "legendFull": "Semakin penuh bulatan, semakin hampir sungai dengan tebingnya"
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",
     "mine": {

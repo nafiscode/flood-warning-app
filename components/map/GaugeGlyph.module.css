@@ -1,0 +1,50 @@
+/* The legend's copy of a gauge on the map (lib/gauge-marks.ts): the water sways, a gauge near or
+   over its bank sends out ripples. Every keyframe starts from the resting picture, and nothing
+   moves under reduced motion. */
+.wave {
+  animation: sway 2.4s ease-in-out infinite;
+}
+.ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ripple 2.8s ease-out infinite;
+}
+.quick {
+  animation-duration: 1.5s;
+}
+.late {
+  animation-delay: -0.75s;
+}
+.live {
+  animation: beat 2s ease-in-out infinite;
+}
+@keyframes sway {
+  50% {
+    transform: translateX(-4px);
+  }
+}
+@keyframes ripple {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+@keyframes beat {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave,
+  .ripple,
+  .live {
+    animation: none;
+  }
+  .ripple {
+    opacity: 0;
+  }
+}

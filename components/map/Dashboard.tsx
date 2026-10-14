@@ -11,7 +11,7 @@ import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
 import { satelliteUrl, type SatelliteFlood, type SatelliteWindow } from "@/lib/satellite-flood";
-import { useFetched, useMyPlaces, useNow, usePublicStatus } from "@/lib/use-public";
+import { useFetched, useLiveGauges, useMyPlaces, useNow, usePublicStatus } from "@/lib/use-public";
 import { DashboardView } from "./DashboardView";
 
 /**
@@ -46,6 +46,13 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   const hazards = useFetched<{ hazards: Hazard[] }>("/api/public/hazards");
   const directory = useFetched<AreaDirectory>("/api/geo/areas");
   const data = useFetched<MapData>("/api/public/map");
+  // The river gauges, asked for again every five minutes while the map is open (A8 item 4): the
+  // database reads ThaiWater every 15 minutes, so the map keeps up without a reload.
+  const live = useLiveGauges("/api/public/gauges");
+  const mapData = useMemo(
+    () => (data.data && live.data ? { ...data.data, gauges: live.data.gauges } : data.data),
+    [data.data, live.data],
+  );
   // The dam, the reservoir and the path released water takes: public, edge-cached, and asked
   // for in every view because the river is always drawn (spec section 15).
   const dam = useFetched<DamData>(DAM_URL);
@@ -79,7 +86,8 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       hazardsState={hazards.state}
       directory={directory.data}
       directoryState={directory.state}
-      data={data.data}
+      data={mapData}
+      gaugesAskedAt={live.askedAt}
       dataState={data.state}
       dams={damsWithZones}
       hazardTiles={hazardSourceUrl(tiles, manifest.data)}

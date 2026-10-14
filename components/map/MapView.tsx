@@ -32,6 +32,18 @@ import { SATELLITE_OPACITY, satelliteColor, type SatelliteCell } from "@/lib/sat
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
+  GAUGE_IMAGE_RATIO,
+  gaugeImage,
+  gaugeImageName,
+  gaugeLabels,
+  gaugeLook,
+  gaugePaint,
+  reducedMotion,
+  trendOf,
+  type GaugeLook,
+  type Trend,
+} from "@/lib/gauge-marks";
+import {
   type Basemap,
   createServiceAreaMap,
   darkNow,
@@ -126,6 +138,8 @@ type Props = {
   boundsKey?: number;
   onSelect: (selection: MapSelection) => void;
   text: { loading: string; failed: string };
+  /** The words written beside a gauge near or over its bank (lib/gauge-marks.ts). */
+  gaugeWords?: { near: string; over: string };
 };
 
 /*
@@ -144,6 +158,7 @@ const HAZARD_FILL = "jaga-hazard-fill";
 const SATELLITE = "jaga-satellite";
 const SATELLITE_LINE = "jaga-satellite-line";
 const GAUGES = "jaga-gauges";
+const GAUGE_LABEL = "jaga-gauge-label";
 const MINE = "jaga-mine";
 const MINE_LABEL = "jaga-mine-label";
 /** How far from a tap a thin line or a small mark still counts, in pixels. */
@@ -232,11 +247,21 @@ function damCollections(
   };
 }
 
+/** Which gauge is drawn on top where two overlap: the one nearest its bank. */
+const GAUGE_RANK: Record<GaugeLook, number> = {
+  over: 4,
+  near: 3,
+  normal: 2,
+  nolevels: 1,
+  quiet: 0,
+};
+
 function toCollections(
   data: MapData | null,
   mine: MinePlace[],
   dams: Dam[],
   damText: { spillway: string; outlet: string; locale: string },
+  gaugeWords: { near: string; over: string },
 ): Record<string, Collection> {
   return {
     ...damCollections(dams, damText),
@@ -256,11 +281,20 @@ function toCollections(
       })),
     ),
     [GAUGES]: collection(
-      (data?.gauges ?? []).map((gauge) => ({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [gauge.lon, gauge.lat] },
-        properties: { id: gauge.id },
-      })),
+      (data?.gauges ?? []).map((gauge) => {
+        const look = gaugeLook(gauge.status);
+        return {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [gauge.lon, gauge.lat] },
+          properties: {
+            id: gauge.id,
+            look,
+            trend: trendOf(gauge.rise3h ?? null, look),
+            rank: GAUGE_RANK[look],
+            ...gaugeLabels(gauge, gaugeWords),
+          },
+        };
+      }),
     ),
   };
 }
@@ -287,7 +321,9 @@ export function MapView({
   hazardUrl = null,
   basemap = "streets",
   satellite = null,
+  gaugeWords = { near: "", over: "" },
 }: Props) {
+  const { near: nearWord, over: overWord } = gaugeWords;
   // One object for as long as the hexagons are the same, so they are sent to the map once.
   const satelliteData = useMemo(
     () => collection((satellite ?? []) as GeoJSON.Feature[]),
@@ -333,11 +369,17 @@ export function MapView({
 
   useEffect(() => {
     const collections = {
-      ...toCollections(data, mine, dams, {
-        spillway: spillwayLabel,
-        outlet: outletLabel,
-        locale: damLocale,
-      }),
+      ...toCollections(
+        data,
+        mine,
+        dams,
+        {
+          spillway: spillwayLabel,
+          outlet: outletLabel,
+          locale: damLocale,
+        },
+        { near: nearWord, over: overWord },
+      ),
       [SATELLITE]: satelliteData,
     };
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
@@ -678,19 +720,73 @@ export function MapView({
           parkingImage,
           placeImage,
         ]);
+        /*
+         * The river gauges: a glass with water in it that sways, ripples near or over the bank,
+         * a chevron for the last three hours (lib/gauge-marks.ts). Each picture redraws itself;
+         * only the ones in use are made, and none moves for someone who asked for less motion.
+         */
+        const night = mapIsDark();
+        const moving = !reducedMotion();
+        const gaugeKinds = new Set(
+          (data?.gauges ?? []).map((g) => {
+            const look = gaugeLook(g.status);
+            return `${look}|${trendOf(g.rise3h ?? null, look)}`;
+          }),
+        );
+        for (const kind of gaugeKinds) {
+          const [look, trend] = kind.split("|") as [GaugeLook, Trend];
+          const name = gaugeImageName(look, trend, night);
+          if (!m.hasImage(name)) {
+            const picture = gaugeImage(look, trend, night, moving);
+            if (picture) m.addImage(name, picture, { pixelRatio: GAUGE_IMAGE_RATIO });
+          }
+        }
+        const gaugeIcon = [
+          "concat",
+          "jaga-gauge-",
+          ["get", "look"],
+          "-",
+          ["get", "trend"],
+          night ? "-night" : "-day",
+        ] as unknown as string;
+        if (m.getLayer(GAUGES) && m.getLayer(GAUGES)!.type !== "symbol") m.removeLayer(GAUGES);
         if (!m.getLayer(GAUGES)) {
           m.addLayer({
             id: GAUGES,
-            type: "circle",
+            type: "symbol",
             source: GAUGES,
-            paint: {
-              "circle-radius": 6,
-              "circle-color": halo(),
-              "circle-stroke-color": ink(),
-              "circle-stroke-width": 3,
+            layout: {
+              "icon-image": gaugeIcon,
+              "icon-size": ["interpolate", ["linear"], ["zoom"], 7, 0.5, 9, 0.75, 12, 1.1],
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
+              "symbol-sort-key": ["get", "rank"],
             },
           });
         }
+        m.setLayoutProperty(GAUGES, "icon-image", gaugeIcon);
+        if (!m.getLayer(GAUGE_LABEL)) {
+          m.addLayer({
+            id: GAUGE_LABEL,
+            type: "symbol",
+            source: GAUGES,
+            layout: {
+              // Far out only the gauges near or over their bank are named; close in, every level.
+              "text-field": ["step", ["zoom"], ["get", "short"], 10, ["get", "long"]],
+              "text-font": ["Noto Sans Regular"],
+              "text-size": 12,
+              "text-anchor": "left",
+              "text-offset": [1.3, 0],
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+              "symbol-sort-key": ["get", "rank"],
+            },
+          });
+        }
+        const gp = gaugePaint(night);
+        m.setPaintProperty(GAUGE_LABEL, "text-color", gp.rim);
+        m.setPaintProperty(GAUGE_LABEL, "text-halo-color", gp.halo);
+        m.setPaintProperty(GAUGE_LABEL, "text-halo-width", 1.8);
         if (!m.getLayer(MINE)) {
           // On top of the public layers: these few points are what the person came to find.
           m.addLayer({
@@ -790,6 +886,7 @@ export function MapView({
         m.setLayoutProperty(REPORTS_LINE, "visibility", show("reports"));
         m.setLayoutProperty(PLACES, "visibility", show("places"));
         m.setLayoutProperty(GAUGES, "visibility", show("gauges"));
+        m.setLayoutProperty(GAUGE_LABEL, "visibility", show("gauges"));
         const mineOn = showMine && mine.length > 0 ? "visible" : "none";
         m.setLayoutProperty(MINE, "visibility", mineOn);
         m.setLayoutProperty(MINE_LABEL, "visibility", mineOn);
@@ -811,6 +908,8 @@ export function MapView({
     damLocale,
     hazardUrl,
     satelliteData,
+    nearWord,
+    overWord,
   ]);
 
   useEffect(() => {

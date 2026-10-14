@@ -16,10 +16,13 @@ export type MapLayer = (typeof MAP_LAYERS)[number];
 /**
  * The layers a hazard may draw in a view. A hazard that is not active draws nothing at all: no
  * empty layer and no "all clear" color (safety rule 10).
- * Pre-season risk view: hazard map and safe places. Live view: alerts, reports, gauges, and the
+ * Risk view: hazard map, the river gauges (live, on top of the hazard colours: the owner, 14 Oct)
+ * and safe places. Live view: alerts, reports, gauges, and the
  * safe places people are heading to.
  */
 export function layersFor(hazard: Pick<Hazard, "status"> | null, mode: MapMode): MapLayer[] {
   if (!hazard || hazard.status !== "active") return [];
-  return mode === "risk" ? ["hazard", "places"] : ["alerts", "reports", "gauges", "places"];
+  return mode === "risk"
+    ? ["hazard", "gauges", "places"]
+    : ["alerts", "reports", "gauges", "places"];
 }
