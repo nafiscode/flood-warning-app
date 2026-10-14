@@ -189,6 +189,21 @@ const TEAL = "#2f9c95";
 const GROUND = "#f0f2ee";
 const GROUND_DARK = "#0f1c26";
 
+/**
+ * The tambon outlines. On a street map, slate (pale at night) and quiet. On a photograph the slate
+ * vanished into dark fields and forest (the owner, 15 Oct 2026: a little more visible, not too
+ * much), so there they are pale, a touch wider and half see-through.
+ */
+export function tambonLinePaint(dark: boolean, photo: boolean) {
+  return photo
+    ? { "line-color": "#f2f5f3", "line-width": 0.9, "line-opacity": 0.4 }
+    : {
+        "line-color": dark ? "#cfe0e8" : SLATE,
+        "line-width": 0.8,
+        "line-opacity": dark ? 0.5 : 0.6,
+      };
+}
+
 const startStyle = (dark: boolean): StyleSpecification => ({
   version: 8,
   // The same free font server the basemap uses, so our own labels can be drawn before (and
@@ -220,11 +235,7 @@ const startStyle = (dark: boolean): StyleSpecification => ({
       id: "jaga-tambon-line",
       type: "line",
       source: TAMBON_SOURCE,
-      paint: {
-        "line-color": dark ? "#cfe0e8" : SLATE,
-        "line-width": 0.8,
-        "line-opacity": dark ? 0.5 : 0.6,
-      },
+      paint: tambonLinePaint(dark, isPhotoBasemap(chosen)),
     },
   ],
 });
@@ -366,7 +377,14 @@ function carryOwn(
   base: StyleSpecification,
 ): StyleSpecification {
   if (!previous) return base;
-  const own = previous.layers.filter((l) => l.id.startsWith("jaga-") && !BASE_PARTS.includes(l.id));
+  const own = previous.layers
+    .filter((l) => l.id.startsWith("jaga-") && !BASE_PARTS.includes(l.id))
+    // The tambon outlines take the colour that reads on the new ground.
+    .map((l) =>
+      l.id === TAMBON_LINE_LAYER && l.type === "line"
+        ? { ...l, paint: { ...l.paint, ...tambonLinePaint(mapIsDark(), isPhotoBasemap(chosen)) } }
+        : l,
+    );
   // Every source of ours comes along, with whatever data it holds by now.
   const ownSources = Object.fromEntries(
     Object.entries(previous.sources).filter(([id]) => id.startsWith("jaga-") && !isBaseSource(id)),
