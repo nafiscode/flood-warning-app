@@ -23,6 +23,9 @@ export async function generateMetadata({
 
 export const dynamic = "force-dynamic";
 
+/** Gauges are fetched every 15 minutes; reading the page every 5 shows a new one within 5. */
+const REFRESH_MINUTES = 5;
+
 /**
  * The signal dashboard (spec 6.3): per warning zone, the gauges against their thresholds, the
  * rain behind and ahead, the modelled flow, the tide, and a suggested level with its reasons.
@@ -72,6 +75,7 @@ export default async function SignalsPage({
       modeAction={setAutoMode.bind(null, locale)}
       dismissAction={dismissAutoAlarm.bind(null, locale)}
       levelsAction={setGaugeLevels.bind(null, locale)}
+      refreshMinutes={REFRESH_MINUTES}
     />
   );
 }

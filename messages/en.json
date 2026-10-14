@@ -3174,7 +3174,7 @@
     "tide": {
       "title": "Sea level at the river mouth (m)",
       "none": "No sea level fetched yet.",
-      "caveat": "A tide and ocean model's hourly sea level (Open-Meteo Marine). A high tide slows the river's way out to sea."
+      "caveat": "A tide and ocean model's hourly sea level (Open-Meteo Marine). Against the tidal gauges in Pattani town (2024–2026) it rises and falls at the same hours and by about the same amount, but reads about 0.7 m higher than their datum (m MSL). Read its rise and fall, not its figure. A high tide slows the river's way out to sea."
     },
     "feed": {
       "title": "The data's own state",
@@ -3184,7 +3184,8 @@
       "failed": "{name}: the last fetch, {time}, had a failure.",
       "never": "{name}: never fetched.",
       "old": "That is {hours} hours ago.",
-      "lag": "Gauges are asked for every 15 minutes and the forecasts every hour. The agencies' own feeds lag: a gauge can be hours behind even when the fetch worked, which is why every reading shows its own time."
+      "lag": "Gauges are asked for every 15 minutes and the forecasts every hour. The agencies' own feeds lag: a gauge can be hours behind even when the fetch worked, which is why every reading shows its own time.",
+      "refresh": "This page reads the data again every {minutes} minutes while it is open, except while you are typing into a form."
     },
     "thresholds": {
       "title": "Thresholds for this zone",

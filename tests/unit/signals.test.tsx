@@ -1,7 +1,7 @@
 import { render as plainRender } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SignalsView } from "@/components/admin/Signals";
 import {
   gaugeNow,
@@ -19,6 +19,12 @@ import { EXAMPLE_SIGNALS, EXAMPLE_SIGNALS_NOW } from "@/lib/signals-examples";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
+
+// The live page reads itself again through the app router, which a unit test does not mount.
+vi.mock("next/navigation", async (original) => ({
+  ...(await original<typeof import("next/navigation")>()),
+  useRouter: () => ({ refresh: () => {} }),
+}));
 
 // The "Write an alert" link is next-intl's, which wants its provider around it.
 const render = (ui: ReactElement) =>
@@ -405,5 +411,28 @@ describe("a gauge's own levels", () => {
     const g = { ...rising.key!, bank: 10, series: [[now - HOUR / 2, 9.2]] as Point[] };
     expect(gaugeState(g, now, { watch: 9, warning: 9.6, evacuate: 10 })).toBe("near");
     expect(gaugeState(g, now, { watch: 9.3, warning: 9.6, evacuate: 10 })).toBe("normal");
+  });
+});
+
+describe("the dashboard reads itself again", () => {
+  it("only when the period has passed, the page is seen, and nobody is typing", async () => {
+    const { shouldRefresh } = await import("@/components/admin/RefreshEvery");
+    const five = 5 * 60_000;
+    expect(shouldRefresh(five, 0, five, "visible", false)).toBe(true);
+    expect(shouldRefresh(five - 1, 0, five, "visible", false)).toBe(false);
+    expect(shouldRefresh(five, 0, five, "hidden", false)).toBe(false);
+    expect(shouldRefresh(five, 0, five, "visible", true)).toBe(false);
+  });
+
+  it("says so on the live page and not on the example", () => {
+    const t = translator(en.signals as Record<string, unknown>);
+    const example = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} />);
+    expect(example.container.querySelector("[data-signals-refresh]")).toBeNull();
+    const live = render(
+      <SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} refreshMinutes={5} />,
+    );
+    expect(live.container.querySelector("[data-signals-refresh]")!.textContent).toContain(
+      "every 5 minutes",
+    );
   });
 });

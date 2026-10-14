@@ -427,9 +427,11 @@ Acceptance: live data for the priority zones; a simulated source outage handled 
 **A8 built** (14 Oct): `gauges_fetch()` every 15 minutes and `signals_fetch()` every hour (migrations
 `a8_gauges_live`, `a8_signals`), zones, gauges, thresholds and the feed setting from the generated seed
 `46_zones_gauges_thresholds.sql`, the dashboard at `/admin/signals` (`lib/signals.ts`,
-`components/admin/Signals.tsx`, example at `/dev/signals`) and `admin_set_threshold`. Open: ThaiWater's
-tide data was not evaluated (Open-Meteo Marine is used), `warning_zone_tambons` is empty, the page does
-not refresh by itself, and live rain is a model's while the thresholds were set on satellite rain.
+`components/admin/Signals.tsx`, example at `/dev/signals`) and `admin_set_threshold`; later the same day
+the automated alarm, per-gauge levels, gauges on the public map, the zones' tambons, ThaiWater's tide
+evaluated (it has none; Open-Meteo Marine stays, decisions 14 Oct), the page reading itself every
+5 minutes, and an outage test (`tests/rls/feed-outage.test.ts`). Open: live rain is a model's while the
+thresholds were set on satellite rain.
 
 ### A9: Offline and language hardening
 ```text

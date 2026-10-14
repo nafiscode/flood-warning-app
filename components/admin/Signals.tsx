@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import { RefreshEvery } from "@/components/admin/RefreshEvery";
 import { SignalsMap, type MapPoint } from "@/components/admin/SignalsMap";
 import {
   FORECAST_STALE_H,
@@ -911,6 +912,7 @@ export function SignalsView({
   modeAction,
   dismissAction,
   levelsAction,
+  refreshMinutes,
 }: {
   data: Signals;
   locale: string;
@@ -924,6 +926,8 @@ export function SignalsView({
   modeAction?: (form: FormData) => void;
   dismissAction?: (form: FormData) => void;
   levelsAction?: (form: FormData) => void;
+  /** Read the page again this often while it is open (the live page; never the example). */
+  refreshMinutes?: number;
 }) {
   return (
     <div className="flex flex-col gap-5" data-signals={data.zones.length} data-signals-view={view}>
@@ -970,6 +974,12 @@ export function SignalsView({
           />
         </ul>
         <p className={hint}>{t("feed.lag")}</p>
+        {refreshMinutes ? (
+          <p className={hint} data-signals-refresh={refreshMinutes}>
+            {t("feed.refresh", { minutes: refreshMinutes })}
+          </p>
+        ) : null}
+        {refreshMinutes ? <RefreshEvery minutes={refreshMinutes} /> : null}
       </section>
       <AutoPanel
         data={data}

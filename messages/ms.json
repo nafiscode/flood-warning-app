@@ -3174,7 +3174,7 @@
     "tide": {
       "title": "Paras laut di muara sungai (m)",
       "none": "Paras laut belum diambil.",
-      "caveat": "Paras laut setiap jam daripada model pasang surut dan lautan (Open-Meteo Marine). Air pasang melambatkan aliran sungai ke laut."
+      "caveat": "Paras laut setiap jam daripada model pasang surut dan lautan (Open-Meteo Marine). Berbanding stesen paras air di bandar Pattani yang dipengaruhi pasang surut (2024–2026), ia naik dan turun pada jam yang sama dengan julat yang hampir sama, tetapi kira-kira 0.7 m lebih tinggi daripada datum stesen. Baca naik turunnya, bukan angkanya. Air pasang melambatkan aliran sungai ke laut."
     },
     "feed": {
       "title": "Keadaan data itu sendiri",
@@ -3184,7 +3184,8 @@
       "failed": "{name}: pengambilan terakhir, {time}, ada kegagalan.",
       "never": "{name}: belum pernah diambil.",
       "old": "Itu {hours} jam yang lalu.",
-      "lag": "Stesen ditanya setiap 15 minit dan ramalan setiap jam. Suapan agensi sendiri lewat: sesebuah stesen boleh ketinggalan berjam-jam walaupun pengambilan berjaya, sebab itu setiap bacaan menunjukkan masanya sendiri."
+      "lag": "Stesen ditanya setiap 15 minit dan ramalan setiap jam. Suapan agensi sendiri lewat: sesebuah stesen boleh ketinggalan berjam-jam walaupun pengambilan berjaya, sebab itu setiap bacaan menunjukkan masanya sendiri.",
+      "refresh": "Halaman ini membaca data semula setiap {minutes} minit selagi ia dibuka, kecuali semasa anda menaip dalam borang."
     },
     "thresholds": {
       "title": "Had bagi zon ini",
