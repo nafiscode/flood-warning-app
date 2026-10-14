@@ -45,3 +45,70 @@ def test_association_and_trend_see_what_is_there_and_not_what_is_not():
     assert up["per_decade"] == 50.0 and up["low"] <= 50.0 <= up["high"] and up["p"] < 0.001
     none = history.trend(list(range(1981, 2011)), [100 + ((i * 7919) % 13) for i in range(30)])
     assert none["low"] < 0 < none["high"]
+
+
+CPT = """xmlns:cpt=http://iri.columbia.edu/CPT/v10/
+cpt:nfields=1
+cpt:field=precip, cpt:T=1991-11/1992-01, cpt:S=1991-10-01, cpt:nrow=3, cpt:ncol=3, cpt:row=Y, cpt:col=X, cpt:units=mm, cpt:missing=-999.0
+\t100.0\t101.0\t102.0
+5.0\t9\t9\t9
+6.0\t1\t3\t-999.0
+7.0\t5\t7\t9
+cpt:field=precip, cpt:T=1992-11/1993-01, cpt:S=1992-10-01, cpt:nrow=3, cpt:ncol=3, cpt:row=Y, cpt:col=X, cpt:units=mm, cpt:missing=-999.0
+\t100.0\t101.0\t102.0
+5.0\t0\t0\t0
+6.0\t2\t2\t2
+7.0\t2\t2\t2
+"""
+
+
+def test_a_model_file_is_read_as_the_mean_of_the_chosen_cells_without_missing_values():
+    from seasonal_outlook import models
+
+    got = models.read_cpt(CPT, [100.0, 101.0, 102.0], [6.0, 7.0])
+    assert got == {1991: 5.0, 1992: 2.0}          # (1 + 3 + 5 + 7 + 9) / 5, the missing cell skipped
+
+
+def test_leans_are_scored_without_knowing_their_own_season():
+    from seasonal_outlook import models
+
+    series = {y: float(y - 2000) for y in range(2000, 2009)}          # 0..8
+    thirds = models.leave_one_out(series, list(series))
+    assert thirds[2000] == models.DRY and thirds[2008] == models.WET and thirds[2004] == models.NORMAL
+    perfect = models.score(thirds, thirds)
+    assert perfect["hit_rate_pct"] == 100 and perfect["heidke"] == 1.0
+    always_normal = models.score({s: models.NORMAL for s in thirds}, thirds)
+    assert always_normal["heidke"] == 0.0 and always_normal["hits"] == sum(v == models.NORMAL for v in thirds.values())
+    assert [models.enso_lean(v) for v in (-1.0, 0.0, 2.16, None)] == [models.WET, models.NORMAL, models.DRY, None]
+    o = models.odds(models.DRY, {1: 0, 2: 0, 3: 2}, {1: 0, 2: 1, 3: 2})
+    assert o["past_seasons_with_this_lean"] == 2 and o["odds_pct"] == {"dry": 40, "normal": 40, "wet": 20}
+
+
+def test_the_outlook_uses_only_methods_that_earned_it_and_says_so_when_they_disagree():
+    from seasonal_outlook import outlook
+
+    past = [float(v) for v in range(30)]
+    assert outlook.in_range(15.0, past) and not outlook.in_range(30.0, past) and not outlook.in_range(-1.0, past)
+    assert outlook.mean_odds([{"dry": 50, "normal": 33, "wet": 17}, {"dry": 67, "normal": 22, "wet": 11}]) == {
+        "dry": 58, "normal": 28, "wet": 14}
+    assert outlook.enso_odds({"el_nino": {"seasons": 9, "wet_third": 1, "dry_third": 5}}, "el_nino") == {
+        "dry": 50, "normal": 33, "wet": 17}
+    rows = [{"lean": "dry", "usable": True}, {"lean": "wet", "usable": False}]
+    assert outlook.summary(rows)[0] == "dry"
+    assert outlook.summary(rows + [{"lean": "normal", "usable": True}])[0] == "none"
+    assert outlook.summary([{"lean": "wet", "usable": False}]) == (
+        "none", "No method can be trusted this time. Prepare as for any season.")
+    assert outlook.beats({"hit_rate_pct": 50}, [{"hit_rate_pct": 33}, {"hit_rate_pct": 40}])
+    assert not outlook.beats({"hit_rate_pct": 40}, [{"hit_rate_pct": 33}, {"hit_rate_pct": 40}])
+
+
+def test_running_totals_are_never_mistaken_for_daily_rain_and_gaps_never_for_dry_days():
+    from seasonal_outlook import sources
+
+    assert [sources.pentad_of(d) for d in (1, 5, 6, 25, 26, 31)] == [0, 0, 1, 4, 5, 5]
+    daily = [{"area": "all", "year": 2024, "month": 11, "day": d, "mm": 1.0} for d in range(1, 31)]
+    daily = [r for r in daily if r["day"] != 8]                         # one day missing
+    got = sources.to_pentads(daily)
+    assert [(r["pentad"], r["mm"]) for r in got] == [(0, 5.0), (2, 5.0), (3, 5.0), (4, 5.0), (5, 5.0)]
+    a = {y: float(y) for y in range(2000, 2012)}
+    assert sources.agreement(a, a) == {"seasons": 12, "spearman": 1.0, "same_third_pct": 100.0}

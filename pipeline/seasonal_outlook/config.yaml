@@ -17,3 +17,24 @@ oni_url: https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt
 enso_months: JAS            # the newest value known in mid-October, when the outlook would be made
 baseline: [1991, 2020]      # the seasons that define "normal" and the thirds
 rank_from: 2017
+
+# A second record: ERA5-Land, ECMWF's land reanalysis (about 11 km, 1950 on; Copernicus licence).
+era5:
+  collection: ECMWF/ERA5_LAND/DAILY_AGGR
+  band: total_precipitation_sum      # metres a day; multiplied by 1000
+  scale_m: 11132
+# The ThaiWater gauges: a province-day counts when at least this many stations reported.
+gauges_min_stations: 3
+
+# The seasonal forecast models: NOAA CPC's North American Multi-Model Ensemble, CPT text files
+# (public domain, no account). Forecasts made at the start of October for November to January.
+models:
+  base_url: https://ftp.cpc.ncep.noaa.gov/International/nmme
+  hindcast_dir: seasonal_nmme_hindcast_in_cpt_format
+  forecast_dir: seasonal_nmme_forecast_in_cpt_format
+  hindcast_file: "{model}_precip_hcst_Octic_11-1_1991-2021.txt"
+  forecast_file: "{model}_precip_fcst_Octic_11-1_2026-2027.txt"
+  names: [nmme, cfsv2, cmc1, cmc2, nasa, ncar_ccsm4, ncar_cesm1]
+  # 1-degree cell centres over the four provinces
+  lons: [100.0, 101.0, 102.0]
+  lats: [6.0, 7.0]

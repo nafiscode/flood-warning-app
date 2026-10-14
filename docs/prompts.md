@@ -175,8 +175,9 @@ the owner's choice between the path and the zone, and the question of unrecorded
 ```text
 Read docs/science-plan.md Module 9 and pipeline/seasonal_outlook/METHODS.md.
 
-Step 1 (the record of 45 seasons against ENSO) is built. Continue in order, and show the owner the
-result of each step before the next:
+Steps 1 to 4 below were done on 14 Oct 2026 (METHODS.md has the results; the outlook for season
+2026 is "no reliable lean"). Each season: rerun `models` and `outlook` when the October NMME files
+appear, score the past season in February. The original steps:
 1. A second rainfall record for the same seasons (ERA5-Land; ThaiWater and TMD gauges where they
    reach back). Compare totals, wettest five and fifteen days, and the trend with CHIRPS. Say plainly
    which findings survive.
