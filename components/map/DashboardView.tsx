@@ -40,7 +40,8 @@ import { SatelliteFloodPanel } from "./SatelliteFlood";
 import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
 import { Link } from "@/i18n/navigation";
 import { checkBox, checkRow } from "@/lib/ui";
-import { MapView, type MapSelection, type MinePlace } from "./MapView";
+import { DamPeek, GaugePeek, PlacePeek } from "./MapPeek";
+import { MapView, type MapSelection, type MinePlace, type PeekTarget } from "./MapView";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { gaugeLook, trendOf } from "@/lib/gauge-marks";
 
@@ -129,6 +130,30 @@ const chipOff = "border-jaga-edge bg-jaga-surface text-jaga-ink";
  */
 const chipQuiet =
   "relative inline-flex min-h-9 items-center gap-1.5 rounded-full border-2 px-3 py-0.5 text-small font-medium after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-[''] active:translate-y-px lg:min-h-tap lg:gap-2 lg:px-4 lg:py-1 lg:text-body lg:after:hidden";
+
+/** The two buttons on the map's top edge: all four provinces, and the person's own places. */
+const mapButton =
+  "inline-flex min-h-tap items-center gap-2 rounded-lg border border-jaga-line bg-jaga-surface px-3 text-small font-bold text-jaga-ink shadow-sm";
+
+/** A map pin, for "My places". */
+function HomePinIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+  );
+}
 
 /** Four corners of a frame: "show the whole area". */
 function ZoomOutIcon() {
@@ -381,6 +406,43 @@ export function DashboardView(props: DashboardViewProps) {
           props.openReports.lat + 0.05,
         ]
       : null;
+
+  /*
+   * The pop-ups on the map itself (the owner, 14 Oct): a reservoir, a gauge or a safe place says
+   * how it stands where it is drawn. "All details" opens the card under the map and scrolls to it.
+   */
+  const peekMore = (target: PeekTarget) => {
+    setSelection(target);
+    window.setTimeout(() => {
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      document
+        .querySelector("[data-selected-panel]")
+        ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }, 60);
+  };
+  const renderPeek = (target: PeekTarget): React.ReactNode => {
+    const more = () => peekMore(target);
+    if (target.kind === "gauge") {
+      const gauge = data?.gauges.find((g) => g.id === target.id);
+      return gauge ? <GaugePeek gauge={gauge} dark={nightMap} time={time} onMore={more} /> : null;
+    }
+    if (target.kind === "place") {
+      const place = data?.places.find((x) => x.id === target.id);
+      return place ? <PlacePeek place={place} userAgent={props.userAgent} onMore={more} /> : null;
+    }
+    const dam = dams.find((d) => d.code === target.code);
+    return dam ? <DamPeek dam={dam} time={time} onMore={more} /> : null;
+  };
+
+  /*
+   * "My places" (the owner, 14 Oct): the map frames the person's home and the places they watch,
+   * or, for someone with neither, the area chosen on this phone.
+   */
+  const myPoints = [
+    ...mine.map((m) => ({ lon: m.lon, lat: m.lat })),
+    ...(mine.length === 0 && props.area ? [{ lon: props.area.lon, lat: props.area.lat }] : []),
+  ];
+  const myBox = myPoints.length > 0 ? boundsAround(myPoints) : null;
 
   let selected: React.ReactNode = null;
   if (selection?.kind === "tambon" && layers.includes("alerts")) {
@@ -644,17 +706,34 @@ export function DashboardView(props: DashboardViewProps) {
                * of its top edge, opposite the zoom buttons.
                */}
               <div className="relative">
-                <button
-                  type="button"
-                  data-zoom-all="true"
-                  onClick={() =>
-                    setFocus((was) => ({ box: SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }))
-                  }
-                  className="absolute start-2 top-2 z-10 inline-flex min-h-tap items-center gap-2 rounded-lg border border-jaga-line bg-jaga-surface px-3 text-small font-bold text-jaga-ink shadow-sm"
-                >
-                  <ZoomOutIcon />
-                  {t("zoomAll")}
-                </button>
+                <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12">
+                  <button
+                    type="button"
+                    data-zoom-all="true"
+                    onClick={() =>
+                      setFocus((was) => ({ box: SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }))
+                    }
+                    className={mapButton}
+                  >
+                    <ZoomOutIcon />
+                    {t("zoomAll")}
+                  </button>
+                  {myBox && (
+                    <button
+                      type="button"
+                      data-zoom-mine="true"
+                      onClick={() => {
+                        // The pins are what the button is for, so it shows them if hidden.
+                        setShowMine(true);
+                        setFocus((was) => ({ box: myBox, key: (was?.key ?? 0) + 1 }));
+                      }}
+                      className={mapButton}
+                    >
+                      <HomePinIcon />
+                      {t("zoomMine")}
+                    </button>
+                  )}
+                </div>
                 <MapView
                   layers={mapLayers}
                   status={fresh ? status : null}
@@ -665,6 +744,7 @@ export function DashboardView(props: DashboardViewProps) {
                   onSelect={setSelection}
                   text={{ loading: t("loading"), failed: t("failed") }}
                   gaugeWords={{ near: t("gauge.nearShort"), over: t("gauge.overShort") }}
+                  peek={renderPeek}
                   mine={mine}
                   showMine={showMine}
                   dams={dams}

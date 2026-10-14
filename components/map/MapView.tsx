@@ -2,7 +2,8 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { GeoJSONSource, Map as MapLibreMap, PointLike, Popup } from "maplibre-gl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { MapLayer } from "@/lib/hazards";
 import { damLevel, type Dam, reachesInOrder } from "@/lib/dam";
 import {
@@ -69,6 +70,9 @@ export type MapSelection =
   | { kind: "mine"; id: string }
   | { kind: "dam"; code: string }
   | { kind: "hazard"; value: number };
+
+/** What can say how it stands in a pop-up on the map itself (the owner, 14 Oct). */
+export type PeekTarget = Extract<MapSelection, { kind: "gauge" | "place" | "dam" }>;
 
 /**
  * A place of the person's own: their home, or one they watch for someone (spec 4.9). It is
@@ -140,6 +144,11 @@ type Props = {
   text: { loading: string; failed: string };
   /** The words written beside a gauge near or over its bank (lib/gauge-marks.ts). */
   gaugeWords?: { near: string; over: string };
+  /**
+   * The compact pop-up for a reservoir, a gauge or a safe place, drawn by the caller (it holds
+   * the figures and the words). Without it only the person's own places have a pop-up.
+   */
+  peek?: (target: PeekTarget) => ReactNode;
 };
 
 /*
@@ -322,6 +331,7 @@ export function MapView({
   basemap = "streets",
   satellite = null,
   gaugeWords = { near: "", over: "" },
+  peek,
 }: Props) {
   const { near: nearWord, over: overWord } = gaugeWords;
   // One object for as long as the hexagons are the same, so they are sent to the map once.
@@ -355,9 +365,17 @@ export function MapView({
   // The places as the handlers below need them, without rebuilding the map when they change.
   const minePlaces = useRef<MinePlace[]>(mine);
   const popup = useRef<Popup | null>(null);
-  // When a label was opened by a tap. Phones send a mouse move of their own right after a tap,
-  // which would otherwise close the label in the same instant it appeared.
-  const tappedAt = useRef(0);
+  /*
+   * One pop-up at a time, for the person's own places and (with `peek`) for a reservoir, a gauge
+   * or a safe place. A mouse opens it on hover and it closes a moment after the pointer leaves -
+   * unless the pointer went into the pop-up, so its buttons can be reached. A click or a tap
+   * pins it: it then stays until a tap elsewhere on the map, Escape, or a change of layers.
+   * Pinning also covers the phone's own mouse move right after a tap, which would otherwise
+   * close the pop-up in the instant it appeared.
+   */
+  const [peekAt, setPeekAt] = useState<{ target: PeekTarget; node: HTMLElement } | null>(null);
+  const hasPeek = useRef(false);
+  const closePeek = useRef<() => void>(() => {});
 
   useEffect(() => {
     select.current = onSelect;
@@ -366,6 +384,24 @@ export function MapView({
   useEffect(() => {
     minePlaces.current = mine;
   }, [mine]);
+
+  useEffect(() => {
+    hasPeek.current = !!peek;
+  }, [peek]);
+
+  // A pop-up for something no longer drawn would point at nothing.
+  const drawnKey = `${layers.join(",")}|${showMine}`;
+  useEffect(() => {
+    closePeek.current();
+  }, [drawnKey]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closePeek.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     const collections = {
@@ -932,58 +968,140 @@ export function MapView({
         created.on("style.load", () => held.current.clear());
         created.on("styledata", redraw);
         created.on("idle", redraw);
-        /*
-         * The label of one of the person's own places: on hover with a mouse, and on tap on a
-         * phone or tablet, where the tap also opens the card below the map. MapLibre is already
-         * loaded by now, so this import is the cached module.
-         */
-        const showLabel = (place: MinePlace) => {
-          void import("maplibre-gl").then(({ Popup }) => {
-            if (map.current !== created) return;
-            popup.current?.remove();
-            popup.current = new Popup({ closeButton: false, offset: 14, maxWidth: "260px" })
-              .setLngLat([place.lon, place.lat])
-              .setDOMContent(mineLabel(place))
-              .addTo(created);
-          });
+        type Hit = {
+          key: string;
+          lngLat: [number, number];
+          target: PeekTarget | null;
+          own: MinePlace | null;
         };
-        const hideLabel = () => {
-          if (Date.now() - tappedAt.current < 600) return;
+        let openKey: string | null = null;
+        let pinned = false;
+        let overPopup = false;
+        let hideTimer: number | undefined;
+        let watchSize: ResizeObserver | null = null;
+        /*
+         * A pinned pop-up must be readable whole: the map is a frame that cuts off whatever
+         * leaves it, and on a phone a gauge near the top edge lost half its figures. The map moves
+         * just enough to bring the pop-up inside, again when it grows (Navigate opened). Never for
+         * a hover, where moving the map under the pointer would be a nuisance.
+         */
+        const fitPopup = () => {
+          const element = popup.current?.getElement();
+          if (!element || !pinned) return;
+          const box = element.getBoundingClientRect();
+          const frame = created.getContainer().getBoundingClientRect();
+          const gap = 8;
+          let dx = 0;
+          let dy = 0;
+          if (box.top < frame.top + gap || box.height > frame.height - 2 * gap) {
+            dy = box.top - frame.top - gap;
+          } else if (box.bottom > frame.bottom - gap) dy = box.bottom - frame.bottom + gap;
+          if (box.left < frame.left + gap) dx = box.left - frame.left - gap;
+          else if (box.right > frame.right - gap) dx = box.right - frame.right + gap;
+          if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+          const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+          created.panBy([dx, dy], { duration: still ? 0 : 300 });
+        };
+        const close = () => {
+          window.clearTimeout(hideTimer);
+          watchSize?.disconnect();
+          watchSize = null;
           popup.current?.remove();
           popup.current = null;
+          openKey = null;
+          pinned = false;
+          overPopup = false;
+          setPeekAt(null);
         };
-        const placeAt = (point: Parameters<typeof created.queryRenderedFeatures>[0]) => {
-          if (!created.getLayer(MINE)) return null;
-          const hit = created.queryRenderedFeatures(point, { layers: [MINE] })[0];
-          const id = hit?.properties?.id;
-          return id ? (minePlaces.current.find((p) => p.id === String(id)) ?? null) : null;
+        closePeek.current = close;
+        const closeSoon = () => {
+          if (pinned) return;
+          window.clearTimeout(hideTimer);
+          hideTimer = window.setTimeout(() => {
+            if (!overPopup && !pinned) close();
+          }, 300);
+        };
+        const show = (hit: Hit, pin: boolean) => {
+          window.clearTimeout(hideTimer);
+          if (pin) pinned = true;
+          if (openKey === hit.key) {
+            if (pin) requestAnimationFrame(fitPopup);
+            return;
+          }
+          openKey = hit.key;
+          // The person's own place is written as text nodes (lib/mine-label.ts); everything else
+          // is drawn by the caller into this node, through a portal.
+          const node = hit.own ? mineLabel(hit.own) : document.createElement("div");
+          void import("maplibre-gl").then(({ Popup }) => {
+            if (map.current !== created || openKey !== hit.key) return;
+            popup.current?.remove();
+            const opened = new Popup({
+              closeButton: false,
+              closeOnClick: false,
+              offset: 14,
+              maxWidth: "290px",
+            })
+              .setLngLat(hit.lngLat)
+              .setDOMContent(node)
+              .addTo(created);
+            const element = opened.getElement();
+            element.dataset.mapPeek = hit.key.split(":")[0];
+            element.addEventListener("mouseenter", () => {
+              overPopup = true;
+              window.clearTimeout(hideTimer);
+            });
+            element.addEventListener("mouseleave", () => {
+              overPopup = false;
+              closeSoon();
+            });
+            popup.current = opened;
+            watchSize?.disconnect();
+            watchSize =
+              typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => fitPopup());
+            watchSize?.observe(element);
+            if (pinned) requestAnimationFrame(fitPopup);
+            setPeekAt(hit.target ? { target: hit.target, node } : null);
+          });
+        };
+        const hitAt = (where: Parameters<typeof created.queryRenderedFeatures>[0]): Hit | null => {
+          const ids = [MINE, ...(hasPeek.current ? [GAUGES, PLACES, DAM_MARKS] : [])].filter((id) =>
+            created.getLayer(id),
+          );
+          if (ids.length === 0) return null;
+          const hit = created.queryRenderedFeatures(where, { layers: ids })[0];
+          const p = hit?.properties;
+          if (!hit || !p) return null;
+          if (hit.layer.id === MINE) {
+            const own = minePlaces.current.find((x) => x.id === String(p.id));
+            return own
+              ? { key: `mine:${own.id}`, lngLat: [own.lon, own.lat], target: null, own }
+              : null;
+          }
+          if (hit.geometry.type !== "Point") return null;
+          const [lon, lat] = hit.geometry.coordinates as [number, number];
+          if (hit.layer.id === DAM_MARKS) {
+            const code = String(p.code);
+            return {
+              key: `dam:${code}:${String(p.kind)}`,
+              lngLat: [lon, lat],
+              target: { kind: "dam", code },
+              own: null,
+            };
+          }
+          const kind = hit.layer.id === GAUGES ? "gauge" : "place";
+          const id = String(p.id);
+          return { key: `${kind}:${id}`, lngLat: [lon, lat], target: { kind, id }, own: null };
         };
         created.on("mousemove", (event) => {
-          const place = placeAt(event.point);
-          created.getCanvas().style.cursor = place ? "pointer" : "";
-          if (place) showLabel(place);
-          else hideLabel();
+          const hit = hitAt(event.point);
+          created.getCanvas().style.cursor = hit ? "pointer" : "";
+          if (pinned) return;
+          if (hit) show(hit, false);
+          else closeSoon();
         });
-        created.on("mouseout", hideLabel);
+        created.on("mouseout", closeSoon);
 
         created.on("click", (event) => {
-          const own = placeAt(event.point);
-          if (own) {
-            tappedAt.current = Date.now();
-            showLabel(own);
-          }
-          const ids = [
-            MINE,
-            GAUGES,
-            PLACES,
-            DAM_MARKS,
-            REPORTS,
-            DAM_MAIN,
-            DAM_TRIBUTARY,
-            DAM_RESERVOIR_FILL,
-            HAZARD_FILL,
-            TAMBON_FILL_LAYER,
-          ].filter((id) => created.getLayer(id));
           /*
            * A tap is a thumb, not a pixel. Measured on the same view, 665 taps 16 px apart
            * over the middle of Yala: the dam, its river and its reservoir answered 4 of them
@@ -996,7 +1114,29 @@ export function MapView({
             [at.x - TAP_SLACK, at.y - TAP_SLACK],
             [at.x + TAP_SLACK, at.y + TAP_SLACK],
           ];
-          let hit = created.queryRenderedFeatures(near, { layers: ids })[0];
+          // The mark under the finger first; the thumb-sized box only when nothing is exactly
+          // there, so in a cluster the tap opens the mark it landed on, not its neighbour.
+          const tapped = hitAt(at) ?? hitAt(near);
+          if (tapped) show(tapped, true);
+          else close();
+          const ids = [
+            MINE,
+            GAUGES,
+            PLACES,
+            DAM_MARKS,
+            REPORTS,
+            DAM_MAIN,
+            DAM_TRIBUTARY,
+            DAM_RESERVOIR_FILL,
+            HAZARD_FILL,
+            TAMBON_FILL_LAYER,
+          ].filter((id) => created.getLayer(id));
+          // As for the pop-up: a mark exactly under the finger wins over one merely near it.
+          const marks = ids.filter((id) => id !== TAMBON_FILL_LAYER && id !== HAZARD_FILL);
+          let hit =
+            (marks.length > 0
+              ? created.queryRenderedFeatures(at, { layers: marks })[0]
+              : undefined) ?? created.queryRenderedFeatures(near, { layers: ids })[0];
           /*
            * A tambon covers the whole map, so on the risk view it would answer every tap and the
            * hazard class under the finger would never be named. Where a class is drawn exactly
@@ -1065,6 +1205,7 @@ export function MapView({
   }
   return (
     <div className="relative">
+      {peekAt && peek && createPortal(peek(peekAt.target), peekAt.node)}
       <div
         ref={container}
         data-map="true"

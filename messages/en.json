@@ -632,6 +632,10 @@
       "alerts": "Alerts for your area come from Jaga's admins and from DDPM, not from this outlook.",
       "issued": "Issued {date}",
       "source": "From 45 seasons of rain (CHIRPS, ERA5-Land), the ENSO index and NOAA's seasonal forecasts."
+    },
+    "zoomMine": "My places",
+    "peek": {
+      "more": "See all details"
     }
   },
   "attribution": {

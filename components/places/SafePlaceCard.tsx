@@ -57,34 +57,52 @@ export function SafePlaceCard({ place, userAgent = "" }: Props) {
         {place.capacity !== null && <li>{t("capacity", { count: place.capacity })}</li>}
         {place.needs && <li>{t("needs", { text: place.needs })}</li>}
       </ul>
-      {/*
-       * "Navigate" asks which app first (owner, 13 Oct). A native disclosure, so it opens with no
-       * script and with no signal, like the list it sits in.
-       */}
-      <details className="group/nav flex flex-col" data-navigate-place={place.id}>
-        <summary
-          className={`${buttonSecondary} cursor-pointer list-none gap-2 [&::-webkit-details-marker]:hidden`}
-        >
-          <PinIcon size={22} />
-          {t("navigate")}
-        </summary>
-        <div className="flex flex-col gap-2 pt-3">
-          <p className="font-medium">{t("navigateWith")}</p>
-          {navigateChoices(place.lat, place.lon, userAgent).map(({ app, href }) => (
-            <a
-              key={app}
-              href={href}
-              // A geo: link is handed to the phone itself; a new tab would only show an error.
-              {...(app === "other" ? {} : { target: "_blank", rel: "noopener noreferrer" })}
-              data-navigate-app={app}
-              className={buttonSecondary}
-            >
-              {t(`navigateApp.${app}`)}
-            </a>
-          ))}
-          <p className={hint}>{t("navigateNote")}</p>
-        </div>
-      </details>
+      <NavigateChooser id={place.id} lat={place.lat} lon={place.lon} userAgent={userAgent} />
     </article>
+  );
+}
+
+/**
+ * "Navigate" asks which app first (owner, 13 Oct). A native disclosure, so it opens with no
+ * script and with no signal, like the list it sits in. The same chooser sits on the home
+ * screen's list and in the map's pop-up for a safe place (owner, 14 Oct), so the two behave alike.
+ */
+export function NavigateChooser({
+  id,
+  lat,
+  lon,
+  userAgent = "",
+}: {
+  id: string;
+  lat: number;
+  lon: number;
+  userAgent?: string;
+}) {
+  const t = useTranslations("places");
+  return (
+    <details className="group/nav flex flex-col" data-navigate-place={id}>
+      <summary
+        className={`${buttonSecondary} cursor-pointer list-none gap-2 [&::-webkit-details-marker]:hidden`}
+      >
+        <PinIcon size={22} />
+        {t("navigate")}
+      </summary>
+      <div className="flex flex-col gap-2 pt-3">
+        <p className="font-medium">{t("navigateWith")}</p>
+        {navigateChoices(lat, lon, userAgent).map(({ app, href }) => (
+          <a
+            key={app}
+            href={href}
+            // A geo: link is handed to the phone itself; a new tab would only show an error.
+            {...(app === "other" ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+            data-navigate-app={app}
+            className={buttonSecondary}
+          >
+            {t(`navigateApp.${app}`)}
+          </a>
+        ))}
+        <p className={hint}>{t("navigateNote")}</p>
+      </div>
+    </details>
   );
 }

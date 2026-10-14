@@ -632,6 +632,10 @@
       "alerts": "Amaran untuk kawasan anda datang daripada pentadbir Jaga dan DDPM, bukan daripada tinjauan ini.",
       "issued": "Dikeluarkan {date}",
       "source": "Daripada data hujan 45 musim (CHIRPS, ERA5-Land), indeks ENSO dan ramalan musim NOAA."
+    },
+    "zoomMine": "Tempat saya",
+    "peek": {
+      "more": "Lihat semua butiran"
     }
   },
   "attribution": {
