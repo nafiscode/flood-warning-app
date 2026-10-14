@@ -1,6 +1,6 @@
 import { alertWords, fillArea } from "@/lib/alert-words";
 import { alert as ALERT_COLOURS } from "@/lib/brand/tokens";
-import { clip, type PushLevel } from "@/lib/push";
+import { casePayload, clip, type DueRow, type PushLevel } from "@/lib/push";
 
 /**
  * LINE messages (A7), the parts with no network and no key in them, so they can be tested.
@@ -14,6 +14,21 @@ export const LINE_BATCH = 500;
 
 /** The words a LINE message needs besides the alert's own: the `line` group of a language. */
 export type LineWords = {
+  /** Labels on LINE buttons: 20 characters at most, LINE's own limit. */
+  openBoard: string;
+  confirmAsk: string;
+  confirmAskSupplies: string;
+  confirmYes: string;
+  confirmNo: string;
+  confirmYesSupplies: string;
+  confirmNoSupplies: string;
+  answeredYes: string;
+  answeredNo: string;
+  answeredClosed: string;
+  answeredNotYours: string;
+  menuStatus: string;
+  menuPlaces: string;
+  menuSos: string;
   open: string;
   nextUpdate: string;
   /** "your area", put where the alert's own text lists its tambons. */
@@ -201,4 +216,81 @@ export function statusText(
       .join("\n");
   });
   return clip([words.statusHead, ...lines].join("\n\n"), 4800);
+}
+
+/** LINE's limit for a button's label, in characters. */
+export const LINE_LABEL_MAX = 20;
+
+/**
+ * A request for help as a LINE message (A7):
+ *  - to a team, the offer: what and where (a tambon, never the place or the person), and a
+ *    button onto the board, where the rest is behind the sign-in;
+ *  - to the sender, once the team reports it done: two buttons, "yes, I have been helped" and
+ *    "no, I still need help", answered in the chat itself (spec 5.4).
+ * `send` is the `push.send` group of the same language, so LINE and the phone say the same.
+ */
+export function caseLineMessage(
+  row: DueRow,
+  send: Record<string, string>,
+  words: LineWords,
+  site: string,
+): Record<string, unknown> | null {
+  const supplies = row.data?.request === "supplies";
+  if (row.kind === "offer") {
+    const p = casePayload(row, send);
+    if (!p) return null;
+    return {
+      type: "template",
+      altText: clip(`${p.title}. ${p.body}`, 380),
+      template: {
+        type: "buttons",
+        title: clip(p.title, 40),
+        text: clip(p.body, 120),
+        actions: [{ type: "uri", label: words.openBoard, uri: `${site}${p.url}` }],
+      },
+    };
+  }
+  if (row.kind === "rescued") {
+    if (!/^[0-9a-f-]{36}$/i.test(row.sos_id)) return null;
+    const ask = (supplies ? words.confirmAskSupplies : words.confirmAsk).replace(
+      "{unit}",
+      row.data?.unit || send.aTeam || "",
+    );
+    const yes = supplies ? words.confirmYesSupplies : words.confirmYes;
+    const no = supplies ? words.confirmNoSupplies : words.confirmNo;
+    return {
+      type: "template",
+      altText: clip(ask, 380),
+      template: {
+        type: "confirm",
+        text: clip(ask, 240),
+        actions: [
+          { type: "postback", label: yes, data: `rescue:${row.sos_id}:yes`, displayText: yes },
+          { type: "postback", label: no, data: `rescue:${row.sos_id}:no`, displayText: no },
+        ],
+      },
+    };
+  }
+  return null;
+}
+
+/** What a LINE button pressed means: the area status, or an answer about one request. */
+export type LinePress =
+  { kind: "status" } | { kind: "rescue"; sos: string; rescued: boolean } | { kind: "other" };
+
+export function readPress(data: unknown): LinePress {
+  if (data === "status") return { kind: "status" };
+  const m = typeof data === "string" ? /^rescue:([0-9a-f-]{36}):(yes|no)$/i.exec(data) : null;
+  return m ? { kind: "rescue", sos: m[1]!, rescued: m[2] === "yes" } : { kind: "other" };
+}
+
+/** The chat's answer once a request's button has been pressed. */
+export function answerText(outcome: string, words: LineWords): string {
+  return outcome === "confirmed"
+    ? words.answeredYes
+    : outcome === "disputed"
+      ? words.answeredNo
+      : outcome === "closed"
+        ? words.answeredClosed
+        : words.answeredNotYours;
 }

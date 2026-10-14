@@ -197,3 +197,123 @@ describe("the month's quota", () => {
     expect(Number(sent[0]!.n)).toBe(5);
   });
 });
+
+describe("requests for help in LINE", () => {
+  const TEAM = `U${"d".repeat(32)}`;
+  const due = async () => {
+    await as(db, "anon");
+    const all = await rows<{
+      kind: string;
+      line_user_id: string;
+      sos_id: string;
+      data: Record<string, unknown>;
+    }>(db, "select * from line_due($1)", [TOKEN]);
+    await asOwner(db);
+    return all.filter((r) => r.sos_id === w.yalaSos);
+  };
+  /** The team reports it done (the photo check is the board's business, tested elsewhere). */
+  const reportDone = async () => {
+    await as(db, { uid: w.yalaRescue.user });
+    await db.query("select * from authority_accept_sos($1)", [w.yalaSos]);
+    await asOwner(db);
+    await db.query(
+      "update sos_claims set completed_at = now() where sos_id = $1 and released_at is null",
+      [w.yalaSos],
+    );
+    await db.query("update sos_requests set status = 'rescued' where id = $1", [w.yalaSos]);
+  };
+  const answer = async (who: string, rescued: boolean) => {
+    await as(db, "anon");
+    const out = await rows<{ outcome: string }>(
+      db,
+      "select line_case_answer($1, $2, $3, $4) as outcome",
+      [TOKEN, who, w.yalaSos, rescued],
+    );
+    await asOwner(db);
+    return out[0]!.outcome;
+  };
+
+  beforeEach(async () => {
+    await db.query("update profiles set line_user_id = $2 where user_id = $1", [
+      w.yalaRescue.user,
+      TEAM,
+    ]);
+  });
+
+  it("only Jaga's server can ask what is owed or answer for a sender", async () => {
+    for (const caller of ["anon", { uid: w.requester }, { uid: w.admin }] as const) {
+      await as(db, caller);
+      await expectDenied(db, "select * from line_due($1)", ["wrong-token"]);
+      await expectDenied(db, "select line_case_answer($1, $2, $3, true)", [
+        "wrong-token",
+        HOME,
+        w.yalaSos,
+      ]);
+    }
+  });
+
+  it("the offer goes to the LINE of the team whose turn it is, once, with a tambon and nothing about the person", async () => {
+    const first = await due();
+    expect(first.map((r) => [r.kind, r.line_user_id])).toEqual([["offer", TEAM]]);
+    expect(Object.keys(first[0]!.data).sort()).toEqual([
+      "expires_at",
+      "request",
+      "tambon_en",
+      "tambon_th",
+    ]);
+    expect(await due()).toEqual([]);
+  });
+
+  it("once the team reports it done, the sender is asked in LINE, once", async () => {
+    await due();
+    await reportDone();
+    const asked = await due();
+    expect(asked.map((r) => [r.kind, r.line_user_id])).toEqual([["rescued", HOME]]);
+    expect(asked[0]!.data.unit).toBe("Yala rescue");
+    expect(await due()).toEqual([]);
+  });
+
+  it("only the sender's own LINE can answer; yes closes the case as the sender would", async () => {
+    await reportDone();
+    expect(await answer(TEAM, true)).toBe("not_yours");
+    expect(await answer(HOME, true)).toBe("confirmed");
+    const s = await rows<{ closed: boolean }>(
+      db,
+      "select closed_at is not null as closed from sos_requests where id = $1",
+      [w.yalaSos],
+    );
+    expect(s[0]!.closed).toBe(true);
+    const confirmed = await rows<{ method: string; confirmed_by: string }>(
+      db,
+      "select method, confirmed_by from rescue_confirmations where sos_id = $1",
+      [w.yalaSos],
+    );
+    expect(confirmed).toEqual([{ method: "requester", confirmed_by: w.requester }]);
+    // Pressed again later: nothing left to answer.
+    expect(await answer(HOME, true)).toBe("closed");
+  });
+
+  it("no sends the case back to looking for a team, as the app's own button does", async () => {
+    await reportDone();
+    expect(await answer(HOME, false)).toBe("disputed");
+    const s = await rows<{ status: string }>(db, "select status from sos_requests where id = $1", [
+      w.yalaSos,
+    ]);
+    expect(s[0]!.status).toBe("received");
+    const log = await rows(
+      db,
+      "select 1 from audit_log where action = 'rescue_disputed_line' and entity_id = $1",
+      [w.yalaSos],
+    );
+    expect(log).toHaveLength(1);
+  });
+
+  it("the month's figures are for admins only", async () => {
+    for (const caller of ["anon", { uid: w.requester }] as const) {
+      await as(db, caller);
+      await expectDenied(db, "select * from line_quota_now()");
+    }
+    await as(db, { uid: w.admin });
+    await rows(db, "select * from line_quota_now()");
+  });
+});

@@ -1,7 +1,17 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { alertFlex, batches, statusText, type LineStatus, type LineWords } from "@/lib/line";
-import { gateToken } from "@/lib/push-server";
+import {
+  alertFlex,
+  answerText,
+  batches,
+  caseLineMessage,
+  readPress,
+  statusText,
+  type LineStatus,
+  type LineWords,
+} from "@/lib/line";
+import type { DueRow } from "@/lib/push";
+import { gateToken, runPushTick } from "@/lib/push-server";
 import { siteUrl } from "@/lib/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import en from "@/messages/en.json";
@@ -201,6 +211,7 @@ export function lineSignatureOk(body: string, signature: string | null): boolean
 type LineEvent = {
   type?: string;
   replyToken?: string;
+  postback?: { data?: string };
   source?: { type?: string; userId?: string };
 };
 
@@ -224,6 +235,33 @@ export async function handleLineEvents(events: LineEvent[]): Promise<void> {
           p_line_user: user,
           p_following: event.type === "follow",
         });
+      }
+      // A button pressed on a request's question: answered as the sender, if it is theirs.
+      const press = event.type === "postback" ? readPress(event.postback?.data) : null;
+      if (press?.kind === "rescue" && event.replyToken) {
+        const { data: outcome } = await supabase.rpc("line_case_answer", {
+          p_token: token,
+          p_line_user: user,
+          p_sos: press.sos,
+          p_rescued: press.rescued,
+        });
+        const { data: who } = await supabase.rpc("line_status_for", {
+          p_token: token,
+          p_line_user: user,
+        });
+        const locale = localeOf(
+          ((Array.isArray(who) ? who[0] : who) as { locale?: string } | undefined)?.locale ?? "th",
+        );
+        await call("/message/reply", {
+          method: "POST",
+          body: {
+            replyToken: event.replyToken,
+            messages: [{ type: "text", text: answerText(String(outcome ?? ""), wordsOf(locale)) }],
+          },
+        });
+        // The team's board and the sender's own page move on at once, not at the next tick.
+        await runPushTick();
+        continue;
       }
       if ((event.type === "message" || event.type === "postback") && event.replyToken) {
         const { data } = await supabase.rpc("line_status_for", {
@@ -249,5 +287,52 @@ export async function handleLineEvents(events: LineEvent[]): Promise<void> {
     } catch {
       // One bad event must not stop the rest; LINE does not resend what was acknowledged.
     }
+  }
+}
+
+const SEND_WORDS = { th: th.push.send, ms: ms.push.send, en: en.push.send } as const;
+
+/**
+ * The LINE half of the work on requests for help (A7): the offer to a team's LINE, and the
+ * sender's two buttons once the team reports it done. Called from `runPushTick`, so whatever
+ * wakes the web push also wakes this. One message per person, through LINE's push API; each
+ * counts against the month's quota like an alert. Never throws.
+ */
+export async function lineCaseTick(): Promise<
+  { sent: number; failed: number } | { skipped: string }
+> {
+  try {
+    const token = gateToken();
+    if (!token || !accessToken()) return { skipped: "no_keys" };
+    const supabase = createPublicClient();
+    const { data, error } = await supabase.rpc("line_due", { p_token: token });
+    if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
+    let sent = 0;
+    let failed = 0;
+    for (const row of data as (DueRow & { line_user_id: string })[]) {
+      const locale = localeOf(row.locale);
+      const message = caseLineMessage(row, SEND_WORDS[locale], wordsOf(locale), siteUrl());
+      if (!message) continue;
+      const retryKey = randomUUID();
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        try {
+          const r = await call("/message/push", {
+            method: "POST",
+            body: { to: row.line_user_id, messages: [message] },
+            retryKey,
+          });
+          ok = r.ok || r.status === 409;
+          if (!ok && r.status < 500) break;
+        } catch {
+          // A timeout or a dropped connection: try again with the same key.
+        }
+      }
+      if (ok) sent++;
+      else failed++;
+    }
+    return { sent, failed };
+  } catch {
+    return { skipped: "error" };
   }
 }

@@ -1,6 +1,18 @@
 import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { alertFlex, batches, lineTime, personalBody, statusText, type LineWords } from "@/lib/line";
+import { lineQuotaLevel } from "@/components/admin/LineQuota";
+import {
+  alertFlex,
+  answerText,
+  batches,
+  caseLineMessage,
+  LINE_LABEL_MAX,
+  lineTime,
+  personalBody,
+  readPress,
+  statusText,
+  type LineWords,
+} from "@/lib/line";
 import { lineSignatureOk } from "@/lib/line-server";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
@@ -152,5 +164,92 @@ describe("LINE's signature on a webhook", () => {
     expect(lineSignatureOk(body, createHmac("sha256", "").update(body).digest("base64"))).toBe(
       false,
     );
+  });
+});
+
+describe("a request for help in LINE", () => {
+  const row = (kind: string, data: Record<string, unknown> = {}) => ({
+    kind,
+    sos_id: "0b0e7c1e-0000-4000-8000-00000000000a",
+    locale: "th",
+    data: { request: "rescue", tambon_th: "บานา", tambon_en: "Bana", unit: "Yala rescue", ...data },
+  });
+
+  it("the offer to a team names the tambon and opens the board, nothing about the person", () => {
+    const m = caseLineMessage(row("offer"), th.push.send, words, "https://jaga.example")!;
+    const text = JSON.stringify(m);
+    expect(text).toContain("บานา");
+    expect(text).toContain('"uri":"https://jaga.example/authority"');
+    expect(text).toContain(words.openBoard);
+  });
+
+  it("the sender's question carries two buttons whose presses name this request", () => {
+    const m = caseLineMessage(row("rescued"), th.push.send, words, "https://x") as {
+      template: { type: string; text: string; actions: { data: string; label: string }[] };
+    };
+    expect(m.template.type).toBe("confirm");
+    expect(m.template.text).toContain("Yala rescue");
+    expect(m.template.actions.map((a) => a.data)).toEqual([
+      "rescue:0b0e7c1e-0000-4000-8000-00000000000a:yes",
+      "rescue:0b0e7c1e-0000-4000-8000-00000000000a:no",
+    ]);
+    const supplies = caseLineMessage(
+      row("rescued", { request: "supplies" }),
+      th.push.send,
+      words,
+      "https://x",
+    ) as {
+      template: { actions: { label: string }[] };
+    };
+    expect(supplies.template.actions[0]!.label).toBe(words.confirmYesSupplies);
+  });
+
+  it("nothing is made for a kind LINE does not carry, or a broken case id", () => {
+    expect(caseLineMessage(row("en_route"), th.push.send, words, "https://x")).toBeNull();
+    expect(
+      caseLineMessage({ ...row("rescued"), sos_id: "x" }, th.push.send, words, "https://x"),
+    ).toBeNull();
+  });
+
+  it("every button label fits LINE's limit of 20 characters, in every language", () => {
+    for (const lang of [th.line, ms.line, en.line]) {
+      for (const key of [
+        "openBoard",
+        "confirmYes",
+        "confirmNo",
+        "confirmYesSupplies",
+        "confirmNoSupplies",
+      ] as const) {
+        expect([...lang[key]].length, `${key}: ${lang[key]}`).toBeLessThanOrEqual(LINE_LABEL_MAX);
+      }
+    }
+  });
+
+  it("a press is read strictly: the menu's status, or yes or no for one request", () => {
+    expect(readPress("status")).toEqual({ kind: "status" });
+    expect(readPress("rescue:0b0e7c1e-0000-4000-8000-00000000000a:no")).toEqual({
+      kind: "rescue",
+      sos: "0b0e7c1e-0000-4000-8000-00000000000a",
+      rescued: false,
+    });
+    expect(readPress("rescue:../../x:yes")).toEqual({ kind: "other" });
+    expect(readPress(undefined)).toEqual({ kind: "other" });
+  });
+
+  it("the chat says what the press did", () => {
+    expect(answerText("confirmed", words)).toBe(words.answeredYes);
+    expect(answerText("disputed", words)).toBe(words.answeredNo);
+    expect(answerText("closed", words)).toBe(words.answeredClosed);
+    expect(answerText("not_yours", words)).toBe(words.answeredNotYours);
+  });
+});
+
+describe("the admins' LINE quota line", () => {
+  it("is quiet with room, warns from 70%, and says when the month is spent", () => {
+    expect(lineQuotaLevel(100, 500)).toBe("ok");
+    expect(lineQuotaLevel(350, 500)).toBe("70");
+    expect(lineQuotaLevel(450, 500)).toBe("90");
+    expect(lineQuotaLevel(500, 500)).toBe("full");
+    expect(lineQuotaLevel(10, 0)).toBe("ok");
   });
 });

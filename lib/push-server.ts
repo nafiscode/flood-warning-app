@@ -208,7 +208,12 @@ type Due = DueRow & { endpoint: string; keys: { p256dh: string; auth: string } }
 export async function runPushTick(): Promise<PushOutcome> {
   try {
     const token = gateToken();
-    if (!token || !configured()) return { skipped: "no_keys" };
+    // The LINE half runs beside this one, whatever happens to web push.
+    const line = import("@/lib/line-server").then((m) => m.lineCaseTick()).catch(() => null);
+    if (!token || !configured()) {
+      await line;
+      return { skipped: "no_keys" };
+    }
     const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("push_due", { p_token: token });
     if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
@@ -238,6 +243,7 @@ export async function runPushTick(): Promise<PushOutcome> {
     await Promise.all(Array.from({ length: 8 }, worker));
     const auto = await autoAlarmTick(supabase, token, gone);
     if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
+    await line;
     return { sent: sent + auto.sent, failed: failed + auto.failed, gone: gone.length };
   } catch {
     return { skipped: "error" };

@@ -2948,7 +2948,21 @@
     "statusUnknown": "No Jaga account is linked to this LINE yet. Open the Jaga app and sign in with LINE to get alerts for your area. In an emergency call 1784 or 1669.",
     "statusNoPlaces": "You have not set a home or a place to watch in the Jaga app yet. Open the app and go to Account to set them. In an emergency call 1784 or 1669.",
     "yourArea": "your area",
-    "covers": "This alert covers {count} subdistricts. Open Jaga to see which of your places are in it."
+    "covers": "This alert covers {count} subdistricts. Open Jaga to see which of your places are in it.",
+    "openBoard": "Open the board",
+    "confirmAsk": "{unit} reports that you have been helped. Is that right?",
+    "confirmAskSupplies": "{unit} reports that your supplies were delivered. Did they arrive?",
+    "confirmYes": "Yes, I'm safe",
+    "confirmNo": "Still need help",
+    "confirmYesSupplies": "Received",
+    "confirmNoSupplies": "Not received",
+    "answeredYes": "Thank you. It is recorded that you have been helped.",
+    "answeredNo": "Understood. Your request has gone back to the response teams. If it is urgent, call 1669.",
+    "answeredClosed": "This request is already closed. If you still need help, open Jaga and press SOS, or call 1669.",
+    "answeredNotYours": "This button is only for the person who sent this request.",
+    "menuStatus": "My area status",
+    "menuPlaces": "Safe places near me",
+    "menuSos": "Ask for help"
   },
   "fieldRescue": {
     "title": "Record a rescue your team did",
@@ -3188,5 +3202,10 @@
       "noZone": "Outside every warning zone",
       "auto": "automated alarm on"
     }
+  },
+  "lineQuota": {
+    "ok": "LINE messages this month: {used} of {limit} used",
+    "warn": "LINE messages this month: {used} of {limit} used, close to the limit. Each alert uses one message per person reached.",
+    "full": "This month's {limit} LINE messages are used up. LINE will send no more until next month. Alerts still reach people by phone notification, in the app and in the bell."
   }
 }

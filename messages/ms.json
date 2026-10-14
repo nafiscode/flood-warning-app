@@ -2948,7 +2948,21 @@
     "statusUnknown": "Belum ada akaun Jaga yang dipautkan dengan LINE ini. Buka aplikasi Jaga dan log masuk dengan LINE untuk menerima amaran bagi kawasan anda. Kecemasan: hubungi 1784 atau 1669.",
     "statusNoPlaces": "Anda belum menetapkan lokasi rumah atau tempat yang dipantau dalam aplikasi Jaga. Buka aplikasi dan pergi ke Akaun untuk menetapkannya. Kecemasan: hubungi 1784 atau 1669.",
     "yourArea": "kawasan anda",
-    "covers": "Amaran ini meliputi {count} mukim. Buka Jaga untuk melihat tempat anda yang terlibat."
+    "covers": "Amaran ini meliputi {count} mukim. Buka Jaga untuk melihat tempat anda yang terlibat.",
+    "openBoard": "Buka papan kes",
+    "confirmAsk": "{unit} melaporkan anda sudah dibantu. Betul?",
+    "confirmAskSupplies": "{unit} melaporkan barang sudah dihantar kepada anda. Sudah terima?",
+    "confirmYes": "Ya, saya selamat",
+    "confirmNo": "Masih perlu bantuan",
+    "confirmYesSupplies": "Sudah terima",
+    "confirmNoSupplies": "Belum terima",
+    "answeredYes": "Terima kasih. Direkodkan bahawa anda sudah dibantu.",
+    "answeredNo": "Baik. Permintaan anda dihantar semula kepada pasukan bantuan. Jika kecemasan, hubungi 1669.",
+    "answeredClosed": "Permintaan ini sudah ditutup. Jika masih perlu bantuan, buka Jaga dan tekan SOS atau hubungi 1669.",
+    "answeredNotYours": "Butang ini hanya untuk pengirim permintaan ini.",
+    "menuStatus": "Status kawasan saya",
+    "menuPlaces": "Tempat selamat",
+    "menuSos": "Minta bantuan"
   },
   "fieldRescue": {
     "title": "Rekod penyelamatan yang ditemui sendiri",
@@ -3188,5 +3202,10 @@
       "noZone": "Di luar semua zon amaran",
       "auto": "penggera automatik hidup"
     }
+  },
+  "lineQuota": {
+    "ok": "Mesej LINE bulan ini: {used} daripada {limit} digunakan",
+    "warn": "Mesej LINE bulan ini sudah {used} daripada {limit}, hampir habis. Setiap amaran menggunakan satu mesej bagi setiap orang.",
+    "full": "Mesej LINE bulan ini sudah habis ({limit}). LINE tidak akan menghantar lagi sehingga bulan depan. Amaran masih sampai melalui pemberitahuan telefon, aplikasi dan loceng."
   }
 }

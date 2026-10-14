@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DualTime } from "@/components/admin/DualTime";
+import { LineQuota } from "@/components/admin/LineQuota";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { Link } from "@/i18n/navigation";
@@ -164,6 +165,8 @@ export default async function AdminAlerts({
     <div className="flex flex-col gap-5" data-alert-console={inForce.length}>
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={hint}>{t("intro")}</p>
+      {/* What LINE has left this month, before anyone sends (A7; warned from 70%). */}
+      <LineQuota />
       {!inService() && (
         <p className={errorNotice} data-drill-mode="true">
           {t("drillMode")}
