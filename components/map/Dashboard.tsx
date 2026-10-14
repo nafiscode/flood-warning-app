@@ -8,6 +8,7 @@ import type { Area, AreaDirectory } from "@/lib/area";
 import { DAM_URL, DAM_ZONE_URL, type DamData, type DamZoneData } from "@/lib/dam";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
 import type { Hazard } from "@/lib/hazards";
+import { readFocus } from "@/lib/map-focus";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
 import { satelliteUrl, type SatelliteFlood, type SatelliteWindow } from "@/lib/satellite-flood";
@@ -41,6 +42,8 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
     reportsTambon && /^\d{6}$/.test(reportsTambon) && at.length === 2 && at.every(Number.isFinite)
       ? { tambon: reportsTambon, lat: at[0]!, lon: at[1]! }
       : null;
+  // "?focus=gauges" from a tile on the home screen: the map opens on that feature (lib/map-focus.ts).
+  const openFocus = readFocus(query.get("focus"));
   const reports = useFetched<ReportsNear>(REPORTS_NEAR_URL);
   const { status, checkedAt, failed } = usePublicStatus();
   const hazards = useFetched<{ hazards: Hazard[] }>("/api/public/hazards");
@@ -101,6 +104,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       transparency={transparency}
       openDam={openDam}
       openReports={openReports}
+      openFocus={openFocus}
       reports={reports.data?.tambons ?? null}
       userAgent={ready ? navigator.userAgent : ""}
     />

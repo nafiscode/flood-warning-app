@@ -69,7 +69,7 @@
       "addFirst": "Tambah tempat yang anda jaga, contohnya rumah mak",
       "details": "Lihat butiran amaran"
     },
-    "mapLink": "Buka peta",
+    "mapLink": "Buka Peta Risiko Banjir",
     "projectLine": "Talian bantuan Jaga"
   },
   "install": {
@@ -471,11 +471,11 @@
     "needs": "Keperluan: {text}"
   },
   "map": {
-    "title": "Peta",
+    "title": "Peta Risiko Banjir",
     "zoomAll": "Lihat 4 wilayah",
     "tabs": {
       "label": "Halaman peta",
-      "map": "Peta",
+      "map": "Peta Risiko Banjir",
       "transparency": "Ketelusan"
     },
     "province": {
@@ -659,8 +659,9 @@
     "clock": "Masa",
     "home": "Utama",
     "account": "Akaun",
-    "map": "Peta",
-    "admin": "Admin"
+    "map": "Peta Risiko Banjir",
+    "admin": "Admin",
+    "signIn": "Log masuk"
   },
   "notices": {
     "title": "Pemberitahuan",
@@ -720,6 +721,12 @@
       "title": "Untuk pentadbir",
       "body": "{count} rekod penyelamatan yang ditemui pasukan menunggu semakan anda",
       "see": "Buka halaman semakan"
+    },
+    "nudge": {
+      "title": "Terima ini dalam LINE juga",
+      "body": "Log masuk dengan LINE, dan amaran untuk rumah anda serta tempat yang anda pantau sampai walaupun aplikasi ditutup.",
+      "button": "Log masuk dengan LINE",
+      "later": "Nanti dahulu"
     }
   },
   "placeFinder": {
@@ -3380,7 +3387,7 @@
     "resident": {
       "note": "Penduduk yang telah log masuk, dengan rumah dan dua tempat yang dipantau.",
       "home": "Laman utama",
-      "map": "Peta"
+      "map": "Peta Risiko Banjir"
     },
     "rescue": {
       "note": "Ketik \"Buka bunyi amaran\" untuk mendengar bunyi apabila permintaan ditawarkan kepada pasukan. Terima, beri anggaran masa tiba atau pulangkan; contoh ini bertindak balas sendiri."
@@ -3645,7 +3652,7 @@
       "entriesNote": "Skrin pertama setiap lawatan: pautan yang dikongsi, ikon skrin utama atau pemberitahuan.",
       "names": {
         "_": "Laman utama",
-        "_map": "Peta",
+        "_map": "Peta Risiko Banjir",
         "_sos": "SOS",
         "_sos__id": "Kes SOS",
         "_report": "Laporan banjir",
@@ -3664,5 +3671,126 @@
       "never": "Tidak sekali-kali: GPS, nama, nombor telefon, alamat internet itu sendiri, atau apa-apa daripada borang SOS dan laporan. Pelayar yang meminta tidak dijejaki tidak dikira.",
       "keep": "Baris mentah dipadam selepas 90 hari; hanya jumlah harian yang kekal."
     }
+  },
+  "mapFeatures": {
+    "homeTitle": "Terokai Peta Risiko Banjir",
+    "mapTitle": "Apa yang ditunjukkan peta ini. Ketik untuk melihat.",
+    "live": "Langsung",
+    "risk": {
+      "name": "Kawasan berisiko banjir",
+      "note": "Dianalisis daripada imej radar satelit 9 musim hujan dan ketinggian tanah",
+      "short": "Kawasan berisiko"
+    },
+    "places": {
+      "name": "Tempat selamat dan arah jalan",
+      "note": "Tempat pemindahan dan tempat letak kereta di tanah tinggi, dengan butang arah",
+      "short": "Tempat selamat"
+    },
+    "damzone": {
+      "name": "Kawasan yang boleh dicapai air empangan",
+      "note": "Tanah rendah di tepi Sungai Pattani di hilir Empangan Bang Lang",
+      "short": "Hilir empangan"
+    },
+    "gauges": {
+      "name": "Paras air sungai",
+      "note": "Stesen paras air, dikemas kini setiap 15 minit",
+      "short": "Paras sungai"
+    },
+    "dam": {
+      "name": "Keadaan empangan",
+      "note": "Empangan Bang Lang: simpanan dan lepasan air setiap jam",
+      "short": "Empangan"
+    }
+  },
+  "mapMethod": {
+    "title": "Bagaimana peta ini dibuat",
+    "teaser": "Radar satelit 9 musim hujan · diuji dengan banjir sebenar 2025",
+    "radar": {
+      "lead": "Radar satelit nampak banjir walaupun berawan",
+      "text": "Kira-kira 400 imej Sentinel-1 dalam 9 musim hujan (2017–2025), termasuk banjir besar 2024 dan 2025, menunjukkan tanah mana pernah banjir dan seberapa kerap."
+    },
+    "height": {
+      "lead": "Ketinggian di atas sungai terdekat",
+      "text": "Daripada model ketinggian tanah 30 meter, ketinggian setiap tempat di atas sungai yang menerima airnya: tanah yang rendah ialah tempat air bertakung dahulu apabila sungai naik."
+    },
+    "towns": {
+      "lead": "Di bandar, ketinggian tanah yang menentukan",
+      "text": "Radar tidak nampak air di celah bangunan, jadi kawasan bandar yang rendah dekat sungai ditanda menurut ketinggiannya, bukan menurut apa yang radar terlepas."
+    },
+    "checked": {
+      "lead": "Diuji dengan banjir sebenar",
+      "text": "Apabila dibina semula tanpa banjir 2025, peta ini masih meletakkan 74% tanah yang radar nampak banjir pada tahun itu dalam kawasan Sederhana atau Tinggi."
+    },
+    "gistda": {
+      "lead": "Dibandingkan dengan rekod GISTDA",
+      "text": "Disemak dengan peta banjir berulang GISTDA 2011–2024; tanah rendah yang mereka catat pernah banjir tetapi kami terlepas kini sekurang-kurangnya Rendah."
+    },
+    "damzone": {
+      "lead": "Kawasan hilir empangan daripada paras tertinggi yang pernah diukur",
+      "text": "Tanah yang bersambung dengan Sungai Pattani dan di bawah paras tertinggi yang pernah dicatat oleh stesennya, serta satu jalur satu meter lebih tinggi."
+    },
+    "live": {
+      "lead": "Data langsung daripada agensi",
+      "text": "Stesen paras sungai daripada ThaiWater (HII) setiap 15 minit; Bang Lang setiap jam daripada EGAT, dan lima takungan setiap hari daripada Jabatan Pengairan Diraja (RID)."
+    },
+    "places": {
+      "lead": "Tempat selamat dipilih dengan data yang sama",
+      "text": "Sekolah, wat, masjid, pejabat kerajaan dan tanah tinggi daripada OpenStreetMap, disusun menurut ketinggiannya di atas banjir lalu dan sama ada jalan ke sana pernah banjir. Belum disemak di lapangan."
+    },
+    "limits": "Satu anggaran, bukan ramalan dan bukan amaran. Tempat tanpa warna bukan tempat tanpa risiko: hujan lebat dan banjir kilat boleh berlaku di mana-mana. Amaran datang daripada pentadbir Jaga dan DDPM (1784).",
+    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Jabatan Pengairan Diraja, penyumbang OpenStreetMap, Google Open Buildings."
+  },
+  "tambonRisk": {
+    "eyebrow": "Risiko banjir jangka panjang, bukan amaran hari ini",
+    "title": "{name}",
+    "headline": {
+      "buildings": "Kira-kira {share}% bangunan di sini terletak di kawasan berisiko banjir Sederhana atau Tinggi",
+      "land": "Kira-kira {share}% tanah di sini berisiko banjir Sederhana atau Tinggi",
+      "little": "Sedikit sahaja tanah di sini ditanda berisiko banjir. Itu bukan bermakna tiada risiko: hujan lebat dan banjir kilat boleh berlaku di mana-mana."
+    },
+    "barLabel": "Tanah dalam setiap kelas: Tinggi {high}%, Sederhana {medium}%, Rendah {low}%",
+    "class": {
+      "high": "Tinggi",
+      "medium": "Sederhana",
+      "low": "Rendah",
+      "minimal": "Tidak ditanda"
+    },
+    "note": "Dianggar daripada radar satelit 9 musim hujan dan ketinggian tanah. Satu anggaran, bukan ramalan.",
+    "open": "Lihat di Peta Risiko Banjir"
+  },
+  "signInOffer": {
+    "title": "Log masuk, Jaga boleh bantu anda lebih banyak",
+    "sub": "Percuma, dengan akaun LINE yang anda ada, kurang seminit",
+    "gain": {
+      "line": {
+        "title": "Amaran dihantar dalam LINE",
+        "body": "Untuk rumah anda dan tempat yang anda pantau, walaupun aplikasi ditutup"
+      },
+      "watch": {
+        "title": "Pantau rumah ibu bapa dan orang yang anda sayangi",
+        "body": "Tambah beberapa tempat, lihat di peta, dan tahu bila ada amaran di sana"
+      },
+      "household": {
+        "title": "Daftar isi rumah",
+        "body": "Beritahu pasukan penyelamat lebih awal jika ada warga emas, pesakit terlantar atau bayi di rumah"
+      },
+      "report": {
+        "title": "Laporkan banjir untuk jiran",
+        "body": "Paras air dan jalan yang tidak boleh dilalui, dengan gambar"
+      },
+      "home": {
+        "title": "Rumah anda pada setiap peranti",
+        "body": "Simpan sekali; ada pada telefon dan komputer anda"
+      }
+    },
+    "line": "Log masuk dengan LINE",
+    "other": "Cara lain untuk log masuk",
+    "noNeed": "Tak perlu log masuk untuk minta tolong (SOS), tengok amaran atau telefon talian kecemasan.",
+    "hint": {
+      "report": "Perlu log masuk dahulu untuk melaporkan banjir.",
+      "mapPlaces": "Pin rumah anda dan tempat yang anda sayangi pada peta ini.",
+      "places": "Pantau rumah ibu bapa atau tempat yang anda sayangi, dan terima amarannya."
+    },
+    "hintLink": "Log masuk"
   }
 }

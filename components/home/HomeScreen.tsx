@@ -16,6 +16,8 @@ import { RequestsLink } from "@/components/journey/MyRequests";
 import { PushCard } from "@/components/push/PushCard";
 import { MyReports } from "@/components/reports/MyReports";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
+import { SignInOffer } from "@/components/account/SignInOffer";
+import { TambonRiskCard } from "./TambonRisk";
 import { HomeView } from "./HomeView";
 
 /**
@@ -65,6 +67,8 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       projectLine={projectLine}
       userAgent={ready ? navigator.userAgent : ""}
       push={<PushCard place="home" />}
+      tambonRisk={(code, name) => <TambonRiskCard code={code} name={name} />}
+      signInOffer={<SignInOffer />}
       install={
         <>
           <InstallCard place="home" />

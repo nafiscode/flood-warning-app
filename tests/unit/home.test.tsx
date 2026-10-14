@@ -126,11 +126,13 @@ describe("the dam's figure on the home screen", () => {
    * one button - and it names the dam, so the map arrives with that report already open rather
    * than leaving somebody to find a mark a few pixels wide.
    */
-  it("sits directly above the map button and opens the dam's whole report", () => {
+  it("sits directly above the way into the map and opens the dam's whole report", () => {
     const c = home("normal", { dams: [{ ...DAM, signal: exampleDamSignal("quiet") }], area: BANA });
     const card = c.querySelector("[data-dam-figure-card]")!;
-    const map = c.querySelector("[data-map-link]")!;
-    expect(card.nextElementSibling).toBe(map);
+    // Since 15 Oct the way into the map is the five feature tiles, ending in the map button.
+    const tiles = c.querySelector("[data-map-features='home']")!;
+    expect(card.nextElementSibling).toBe(tiles);
+    expect(tiles.querySelector("[data-map-link]")).toBeTruthy();
     const links = [...card.querySelectorAll("a")];
     expect(links.length).toBe(1);
     expect(links[0]!.getAttribute("href")).toContain(`dam=${DAM.code}`);

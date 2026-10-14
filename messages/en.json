@@ -69,7 +69,7 @@
       "addFirst": "Add a place you watch, such as Mum's house",
       "details": "See the alert details"
     },
-    "mapLink": "Open the map",
+    "mapLink": "Open the Flood Risk Map",
     "projectLine": "Jaga help line"
   },
   "install": {
@@ -471,11 +471,11 @@
     "needs": "Needs: {text}"
   },
   "map": {
-    "title": "Map",
+    "title": "Flood Risk Map",
     "zoomAll": "All 4 provinces",
     "tabs": {
       "label": "Map pages",
-      "map": "Map",
+      "map": "Flood Risk Map",
       "transparency": "Transparency"
     },
     "province": {
@@ -659,8 +659,9 @@
     "clock": "Time",
     "home": "Home",
     "account": "Account",
-    "map": "Map",
-    "admin": "Admin"
+    "map": "Flood Risk Map",
+    "admin": "Admin",
+    "signIn": "Sign in"
   },
   "notices": {
     "title": "Notifications",
@@ -720,6 +721,12 @@
       "title": "For admins",
       "body": "{count, plural, one {# field rescue is} other {# field rescues are}} waiting for you to check",
       "see": "Open the review page"
+    },
+    "nudge": {
+      "title": "Get these in LINE too",
+      "body": "Sign in with LINE, and alerts for your home and the places you watch reach you even with the app closed.",
+      "button": "Sign in with LINE",
+      "later": "Not now"
     }
   },
   "placeFinder": {
@@ -3380,7 +3387,7 @@
     "resident": {
       "note": "A signed-in resident with a home and two watched places.",
       "home": "Home",
-      "map": "Map"
+      "map": "Flood Risk Map"
     },
     "rescue": {
       "note": "Tap \"Turn on the alarm sound\" to hear a request being offered to the team. Accept, give an arrival estimate or hand it back; the example answers by itself."
@@ -3645,7 +3652,7 @@
       "entriesNote": "The first screen of each visit: a shared link, the home-screen icon or a notification.",
       "names": {
         "_": "Home",
-        "_map": "Map",
+        "_map": "Flood Risk Map",
         "_sos": "SOS",
         "_sos__id": "An SOS case",
         "_report": "Flood report",
@@ -3664,5 +3671,126 @@
       "never": "Never: GPS, names, phone numbers, the internet address itself, or anything from the SOS and report forms. A browser that asks not to be tracked is not counted.",
       "keep": "The raw rows are deleted after 90 days; only the daily totals stay."
     }
+  },
+  "mapFeatures": {
+    "homeTitle": "Explore the Flood Risk Map",
+    "mapTitle": "What this map shows. Tap to see.",
+    "live": "Live",
+    "risk": {
+      "name": "Flood-risk areas",
+      "note": "Analysed from 9 rainy seasons of satellite radar and the height of the land",
+      "short": "Flood risk"
+    },
+    "places": {
+      "name": "Safe places and directions",
+      "note": "Shelters and high-ground parking, with a button for directions",
+      "short": "Safe places"
+    },
+    "damzone": {
+      "name": "Where dam water can reach",
+      "note": "Low land along the Pattani River below Bang Lang dam",
+      "short": "Dam release zone"
+    },
+    "gauges": {
+      "name": "River levels",
+      "note": "River gauges, updated every 15 minutes",
+      "short": "River gauges"
+    },
+    "dam": {
+      "name": "Dams right now",
+      "note": "Bang Lang dam: storage and release, hour by hour",
+      "short": "Dam"
+    }
+  },
+  "mapMethod": {
+    "title": "How this map was made",
+    "teaser": "9 rainy seasons of satellite radar · tested on the real 2025 flood",
+    "radar": {
+      "lead": "Satellite radar sees floods through cloud",
+      "text": "About 400 Sentinel-1 passes over nine rainy seasons (2017–2025), including the great floods of 2024 and 2025, show which land has flooded and how often."
+    },
+    "height": {
+      "lead": "Height above the nearest stream",
+      "text": "From a 30 m elevation model, every place's height above the stream its water drains to: low land is where water collects first when rivers rise."
+    },
+    "towns": {
+      "lead": "In towns, the height of the land decides",
+      "text": "Radar cannot see water between buildings, so built-up land low above its river is marked by its height, not by what the radar missed."
+    },
+    "checked": {
+      "lead": "Tested on a real flood",
+      "text": "Built again without the 2025 flood, the map still put 74% of the land the radar saw flooded that year in its Medium or High areas."
+    },
+    "gistda": {
+      "lead": "Compared with GISTDA's records",
+      "text": "Checked against GISTDA's repeated-flood map for 2011–2024; low land they recorded as flooded that we had missed is now at least Low."
+    },
+    "damzone": {
+      "lead": "The dam zone, from the highest levels ever measured",
+      "text": "Land joined to the Pattani River and below the highest levels its gauges have recorded, plus a band one metre higher."
+    },
+    "live": {
+      "lead": "Live from the agencies",
+      "text": "River gauges from ThaiWater (HII) every 15 minutes; Bang Lang hourly from EGAT, and five reservoirs daily from the Royal Irrigation Department (RID)."
+    },
+    "places": {
+      "lead": "Safe places chosen with the same data",
+      "text": "Schools, temples, mosques, government offices and high ground from OpenStreetMap, ranked by how far above past floods they sit and whether the roads to them flooded. Not yet checked on the ground."
+    },
+    "limits": "An estimate, not a forecast and not an alert. A place without colour is not a place without risk: heavy rain and flash floods can happen anywhere. Alerts come from Jaga's admins and DDPM (1784).",
+    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Royal Irrigation Department, OpenStreetMap contributors, Google Open Buildings."
+  },
+  "tambonRisk": {
+    "eyebrow": "Long-term flood risk, not today's alert",
+    "title": "{name}",
+    "headline": {
+      "buildings": "About {share}% of buildings here stand on Medium or High flood-risk land",
+      "land": "About {share}% of the land here is at Medium or High flood risk",
+      "little": "Little land here is marked as flood-prone. That is not the same as no risk: heavy rain and flash floods can happen anywhere."
+    },
+    "barLabel": "Land in each class: High {high}%, Medium {medium}%, Low {low}%",
+    "class": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "minimal": "Not marked"
+    },
+    "note": "Estimated from 9 rainy seasons of satellite radar and the height of the land. An estimate, not a forecast.",
+    "open": "See it on the Flood Risk Map"
+  },
+  "signInOffer": {
+    "title": "Sign in and Jaga does more for you",
+    "sub": "Free, with the LINE account you already have, in under a minute",
+    "gain": {
+      "line": {
+        "title": "Alerts in LINE",
+        "body": "For your home and the places you watch, even with the app closed"
+      },
+      "watch": {
+        "title": "Watch your parents' home and the people you care about",
+        "body": "Add several places, see them on the map, and know when an alert covers them"
+      },
+      "household": {
+        "title": "Register your household",
+        "body": "Tell rescue teams in advance about older people, bedridden people or babies at home"
+      },
+      "report": {
+        "title": "Report floods for your neighbours",
+        "body": "Water depth and blocked roads, with photos"
+      },
+      "home": {
+        "title": "Your home on every device",
+        "body": "Save it once; it is there on your phone and your computer"
+      }
+    },
+    "line": "Sign in with LINE",
+    "other": "Other ways to sign in",
+    "noNeed": "You don't need to sign in to send an SOS, see alerts or call the hotlines.",
+    "hint": {
+      "report": "Reporting a flood needs an account.",
+      "mapPlaces": "Pin your home and the places you care about on this map.",
+      "places": "Watch your parents' home or other places you care about, and get their alerts."
+    },
+    "hintLink": "Sign in"
   }
 }

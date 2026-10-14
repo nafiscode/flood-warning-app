@@ -11,6 +11,7 @@ import { useStored } from "@/lib/phone-store";
 import { useAlertRing } from "@/lib/use-alert-ring";
 import { useNotices } from "@/lib/use-notices";
 import { useNow } from "@/lib/use-public";
+import { LineNudge } from "./LineNudge";
 import { NoticeList } from "./NoticeList";
 
 /** Nothing is fetched on the SOS screens: there, only the request matters (safety rule 1). */
@@ -158,6 +159,8 @@ export function NoticeBell({ className = "" }: { className?: string }) {
             // nothing to tell them.
             emptyHint={area ? t("noneHint") : t("noArea")}
           />
+          {/* A visitor is told the same news can come in LINE (the owner, 15 Oct). */}
+          <LineNudge />
           {checkedAt !== null && items.length > 0 && (
             <p className="border-t border-jaga-line px-4 py-2 text-small text-jaga-text-2">
               {t("checked", {

@@ -1,0 +1,41 @@
+/* The map's risk colours, by day and by night (lib/hazard-layer.ts); the theme follows the sun. */
+.high {
+  background: #7a1238;
+}
+.medium {
+  background: #db6a9a;
+}
+.low {
+  background: #f2b8c6;
+}
+.minimal {
+  background: var(--jaga-line);
+}
+:global(:root[data-theme="dark"]) .high {
+  background: #ffc4d6;
+}
+:global(:root[data-theme="dark"]) .medium {
+  background: #e0679e;
+}
+:global(:root[data-theme="dark"]) .low {
+  background: #7e5c74;
+}
+
+/* The bar fills in from the start once, then rests; still for anyone who asked for less motion. */
+.grow {
+  animation: grow 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transform-origin: left center;
+}
+:global([dir="rtl"]) .grow {
+  transform-origin: right center;
+}
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grow {
+    animation: none;
+  }
+}

@@ -4,7 +4,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { ReportForm } from "@/components/report/ReportForm";
 import { NotYet } from "@/components/sos/NotYet";
 import { getPathname, Link } from "@/i18n/navigation";
-import { getSessionProfile } from "@/lib/auth";
+import { getSessionProfile, localePath } from "@/lib/auth";
 import { sosSendingEnabled } from "@/lib/features";
 import { reportMessages } from "@/lib/messages";
 import { buttonPrimary, buttonSecondary, notice } from "@/lib/ui";
@@ -52,7 +52,11 @@ export default async function ReportPage({ params }: PageProps<"/[locale]/report
       <section className="flex flex-col gap-4" data-report-state="signIn">
         <h1 className="text-h3 font-bold text-jaga-ink">{t("signInTitle")}</h1>
         <p>{t("signInBody")}</p>
-        <Link href="/sign-in" className={buttonPrimary}>
+        {/* Back to the form once signed in (the owner, 15 Oct: every way in returns the person). */}
+        <Link
+          href={{ pathname: "/sign-in", query: { next: localePath(locale, "/report") } }}
+          className={buttonPrimary}
+        >
           {t("signIn")}
         </Link>
         <p className={notice}>{t("notEmergency")}</p>

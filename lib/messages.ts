@@ -14,7 +14,20 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
   const all = messages as Messages;
   const dam = all.dam as Messages;
   return {
-    ...pick(messages, ["home", "alert", "sos", "places", "hotlines", "install", "push", "journey"]),
+    ...pick(messages, [
+      "home",
+      "alert",
+      "sos",
+      "places",
+      "hotlines",
+      "install",
+      "push",
+      "journey",
+      // The way into the Flood Risk Map, the tambon's own risk, and what an account gives (15 Oct).
+      "mapFeatures",
+      "tambonRisk",
+      "signInOffer",
+    ]),
     // The area chooser's province list.
     map: { province: all.map!.province! },
     // Residents' flood reports near the person (13 Oct), with the report form's own words for
@@ -73,7 +86,19 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
   // "dam" comes with the map because the dam is drawn in every view (spec section 15).
   const all = messages as Messages;
   return {
-    ...pick(messages, ["map", "home", "alert", "sos", "places", "hotlines", "dam"]),
+    ...pick(messages, [
+      "map",
+      "home",
+      "alert",
+      "sos",
+      "places",
+      "hotlines",
+      "dam",
+      // The chips above the map and how the map was made (15 Oct); the hint on My places.
+      "mapFeatures",
+      "mapMethod",
+      "signInOffer",
+    ]),
     // Residents' flood reports near the person (13 Oct), with the report form's own words for
     // depth, trend and road so they read the same on every screen.
     reportsNear: all.reportsNear!,

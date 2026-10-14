@@ -1,0 +1,54 @@
+/* The map's own colours, by day and by night (the theme follows the sun: DaylightTheme). */
+.risk1 {
+  fill: #f2b8c6;
+}
+.risk2 {
+  fill: #db6a9a;
+}
+.risk3 {
+  fill: #7a1238;
+}
+.water {
+  fill: #1b6e8c;
+}
+.waterLine {
+  stroke: #1b6e8c;
+}
+:global(:root[data-theme="dark"]) .risk1 {
+  fill: #7e5c74;
+}
+:global(:root[data-theme="dark"]) .risk2 {
+  fill: #e0679e;
+}
+:global(:root[data-theme="dark"]) .risk3 {
+  fill: #ffc4d6;
+}
+:global(:root[data-theme="dark"]) .water {
+  fill: #7ec8e3;
+}
+:global(:root[data-theme="dark"]) .waterLine {
+  stroke: #7ec8e3;
+}
+
+/* "Live": a slow pulse on the dot, nothing at all for someone who asked for less motion. */
+.live {
+  animation: pulse 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live {
+    animation: none;
+  }
+}

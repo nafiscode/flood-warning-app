@@ -4,6 +4,7 @@ import { IBM_Plex_Sans_Thai } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { AccountLink } from "@/components/AccountLink";
 import { AdminLink } from "@/components/AdminLink";
 import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
@@ -181,13 +182,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   >
                     {tNav("map")}
                   </Link>
-                  <Link
-                    href="/account"
-                    prefetch={false}
-                    className="inline-flex min-h-tap items-center rounded px-2 text-small font-medium text-white underline"
-                  >
-                    {tNav("account")}
-                  </Link>
+                  {/* "Sign in" for a visitor, "Account" once signed in (the owner, 15 Oct). */}
+                  <AccountLink />
                   {/* Only an admin ever sees this one, and only in their own browser. */}
                   <AdminLink />
                 </div>

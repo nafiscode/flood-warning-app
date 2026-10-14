@@ -2,7 +2,9 @@
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
-import { MapIcon, ParcelIcon, PhoneIcon, WaveIcon } from "@/components/icons";
+import { ParcelIcon, PhoneIcon, WaveIcon } from "@/components/icons";
+import { MapFeatureTiles } from "@/components/map/MapFeatures";
+import { SignInHint } from "@/components/account/SignInOffer";
 import { SafePlaces } from "@/components/places/SafePlaces";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { SOSButton } from "@/components/sos/SOSButton";
@@ -56,6 +58,13 @@ export type HomeViewProps = {
   push?: ReactNode;
   /** The "put Jaga on your home screen" card. Drawn last, and not at Warning or Evacuate. */
   install?: ReactNode;
+  /**
+   * The long-term flood risk of the person's own tambon (the owner, 15 Oct): under the hero on an
+   * ordinary day, after the checklist when somewhere of theirs is at Warning or Evacuate.
+   */
+  tambonRisk?: (code: string, name: string) => ReactNode;
+  /** "What you get by signing in": a visitor only, and never at Warning or Evacuate. */
+  signInOffer?: ReactNode;
 };
 
 /** What a tambon shows, never green from a copy that is too old to trust. */
@@ -143,6 +152,10 @@ export function HomeView(props: HomeViewProps) {
     (s) => s?.kind === "alert" && (s.alert.level === "warning" || s.alert.level === "evacuate"),
   );
   const sos = <SOSButton href={getPathname({ href: "/sos", locale })} />;
+  const riskCard =
+    !loading && !choosing && home && props.tambonRisk
+      ? props.tambonRisk(home.code, tambonName(locale, home))
+      : null;
   const checklist =
     hero?.kind === "alert" ? (
       <Checklist level={hero.alert.level} listId={hero.alert.id} />
@@ -265,8 +278,12 @@ export function HomeView(props: HomeViewProps) {
           </p>
         )}
 
+        {!tense && riskCard}
+
         {evacuate && sos}
         {!choosing && checklist}
+
+        {tense && riskCard}
       </div>
 
       <div className="flex flex-col gap-5">
@@ -280,6 +297,8 @@ export function HomeView(props: HomeViewProps) {
           <WaveIcon size={30} />
           {t("report")}
         </Link>
+        {/* Reporting needs an account; a visitor is told so before tapping (the owner, 15 Oct). */}
+        {ready && !me?.signedIn && <SignInHint what="report" />}
 
         {/* For someone safe but cut off (spec 4.10). Quieter than SOS and never in its way. */}
         <Link
@@ -316,6 +335,9 @@ export function HomeView(props: HomeViewProps) {
           </Link>
         )}
 
+        {/* What an account gives, where a visitor would otherwise see their watched places. */}
+        {!me?.signedIn && !loading && !choosing && !tense && props.signInOffer}
+
         {/*
          * The same dam, for everyone the notice does not reach: the drawing and what it means,
          * with nothing saying water is coming to them, because it is not. It sits in the smaller
@@ -332,16 +354,9 @@ export function HomeView(props: HomeViewProps) {
         ))}
 
         {/* The map comes straight after the person's own places, and the safe places after it,
-            folded under their own button (owner, 12 Oct). */}
-        <Link
-          href="/map"
-          prefetch={false}
-          data-map-link="true"
-          className={`${buttonSecondary} gap-2`}
-        >
-          <MapIcon size={22} />
-          {t("mapLink")}
-        </Link>
+            folded under their own button (owner, 12 Oct). Since 15 Oct the way in is the map's five
+            features as tiles, each opening the map on itself (the owner: the science should be seen). */}
+        <MapFeatureTiles />
 
         {home && !loading && (
           <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />

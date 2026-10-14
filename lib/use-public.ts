@@ -76,6 +76,18 @@ function hasSession(): boolean {
   return document.cookie.split(";").some((c) => isSessionCookie(c.trim().split("=")[0] ?? ""));
 }
 
+const noSubscribe = () => () => {};
+
+/**
+ * Whether this browser holds a session, for the words of a link (Sign in or Account) and the
+ * hints on features that need an account. False on the server and in the first paint, so a
+ * visitor (the usual case) sees the invitation at once and someone signed in sees it turn into
+ * Account as the page wakes. It only chooses words: what a session may read is RLS's to decide.
+ */
+export function useSignedIn(): boolean {
+  return useSyncExternalStore(noSubscribe, hasSession, () => false);
+}
+
 /**
  * The signed-in person's home and watched places. Asked only when this browser holds a session,
  * so visitors never call the server for it. Phone numbers stay in memory; the rest is kept on

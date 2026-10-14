@@ -32,7 +32,7 @@ import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { boundsAround, darkNow, PROVINCE_BOUNDS, SERVICE_BOUNDS } from "@/lib/map";
+import { boundsAround, darkNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
@@ -49,6 +49,10 @@ import { checkBox, checkRow } from "@/lib/ui";
 import { DamPeek, GaugePeek, PlacePeek } from "./MapPeek";
 import { MapView, type MapSelection, type MinePlace, type PeekTarget } from "./MapView";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
+import { MapFeatureChips } from "./MapFeatures";
+import { SignInHint } from "@/components/account/SignInOffer";
+import { MapMethod } from "./MapMethod";
+import { MAIN_DAM, mainDam, zoneFrame, type MapFocus } from "@/lib/map-focus";
 import { gaugeLook, trendOf } from "@/lib/gauge-marks";
 
 /** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
@@ -118,6 +122,8 @@ export type DashboardViewProps = {
   openDam?: string | null;
   /** A tambon whose residents' flood reports were asked for from the home screen. */
   openReports?: { tambon: string; lat: number; lon: number } | null;
+  /** One of the map's five features, asked for from a tile on the home screen (?focus=). */
+  openFocus?: MapFocus | null;
   /** Tambons with a standing flood report from residents. Null while loading or unavailable. */
   reports?: TambonReports[] | null;
   userAgent?: string;
@@ -199,7 +205,9 @@ export function DashboardView(props: DashboardViewProps) {
   const [tab, setTab] = useState<"map" | "transparency">("map");
   const [hazardCode, setHazardCode] = useState("flood");
   // Someone who came to see reports wants the current situation, not the long-term risk.
-  const [chosenMode, setChosenMode] = useState<MapMode | null>(props.openReports ? "live" : null);
+  const [chosenMode, setChosenMode] = useState<MapMode | null>(
+    props.openReports ? "live" : props.openFocus === "risk" ? "risk" : null,
+  );
   /*
    * The map opens where the person already said they are: the area chosen on the home screen
    * (their home if they have one saved) decides the province in the selector, where the map
@@ -221,7 +229,7 @@ export function DashboardView(props: DashboardViewProps) {
    * in an effect, so the report is on screen in the first paint instead of flashing the area
    * card first.
    */
-  const asked = props.openDam ?? null;
+  const asked = props.openDam ?? (props.openFocus === "dam" ? MAIN_DAM : null);
   const [picked, setPicked] = useState<MapSelection | null>(
     asked ? { kind: "dam", code: asked } : null,
   );
@@ -244,7 +252,9 @@ export function DashboardView(props: DashboardViewProps) {
    * Safe places are drawn only when asked for (the owner, 12 Oct 2026): there are thousands, and
    * all of them at once bury the map. The switch sits right under the map and says how many.
    */
-  const [showPlaces, setShowPlaces] = useState(false);
+  const [showPlaces, setShowPlaces] = useState(props.openFocus === "places");
+  // The feature last asked for with the chips above the map, or from a home-screen tile.
+  const [activeFocus, setActiveFocus] = useState<MapFocus | null>(props.openFocus ?? null);
   // The flood-risk areas start on (the owner, 12 Oct 2026) and can be switched off to read the
   // ground underneath; the basemap is the person's choice for as long as this page is open. It
   // opens on the satellite picture with the hills shaded over it (the owner, 15 Oct 2026, after
@@ -390,13 +400,19 @@ export function DashboardView(props: DashboardViewProps) {
   const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
 
   /*
-   * Where the map looks: close around the person's own area while that is what is chosen, the
-   * whole province once they pick one from the list, and all four when they clear it. The box is
-   * about 22 by 17 km, which holds a tambon and its neighbours.
+   * Where the map looks: the whole province of the person's chosen area, together with the
+   * provinces of their home and of every place they watch (the owner, 15 Oct: someone in Pattani
+   * who watches a place in Narathiwat opens on both provinces in full); the one province once
+   * they pick one from the list; and all four when they clear it or have no place yet.
    */
   const mapBounds: [number, number, number, number] | undefined =
-    chosenProvince === null && props.area
-      ? [props.area.lon - 0.1, props.area.lat - 0.08, props.area.lon + 0.1, props.area.lat + 0.08]
+    chosenProvince === null
+      ? provincesBox([
+          props.area?.code,
+          ...(props.me?.signedIn
+            ? [props.me.home?.code, ...props.me.places.map((place) => place.area?.code)]
+            : []),
+        ])
       : PROVINCE_BOUNDS[province];
 
   /*
@@ -405,16 +421,21 @@ export function DashboardView(props: DashboardViewProps) {
    * cannot pull the map back (MapView refits on the figures, not on the array).
    */
   const askedDam = asked ? dams.find((d) => d.code === asked) : undefined;
+  const zoneDam = props.openFocus === "damzone" ? mainDam(dams) : undefined;
   const askedBox: [number, number, number, number] | null = askedDam
     ? (boundsAround(damFrame(askedDam)) ?? null)
-    : props.openReports
-      ? [
-          props.openReports.lon - 0.06,
-          props.openReports.lat - 0.05,
-          props.openReports.lon + 0.06,
-          props.openReports.lat + 0.05,
-        ]
-      : null;
+    : zoneDam
+      ? (boundsAround(zoneFrame(zoneDam)) ?? null)
+      : props.openFocus === "gauges"
+        ? SERVICE_BOUNDS
+        : props.openReports
+          ? [
+              props.openReports.lon - 0.06,
+              props.openReports.lat - 0.05,
+              props.openReports.lon + 0.06,
+              props.openReports.lat + 0.05,
+            ]
+          : null;
 
   /*
    * The pop-ups on the map itself (the owner, 14 Oct): a reservoir, a gauge or a safe place says
@@ -485,6 +506,55 @@ export function DashboardView(props: DashboardViewProps) {
     ...(mine.length === 0 && props.area ? [{ lon: props.area.lon, lat: props.area.lat }] : []),
   ];
   const myBox = myPoints.length > 0 ? boundsAround(myPoints) : null;
+
+  /*
+   * The chips above the map (the owner, 15 Oct): each switches its feature on, frames it and
+   * brings the map into view, so a first visit shows what the map can do.
+   */
+  const frameMap = () => {
+    window.setTimeout(() => {
+      const frame = document.querySelector<HTMLElement>("[data-map-frame]");
+      if (!frame) return;
+      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      const gap = frame.getBoundingClientRect().top - header - 8;
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      if (Math.abs(gap) > 4)
+        window.scrollTo({
+          top: Math.max(0, window.scrollY + gap),
+          behavior: reduce ? "auto" : "smooth",
+        });
+    }, 40);
+  };
+  const flyTo = (box: [number, number, number, number] | null | undefined) => {
+    if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+  };
+  const pickFocus = (f: MapFocus) => {
+    setActiveFocus(f);
+    if (f === "risk") {
+      setChosenMode("risk");
+      setShowHazard(true);
+      setSelection(null);
+      flyTo(myBox ?? mapBounds ?? SERVICE_BOUNDS);
+      frameMap();
+    } else if (f === "places") {
+      setShowPlaces(true);
+      flyTo(myBox ?? mapBounds ?? SERVICE_BOUNDS);
+      frameMap();
+    } else if (f === "damzone") {
+      const dam = mainDam(dams);
+      flyTo(dam ? boundsAround(zoneFrame(dam)) : null);
+      frameMap();
+    } else if (f === "gauges") {
+      flyTo(SERVICE_BOUNDS);
+      frameMap();
+    } else {
+      const dam = mainDam(dams);
+      if (!dam) return;
+      setSelection({ kind: "dam", code: dam.code });
+      flyTo(boundsAround(damFrame(dam)));
+      revealPanel();
+    }
+  };
 
   let selected: React.ReactNode = null;
   if (selection?.kind === "tambon" && layers.includes("alerts")) {
@@ -635,6 +705,12 @@ export function DashboardView(props: DashboardViewProps) {
         <div role="tabpanel" data-transparency-slot="true" />
       ) : (
         <>
+          {hazard.status === "active" && (
+            <>
+              <MapFeatureChips active={activeFocus} onPick={pickFocus} />
+              <MapMethod />
+            </>
+          )}
           <div className="flex flex-col gap-1">
             <p className="font-medium" id="hazard-label">
               {t("hazard.label")}
@@ -747,7 +823,7 @@ export function DashboardView(props: DashboardViewProps) {
                * four provinces in one tap (the owner, 13 Oct). It sits on the map, at the start
                * of its top edge, opposite the zoom buttons.
                */}
-              <div className="relative">
+              <div className="relative" data-map-frame="true">
                 <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12">
                   <button
                     type="button"
@@ -891,6 +967,8 @@ export function DashboardView(props: DashboardViewProps) {
                   <span>{t("mine.toggle", { count: mine.length })}</span>
                 </label>
               )}
+              {/* A visitor learns their family's places could be pinned here (the owner, 15 Oct). */}
+              {!props.me?.signedIn && <SignInHint what="mapPlaces" />}
               <p className={hint}>{t("tapHint")}</p>
               {props.dataState === "unavailable" && (
                 <p role="status" className={notice}>
