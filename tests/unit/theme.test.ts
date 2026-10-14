@@ -127,13 +127,21 @@ describe("the dark colours", () => {
     // MapLibre paints its popup white from its own stylesheet, which left the label's light
     // text on a white box at night (the owner saw it, 9 Oct).
     const css = readFileSync("app/globals.css", "utf8");
-    const selectors = css
+    const blocks = css
       .split("*/")
       .map((part) => (part.includes("/*") ? part.slice(0, part.indexOf("/*")) : part))
       .join(" ")
       .split("}")
-      .map((block) => block.slice(0, block.indexOf("{")).trim())
-      .filter((selector) => selector.includes("maplibregl-popup"));
+      .map((block) => ({
+        selector: block.slice(0, block.indexOf("{")).trim(),
+        body: block.slice(block.indexOf("{") + 1),
+      }))
+      .filter((b) => b.selector.includes("maplibregl-popup"));
+    // Only a rule that colours the pop-up must wait for the night; the one that gives it the
+    // app's face and sizes (14 Oct) holds in both themes.
+    const selectors = blocks
+      .filter((b) => /(^|[\s;])(background|color|border(-[a-z]+)*-color)\s*:/.test(b.body))
+      .map((b) => b.selector);
     expect(selectors.length).toBeGreaterThan(0);
     for (const selector of selectors) {
       for (const one of selector.split(",")) {
