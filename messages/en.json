@@ -597,7 +597,8 @@
       "streets": "Standard",
       "terrain": "Terrain",
       "satellite": "Satellite",
-      "satelliteNote": "A satellite picture from 2020 at about 10 metres a point: rivers, fields and towns show, single houses do not, and it is not a live picture."
+      "satelliteNote": "A satellite picture from 2020 at about 10 metres a point: rivers, fields and towns show, single houses do not, and it is not a live picture.",
+      "satelliteNoteEsri": "A satellite and aerial picture from Esri and its partners, down to about half a metre a point in towns, so single houses show. It is not a live picture, and when it was taken differs from place to place."
     },
     "satellite": {
       "toggle": "Show flood seen by satellite (GISTDA)",

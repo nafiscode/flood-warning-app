@@ -17,9 +17,12 @@ export function darkNow(): boolean {
  *   streets    OpenFreeMap, light by day and dark at night; the default.
  *   terrain    the same streets with the hills shaded from open elevation tiles (Mapzen's
  *              Terrarium set on AWS), so it follows day and night as well.
- *   satellite  Sentinel-2 cloudless by EOX: a cloud-free picture of 2020 at about 10 m, so fields,
- *              rivers and towns are clear but single houses are not. A photograph has no night
- *              version, so it always looks like day.
+ *   satellite  Esri World Imagery when Jaga has an ArcGIS key (the owner, 14 Oct 2026): satellite
+ *              and aerial pictures down to about half a metre in towns, so single houses show.
+ *              Without a key, or once Esri stops answering (the free allowance is 2 million tiles
+ *              a month; past it the tiles stop, since pay-as-you-go is left off), Sentinel-2
+ *              cloudless by EOX: a cloud-free picture of 2020 at about 10 m. A photograph has no
+ *              night version, so it always looks like day.
  */
 export const BASEMAPS = ["streets", "terrain", "satellite"] as const;
 export type Basemap = (typeof BASEMAPS)[number];
@@ -27,6 +30,55 @@ const SATELLITE_TILES =
   "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg";
 const SATELLITE_CREDIT =
   'Sentinel-2 cloudless 2020 by <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX</a> (contains modified Copernicus Sentinel data), CC BY-NC-SA 4.0';
+
+/*
+ * Esri World Imagery through ArcGIS Location Platform. The key is a browser key by Esri's design:
+ * it is visible in the page and is restricted to Jaga's own web addresses in Esri's dashboard, and
+ * it may use the basemaps and nothing else. The credit line is the one Esri asks for.
+ */
+const ARCGIS_KEY = process.env.NEXT_PUBLIC_ARCGIS_API_KEY ?? "";
+const ESRI_CREDIT =
+  'Powered by <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> | Esri, Maxar, Earthstar Geographics, and the GIS User Community';
+export function esriImageryTiles(key: string): string {
+  return `https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=${encodeURIComponent(key)}`;
+}
+/** Failed Esri tiles before the map gives up on Esri for this visit and shows EOX instead. */
+export const ESRI_FAILS_BEFORE_FALLBACK = 4;
+let esriFailed = false;
+const satelliteListeners = new Set<() => void>();
+/** For a screen that says which picture is shown: told once, when Esri gives way to EOX. */
+export function subscribeSatellite(listener: () => void): () => void {
+  satelliteListeners.add(listener);
+  return () => {
+    satelliteListeners.delete(listener);
+  };
+}
+export type SatelliteProvider = "esri" | "eox";
+/** Which picture the satellite basemap shows: Esri with a key that still answers, else EOX. */
+export function satelliteProvider(
+  key: string = ARCGIS_KEY,
+  failed = esriFailed,
+): SatelliteProvider {
+  return key && !failed ? "esri" : "eox";
+}
+/** The raster source for the satellite basemap. */
+export function satelliteSource(provider: SatelliteProvider, key: string = ARCGIS_KEY) {
+  return provider === "esri"
+    ? {
+        type: "raster" as const,
+        tiles: [esriImageryTiles(key)],
+        tileSize: 256,
+        maxzoom: 19,
+        attribution: ESRI_CREDIT,
+      }
+    : {
+        type: "raster" as const,
+        tiles: [SATELLITE_TILES],
+        tileSize: 256,
+        maxzoom: 15,
+        attribution: SATELLITE_CREDIT,
+      };
+}
 const TERRAIN_TILES = "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
 const TERRAIN_CREDIT = "Elevation: Mapzen terrain tiles on AWS (SRTM, GMTED and others)";
 
@@ -117,13 +169,7 @@ const satelliteStyle = (): StyleSpecification => ({
   version: 8,
   glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
   sources: {
-    "jaga-base-satellite": {
-      type: "raster",
-      tiles: [SATELLITE_TILES],
-      tileSize: 256,
-      maxzoom: 15,
-      attribution: SATELLITE_CREDIT,
-    },
+    "jaga-base-satellite": satelliteSource(satelliteProvider()),
   },
   layers: [{ id: "jaga-base-satellite", type: "raster", source: "jaga-base-satellite" }],
 });
@@ -230,6 +276,20 @@ export async function createServiceAreaMap(
     attributionControl: { compact: true },
   });
   map.touchZoomRotate.disableRotation();
+  /*
+   * When Esri stops answering (the month's free tiles used up, or the key refused), the
+   * satellite view falls back to EOX for the rest of the visit rather than going blank.
+   */
+  let esriErrors = 0;
+  map.on("error", (event) => {
+    const source = (event as { sourceId?: string }).sourceId;
+    if (source !== "jaga-base-satellite" || satelliteProvider() !== "esri") return;
+    esriErrors += 1;
+    if (esriErrors < ESRI_FAILS_BEFORE_FALLBACK) return;
+    esriFailed = true;
+    if (chosen === "satellite") setBasemap(map, "satellite");
+    for (const listener of satelliteListeners) listener();
+  });
   map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
 
   map.once("load", () => {

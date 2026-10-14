@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { AlertHero } from "@/components/home/AlertHero";
@@ -9,7 +9,7 @@ import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/H
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { HAZARD_CLASSES, hazardColor, hazardKey } from "@/lib/hazard-layer";
-import { BASEMAPS, type Basemap } from "@/lib/map";
+import { BASEMAPS, satelliteProvider, subscribeSatellite, type Basemap } from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
 import { PhoneIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
@@ -245,6 +245,8 @@ export function DashboardView(props: DashboardViewProps) {
   // water goes.
   const [showHazard, setShowHazard] = useState(true);
   const [basemap, setBasemapChoice] = useState<Basemap>("terrain");
+  // Esri's picture, or EOX's once Esri stops answering (lib/map.ts): the note says which.
+  const satellite = useSyncExternalStore(subscribeSatellite, satelliteProvider, satelliteProvider);
   /*
    * A box the map has been asked to fly to, and a count so that asking for the same box twice
    * still moves it (the owner, 12 Oct: opening the dam's figures should show the dam and the
@@ -815,7 +817,13 @@ export function DashboardView(props: DashboardViewProps) {
                     </button>
                   ))}
                 </div>
-                {basemap === "satellite" && <p className={hint}>{t("basemap.satelliteNote")}</p>}
+                {basemap === "satellite" && (
+                  <p className={hint} data-satellite-note={satellite}>
+                    {t(
+                      satellite === "esri" ? "basemap.satelliteNoteEsri" : "basemap.satelliteNote",
+                    )}
+                  </p>
+                )}
               </fieldset>
               {hazardOnOffer && (
                 <label
