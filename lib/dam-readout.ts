@@ -135,7 +135,8 @@ export function flowNow(dam: Dam, which: "inflow" | "outflow"): FlowNow | null {
   const signal = dam.signal;
   const hour = which === "inflow" ? (signal?.inflowCms ?? null) : (signal?.outflowCms ?? null);
   const daily = dam.daily;
-  const mean = which === "inflow" ? (daily?.inflowMeanCms ?? null) : (daily?.outflowMeanCms ?? null);
+  const mean =
+    which === "inflow" ? (daily?.inflowMeanCms ?? null) : (daily?.outflowMeanCms ?? null);
   const hours = which === "inflow" ? (daily?.inflowHours ?? 0) : (daily?.outflowHours ?? 0);
   const day = mean !== null && hours > 0 ? { mean, hours } : null;
   if (dam.feed === "hourly" && hour !== null) {
