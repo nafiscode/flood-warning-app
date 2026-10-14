@@ -416,7 +416,7 @@ Read docs/science-plan.md Module 3 and docs/spec.md section 6.3.
    - tide/sea level: evaluate ThaiWater's tide and storm-surge data first, with Open-Meteo Marine as the backup; record the choice in docs/decisions.md
    Write to stations, observations and forecasts.
 2. Load thresholds.yaml from S5 into the thresholds table, editable by admins with a provisional flag.
-3. Signal dashboard per zone: charts, threshold lines, rate of rise, data age, stale flags, and an advisory "suggested level + reasons". Never auto-publish.
+3. Signal dashboard per zone: charts, threshold lines, rate of rise, data age, stale flags, and an advisory "suggested level + reasons". Never auto-publish, except the automated alarm for ticked gauges (owner, 14 Oct 2026; safety rule 2).
 4. Gauge status on the public map.
 5. When a source goes down, pages must not break; show the last update time.
 

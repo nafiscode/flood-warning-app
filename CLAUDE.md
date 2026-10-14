@@ -7,7 +7,7 @@ Floods come first, but the design is hazard-agnostic: every alert, report, SOS a
 
 - Owner and super admin: Nafis, a GIS, remote-sensing and hydrology specialist who works in UTC+3. The service area runs on Asia/Bangkok time (UTC+7).
 - Target go-live: 25 October 2026. Flood peak is November to December.
-- Scope for 2026: the season-ready MVP defined in `docs/spec.md`. Alerts are issued by admins, not automatically.
+- Scope for 2026: the season-ready MVP defined in `docs/spec.md`. Alerts are issued by admins; the one automatic path is the automated alarm of safety rule 2.
 
 ## Reference docs
 Read the relevant doc before starting a task. Don't load all of them every time.
@@ -25,7 +25,9 @@ Read the relevant doc before starting a task. Don't load all of them every time.
    - Anonymous SOS is allowed. The phone number is optional but shown prominently, with the hint "Without a number, rescuers can't call you."
    - Never reject an SOS, even when rate-limited. While a case is open, a repeat SOS from the same device or phone merges into that case as an update. Above a threshold, new cases are flagged `suspected_spam` for admin review (admins can bulk-dismiss; authorities see the flag). They are still delivered.
    - When offline, queue the SOS and retry, and offer SMS and call fallbacks.
-2. Only humans publish alerts. Code may compute signals and suggest a level. Code must never auto-publish a public alert in the MVP.
+2. Only humans publish alerts, with one exception the owner chose on 14 Oct 2026. Code may compute signals and suggest a level.
+   - The exception is the **automated alarm**: for a river gauge an admin has ticked, when its two latest readings (both recent) reach the zone's threshold, every admin's phone rings with a draft alert. If no admin sends or dismisses it within the grace time (`system_settings.auto_alarm`, 20 min), Jaga publishes that draft itself from the reviewed template, marked as not reviewed and written to `audit_log`. If the river has gone back below by then, nothing is published. Before launch it publishes drills only.
+   - Nothing else is ever auto-published: rain, forecasts, the dam and suggestions stay advisory.
 3. Every alert shows its level, area, issuer, issue time, reason, and next-update time. Once the next-update time has passed, the alert keeps its level badge and gets a grey "not updated since [time]" marker. Stale is a marker, not a level; never hide or downgrade the level.
 4. Official hotlines are always one tap away, including offline: 1784 (DDPM, disaster prevention), 1669 (medical emergency), 191 (police), 199 (fire).
 5. Access to sensitive data is enforced by Postgres RLS (row-level security), never by the frontend alone.

@@ -353,7 +353,7 @@ For each warning zone:
 - tide and sea level
 - a *suggested* level with the reasons behind it
 
-Admins decide. The system never auto-publishes. Every data source shows its last-update time and a stale flag.
+Admins decide. The system never auto-publishes, with one exception (owner, 14 Oct 2026): the automated alarm. An admin may tick a river gauge (or all of them at once); when its two latest readings reach the zone's Warning or Evacuate threshold, every admin is alarmed with a draft built from the reviewed template, and if no admin sends or dismisses it within the grace time (20 minutes by default) the draft is published by itself, marked as not reviewed and logged. A reading that has dropped back below by then publishes nothing. Before launch it publishes drills only; an admin switches it to real alerts. Every data source shows its last-update time and a stale flag.
 
 ### 6.4 SOS monitor
 - Shows all cases. A case unclaimed for more than 15 minutes (configurable) is highlighted.
