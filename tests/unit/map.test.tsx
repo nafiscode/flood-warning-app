@@ -283,6 +283,40 @@ describe("the dam's card can be opened without hitting a two-pixel mark", () => 
     expect(card.querySelector("[data-dam-history]")).not.toBeNull();
   });
 
+  it("takes the page to the card it opens, and the card can take the keyboard", () => {
+    /*
+     * The card opens under the map, above the legend, so on a laptop the button in the legend
+     * opened it off the top of the screen and nothing seemed to happen (the owner, 14 Oct). The
+     * page goes to it, the panel is given the keyboard, and it rings for a moment so the eye
+     * lands on it.
+     */
+    const asked: { top?: number }[] = [];
+    const had = Object.getOwnPropertyDescriptor(window, "scrollTo");
+    Object.defineProperty(window, "scrollTo", {
+      configurable: true,
+      value: (to: { top?: number }) => asked.push(to),
+    });
+    vi.useFakeTimers();
+    try {
+      const c = dashboard({ dams: [EXAMPLE_DAM] });
+      fireEvent.click(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)!);
+      const panel = c.querySelector("[data-selected-panel]") as HTMLElement;
+      expect(panel).not.toBeNull();
+      expect(panel.getAttribute("tabindex")).toBe("-1");
+      vi.advanceTimersByTime(100);
+      // The page is taken to the panel, and never to a negative offset.
+      expect(asked).toHaveLength(1);
+      expect(asked[0]!.top).toBeGreaterThanOrEqual(0);
+      expect(panel.dataset.justOpened).toBe("true");
+      // ...and it stops ringing by itself.
+      vi.advanceTimersByTime(2_500);
+      expect(panel.dataset.justOpened).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+      if (had) Object.defineProperty(window, "scrollTo", had);
+    }
+  });
+
   it("says nothing about a dam when there is none on the map", () => {
     const c = dashboard();
     expect(c.querySelector("[data-open-dam]")).toBeNull();

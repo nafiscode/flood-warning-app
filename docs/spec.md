@@ -789,6 +789,18 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   alert hues, as a pill rather than the badge a level wears, with an icon and a word, on the card,
   the notice, the war room and the dam's marks on the map. The water keeps its own colour. See
   docs/brand.md; the screen always says these are the dam's figures, not an alert from Jaga.
+- **The instrument panel at the head of the report** (added 14 Oct 2026, the owner's request for a
+  report with some awe in it for a reader who knows water): a slate panel with a dial of how full
+  the reservoir is, normal high water marked on the dial, and the readings as cells with their
+  units and their datum - storage, reservoir level in m MSL, inflow, total outflow with the
+  spillway's share, and the measured change in storage in million m³ an hour. Three rules inside
+  it: the fullness is named against **both** denominators, the maximum and the capacity at normal
+  high water the bulletins quote; where the newest hour carries no storage - which is how Bang
+  Lang's feed arrives on some hours - the panel falls back to the newest figure of the day and
+  says which day it is, rather than showing nothing; and an hourly dam's flows carry the day's mean
+  beside the hour. The panel is brand slate and teal, which never carry a status: the state stays
+  in the chip beneath it, and the card still says these are the dam's own figures. The home screen
+  does not carry the panel - it must stay light on slow 3G.
 - **The drawing in the report** (added 13 Oct 2026, the owner's request): the dam's card on the map
   opens with the same animated cross-section the home screen carries, above the state chip and
   without its own caption, because the chip, the grade line and the figures below already say it.

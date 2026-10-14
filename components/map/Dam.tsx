@@ -18,6 +18,7 @@ import {
   type DamSignal,
 } from "@/lib/dam";
 import { DamSectionFigure } from "@/components/dam/DamFigures";
+import { DamReadout } from "@/components/dam/DamReadout";
 import { DamArrivalLines } from "@/components/map/DamArrival";
 import { DamHistory } from "@/components/map/DamHistory";
 import { localName } from "@/lib/places";
@@ -106,6 +107,7 @@ function Figures({
   dam,
   now,
   brief = false,
+  headline = true,
 }: {
   dam: Dam;
   now: number;
@@ -116,6 +118,12 @@ function Figures({
    * stays on the dam's card, one tap away.
    */
   brief?: boolean;
+  /**
+   * The outflow, storage and level sentences. The card draws those three as an instrument panel
+   * instead (DamReadout, 14 Oct), so it asks for them to be left out here rather than printing
+   * every figure twice; the notice has no panel and keeps them.
+   */
+  headline?: boolean;
 }) {
   const t = useTranslations("dam");
   const format = useFormatter();
@@ -138,13 +146,13 @@ function Figures({
   const dailySpill = volume(daily?.spilledMcm ?? null);
   return (
     <div className="flex flex-col gap-1">
-      {outflow !== null && (
+      {headline && outflow !== null && (
         <p>
           <span className="font-medium">{t("figures.outflow", { cms: outflow })}</span>
           {spilled !== null && spilled > 0 && <> · {t("figures.spilled", { cms: spilled })}</>}
         </p>
       )}
-      {signal.storageMcm !== null && (
+      {headline && signal.storageMcm !== null && (
         <p>
           {t("figures.storage", {
             mcm: Math.round(signal.storageMcm),
@@ -152,7 +160,9 @@ function Figures({
           })}
         </p>
       )}
-      {signal.levelM !== null && <p>{t("figures.level", { m: signal.levelM.toFixed(2) })}</p>}
+      {headline && signal.levelM !== null && (
+        <p>{t("figures.level", { m: signal.levelM.toFixed(2) })}</p>
+      )}
       <p>{t(`figures.trend.${trend(signal)}`, { hours: signal.riseWindowH })}</p>
       {daily && (dailyOut || dailyIn) && (
         <div className="flex flex-col gap-1">
@@ -337,7 +347,14 @@ export function DamCard({
         </p>
       ))}
 
-      <Figures dam={dam} now={now} />
+      {/*
+       * The reservoir read as an instrument (the owner, 14 Oct): the figures a reader who knows
+       * water wants first, each with its unit, its datum and where it came from. The sentences
+       * under it carry the day, the trend and the hour.
+       */}
+      <DamReadout dam={dam} />
+
+      <Figures dam={dam} now={now} headline={false} />
 
       {/*
        * The fortnight (the owner, 12 Oct). On the card and not in the notice: the notice is read

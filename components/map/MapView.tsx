@@ -173,6 +173,11 @@ const MINE_LABEL = "jaga-mine-label";
 /** How far from a tap a thin line or a small mark still counts, in pixels. */
 const TAP_SLACK = 12;
 
+/** What a pop-up gives up to the map's edges: the tip it points with, plus a little air. */
+const POPUP_AIR = 32;
+/** A pop-up is never squeezed below this, however short the map is; it scrolls instead. */
+const POPUP_MIN_H = 140;
+
 const DAM_WATER_SOURCE = "jaga-dam-water";
 const DAM_REACHES = "jaga-dam-reaches";
 const DAM_ZONE_SOURCE = "jaga-dam-zone";
@@ -985,7 +990,22 @@ export function MapView({
          * just enough to bring the pop-up inside, again when it grows (Navigate opened). Never for
          * a hover, where moving the map under the pointer would be a nuisance.
          */
+        /*
+         * The box itself is never taller than the map: a pop-up that outgrows the frame cannot be
+         * brought inside by moving the map, so the bottom of it was simply cut off (the owner saw
+         * it on a gauge, 14 Oct). What does not fit scrolls inside the box (app/globals.css).
+         */
+        const capPopup = () => {
+          const content = popup.current
+            ?.getElement()
+            .querySelector<HTMLElement>(".maplibregl-popup-content");
+          if (!content) return;
+          const frame = created.getContainer().getBoundingClientRect();
+          const room = `${Math.max(POPUP_MIN_H, Math.round(frame.height - POPUP_AIR))}px`;
+          if (content.style.maxHeight !== room) content.style.maxHeight = room;
+        };
         const fitPopup = () => {
+          capPopup();
           const element = popup.current?.getElement();
           if (!element || !pinned) return;
           const box = element.getBoundingClientRect();
@@ -1055,6 +1075,7 @@ export function MapView({
               closeSoon();
             });
             popup.current = opened;
+            capPopup();
             watchSize?.disconnect();
             watchSize =
               typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => fitPopup());
@@ -1183,6 +1204,12 @@ export function MapView({
   const [west, south, east, north] = bounds ?? SERVICE_BOUNDS;
   useEffect(() => {
     if (state !== "ready") return;
+    /*
+     * The map has been sent somewhere else - a reservoir's button, "All 4 provinces", a province
+     * - so a pinned pop-up would travel with its own mark and end up pointing off the edge of
+     * the frame, and with it off the side of the page.
+     */
+    if (boundsKey > 0) closePeek.current();
     map.current?.fitBounds(
       [
         [west, south],

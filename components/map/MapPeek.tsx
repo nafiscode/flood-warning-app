@@ -14,7 +14,8 @@ import { GaugeGlyph } from "./GaugeGlyph";
  * The small pop-ups on the map itself (the owner, 14 Oct): a reservoir, a river gauge or a safe
  * place says how it stands where it is drawn - on hover with a mouse, on tap on a phone - with a
  * button down to the full card under the map. They are compact on purpose: the card keeps every
- * figure, and a pop-up taller than the map would be cut off by it.
+ * figure and the disclaimer in full, and a box taller than the map would lose its own bottom - so
+ * the lines here are the short ones, and MapView caps the box at the map's height besides.
  */
 
 type More = { onMore: () => void };
@@ -69,7 +70,7 @@ export function GaugePeek({
         </p>
       )}
       {gauge.observedAt && <p className={hint}>{t("at", { time: time(gauge.observedAt) })}</p>}
-      <p className={hint}>{t("notAlert")}</p>
+      <p className={hint}>{t("notAlertShort")}</p>
       <MoreButton onMore={onMore} />
     </div>
   );
@@ -109,7 +110,7 @@ export function DamPeek({ dam, time, onMore }: { dam: Dam; time: (iso: string) =
         </>
       )}
       {/* The chip wears the alert colours (decided 12 Oct), so it says what it is not. */}
-      <p className={hint}>{t("disclaimer.notAnAlert")}</p>
+      <p className={hint}>{t("disclaimer.notAnAlertShort")}</p>
       <MoreButton onMore={onMore} />
     </div>
   );

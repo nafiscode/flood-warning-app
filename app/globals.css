@@ -184,12 +184,18 @@ body {
 /* MapLibre writes 12 px Helvetica inside the map. The pop-ups on the map (own places, gauges,
    reservoirs, safe places) are app text, so they take the app's face and sizes (Thai body text
    at least 18 px), with room for a thumb. */
+/* The map is a frame that cuts off whatever leaves it, so a pop-up taller than the map lost its
+   bottom - a gauge's figures and the way down to the full card (the owner, 14 Oct). MapView caps
+   the box at the map's own height; anything past that scrolls inside the box, and the scroll stays
+   in it rather than carrying on into the page. */
 .maplibregl-popup-content {
   font-family: var(--font-sans);
   font-size: var(--text-body);
   line-height: var(--text-body--line-height);
   padding: 12px 14px;
   border-radius: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 :root[data-theme="dark"] .maplibregl-popup-content {
@@ -218,4 +224,30 @@ body {
 
 :root[data-theme="dark"] .maplibregl-popup-anchor-right .maplibregl-popup-tip {
   border-left-color: var(--jaga-surface);
+}
+
+/* A card that has just been asked for rings once, so the eye finds it where it opened
+   (components/map/DashboardView.tsx: a reservoir's button in the legend is far from the card).
+   Brand teal, never an alert hue, and the rule above stops it for anyone who asked for less
+   motion. */
+[data-just-opened] > :first-child {
+  animation: jaga-just-opened 1.8s ease-out 1;
+}
+
+@keyframes jaga-just-opened {
+  0%,
+  25% {
+    box-shadow: 0 0 0 3px var(--jaga-teal);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+
+/* The buttons over the map's top corner ("All 4 provinces", "My places") are stacked above the
+   map, and they were covering the first line of a pop-up - the gauge's own name. A pop-up is
+   something the reader asked for by tapping, so it goes above them; the map's frame still clips
+   it, so it can never reach the hotlines at the foot of the page. */
+.maplibregl-popup {
+  z-index: 20;
 }

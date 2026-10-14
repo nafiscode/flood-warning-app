@@ -566,7 +566,8 @@
       "live": "Langsung",
       "updated": "Bacaan terbaru {time} · disemak semula setiap 5 minit",
       "legendTrend": "Anak panah: naik atau turun dalam 3 jam lepas",
-      "legendFull": "Semakin penuh bulatan, semakin hampir sungai dengan tebingnya"
+      "legendFull": "Semakin penuh bulatan, semakin hampir sungai dengan tebingnya",
+      "notAlertShort": "Ini ukuran, bukan amaran."
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",
     "mine": {
@@ -2316,7 +2317,8 @@
     },
     "disclaimer": {
       "notAnAlert": "Ini bukan amaran Jaga. Ia angka yang diterbitkan oleh empangan sendiri. Jika amaran diperlukan, pihak berkuasa yang akan mengeluarkannya.",
-      "noArrivalTime": "Tiada data masa perjalanan air untuk empangan ini lagi."
+      "noArrivalTime": "Tiada data masa perjalanan air untuk empangan ini lagi.",
+      "notAnAlertShort": "Angka dari empangan, bukan amaran."
     },
     "source": "Sumber: {operator}, diterbitkan melalui ThaiWater",
     "history": {
@@ -2394,6 +2396,36 @@
       "estimate": "Julat masa ini ialah anggaran daripada stesen paras air, bukan ramalan.",
       "issuer": "Dikeluarkan oleh pentadbir Jaga daripada angka pelepasan {operator}.",
       "reason": "{dam} melepaskan {cms} m³/s sejak {time}"
+    },
+    "readout": {
+      "title": "Bacaan terkini yang diterbitkan",
+      "storage": "Isipadu simpanan",
+      "level": "Paras air takungan",
+      "inflow": "Alir masuk ke takungan",
+      "outflow": "Jumlah pelepasan air",
+      "change": "Perubahan isipadu simpanan",
+      "unit": {
+        "mcm": "juta m³",
+        "m": "m aras laut purata",
+        "cms": "m³/s",
+        "mcmPerH": "juta m³/jam"
+      },
+      "ofMax": "{percent}% daripada kapasiti maksimum",
+      "ofNormal": "{percent}% daripada kapasiti pada paras simpanan biasa",
+      "normalMark": "Tanda pada dail: paras simpanan biasa ({percent}%)",
+      "room": "Masih boleh menerima {mcm, number} juta m³ sebelum paras simpanan biasa",
+      "fromHour": "jam terkini",
+      "fromMean": "purata daripada {hours} jam data",
+      "spill": "alur limpah {cms, number} m³/s",
+      "over": "dalam {hours} jam",
+      "way": {
+        "rising": "meningkat",
+        "falling": "menurun",
+        "steady": "stabil"
+      },
+      "dial": "Isipadu simpanan berbanding kapasiti maksimum",
+      "fromDay": "angka terkini bagi {day}",
+      "dayMean": "purata {hours} jam {cms, number} m³/s"
     }
   },
   "alertConsole": {

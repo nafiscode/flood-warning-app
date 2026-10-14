@@ -411,14 +411,47 @@ export function DashboardView(props: DashboardViewProps) {
    * The pop-ups on the map itself (the owner, 14 Oct): a reservoir, a gauge or a safe place says
    * how it stands where it is drawn. "All details" opens the card under the map and scrolls to it.
    */
+  /*
+   * Opening a card has to take the eye to it. The panel sits under the map and above the legend,
+   * so a button in the legend - and a reservoir's own button is a long way down it on a laptop -
+   * opened the card off the top of the screen and nothing seemed to happen (the owner, 14 Oct).
+   * Everything that opens a card now scrolls the panel into the frame, hands it the keyboard and
+   * marks it for a moment, so the eye lands on what was asked for.
+   */
+  const revealPanel = () => {
+    const reduce = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    /*
+     * The header is frozen at the top of the page and is taller than the page's own scroll
+     * padding on a phone (155 px against 112 px), so scrollIntoView alone slides the first lines
+     * of the card under it. The header's own height is measured instead.
+     */
+    const bring = (behavior: ScrollBehavior) => {
+      const panel = document.querySelector<HTMLElement>("[data-selected-panel]");
+      if (!panel) return null;
+      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      const gap = panel.getBoundingClientRect().top - header - 12;
+      if (Math.abs(gap) > 4) window.scrollTo({ top: Math.max(0, window.scrollY + gap), behavior });
+      return panel;
+    };
+    window.setTimeout(() => {
+      const panel = bring(reduce() ? "auto" : "smooth");
+      if (!panel) return;
+      panel.focus({ preventScroll: true });
+      panel.dataset.justOpened = "true";
+      /*
+       * The card settles as it fills - the drawing, the charts and the map's own move all change
+       * what is above it - so where it ended up is checked once more and put right without
+       * another animation.
+       */
+      window.setTimeout(() => bring("auto"), 700);
+      window.setTimeout(() => {
+        delete panel.dataset.justOpened;
+      }, 1800);
+    }, 60);
+  };
   const peekMore = (target: PeekTarget) => {
     setSelection(target);
-    window.setTimeout(() => {
-      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-      document
-        .querySelector("[data-selected-panel]")
-        ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-    }, 60);
+    revealPanel();
   };
   const renderPeek = (target: PeekTarget): React.ReactNode => {
     const more = () => peekMore(target);
@@ -851,7 +884,11 @@ export function DashboardView(props: DashboardViewProps) {
               )}
 
               {selected && (
-                <div className="flex flex-col gap-2" data-selected-panel="true">
+                <div
+                  className="flex flex-col gap-2 outline-none"
+                  data-selected-panel="true"
+                  tabIndex={-1}
+                >
                   {selected}
                   <button
                     type="button"
@@ -1018,6 +1055,8 @@ export function DashboardView(props: DashboardViewProps) {
                            */
                           const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
                           if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+                          // The card opens above the legend, so the page has to go to it.
+                          revealPanel();
                         }}
                         className={`${buttonQuiet} w-full justify-between text-start`}
                       >

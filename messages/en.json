@@ -566,7 +566,8 @@
       "live": "Live",
       "updated": "Newest reading {time} · checked again every 5 minutes",
       "legendTrend": "Chevron: risen or fallen in the last 3 hours",
-      "legendFull": "The fuller the glass, the closer the river is to its bank"
+      "legendFull": "The fuller the glass, the closer the river is to its bank",
+      "notAlertShort": "A measurement, not an alert."
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
     "mine": {
@@ -2316,7 +2317,8 @@
     },
     "disclaimer": {
       "notAnAlert": "This is not an alert from Jaga. These are figures the dam publishes itself. If an alert is needed, the authorities issue it.",
-      "noArrivalTime": "There is no measured travel time for this dam yet."
+      "noArrivalTime": "There is no measured travel time for this dam yet.",
+      "notAnAlertShort": "Figures from the dam, not an alert."
     },
     "source": "Source: {operator}, published through ThaiWater",
     "history": {
@@ -2394,6 +2396,36 @@
       "estimate": "The times are estimates from the river gauges, not a forecast.",
       "issuer": "Issued by a Jaga admin from the release figures of {operator}.",
       "reason": "{dam} releasing {cms} m³/s since {time}"
+    },
+    "readout": {
+      "title": "Latest figures published",
+      "storage": "Storage",
+      "level": "Reservoir level",
+      "inflow": "Inflow to the reservoir",
+      "outflow": "Total outflow",
+      "change": "Change in storage",
+      "unit": {
+        "mcm": "million m³",
+        "m": "m MSL",
+        "cms": "m³/s",
+        "mcmPerH": "million m³/h"
+      },
+      "ofMax": "{percent}% of maximum capacity",
+      "ofNormal": "{percent}% of capacity at normal high water",
+      "normalMark": "Mark on the dial: normal high water ({percent}%)",
+      "room": "{mcm, number} million m³ more before normal high water",
+      "fromHour": "latest hour",
+      "fromMean": "mean over {hours} hours of readings",
+      "spill": "spillway {cms, number} m³/s",
+      "over": "over {hours} hours",
+      "way": {
+        "rising": "rising",
+        "falling": "falling",
+        "steady": "holding steady"
+      },
+      "dial": "Storage against maximum capacity",
+      "fromDay": "latest figure for {day}",
+      "dayMean": "{hours} h mean {cms, number} m³/s"
     }
   },
   "alertConsole": {

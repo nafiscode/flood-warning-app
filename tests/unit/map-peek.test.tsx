@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardView, type DashboardViewProps } from "@/components/map/DashboardView";
@@ -112,7 +113,7 @@ describe("the pop-ups on the map", () => {
     expect(c.textContent).toContain("Water level 3.42 m MSL · 0.58 m below the bank");
     expect(c.textContent).toContain("Rose 0.30 m in about 3 hours");
     expect(c.textContent).toContain("Measured 14 Oct 09:00");
-    expect(c.textContent).toContain(en.map.gauge.notAlert);
+    expect(c.textContent).toContain(en.map.gauge.notAlertShort);
   });
 
   it("a silent gauge says so and shows no level as if it were current", () => {
@@ -132,7 +133,7 @@ describe("the pop-ups on the map", () => {
     expect(c.querySelector("[data-dam-chip]")?.getAttribute("data-dam-chip")).toBe("watch");
     expect(c.textContent).toMatch(/Storage [\d,]+ million m³ \(\d+% of maximum capacity\)/);
     expect(c.textContent).toMatch(/Total outflow [\d,]+ m³\/s/);
-    expect(c.textContent).toContain(en.dam.disclaimer.notAnAlert);
+    expect(c.textContent).toContain(en.dam.disclaimer.notAnAlertShort);
   });
 
   it("a reservoir with no figures says so", () => {
@@ -141,6 +142,37 @@ describe("the pop-ups on the map", () => {
       "en",
     ).container;
     expect(c.textContent).toContain(en.dam.figures.none);
+  });
+
+  it("says the disclaimer short, because the box has to fit in the map", () => {
+    // The map cuts off whatever leaves it (the owner, 14 Oct). Each short line still says the
+    // one thing that matters - it is not an alert - and the card under the map says it in full.
+    for (const [short, full] of [
+      [en.map.gauge.notAlertShort, en.map.gauge.notAlert],
+      [en.dam.disclaimer.notAnAlertShort, en.dam.disclaimer.notAnAlert],
+    ]) {
+      expect(short!.length).toBeLessThan(full!.length / 2);
+      expect(short!.toLowerCase()).toContain("not an alert");
+    }
+    for (const locale of ["th", "ms", "en"] as const) {
+      const m = JSON.parse(readFileSync(`messages/${locale}.json`, "utf8"));
+      expect(m.map.gauge.notAlertShort.length).toBeGreaterThan(10);
+      expect(m.dam.disclaimer.notAnAlertShort.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("the pop-up is never taller than the map it sits in", () => {
+    // Moving the map cannot bring a box taller than the frame inside, so MapView caps the box
+    // and app/globals.css lets the rest scroll inside it.
+    const view = readFileSync("components/map/MapView.tsx", "utf8");
+    expect(view).toContain("const capPopup = ");
+    expect(view.indexOf("capPopup();")).toBeLessThan(view.indexOf("const fitPopup") + 60);
+    expect(view).toContain("content.style.maxHeight = room");
+    const css = readFileSync("app/globals.css", "utf8");
+    const block = css.slice(css.indexOf(".maplibregl-popup-content {"));
+    const body = block.slice(0, block.indexOf("}"));
+    expect(body).toContain("overflow-y: auto");
+    expect(body).toContain("overscroll-behavior: contain");
   });
 
   it("a safe place has the same Navigate chooser as the home screen", () => {

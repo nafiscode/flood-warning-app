@@ -271,6 +271,23 @@ test.describe("the dam's quiet notice", () => {
     await expect(card).toBeVisible();
     await expect(card.locator("[data-dam-history]")).toBeVisible();
     await expect(card.locator("[data-dam-chart='outflow']")).toBeVisible();
+    /*
+     * ...and the page goes to it. The card opens under the map, above the legend, so the button
+     * used to open it off the top of the screen and nothing seemed to happen (the owner, 14 Oct).
+     * It has to end up under the frozen header, not behind it, and inside the screen.
+     */
+    const where = await page.evaluate(() => {
+      const panel = document.querySelector("[data-selected-panel]")!.getBoundingClientRect();
+      const header = document.querySelector("header")!.getBoundingClientRect();
+      return { top: panel.top, header: header.bottom, height: window.innerHeight };
+    });
+    expect(where.top).toBeGreaterThanOrEqual(where.header - 1);
+    expect(where.top).toBeLessThan(where.height / 2);
+    // The reservoir read as an instrument: the figures with their units and their datum.
+    const readout = card.locator("[data-dam-readout]");
+    await expect(readout).toBeVisible();
+    await expect(readout.locator("[data-dam-dial]")).toBeVisible();
+    await expect(readout).toContainText(th.dam.readout.unit.mcm);
   });
 
   /*
