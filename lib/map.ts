@@ -237,6 +237,27 @@ export const PROVINCE_BOUNDS: Record<string, [number, number, number, number]> =
   "96": [101.37, 5.73, 102.09, 6.64],
 };
 
+/**
+ * The whole provinces of the person's own places, as one box (the owner, 15 Oct 2026: someone in
+ * Pattani who watches a place in Narathiwat sees both provinces in full when the map opens). Takes
+ * tambon (or any DOPA) codes; codes outside the four provinces are left out. Undefined when none
+ * is left, so the map shows all four.
+ */
+export function provincesBox(
+  codes: readonly (string | null | undefined)[],
+): [number, number, number, number] | undefined {
+  const boxes = [...new Set(codes.map((code) => code?.slice(0, 2) ?? ""))]
+    .map((province) => PROVINCE_BOUNDS[province])
+    .filter((box): box is [number, number, number, number] => box !== undefined);
+  if (boxes.length === 0) return undefined;
+  return [
+    Math.min(...boxes.map((b) => b[0])),
+    Math.min(...boxes.map((b) => b[1])),
+    Math.max(...boxes.map((b) => b[2])),
+    Math.max(...boxes.map((b) => b[3])),
+  ];
+}
+
 export const TAMBON_FILL_LAYER = "jaga-tambon-fill";
 export const TAMBON_LINE_LAYER = "jaga-tambon-line";
 export const TAMBON_SELECTED_LAYER = "jaga-tambon-selected";
