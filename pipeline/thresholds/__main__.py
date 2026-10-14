@@ -147,6 +147,29 @@ def cmd_seed(cfg: dict) -> int:
     return 0
 
 
+def cmd_gauges(cfg: dict) -> int:
+    """Watch, Warning and Evacuate for every gauge with a bank level (thresholds/gauges.py)."""
+    import pandas as pd
+
+    from . import gauges as gs
+
+    out = output_dir(cfg)
+    stations = pd.read_csv(data_dir() / "stations.csv")
+    hindcast = json.loads((out / "hindcast.json").read_text(encoding="utf-8"))
+    rows = gs.run(cfg, stations, data_dir() / "tidy", seed.gauges(stations, cfg, hindcast), cfg.get("gauge_levels"),
+                  {z: v["proposal"] for z, v in hindcast["zones"].items()})
+    (out / "gauge_levels.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
+    for folder in (out, CONFIG_PATH.parent):
+        (folder / "gauge_levels.md").write_text(gs.markdown(rows), encoding="utf-8", newline="\n")
+    seed_path = REPO_DIR / "supabase" / "seed" / "47_gauge_levels.sql"
+    seed_path.write_text(gs.seed_sql(rows), encoding="utf-8", newline="\n")
+    counts = {}
+    for r in rows:
+        counts[r["method"]] = counts.get(r["method"], 0) + 1
+    print(f"{len(rows)} gauges: {counts}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="thresholds", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -156,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("glofas")
     sub.add_parser("hindcast")
     sub.add_parser("seed")
+    sub.add_parser("gauges")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -167,6 +191,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_glofas(cfg)
     if args.command == "seed":
         return cmd_seed(cfg)
+    if args.command == "gauges":
+        return cmd_gauges(cfg)
     return cmd_hindcast(cfg)
 
 

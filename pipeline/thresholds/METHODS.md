@@ -52,3 +52,15 @@ The science plan's first idea, "the value reached 48 to 72 hours before onset in
 - **The Kolok basin is mostly in Malaysia**, where no gauge of ours stands; rain there is from the satellite alone.
 - **Rain thresholds do not know how wet the ground is.** The same 72-hour rain floods a saturated basin and not a dry one.
 - Lead times are from the alarm's start to the gauge's onset. The time needed to decide, write and send an alert comes out of them.
+
+## Levels for every gauge (14 Oct 2026)
+
+The owner asked for Watch, Warning and Evacuate at every river gauge, not only the three key gauges. `uv run python -m thresholds gauges` (`thresholds/gauges.py`) writes them to `gauge_levels.md` (beside this file), `out/thresholds/gauge_levels.json` and `supabase/seed/47_gauge_levels.sql` (table `gauge_levels`, provisional; an admin changes them on the signal dashboard's gauge map, and a level an admin set is never overwritten by a re-seed).
+
+- **Evacuate is the bank**, the irrigation department's own flood marker at that gauge, as the key gauges' hindcast chose.
+- **Warning** is the highest level below the bank whose crossings came, in the median, at least 6 hours before the river reached its bank, chosen by the critical success index over the whole record (2017 onwards, every month); **Watch** the same with 24 hours and at least 0.2 m below Warning. Candidates run from 0.1 to 4 m below the bank.
+- **A level may not be one the river sits above for weeks:** Warning is exceeded in at most 3 % of the record's hours, Watch in at most 6 %. Without this, at gauges near the sea (banks of 1–2 m) the tide kept a low "alarm" on for months, its "lead" came out in thousands of hours, and the levels fell below mean sea level. Where a rule-picked level was under that floor, it was lifted to it (marked "lifted").
+- **With fewer than three floods on record** (or no candidate that gave the lead), the level comes from how fast the river rises: Warning = bank less the 95th percentile of all 6-hour rises (at least 0.3 m), Watch = bank less the 24-hour rise, and at least half as far again below the bank as Warning. 32 of 46 gauges are set this way, including X.44 at Hat Yai (one flood) — so most of these are informed placeholders, not tested thresholds.
+- **The key gauges keep what the owner accepted for their zones** (X.40A Warning 16.0, Evacuate 16.5; X.119A 8.8 and 9.3; X.44 Evacuate 7.4) and gain only a level-based Watch below them. In the app the key gauge's levels and its zone's `key_level_m` threshold are one value: saving either changes both.
+- **Nine gauges are flagged "bank looks too low"**: the river stands within 0.3 m of the listed bank more than a tenth of the time (X.275, FOP041, JNA001, JNA002, ONE037, ONE038, ONE039, SLA005, SLA007 — mostly tidal reaches). There the listed bank is no flood marker and the levels need someone who knows the gauge. **Two gauges never reached their listed bank** in the record (BLGTD01, MOU454). BLGTU05 and BLGTU06 have no bank and no levels.
+- The automated alarm reads them: a ticked gauge other than its zone's key gauge raises Warning (never more on its own) at its own Evacuate level.

@@ -2,10 +2,16 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SignalsView } from "@/components/admin/Signals";
 import { isAdminHere } from "@/lib/admin-guard";
-import { toSignals } from "@/lib/signals";
+import { toSignals, withGaugeLevels } from "@/lib/signals";
 import { createClient } from "@/lib/supabase/server";
 import { hint } from "@/lib/ui";
-import { dismissAutoAlarm, setAutoAlarm, setAutoMode, setThreshold } from "./actions";
+import {
+  dismissAutoAlarm,
+  setAutoAlarm,
+  setAutoMode,
+  setGaugeLevels,
+  setThreshold,
+} from "./actions";
 
 export async function generateMetadata({
   params,
@@ -33,17 +39,28 @@ export default async function SignalsPage({
   if (!(await isAdminHere())) return null;
   const t = await getTranslations("signals");
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_signals");
+  const [{ data, error }, levels] = await Promise.all([
+    supabase.rpc("admin_signals"),
+    supabase.rpc("admin_gauge_levels"),
+  ]);
   if (error) return <p className={hint}>{t("noZones")}</p>;
   const saved = typeof query.saved === "string" ? query.saved : null;
   const autoNotice =
-    query.autosaved === "1" ? t("auto.saved") : query.error === "auto" ? t("auto.error") : null;
+    query.autosaved === "1"
+      ? t("auto.saved")
+      : query.error === "auto"
+        ? t("auto.error")
+        : query.levels === "1"
+          ? t("map.levels.saved")
+          : query.error === "levels"
+            ? t("map.levels.error")
+            : null;
   const notice =
     autoNotice ??
     (saved ? t("thresholds.saved") : query.error === "threshold" ? t("thresholds.error") : null);
   return (
     <SignalsView
-      data={toSignals(data)}
+      data={withGaugeLevels(toSignals(data), levels.data)}
       locale={locale}
       t={(key, values) => t(key as never, values as never)}
       action={setThreshold.bind(null, locale)}
@@ -54,6 +71,7 @@ export default async function SignalsPage({
       allAction={setAutoAlarm.bind(null, locale)}
       modeAction={setAutoMode.bind(null, locale)}
       dismissAction={dismissAutoAlarm.bind(null, locale)}
+      levelsAction={setGaugeLevels.bind(null, locale)}
     />
   );
 }

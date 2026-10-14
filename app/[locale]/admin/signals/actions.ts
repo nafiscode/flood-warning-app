@@ -77,3 +77,36 @@ export async function dismissAutoAlarm(locale: string, form: FormData) {
     : { error: true };
   redirect(`${localePath(locale, "/admin/signals")}?${error ? "error=auto" : "autosaved=1"}`);
 }
+
+/**
+ * One gauge's Watch, Warning and Evacuate (the owner, 14 Oct 2026). The database checks the
+ * caller is an admin, that the levels rise in that order, and logs the change; a zone's key gauge
+ * moves its zone's threshold with it. Levels are metres above mean sea level and may be below
+ * nought near the sea.
+ */
+export async function setGaugeLevels(locale: string, form: FormData) {
+  const back = backTo(locale, form);
+  const join = back.includes("?") ? "&" : "?";
+  const station = String(form.get("station") ?? "");
+  const read = (name: string): number | null | "bad" => {
+    const text = String(form.get(name) ?? "")
+      .trim()
+      .replace(",", ".");
+    if (text === "") return null;
+    const value = Number(text);
+    return Number.isFinite(value) && Math.abs(value) < 10000 ? value : "bad";
+  };
+  const [watch, warning, evacuate] = [read("watch"), read("warning"), read("evacuate")];
+  if (!/^[0-9a-f-]{36}$/i.test(station) || [watch, warning, evacuate].includes("bad"))
+    redirect(`${back}${join}error=levels`);
+  const note = String(form.get("note") ?? "").trim();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_gauge_levels", {
+    p_station: station,
+    p_watch: watch,
+    p_warning: warning,
+    p_evacuate: evacuate,
+    p_note: note || null,
+  });
+  redirect(`${back}${join}${error ? "error=levels" : "levels=1"}`);
+}

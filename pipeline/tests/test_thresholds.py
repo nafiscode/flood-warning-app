@@ -92,3 +92,47 @@ def test_choose_takes_the_best_balance_among_the_timely_candidates():
     assert hc.choose(rows, min_lead_h=0)["threshold"] == 180       # perfect, but only two hours ahead
     assert hc.choose(rows, min_lead_h=25)["threshold"] == 150
     assert hc.choose([row(300, 0, 0, None)], 0) is None
+
+
+CFG = {"flood": {"min_hours": 3, "gap_days": 5}, "alarm": {"merge_gap_h": 48, "hit_window_h": 120}}
+
+
+def flood_year(n_floods: int, base: float = 2.0, bank: float = 5.0, days: int = 400) -> pd.Series:
+    """A quiet river at `base` with `n_floods` slow rises over `bank` (20 h up, 10 h over, down)."""
+    v = base + 0.1 * np.sin(np.arange(days * 24) * 2 * np.pi / 24)
+    for k in range(n_floods):
+        t0 = 24 * 30 * (k + 1)
+        up = np.linspace(base, bank + 0.5, 30)
+        v[t0:t0 + 30] = up
+        v[t0 + 30:t0 + 40] = bank + 0.5
+        v[t0 + 40:t0 + 70] = up[::-1]
+    return series(v, start="2018-01-01")
+
+
+def test_gauge_levels_rise_from_watch_to_evacuate_at_the_bank():
+    from thresholds import gauges as gs
+
+    level = pd.concat([flood_year(5), flood_year(0, days=800).shift(400 * 24, freq="1h")])
+    out = gs.suggest(level, 5.0, CFG)
+    assert out["evacuate"] == 5.0
+    assert out["watch"] < out["warning"] < out["evacuate"]
+    assert out["floods"] == 5
+
+
+def test_gauge_levels_fall_back_to_rises_with_too_few_floods():
+    from thresholds import gauges as gs
+
+    out = gs.suggest(flood_year(1, days=1200), 5.0, CFG)
+    assert out["warning_method"] == "rise" and out["watch_method"] == "rise"
+    assert out["watch"] < out["warning"] < out["evacuate"]
+
+
+def test_a_level_the_river_sits_above_for_weeks_is_lifted():
+    from thresholds import gauges as gs
+
+    # A tidal gauge: up and down by a metre twice a day, bank just over the high tide.
+    hours = np.arange(24 * 800)
+    tide = 0.6 * np.sin(hours * 2 * np.pi / 12.4)
+    out = gs.suggest(series(tide, start="2018-01-01"), 0.7, CFG)
+    assert gs.share_above(series(tide, start="2018-01-01"), out["warning"]) <= 0.031
+    assert out["bank_suspect"]

@@ -328,3 +328,41 @@ describe("a gauge's state on the map", () => {
     expect(gaugeState(g(5, 0.5, null), now)).toBe("nolevels");
   });
 });
+
+describe("a gauge's own levels", () => {
+  it("are joined by station id, and a key gauge keeps its zone's Warning and Evacuate", async () => {
+    const { withGaugeLevels, mapLevels } = await import("@/lib/signals");
+    const all = EXAMPLE_SIGNALS.allGauges!;
+    const key = all.find((g) => g.code === "X.40A")!;
+    const up = all.find((g) => g.code === "X.77")!;
+    const data = withGaugeLevels(EXAMPLE_SIGNALS, [
+      {
+        station_id: key.id,
+        watch_m: 15.75,
+        warning_m: 16.3,
+        evacuate_m: 16.9,
+        provisional: true,
+        method: {},
+      },
+      {
+        station_id: up.id,
+        watch_m: 37.4,
+        warning_m: 38.15,
+        evacuate_m: 39.7,
+        provisional: false,
+        method: { how: "rise", floods: 2, bank_suspect: true },
+      },
+    ]);
+    const k = data.allGauges!.find((g) => g.code === "X.40A")!;
+    const u = data.allGauges!.find((g) => g.code === "X.77")!;
+    expect(mapLevels(k, data.zones)).toEqual({ watch: 15.75, warning: 16, evacuate: 16.5 });
+    expect(mapLevels(u, data.zones)).toEqual({ watch: 37.4, warning: 38.15, evacuate: 39.7 });
+    expect(u.levels).toMatchObject({ provisional: false, how: "rise", bankSuspect: true });
+  });
+
+  it("puts a gauge at Watch once it reaches its own Watch level", () => {
+    const g = { ...rising.key!, bank: 10, series: [[now - HOUR / 2, 9.2]] as Point[] };
+    expect(gaugeState(g, now, { watch: 9, warning: 9.6, evacuate: 10 })).toBe("near");
+    expect(gaugeState(g, now, { watch: 9.3, warning: 9.6, evacuate: 10 })).toBe("normal");
+  });
+});

@@ -57,7 +57,50 @@ export type Zone = {
 };
 
 /** A gauge on the map of all gauges: where it is and which zone holds it. */
-export type MapGauge = Gauge & { lon: number; lat: number; zoneId: string | null };
+export type MapGauge = Gauge & {
+  lon: number;
+  lat: number;
+  zoneId: string | null;
+  /** The gauge's own three levels (gauge_levels), when the database holds them. */
+  levels?: GaugeLevels | null;
+};
+
+/** Watch, Warning and Evacuate for one gauge, suggested by the pipeline or set by an admin. */
+export type GaugeLevels = {
+  watch: number | null;
+  warning: number | null;
+  evacuate: number | null;
+  provisional: boolean;
+  how: string | null;
+  floods: number | null;
+  bankSuspect: boolean;
+  neverReachedBank: boolean;
+  note: string | null;
+};
+
+/** `admin_gauge_levels()` rows, joined onto the map's gauges by station id. */
+export function withGaugeLevels(data: Signals, rows: unknown): Signals {
+  if (!Array.isArray(rows) || !data.allGauges) return data;
+  const byId = new Map<string, GaugeLevels>();
+  for (const r of rows as Row[]) {
+    const m = (r.method ?? {}) as Row;
+    byId.set(String(r.station_id), {
+      watch: numberOrNull(r.watch_m),
+      warning: numberOrNull(r.warning_m),
+      evacuate: numberOrNull(r.evacuate_m),
+      provisional: r.provisional !== false,
+      how: typeof m.how === "string" ? m.how : null,
+      floods: numberOrNull(m.floods),
+      bankSuspect: m.bank_suspect === true,
+      neverReachedBank: m.never_reached_bank === true,
+      note: typeof m.note === "string" ? m.note : null,
+    });
+  }
+  return {
+    ...data,
+    allGauges: data.allGauges.map((g) => ({ ...g, levels: (g.id && byId.get(g.id)) || null })),
+  };
+}
 
 export type AutoSettings = { graceMinutes: number; maxAgeH: number; mode: "drill" | "real" };
 export type AutoEvent = {
@@ -440,19 +483,35 @@ export const GAUGE_STATES: GaugeState[] = [
 export function gaugeState(
   gauge: Gauge,
   now: number,
-  keyLevels?: Partial<Record<Level, number>>,
+  levels?: Partial<Record<Level, number | null>>,
 ): GaugeState {
   const st = gaugeNow(gauge, now);
   if (!st || st.stale) return "stale";
-  const evacuate = keyLevels?.evacuate ?? gauge.bank;
-  const warning = keyLevels?.warning ?? null;
-  if (evacuate === null && warning === null) return "nolevels";
-  if (keyLevels?.evacuate !== undefined && st.value >= keyLevels.evacuate) return "evacuate";
+  const own = levels ?? {};
+  // Without levels of its own, a gauge is measured against its bank as before: Warning at the
+  // bank, "near" half a metre below it.
+  const evacuate = own.evacuate ?? null;
+  const warning = own.warning ?? (own.evacuate == null ? gauge.bank : null);
+  const watch = own.watch ?? (gauge.bank !== null ? gauge.bank - 0.5 : null);
+  if (evacuate === null && warning === null && watch === null) return "nolevels";
+  if (evacuate !== null && st.value >= evacuate) return "evacuate";
   if (warning !== null && st.value >= warning) return "warning";
-  if (keyLevels?.evacuate === undefined && gauge.bank !== null && st.value >= gauge.bank)
-    return "warning";
-  if (gauge.bank !== null && st.value >= gauge.bank - 0.5) return "near";
+  if (watch !== null && st.value >= watch) return "near";
   return "normal";
+}
+
+/**
+ * The levels a map gauge is measured against: its own (gauge_levels), with a zone's key gauge
+ * taking its zone's Warning and Evacuate, which are the same numbers once an admin has set them.
+ */
+export function mapLevels(gauge: MapGauge, zones: Zone[]): Partial<Record<Level, number | null>> {
+  const own = gauge.levels;
+  const key = keyLevelsFor(gauge, zones);
+  return {
+    watch: own?.watch ?? null,
+    warning: key?.warning ?? own?.warning ?? null,
+    evacuate: key?.evacuate ?? own?.evacuate ?? null,
+  };
 }
 
 /** The key gauge's levels for a map gauge, when it is one. */

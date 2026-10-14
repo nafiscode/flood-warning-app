@@ -3228,17 +3228,33 @@
       "title": "Semua stesen sungai",
       "hint": "Ketik stesen untuk bacaannya dan penggera automatiknya. Warna mengikut bacaan setiap stesen berbanding parasnya sendiri; perkataan dalam panel menyatakan perkara yang sama.",
       "state": {
-        "evacuate": "Pada atau melebihi paras tebing (Pindah)",
+        "evacuate": "Pada atau melebihi paras Pindah",
         "warning": "Pada atau melebihi paras Amaran",
-        "near": "Kurang setengah meter dari tebing",
-        "normal": "Di bawah parasnya",
+        "near": "Pada atau melebihi paras Berjaga-jaga",
+        "normal": "Di bawah paras Berjaga-jaga",
         "stale": "Tiada bacaan dalam 6 jam",
         "nolevels": "Paras tebing tidak diketahui"
       },
       "close": "Tutup",
       "zone": "Zon: {zone}",
       "noZone": "Di luar semua zon amaran",
-      "auto": "penggera automatik hidup"
+      "auto": "penggera automatik hidup",
+      "levels": {
+        "title": "Paras stesen ini",
+        "provisional": "Sementara, dicadangkan oleh Jaga.",
+        "set": "Ditetapkan oleh pentadbir.",
+        "fromFloods": "Diuji dengan {count} kali sungai di stesen ini melimpahi tebing sejak 2017.",
+        "fromRise": "Terlalu sedikit banjir dalam rekod untuk diuji: ditetapkan daripada kelajuan sungai ini naik pada hari-hari ia naik cepat.",
+        "key": "Ini stesen utama zon: paras Amaran dan Pindahnya ialah paras zon itu sendiri, dan menyimpan di sini turut mengubahnya.",
+        "bankSuspect": "Paras tebing dalam senarai kelihatan terlalu rendah sebagai penanda banjir di sini: sungai berada dalam 0.3 m daripadanya lebih sepersepuluh masa. Paras daripada orang yang mengenali stesen ini diperlukan.",
+        "neverReached": "Dalam rekod, sungai belum pernah mencapai tebing ini.",
+        "note": "Sebab (untuk log)",
+        "save": "Simpan paras",
+        "hint": "Meter di atas aras laut purata; biarkan kotak kosong jika tiada paras. Paras mesti naik daripada Berjaga-jaga ke Amaran ke Pindah. Mengubah paras tidak menerbitkan apa-apa.",
+        "saved": "Paras telah disimpan.",
+        "error": "Paras tidak disimpan. Pastikan ia nombor yang naik daripada Berjaga-jaga ke Amaran ke Pindah, dan anda masih log masuk sebagai pentadbir.",
+        "none": "Belum ada paras ditetapkan bagi stesen ini: ia diukur berbanding tebingnya."
+      }
     }
   },
   "lineQuota": {

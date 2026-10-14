@@ -35,6 +35,18 @@ export type MapPoint = {
   auto: boolean;
   canAuto: boolean;
   series: [number, number][];
+  /** Watch, Warning and Evacuate as the map measures this gauge (lib/signals.ts, mapLevels). */
+  levels?: {
+    watch: number | null;
+    warning: number | null;
+    evacuate: number | null;
+    provisional: boolean;
+    how: string | null;
+    floods: number | null;
+    bankSuspect: boolean;
+    neverReachedBank: boolean;
+    isKey: boolean;
+  };
 };
 
 export type MapWords = {
@@ -55,6 +67,23 @@ export type MapWords = {
   warning: string;
   unknown: string;
   notIssued: string;
+  levels?: {
+    title: string;
+    none: string;
+    watch: string;
+    warning: string;
+    evacuate: string;
+    provisional: string;
+    set: string;
+    fromFloods: string;
+    fromRise: string;
+    key: string;
+    bankSuspect: string;
+    neverReached: string;
+    note: string;
+    save: string;
+    hint: string;
+  };
 };
 
 const STATE_COLOR: Record<GaugeState, string> = {
@@ -79,11 +108,13 @@ export function SignalsMap({
   zones,
   words,
   action,
+  levelsAction,
 }: {
   points: MapPoint[];
   zones: GeoJSON.FeatureCollection;
   words: MapWords;
   action?: (form: FormData) => void;
+  levelsAction?: (form: FormData) => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
@@ -278,14 +309,11 @@ export function SignalsMap({
               </dd>
               <dt className="opacity-70">{words.bank}</dt>
               <dd>{point.bank === null ? words.unknown : `${point.bank.toFixed(2)} m`}</dd>
-              {point.warning !== null && (
-                <>
-                  <dt className="opacity-70">{words.warning}</dt>
-                  <dd>{`${point.warning.toFixed(2)} m`}</dd>
-                </>
-              )}
             </dl>
-            <Spark series={point.series} bank={point.bank} />
+            {point.levels && words.levels && (
+              <GaugeLevelsBlock point={point} words={words.levels} action={levelsAction} />
+            )}
+            <Spark series={point.series} bank={point.bank} levels={point.levels} />
             <p className="mt-2 text-small opacity-80">{words.notIssued}</p>
             {point.canAuto && point.id && (
               <form
@@ -342,10 +370,114 @@ export function SignalsMap({
   );
 }
 
-function Spark({ series, bank }: { series: [number, number][]; bank: number | null }) {
+/** Watch, Warning and Evacuate for the picked gauge: where they came from, and a form to change them. */
+function GaugeLevelsBlock({
+  point,
+  words,
+  action,
+}: {
+  point: MapPoint;
+  words: NonNullable<MapWords["levels"]>;
+  action?: (form: FormData) => void;
+}) {
+  const lv = point.levels!;
+  const shown = [
+    ["watch", lv.watch, words.watch, STATE_COLOR.near],
+    ["warning", lv.warning, words.warning, STATE_COLOR.warning],
+    ["evacuate", lv.evacuate, words.evacuate, STATE_COLOR.evacuate],
+  ] as const;
+  const fix = (v: number | null) => (v === null ? "" : v.toFixed(2));
+  const field =
+    "min-h-tap w-full rounded-lg border border-[#5fd1c4]/50 bg-[#0b1620] px-2 text-[#e6edf1]";
+  const none = lv.watch === null && lv.warning === null && lv.evacuate === null;
+  const origin = none
+    ? words.none
+    : !lv.provisional
+      ? words.set
+      : lv.how === "hindcast" || lv.how === "mixed"
+        ? `${words.provisional} ${words.fromFloods.replace("{count}", String(lv.floods ?? 0))}`
+        : lv.how === "rise"
+          ? `${words.provisional} ${words.fromRise}`
+          : words.provisional;
+  return (
+    <div
+      className="mt-3 flex flex-col gap-2 border-t border-[#5fd1c4]/30 pt-3"
+      data-gauge-levels={point.code}
+    >
+      <h4 className="font-bold">{words.title}</h4>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-small">
+        {shown.map(([key, value, label, color]) => (
+          <div key={key} className="contents">
+            <dt className="flex items-center gap-2 opacity-80">
+              <span
+                aria-hidden="true"
+                className="inline-block h-2.5 w-2.5 rounded-full"
+                style={{ background: color }}
+              />
+              {label}
+            </dt>
+            <dd data-gauge-level={key}>{value === null ? "–" : `${value.toFixed(2)} m`}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-small opacity-80">{origin}</p>
+      {lv.isKey && <p className="text-small opacity-80">{words.key}</p>}
+      {lv.bankSuspect && <p className="text-small font-bold text-[#f2c230]">{words.bankSuspect}</p>}
+      {lv.neverReachedBank && <p className="text-small opacity-80">{words.neverReached}</p>}
+      {action && point.id && (
+        <form action={action} className="flex flex-col gap-2" data-gauge-levels-form={point.code}>
+          <input type="hidden" name="station" value={point.id} />
+          <input type="hidden" name="view" value="map" />
+          <div className="grid grid-cols-3 gap-2">
+            {shown.map(([key, value, label]) => (
+              <label key={key} className="flex flex-col gap-1 text-small">
+                <span className="opacity-80">{label}</span>
+                <input
+                  name={key}
+                  inputMode="decimal"
+                  defaultValue={fix(value)}
+                  key={`${point.code}-${key}-${fix(value)}`}
+                  className={field}
+                />
+              </label>
+            ))}
+          </div>
+          <label className="flex flex-col gap-1 text-small">
+            <span className="opacity-80">{words.note}</span>
+            <input name="note" maxLength={300} className={field} />
+          </label>
+          <p className="text-small opacity-70">{words.hint}</p>
+          <button
+            type="submit"
+            className="min-h-tap self-start rounded-xl bg-[#2f9c95] px-4 font-bold text-[#0f1c26]"
+          >
+            {words.save}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function Spark({
+  series,
+  bank,
+  levels,
+}: {
+  series: [number, number][];
+  bank: number | null;
+  levels?: MapPoint["levels"];
+}) {
   if (series.length < 2) return null;
+  const marks = (
+    [
+      [levels?.watch ?? null, STATE_COLOR.near],
+      [levels?.warning ?? null, STATE_COLOR.warning],
+      [levels?.evacuate ?? bank, STATE_COLOR.evacuate],
+    ] as const
+  ).filter((m): m is readonly [number, string] => m[0] !== null);
   const xs = series.map((p) => p[0]);
-  const ys = [...series.map((p) => p[1]), ...(bank === null ? [] : [bank])];
+  const ys = [...series.map((p) => p[1]), ...marks.map((m) => m[0])];
   const [x0, x1] = [Math.min(...xs), Math.max(...xs)];
   const [y0, y1] = [Math.min(...ys) - 0.1, Math.max(...ys) + 0.1];
   const x = (t: number) => ((t - x0) / Math.max(1, x1 - x0)) * 100;
@@ -357,18 +489,19 @@ function Spark({ series, bank }: { series: [number, number][]; bank: number | nu
       className="mt-2 h-16 w-full"
       aria-hidden="true"
     >
-      {bank !== null && (
+      {marks.map(([v, color]) => (
         <line
+          key={`${color}-${v}`}
           x1="0"
           x2="100"
-          y1={y(bank)}
-          y2={y(bank)}
-          stroke="#f07f1a"
+          y1={y(v)}
+          y2={y(v)}
+          stroke={color}
           strokeWidth="1"
           strokeDasharray="3 2"
           vectorEffect="non-scaling-stroke"
         />
-      )}
+      ))}
       <path
         d={series
           .map(([t, v], i) => `${i ? "L" : "M"}${x(t).toFixed(1)} ${y(v).toFixed(1)}`)

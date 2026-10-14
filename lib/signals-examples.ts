@@ -174,3 +174,31 @@ export const EXAMPLE_SIGNALS: Signals = {
     signals: { at: EXAMPLE_SIGNALS_NOW - 0.5 * HOUR, ok: true, error: null },
   },
 };
+
+/** Made-up rows of `admin_gauge_levels()` for the example page (the real ones come from seed 47). */
+export const EXAMPLE_GAUGE_LEVELS = [
+  {
+    station_id: "example-X.40A",
+    watch_m: 15.75,
+    warning_m: 16,
+    evacuate_m: 16.5,
+    provisional: true,
+    method: { how: "mixed", floods: 8 },
+  },
+  {
+    station_id: "example-X.77",
+    watch_m: 37.4,
+    warning_m: 38.15,
+    evacuate_m: 39.7,
+    provisional: true,
+    method: { how: "rise", floods: 2 },
+  },
+  {
+    station_id: "example-X.10A",
+    watch_m: 0.85,
+    warning_m: 1.05,
+    evacuate_m: 1.15,
+    provisional: false,
+    method: { how: "set by an admin" },
+  },
+];

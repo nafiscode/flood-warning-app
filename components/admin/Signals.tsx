@@ -6,6 +6,7 @@ import {
   gaugeNow,
   gaugeState,
   keyLevelsFor,
+  mapLevels,
   LEVELS,
   linePath,
   rainNow,
@@ -760,7 +761,7 @@ function AutoPanel({
 /** The map view's marks, built on the server from the same read as the cards. */
 function mapPoints(data: Signals, locale: string): MapPoint[] {
   return (data.allGauges ?? []).map((g) => {
-    const levels = keyLevelsFor(g, data.zones);
+    const levels = mapLevels(g, data.zones);
     const st = gaugeNow(g, data.now);
     return {
       id: g.id ?? null,
@@ -778,7 +779,18 @@ function mapPoints(data: Signals, locale: string): MapPoint[] {
       ageH: st ? st.ageH : null,
       rise: st ? st.riseM : null,
       bank: g.bank,
-      warning: levels?.warning ?? null,
+      warning: levels.warning ?? null,
+      levels: {
+        watch: levels.watch ?? null,
+        warning: levels.warning ?? null,
+        evacuate: levels.evacuate ?? null,
+        provisional: g.levels?.provisional ?? true,
+        how: g.levels?.how ?? null,
+        floods: g.levels?.floods ?? null,
+        bankSuspect: g.levels?.bankSuspect ?? false,
+        neverReachedBank: g.levels?.neverReachedBank ?? false,
+        isKey: keyLevelsFor(g, data.zones) !== undefined,
+      },
       auto: g.auto === true,
       canAuto: g.zoneId !== null,
       series: g.series,
@@ -798,6 +810,7 @@ export function SignalsView({
   allAction,
   modeAction,
   dismissAction,
+  levelsAction,
 }: {
   data: Signals;
   locale: string;
@@ -810,6 +823,7 @@ export function SignalsView({
   allAction?: (form: FormData) => void;
   modeAction?: (form: FormData) => void;
   dismissAction?: (form: FormData) => void;
+  levelsAction?: (form: FormData) => void;
 }) {
   return (
     <div className="flex flex-col gap-5" data-signals={data.zones.length} data-signals-view={view}>
@@ -879,6 +893,7 @@ export function SignalsView({
               })),
           }}
           action={autoAction}
+          levelsAction={levelsAction}
           words={{
             title: t("map.title"),
             hint: t("map.hint"),
@@ -904,6 +919,23 @@ export function SignalsView({
             warning: t("level.warning"),
             unknown: t("unknown"),
             notIssued: t("suggestion.onlyAdvice"),
+            levels: {
+              title: t("map.levels.title"),
+              none: t("map.levels.none"),
+              watch: t("level.watch"),
+              warning: t("level.warning"),
+              evacuate: t("level.evacuate"),
+              provisional: t("map.levels.provisional"),
+              set: t("map.levels.set"),
+              fromFloods: t("map.levels.fromFloods"),
+              fromRise: t("map.levels.fromRise"),
+              key: t("map.levels.key"),
+              bankSuspect: t("map.levels.bankSuspect"),
+              neverReached: t("map.levels.neverReached"),
+              note: t("map.levels.note"),
+              save: t("map.levels.save"),
+              hint: t("map.levels.hint"),
+            },
           }}
         />
       ) : null}

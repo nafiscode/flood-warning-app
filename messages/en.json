@@ -3228,17 +3228,33 @@
       "title": "All river gauges",
       "hint": "Tap a gauge for its readings and its automated alarm. Colours follow each gauge's own reading against its own levels; the words in the panel say the same.",
       "state": {
-        "evacuate": "At or over its bank level for Evacuate",
+        "evacuate": "At or over its Evacuate level",
         "warning": "At or over its Warning level",
-        "near": "Within half a metre of its bank",
-        "normal": "Below its levels",
+        "near": "At or over its Watch level",
+        "normal": "Below its Watch level",
         "stale": "No reading in 6 hours",
         "nolevels": "No bank level known"
       },
       "close": "Close",
       "zone": "Zone: {zone}",
       "noZone": "Outside every warning zone",
-      "auto": "automated alarm on"
+      "auto": "automated alarm on",
+      "levels": {
+        "title": "This gauge's levels",
+        "provisional": "Provisional, suggested by Jaga.",
+        "set": "Set by an admin.",
+        "fromFloods": "Scored against the {count} times this gauge went over its bank since 2017.",
+        "fromRise": "Too few floods on record to score: set from how fast this river rises on its fast days.",
+        "key": "This is the zone's key gauge: its Warning and Evacuate are the zone's own levels, and saving here changes them too.",
+        "bankSuspect": "The listed bank looks too low for a flood marker here: the river stands within 0.3 m of it more than a tenth of the time. A level from someone who knows this gauge is needed.",
+        "neverReached": "The river has not reached this bank in the record.",
+        "note": "Why (for the log)",
+        "save": "Save the levels",
+        "hint": "Metres above mean sea level; leave a box empty for no level. They must rise from Watch to Warning to Evacuate. Changing a level publishes nothing.",
+        "saved": "The levels are saved.",
+        "error": "The levels were not saved. Check they are numbers rising from Watch to Warning to Evacuate, and that you are still signed in as an admin.",
+        "none": "No levels set for this gauge yet: it is measured against its bank."
+      }
     }
   },
   "lineQuota": {
