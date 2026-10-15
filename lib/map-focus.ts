@@ -8,6 +8,20 @@ import type { Dam } from "@/lib/dam";
 export const MAP_FOCUSES = ["risk", "places", "damzone", "gauges", "dam", "sea"] as const;
 export type MapFocus = (typeof MAP_FOCUSES)[number];
 
+/**
+ * The order of the chips above the map (the owner, 15 Oct): the flood-risk areas first, then what
+ * changes while someone looks, then the dam's land, and the thousands of safe places last. The
+ * home screen's tiles keep MAP_FOCUSES.
+ */
+export const CHIP_ORDER: readonly MapFocus[] = [
+  "risk",
+  "gauges",
+  "sea",
+  "dam",
+  "damzone",
+  "places",
+];
+
 export function readFocus(value: string | null | undefined): MapFocus | null {
   return MAP_FOCUSES.find((f) => f === value) ?? null;
 }

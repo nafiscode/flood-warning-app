@@ -136,6 +136,12 @@ export type SeaMark = {
 type Props = {
   /** What may be drawn. Empty: nothing of ours but the tambon outlines. */
   layers: MapLayer[];
+  /**
+   * The dam's own marks - reservoir, river path and the dam itself - and the land its release can
+   * reach, each switched by its chip above the map (the owner, 15 Oct). Both drawn when left out.
+   */
+  showDam?: boolean;
+  showDamZone?: boolean;
   /** The `pmtiles://` address of the flood-hazard classes; null until the manifest names one. */
   hazardUrl?: string | null;
   /** The basemap under our layers (lib/map.ts). */
@@ -361,6 +367,8 @@ function toCollections(
  */
 export function MapView({
   layers,
+  showDam = true,
+  showDamZone = true,
   status,
   data,
   now,
@@ -1067,14 +1075,15 @@ export function MapView({
         ] as const) {
           m.setPaintProperty(layer, property, value);
         }
-        // Always on, in every view: the river does not stop running through someone's tambon
-        // because they switched to the risk map (the owner, 10 Oct).
-        const damOn = dams.length > 0 ? "visible" : "none";
+        // In every view: the river does not stop running through someone's tambon because they
+        // switched to the risk map (the owner, 10 Oct).
+        // Each half has its own chip above the map (15 Oct); both are on unless switched off.
+        const damOn = dams.length > 0 && showDam ? "visible" : "none";
+        const zoneOn = dams.length > 0 && showDamZone ? "visible" : "none";
+        for (const layer of [DAM_ZONE_FILL, DAM_ZONE_CASING, DAM_ZONE_LINE, DAM_ZONE_OUTER]) {
+          m.setLayoutProperty(layer, "visibility", zoneOn);
+        }
         for (const layer of [
-          DAM_ZONE_FILL,
-          DAM_ZONE_CASING,
-          DAM_ZONE_LINE,
-          DAM_ZONE_OUTER,
           DAM_RESERVOIR_FILL,
           DAM_RESERVOIR_LINE,
           DAM_TRIBUTARY,
@@ -1104,6 +1113,8 @@ export function MapView({
     draw.current();
   }, [
     layers,
+    showDam,
+    showDamZone,
     status,
     data,
     now,

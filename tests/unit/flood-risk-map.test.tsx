@@ -4,7 +4,8 @@ import { TambonRiskView } from "@/components/home/TambonRisk";
 import { MapFeatureChips, MapFeatureTiles } from "@/components/map/MapFeatures";
 import type { Dam } from "@/lib/dam";
 import { EXAMPLE_NOW, EXAMPLE_PLACES, homeExample, type HomeScenario } from "@/lib/dev-examples";
-import { focusHref, mainDam, MAP_FOCUSES, readFocus, zoneFrame } from "@/lib/map-focus";
+import { CHIP_ORDER, focusHref, mainDam, MAP_FOCUSES, readFocus, zoneFrame } from "@/lib/map-focus";
+import { COAST_POINTS, withCoast } from "@/lib/sea";
 import { lineSignInHref, signInHref } from "@/lib/sign-in-link";
 import { riskHeadline, roundShare, toTambonRisk } from "@/lib/tambon-risk";
 import { nudgeDue, NUDGE_REST_MS } from "@/components/notices/LineNudge";
@@ -126,16 +127,38 @@ describe("the six features", () => {
     expect(c.innerHTML).not.toMatch(ALERT_CLASSES);
   });
 
-  it("are buttons above the map that say which one was asked for", () => {
-    const picked: string[] = [];
+  it("are switches above the map, in the owner's order, each saying whether it is on", () => {
+    const toggled: string[] = [];
+    const on = { risk: true, gauges: false, sea: true, dam: true, damzone: false, places: false };
     const c = renderWithIntl(
-      <MapFeatureChips active="dam" onPick={(f) => picked.push(f)} />,
+      <MapFeatureChips on={on} onToggle={(f) => toggled.push(f)} />,
     ).container;
     const chips = [...c.querySelectorAll<HTMLButtonElement>("[data-map-chip]")];
-    expect(chips).toHaveLength(6);
-    expect(c.querySelector("[data-map-chip='dam']")?.getAttribute("aria-pressed")).toBe("true");
-    chips[2]!.click();
-    expect(picked).toEqual(["damzone"]);
+    expect(chips.map((b) => b.getAttribute("data-map-chip"))).toEqual([...CHIP_ORDER]);
+    expect(chips.map((b) => b.getAttribute("aria-pressed"))).toEqual([
+      "true",
+      "false",
+      "true",
+      "true",
+      "false",
+      "false",
+    ]);
+    chips[4]!.click();
+    expect(toggled).toEqual(["damzone"]);
+  });
+
+  it("widen the map's first view to the wave points off the person's own provinces only", () => {
+    const pattani: [number, number, number, number] = [101.0, 6.4, 101.8, 6.95];
+    const wider = withCoast(pattani, ["94"]);
+    for (const p of COAST_POINTS.filter((x) => x.province === "94")) {
+      expect(p.lon).toBeGreaterThanOrEqual(wider[0]);
+      expect(p.lon).toBeLessThanOrEqual(wider[2]);
+      expect(p.lat).toBeGreaterThanOrEqual(wider[1]);
+      expect(p.lat).toBeLessThanOrEqual(wider[3]);
+    }
+    // Songkhla's points are not pulled in, and Yala has no coast.
+    expect(wider[0]).toBeGreaterThan(100.9);
+    expect(withCoast(pattani, ["95"])).toEqual(pattani);
   });
 
   it("frame the land below the dam from its zone, else its river, and pick the dam that has one", () => {

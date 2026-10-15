@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { focusHref, MAP_FOCUSES, type MapFocus } from "@/lib/map-focus";
+import { CHIP_ORDER, focusHref, MAP_FOCUSES, type MapFocus } from "@/lib/map-focus";
 import { FeatureIcon } from "./FeatureIcon";
 import styles from "./FeatureIcon.module.css";
 
@@ -80,16 +80,16 @@ export function MapFeatureTiles() {
 }
 
 /**
- * The same six on the map page itself, as a row of buttons above the map: each one switches its
- * layer on, frames it and brings the map into view, so a first visit shows what the map can do
- * instead of leaving it in the legend.
+ * The same six on the map page itself, as a row of switches above the map (the owner, 15 Oct):
+ * each shows or hides its layer, several can be on at once, and none moves the map - except the
+ * dam, which also brings its report into view below the map.
  */
 export function MapFeatureChips({
-  active,
-  onPick,
+  on,
+  onToggle,
 }: {
-  active: MapFocus | null;
-  onPick: (focus: MapFocus) => void;
+  on: Record<MapFocus, boolean>;
+  onToggle: (focus: MapFocus) => void;
 }) {
   const t = useTranslations("mapFeatures");
   return (
@@ -102,15 +102,15 @@ export function MapFeatureChips({
         {t("mapTitle")}
       </p>
       <ul className="flex flex-wrap gap-2">
-        {MAP_FOCUSES.map((f) => (
+        {CHIP_ORDER.map((f) => (
           <li key={f}>
             <button
               type="button"
               data-map-chip={f}
-              aria-pressed={active === f}
-              onClick={() => onPick(f)}
+              aria-pressed={on[f]}
+              onClick={() => onToggle(f)}
               className={`inline-flex min-h-tap items-center gap-2 rounded-full border-2 py-1 ps-1.5 pe-4 font-bold active:translate-y-px ${
-                active === f
+                on[f]
                   ? "border-jaga-edge bg-jaga-slate text-white"
                   : "border-jaga-line bg-jaga-surface text-jaga-ink hover:border-jaga-teal-ink"
               }`}
@@ -125,7 +125,7 @@ export function MapFeatureChips({
                     cx="4"
                     cy="4"
                     r="4"
-                    className={`${active === f ? "fill-jaga-teal-light" : "fill-jaga-teal-ink"} ${styles.live}`}
+                    className={`${on[f] ? "fill-jaga-teal-light" : "fill-jaga-teal-ink"} ${styles.live}`}
                   />
                 </svg>
               )}

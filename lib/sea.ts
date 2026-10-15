@@ -345,6 +345,26 @@ export function isCoastId(value: string): value is CoastId {
   return (COAST_IDS as readonly string[]).includes(value);
 }
 
+/**
+ * A box widened to take in the coast points of the given provinces, so the map's first view shows
+ * the waves off the person's own coast as well (the owner, 15 Oct). A province without a coast
+ * (Yala) adds nothing; the margin leaves room for each point's waves and words.
+ */
+export function withCoast(
+  box: [number, number, number, number],
+  provinces: readonly string[],
+  margin = 0.1,
+): [number, number, number, number] {
+  const points = COAST_POINTS.filter((p) => provinces.includes(p.province));
+  if (points.length === 0) return box;
+  return [
+    Math.min(box[0], ...points.map((p) => p.lon - margin)),
+    Math.min(box[1], ...points.map((p) => p.lat - margin)),
+    Math.max(box[2], ...points.map((p) => p.lon + margin)),
+    Math.max(box[3], ...points.map((p) => p.lat + margin)),
+  ];
+}
+
 /** The box around the coast points, with a margin, for "show me the sea". */
 export function coastBox(): [number, number, number, number] {
   const lons = COAST_POINTS.map((p) => p.lon);

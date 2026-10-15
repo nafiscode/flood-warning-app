@@ -59,6 +59,7 @@ import { SeaGradeIcon, SeaPeek, SeaSection } from "./Sea";
 import { RainPeek, RainSection } from "./RainCard";
 import {
   coastBox,
+  withCoast,
   hourNow,
   isCoastId,
   nearestCoast,
@@ -331,8 +332,11 @@ export function DashboardView(props: DashboardViewProps) {
    * all of them at once bury the map. The switch sits right under the map and says how many.
    */
   const [showPlaces, setShowPlaces] = useState(props.openFocus === "places");
-  // The feature last asked for with the chips above the map, or from a home-screen tile.
-  const [activeFocus, setActiveFocus] = useState<MapFocus | null>(props.openFocus ?? null);
+  // The river gauges, the dam and the land its release can reach: each on its chip above the map
+  // (the owner, 15 Oct), all on to start with, as the map has always drawn them.
+  const [showGauges, setShowGauges] = useState(true);
+  const [showDam, setShowDam] = useState(true);
+  const [showDamZone, setShowDamZone] = useState(true);
   // The flood-risk areas start on (the owner, 12 Oct 2026) and can be switched off to read the
   // ground underneath; the basemap is the person's choice for as long as this page is open. It
   // opens on the satellite picture with the hills shaded over it (the owner, 15 Oct 2026, after
@@ -477,7 +481,10 @@ export function DashboardView(props: DashboardViewProps) {
     null,
   );
   const mapLayers = layers.filter(
-    (l) => (l !== "places" || showPlaces) && (l !== "hazard" || showHazard || !hazardOnOffer),
+    (l) =>
+      (l !== "places" || showPlaces) &&
+      (l !== "gauges" || showGauges) &&
+      (l !== "hazard" || showHazard || !hazardOnOffer),
   );
   const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
 
@@ -487,15 +494,20 @@ export function DashboardView(props: DashboardViewProps) {
    * who watches a place in Narathiwat opens on both provinces in full); the one province once
    * they pick one from the list; and all four when they clear it or have no place yet.
    */
-  const mapBounds: [number, number, number, number] | undefined =
+  const myCodes = [
+    props.area?.code,
+    ...(props.me?.signedIn
+      ? [props.me.home?.code, ...props.me.places.map((place) => place.area?.code)]
+      : []),
+  ];
+  const openProvinces =
     chosenProvince === null
-      ? provincesBox([
-          props.area?.code,
-          ...(props.me?.signedIn
-            ? [props.me.home?.code, ...props.me.places.map((place) => place.area?.code)]
-            : []),
-        ])
-      : PROVINCE_BOUNDS[province];
+      ? [...new Set(myCodes.map((code) => code?.slice(0, 2) ?? "").filter(Boolean))]
+      : [province];
+  const provinceBox: [number, number, number, number] | undefined =
+    chosenProvince === null ? provincesBox(myCodes) : PROVINCE_BOUNDS[province];
+  // ...and the wave points off those provinces' own coast (the owner, 15 Oct).
+  const mapBounds = provinceBox ? withCoast(provinceBox, openProvinces) : undefined;
 
   /*
    * ...and the map travels to it, the same view the legend's button gives. Only the dam and its
@@ -635,56 +647,42 @@ export function DashboardView(props: DashboardViewProps) {
   };
 
   /*
-   * The chips above the map (the owner, 15 Oct): each switches its feature on, frames it and
-   * brings the map into view, so a first visit shows what the map can do.
+   * The chips above the map (the owner, 15 Oct): switches, several on at once, and none moves the
+   * map. The dam's chip, when it is switched on, also opens the dam's report below the map and
+   * brings the page to it, as it always has.
    */
-  const frameMap = () => {
-    window.setTimeout(() => {
-      const frame = document.querySelector<HTMLElement>("[data-map-frame]");
-      if (!frame) return;
-      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
-      const gap = frame.getBoundingClientRect().top - header - 8;
-      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-      if (Math.abs(gap) > 4)
-        window.scrollTo({
-          top: Math.max(0, window.scrollY + gap),
-          behavior: reduce ? "auto" : "smooth",
-        });
-    }, 40);
+  const featuresOn: Record<MapFocus, boolean> = {
+    risk: showHazard,
+    gauges: showGauges,
+    sea: showSea,
+    dam: showDam,
+    damzone: showDamZone,
+    places: showPlaces,
   };
-  const flyTo = (box: [number, number, number, number] | null | undefined) => {
-    if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
-  };
-  const pickFocus = (f: MapFocus) => {
-    setActiveFocus(f);
+  const toggleFeature = (f: MapFocus) => {
+    const next = !featuresOn[f];
     if (f === "risk") {
-      setChosenMode("risk");
-      setShowHazard(true);
-      setSelection(null);
-      flyTo(myBox ?? mapBounds ?? SERVICE_BOUNDS);
-      frameMap();
-    } else if (f === "places") {
-      setShowPlaces(true);
-      flyTo(myBox ?? mapBounds ?? SERVICE_BOUNDS);
-      frameMap();
-    } else if (f === "damzone") {
-      const dam = mainDam(dams);
-      flyTo(dam ? boundsAround(zoneFrame(dam)) : null);
-      frameMap();
+      // The flood-risk areas are drawn in the risk view: switching them on goes there.
+      if (next) setChosenMode("risk");
+      setShowHazard(next);
     } else if (f === "gauges") {
-      flyTo(SERVICE_BOUNDS);
-      frameMap();
+      setShowGauges(next);
     } else if (f === "sea") {
-      setShowSea(true);
-      setSelection({ kind: "sea", id: nearestCoast(props.area) });
-      flyTo(coastBox());
-      frameMap();
+      setShowSea(next);
+      if (!next && selection?.kind === "sea") setSelection(null);
+    } else if (f === "damzone") {
+      setShowDamZone(next);
+    } else if (f === "places") {
+      setShowPlaces(next);
     } else {
+      setShowDam(next);
       const dam = mainDam(dams);
-      if (!dam) return;
-      setSelection({ kind: "dam", code: dam.code });
-      flyTo(boundsAround(damFrame(dam)));
-      revealPanel();
+      if (next && dam) {
+        setSelection({ kind: "dam", code: dam.code });
+        revealPanel();
+      } else if (!next && selection?.kind === "dam") {
+        setSelection(null);
+      }
     }
   };
 
@@ -917,7 +915,7 @@ export function DashboardView(props: DashboardViewProps) {
           {/* The hazard comes first, then what the map shows for it (owner, 15 Oct). */}
           {hazard.status === "active" && (
             <>
-              <MapFeatureChips active={activeFocus} onPick={pickFocus} />
+              <MapFeatureChips on={featuresOn} onToggle={toggleFeature} />
               <MapMethod />
             </>
           )}
@@ -1124,6 +1122,8 @@ export function DashboardView(props: DashboardViewProps) {
                 </div>
                 <MapView
                   layers={mapLayers}
+                  showDam={showDam}
+                  showDamZone={showDamZone}
                   status={fresh ? status : null}
                   data={data}
                   now={now}

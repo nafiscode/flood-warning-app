@@ -1,4 +1,5 @@
 import { fireEvent } from "@testing-library/react";
+import { withCoast } from "@/lib/sea";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardView, type DashboardViewProps } from "@/components/map/DashboardView";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
@@ -35,8 +36,12 @@ vi.mock("@/components/map/MapView", () => ({
     onSelect,
     bounds,
     basemap = "streets",
+    showDam = true,
+    showDamZone = true,
   }: {
     basemap?: string;
+    showDam?: boolean;
+    showDamZone?: boolean;
     onSelect?: (s: { kind: "mine"; id: string }) => void;
     bounds?: [number, number, number, number];
     layers: string[];
@@ -59,6 +64,8 @@ vi.mock("@/components/map/MapView", () => ({
       data-mine-labels={mine.map((p) => [p.label, ...p.lines].join(" | ")).join(" / ")}
       data-mine-calls={mine.map((p) => `${p.id}:${p.call ? p.call.tel : "-"}`).join(",")}
       data-bounds={bounds ? bounds.map((n) => n.toFixed(2)).join(",") : ""}
+      data-show-dam={showDam ? "1" : "0"}
+      data-show-zone={showDamZone ? "1" : "0"}
     >
       {layers.join(",")}
       {/* Stands in for tapping the first pin, which the real map answers with onSelect. */}
@@ -802,7 +809,10 @@ describe("the map opens where the person already is", () => {
     expect((c.querySelector("#map-province") as HTMLSelectElement).value).toBe("94");
     // The map looks at the whole of their province (the owner, 15 Oct).
     expect(c.querySelector("[data-map]")?.getAttribute("data-bounds")).toBe(
-      PROVINCE_BOUNDS["94"]!.join(","),
+      // The province, and the wave points off its own coast (owner, 15 Oct).
+      withCoast(PROVINCE_BOUNDS["94"]!, ["94"])
+        .map((n) => n.toFixed(2))
+        .join(","),
     );
     // And their tambon's alert is the one shown, without tapping anything.
     expect(c.querySelector("[data-selected-panel]")?.textContent).toContain("บานา");
@@ -819,7 +829,9 @@ describe("the map opens where the person already is", () => {
       },
     });
     expect(c.querySelector("[data-map]")?.getAttribute("data-bounds")).toBe(
-      provincesBox(["940101", "960101"])!.join(","),
+      withCoast(provincesBox(["940101", "960101"])!, ["94", "96"])
+        .map((n) => n.toFixed(2))
+        .join(","),
     );
   });
 
@@ -884,5 +896,51 @@ describe("river gauges on the public map (A8 item 4)", () => {
         expect(distance, level).toBeGreaterThan(60);
       }
     }
+  });
+});
+
+describe("the chips above the map (owner, 15 Oct)", () => {
+  const chip = (c: HTMLElement, f: string) =>
+    c.querySelector<HTMLButtonElement>(`[data-map-chip='${f}']`)!;
+  const bounds = (c: HTMLElement) => c.querySelector("[data-map]")!.getAttribute("data-bounds");
+
+  it("are switches in their order, several on at once, and none of them moves the map", () => {
+    const c = dashboard({ dams: [EXAMPLE_DAM], area: BANA });
+    const order = [...c.querySelectorAll("[data-map-chip]")].map((b) =>
+      b.getAttribute("data-map-chip"),
+    );
+    expect(order).toEqual(["risk", "gauges", "sea", "dam", "damzone", "places"]);
+    // What the map draws today starts on; the thousands of safe places start off.
+    const on = (f: string) => chip(c, f).getAttribute("aria-pressed");
+    expect(["risk", "gauges", "sea", "dam", "damzone"].map(on)).toEqual([
+      "true",
+      "true",
+      "true",
+      "true",
+      "true",
+    ]);
+    expect(on("places")).toBe("false");
+    const before = bounds(c);
+    fireEvent.click(chip(c, "places"));
+    fireEvent.click(chip(c, "gauges"));
+    fireEvent.click(chip(c, "damzone"));
+    expect(on("places")).toBe("true");
+    expect(on("gauges")).toBe("false");
+    expect(on("risk")).toBe("true");
+    const map = c.querySelector("[data-map]")!;
+    expect(map.textContent).toContain("places");
+    expect(map.textContent).not.toContain("gauges");
+    expect(map.getAttribute("data-show-zone")).toBe("0");
+    expect(map.getAttribute("data-show-dam")).toBe("1");
+    expect(bounds(c)).toBe(before);
+  });
+
+  it("the dam's chip, switched on, opens the dam's report as before; off, hides the dam", () => {
+    const c = dashboard({ dams: [EXAMPLE_DAM], area: BANA });
+    fireEvent.click(chip(c, "dam"));
+    expect(c.querySelector("[data-map]")!.getAttribute("data-show-dam")).toBe("0");
+    fireEvent.click(chip(c, "dam"));
+    expect(c.querySelector("[data-map]")!.getAttribute("data-show-dam")).toBe("1");
+    expect(c.querySelector("[data-selected-panel]")?.textContent).toContain(EXAMPLE_DAM.name.th!);
   });
 });
