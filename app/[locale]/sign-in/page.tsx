@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/BackLink";
 import { LineLink } from "@/components/account/LineLink";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -38,6 +39,7 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
   setRequestLocale(locale);
   const query = await searchParams;
   const t = await getTranslations("signIn");
+  const tNav = await getTranslations("nav");
   const next = safeNextPath(one(query.next)) ?? "";
   const error = ERRORS.find((e) => e === one(query.error));
   const codeStep = one(query.step) === "code" && one(query.phone) !== "";
@@ -150,6 +152,7 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
           <p className={hint}>{t("admin.note")}</p>
         </form>
       </details>
+      <BackLink label={tNav("backHome")} />
     </div>
   );
 }

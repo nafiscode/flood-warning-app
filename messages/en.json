@@ -307,7 +307,7 @@
     },
     "back": "Back to the home screen",
     "soonTitle": "The SOS button isn't working yet",
-    "soonBody": "Asking for help through Jaga opens before the flood season. Right now nobody receives requests from this app. If you need help, call straight away.",
+    "soonBody": "Asking for help through Jaga opens on 25 October 2026. Until then nobody receives requests from this app. If you need help, call straight away.",
     "team": {
       "searching": "Looking for a team",
       "searchingBody": "No team has accepted your request yet. It is being offered to the teams in your area, one after another.",
@@ -415,7 +415,8 @@
         "exhaustedBody": "Your request is now with Jaga's admins, who are looking for a team. If things get worse, press the rescue button below.",
         "accepted": "A team will bring your supplies",
         "urgent": "If things get worse, don't wait: press the rescue button below, or call."
-      }
+      },
+      "soonBody": "Asking for food and water through Jaga opens on 25 October 2026. Until then nobody receives requests from this app. If you are in danger, call straight away."
     }
   },
   "hotlines": {
@@ -680,7 +681,10 @@
     "account": "Account",
     "map": "Flood Risk Map",
     "admin": "Admin",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "backHome": "Back to the home screen",
+    "backAccount": "Back to your account",
+    "backBoard": "Back to the case board"
   },
   "notices": {
     "title": "Notifications",
@@ -1375,7 +1379,7 @@
     "signedInAs": "Signed in as {name}",
     "nav": {
       "label": "Admin menu",
-      "home": "Home",
+      "home": "Admin home",
       "authorities": "Verify units",
       "invitations": "Admins",
       "warRoom": "War room",
@@ -1401,7 +1405,8 @@
         "pending": "Team awaiting verification",
         "operator": "Dam operator"
       },
-      "usage": "App usage"
+      "usage": "App usage",
+      "back": "Back to the admin home"
     },
     "role": {
       "admin": "Admin",
@@ -2112,7 +2117,7 @@
     "another": "Report another place",
     "home": "Back to the home screen",
     "soonTitle": "Flood reports aren't working yet",
-    "soonBody": "They open before the flood season. If this is an emergency, call straight away.",
+    "soonBody": "Flood reports through Jaga open on 25 October 2026. If this is an emergency, call straight away.",
     "depths": {
       "dry": "Dry",
       "ankle": "Ankle",

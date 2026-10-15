@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { BackLink } from "@/components/BackLink";
 import { Console } from "@/components/authority/Console";
 import { Link } from "@/i18n/navigation";
 import { readAuthorityBoard, readMyUnits } from "@/lib/authority-board";
@@ -60,6 +61,7 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
       <NextIntlClientProvider messages={authorityMessages(await getMessages())}>
         <Console initial={board} />
       </NextIntlClientProvider>
+      <BackLink label={(await getTranslations("nav"))("backHome")} />
     </div>
   );
 }

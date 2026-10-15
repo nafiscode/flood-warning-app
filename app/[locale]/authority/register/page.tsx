@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BackLink } from "@/components/BackLink";
 import { CoverageMap } from "@/components/authority/CoverageMap";
 import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -60,6 +61,7 @@ export default async function AuthorityRegister({
   // A unit is registered under a person's name, so the name comes first (spec section 3).
   if (needsName(session)) redirect(setupPath(locale, "/authority/register"));
   const t = await getTranslations("authorityRegister");
+  const tNav = await getTranslations("nav");
   const error = ERRORS.find((e) => e === query.error);
 
   const supabase = await createClient();
@@ -265,6 +267,7 @@ export default async function AuthorityRegister({
       <button type="submit" className={buttonPrimary}>
         {t("submit")}
       </button>
+      <BackLink href="/account" label={tNav("backAccount")} />
     </form>
   );
 }

@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { AdminMenu } from "@/components/admin/AdminMenu";
+import { AdminBack, AdminMenu } from "@/components/admin/AdminMenu";
 import { menuGroups, readAdminCounts } from "@/lib/admin-counts";
 import { getSessionProfile, isAdminRole, localePath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -31,6 +31,7 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
         )}
       />
       {children}
+      <AdminBack label={t("nav.back")} />
     </div>
   );
 }

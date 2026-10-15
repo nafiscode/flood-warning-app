@@ -34,7 +34,7 @@ export default async function SuppliesPage({ params }: PageProps<"/[locale]/supp
     return (
       <NotYet
         title={t("supplies.soonTitle")}
-        body={t("soonBody")}
+        body={t("supplies.soonBody")}
         back={t("back")}
         backHref={getPathname({ href: "/", locale })}
       />

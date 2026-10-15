@@ -95,6 +95,22 @@ describe("the admin pages, in groups", () => {
   });
 });
 
+describe("the way back to the admin home", () => {
+  async function back(path: string) {
+    pathname = path;
+    const { AdminBack } = await import("@/components/admin/AdminMenu");
+    return renderWithIntl(<AdminBack label="Back to the admin home" />, "en").container;
+  }
+
+  it("is at the foot of every admin page but the admin home", async () => {
+    expect(
+      (await back("/en/admin/log")).querySelector("[data-admin-back]")?.getAttribute("href"),
+    ).toBe("/admin");
+    expect((await back("/th/admin/alerts/new")).querySelector("[data-admin-back]")).not.toBeNull();
+    expect((await back("/en/admin")).querySelector("[data-admin-back]")).toBeNull();
+  });
+});
+
 describe("the menu", () => {
   async function show(path: string) {
     pathname = path;

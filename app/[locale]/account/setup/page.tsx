@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BackLink } from "@/components/BackLink";
 import { HomeLocationField } from "@/components/account/HomeLocationField";
 import { routing } from "@/i18n/routing";
 import { getSessionProfile, localePath, needsName, safeNextPath } from "@/lib/auth";
@@ -42,6 +43,7 @@ export default async function AccountSetup({
   if (!session) redirect(localePath(locale, "/sign-in"));
   const t = await getTranslations("account");
   const tLanguage = await getTranslations("language");
+  const tNav = await getTranslations("nav");
 
   const finder = await finderText();
   const supabase = await createClient();
@@ -153,6 +155,8 @@ export default async function AccountSetup({
         <CheckIcon size={22} />
         {t("save")}
       </button>
+      {/* Home, not Account: Account sends someone without a name straight back here. */}
+      <BackLink label={tNav("backHome")} />
     </form>
   );
 }

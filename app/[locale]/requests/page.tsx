@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { BackLink } from "@/components/BackLink";
 import { MyRequests } from "@/components/journey/MyRequests";
 import { journeyMessages } from "@/lib/journey-messages";
 
@@ -22,9 +23,14 @@ export async function generateMetadata({
 export default async function RequestsPage({ params }: PageProps<"/[locale]/requests">) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("nav");
   return (
-    <NextIntlClientProvider messages={journeyMessages(await getMessages())}>
-      <MyRequests />
-    </NextIntlClientProvider>
+    <div className="flex flex-col gap-5">
+      <BackLink label={t("backHome")} />
+      <NextIntlClientProvider messages={journeyMessages(await getMessages())}>
+        <MyRequests />
+      </NextIntlClientProvider>
+      <BackLink label={t("backHome")} />
+    </div>
   );
 }

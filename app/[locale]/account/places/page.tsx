@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BackLink } from "@/components/BackLink";
 import { AddSquareIcon, EditIcon, PhoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { pickName } from "@/lib/area";
@@ -43,6 +44,7 @@ export default async function WatchedPlaces({
   // A name first (spec section 3): these are the person's own details, kept under their name.
   if (needsName(session)) redirect(setupPath(locale, "/account/places"));
   const t = await getTranslations("watched");
+  const tNav = await getTranslations("nav");
 
   const supabase = await createClient();
   const { data } = await supabase
@@ -95,6 +97,7 @@ export default async function WatchedPlaces({
       ) : (
         <p className={notice}>{t("error.limit")}</p>
       )}
+      <BackLink href="/account" label={tNav("backAccount")} />
     </div>
   );
 }

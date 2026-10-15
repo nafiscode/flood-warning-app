@@ -1,8 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { BackIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { currentItem, plainPath, type AdminGroup } from "@/lib/admin-menu";
+import { buttonSecondary } from "@/lib/ui";
 
 export type MenuItem = {
   key: string;
@@ -115,5 +117,25 @@ export function AdminMenu({
         </details>
       ))}
     </nav>
+  );
+}
+
+/**
+ * At the foot of every admin page but the admin home: the way back to it (the owner, 16 Oct).
+ * The menu's first button does the same at the top; a long page should not need a scroll up.
+ */
+export function AdminBack({ label }: { label: string }) {
+  const pathname = usePathname();
+  if (plainPath(pathname) === "/admin") return null;
+  return (
+    <Link
+      href="/admin"
+      prefetch={false}
+      className={`${buttonSecondary} sm:w-auto sm:self-start sm:px-8`}
+      data-admin-back
+    >
+      <BackIcon size={22} />
+      {label}
+    </Link>
   );
 }

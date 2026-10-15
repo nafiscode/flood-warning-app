@@ -307,7 +307,7 @@
     },
     "back": "Kembali ke halaman utama",
     "soonTitle": "Butang SOS belum boleh digunakan",
-    "soonBody": "Permintaan bantuan melalui Jaga akan dibuka sebelum musim banjir. Sekarang tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera.",
+    "soonBody": "Permintaan bantuan melalui Jaga akan dibuka pada 25 Oktober 2026. Sebelum itu tiada sesiapa menerima permintaan daripada aplikasi ini. Jika perlukan bantuan, telefon segera.",
     "team": {
       "searching": "Sedang mencari pasukan bantuan",
       "searchingBody": "Belum ada pasukan terima permintaan anda. Permintaan sedang ditawarkan kepada pasukan di kawasan anda, satu demi satu.",
@@ -415,7 +415,8 @@
         "exhaustedBody": "Permintaan anda kini bersama pentadbir Jaga, yang sedang mencari pasukan. Jika keadaan bertambah buruk, tekan butang menyelamat di bawah.",
         "accepted": "Ada pasukan sudah setuju membawa bekalan kepada anda",
         "urgent": "Jika keadaan bertambah buruk, jangan tunggu: tekan butang menyelamat di bawah, atau telefon."
-      }
+      },
+      "soonBody": "Permintaan makanan dan air melalui Jaga akan dibuka pada 25 Oktober 2026. Sebelum itu tiada sesiapa menerima permintaan daripada aplikasi ini. Jika dalam bahaya, telefon segera."
     }
   },
   "hotlines": {
@@ -680,7 +681,10 @@
     "account": "Akaun",
     "map": "Peta Risiko Banjir",
     "admin": "Admin",
-    "signIn": "Log masuk"
+    "signIn": "Log masuk",
+    "backHome": "Kembali ke halaman utama",
+    "backAccount": "Kembali ke akaun",
+    "backBoard": "Kembali ke papan kes"
   },
   "notices": {
     "title": "Pemberitahuan",
@@ -1375,7 +1379,7 @@
     "signedInAs": "Log masuk sebagai {name}",
     "nav": {
       "label": "Menu pentadbir",
-      "home": "Utama",
+      "home": "Utama pentadbir",
       "authorities": "Semak pasukan",
       "invitations": "Pentadbir",
       "warRoom": "Bilik gerakan",
@@ -1401,7 +1405,8 @@
         "pending": "Pasukan menunggu pengesahan",
         "operator": "Pengendali empangan"
       },
-      "usage": "Penggunaan aplikasi"
+      "usage": "Penggunaan aplikasi",
+      "back": "Kembali ke utama pentadbir"
     },
     "role": {
       "admin": "Pentadbir",
@@ -2112,7 +2117,7 @@
     "another": "Lapor tempat lain",
     "home": "Kembali ke halaman utama",
     "soonTitle": "Laporan banjir belum berfungsi",
-    "soonBody": "Akan dibuka sebelum musim banjir. Jika kecemasan, telefon segera.",
+    "soonBody": "Laporan banjir melalui Jaga akan dibuka pada 25 Oktober 2026. Jika kecemasan, telefon segera.",
     "depths": {
       "dry": "Kering",
       "ankle": "Paras buku lali",

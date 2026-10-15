@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { BackLink } from "@/components/BackLink";
 import { FieldRescue } from "@/components/authority/FieldRescue";
 import { Link } from "@/i18n/navigation";
 import { getSessionProfile, localePath } from "@/lib/auth";
@@ -49,9 +50,13 @@ export default async function FieldRescuePage({
       </section>
     );
   }
+  const tNav = await getTranslations("nav");
   return (
-    <NextIntlClientProvider messages={fieldRescueMessages(await getMessages())}>
-      <FieldRescue unitId={units[0]!.id} />
-    </NextIntlClientProvider>
+    <div className="flex flex-col gap-5">
+      <NextIntlClientProvider messages={fieldRescueMessages(await getMessages())}>
+        <FieldRescue unitId={units[0]!.id} />
+      </NextIntlClientProvider>
+      <BackLink href="/authority" label={tNav("backBoard")} />
+    </div>
   );
 }
