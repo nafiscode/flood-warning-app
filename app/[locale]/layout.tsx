@@ -10,6 +10,7 @@ import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
 import { DaylightTheme } from "@/components/DaylightTheme";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { OfflineWarmup } from "@/components/OfflineWarmup";
 import { QueueRunner } from "@/components/QueueRunner";
 import { SignInFinisher } from "@/components/SignInFinisher";
 import { NoticeBell } from "@/components/notices/NoticeBell";
@@ -215,6 +216,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               <HotlineBar />
             </footer>
             <QueueRunner />
+            {/* Keeps home, SOS and the map ready for a visit with no signal (A9). */}
+            <OfflineWarmup />
             <SignInFinisher />
             {/* Counts that Jaga is in use, for the admins (14 Oct). Never waits, never on the way. */}
             <UsageBeacon />

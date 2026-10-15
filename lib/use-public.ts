@@ -151,12 +151,19 @@ export function useMyRole(ask = true): string | null {
   return live ?? stored;
 }
 
-type StoredPlaces = { key: string; places: NearbyPlaces };
+/** `checkedAt` since A9 (15 Oct 2026); lists kept before then have none. */
+type StoredPlaces = { key: string; places: NearbyPlaces; checkedAt?: number };
 
-/** The top safe places from a point, sent rounded to about 100 m. Kept on the phone for offline. */
+/**
+ * The top safe places from a point, sent rounded to about 100 m. Kept on the phone for offline.
+ * When this visit could not refresh them, `savedAt` says when the list shown was kept (A9: every
+ * saved item says how old it is); null otherwise, and for a list kept before the time was.
+ */
 export function useNearbyPlaces(point: { lat: number; lon: number } | null): {
   places: NearbyPlaces | null;
   state: LoadState;
+  fromPhone: boolean;
+  savedAt: number | null;
 } {
   const key = point ? `${coarse(point.lat)},${coarse(point.lon)}` : null;
   const stored = useStored<StoredPlaces>("places");
@@ -168,7 +175,7 @@ export function useNearbyPlaces(point: { lat: number; lon: number } | null): {
     getJson<NearbyPlaces>(`/api/public/places?lat=${lat}&lon=${lon}`).then(
       (places) => {
         if (cancelled) return;
-        writeStored("places", { key, places } satisfies StoredPlaces);
+        writeStored("places", { key, places, checkedAt: Date.now() } satisfies StoredPlaces);
         setFailedKey(null);
       },
       () => {
@@ -180,7 +187,13 @@ export function useNearbyPlaces(point: { lat: number; lon: number } | null): {
     };
   }, [key]);
   const places = key && stored?.key === key ? stored.places : null;
-  return { places, state: places ? "ok" : key && failedKey === key ? "unavailable" : "loading" };
+  const fromPhone = places !== null && failedKey === key;
+  return {
+    places,
+    state: places ? "ok" : key && failedKey === key ? "unavailable" : "loading",
+    fromPhone,
+    savedAt: fromPhone ? (stored?.checkedAt ?? null) : null,
+  };
 }
 
 /** Fetch a public JSON address once (and again when `url` changes). Null `url`: nothing yet. */

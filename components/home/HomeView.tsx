@@ -43,6 +43,9 @@ export type HomeViewProps = {
   me: MyPlaces | null;
   places: NearbyPlaces | null;
   placesState: LoadState;
+  /** The list shown is the one kept on the phone, because this visit could not refresh it (A9). */
+  placesFromPhone?: boolean;
+  placesSavedAt?: number | null;
   now: number;
   onChooseArea: (area: Area) => void;
   onRetry: () => void;
@@ -346,7 +349,13 @@ export function HomeView(props: HomeViewProps) {
         <MapFeatureTiles />
 
         {home && !loading && (
-          <SafePlaces places={places} state={placesState} userAgent={props.userAgent} />
+          <SafePlaces
+            places={places}
+            state={placesState}
+            userAgent={props.userAgent}
+            fromPhone={props.placesFromPhone}
+            savedAt={props.placesSavedAt}
+          />
         )}
 
         {/* Notifications are offered at any level: a warning is when they matter most. */}

@@ -106,7 +106,7 @@ The dark values are in `lib/brand/tokens.ts` (`darkBrand`) and mirrored in `app/
 ## Typography
 - **Family:** IBM Plex Sans Thai, weights 400, 500 and 700. It covers Thai and Latin, which is enough for Thai, Rumi Malay and English.
 - **Jawi:** if Jawi script is chosen for Malay, add an Arabic-script companion font and check that it includes the Jawi-specific letters (ڠ ڤ چ ڽ ݢ ۏ).
-- **Scale:** Thai body 18 px/1.6 (never below 16 px, even for secondary text); headings 24/30/40 px at 700; the alert-hero level label at 32–40 px, 700.
+- **Scale:** Thai body 18 px/1.6; headings 24/30/40 px at 700; the alert-hero level label at 32–40 px, 700. Secondary text (`text-small`) is 18 px in Thai too (decision 15 Oct 2026, A9: Thai is never below 18 px, so secondary text is set apart by colour and weight, not size) and 16 px in Malay and English.
 - **Numbers and times:** tabular figures where the font supports them.
 
 ## Voice and tone

@@ -468,7 +468,9 @@
     "flooded2025": "Flooded in 2025",
     "notFlooded": "No flooding found in 2024 or 2025",
     "capacity": "Room for about {count} people",
-    "needs": "Needs: {text}"
+    "needs": "Needs: {text}",
+    "savedAt": "No connection. Showing the list saved on this phone at {time}.",
+    "savedOld": "No connection. Showing the list saved on this phone."
   },
   "map": {
     "title": "Flood Risk Map",

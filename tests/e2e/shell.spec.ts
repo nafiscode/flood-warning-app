@@ -91,7 +91,8 @@ test.describe("offline (safety rule 7)", () => {
     await context.setOffline(true);
     await page.goto("/en");
     try {
-      await expect(page.locator("body")).toContainText("ไม่มีการเชื่อมต่ออินเทอร์เน็ต");
+      // The offline page in the language asked for (A9).
+      await expect(page.locator("body")).toContainText("No internet connection");
     } catch (error) {
       throw new Error(`${(error as Error).message}\nSeen: ${JSON.stringify(seen, null, 1)}`);
     }

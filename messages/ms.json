@@ -468,7 +468,9 @@
     "flooded2025": "Pernah banjir pada 2025",
     "notFlooded": "Tiada banjir dikesan pada 2024 atau 2025",
     "capacity": "Muat kira-kira {count} orang",
-    "needs": "Keperluan: {text}"
+    "needs": "Keperluan: {text}",
+    "savedAt": "Tiada sambungan. Menunjukkan senarai yang disimpan dalam telefon pada {time}.",
+    "savedOld": "Tiada sambungan. Menunjukkan senarai yang disimpan dalam telefon."
   },
   "map": {
     "title": "Peta Risiko Banjir",

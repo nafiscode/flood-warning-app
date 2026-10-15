@@ -9,7 +9,22 @@
  */
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { ExpirationPlugin, NetworkFirst, NetworkOnly, Serwist } from "serwist";
+import {
+  CacheableResponsePlugin,
+  CacheFirst,
+  ExpirationPlugin,
+  NetworkFirst,
+  NetworkOnly,
+  Serwist,
+} from "serwist";
+import {
+  isPublicData,
+  mapAsset,
+  offlinePageFor,
+  PAGES_CACHE,
+  PUBLIC_DATA_CACHE,
+  WARM_MESSAGE,
+} from "@/lib/offline-warm";
 import { readPayload } from "@/lib/push";
 import { flush, SYNC_TAG } from "@/lib/queue";
 
@@ -30,6 +45,22 @@ const serwist = new Serwist({
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
+    // A9: public answers that are the same for everyone (the area list, tambon outlines, the
+    // map's alert colours and safe places) are asked for first and kept for offline, so the SOS
+    // screen's "choose your area" and the map still work without signal. Before the private rule,
+    // which covers all of /api/.
+    {
+      matcher: ({ url, sameOrigin, request }) =>
+        sameOrigin && request.method === "GET" && isPublicData(url.pathname),
+      handler: new NetworkFirst({
+        cacheName: PUBLIC_DATA_CACHE,
+        networkTimeoutSeconds: 6,
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [200] }),
+          new ExpirationPlugin({ maxEntries: 24, maxAgeSeconds: 14 * 24 * 60 * 60 }),
+        ],
+      }),
+    },
     // Personal and sign-in pages are never stored: on a shared phone the next person must not
     // see the last person's account, cases or admin screens from the cache.
     {
@@ -37,20 +68,76 @@ const serwist = new Serwist({
       handler: new NetworkOnly(),
     },
     // Page loads: network first, but give up after 5 s on a bad connection and use the copy of
-    // this exact page from the last visit. A page never visited falls back to /offline (below).
-    // Serwist's defaults match pages by a Content-Type request header that navigations don't send.
+    // this exact page from the last visit, or from the warm-up (below). A page never visited falls
+    // back to the offline page in its own language. Serwist's defaults match pages by a
+    // Content-Type request header that navigations don't send. ignoreVary: a warmed copy was
+    // fetched by the worker, not by a navigation, and Next's Vary headers would hide it.
     {
       matcher: ({ request, sameOrigin }) => sameOrigin && request.mode === "navigate",
       handler: new NetworkFirst({
-        cacheName: "pages-html",
+        cacheName: PAGES_CACHE,
         networkTimeoutSeconds: 5,
+        matchOptions: { ignoreVary: true },
         plugins: [new ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 7 * 24 * 60 * 60 })],
+      }),
+    },
+    // A9: the app's own fonts, kept for good (their names change with every new file). The
+    // default font cache holds only 4 files, fewer than the Thai font's weights and subsets.
+    {
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin && url.pathname.startsWith("/_next/static/media/"),
+      handler: new CacheFirst({
+        cacheName: "app-fonts",
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [200] }),
+          new ExpirationPlugin({ maxEntries: 40, maxAgeSeconds: 365 * 24 * 60 * 60 }),
+        ],
+      }),
+    },
+    // A9: map tiles the person has looked at stay on the phone for a month, so the area they
+    // know still draws offline. Only what was viewed: no download in the background (OpenFreeMap's
+    // terms; decision 15 Oct 2026). About 600 tiles is a few tens of MB at most.
+    {
+      matcher: ({ url }) => mapAsset(url) === "tile",
+      handler: new CacheFirst({
+        cacheName: "map-tiles",
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [200] }),
+          new ExpirationPlugin({
+            maxEntries: 600,
+            maxAgeSeconds: 30 * 24 * 60 * 60,
+            purgeOnQuotaError: true,
+          }),
+        ],
+      }),
+    },
+    {
+      matcher: ({ url }) => mapAsset(url) === "style",
+      handler: new NetworkFirst({
+        cacheName: "map-styles",
+        networkTimeoutSeconds: 6,
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [200] }),
+          new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60 }),
+        ],
       }),
     },
     ...defaultCache,
   ],
   fallbacks: {
     entries: [
+      {
+        url: "/ms/offline",
+        matcher: ({ request }) =>
+          request.destination === "document" &&
+          offlinePageFor(new URL(request.url).pathname) === "/ms/offline",
+      },
+      {
+        url: "/en/offline",
+        matcher: ({ request }) =>
+          request.destination === "document" &&
+          offlinePageFor(new URL(request.url).pathname) === "/en/offline",
+      },
       {
         url: "/offline",
         matcher: ({ request }) => request.destination === "document",
@@ -60,6 +147,48 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+/**
+ * A9 warm-up: the page asks for a short list of addresses (lib/offline-warm.ts) and the worker
+ * fetches them into the caches above, so they open with no signal even if never visited. Fetched
+ * without cookies, so a stored copy never holds anyone's account; a redirect or an error is not
+ * stored. The page is told when it is done, and keeps the time on the phone.
+ */
+type WarmMessage = { type: typeof WARM_MESSAGE; urls: string[] };
+
+async function warm(urls: string[]): Promise<number> {
+  const pages = await caches.open(PAGES_CACHE);
+  const data = await caches.open(PUBLIC_DATA_CACHE);
+  let kept = 0;
+  for (const raw of urls) {
+    const url = new URL(raw, self.location.origin);
+    if (url.origin !== self.location.origin) continue;
+    const isData = isPublicData(url.pathname);
+    if (!isData && PRIVATE_PATH.test(url.pathname)) continue;
+    try {
+      const response = await fetch(url.href, { credentials: "omit", cache: "no-store" });
+      if (!response.ok || response.redirected) continue;
+      await (isData ? data : pages).put(url.href, response);
+      kept += 1;
+    } catch {
+      // No signal or a slow server: the next warm-up tries again.
+    }
+  }
+  return kept;
+}
+
+self.addEventListener("message", (event) => {
+  const message = event.data as WarmMessage | null;
+  if (message?.type !== WARM_MESSAGE || !Array.isArray(message.urls)) return;
+  const urls = message.urls.filter((u): u is string => typeof u === "string").slice(0, 12);
+  const reply = event.ports?.[0];
+  event.waitUntil(
+    warm(urls).then(
+      (kept) => reply?.postMessage({ ok: true, kept }),
+      () => reply?.postMessage({ ok: false, kept: 0 }),
+    ),
+  );
+});
 
 /**
  * Background Sync: the browser wakes this worker when the connection is back and lets it send

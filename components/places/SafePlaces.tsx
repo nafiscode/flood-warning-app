@@ -1,10 +1,19 @@
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import type { NearbyPlaces } from "@/lib/places";
+import { BANGKOK_DATE_TIME } from "@/lib/time";
 import type { LoadState } from "@/lib/use-public";
 import { hint, notice } from "@/lib/ui";
 import { SafePlaceCard } from "./SafePlaceCard";
 
-type Props = { places: NearbyPlaces | null; state: LoadState; userAgent?: string };
+type Props = {
+  places: NearbyPlaces | null;
+  state: LoadState;
+  userAgent?: string;
+  /** The list is the one kept on the phone: this visit could not refresh it (A9). */
+  fromPhone?: boolean;
+  /** When that list was kept; null for a list kept before the time was. */
+  savedAt?: number | null;
+};
 
 /**
  * The top-3 safe places from the person's point, and high ground for cars as its own list (spec
@@ -16,8 +25,9 @@ type Props = { places: NearbyPlaces | null; state: LoadState; userAgent?: string
  * when it does - it is fetched and stored as before, whether or not it is ever opened (safety
  * rule 7). The button carries the count, so "nothing listed here" is not hidden behind a tap.
  */
-export function SafePlaces({ places, state, userAgent }: Props) {
+export function SafePlaces({ places, state, userAgent, fromPhone, savedAt }: Props) {
   const t = useTranslations("places");
+  const format = useFormatter();
   const count = places ? places.people.length + places.parking.length : null;
   return (
     <details className="group flex flex-col" data-safe-places={state}>
@@ -33,6 +43,14 @@ export function SafePlaces({ places, state, userAgent }: Props) {
         />
       </summary>
       <div className="flex flex-col gap-3 pt-3">
+        {/* Every saved item says how old it is (A9); a place may have closed since. */}
+        {places && fromPhone && (
+          <p className={notice} role="status" data-places-saved={savedAt ? "time" : "old"}>
+            {savedAt
+              ? t("savedAt", { time: format.dateTime(new Date(savedAt), BANGKOK_DATE_TIME) })
+              : t("savedOld")}
+          </p>
+        )}
         {!places && (
           <p className={hint}>{t(state === "unavailable" ? "unavailable" : "loading")}</p>
         )}

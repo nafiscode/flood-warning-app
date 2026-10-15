@@ -53,6 +53,8 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       me={me}
       places={nearby.places}
       placesState={nearby.state}
+      placesFromPhone={nearby.fromPhone}
+      placesSavedAt={nearby.savedAt}
       now={now}
       onChooseArea={(chosen) => writeStored("area", chosen)}
       onRetry={refresh}
