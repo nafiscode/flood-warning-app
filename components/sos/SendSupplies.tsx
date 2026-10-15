@@ -19,6 +19,7 @@ import { useOnPhone, useStored } from "@/lib/phone-store";
 import { enqueue } from "@/lib/queue";
 import {
   deviceId,
+  openCase,
   NEEDS,
   OPEN_STATUSES,
   rememberCase,
@@ -103,6 +104,8 @@ export function SendSupplies() {
       accuracy: gps.accuracy,
       locationText: locationText.trim() || null,
       deviceId: deviceId(),
+      // This phone's own open case, if any: a repeat then updates it (submit_sos).
+      caseToken: openCase()?.token ?? null,
       phone: normalizePhone(phone) ?? (phone.trim() === "" ? null : phone.trim()),
       battery,
       sentAt: new Date().toISOString(),

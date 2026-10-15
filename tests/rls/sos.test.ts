@@ -97,7 +97,12 @@ describe("an SOS is never refused (safety rule 1)", () => {
   it("a repeat while the case is open merges into it instead of opening a second case", async () => {
     await as(db, "anon");
     const first = await send({ device: "device-b", phone: "66812345678" });
-    const again = await send({ device: "device-b", lat: 6.5, lon: 101.3 });
+    // A device-only match about 200 m away: merged, its position kept in the history (A10).
+    const start = await one<{ lat: number; lon: number }>(
+      "select extensions.st_y(extensions.st_geomfromtext($1, 4326)) as lat, extensions.st_x(extensions.st_geomfromtext($1, 4326)) as lon",
+      [w.yalaPoint],
+    );
+    const again = await send({ device: "device-b", lat: start.lat + 0.0018, lon: start.lon });
     expect(again.merged).toBe(true);
     expect(again.sos_id).toBe(first.sos_id);
     // A merge never hands out the token again: only the first sender holds it.

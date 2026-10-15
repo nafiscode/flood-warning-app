@@ -88,6 +88,12 @@ export type SendSos = {
   /** What the person typed when GPS failed and they could not place a pin either. */
   locationText?: string | null;
   deviceId?: string | null;
+  /**
+   * The key of this phone's newest open case, if it has one. Only a repeat carrying it (or sent
+   * from the same account) may move that case; a match by phone number or device alone adds the
+   * position to the case's history and leaves the case where it is.
+   */
+  caseToken?: string | null;
   phone?: string | null;
   onBehalf?: boolean;
   onBehalfNote?: string | null;

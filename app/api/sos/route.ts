@@ -62,6 +62,7 @@ export async function POST(request: Request) {
         ? input.suppliesLeft
         : null,
     p_people_count: people(input.peopleCount),
+    p_token: text(input.caseToken, 100),
   });
   const row = Array.isArray(data) ? data[0] : data;
   if (error || !row) {

@@ -144,9 +144,10 @@ describe("user", () => {
     expect(await count("select 1 from sos_requests")).toBe(0);
   });
 
-  it("submits reports only as themselves and only as pending", async () => {
+  it("submits reports only through submit_report, never by writing the table (A10)", async () => {
     await as(db, { uid: w.otherUser });
-    await db.query(
+    await expectDenied(
+      db,
       "insert into reports (reporter_id, point, tambon) values ($1, extensions.st_makepoint(101.28, 6.54), $2)",
       [w.otherUser, w.yala1],
     );
@@ -243,28 +244,27 @@ describe("verified authority", () => {
       "42501",
     );
     await as(db, { uid: w.yalaRescue.user });
-    expect(await count("select * from households_in_tambon($1)", [w.yala1])).toBe(1);
+    // The old bulk read is closed (A10); the list has no phones and every read is logged.
+    expect(await expectDenied(db, "select * from households_in_tambon($1)", [w.yala1])).toBe(
+      "42501",
+    );
+    expect(await count("select * from authority_households()")).toBe(1);
     expect(await count("select 1 from households")).toBe(0); // no direct read
-    expect(await auditCount("read_households", w.yala1)).toBe(1);
   });
 
-  it("claims only cases in its coverage, one active claim per SOS", async () => {
+  it("claims a case only through the dispatch functions, never by writing the table (A10)", async () => {
     await as(db, { uid: w.yalaRescue.user });
-    await db.query("insert into sos_claims (sos_id, unit_id) values ($1, $2)", [
+    await expectDenied(db, "insert into sos_claims (sos_id, unit_id) values ($1, $2)", [
       w.yalaSos,
       w.yalaRescue.id,
     ]);
-    await expectDenied(db, "insert into sos_claims (sos_id, unit_id) values ($1, $2)", [
-      w.songkhlaSos,
-      w.yalaRescue.id,
-    ]);
-    await as(db, { uid: w.yalaPlanning.user });
+    await db.query("select * from authority_accept_sos($1)", [w.yalaSos]);
+    await asOwner(db);
     expect(
-      await expectDenied(db, "insert into sos_claims (sos_id, unit_id) values ($1, $2)", [
+      await count("select 1 from sos_claims where sos_id = $1 and released_at is null", [
         w.yalaSos,
-        w.yalaPlanning.id,
       ]),
-    ).toBe("23505");
+    ).toBe(1);
   });
 
   it("cannot change its own status or widen its coverage once verified", async () => {

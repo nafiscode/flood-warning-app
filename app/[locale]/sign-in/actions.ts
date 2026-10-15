@@ -1,9 +1,11 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { finishSignIn, localePath, requestOrigin, safeNextPath } from "@/lib/auth";
 import { phoneSignInEnabled } from "@/lib/features";
 import { normalizePhone } from "@/lib/phone";
+import { gateToken } from "@/lib/push-server";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -25,6 +27,33 @@ async function callbackUrl(form: FormData): Promise<string> {
   return `${origin}/api/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
 }
 
+/** The caller's internet address as Vercel passes it on, for the per-address limit. */
+async function callerIp(): Promise<string | null> {
+  const h = await headers();
+  const first = (h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? "").split(",")[0]?.trim() ?? "";
+  return /^[0-9a-f.:]{3,45}$/i.test(first) ? first : null;
+}
+
+/**
+ * At most 5 links an hour to one address and 30 from one internet address (A10 security review),
+ * so a script cannot flood an admin's inbox or use up the project's email allowance. Asked with
+ * the server's own token; if the check itself fails, the link is sent, because an admin who
+ * cannot sign in during a flood cannot publish alerts.
+ */
+async function emailLinkAllowed(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  email: string,
+): Promise<boolean> {
+  const token = gateToken();
+  if (!token) return true;
+  const { data, error } = await supabase.rpc("email_link_allowed", {
+    p_token: token,
+    p_email: email,
+    p_ip: await callerIp(),
+  });
+  return error ? true : data !== false;
+}
+
 /**
  * Email link for admins. Only addresses the super admin invited have an account, and the reply
  * is the same either way, so the form can't be used to find out who is an admin.
@@ -36,6 +65,7 @@ export async function sendEmailLink(form: FormData) {
   }
   if (!supabaseConfigured()) back(form, { error: "unavailable" });
   const supabase = await createClient();
+  if (!(await emailLinkAllowed(supabase, email))) back(form, { error: "rate" });
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: { shouldCreateUser: false, emailRedirectTo: await callbackUrl(form) },

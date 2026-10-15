@@ -19,6 +19,7 @@ import { useOnPhone, useStored } from "@/lib/phone-store";
 import { enqueue } from "@/lib/queue";
 import {
   deviceId,
+  openCase,
   OPEN_STATUSES,
   rememberCase,
   type RememberedCase,
@@ -105,6 +106,8 @@ export function SendSOS({ projectLine, place }: Props) {
       accuracy: place ? null : gps.accuracy,
       locationText: locationText.trim() || null,
       deviceId: deviceId(),
+      // This phone's own open case, if any: a repeat then updates it (submit_sos).
+      caseToken: openCase()?.token ?? null,
       phone: normalizePhone(phone) ?? (phone.trim() === "" ? null : phone.trim()),
       onBehalf: !!place,
       onBehalfNote: place ? note.trim() || place.label : null,

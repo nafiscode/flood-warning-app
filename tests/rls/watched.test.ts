@@ -109,7 +109,7 @@ describe("household for someone at a watched place", () => {
     );
     // A rescue unit covering Yala sees both households there (logged), like any household.
     await as(db, { uid: w.yalaRescue.user });
-    expect(await count("select * from households_in_tambon($1)", [w.yala1])).toBe(2);
+    expect(await count("select * from authority_households()")).toBe(2);
   });
 });
 
