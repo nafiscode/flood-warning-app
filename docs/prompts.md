@@ -604,6 +604,24 @@ Read docs/science-plan.md, the pipeline METHODS.md files, docs/spec.md and docs/
 Acceptance: an academic reader understands what each layer means, where its data come from and how far to trust it, without being given a method to copy; no vendor name appears on the system page (a test checks the words); the owner has approved both pages.
 ```
 
+### A19: Highway paths in the authority console (after launch)
+
+Added 16 Oct 2026 (owner's choice): Module 8 part 2 is built (`pipeline/highway_paths`, 15 Oct) but its lists only sit on the laptop. The offices get them as a page of their own in the authority console, not as a document pack and never in the public app.
+```text
+Read docs/science-plan.md Module 8, pipeline/highway_paths/METHODS.md, docs/spec.md sections 3, 5 and 8, and CLAUDE.md safety rules 5, 6, 8 and 10.
+
+1. Migration: `highway_sections` (one row per 500 m section: geometry, the stretch id, road kind and number, name, province/district/tambon codes, class, score, the reasons as structured fields, the largest crossing's catchment and the nearest mapped opening, the radar run id and the run date) and `highway_stretches` (the joined neighbours, told by their best section). RLS: readable by admins and by verified authorities with the `planning` capability whose coverage falls in that province; never anon, never a resident, never a rescue-only unit. Province scope, not tambon: an office works on a whole road. Nothing in it is personal data, so no reveal logging is needed, but the page view is written to `audit_log` like the other authority views.
+2. A loader beside the pipeline (`python -m highway_paths load`, or a generated seed): reads `out/highway_paths/sections.geojson` and the per-province CSVs, replaces the rows of the previous run in one transaction, keeps any note an office left (step 5).
+3. The page `/authority/highway-paths` (add it to the console's other views, spec 5.7, and to the authority menu): the stretches of the unit's own province, "look here first" before "worth a look", each with its reasons in plain words, the tambon and district, a map link, and the figures behind it. A map layer of the sections over the flood-history layer, coloured by class (not alert colours: these are not alert levels - see docs/brand.md). Downloads for their own GIS: CSV and GeoJSON of their province only.
+4. Wording, in messages/*.json, Thai first: never "this road blocks the flood". It says where the radar record looks as if water stood on one side, that it is to be checked on imagery and on the ground, that the radar sees extent and not depth, that a wetter side can be a paddy or a natural low, and that most culverts are not in OpenStreetMap, so "no mapped opening" usually means "not mapped" (safety rule 8: never present it as certain). It feeds no alert level, no suggestion and no notification.
+5. One note per stretch from the office that owns it (free text plus a status: not looked at, checked on imagery, checked on the ground, an opening exists, work planned, done), visible to that province's `planning` units and to admins. It is their working record, never public, and it survives a reload of the pipeline's rows.
+6. Who may see it: a provincial highway office (แขวงทางหลวง) or irrigation project office (โครงการชลประทาน) registers as an authority with the `planning` capability and province-wide coverage. Check and state in the spec that `planning` alone opens no SOS, no household data and no phone reveal (safety rule 5); if it does today, close that first.
+7. Tests: RLS for anon, a resident, a rescue-only unit, a `planning` unit in another province, a `planning` unit in its own province and an admin; a unit test that the page shows no alert colours and no words claiming the road blocks the flood; the download carries only the unit's own province.
+8. Docs: a decision entry, the science plan's Module 8 marked as delivered this way, and a line in docs/runbook.md on reloading the rows after each season's radar rerun.
+
+Acceptance: a verified planning unit in Pattani signs in and sees the 32 flagged stretches of Pattani with their reasons, a map and a download, and nothing of the other three provinces; a rescue team and a resident cannot reach the page or the rows at all (RLS tests); nothing of it appears in the public app; the owner has read the Thai.
+```
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.
