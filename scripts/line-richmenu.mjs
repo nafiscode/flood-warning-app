@@ -7,7 +7,7 @@
  *   - "Safe places near me": opens Jaga's home screen, where the nearest safe places are listed
  *   - "Ask for help": opens Jaga's SOS screen; it never sends anything by itself (safety rule 1:
  *     a request is sent from the SOS screen, where the location is taken)
- *   - "Flood Risk Map": opens the map (owner, 15 Oct)
+ *   - "Risk & Live Map" (named "Flood Risk Map" until 16 Oct): opens the map (owner, 15 Oct)
  *   - "Register a response team": opens the team registration, through sign-in (owner, 15 Oct)
  *
  * The everyday three keep the top row at the same size as before; the two newer ones sit under

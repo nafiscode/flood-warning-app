@@ -38,10 +38,10 @@ afterEach(() => {
 const ALERT_CLASSES = /bg-alert-|text-alert-|border-alert-|bg-sos/;
 
 describe("the new name", () => {
-  it("is the Flood Risk Map in the header, on the page and on the home button, in every language", () => {
-    expect(th.nav.map).toBe("แผนที่เสี่ยงน้ำท่วม");
-    expect(en.nav.map).toBe("Flood Risk Map");
-    expect(ms.nav.map).toBe("Peta Risiko Banjir");
+  it("is the Risk & Live Map in the header, on the page and on the home button, in every language (renamed 16 Oct)", () => {
+    expect(th.nav.map).toBe("แผนที่ภัยและสถานการณ์");
+    expect(en.nav.map).toBe("Risk & Live Map");
+    expect(ms.nav.map).toBe("Peta Risiko & Semasa");
     for (const m of [th, ms, en]) {
       expect(m.map.title).toBe(m.nav.map);
       expect(m.home.mapLink).toContain(m.nav.map);

@@ -69,7 +69,7 @@
       "addFirst": "Add a place you watch, such as Mum's house",
       "details": "See the alert details"
     },
-    "mapLink": "Open the Flood Risk Map",
+    "mapLink": "Open the Risk & Live Map",
     "projectLine": "Jaga help line"
   },
   "install": {
@@ -475,11 +475,11 @@
     "savedOld": "No connection. Showing the list saved on this phone."
   },
   "map": {
-    "title": "Flood Risk Map",
+    "title": "Risk & Live Map",
     "zoomAll": "All 4 provinces",
     "tabs": {
       "label": "Map pages",
-      "map": "Flood Risk Map",
+      "map": "Risk & Live Map",
       "transparency": "Transparency"
     },
     "province": {
@@ -495,7 +495,9 @@
       "willDo": "What this will offer later",
       "call": "Call {number}",
       "failed": "Couldn't load the list of hazards. The map shows floods only.",
-      "flood": "Flood"
+      "flood": "Flood",
+      "more": "Other hazards ({count})",
+      "moreSoon": "Other hazards, coming soon ({count})"
     },
     "mode": {
       "label": "View",
@@ -679,7 +681,7 @@
     "clock": "Time",
     "home": "Home",
     "account": "Account",
-    "map": "Flood Risk Map",
+    "map": "Risk & Live Map",
     "admin": "Admin",
     "signIn": "Sign in",
     "backHome": "Back to the home screen",
@@ -3140,7 +3142,7 @@
     "menuStatus": "My area status",
     "menuPlaces": "Safe places near me",
     "menuSos": "Ask for help",
-    "menuMap": "Flood Risk Map",
+    "menuMap": "Risk & Live Map",
     "menuUnit": "Register a response team"
   },
   "fieldRescue": {
@@ -3460,7 +3462,7 @@
     "resident": {
       "note": "A signed-in resident with a home and two watched places.",
       "home": "Home",
-      "map": "Flood Risk Map"
+      "map": "Risk & Live Map"
     },
     "rescue": {
       "note": "Tap \"Turn on the alarm sound\" to hear a request being offered to the team. Accept, give an arrival estimate or hand it back; the example answers by itself."
@@ -3725,7 +3727,7 @@
       "entriesNote": "The first screen of each visit: a shared link, the home-screen icon or a notification.",
       "names": {
         "_": "Home",
-        "_map": "Flood Risk Map",
+        "_map": "Risk & Live Map",
         "_sos": "SOS",
         "_sos__id": "An SOS case",
         "_report": "Flood report",
@@ -3746,7 +3748,7 @@
     }
   },
   "mapFeatures": {
-    "homeTitle": "Explore the Flood Risk Map",
+    "homeTitle": "Explore the Risk & Live Map",
     "mapTitle": "What this map shows. Tap to see.",
     "live": "Live",
     "risk": {
@@ -3842,7 +3844,7 @@
       "minimal": "Not marked"
     },
     "note": "Estimated from 9 rainy seasons of satellite radar and the height of the land. An estimate, not a forecast.",
-    "open": "See it on the Flood Risk Map"
+    "open": "See it on the Risk & Live Map"
   },
   "signInOffer": {
     "title": "Sign in and Jaga does more for you",

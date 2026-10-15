@@ -751,6 +751,27 @@ describe("the hazard switcher on a small screen", () => {
     expect(flood.className).toContain("min-h-9");
   });
 
+  it("on a phone or tablet only the chosen hazard shows until 'Other hazards' is opened (owner, 16 Oct)", () => {
+    const c = dashboard();
+    const item = (code: string) => c.querySelector(`[data-hazard="${code}"]`)!.closest("li")!;
+    expect(item("flood").className).not.toContain("max-lg:hidden");
+    expect(item("fire").className).toContain("max-lg:hidden");
+    const more = c.querySelector<HTMLButtonElement>("[data-more-hazards]")!;
+    expect(more.closest("li")!.className).toContain("lg:hidden");
+    expect(more.getAttribute("aria-expanded")).toBe("false");
+    // Every other hazard is still to come, so the button says so, and how many.
+    const others = c.querySelectorAll("[data-hazard]").length - 1;
+    expect(more.textContent).toBe(th.map.hazard.moreSoon.replace("{count}", String(others)));
+    fireEvent.click(more);
+    expect(more.getAttribute("aria-expanded")).toBe("true");
+    expect(item("fire").className ?? "").not.toContain("max-lg:hidden");
+    // A coming-soon hazard picked from the list stays in view after the list is closed again.
+    fireEvent.click(c.querySelector('[data-hazard="fire"]')!);
+    fireEvent.click(more);
+    expect(item("fire").className ?? "").not.toContain("max-lg:hidden");
+    expect(item("flood").className).toContain("max-lg:hidden");
+  });
+
   it("a hazard that is still coming says so, chosen or not (safety rule 10)", () => {
     const c = dashboard();
     expect(c.querySelector('[data-hazard="fire"]')?.textContent).toContain(

@@ -277,6 +277,8 @@ export function DashboardView(props: DashboardViewProps) {
 
   const [tab, setTab] = useState<"map" | "transparency">("map");
   const [hazardCode, setHazardCode] = useState("flood");
+  // Phones and tablets show only the chosen hazard until this is opened (the owner, 16 Oct).
+  const [moreHazards, setMoreHazards] = useState(false);
   // Someone who came to see reports wants the current situation, not the long-term risk.
   const [chosenMode, setChosenMode] = useState<MapMode | null>(
     props.openReports ? "live" : props.openFocus === "risk" ? "risk" : null,
@@ -897,6 +899,9 @@ export function DashboardView(props: DashboardViewProps) {
     ) : null;
   }
 
+  const others = hazards.filter((h) => h.code !== hazard.code);
+  const othersSoon = others.every((h) => h.status !== "active");
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
@@ -940,7 +945,10 @@ export function DashboardView(props: DashboardViewProps) {
             </p>
             <ul aria-labelledby="hazard-label" className="flex flex-wrap gap-2">
               {hazards.map((h) => (
-                <li key={h.code}>
+                <li
+                  key={h.code}
+                  className={h.code === hazard.code || moreHazards ? undefined : "max-lg:hidden"}
+                >
                   <button
                     type="button"
                     aria-pressed={h.code === hazard.code}
@@ -959,6 +967,38 @@ export function DashboardView(props: DashboardViewProps) {
                   </button>
                 </li>
               ))}
+              {/*
+               * Only flood is live for now, so on a phone or tablet the other four wait behind
+               * one button that says what they are (the owner, 16 Oct); a laptop has the room
+               * to show them all.
+               */}
+              {others.length > 0 && (
+                <li className="lg:hidden">
+                  <button
+                    type="button"
+                    aria-expanded={moreHazards}
+                    data-more-hazards="true"
+                    onClick={() => setMoreHazards((open) => !open)}
+                    className={`${chipQuiet} ${chipOff} gap-1`}
+                  >
+                    {t(othersSoon ? "hazard.moreSoon" : "hazard.more", { count: others.length })}
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 20 20"
+                      className={`size-5 transition-transform motion-reduce:transition-none ${moreHazards ? "rotate-180" : ""}`}
+                    >
+                      <path
+                        d="M5 8l5 5 5-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </li>
+              )}
             </ul>
             {props.hazardsState === "unavailable" && <p className={hint}>{t("hazard.failed")}</p>}
           </div>

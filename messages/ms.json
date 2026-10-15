@@ -69,7 +69,7 @@
       "addFirst": "Tambah tempat yang anda jaga, contohnya rumah mak",
       "details": "Lihat butiran amaran"
     },
-    "mapLink": "Buka Peta Risiko Banjir",
+    "mapLink": "Buka Peta Risiko & Semasa",
     "projectLine": "Talian bantuan Jaga"
   },
   "install": {
@@ -475,11 +475,11 @@
     "savedOld": "Tiada sambungan. Menunjukkan senarai yang disimpan dalam telefon."
   },
   "map": {
-    "title": "Peta Risiko Banjir",
+    "title": "Peta Risiko & Semasa",
     "zoomAll": "Lihat 4 wilayah",
     "tabs": {
       "label": "Halaman peta",
-      "map": "Peta Risiko Banjir",
+      "map": "Peta Risiko & Semasa",
       "transparency": "Ketelusan"
     },
     "province": {
@@ -495,7 +495,9 @@
       "willDo": "Apa yang akan ada nanti",
       "call": "Telefon {number}",
       "failed": "Senarai jenis bencana tidak dapat dimuat. Peta menunjukkan banjir sahaja.",
-      "flood": "Banjir"
+      "flood": "Banjir",
+      "more": "Bencana lain ({count})",
+      "moreSoon": "Bencana lain, akan datang ({count})"
     },
     "mode": {
       "label": "Paparan",
@@ -679,7 +681,7 @@
     "clock": "Masa",
     "home": "Utama",
     "account": "Akaun",
-    "map": "Peta Risiko Banjir",
+    "map": "Peta Risiko & Semasa",
     "admin": "Admin",
     "signIn": "Log masuk",
     "backHome": "Kembali ke halaman utama",
@@ -3140,7 +3142,7 @@
     "menuStatus": "Status kawasan saya",
     "menuPlaces": "Tempat selamat",
     "menuSos": "Minta bantuan",
-    "menuMap": "Peta Risiko Banjir",
+    "menuMap": "Peta Risiko & Semasa",
     "menuUnit": "Daftar pasukan bantuan"
   },
   "fieldRescue": {
@@ -3460,7 +3462,7 @@
     "resident": {
       "note": "Penduduk yang telah log masuk, dengan rumah dan dua tempat yang dipantau.",
       "home": "Laman utama",
-      "map": "Peta Risiko Banjir"
+      "map": "Peta Risiko & Semasa"
     },
     "rescue": {
       "note": "Ketik \"Buka bunyi amaran\" untuk mendengar bunyi apabila permintaan ditawarkan kepada pasukan. Terima, beri anggaran masa tiba atau pulangkan; contoh ini bertindak balas sendiri."
@@ -3725,7 +3727,7 @@
       "entriesNote": "Skrin pertama setiap lawatan: pautan yang dikongsi, ikon skrin utama atau pemberitahuan.",
       "names": {
         "_": "Laman utama",
-        "_map": "Peta Risiko Banjir",
+        "_map": "Peta Risiko & Semasa",
         "_sos": "SOS",
         "_sos__id": "Kes SOS",
         "_report": "Laporan banjir",
@@ -3746,7 +3748,7 @@
     }
   },
   "mapFeatures": {
-    "homeTitle": "Terokai Peta Risiko Banjir",
+    "homeTitle": "Terokai Peta Risiko & Semasa",
     "mapTitle": "Apa yang ditunjukkan peta ini. Ketik untuk melihat.",
     "live": "Langsung",
     "risk": {
@@ -3842,7 +3844,7 @@
       "minimal": "Tidak ditanda"
     },
     "note": "Dianggar daripada radar satelit 9 musim hujan dan ketinggian tanah. Satu anggaran, bukan ramalan.",
-    "open": "Lihat di Peta Risiko Banjir"
+    "open": "Lihat di Peta Risiko & Semasa"
   },
   "signInOffer": {
     "title": "Log masuk, Jaga boleh bantu anda lebih banyak",
