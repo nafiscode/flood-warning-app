@@ -100,8 +100,10 @@ describe("the four provinces at a glance (owner, 15 Oct)", () => {
       L("place-city", "symbol"),
       { id: "place-village", type: "symbol", minzoom: 11 },
       L("water", "fill"),
+      L("jaga-dam-labels", "symbol"),
+      L("jaga-mine-label", "symbol"),
     ]);
-    quietOverview(f.map);
+    quietOverview(f.map, ["jaga-dam-labels"]);
     expect(f.byId.get(TAMBON_LINE_LAYER)!.minzoom).toBe(7.4);
     expect(f.byId.get(CAPITAL_LAYER)!.maxzoom).toBe(7.4);
     expect(f.byId.get("place-city")!.minzoom).toBe(7.4);
@@ -109,9 +111,12 @@ describe("the four provinces at a glance (owner, 15 Oct)", () => {
     expect(f.byId.get("place-village")!.minzoom).toBe(11);
     expect(f.byId.get(PROVINCE_LINE_LAYER)!.minzoom).toBeUndefined();
     expect(f.byId.get("water")!.minzoom).toBeUndefined();
+    // Our own names wait too, but never the person's own places.
+    expect(f.byId.get("jaga-dam-labels")!.minzoom).toBe(7.4);
+    expect(f.byId.get("jaga-mine-label")!.minzoom).toBeUndefined();
     // Asking again changes nothing.
     const n = f.calls.length;
-    quietOverview(f.map);
+    quietOverview(f.map, ["jaga-dam-labels"]);
     expect(f.calls.length).toBe(n);
   });
 });

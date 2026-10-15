@@ -678,12 +678,12 @@ export function provinceLinePaint(dark: boolean, photo: boolean) {
 const originalMinzoom = new WeakMap<MapLibreMap, Map<string, number | undefined>>();
 
 /**
- * Hide the tambon outlines and the basemap's names while the whole service area is in view, and
- * show the four capitals then instead. The zoom is worked out from this map's own size, so a
+ * Hide the tambon outlines and the basemap's names (and `ownLabels`, our own text-only layers)
+ * while the whole service area is in view, and show the four capitals then instead. The zoom is worked out from this map's own size, so a
  * phone and a laptop both switch just past their own four-province view. Safe to call on every
  * draw: it changes a layer only when its zoom range differs.
  */
-export function quietOverview(map: MapLibreMap): void {
+export function quietOverview(map: MapLibreMap, ownLabels: readonly string[] = []): void {
   const camera = map.cameraForBounds(
     [
       [SERVICE_BOUNDS[0], SERVICE_BOUNDS[1]],
@@ -704,7 +704,8 @@ export function quietOverview(map: MapLibreMap): void {
   let originals = originalMinzoom.get(map);
   if (!originals) originalMinzoom.set(map, (originals = new Map()));
   for (const layer of map.getStyle().layers) {
-    if (layer.type !== "symbol" || layer.id.startsWith("jaga-")) continue;
+    if (layer.type !== "symbol") continue;
+    if (layer.id.startsWith("jaga-") && !ownLabels.includes(layer.id)) continue;
     if (!originals.has(layer.id)) originals.set(layer.id, layer.minzoom);
     range(layer.id, labelMinzoom(originals.get(layer.id), detail), layer.maxzoom ?? 24);
   }

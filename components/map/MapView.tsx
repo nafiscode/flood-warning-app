@@ -675,7 +675,6 @@ export function MapView({
         }
         m.setPaintProperty(CAPITAL_LAYER, "text-color", photoNow() ? "#ffffff" : ink());
         m.setPaintProperty(CAPITAL_LAYER, "text-halo-color", photoNow() ? "#1d3b53" : mapHalo());
-        quietOverview(m);
         /*
          * The dam, its reservoir and the path released water takes (spec section 15). Drawn
          * above the alert fill, so the river can be followed across coloured tambons, and below
@@ -1095,6 +1094,13 @@ export function MapView({
             },
           });
         }
+        /*
+         * At the four-province view the capitals' names sit over every mark, and the other names
+         * (reservoirs, sea points, gauge words) wait for a closer look; the marks themselves and
+         * the person's own place names stay (lib/map.ts, quietOverview).
+         */
+        if (m.getStyle().layers.at(-1)?.id !== CAPITAL_LAYER) m.moveLayer(CAPITAL_LAYER);
+        quietOverview(m, [DAM_LABELS, SEA_LABEL, GAUGE_LABEL]);
         /*
          * The dam follows the theme while the page is open: the daytime water colour vanishes
          * into the dark basemap after sunset, and the page turns itself dark at sunset without
