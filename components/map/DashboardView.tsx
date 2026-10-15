@@ -912,17 +912,9 @@ export function DashboardView(props: DashboardViewProps) {
             {props.hazardsState === "unavailable" && <p className={hint}>{t("hazard.failed")}</p>}
           </div>
 
-          {/* The hazard comes first, then what the map shows for it (owner, 15 Oct). */}
+          {/* The hazard comes first, then the province, then what the map shows for it (owner,
+              15 Oct). */}
           {hazard.status === "active" && (
-            <>
-              <MapFeatureChips on={featuresOn} onToggle={toggleFeature} />
-              <MapMethod />
-            </>
-          )}
-
-          {hazard.status !== "active" ? (
-            <HazardPlaceholder hazard={hazard} />
-          ) : (
             <>
               {directory ? (
                 <ProvinceSelect
@@ -937,7 +929,15 @@ export function DashboardView(props: DashboardViewProps) {
                   <p className={hint}>{t("province.failed")}</p>
                 )
               )}
+              <MapFeatureChips on={featuresOn} onToggle={toggleFeature} />
+              <MapMethod />
+            </>
+          )}
 
+          {hazard.status !== "active" ? (
+            <HazardPlaceholder hazard={hazard} />
+          ) : (
+            <>
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium" id="mode-label">
                   {t("mode.label")}
