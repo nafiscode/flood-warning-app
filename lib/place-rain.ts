@@ -265,10 +265,11 @@ export function rainClouds(places: RainPlace[], weather: PointWeather[]): RainCl
 /**
  * How far above the place the cloud's bottom sits, in CSS pixels, so the rain falls onto the
  * top of the pin rather than over it: the home pin stands about 46 px tall (its tip on the home,
- * lib/mine-marks.ts), a watched place is a dot in brackets about 22 px from its centre.
+ * lib/mine-marks.ts), a watched place is a dot in brackets about 16 px from its centre; the
+ * drops fade out just before the bottom of the cloud's box, so it sits a little lower than that.
  */
 export function cloudLift(home: boolean): number {
-  return home ? 44 : 20;
+  return home ? 32 : 10;
 }
 
 /**

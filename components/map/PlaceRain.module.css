@@ -43,10 +43,10 @@
 /* The sun or moon behind a shower cloud. */
 .peek {
   position: absolute;
-  top: 1px;
-  inset-inline-end: 2px;
-  width: 16px;
-  height: 16px;
+  top: -4px;
+  inset-inline-end: -5px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   z-index: 1;
   background: radial-gradient(circle at 40% 40%, #fff6d6, #f2d68a);
