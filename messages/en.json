@@ -650,7 +650,7 @@
       "prev": "Previous place",
       "next": "Next place",
       "pick": "Choose one of your places",
-      "option": "{n}/{total} · {name}",
+      "option": "{name} ({n}/{total})",
       "reset": "Reset",
       "resetLabel": "Back to the map's first view"
     }

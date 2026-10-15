@@ -501,7 +501,7 @@ describe("map dashboard (spec 4.2)", () => {
     );
     // The list names each place with its number.
     const options = [...c.querySelectorAll("[data-tour-pick] option")].map((o) => o.textContent);
-    expect(options[0]).toBe(`1/${places.length} · ${places[0]!.label}`);
+    expect(options[0]).toBe(`${places[0]!.label} (1/${places.length})`);
     // Reset: the first view again, no card, and the two buttons are back.
     fireEvent.click(c.querySelector("[data-tour-reset]")!);
     expect(c.querySelector("[data-tour]")).toBeNull();

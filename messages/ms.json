@@ -650,7 +650,7 @@
       "prev": "Tempat sebelumnya",
       "next": "Tempat seterusnya",
       "pick": "Pilih tempat anda",
-      "option": "{n}/{total} · {name}",
+      "option": "{name} ({n}/{total})",
       "reset": "Set semula",
       "resetLabel": "Kembali ke paparan asal peta"
     }
