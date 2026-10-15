@@ -2,11 +2,15 @@ import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   alertFlex,
+  answerSticker,
   answerText,
   batches,
   caseLineMessage,
   decisionLineMessage,
+  greetingSticker,
   readPress,
+  statusSticker,
+  stickerMessage,
   type DecisionRow,
   type DecisionWords,
   statusText,
@@ -238,6 +242,16 @@ export async function handleLineEvents(events: LineEvent[]): Promise<void> {
           p_line_user: user,
           p_following: event.type === "follow",
         });
+        // A new friend is greeted by Ja or Ga; a reply costs nothing from the month's quota.
+        if (event.type === "follow" && event.replyToken) {
+          await call("/message/reply", {
+            method: "POST",
+            body: {
+              replyToken: event.replyToken,
+              messages: [stickerMessage(siteUrl(), greetingSticker(user))],
+            },
+          });
+        }
       }
       // A button pressed on a request's question: answered as the sender, if it is theirs.
       const press = event.type === "postback" ? readPress(event.postback?.data) : null;
@@ -255,11 +269,16 @@ export async function handleLineEvents(events: LineEvent[]): Promise<void> {
         const locale = localeOf(
           ((Array.isArray(who) ? who[0] : who) as { locale?: string } | undefined)?.locale ?? "th",
         );
+        const answered = String(outcome ?? "");
+        const thanks = answerSticker(answered);
         await call("/message/reply", {
           method: "POST",
           body: {
             replyToken: event.replyToken,
-            messages: [{ type: "text", text: answerText(String(outcome ?? ""), wordsOf(locale)) }],
+            messages: [
+              { type: "text", text: answerText(answered, wordsOf(locale)) },
+              ...(thanks ? [stickerMessage(siteUrl(), thanks)] : []),
+            ],
           },
         });
         // The team's board and the sender's own page move on at once, not at the next tick.
@@ -282,9 +301,16 @@ export async function handleLineEvents(events: LineEvent[]): Promise<void> {
           (level) => levelOf(locale, level),
           wordsOf(locale),
         );
+        const sticker = statusSticker({ alerts: row.alerts ?? [] });
         await call("/message/reply", {
           method: "POST",
-          body: { replyToken: event.replyToken, messages: [{ type: "text", text }] },
+          body: {
+            replyToken: event.replyToken,
+            messages: [
+              { type: "text", text },
+              ...(sticker ? [stickerMessage(siteUrl(), sticker)] : []),
+            ],
+          },
         });
       }
     } catch {

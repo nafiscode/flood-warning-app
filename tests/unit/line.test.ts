@@ -1,16 +1,22 @@
 import { createHmac } from "node:crypto";
+import { existsSync, statSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { lineQuotaLevel } from "@/components/admin/LineQuota";
 import {
   alertFlex,
+  answerSticker,
   answerText,
   batches,
   caseLineMessage,
+  greetingSticker,
   LINE_LABEL_MAX,
+  LINE_STICKERS,
   lineTime,
   personalBody,
   readPress,
+  statusSticker,
   statusText,
+  stickerMessage,
   type LineWords,
 } from "@/lib/line";
 import { lineSignatureOk } from "@/lib/line-server";
@@ -251,5 +257,34 @@ describe("the admins' LINE quota line", () => {
     expect(lineQuotaLevel(450, 500)).toBe("90");
     expect(lineQuotaLevel(500, 500)).toBe("full");
     expect(lineQuotaLevel(10, 0)).toBe("ok");
+  });
+});
+
+describe("Jaga's stickers in the chat's replies", () => {
+  it("are pictures served from the site, under LINE's 1 MB preview limit", () => {
+    for (const name of LINE_STICKERS) {
+      const file = `public/line/stickers/${name}.png`;
+      expect(existsSync(file), file).toBe(true);
+      expect(statSync(file).size).toBeLessThan(1_000_000);
+    }
+    expect(stickerMessage("https://jagaapp.org/", "take-care")).toEqual({
+      type: "image",
+      originalContentUrl: "https://jagaapp.org/line/stickers/take-care.png",
+      previewImageUrl: "https://jagaapp.org/line/stickers/take-care.png",
+    });
+  });
+
+  it("never sit beside an alert in force", () => {
+    const alert = { level: "watch", messages: {}, next_update_at: null };
+    expect(statusSticker({ alerts: [] })).toBe("take-care");
+    expect(statusSticker({ alerts: [alert] })).toBeNull();
+  });
+
+  it("thank only a confirmed rescue, and greet each friend the same way every time", () => {
+    expect(answerSticker("confirmed")).toBe("together");
+    for (const outcome of ["disputed", "closed", "not_yours", ""])
+      expect(answerSticker(outcome)).toBeNull();
+    expect(greetingSticker("U1234")).toBe(greetingSticker("U1234"));
+    expect(new Set(["Ua", "Ub", "Uc", "Ud"].map(greetingSticker)).size).toBe(2);
   });
 });

@@ -352,6 +352,37 @@ export function readPress(data: unknown): LinePress {
   return m ? { kind: "rescue", sos: m[1]!, rescued: m[2] === "yes" } : { kind: "other" };
 }
 
+/**
+ * Jaga's own stickers (Ja and Ga, drawn for the LINE sticker sets) sent as pictures in the
+ * chat's free replies. LINE's Messaging API cannot send a sticker of a set made on Creators
+ * Market, so they go as images served from the site. Never next to an alert in force: a
+ * cheerful picture beside a warning would soften it.
+ */
+export const LINE_STICKERS = ["hello-ja", "hello-ga", "take-care", "together"] as const;
+export type LineSticker = (typeof LINE_STICKERS)[number];
+
+export function stickerMessage(site: string, name: LineSticker) {
+  const url = `${site.replace(/\/+$/, "")}/line/stickers/${name}.png`;
+  return { type: "image" as const, originalContentUrl: url, previewImageUrl: url };
+}
+
+/** A new friend is greeted by Ja or Ga, the same one each time for the same person. */
+export function greetingSticker(lineUser: string): LineSticker {
+  let sum = 0;
+  for (const c of lineUser) sum += c.charCodeAt(0);
+  return sum % 2 ? "hello-ga" : "hello-ja";
+}
+
+/** "Jaga diri, Jaga jiran" under a status answer, only when no alert is in force there. */
+export function statusSticker(status: Pick<LineStatus, "alerts">): LineSticker | null {
+  return status.alerts.length === 0 ? "take-care" : null;
+}
+
+/** "Take care of each other" once the sender confirms they were rescued; nothing otherwise. */
+export function answerSticker(outcome: string): LineSticker | null {
+  return outcome === "confirmed" ? "together" : null;
+}
+
 /** The chat's answer once a request's button has been pressed. */
 export function answerText(outcome: string, words: LineWords): string {
   return outcome === "confirmed"
