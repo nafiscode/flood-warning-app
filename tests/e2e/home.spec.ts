@@ -139,7 +139,7 @@ test.describe("home", () => {
     await noSidewaysScroll(page);
   });
 
-  test("the header has Home, Map and Account as words, and nothing scrolls sideways", async ({
+  test("the header has Home, Map and Sign in as words, and nothing scrolls sideways", async ({
     page,
   }) => {
     await serve(page, { inService: true, alerts: [] });
@@ -148,7 +148,8 @@ test.describe("home", () => {
     // Home as a link of its own: a logo is not what people tap to go back.
     await expect(header.locator('a[href="/"]', { hasText: th.nav.home })).toBeVisible();
     await expect(header.getByRole("link", { name: th.nav.map })).toBeVisible();
-    await expect(header.getByRole("link", { name: th.nav.account })).toBeVisible();
+    // A visitor is invited to sign in where a signed-in person sees Account (15 Oct, 012ec5a).
+    await expect(header.locator('[data-account-link="sign-in"]')).toHaveText(th.nav.signIn);
     const home = (await header.locator('a[href="/"]', { hasText: th.nav.home }).boundingBox())!;
     expect(home.height).toBeGreaterThanOrEqual(44);
     await noSidewaysScroll(page);

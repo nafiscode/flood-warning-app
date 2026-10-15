@@ -168,7 +168,7 @@ test.describe("the bell", () => {
     await page.goto("/");
     const header = page.locator("header");
     const box = (await bell(page).boundingBox())!;
-    const account = (await header.getByRole("link", { name: th.nav.account }).boundingBox())!;
+    const account = (await header.locator("[data-account-link]").boundingBox())!;
     // Last of the row (the owner's note, 12 Oct). The end, not literally the right: in a
     // right-to-left script the whole bar turns round and the bell goes with it.
     expect(box.x).toBeGreaterThan(account.x);

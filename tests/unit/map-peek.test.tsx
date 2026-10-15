@@ -223,7 +223,7 @@ describe("the pop-ups on the map", () => {
 describe("the My places button", () => {
   const bounds = (c: HTMLElement) => c.querySelector("[data-map]")!.getAttribute("data-bounds");
 
-  it("frames the person's home and watched places, and shows their pins", () => {
+  it("starts a tour at the person's home, one place at a time, and shows their pins", () => {
     if (!EXAMPLE_ME.signedIn) throw new Error("the example person is signed in");
     const me = { ...EXAMPLE_ME, home: { ...BANA, from: "account" as const } };
     const c = dashboard({ me, area: BANA });
@@ -234,15 +234,23 @@ describe("the My places button", () => {
     expect(c.querySelector("[data-map]")!.getAttribute("data-show-mine")).toBe("0");
     fireEvent.click(button);
     expect(c.querySelector("[data-map]")!.getAttribute("data-show-mine")).toBe("1");
-    const points = [
-      { lon: BANA.lon, lat: BANA.lat },
-      ...me.places.filter((p) => p.area).map((p) => ({ lon: p.area!.lon, lat: p.area!.lat })),
+    // Home first, in a close box around it (since the tour of 15 Oct, 6b1cdfa).
+    const [west, south, east, north] = bounds(c)!.split(",").map(Number) as [
+      number,
+      number,
+      number,
+      number,
     ];
-    expect(bounds(c)).toBe(
-      boundsAround(points)!
-        .map((n) => n.toFixed(3))
-        .join(","),
-    );
+    expect((west + east) / 2).toBeCloseTo(BANA.lon, 2);
+    expect((south + north) / 2).toBeCloseTo(BANA.lat, 2);
+    expect(east - west).toBeLessThan(0.1);
+    expect(c.querySelector("[data-tour]")).not.toBeNull();
+    // Next goes on to a watched place.
+    fireEvent.click(c.querySelector('[data-tour-step="next"]')!);
+    const first = me.places.find((p) => p.area)!.area!;
+    const [w2, s2, e2, n2] = bounds(c)!.split(",").map(Number) as [number, number, number, number];
+    expect((w2 + e2) / 2).toBeCloseTo(first.lon, 2);
+    expect((s2 + n2) / 2).toBeCloseTo(first.lat, 2);
   });
 
   it("frames the chosen area for someone with no saved places", () => {
