@@ -750,6 +750,19 @@
       "approved": "Pentadbir telah menyemak laporan banjir anda di {tambon}. Terima kasih kerana melaporkan.",
       "hidden": "Pentadbir telah mengeluarkan laporan banjir anda di {tambon} dari peta. Jika ini satu kesilapan, laporkan semula.",
       "see": "Lihat permintaan saya"
+    },
+    "elsewhere": "Kawasan lain: {count} mukim",
+    "auto": {
+      "title": "Penggera automatik (pentadbir sahaja)",
+      "pending": "Draf amaran {level} untuk {zone} menunggu pentadbir ({gauge} {value} m). Jika tiada siapa menghantar atau menolaknya, Jaga akan menerbitkannya sendiri pada {time}.",
+      "sent": "Seorang pentadbir telah menghantar draf {level} untuk {zone}.",
+      "dismissed": "Seorang pentadbir telah menolak draf {level} untuk {zone}.",
+      "auto_published": "Tiada pentadbir bertindak tepat pada masanya, jadi Jaga menerbitkan amaran {level} untuk {zone} sendiri (belum disemak).",
+      "lapsed": "Sungai surut sebelum masa tamat, jadi draf {level} untuk {zone} tidak diterbitkan.",
+      "replaced": "Draf {level} untuk {zone} telah digantikan dengan draf baharu.",
+      "drill": "Ini latihan; orang awam tidak nampak.",
+      "act": "Pergi ke isyarat",
+      "see": "Lihat sejarah"
     }
   },
   "placeFinder": {
@@ -2475,7 +2488,8 @@
     "done": {
       "published": "Amaran telah disimpan.",
       "extended": "Masa kemas kini seterusnya telah dianjak.",
-      "cancelled": "Amaran telah dibatalkan."
+      "cancelled": "Amaran telah dibatalkan.",
+      "bell": "Tetapan loceng anda telah disimpan."
     },
     "error": {
       "save": "Tidak berjaya disimpan. Cuba lagi.",
@@ -2620,6 +2634,31 @@
         "real": "Amaran sebenar",
         "realHint": "Dipaparkan pada peta, halaman utama dan loceng semua orang di kawasan itu, walaupun perkhidmatan belum dibuka."
       }
+    },
+    "auto": {
+      "title": "Penggera automatik",
+      "intro": "Setiap kali tolok yang ditanda automatik mencapai paras dalam 30 hari lepas, dan apa yang berlaku. Hanya pentadbir melihat bahagian ini.",
+      "none": "Tiada penggera automatik dalam 30 hari lepas.",
+      "status": {
+        "pending": "Menunggu pentadbir",
+        "sent": "Dihantar oleh pentadbir",
+        "dismissed": "Ditolak oleh pentadbir",
+        "auto_published": "Diterbitkan sendiri oleh Jaga",
+        "lapsed": "Sungai surut, tidak diterbitkan",
+        "replaced": "Digantikan"
+      },
+      "reading": "{gauge}: {value} m (paras {threshold} m)",
+      "raised": "Dicetuskan",
+      "deadline": "Diterbitkan sendiri pada",
+      "decided": "{name}",
+      "byJaga": "Jaga (automatik)",
+      "act": "Hantar atau tolak di isyarat"
+    },
+    "bell": {
+      "title": "Loceng anda",
+      "all": "Terima setiap amaran yang Jaga hantar, di semua kawasan, dengan bunyi amaran sebenar",
+      "hint": "Jika tidak ditanda, anda hanya menerima bunyi dan amaran untuk rumah dan tempat yang anda pantau, seperti pengguna lain. Penggera automatik yang menunggu pentadbir sentiasa berbunyi. Tetapan ini untuk anda sahaja.",
+      "save": "Simpan"
     }
   },
   "adminTools": {

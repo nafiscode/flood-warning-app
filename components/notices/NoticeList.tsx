@@ -14,6 +14,7 @@ import type { NoticeItem } from "@/lib/notices";
  */
 function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; locale: string }) {
   const t = useTranslations("notices");
+  const tLevel = useTranslations("alert.level");
   const format = useFormatter();
   const when = format.dateTime(new Date(item.at), {
     timeZone: "Asia/Bangkok",
@@ -23,7 +24,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
     minute: "2-digit",
   });
   const where =
-    item.places.length > 0 ? item.places.map((place) => place.label).join(", ") : t("yourArea");
+    item.kind === "alert" && item.elsewhere
+      ? t("elsewhere", { count: item.elsewhere })
+      : item.places.length > 0
+        ? item.places.map((place) => place.label).join(", ")
+        : t("yourArea");
   const text = (messages: Record<string, string>) => messages[locale] ?? messages.th;
 
   return (
@@ -45,17 +50,19 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         ) : (
           <span className="inline-flex items-center gap-2 font-bold text-jaga-ink">
             <LifebuoyIcon size={24} />
-            {item.kind === "fieldWaiting"
-              ? t("fieldWaiting.title")
-              : item.kind === "report"
-                ? t("report.title")
-                : item.kind === "field"
-                  ? t("field.title")
-                  : item.kind === "unit"
-                    ? t("unit.title")
-                    : item.kind === "sos" && item.supplies
-                      ? t("supply.title")
-                      : t("sos.title")}
+            {item.kind === "autoAlarm"
+              ? t("auto.title")
+              : item.kind === "fieldWaiting"
+                ? t("fieldWaiting.title")
+                : item.kind === "report"
+                  ? t("report.title")
+                  : item.kind === "field"
+                    ? t("field.title")
+                    : item.kind === "unit"
+                      ? t("unit.title")
+                      : item.kind === "sos" && item.supplies
+                        ? t("supply.title")
+                        : t("sos.title")}
           </span>
         )}
         {unread && (
@@ -92,6 +99,25 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         </p>
       )}
       {item.kind === "fieldWaiting" && <p>{t("fieldWaiting.body", { count: item.count })}</p>}
+      {item.kind === "autoAlarm" && (
+        <>
+          <AlertBadge level={item.level} />
+          <p>
+            {t(`auto.${item.status}`, {
+              level: tLevel(item.level),
+              zone: item.zone,
+              gauge: item.gauge ?? "–",
+              value: item.value ?? "–",
+              time: format.dateTime(new Date(item.deadline), {
+                timeZone: "Asia/Bangkok",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            })}
+          </p>
+          {item.drill && <p className="text-small text-jaga-text-2">{t("auto.drill")}</p>}
+        </>
+      )}
       {item.kind === "sos" && (
         <>
           <p>{t(`${item.supplies ? "supply" : "sos"}.${item.event}`)}</p>
@@ -119,6 +145,15 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         {item.kind === "fieldWaiting" && (
           <Link href="/admin/field-rescues" prefetch={false} className="underline">
             {t("fieldWaiting.see")}
+          </Link>
+        )}
+        {item.kind === "autoAlarm" && (
+          <Link
+            href={item.status === "pending" ? "/admin/signals" : "/admin/alerts#auto-alarms"}
+            prefetch={false}
+            className="underline"
+          >
+            {t(item.status === "pending" ? "auto.act" : "auto.see")}
           </Link>
         )}
         {item.kind === "field" && (

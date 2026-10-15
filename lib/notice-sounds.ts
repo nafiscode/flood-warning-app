@@ -26,6 +26,13 @@ export function ringForAll(
   const ids = fresh.map((i) => i.id);
   const alert = ringFor(items, read, rung).sound;
   if (alert) return { sound: alert, ids };
+  // An automatic alarm waiting for an admin is urgent: Jaga publishes it by itself unless someone
+  // acts within the grace time. It sounds like the alert it would become, whatever the admin's tick.
+  const draft = fresh.find(
+    (i): i is Extract<NoticeItem, { kind: "autoAlarm" }> =>
+      i.kind === "autoAlarm" && i.status === "pending",
+  );
+  if (draft) return { sound: draft.level === "evacuate" ? "alertEvacuate" : "alertWarning", ids };
   // An alert that is new to this phone but has already ended is news, not a warning.
   const kinds = new Set(fresh.map((i) => i.kind as string));
   const caseEvents = fresh.flatMap((i) =>

@@ -45,6 +45,11 @@ export type NoticeItem = Base &
         source: string | null;
         /** The alert this item is about, for the link to the full alert. */
         alertId: string;
+        /**
+         * Set when none of the person's own places is in the alert: an admin who chose to hear
+         * every alert, everywhere. How many tambons it covers, said instead of "your area".
+         */
+        elsewhere?: number;
       }
     | {
         kind: "alertEnded";
@@ -66,7 +71,65 @@ export type NoticeItem = Base &
     | { kind: "field"; event: "approved" | "rejected" }
     | { kind: "fieldWaiting"; count: number }
     | { kind: "report"; event: "approved" | "hidden"; tambon: { th: string; en: string } | null }
+    | ({ kind: "autoAlarm" } & Omit<AutoAlarm, "id" | "createdAt" | "decidedAt">)
   );
+
+/** What became of one automatic alarm (A8, safety rule 2's one exception). */
+export const AUTO_ALARM_STATUSES = [
+  "pending",
+  "sent",
+  "dismissed",
+  "auto_published",
+  "lapsed",
+  "replaced",
+] as const;
+export type AutoAlarmStatus = (typeof AUTO_ALARM_STATUSES)[number];
+
+/** One automatic alarm, as admin_auto_alarms() gives it. Admins only. */
+export type AutoAlarm = {
+  id: string;
+  status: AutoAlarmStatus;
+  level: "warning" | "evacuate";
+  zone: string;
+  gauge: string | null;
+  value: number | null;
+  threshold: number | null;
+  createdAt: string;
+  deadline: string;
+  decidedAt: string | null;
+  decidedBy: string | null;
+  note: string | null;
+  alertId: string | null;
+  /** Whether what it published was a drill; null when it published nothing. */
+  drill: boolean | null;
+};
+
+/** One row of admin_auto_alarms() as an AutoAlarm, or null when it is not one. */
+export function toAutoAlarm(row: Record<string, unknown>): AutoAlarm | null {
+  const createdAt = isoOrNull(row.createdAt);
+  const deadline = isoOrNull(row.deadline);
+  const status = AUTO_ALARM_STATUSES.find((s) => s === row.status);
+  const level = row.level === "warning" || row.level === "evacuate" ? row.level : null;
+  if (typeof row.id !== "string" || !createdAt || !deadline || !status || !level) return null;
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  const text = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);
+  return {
+    id: row.id,
+    status,
+    level,
+    zone: text(row.zone) ?? "",
+    gauge: text(row.gauge),
+    value: num(row.value),
+    threshold: num(row.threshold),
+    createdAt,
+    deadline,
+    decidedAt: isoOrNull(row.decidedAt),
+    decidedBy: text(row.decidedBy),
+    note: text(row.note),
+    alertId: text(row.alertId),
+    drill: typeof row.drill === "boolean" ? row.drill : null,
+  };
+}
 
 /**
  * An admin's decision on one of the person's own flood reports (/api/me/requests, from
@@ -230,13 +293,15 @@ export function buildNotices(input: {
   fieldWaiting?: FieldWaiting | null;
   /** What an admin decided about the person's own flood reports. */
   reports?: ReportDecision[];
+  /** For an admin: the automatic alarms of the last fourteen days. */
+  autoAlarms?: AutoAlarm[];
   now: number;
   /** The word for the person's own home, and how to name a chosen area, both translated. */
   homeLabel: string;
   areaLabel: (area: Area) => string;
 }): NoticeItem[] {
   const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
-  const { fieldWaiting, reports = [] } = input;
+  const { fieldWaiting, reports = [], autoAlarms = [] } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -274,6 +339,8 @@ export function buildNotices(input: {
         nextUpdateAt: row.nextUpdateAt,
         source: row.source,
         alertId: row.id,
+        // None of the person's places is in it: an admin hearing every alert, everywhere.
+        ...(places.length === 0 && row.tambons.length > 0 ? { elsewhere: row.tambons.length } : {}),
       });
     }
     // An alert that has been lifted or replaced is news of its own, and keeps its level, so the
@@ -342,6 +409,30 @@ export function buildNotices(input: {
     const news = fieldNews(record);
     if (!news || !within(news.at)) continue;
     items.push({ kind: "field", id: news.id, at: news.at, places: [], event: news.event });
+  }
+
+  // An automatic alarm is news each time its state changes: raised, then sent, dismissed,
+  // published by itself or let go because the river fell back.
+  for (const alarm of autoAlarms) {
+    const at = alarm.status === "pending" ? alarm.createdAt : (alarm.decidedAt ?? alarm.createdAt);
+    if (!within(at)) continue;
+    items.push({
+      kind: "autoAlarm",
+      id: `auto:${alarm.id}:${alarm.status}`,
+      at,
+      places: [],
+      status: alarm.status,
+      level: alarm.level,
+      zone: alarm.zone,
+      gauge: alarm.gauge,
+      value: alarm.value,
+      threshold: alarm.threshold,
+      deadline: alarm.deadline,
+      decidedBy: alarm.decidedBy,
+      note: alarm.note,
+      alertId: alarm.alertId,
+      drill: alarm.drill,
+    });
   }
 
   for (const decision of reports) {

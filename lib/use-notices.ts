@@ -9,6 +9,7 @@ import {
   unreadCount,
   type KnownCase,
   type NoticeItem,
+  type AutoAlarm,
   type NoticeRow,
   type ReportDecision,
 } from "@/lib/notices";
@@ -30,6 +31,8 @@ type StoredUnits = {
   fieldWaiting?: FieldWaiting | null;
   /** What an admin decided about their own flood reports. */
   reports?: ReportDecision[];
+  /** For an admin: automatic alarms, and every alert when they chose to hear all of them. */
+  admin?: { allAlerts: boolean; autoAlarms: AutoAlarm[]; alerts: NoticeRow[] } | null;
   checkedAt: number;
 };
 
@@ -169,6 +172,7 @@ export function useNotices(options: {
         units: UnitRequest[];
         fieldWaiting?: FieldWaiting | null;
         reports?: ReportDecision[];
+        admin?: StoredUnits["admin"];
       }>(REQUESTS_URL).then(
         async (answer) => {
           // Only someone with a verified team has field records to hear about.
@@ -184,6 +188,7 @@ export function useNotices(options: {
               field,
               fieldWaiting: answer.fieldWaiting ?? null,
               reports: answer.reports ?? [],
+              admin: answer.admin ?? null,
               checkedAt: Date.now(),
             } satisfies StoredUnits);
           }
@@ -200,7 +205,10 @@ export function useNotices(options: {
   }, [ask]);
 
   const items = useMemo(() => {
-    const rows = stored?.key === key ? stored.rows : [];
+    const own = stored?.key === key ? stored.rows : [];
+    // An admin who chose to hear every alert gets the rest of them too, once each.
+    const extra = (storedUnits?.admin?.alerts ?? []).filter((r) => !own.some((o) => o.id === r.id));
+    const rows = [...own, ...extra];
     return buildNotices({
       rows,
       area,
@@ -210,6 +218,7 @@ export function useNotices(options: {
       field: storedUnits?.field ?? [],
       fieldWaiting: storedUnits?.fieldWaiting ?? null,
       reports: storedUnits?.reports ?? [],
+      autoAlarms: storedUnits?.admin?.autoAlarms ?? [],
       // Zero until the phone's clock is readable (the server's HTML draws an empty bell).
       now,
       homeLabel,

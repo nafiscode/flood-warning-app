@@ -1,5 +1,12 @@
 import { toUnitRequest, type UnitRequest } from "@/lib/journey";
-import { toReportDecision, type ReportDecision } from "@/lib/notices";
+import {
+  toAutoAlarm,
+  toNoticeRow,
+  toReportDecision,
+  type AutoAlarm,
+  type NoticeRow,
+  type ReportDecision,
+} from "@/lib/notices";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -41,7 +48,29 @@ export async function GET() {
   const reports = (Array.isArray(decided.data) ? (decided.data as Record<string, unknown>[]) : [])
     .map(toReportDecision)
     .filter((r): r is ReportDecision => r !== null);
+  // For an admin: the automatic alarms, and every alert if they ticked "all alerts" (15 Oct).
+  // Anyone else is refused by the function, which simply leaves this out.
+  const feed = await supabase.rpc("admin_notice_feed");
+  const raw =
+    !feed.error && feed.data && typeof feed.data === "object"
+      ? (feed.data as Record<string, unknown>)
+      : null;
+  const admin = raw
+    ? {
+        allAlerts: raw.allAlerts === true,
+        autoAlarms: (Array.isArray(raw.autoAlarms)
+          ? (raw.autoAlarms as Record<string, unknown>[])
+          : []
+        )
+          .map(toAutoAlarm)
+          .filter((a): a is AutoAlarm => a !== null),
+        alerts: (Array.isArray(raw.alerts) ? (raw.alerts as Record<string, unknown>[]) : [])
+          .map(toNoticeRow)
+          .filter((r): r is NoticeRow => r !== null),
+      }
+    : null;
   return answer({
+    admin,
     fieldWaiting,
     reports,
     units: ((data ?? []) as Record<string, unknown>[])

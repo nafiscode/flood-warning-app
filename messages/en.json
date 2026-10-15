@@ -750,6 +750,19 @@
       "approved": "An admin has checked your flood report in {tambon}. Thank you for reporting.",
       "hidden": "An admin has taken your flood report in {tambon} off the map. If this is a mistake, report again.",
       "see": "See my requests"
+    },
+    "elsewhere": "Elsewhere: {count, plural, one {# subdistrict} other {# subdistricts}}",
+    "auto": {
+      "title": "Automatic alarm (admins only)",
+      "pending": "A {level} draft for {zone} is waiting for an admin ({gauge} {value} m). If nobody sends or dismisses it, Jaga publishes it by itself at {time}.",
+      "sent": "An admin sent the {level} draft for {zone}.",
+      "dismissed": "An admin dismissed the {level} draft for {zone}.",
+      "auto_published": "No admin acted in time, so Jaga published the {level} alert for {zone} by itself (not reviewed).",
+      "lapsed": "The river fell back before time ran out, so the {level} draft for {zone} was not published.",
+      "replaced": "The {level} draft for {zone} was replaced by a newer one.",
+      "drill": "This is a drill; the public does not see it.",
+      "act": "Go to signals",
+      "see": "See the history"
     }
   },
   "placeFinder": {
@@ -2475,7 +2488,8 @@
     "done": {
       "published": "The alert is saved.",
       "extended": "The next-update time has been moved.",
-      "cancelled": "The alert has been cancelled."
+      "cancelled": "The alert has been cancelled.",
+      "bell": "Your bell setting is saved."
     },
     "error": {
       "save": "That could not be saved. Try again.",
@@ -2620,6 +2634,31 @@
         "real": "Real alert",
         "realHint": "Shown on the map, the home screen and the bell of everyone in the area, even though the service is not switched on yet."
       }
+    },
+    "auto": {
+      "title": "Automatic alarms",
+      "intro": "Every time a gauge ticked for the automatic alarm reached its level in the last 30 days, and what happened. Only admins see this.",
+      "none": "No automatic alarm in the last 30 days.",
+      "status": {
+        "pending": "Waiting for an admin",
+        "sent": "Sent by an admin",
+        "dismissed": "Dismissed by an admin",
+        "auto_published": "Published by Jaga itself",
+        "lapsed": "River fell back, not published",
+        "replaced": "Replaced"
+      },
+      "reading": "{gauge}: {value} m (level {threshold} m)",
+      "raised": "Raised",
+      "deadline": "Publishes itself at",
+      "decided": "{name}",
+      "byJaga": "Jaga (automatic)",
+      "act": "Send or dismiss it on Signals"
+    },
+    "bell": {
+      "title": "Your bell",
+      "all": "Get every alert Jaga sends, in every area, with the real alarm sound",
+      "hint": "Unticked, you get the sound and the alert only for your own home and watched places, like everyone else. An automatic alarm waiting for an admin always rings. This setting is yours alone.",
+      "save": "Save"
     }
   },
   "adminTools": {

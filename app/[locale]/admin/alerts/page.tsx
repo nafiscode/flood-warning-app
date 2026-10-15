@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { AllAlertsTick, AutoAlarmLog } from "@/components/admin/AutoAlarmLog";
 import { DualTime } from "@/components/admin/DualTime";
 import { LineQuota } from "@/components/admin/LineQuota";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
@@ -8,6 +9,8 @@ import { Link } from "@/i18n/navigation";
 import { readAlerts, readAreas } from "@/lib/admin-alerts";
 import { alertState, NEXT_UPDATE_HOURS, type AdminAlert } from "@/lib/alert-console";
 import { getSessionProfile, isAdminRole } from "@/lib/auth";
+import { toAutoAlarm, type AutoAlarm } from "@/lib/notices";
+import { createClient } from "@/lib/supabase/server";
 import { inService } from "@/lib/features";
 import { reasonFor } from "@/lib/public-status";
 import {
@@ -20,7 +23,7 @@ import {
   label,
   notice,
 } from "@/lib/ui";
-import { cancelAlert, extendAlert } from "./actions";
+import { cancelAlert, extendAlert, setAllAlerts } from "./actions";
 
 export async function generateMetadata({
   params,
@@ -32,7 +35,7 @@ export async function generateMetadata({
 
 export const dynamic = "force-dynamic";
 
-const DONE = ["published", "extended", "cancelled"] as const;
+const DONE = ["published", "extended", "cancelled", "bell"] as const;
 const ERRORS = ["save", "gone", "reason"] as const;
 const EVENTS = [
   "alert_published",
@@ -64,7 +67,20 @@ export default async function AdminAlerts({
   const session = await getSessionProfile();
   if (!session || !isAdminRole(session.role)) return null;
   const t = await getTranslations("alertConsole");
-  const [alerts, areas] = await Promise.all([readAlerts(100), readAreas()]);
+  const supabase = await createClient();
+  const [alerts, areas, autoRead, feedRead] = await Promise.all([
+    readAlerts(100),
+    readAreas(),
+    supabase.rpc("admin_auto_alarms", { p_days: 30 }),
+    supabase.rpc("admin_notice_feed"),
+  ]);
+  const autoAlarms = (
+    Array.isArray(autoRead.data) ? (autoRead.data as Record<string, unknown>[]) : []
+  )
+    .map(toAutoAlarm)
+    .filter((a): a is AutoAlarm => a !== null);
+  const allAlerts =
+    !feedRead.error && (feedRead.data as { allAlerts?: unknown } | null)?.allAlerts === true;
   const names = new Map(
     areas.tambons.map((tb) => [tb.code, locale === "th" || !tb.name_en ? tb.name_th : tb.name_en]),
   );
@@ -256,6 +272,10 @@ export default async function AdminAlerts({
           </article>
         ))}
       </div>
+
+      {/* What the automatic alarm did, and how much of all this rings in this admin's bell. */}
+      <AutoAlarmLog alarms={autoAlarms} t={t} />
+      <AllAlertsTick on={allAlerts} action={setAllAlerts.bind(null, locale)} t={t} />
 
       <h2 className="text-body font-bold text-jaga-ink">{t("ended.title")}</h2>
       {ended.length === 0 && <p className={hint}>{t("ended.none")}</p>}

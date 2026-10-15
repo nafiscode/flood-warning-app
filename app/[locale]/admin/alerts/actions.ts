@@ -88,6 +88,16 @@ export async function publishAlert(locale: string, form: FormData) {
 }
 
 /** "Nothing has changed; we will look again in ...": moves only the next-update time. */
+/**
+ * The admin's own tick (owner, 15 Oct): hear every alert Jaga sends, anywhere, as a real alert
+ * with its sound - or (unticked, the default) only those for their own home and watched places.
+ */
+export async function setAllAlerts(locale: string, form: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_all_alerts", { p_on: form.get("all") === "yes" });
+  redirect(`${localePath(locale, "/admin/alerts")}?${error ? "error=save" : "done=bell"}`);
+}
+
 export async function extendAlert(locale: string, form: FormData) {
   const back = localePath(locale, "/admin/alerts");
   const id = form.get("alert");
