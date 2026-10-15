@@ -171,6 +171,26 @@ function Chip({
         <FeatureIcon feature={f} size={26} />
       </span>
       <span className={floating ? "max-sm:sr-only" : undefined}>{t(`${f}.short`)}</span>
+      {/* A switch that is on says so with a tick, not only with its dark fill. */}
+      {on && (
+        <svg
+          aria-hidden="true"
+          data-chip-tick="true"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          className={`shrink-0 ${floating ? "max-sm:hidden" : ""}`}
+        >
+          <path
+            d="M3 8.5l3.2 3.2L13 4.8"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
       {LIVE.has(f) && (
         <svg
           aria-hidden="true"

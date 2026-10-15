@@ -3750,7 +3750,7 @@
   },
   "mapFeatures": {
     "homeTitle": "Explore the Risk & Live Map",
-    "mapTitle": "What this map shows. Tap to see.",
+    "mapTitle": "Choose what to see on the map. Tap to turn each on or off; pick as many as you like.",
     "live": "Live",
     "risk": {
       "name": "Flood-risk areas",

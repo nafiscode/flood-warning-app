@@ -3750,7 +3750,7 @@
   },
   "mapFeatures": {
     "homeTitle": "Terokai Peta Risiko & Semasa",
-    "mapTitle": "Apa yang ditunjukkan peta ini. Ketik untuk melihat.",
+    "mapTitle": "Pilih apa yang hendak dilihat pada peta. Ketik untuk buka atau tutup; boleh pilih lebih daripada satu.",
     "live": "Langsung",
     "risk": {
       "name": "Kawasan berisiko banjir",

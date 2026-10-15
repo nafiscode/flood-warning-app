@@ -149,6 +149,16 @@ describe("the six features", () => {
       "false",
       "false",
     ]);
+    // On is shown by a tick as well as the fill, and the heading says they are choices.
+    expect(chips.map((b) => !!b.querySelector("[data-chip-tick]"))).toEqual([
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+    ]);
+    expect(c.querySelector("#map-chips-title")?.textContent).toBe(th.mapFeatures.mapTitle);
     chips[4]!.click();
     expect(toggled).toEqual(["damzone"]);
   });
