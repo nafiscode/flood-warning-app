@@ -55,8 +55,7 @@ import {
   type PeekTarget,
   type SeaMark,
 } from "./MapView";
-import { SeaGradeIcon, SeaPeek, SeaSection } from "./Sea";
-import { RainPeek, RainSection } from "./RainCard";
+import { SeaGradeIcon, SeaSection } from "./Sea";
 import {
   coastBox,
   hourNow,
@@ -577,14 +576,6 @@ export function DashboardView(props: DashboardViewProps) {
       const place = data?.places.find((x) => x.id === target.id);
       return place ? <PlacePeek place={place} userAgent={props.userAgent} onMore={more} /> : null;
     }
-    if (target.kind === "sea") {
-      const point = props.sea?.points.find((p) => p.id === target.id);
-      return point ? <SeaPeek point={point} now={now} onMore={more} /> : null;
-    }
-    if (target.kind === "rain") {
-      const place = mine.find((m) => m.id === target.id);
-      return place ? <RainPeek name={place.label} kind={target.rain} onMore={more} /> : null;
-    }
     const dam = dams.find((d) => d.code === target.code);
     return dam ? <DamPeek dam={dam} time={time} onMore={more} /> : null;
   };
@@ -794,18 +785,6 @@ export function DashboardView(props: DashboardViewProps) {
         now={now}
         tambonCode={props.area?.code ?? null}
         tambonName={props.area ? tambonName(props.area.code) : null}
-      />
-    ) : null;
-  } else if (selection?.kind === "rain") {
-    // The rain over one of the person's own places, opened from its cloud's pop-up (15 Oct).
-    const place = mine.find((m) => m.id === selection.id);
-    selected = place ? (
-      <RainSection
-        name={place.label}
-        lat={place.lat}
-        lon={place.lon}
-        kind={selection.rain}
-        now={now}
       />
     ) : null;
   } else if (selection?.kind === "sea") {
