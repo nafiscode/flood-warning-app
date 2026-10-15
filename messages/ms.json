@@ -3918,6 +3918,20 @@
     },
     "tmdLink": "Ramalan dan amaran Jabatan Meteorologi Thailand",
     "surge": "Banjir pantai akibat air laut naik semasa ribut (storm surge) tidak diramalkan di sini.",
-    "fetched": "Ramalan diambil pada {time}"
+    "fetched": "Ramalan diambil pada {time}",
+    "peekNote": "Daripada model, bukan amaran."
+  },
+  "mapRain": {
+    "title": "Hujan di {place}",
+    "now": "Sekarang: {what}",
+    "peekNote": "Daripada model cuaca, bukan amaran.",
+    "loading": "Memuatkan ramalan…",
+    "failed": "Ramalan tidak dapat dimuatkan sekarang.",
+    "eases": "Menurut ramalan, hujan mungkin reda sekitar {time}.",
+    "continues": "Menurut ramalan, hujan berterusan dalam {hours} jam akan datang.",
+    "next": "{hours} jam akan datang",
+    "amount": "{mm} mm · peluang {chance}%",
+    "modelTime": "Data model untuk {time}",
+    "note": "Ramalan daripada model cuaca (Open-Meteo); ia boleh berubah. Ia bukan amaran banjir. Amaran datang daripada pentadbir Jaga dan DDPM (1784)."
   }
 }

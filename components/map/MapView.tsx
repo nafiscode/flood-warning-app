@@ -30,6 +30,7 @@ import {
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
 import { PlaceRain } from "./PlaceRain";
+import { cloudLift, type RainCloud, type RainKind } from "@/lib/place-rain";
 import { HOME_TIP_DY, MINE_IMAGE_RATIO, mineImage, mineImageName } from "@/lib/mine-marks";
 import {
   HAZARD_OPACITY,
@@ -81,10 +82,14 @@ export type MapSelection =
   | { kind: "mine"; id: string }
   | { kind: "dam"; code: string }
   | { kind: "hazard"; value: number }
-  | { kind: "sea"; id: string };
+  | { kind: "sea"; id: string }
+  | { kind: "rain"; id: string; rain: RainKind };
 
 /** What can say how it stands in a pop-up on the map itself (the owner, 14 Oct). */
-export type PeekTarget = Extract<MapSelection, { kind: "gauge" | "place" | "dam" }>;
+export type PeekTarget = Extract<
+  MapSelection,
+  { kind: "gauge" | "place" | "dam" | "sea" | "rain" }
+>;
 
 /**
  * A place of the person's own: their home, or one they watch for someone (spec 4.9). It is
@@ -447,6 +452,12 @@ export function MapView({
   const [peekAt, setPeekAt] = useState<{ target: PeekTarget; node: HTMLElement } | null>(null);
   const hasPeek = useRef(false);
   const closePeek = useRef<() => void>(() => {});
+  /*
+   * The rain clouds are HTML markers over the map, not features in it, so the map cannot find
+   * them under the pointer: they open their pop-up through these, and while the pointer is on a
+   * cloud the map's own "nothing here" does not close it.
+   */
+  const peekCloud = useRef<(cloud: RainCloud, how: "hover" | "leave" | "tap") => void>(() => {});
 
   useEffect(() => {
     select.current = onSelect;
@@ -1137,12 +1148,15 @@ export function MapView({
           lngLat: [number, number];
           target: PeekTarget | null;
           own: MinePlace | null;
+          /** How far above its point the pop-up opens: above a cloud, not over it. */
+          offset?: number;
         };
         let openKey: string | null = null;
         let pinned = false;
         let overPopup = false;
         let hideTimer: number | undefined;
         let watchSize: ResizeObserver | null = null;
+        let overCloud = false;
         /*
          * A pinned pop-up must be readable whole: the map is a frame that cuts off whatever
          * leaves it, and on a phone a gauge near the top edge lost half its figures. The map moves
@@ -1217,7 +1231,7 @@ export function MapView({
             const opened = new Popup({
               closeButton: false,
               closeOnClick: false,
-              offset: 14,
+              offset: hit.offset ?? 14,
               maxWidth: "290px",
             })
               .setLngLat(hit.lngLat)
@@ -1244,8 +1258,8 @@ export function MapView({
           });
         };
         const hitAt = (where: Parameters<typeof created.queryRenderedFeatures>[0]): Hit | null => {
-          const ids = [MINE, ...(hasPeek.current ? [GAUGES, PLACES, DAM_MARKS] : [])].filter((id) =>
-            created.getLayer(id),
+          const ids = [MINE, ...(hasPeek.current ? [GAUGES, SEA, PLACES, DAM_MARKS] : [])].filter(
+            (id) => created.getLayer(id),
           );
           if (ids.length === 0) return null;
           const hit = created.queryRenderedFeatures(where, { layers: ids })[0];
@@ -1268,14 +1282,44 @@ export function MapView({
               own: null,
             };
           }
+          if (hit.layer.id === SEA) {
+            const id = String(p.id);
+            return {
+              key: `sea:${id}`,
+              lngLat: [lon, lat],
+              target: { kind: "sea", id },
+              own: null,
+              offset: 22,
+            };
+          }
           const kind = hit.layer.id === GAUGES ? "gauge" : "place";
           const id = String(p.id);
           return { key: `${kind}:${id}`, lngLat: [lon, lat], target: { kind, id }, own: null };
         };
+        peekCloud.current = (cloud, how) => {
+          if (!hasPeek.current) return;
+          if (how === "leave") {
+            overCloud = false;
+            closeSoon();
+            return;
+          }
+          overCloud = how === "hover" || overCloud;
+          show(
+            {
+              key: `rain:${cloud.id}`,
+              lngLat: [cloud.lon, cloud.lat],
+              target: { kind: "rain", id: cloud.id, rain: cloud.kind },
+              own: null,
+              // The cloud sits above the pin: the pop-up opens above the cloud.
+              offset: cloudLift(cloud.home) + 34,
+            },
+            how === "tap",
+          );
+        };
         created.on("mousemove", (event) => {
           const hit = hitAt(event.point);
           created.getCanvas().style.cursor = hit ? "pointer" : "";
-          if (pinned) return;
+          if (pinned || overCloud) return;
           if (hit) show(hit, false);
           else closeSoon();
         });
@@ -1395,7 +1439,13 @@ export function MapView({
     <div className="relative">
       {peekAt && peek && createPortal(peek(peekAt.target), peekAt.node)}
       {/* Rain falling now over the person's own places (owner, 15 Oct), with the pins. */}
-      {loaded && <PlaceRain map={loaded} places={showMine ? mine : []} />}
+      {loaded && (
+        <PlaceRain
+          map={loaded}
+          places={showMine ? mine : []}
+          onCloud={peek ? (cloud, how) => peekCloud.current(cloud, how) : undefined}
+        />
+      )}
       <div
         ref={container}
         data-map="true"

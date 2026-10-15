@@ -101,7 +101,11 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
       // The Sea and coast section (15 Oct), with the credit Open-Meteo asks for.
       "sea",
       "attribution",
+      // The rain over the person's own places, opened from a cloud (15 Oct).
+      "mapRain",
     ]),
+    // The weather widget's words for what is falling, so the map says it the same way.
+    weather: { codes: (all.weather as Messages).codes! },
     // Residents' flood reports near the person (13 Oct), with the report form's own words for
     // depth, trend and road so they read the same on every screen.
     reportsNear: all.reportsNear!,

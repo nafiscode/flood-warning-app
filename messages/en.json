@@ -3918,6 +3918,20 @@
     },
     "tmdLink": "TMD's forecasts and warnings",
     "surge": "Coastal flooding from the sea in a storm (storm surge) is not forecast here.",
-    "fetched": "Forecast fetched {time}"
+    "fetched": "Forecast fetched {time}",
+    "peekNote": "From a model, not a warning."
+  },
+  "mapRain": {
+    "title": "Rain at {place}",
+    "now": "Now: {what}",
+    "peekNote": "From a weather model, not a warning.",
+    "loading": "Loading the forecast…",
+    "failed": "The forecast could not be loaded right now.",
+    "eases": "In the forecast the rain eases around {time}.",
+    "continues": "In the forecast it keeps raining for the next {hours} hours.",
+    "next": "The next {hours} hours",
+    "amount": "{mm} mm · {chance}% chance",
+    "modelTime": "Model data for {time}",
+    "note": "A forecast from a weather model (Open-Meteo); it can change. It is not a flood alert. Alerts come from Jaga's admins and DDPM (1784)."
   }
 }

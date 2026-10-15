@@ -1,7 +1,7 @@
 "use client";
 
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CLOUD_LOOKS,
   cloudLift,
@@ -157,10 +157,26 @@ function usePlaceWeather(places: RainPlace[]): PointWeather[] {
  * Rain clouds over the person's own places on the map (owner, 15 Oct): only where rain is
  * falling now, with lightning in a thunderstorm (lib/place-rain.ts). Shown with the pins and
  * hidden with them. Each cloud is a MapLibre marker, so it follows the pin as the map moves and
- * tilts; it takes no taps.
+ * tilts. With `onCloud` it answers the pointer like the map's other marks (owner, 15 Oct): hover
+ * on a laptop and a tap anywhere open a small pop-up, whose button leads to the rain's own
+ * section under the map. Without it, it takes no taps.
  */
-export function PlaceRain({ map, places }: { map: MapLibreMap; places: RainPlace[] }) {
+export function PlaceRain({
+  map,
+  places,
+  onCloud,
+}: {
+  map: MapLibreMap;
+  places: RainPlace[];
+  onCloud?: (cloud: RainCloud, how: "hover" | "leave" | "tap") => void;
+}) {
   const weather = usePlaceWeather(places);
+  // The newest handler, read when the pointer arrives: the clouds are not redrawn for it.
+  const handler = useRef(onCloud);
+  useEffect(() => {
+    handler.current = onCloud;
+  }, [onCloud]);
+  const answers = onCloud !== undefined;
   const clouds = useMemo(() => rainClouds(places, weather), [places, weather]);
   const key = clouds.map((c) => `${c.id}:${c.kind}:${c.isDay ? 1 : 0}:${c.lat},${c.lon}`).join("|");
 
@@ -170,9 +186,21 @@ export function PlaceRain({ map, places }: { map: MapLibreMap; places: RainPlace
     let cancelled = false;
     void import("maplibre-gl").then(({ Marker }) => {
       if (cancelled) return;
-      markers = clouds.map((cloud, i) =>
-        new Marker({
-          element: cloudElement(cloud, (i * 1.7) % 4.6),
+      markers = clouds.map((cloud, i) => {
+        const element = cloudElement(cloud, (i * 1.7) % 4.6);
+        if (answers) {
+          element.style.pointerEvents = "auto";
+          element.style.cursor = "pointer";
+          element.addEventListener("mouseenter", () => handler.current?.(cloud, "hover"));
+          element.addEventListener("mouseleave", () => handler.current?.(cloud, "leave"));
+          element.addEventListener("click", (event) => {
+            // The map underneath must not take the same tap as "nothing here" and close it.
+            event.stopPropagation();
+            handler.current?.(cloud, "tap");
+          });
+        }
+        return new Marker({
+          element,
           anchor: "bottom",
           offset: [0, -cloudLift(cloud.home)],
           // Upright whatever the map's tilt, like a sign held over the place.
@@ -180,8 +208,8 @@ export function PlaceRain({ map, places }: { map: MapLibreMap; places: RainPlace
           rotationAlignment: "viewport",
         })
           .setLngLat([cloud.lon, cloud.lat])
-          .addTo(map),
-      );
+          .addTo(map);
+      });
     });
     return () => {
       cancelled = true;
@@ -189,7 +217,7 @@ export function PlaceRain({ map, places }: { map: MapLibreMap; places: RainPlace
     };
     // `key` stands for the clouds: a new array with the same clouds must not redraw them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, key]);
+  }, [map, key, answers]);
 
   return null;
 }

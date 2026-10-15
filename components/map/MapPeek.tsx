@@ -20,7 +20,7 @@ import { GaugeGlyph } from "./GaugeGlyph";
 
 type More = { onMore: () => void };
 
-function MoreButton({ onMore }: More) {
+export function MoreButton({ onMore }: More) {
   const t = useTranslations("map.peek");
   return (
     <button

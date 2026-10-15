@@ -14,8 +14,10 @@ import {
   type SeaGrade,
   type SeaHour,
   type SeaOutlook,
+  type SeaPoint,
   waveRange,
 } from "@/lib/sea";
+import { MoreButton } from "./MapPeek";
 import type { LoadState } from "@/lib/use-public";
 import styles from "./Sea.module.css";
 
@@ -458,3 +460,43 @@ export function SeaSection({
 }
 
 const rankOf = (g: SeaGrade) => ({ unknown: 0, calm: 1, rough: 2, stay: 3 })[g];
+
+/**
+ * The small pop-up on a sea point (the owner, 15 Oct): the note's grade, the waves of the next
+ * day and the tide, with the button down to the whole Sea and coast card. The short lines only;
+ * the card keeps the figures, the advice and the numbers to call.
+ */
+export function SeaPeek({
+  point,
+  now,
+  onMore,
+}: {
+  point: SeaPoint;
+  now: number;
+  onMore: () => void;
+}) {
+  const t = useTranslations("sea");
+  const view = outlook(point, now);
+  const turn = tide(point, now);
+  return (
+    <div className="flex flex-col gap-1 text-jaga-text" data-peek="sea" data-peek-id={point.id}>
+      <p className="text-small text-jaga-text-2">
+        {t("offshore", { place: t(`points.${point.id}`) })}
+      </p>
+      <p className="flex items-center gap-2 font-bold">
+        <SeaGradeIcon grade={view.grade} size={24} />
+        {t(`grade.${view.grade}.title`)}
+      </p>
+      {view.grade !== "unknown" && (
+        <p className="text-small">{t("mark", { range: waveRange(view.waveMin, view.waveMax) })}</p>
+      )}
+      {turn && (
+        <p className="text-small">
+          {t("tide.title")} · {t(`tide.${turn.now}`)}
+        </p>
+      )}
+      <p className="text-small text-jaga-text-2">{t("peekNote")}</p>
+      <MoreButton onMore={onMore} />
+    </div>
+  );
+}
