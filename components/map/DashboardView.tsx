@@ -982,13 +982,16 @@ export function DashboardView(props: DashboardViewProps) {
                * four provinces in one tap (the owner, 13 Oct). It sits on the map, at the start
                * of its top edge, opposite the zoom buttons.
                */}
-              <div className="relative" data-map-frame="true">
+              <div
+                className={`relative ${tourIndex !== null ? "[&_.maplibregl-ctrl-top-right]:top-14" : ""}`}
+                data-map-frame="true"
+              >
                 {tourIndex !== null && mine.length > 0 ? (
                   <div
                     role="group"
                     aria-label={t("zoomMine")}
                     data-tour={mine[tourIndex]!.id}
-                    className="absolute start-2 end-14 top-2 z-10 flex items-center gap-1 rounded-lg border border-jaga-line bg-jaga-surface p-1 shadow-sm"
+                    className="absolute inset-x-2 top-2 z-10 flex items-center gap-1 rounded-lg border border-jaga-line bg-jaga-surface p-1 shadow-sm"
                   >
                     <button
                       type="button"
