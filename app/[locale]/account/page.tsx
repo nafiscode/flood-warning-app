@@ -22,6 +22,7 @@ import {
   ShieldIcon,
   SignOutIcon,
 } from "@/components/icons";
+import { SignOutForm } from "@/components/account/SignOutForm";
 
 export async function generateMetadata({
   params,
@@ -126,12 +127,12 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
         <ShareApp />
       </NextIntlClientProvider>
 
-      <form action="/api/auth/sign-out" method="post">
+      <SignOutForm>
         <button type="submit" className={buttonSecondary}>
           <SignOutIcon size={22} />
           {t("signOut")}
         </button>
-      </form>
+      </SignOutForm>
     </div>
   );
 }

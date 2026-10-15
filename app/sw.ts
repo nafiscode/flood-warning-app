@@ -23,6 +23,7 @@ import {
   offlinePageFor,
   PAGES_CACHE,
   PUBLIC_DATA_CACHE,
+  SIGN_OUT_MESSAGE,
   WARM_MESSAGE,
 } from "@/lib/offline-warm";
 import { readPayload } from "@/lib/push";
@@ -65,6 +66,38 @@ const serwist = new Serwist({
     // see the last person's account, cases or admin screens from the cache.
     {
       matcher: ({ url, sameOrigin }) => sameOrigin && PRIVATE_PATH.test(url.pathname),
+      handler: new NetworkOnly(),
+    },
+    // Signed links to photos and voice notes of requests, reports and field rescues, and map
+    // tiles carrying Jaga's ArcGIS key, are never stored on the phone (A10 security review).
+    {
+      matcher: ({ url, sameOrigin }) =>
+        !sameOrigin &&
+        (url.hostname.endsWith(".supabase.co") || url.hostname.endsWith(".arcgis.com")),
+      handler: new NetworkOnly(),
+    },
+    // SOS for a watched place: the page carries that place's name and position, so it is never
+    // stored either. Offline, the plain SOS page from the cache opens instead, which still sends.
+    {
+      matcher: ({ url, sameOrigin, request }) =>
+        sameOrigin && request.mode === "navigate" && url.searchParams.has("place"),
+      handler: async ({ request, url }) => {
+        try {
+          return await fetch(request);
+        } catch (failure) {
+          const plain = new URL(url.href);
+          plain.search = "";
+          const kept = await caches.match(plain.href, {
+            cacheName: PAGES_CACHE,
+            ignoreVary: true,
+          });
+          if (kept) return kept;
+          throw failure;
+        }
+      },
+    },
+    {
+      matcher: ({ url, sameOrigin }) => sameOrigin && url.searchParams.has("place"),
       handler: new NetworkOnly(),
     },
     // Page loads: network first, but give up after 5 s on a bad connection and use the copy of
@@ -177,7 +210,35 @@ async function warm(urls: string[]): Promise<number> {
   return kept;
 }
 
+/**
+ * Sign-out: forget the copies that could hold the last person's pages (Next's page data, pages
+ * opened with a query) and anything kept from other sites. The offline shell, the plain pages,
+ * public data, map tiles and the SOS queue stay, so the phone still works offline for whoever
+ * uses it next (safety rules 1, 7).
+ */
+async function forgetPersonal(): Promise<void> {
+  await Promise.all(
+    ["pages-rsc", "pages-rsc-prefetch", "pages", "others", "cross-origin", "apis"].map((name) =>
+      caches.delete(name),
+    ),
+  );
+  const pages = await caches.open(PAGES_CACHE);
+  for (const request of await pages.keys()) {
+    if (new URL(request.url).search) await pages.delete(request);
+  }
+}
+
 self.addEventListener("message", (event) => {
+  if ((event.data as { type?: string } | null)?.type === SIGN_OUT_MESSAGE) {
+    const reply = event.ports?.[0];
+    event.waitUntil(
+      forgetPersonal().then(
+        () => reply?.postMessage({ ok: true }),
+        () => reply?.postMessage({ ok: false }),
+      ),
+    );
+    return;
+  }
   const message = event.data as WarmMessage | null;
   if (message?.type !== WARM_MESSAGE || !Array.isArray(message.urls)) return;
   const urls = message.urls.filter((u): u is string => typeof u === "string").slice(0, 12);

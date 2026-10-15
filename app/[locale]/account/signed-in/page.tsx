@@ -6,6 +6,7 @@ import { supabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { buttonPrimary, buttonSecondary, card, hint } from "@/lib/ui";
 import { ForwardIcon, SignOutIcon } from "@/components/icons";
+import { SignOutForm } from "@/components/account/SignOutForm";
 
 export async function generateMetadata({
   params,
@@ -64,12 +65,12 @@ export default async function SignedIn({
           <ForwardIcon size={22} />
           {t("continue")}
         </a>
-        <form action="/api/auth/sign-out" method="post">
+        <SignOutForm>
           <button type="submit" className={buttonSecondary}>
             <SignOutIcon size={22} />
             {t("notMe")}
           </button>
-        </form>
+        </SignOutForm>
       </section>
     </div>
   );

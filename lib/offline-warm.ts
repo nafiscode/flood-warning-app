@@ -11,6 +11,8 @@ export type WarmLocale = "th" | "ms" | "en";
 
 /** The service worker's message type, and the cache the warmed copies go into. */
 export const WARM_MESSAGE = "jaga-warm";
+/** Sent by the sign-out form: the worker forgets every cached copy that could be personal. */
+export const SIGN_OUT_MESSAGE = "jaga-sign-out";
 export const PAGES_CACHE = "pages-html";
 export const PUBLIC_DATA_CACHE = "jaga-public-data";
 
