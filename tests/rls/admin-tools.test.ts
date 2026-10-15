@@ -209,10 +209,10 @@ describe("the access log and handover notes", () => {
       "select * from admin_handover(1)",
     );
     expect(note).toMatchObject({ author_name: "admin", note: "river steady" });
-    const changed = await db.query("update handover_notes set note = 'edited' where id = $1", [
+    // Never changed: since A10 the write itself is refused, not just matched to no row.
+    await expectDenied(db, "update handover_notes set note = 'edited' where id = $1", [
       note!.note_id,
     ]);
-    expect(changed.rowCount).toBe(0);
     await as(db, { uid: w.requester });
     await expectDenied(db, "insert into handover_notes (author_id, note) values ($1, 'hello')", [
       w.requester,

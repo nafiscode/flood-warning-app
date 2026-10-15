@@ -262,7 +262,7 @@ describe("the limit on admin email links", () => {
   it("allows 5 links an hour to one address, then says no", async () => {
     await asOwner(db);
     await db.query(
-      "insert into push_gate (token, site_url) values ('a10-test-gate-token-0123456789', 'https://example.org') on conflict do nothing",
+      "insert into push_gate (token, site_url) values ('a10-test-gate-token-0123456789-abcdefghij', 'https://example.org') on conflict do nothing",
     );
     const gate = (await one<{ token: string }>("select token from push_gate limit 1")).token;
     await as(db, "anon");
