@@ -983,7 +983,7 @@ export function DashboardView(props: DashboardViewProps) {
                * of its top edge, opposite the zoom buttons.
                */}
               <div
-                className={`relative ${tourIndex !== null ? "[&_.maplibregl-ctrl-top-right]:top-14" : ""}`}
+                className={`relative ${tourIndex !== null ? "[&_.maplibregl-ctrl-top-right]:top-16" : ""}`}
                 data-map-frame="true"
               >
                 {tourIndex !== null && mine.length > 0 ? (
