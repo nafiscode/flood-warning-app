@@ -279,7 +279,7 @@ describe("the weather page", () => {
     expect(c.textContent).toContain(th.weather.coverage);
     expect(c.textContent).toContain(th.attribution.openMeteo);
     // The time the model data is for, not just "now".
-    expect(c.textContent).toMatch(/ข้อมูลของเวลา/);
+    expect(c.textContent).toMatch(/ข้อมูลแบบจำลอง เวลา/);
   });
 
   it("carries no alert level, badge or alert colour (safety rules 3 and 10)", () => {
@@ -350,7 +350,7 @@ describe("the weather page", () => {
   it("with no connection shows the last reading with the time it is for", () => {
     const c = view({ failed: true });
     expect(c.querySelector('[data-weather-now="true"]')).not.toBeNull();
-    expect(c.textContent).toMatch(/เชื่อมต่อไม่ได้/);
+    expect(c.textContent).toMatch(/ไม่มีสัญญาณ/);
   });
 
   it("offers another try when there is nothing stored and the request failed", () => {

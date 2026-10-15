@@ -229,7 +229,7 @@ test.describe("weather", () => {
     await serve(page, { area: true, stored: true, weatherFails: true });
     await page.goto("/weather");
     await expect(page.locator('[data-weather-now="true"]')).toContainText("27°C");
-    await expect(page.locator('[data-weather-page="true"]')).toContainText("เชื่อมต่อไม่ได้");
+    await expect(page.locator('[data-weather-page="true"]')).toContainText("ไม่มีสัญญาณ");
   });
 
   test("the maps show rain, temperature, humidity and wind around the place", async ({ page }) => {
