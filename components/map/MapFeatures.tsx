@@ -88,16 +88,41 @@ export function chipsGone(barBottom: number, headerHeight: number): boolean {
   return barBottom < headerHeight - 0.5;
 }
 
+/**
+ * The frozen copy stays only while the map itself is still in view under it (the owner, 16 Oct):
+ * once the map's bottom edge has gone up behind the header and the frozen row, the row goes too,
+ * so the cards and reports below the map have the screen. Without a map on the page it follows
+ * the chips alone.
+ */
+export function chipsFloat(
+  barBottom: number,
+  headerHeight: number,
+  mapBottom: number | null,
+  floatHeight: number,
+): boolean {
+  if (!chipsGone(barBottom, headerHeight)) return false;
+  return mapBottom === null || mapBottom > headerHeight + floatHeight;
+}
+
+/** How tall the frozen row is before it has been drawn: one line of chips and its padding. */
+const FLOAT_GUESS_PX = 64;
+
 function useFloating(ref: RefObject<HTMLElement | null>) {
   const [state, setState] = useState({ float: false, top: 0 });
   useEffect(() => {
     let frame = 0;
+    // The row's last drawn height: once hidden it cannot be measured, and a smaller guess would
+    // bring it back and take it away again on every frame in between.
+    let height = FLOAT_GUESS_PX;
     const check = () => {
       frame = 0;
       const el = ref.current;
       if (!el) return;
       const top = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
-      const float = chipsGone(el.getBoundingClientRect().bottom, top);
+      const map = document.querySelector("[data-map-frame]")?.getBoundingClientRect().bottom;
+      const drawn = document.querySelector("[data-map-chips-float]")?.getBoundingClientRect();
+      if (drawn?.height) height = drawn.height;
+      const float = chipsFloat(el.getBoundingClientRect().bottom, top, map ?? null, height);
       setState((s) => (s.float === float && s.top === top ? s : { float, top }));
     };
     const later = () => {
@@ -172,7 +197,8 @@ function Chip({
  * dam, which also brings its report into view below the map.
  *
  * Once the row has scrolled up behind the header, a copy of it stays frozen under the header
- * (the owner, 15 Oct); on a phone that copy is the six drawings only, one line. The row in the
+ * (the owner, 15 Oct) until the map itself has scrolled away (16 Oct); on a phone that copy is
+ * the six drawings only, one line. The row in the
  * page never moves or changes size, so nothing below it jumps. `after` (the fishermen's button)
  * goes under the row, and into the frozen copy from tablet width up.
  */

@@ -2,7 +2,12 @@ import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HomeView, type HomeViewProps } from "@/components/home/HomeView";
 import { TambonRiskView } from "@/components/home/TambonRisk";
-import { chipsGone, MapFeatureChips, MapFeatureTiles } from "@/components/map/MapFeatures";
+import {
+  chipsFloat,
+  chipsGone,
+  MapFeatureChips,
+  MapFeatureTiles,
+} from "@/components/map/MapFeatures";
 import type { Dam } from "@/lib/dam";
 import { EXAMPLE_NOW, EXAMPLE_PLACES, homeExample, type HomeScenario } from "@/lib/dev-examples";
 import { CHIP_ORDER, focusHref, mainDam, MAP_FOCUSES, readFocus, zoneFrame } from "@/lib/map-focus";
@@ -151,6 +156,11 @@ describe("the six features", () => {
   it("stay frozen under the header once scrolled past, as drawings only on a phone", async () => {
     expect(chipsGone(-20, 155)).toBe(true);
     expect(chipsGone(200, 155)).toBe(false);
+    // ...and only while the map is still on screen below the header and the frozen row.
+    expect(chipsFloat(-20, 155, 600, 64)).toBe(true);
+    expect(chipsFloat(-20, 155, 200, 64)).toBe(false);
+    expect(chipsFloat(200, 155, 600, 64)).toBe(false);
+    expect(chipsFloat(-20, 155, null, 64)).toBe(true);
     const on = { risk: true, gauges: true, sea: true, dam: true, damzone: true, places: false };
     const toggled: string[] = [];
     const rect = vi
