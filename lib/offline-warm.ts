@@ -45,6 +45,7 @@ export function warmDue(last: number | null, now: number): boolean {
 const PUBLIC_DATA_PATHS = new Set([
   "/api/geo/areas",
   "/api/geo/tambons",
+  "/api/geo/provinces",
   "/api/public/map",
   "/api/public/hazards",
   "/api/public/gauges",

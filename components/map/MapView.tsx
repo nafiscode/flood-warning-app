@@ -59,10 +59,17 @@ import {
   type Basemap,
   createServiceAreaMap,
   darkNow,
+  CAPITAL_LAYER,
   liftBasemapLabels,
   mapHalo,
   mapInk,
   mapIsDark,
+  photoNow,
+  PROVINCE_LINE_LAYER,
+  PROVINCE_SOURCE,
+  provinceLinePaint,
+  PROVINCES_URL,
+  quietOverview,
   SERVICE_BOUNDS,
   setBasemap,
   setScene,
@@ -633,6 +640,42 @@ export function MapView({
             paint: { "line-color": STALE_COLOR, "line-width": 3, "line-dasharray": [2, 2] },
           });
         }
+        /*
+         * The four provinces at a glance (the owner, 15 Oct): their outlines always, and their
+         * capitals by name while the whole area is in view; the tambon outlines and the
+         * basemap's own names wait until the reader zooms in (lib/map.ts, quietOverview).
+         */
+        if (!m.getSource(PROVINCE_SOURCE)) {
+          m.addSource(PROVINCE_SOURCE, { type: "geojson", data: PROVINCES_URL });
+        }
+        if (!m.getLayer(PROVINCE_LINE_LAYER)) {
+          m.addLayer({
+            id: PROVINCE_LINE_LAYER,
+            type: "line",
+            source: PROVINCE_SOURCE,
+            filter: ["==", ["get", "kind"], "province"],
+            paint: provinceLinePaint(false, false),
+          });
+          m.addLayer({
+            id: CAPITAL_LAYER,
+            type: "symbol",
+            source: PROVINCE_SOURCE,
+            filter: ["==", ["get", "kind"], "capital"],
+            layout: {
+              "text-field": ["get", damLocale === "th" ? "name_th" : "name_en"],
+              "text-font": ["Noto Sans Bold"],
+              "text-size": 15,
+              "text-allow-overlap": true,
+            },
+            paint: { "text-color": ink(), "text-halo-color": mapHalo(), "text-halo-width": 1.6 },
+          });
+        }
+        for (const [key, value] of Object.entries(provinceLinePaint(mapIsDark(), photoNow()))) {
+          m.setPaintProperty(PROVINCE_LINE_LAYER, key as "line-color", value as never);
+        }
+        m.setPaintProperty(CAPITAL_LAYER, "text-color", photoNow() ? "#ffffff" : ink());
+        m.setPaintProperty(CAPITAL_LAYER, "text-halo-color", photoNow() ? "#1d3b53" : mapHalo());
+        quietOverview(m);
         /*
          * The dam, its reservoir and the path released water takes (spec section 15). Drawn
          * above the alert fill, so the river can be followed across coloured tambons, and below

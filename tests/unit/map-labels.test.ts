@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { labelsToLift } from "@/lib/map";
+import {
+  CAPITAL_LAYER,
+  detailZoom,
+  labelMinzoom,
+  labelsToLift,
+  PROVINCE_LINE_LAYER,
+  quietOverview,
+  TAMBON_LINE_LAYER,
+} from "@/lib/map";
 
 const L = (id: string, type: string) => ({ id, type });
 
@@ -52,5 +60,58 @@ describe("the basemap's place names over our fills (owner, 13 Oct)", () => {
       ),
     ).toEqual([]);
     expect(labelsToLift([L("place-village", "symbol")], "jaga-tambon-line")).toEqual([]);
+  });
+});
+
+describe("the four provinces at a glance (owner, 15 Oct)", () => {
+  type Layer = { id: string; type: string; minzoom?: number; maxzoom?: number };
+  const fakeMap = (overview: number, layers: Layer[]) => {
+    const byId = new Map(layers.map((l) => [l.id, { ...l }]));
+    const calls: [string, number, number][] = [];
+    return {
+      calls,
+      byId,
+      map: {
+        cameraForBounds: () => ({ zoom: overview }),
+        getLayer: (id: string) => {
+          const l = byId.get(id);
+          return l && { minzoom: l.minzoom ?? 0, maxzoom: l.maxzoom ?? 24 };
+        },
+        getStyle: () => ({ layers: [...byId.values()] }),
+        setLayerZoomRange: (id: string, min: number, max: number) => {
+          calls.push([id, min, max]);
+          Object.assign(byId.get(id)!, { minzoom: min, maxzoom: max });
+        },
+      } as unknown as Parameters<typeof quietOverview>[0],
+    };
+  };
+
+  it("brings the detail back a little past the overview", () => {
+    expect(detailZoom(6.7)).toBe(7.1);
+    expect(labelMinzoom(undefined, 7.1)).toBe(7.1);
+    expect(labelMinzoom(12, 7.1)).toBe(12);
+  });
+
+  it("hides tambon outlines and the basemap's names, and shows the capitals, at the overview", () => {
+    const f = fakeMap(7, [
+      L(TAMBON_LINE_LAYER, "line"),
+      L(CAPITAL_LAYER, "symbol"),
+      L(PROVINCE_LINE_LAYER, "line"),
+      L("place-city", "symbol"),
+      { id: "place-village", type: "symbol", minzoom: 11 },
+      L("water", "fill"),
+    ]);
+    quietOverview(f.map);
+    expect(f.byId.get(TAMBON_LINE_LAYER)!.minzoom).toBe(7.4);
+    expect(f.byId.get(CAPITAL_LAYER)!.maxzoom).toBe(7.4);
+    expect(f.byId.get("place-city")!.minzoom).toBe(7.4);
+    // A name that already waits longer keeps its own zoom; outlines and fills are untouched.
+    expect(f.byId.get("place-village")!.minzoom).toBe(11);
+    expect(f.byId.get(PROVINCE_LINE_LAYER)!.minzoom).toBeUndefined();
+    expect(f.byId.get("water")!.minzoom).toBeUndefined();
+    // Asking again changes nothing.
+    const n = f.calls.length;
+    quietOverview(f.map);
+    expect(f.calls.length).toBe(n);
   });
 });

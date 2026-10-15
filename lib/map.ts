@@ -171,6 +171,8 @@ const TERRAIN_CREDIT = "Elevation: Mapzen terrain tiles on AWS (SRTM, GMTED and 
 let chosen: Basemap = "streets";
 /** Whether the map itself is dark right now: at night, except on the satellite picture. */
 export const mapIsDark = () => darkNow() && !isPhotoBasemap(chosen);
+/** Whether the background is a photograph right now (satellite, or satellite with terrain). */
+export const photoNow = () => isPhotoBasemap(chosen);
 
 /**
  * The colours our own layers draw with. On a dark map the outlines and dots turn light, or they
@@ -629,5 +631,81 @@ export function liftBasemapLabels(map: MapLibreMap): void {
     map.setPaintProperty(layer.id, "text-color", mapInk());
     map.setPaintProperty(layer.id, "text-halo-color", mapHalo());
     map.setPaintProperty(layer.id, "text-halo-width", 1.4);
+  }
+}
+
+/*
+ * The four provinces at a glance (the owner, 15 Oct 2026). With the whole service area in view
+ * the map shows only the four province outlines and their four capitals; the 377 tambon outlines
+ * and the basemap's own names (villages, roads, other towns) come back once the reader zooms in a
+ * little. The alert colours of the tambons stay at every zoom: they are a status, not a detail.
+ */
+export const PROVINCE_SOURCE = "jaga-provinces";
+export const PROVINCES_URL = "/api/geo/provinces";
+export const PROVINCE_LINE_LAYER = "jaga-province-line";
+export const CAPITAL_LAYER = "jaga-capitals";
+
+/**
+ * Each province's capital town (the centre of Amphoe Mueang), named on the map with the province's
+ * own name. Data, not words: the name comes from the province table in the reader's language.
+ */
+export const PROVINCE_CAPITALS: Record<string, [number, number]> = {
+  "90": [100.5951, 7.1898],
+  "94": [101.2502, 6.8693],
+  "95": [101.2804, 6.541],
+  "96": [101.8253, 6.4255],
+};
+
+/** How far past the four-province view the reader zooms before the detail comes back. */
+export const DETAIL_STEP = 0.4;
+
+/** The zoom from which tambons and the basemap's names are drawn, given the overview's zoom. */
+export function detailZoom(overview: number): number {
+  return Math.round((overview + DETAIL_STEP) * 100) / 100;
+}
+
+/** A basemap name keeps its own starting zoom when that is already later than ours. */
+export function labelMinzoom(original: number | undefined, detail: number): number {
+  return Math.max(original ?? 0, detail);
+}
+
+export function provinceLinePaint(dark: boolean, photo: boolean) {
+  return photo
+    ? { "line-color": "#f2f5f3", "line-width": 2, "line-opacity": 0.85 }
+    : { "line-color": dark ? "#cfe0e8" : SLATE, "line-width": 1.8, "line-opacity": 0.9 };
+}
+
+const originalMinzoom = new WeakMap<MapLibreMap, Map<string, number | undefined>>();
+
+/**
+ * Hide the tambon outlines and the basemap's names while the whole service area is in view, and
+ * show the four capitals then instead. The zoom is worked out from this map's own size, so a
+ * phone and a laptop both switch just past their own four-province view. Safe to call on every
+ * draw: it changes a layer only when its zoom range differs.
+ */
+export function quietOverview(map: MapLibreMap): void {
+  const camera = map.cameraForBounds(
+    [
+      [SERVICE_BOUNDS[0], SERVICE_BOUNDS[1]],
+      [SERVICE_BOUNDS[2], SERVICE_BOUNDS[3]],
+    ],
+    { padding: 8 },
+  );
+  if (!camera || typeof camera.zoom !== "number") return;
+  const detail = detailZoom(camera.zoom);
+  const range = (id: string, min: number, max: number) => {
+    const layer = map.getLayer(id);
+    if (!layer) return;
+    if (layer.minzoom === min && layer.maxzoom === max) return;
+    map.setLayerZoomRange(id, min, max);
+  };
+  range(TAMBON_LINE_LAYER, detail, 24);
+  range(CAPITAL_LAYER, 0, detail);
+  let originals = originalMinzoom.get(map);
+  if (!originals) originalMinzoom.set(map, (originals = new Map()));
+  for (const layer of map.getStyle().layers) {
+    if (layer.type !== "symbol" || layer.id.startsWith("jaga-")) continue;
+    if (!originals.has(layer.id)) originals.set(layer.id, layer.minzoom);
+    range(layer.id, labelMinzoom(originals.get(layer.id), detail), layer.maxzoom ?? 24);
   }
 }
