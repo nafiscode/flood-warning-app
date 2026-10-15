@@ -560,6 +560,22 @@ Read docs/spec.md sections 17 and 9, and CLAUDE.md safety rules 1, 5 and 9.
 Acceptance: an anonymous visitor can send a rating offline and it arrives later; no feedback prompt appears in any SOS, report or alert flow or during Warning/Evacuate (test); a visitor cannot read anyone's feedback and a contact reveal is logged (RLS tests); the admin page shows the trends and every item can be traced to its outcome.
 ```
 
+### A16: Guided tours for every role (before launch)
+
+Added 15 Oct 2026 (owner's request): a short guided tour of each page and feature, for each role, shown on a person's first two visits.
+```text
+Read docs/spec.md sections 3 and 4, docs/brand.md, and CLAUDE.md safety rules 1, 4, 7 and 9.
+
+1. One tour per page and role: visitor and resident (home, the Flood Risk Map and its features, safe places, watched places, reports, food and water, My requests, the bell, notifications, install, account), response team (the console, an offer and its alarm, accepting, arrival band, finishing with a photo, field rescues, coverage map, points), team waiting for verification, and admin (the menu groups, alerts and drills, signals and the automated alarm, war room, moderation, safe places, dam release, usage, previews). A tour is a few steps that point at the real control on the page and say in one or two plain sentences what it is for.
+2. Shown automatically on the first two visits to that page in that role on this phone (kept on the phone; synced to the account when signed in), never again after "Skip" or "Don't show again", and always available again from a "Show me around" link on the page and in Account.
+3. Never in the way of help: no tour on SOS, food-and-water, report sending or any alert screen; never while the person's area or a watched place is at Warning or Evacuate; never over the hotline bar; a tour never blocks a tap on SOS (it closes when SOS is pressed).
+4. Accessible: every step reachable by keyboard and screen reader, focus returns where it was, 48 px targets, Thai body text 18 px, works at 360 px and in the dark theme, no motion under reduced motion, and works offline for the pages that work offline.
+5. Words in messages/*.json (Thai first, Malay, English); short, plain and low-literacy friendly. Roles previewed through /admin/preview show their tour too, so admins can check them.
+6. Tests: each page's tour points only at elements that exist (a test fails if a target is missing), the first-two-visits rule, skip and replay, and the never-on-SOS / never-at-Warning rules.
+
+Acceptance: a new visitor, a new team and a new admin each see their tours on the first two visits and not on the third; nothing appears on SOS or during Warning/Evacuate; every tour can be replayed; the owner has read the Thai.
+```
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.
