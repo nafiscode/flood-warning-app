@@ -1,6 +1,6 @@
 import { fireEvent } from "@testing-library/react";
 import { withCoast } from "@/lib/sea";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DashboardView, type DashboardViewProps } from "@/components/map/DashboardView";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { alert as alertColors_ } from "@/lib/brand/tokens";
@@ -434,16 +434,16 @@ describe("map dashboard (spec 4.2)", () => {
     expect(th.map.risk.note).toContain("ไม่ได้แปลว่าไม่มีความเสี่ยง");
   });
 
-  it("the flood-risk areas start on and can be switched off; without tiles there is no switch", () => {
-    expect(
-      dashboard({ status: exampleStatus([]) }).querySelector("[data-hazard-toggle]"),
-    ).toBeNull();
+  it("the flood-risk areas start on and its chip switches them off and on (no second switch)", () => {
     const c = dashboard({
       status: exampleStatus([]),
       hazardTiles: "pmtiles://https://tiles.example/h.pmtiles",
     });
-    const toggle = c.querySelector<HTMLInputElement>("[data-hazard-toggle] input")!;
-    expect(toggle.checked).toBe(true);
+    // The chips above the map do this now (owner, 15 Oct); the old switch under the map is gone.
+    expect(c.querySelector("[data-hazard-toggle]")).toBeNull();
+    expect(c.querySelector("[data-sea-toggle]")).toBeNull();
+    const toggle = c.querySelector<HTMLButtonElement>("[data-map-chip='risk']")!;
+    expect(toggle.getAttribute("aria-pressed")).toBe("true");
     expect(c.querySelector("[data-map]")?.textContent).toBe("hazard,gauges");
     fireEvent.click(toggle);
     expect(c.querySelector("[data-map]")?.textContent).toBe("gauges");
@@ -942,5 +942,21 @@ describe("the chips above the map (owner, 15 Oct)", () => {
     fireEvent.click(chip(c, "dam"));
     expect(c.querySelector("[data-map]")!.getAttribute("data-show-dam")).toBe("1");
     expect(c.querySelector("[data-selected-panel]")?.textContent).toContain(EXAMPLE_DAM.name.th!);
+  });
+});
+
+describe("the background follows the time of day (owner, 15 Oct)", () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.theme;
+  });
+  it("is Satellite + terrain by day and Terrain at night; a pick lasts until day and night change", () => {
+    document.documentElement.dataset.theme = "light";
+    const day = dashboard({ status: exampleStatus([]) });
+    expect(day.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("satelliteTerrain");
+    document.documentElement.dataset.theme = "dark";
+    const night = dashboard({ status: exampleStatus([]) });
+    expect(night.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("terrain");
+    fireEvent.click(night.querySelector("[data-basemap-choice='streets']")!);
+    expect(night.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("streets");
   });
 });

@@ -345,7 +345,14 @@ export function DashboardView(props: DashboardViewProps) {
   const [showHazard, setShowHazard] = useState(true);
   // The sea's waves along the coast start on (the owner, 15 Oct 2026), and can be switched off.
   const [showSea, setShowSea] = useState(true);
-  const [basemap, setBasemapChoice] = useState<Basemap>("satelliteTerrain");
+  /*
+   * The background follows the time of day (the owner, 15 Oct): Satellite + terrain by day,
+   * Terrain at night. A background the person picks stays until day turns to night or back; the
+   * picture then changes with it.
+   */
+  const [basemapChoice, setBasemapPicked] = useState<{ kind: Basemap; night: boolean } | null>(
+    null,
+  );
   // 2D or 3D (the owner, 15 Oct): flat by default; the switch sits on the map itself.
   const [scene, setScene] = useState(false);
   // Esri's picture, or EOX's once Esri stops answering (lib/map.ts): the note says which.
@@ -366,6 +373,13 @@ export function DashboardView(props: DashboardViewProps) {
    * which is what the first paint in the browser draws too.
    */
   const dark = props.now > 0 && darkNow();
+  const basemap: Basemap =
+    basemapChoice && basemapChoice.night === dark
+      ? basemapChoice.kind
+      : dark
+        ? "terrain"
+        : "satelliteTerrain";
+  const setBasemapChoice = (kind: Basemap) => setBasemapPicked({ kind, night: dark });
 
   /*
    * The person's own places on the map (spec 4.9, the owner's request on 8 Oct): their home and
@@ -930,6 +944,23 @@ export function DashboardView(props: DashboardViewProps) {
                 )
               )}
               <MapFeatureChips on={featuresOn} onToggle={toggleFeature} />
+              {/* The sea's own report, for fishermen, right under its chip while the sea is shown
+                  (the owner, 15 Oct: the switches under the map are gone, the chips do that). */}
+              {showSea && (
+                <button
+                  type="button"
+                  data-open-sea="true"
+                  onClick={() => {
+                    setSelection({ kind: "sea", id: nearestCoast(props.area) });
+                    revealPanel();
+                  }}
+                  className={`${buttonQuiet} justify-between self-start text-start`}
+                >
+                  <SeaGradeIcon grade="calm" size={24} />
+                  {tSea("open")}
+                  <span aria-hidden="true">→</span>
+                </button>
+              )}
               <MapMethod />
             </>
           )}
@@ -1185,56 +1216,6 @@ export function DashboardView(props: DashboardViewProps) {
                   </p>
                 )}
               </fieldset>
-              {hazardOnOffer && (
-                <label
-                  data-hazard-toggle="true"
-                  className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
-                >
-                  <input
-                    type="checkbox"
-                    className={`${checkBox} mt-0`}
-                    checked={showHazard}
-                    onChange={(event) => setShowHazard(event.target.checked)}
-                  />
-                  <span aria-hidden="true" className="flex shrink-0 overflow-hidden rounded-[4px]">
-                    {[...HAZARD_CLASSES].reverse().map((c) => (
-                      <span
-                        key={c.key}
-                        className="h-5 w-2.5"
-                        style={{ backgroundColor: hazardColor(c, nightMap) }}
-                      />
-                    ))}
-                  </span>
-                  <span>{t("risk.toggle")}</span>
-                </label>
-              )}
-              <label
-                data-sea-toggle="true"
-                className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
-              >
-                <input
-                  type="checkbox"
-                  className={`${checkBox} mt-0`}
-                  checked={showSea}
-                  onChange={(event) => setShowSea(event.target.checked)}
-                />
-                <SeaGradeIcon grade="calm" size={24} />
-                <span>{tSea("toggle")}</span>
-              </label>
-              {showSea && (
-                <button
-                  type="button"
-                  data-open-sea="true"
-                  onClick={() => {
-                    setSelection({ kind: "sea", id: nearestCoast(props.area) });
-                    revealPanel();
-                  }}
-                  className={`${buttonQuiet} w-full justify-between text-start`}
-                >
-                  {tSea("open")}
-                  <span aria-hidden="true">→</span>
-                </button>
-              )}
               {props.onSatelliteDays && (
                 <SatelliteFloodPanel
                   days={props.satelliteDays ?? null}
