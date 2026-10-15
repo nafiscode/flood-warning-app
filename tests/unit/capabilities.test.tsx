@@ -132,3 +132,32 @@ describe("what Jaga can do: the page", () => {
     }
   });
 });
+
+describe("ways into What Jaga can do", () => {
+  it("the home card stays for the first visits, and never once closed", async () => {
+    const { welcomeShown, WELCOME_VISITS } = await import("@/components/home/NewToJaga");
+    expect(welcomeShown(null)).toBe(true);
+    expect(welcomeShown({ visits: WELCOME_VISITS, closed: false })).toBe(true);
+    expect(welcomeShown({ visits: WELCOME_VISITS + 1, closed: false })).toBe(false);
+    expect(welcomeShown({ visits: 1, closed: true })).toBe(false);
+  });
+
+  it("the home card closes for good when its cross is pressed", async () => {
+    const { NewToJaga } = await import("@/components/home/NewToJaga");
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    const { container } = renderWithIntl(<NewToJaga />, "en");
+    expect(container.querySelector('[data-new-to-jaga] a')?.getAttribute("href")).toBe(
+      "/en/features",
+    );
+    fireEvent.click(container.querySelector("[data-new-to-jaga-close]")!);
+    expect(container.querySelector("[data-new-to-jaga]")).toBeNull();
+    expect(JSON.parse(window.localStorage.getItem("jaga.welcome")!).closed).toBe(true);
+  });
+
+  it("the LINE menu has a sixth button with words in every language", () => {
+    for (const messages of Object.values(ALL)) {
+      expect(typeof (messages.line as Record<string, string>).menuFeatures).toBe("string");
+    }
+  });
+});

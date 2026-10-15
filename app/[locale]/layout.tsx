@@ -7,6 +7,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { AccountLink } from "@/components/AccountLink";
 import { AdminLink } from "@/components/AdminLink";
 import { Logo } from "@/components/brand/Logo";
+import { HelpLink } from "@/components/HelpLink";
 import { HotlineBar } from "@/components/HotlineBar";
 import { DaylightTheme } from "@/components/DaylightTheme";
 import { FeaturesLink } from "@/components/FeaturesLink";
@@ -165,6 +166,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     other app puts it (the owner's note, 12 Oct) - and at the *inline* end, so it
                     follows the writing direction if Jawi is ever chosen.
                   */}
+                  {/* What Jaga can do, one tap away (owner, 16 Oct): beside the bell from a tablet up. */}
+                  <HelpLink className="hidden sm:inline-flex" />
                   <NoticeBell />
                 </div>
 
@@ -190,6 +193,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   <AccountLink />
                   {/* Only an admin ever sees this one, and only in their own browser. */}
                   <AdminLink />
+                  {/* On a phone the "?" ends this row: the top row has no room for it. */}
+                  <HelpLink className="ms-auto inline-flex sm:hidden" />
                 </div>
                 {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
                 <div className="flex w-full items-center justify-between gap-x-1 sm:order-4">

@@ -3148,7 +3148,8 @@
     "menuPlaces": "Safe places near me",
     "menuSos": "Ask for help",
     "menuMap": "Risk & Live Map",
-    "menuUnit": "Register a response team"
+    "menuUnit": "Register a response team",
+    "menuFeatures": "What Jaga can do"
   },
   "fieldRescue": {
     "title": "Record a rescue your team did",
@@ -4211,6 +4212,12 @@
       "safe": "Safe",
       "reviewed": "Reviewed",
       "publish": "Publish"
+    },
+    "welcome": {
+      "title": "New to Jaga?",
+      "text": "See in a minute what Jaga can do for you, your family and the teams nearby.",
+      "open": "See what Jaga can do",
+      "close": "Don't show this again"
     }
   }
 }

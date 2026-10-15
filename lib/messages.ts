@@ -30,6 +30,11 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
     ]),
     // The area chooser's province list.
     map: { province: all.map!.province! },
+    // "New to Jaga?": the way into What Jaga can do for a first-time visitor (A17, 16 Oct).
+    capabilities: {
+      link: (all.capabilities as Messages).link!,
+      welcome: (all.capabilities as Messages).welcome!,
+    },
     // Residents' flood reports near the person (13 Oct), with the report form's own words for
     // depth, trend and road so they read the same on every screen.
     reportsNear: all.reportsNear!,

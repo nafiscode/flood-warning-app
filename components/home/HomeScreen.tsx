@@ -17,6 +17,7 @@ import { PushCard } from "@/components/push/PushCard";
 import { MyReports } from "@/components/reports/MyReports";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
 import { SignInOffer } from "@/components/account/SignInOffer";
+import { NewToJaga } from "@/components/home/NewToJaga";
 import { TambonRiskCard } from "./TambonRisk";
 import { HomeView } from "./HomeView";
 
@@ -71,6 +72,7 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       push={<PushCard place="home" />}
       tambonRisk={(code, name) => <TambonRiskCard code={code} name={name} />}
       signInOffer={<SignInOffer />}
+      welcome={<NewToJaga />}
       install={<InstallCard place="home" />}
       share={<ShareApp />}
     />

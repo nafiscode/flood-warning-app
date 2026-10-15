@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { BellIcon } from "@/components/icons";
-import { usePathname } from "@/i18n/navigation";
+import { BellIcon, QuestionIcon } from "@/components/icons";
+import { Link, usePathname } from "@/i18n/navigation";
 import { setIconBadge } from "@/lib/app-badge";
 import type { Area } from "@/lib/area";
 import { badgeText } from "@/lib/notices";
@@ -29,6 +29,7 @@ const QUIET = /^\/sos(\/|$)/;
  */
 export function NoticeBell({ className = "" }: { className?: string }) {
   const t = useTranslations("notices");
+  const tCapabilities = useTranslations("capabilities");
   const locale = useLocale();
   const format = useFormatter();
   const pathname = usePathname();
@@ -161,6 +162,18 @@ export function NoticeBell({ className = "" }: { className?: string }) {
           />
           {/* A visitor is told the same news can come in LINE (the owner, 15 Oct). */}
           <LineNudge />
+          {/* Where people look for help with the app, the way to what it can do (owner, 16 Oct). */}
+          <p className="border-t border-jaga-line px-4 py-2">
+            <Link
+              href="/features"
+              prefetch={false}
+              data-notice-features
+              className="inline-flex min-h-tap items-center gap-2 font-medium text-jaga-ink underline"
+            >
+              <QuestionIcon size={20} />
+              {tCapabilities("link")}
+            </Link>
+          </p>
           {checkedAt !== null && items.length > 0 && (
             <p className="border-t border-jaga-line px-4 py-2 text-small text-jaga-text-2">
               {t("checked", {

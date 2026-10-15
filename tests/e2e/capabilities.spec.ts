@@ -44,3 +44,27 @@ test("the end of a page links to it, and the SOS page does not", async ({ page }
   await page.goto("/en/sos");
   await expect(page.locator("[data-features-link]")).toHaveCount(0);
 });
+
+test("the ? in the header opens it, costs the header no height, and is not on SOS", async ({
+  page,
+}) => {
+  // Thai, no place chosen: the weather pill says "weather" in words, the tightest header there is.
+  await page.goto("/map");
+  const help = page.locator("header [data-help-link]:visible");
+  await expect(help).toHaveCount(1);
+  const withHelp = await page.locator("header").boundingBox();
+  await page.addStyleTag({ content: "[data-help-link]{display:none!important}" });
+  const without = await page.locator("header").boundingBox();
+  expect(withHelp!.height).toBe(without!.height);
+  await page.goto("/en/map");
+  await page.locator("header [data-help-link]:visible").click();
+  await expect(page).toHaveURL(/\/en\/features$/);
+  await page.goto("/en/sos");
+  await expect(page.locator("header [data-help-link]")).toHaveCount(0);
+});
+
+test("the bell's panel ends with the way to it", async ({ page }) => {
+  await page.goto("/en/map");
+  await page.locator("[data-notice-bell]").click();
+  await expect(page.locator("[data-notice-features]")).toHaveAttribute("href", "/en/features");
+});

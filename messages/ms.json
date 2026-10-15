@@ -3148,7 +3148,8 @@
     "menuPlaces": "Tempat selamat",
     "menuSos": "Minta bantuan",
     "menuMap": "Peta Risiko & Semasa",
-    "menuUnit": "Daftar pasukan bantuan"
+    "menuUnit": "Daftar pasukan bantuan",
+    "menuFeatures": "Apa Jaga boleh buat"
   },
   "fieldRescue": {
     "title": "Rekod penyelamatan yang ditemui sendiri",
@@ -4211,6 +4212,12 @@
       "safe": "Selamat",
       "reviewed": "Disemak",
       "publish": "Siarkan"
+    },
+    "welcome": {
+      "title": "Baru menggunakan Jaga?",
+      "text": "Lihat dalam seminit apa yang Jaga boleh buat untuk anda, keluarga dan pasukan berhampiran.",
+      "open": "Lihat apa yang Jaga boleh buat",
+      "close": "Jangan tunjuk lagi"
     }
   }
 }

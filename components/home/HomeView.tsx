@@ -77,6 +77,8 @@ export type HomeViewProps = {
   tambonRisk?: (code: string, name: string) => ReactNode;
   /** "What you get by signing in": a visitor only, and never at Warning or Evacuate. */
   signInOffer?: ReactNode;
+  /** "New to Jaga?" into What Jaga can do: the first visits only, never at Warning or Evacuate. */
+  welcome?: ReactNode;
 };
 
 /** What a tambon shows, never green from a copy that is too old to trust. */
@@ -306,6 +308,9 @@ export function HomeView(props: HomeViewProps) {
 
       <div className="flex flex-col gap-5">
         {!evacuate && sos}
+
+        {/* For someone who has just found Jaga: what it can do, one tap away (owner, 16 Oct). */}
+        {!loading && !tense && props.welcome}
 
         <Link
           href="/report"
