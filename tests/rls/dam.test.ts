@@ -263,8 +263,9 @@ describe("the review queue is not public", () => {
     await as(db, { uid: w.yalaRescue.user });
     expect(await expectDenied(db, "select * from admin_dam_board()")).toBeTruthy();
     await as(db, { uid: w.admin });
+    // Six reservoirs since 14 Oct: Bang Lang is one row of the board, in no fixed place.
     const board = await one<{ dam_code: string; tambons_main: number }>(
-      "select * from admin_dam_board()",
+      "select * from admin_dam_board() where dam_code = 'bang_lang'",
     );
     expect(board.dam_code).toBe("bang_lang");
     expect(board.tambons_main).toBeGreaterThan(0);
@@ -443,7 +444,7 @@ describe("the day's mean flow and volume", () => {
     await readings([quiet, quiet], true);
     await as(db, "anon");
     const state = await one<{ signal: Record<string, unknown>; daily: Record<string, unknown> }>(
-      "select signal, daily from dam_state()",
+      "select signal, daily from dam_state() where code = 'bang_lang'",
     );
     expect(state.signal.observed_at).toBe(state.daily.until);
     expect(Number(state.daily.outflow_mean_cms)).toBeGreaterThan(0);

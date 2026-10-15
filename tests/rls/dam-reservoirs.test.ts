@@ -110,6 +110,12 @@ describe("a day's water is not an hour's", () => {
   });
 
   it("still reads an hourly dam the way it always did", async () => {
+    // One hourly reading of its own: a fresh database (CI) holds none from the feed.
+    await asOwner(db);
+    await db.query(
+      `insert into public.dam_readings (dam_code, observed_at, window_h, storage_mcm, released_mcm_h)
+       values ('bang_lang', now() - interval '1 hour', 1, 750, 0.2)`,
+    );
     await as(db, "anon");
     const s = await one<Signal>(`select * from public.dam_signal('bang_lang')`);
     // Bang Lang's own figures, whatever they are today: a percentage, and no exception thrown.

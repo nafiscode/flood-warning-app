@@ -121,6 +121,9 @@ test.describe("text stands out from what is behind it (WCAG AA)", () => {
   ] as const) {
     for (const { path, level } of PAGES) {
       test(`${path}${level ? ` at ${level}` : ""}, ${when}`, async ({ page }) => {
+        // The map draws in software on a test machine and keeps its marks moving: axe needs
+        // longer there (it ran past 30 s on CI, 15 Oct).
+        if (path === "/map") test.setTimeout(90_000);
         await page.clock.install({ time: now });
         await serve(page, now, level);
         await page.goto(path);

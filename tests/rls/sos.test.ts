@@ -497,17 +497,26 @@ describe("flood reports", () => {
     expect(await expectDenied(db, "select * from submit_report(6.54, 101.28)")).toBe("P0003");
   });
 
-  it("a pending report never counts in the public hex bins", async () => {
+  it("a report counts in the public hex bins at once, and a hidden one counts nowhere", async () => {
+    // Since 13 Oct a standing report shows at once (no wait for approval); only an admin's
+    // "hidden" takes it off the map. jaga-dev may hold real reports: start from none.
+    await asOwner(db);
+    await db.query("delete from reports");
     await as(db, { uid: w.otherUser });
-    await db.query(
+    const sent = await one<{ report_id: string }>(
       `select * from submit_report(
          p_lat => extensions.st_y(extensions.st_geomfromtext($1, 4326)),
          p_lon => extensions.st_x(extensions.st_geomfromtext($1, 4326)), p_depth_ref => 'waist')`,
       [w.yalaPoint],
     );
     await as(db, "anon");
-    const bins = await rows(db, "select * from report_hex_bins(72)");
-    expect(bins).toEqual([]);
+    expect(await rows(db, "select * from report_hex_bins(72)")).toHaveLength(1);
+    await asOwner(db);
+    await db.query("update reports set moderation_status = 'hidden' where id = $1", [
+      sent.report_id,
+    ]);
+    await as(db, "anon");
+    expect(await rows(db, "select * from report_hex_bins(72)")).toEqual([]);
   });
 
   it("a reporter may add media to their own report but not change someone else's", async () => {
