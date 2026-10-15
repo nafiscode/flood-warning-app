@@ -1167,7 +1167,11 @@
       "coordinates": "Koordinat {coords}",
       "copy": "Salin koordinat",
       "copied": "Sudah disalin",
-      "closeNote": "Selepas selesai menyelamat, minta orang itu sahkan pada telefonnya sendiri."
+      "closeNote": "Selepas selesai menyelamat, minta orang itu sahkan pada telefonnya sendiri.",
+      "village": {
+        "m": "Berhampiran {name}, kira-kira {value} m",
+        "km": "Berhampiran {name}, kira-kira {value} km"
+      }
     },
     "act": {
       "accept": "Terima kes ini",

@@ -1167,7 +1167,11 @@
       "coordinates": "Coordinates {coords}",
       "copy": "Copy coordinates",
       "copied": "Copied",
-      "closeNote": "When the rescue is done, ask the person to confirm it on their own phone."
+      "closeNote": "When the rescue is done, ask the person to confirm it on their own phone.",
+      "village": {
+        "m": "Near {name}, about {value} m",
+        "km": "Near {name}, about {value} km"
+      }
     },
     "act": {
       "accept": "Accept this case",

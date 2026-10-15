@@ -17,6 +17,15 @@ export type DeclineReason = (typeof DECLINE_REASONS)[number];
 export const RELEASE_REASONS = ["cannot_reach", "no_boat", "other_emergency", "cannot"] as const;
 export type ReleaseReason = (typeof RELEASE_REASONS)[number];
 
+/** A village near a case: the team's board names it, so a crew can ask the way there. */
+export type CaseVillage = { nameTh: string; nameEn: string | null; distanceM: number };
+
+/** How far, in words a crew can use: to 50 m under a kilometre, else to 0.1 km. */
+export function villageDistance(m: number): { unit: "m" | "km"; value: number } {
+  if (m < 1000) return { unit: "m", value: Math.max(50, Math.round(m / 50) * 50) };
+  return { unit: "km", value: Math.round(m / 100) / 10 };
+}
+
 export type BoardCase = {
   sosId: string;
   createdAt: string;
@@ -59,6 +68,8 @@ export type BoardCase = {
   completedAt: string | null;
   /** How many evidence photos the team attached. The photos themselves are asked for by a tap. */
   proofCount: number;
+  /** The nearest village to the case's point, within 5 km (S3 villages, 16 Oct); absent when none. */
+  village?: CaseVillage | null;
   /** The waiting time has passed and this caller is not the reporting team (spec 5.4). */
   canConfirm: boolean;
   /** A rescue, or a request for food, water and essentials from someone who is safe (spec 4.10). */

@@ -88,6 +88,7 @@ export async function readAuthorityBoard(userId: string, hours = 72): Promise<Au
   ]);
   if (error) throw new Error(error.message);
   const cases = ((data as Row[]) ?? []).map(toCase);
+  await addVillages(supabase, cases);
   const asked = [...new Set(cases.map((c) => c.offeredTo).filter((id): id is string => !!id))];
   if (asked.length > 0) {
     const { data: names } = await supabase
@@ -98,6 +99,30 @@ export async function readAuthorityBoard(userId: string, hours = 72): Promise<Au
     for (const c of cases) c.offeredToName = c.offeredTo ? (byId.get(c.offeredTo) ?? null) : null;
   }
   return { cases, units, readAt: new Date().toISOString() };
+}
+
+/**
+ * The nearest village to each case (S3, 16 Oct), read as the responder: a verified team may see
+ * every village, including the 2012 layer's. A failure leaves the board as it was.
+ */
+async function addVillages(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  cases: BoardCase[],
+): Promise<void> {
+  if (cases.length === 0) return;
+  const { data, error } = await supabase.rpc("villages_near", {
+    p_points: cases.slice(0, 200).map((c) => [c.lon, c.lat]),
+  });
+  if (error) return;
+  for (const r of (data as Row[]) ?? []) {
+    const c = cases[Number(r.i)];
+    if (!c || typeof r.name_th !== "string") continue;
+    c.village = {
+      nameTh: r.name_th,
+      nameEn: text(r.name_en),
+      distanceM: Number(r.distance_m ?? 0),
+    };
+  }
 }
 
 /**

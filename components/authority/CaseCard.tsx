@@ -28,6 +28,7 @@ import {
   nextStep,
   secondsLeft,
   splitMinutes,
+  villageDistance,
   vulnerableKeys,
   type BoardCase,
   type CaseMedia,
@@ -224,6 +225,17 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
 
       <div className="flex flex-col gap-1">
         <p className="font-bold text-jaga-ink">{place || t("case.noArea")}</p>
+        {c.village && (
+          <p className={hint} data-case-village="true">
+            {t(`case.village.${villageDistance(c.village.distanceM).unit}`, {
+              name:
+                locale === "th" || !c.village.nameEn
+                  ? c.village.nameTh
+                  : `${c.village.nameTh} (${c.village.nameEn})`,
+              value: villageDistance(c.village.distanceM).value,
+            })}
+          </p>
+        )}
         {c.locationText && <p className={hint}>{t("case.typedPlace", { text: c.locationText })}</p>}
         <p className={hint}>
           {t("case.sentAt", { time: bangkok.format(new Date(c.createdAt)) })}
