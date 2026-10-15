@@ -586,11 +586,25 @@ export function DashboardView(props: DashboardViewProps) {
       panel.focus({ preventScroll: true });
       panel.dataset.justOpened = "true";
       /*
-       * The card settles as it fills - the drawing, the charts and the map's own move all change
-       * what is above it - so where it ended up is checked once more and put right without
-       * another animation.
+       * The card settles as it fills - the drawing, the charts, the map's own move and whatever
+       * above it is still loading all change where it sits - so for a few seconds after the
+       * scroll it is put back under the header without another animation. Checked once at 700 ms
+       * it still ended up below the bottom of a phone screen (CI, 15 Oct). The person's own
+       * scroll or touch ends it at once.
        */
-      window.setTimeout(() => bring("auto"), 700);
+      let hold = 0;
+      const stop = () => {
+        window.clearInterval(hold);
+        for (const kind of ["wheel", "touchstart", "keydown"] as const)
+          window.removeEventListener(kind, stop);
+      };
+      window.setTimeout(() => {
+        bring("auto");
+        hold = window.setInterval(() => bring("auto"), 150);
+        window.setTimeout(stop, 2500);
+      }, 700);
+      for (const kind of ["wheel", "touchstart", "keydown"] as const)
+        window.addEventListener(kind, stop, { passive: true });
       window.setTimeout(() => {
         delete panel.dataset.justOpened;
       }, 1800);

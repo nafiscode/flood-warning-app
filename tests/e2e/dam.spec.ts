@@ -276,13 +276,18 @@ test.describe("the dam's quiet notice", () => {
      * used to open it off the top of the screen and nothing seemed to happen (the owner, 14 Oct).
      * It has to end up under the frozen header, not behind it, and inside the screen.
      */
-    const where = await page.evaluate(() => {
-      const panel = document.querySelector("[data-selected-panel]")!.getBoundingClientRect();
-      const header = document.querySelector("header")!.getBoundingClientRect();
-      return { top: panel.top, header: header.bottom, height: window.innerHeight };
-    });
-    expect(where.top).toBeGreaterThanOrEqual(where.header - 1);
-    expect(where.top).toBeLessThan(where.height / 2);
+    // The scroll is animated and the page above the card is still loading: wait for it to settle.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const panel = document.querySelector("[data-selected-panel]")!.getBoundingClientRect();
+            const header = document.querySelector("header")!.getBoundingClientRect();
+            return panel.top >= header.bottom - 1 && panel.top < window.innerHeight / 2;
+          }),
+        { timeout: 5_000 },
+      )
+      .toBe(true);
     // The reservoir read as an instrument: the figures with their units and their datum.
     const readout = card.locator("[data-dam-readout]");
     await expect(readout).toBeVisible();
