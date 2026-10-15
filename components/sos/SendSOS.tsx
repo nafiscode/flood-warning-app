@@ -4,7 +4,14 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
 import { AreaChooser } from "@/components/home/AreaChooser";
-import { LifebuoyIcon } from "@/components/icons";
+import {
+  LifebuoyIcon,
+  ListIcon,
+  LocateIcon,
+  MapIcon,
+  MessageIcon,
+  RetryIcon,
+} from "@/components/icons";
 import { PinOnMap } from "@/components/sos/PinOnMap";
 import { Link, useRouter } from "@/i18n/navigation";
 import { normalizePhone } from "@/lib/phone";
@@ -156,12 +163,14 @@ export function SendSOS({ projectLine, place }: Props) {
         {smsHref && (
           <div className="flex flex-col gap-1">
             <a href={smsHref} className={buttonSecondary} data-sos-sms="true">
+              <MessageIcon size={22} />
               {t("sent.smsInstead")}
             </a>
             <p className={hint}>{t("sent.smsHint")}</p>
           </div>
         )}
         <button type="button" onClick={() => void queue.run()} className={buttonSecondary}>
+          <RetryIcon size={22} />
           {t("sent.retry")}
         </button>
       </section>
@@ -209,10 +218,18 @@ export function SendSOS({ projectLine, place }: Props) {
       {!place && !point && (
         <div className="flex flex-col gap-3" data-sos-nolocation="true">
           <p className={notice}>{t("location.needed")}</p>
-          <button type="button" onClick={gps.locate} className={buttonSecondary}>
-            {t("location.locating")}
+          <button
+            type="button"
+            onClick={gps.locate}
+            disabled={gps.state === "locating"}
+            className={buttonSecondary}
+          >
+            <LocateIcon size={22} />
+            {/* Idle, it is a button to try GPS again; it says "finding" only while it is (A9). */}
+            {gps.state === "locating" ? t("location.locating") : t("location.tryAgain")}
           </button>
           <button type="button" onClick={() => setShowMap(!showMap)} className={buttonSecondary}>
+            <MapIcon size={22} />
             {showMap ? t("location.hideMap") : t("location.useMap")}
           </button>
           {showMap && (
@@ -223,6 +240,7 @@ export function SendSOS({ projectLine, place }: Props) {
             />
           )}
           <button type="button" onClick={() => setShowArea(!showArea)} className={buttonSecondary}>
+            <ListIcon size={22} />
             {t("location.area")}
           </button>
           {showArea && (

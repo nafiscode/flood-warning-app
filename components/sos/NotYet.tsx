@@ -1,3 +1,4 @@
+import { BackIcon } from "@/components/icons";
 import { CallNow } from "@/components/CallNow";
 import { buttonSecondary } from "@/lib/ui";
 
@@ -15,6 +16,7 @@ export function NotYet({ title, body, back, backHref }: Props) {
       <p>{body}</p>
       <CallNow />
       <a href={backHref} className={buttonSecondary}>
+        <BackIcon size={22} />
         {back}
       </a>
     </section>

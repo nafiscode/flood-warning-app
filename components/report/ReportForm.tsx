@@ -1,5 +1,6 @@
 "use client";
 
+import { HouseIcon, LocateIcon, MapIcon, SendIcon, WaveIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { MediaFields, type VoiceNote } from "@/components/report/MediaFields";
@@ -77,7 +78,8 @@ export function ReportForm() {
       if (!response.ok) throw new Error(String(response.status));
       id = ((await response.json()) as { id: string }).id;
     } catch {
-      const key = await enqueue("report", "/api/report", body);
+      // The photos and voice note are kept with it and uploaded once it has arrived (A9).
+      const key = await enqueue("report", "/api/report", body, { photos, voice });
       setState(key ? "queued" : "failed");
       return;
     }
@@ -123,9 +125,11 @@ export function ReportForm() {
           }}
           className={buttonSecondary}
         >
+          <WaveIcon size={22} />
           {t("another")}
         </button>
         <Link href="/" className={buttonPrimary}>
+          <HouseIcon size={22} />
           {t("home")}
         </Link>
         {/* Mounted afresh here, so the report just sent is in the list and can be ended later. */}
@@ -149,9 +153,11 @@ export function ReportForm() {
         <span className={label}>{t("location")}</span>
         <p className={hint}>{t("locationHint")}</p>
         <button type="button" onClick={gps.locate} className={buttonSecondary}>
+          <LocateIcon size={22} />
           {gps.state === "locating" ? t("locating") : t("useGps")}
         </button>
         <button type="button" onClick={() => setShowMap(!showMap)} className={buttonSecondary}>
+          <MapIcon size={22} />
           {showMap ? t("hideMap") : t("useMap")}
         </button>
         {showMap && (
@@ -236,6 +242,7 @@ export function ReportForm() {
         data-report-send="true"
         className={buttonPrimary}
       >
+        <SendIcon size={22} />
         {state === "sending" ? t("sending") : t("send")}
       </button>
       {/* What this person already reported, and the button that says the water has gone. */}

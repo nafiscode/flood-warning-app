@@ -209,7 +209,8 @@
       "textLabel": "Beritahu lokasi anda",
       "textHint": "Contohnya nombor rumah, nama kampung, masjid atau tanda tempat.",
       "needed": "Mesti ada lokasi sebelum boleh hantar. Guna GPS, tandakan pada peta, atau pilih kawasan.",
-      "area": "Pilih kawasan anda"
+      "area": "Pilih kawasan anda",
+      "tryAgain": "Cari lokasi dengan GPS sekali lagi"
     },
     "forPlace": {
       "title": "Minta bantuan untuk orang di {place}",

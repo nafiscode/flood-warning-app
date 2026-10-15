@@ -1,5 +1,6 @@
 "use client";
 
+import { SendIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { MediaFields } from "@/components/report/MediaFields";
@@ -188,6 +189,7 @@ export function SosDetailsForm({ id, token }: Props) {
         disabled={state === "saving"}
         className={buttonPrimary}
       >
+        <SendIcon size={22} />
         {state === "saving" ? t("details.saving") : t("details.save")}
       </button>
       {state === "saved" && <p className={hint}>{t("details.saved")}</p>}

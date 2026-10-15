@@ -1,9 +1,9 @@
 /** Shared form styles: tap targets of at least 48 px, body text at 18 px (CLAUDE.md). */
 export const card = "flex flex-col gap-4 rounded-2xl border border-jaga-line bg-jaga-surface p-5";
 export const buttonPrimary =
-  "inline-flex min-h-tap w-full items-center justify-center rounded-xl bg-jaga-slate px-5 py-2 text-center font-medium text-white active:translate-y-px disabled:opacity-60";
+  "inline-flex min-h-tap w-full items-center justify-center gap-2 rounded-xl bg-jaga-slate px-5 py-2 text-center font-medium text-white active:translate-y-px disabled:opacity-60";
 export const buttonSecondary =
-  "inline-flex min-h-tap w-full items-center justify-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-5 py-2 text-center font-medium text-jaga-ink active:translate-y-px disabled:opacity-60";
+  "inline-flex min-h-tap w-full items-center justify-center gap-2 rounded-xl border-2 border-jaga-edge bg-jaga-surface px-5 py-2 text-center font-medium text-jaga-ink active:translate-y-px disabled:opacity-60";
 /**
  * A quiet button: a tint of the brand teal, an outline and a label, sized for a thumb but not
  * asking for the attention the primary one does. For an action that sits beside the content

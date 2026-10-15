@@ -209,7 +209,8 @@
       "textLabel": "Describe your location",
       "textHint": "For example a house number, village name, mosque or landmark.",
       "needed": "A request needs a location. Use GPS, drop a pin, or choose your area.",
-      "area": "Choose your area"
+      "area": "Choose your area",
+      "tryAgain": "Find my location again (GPS)"
     },
     "forPlace": {
       "title": "Ask for help for someone at {place}",

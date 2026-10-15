@@ -119,7 +119,7 @@ test.describe("asking for help", () => {
     const queued = await page.evaluate(
       () =>
         new Promise<number>((resolve) => {
-          const open = indexedDB.open("jaga-queue", 1);
+          const open = indexedDB.open("jaga-queue");
           open.onsuccess = () => {
             const request = open.result.transaction("pending").objectStore("pending").getAll();
             request.onsuccess = () => resolve(request.result.length);
@@ -139,7 +139,7 @@ test.describe("asking for help", () => {
     const left = await page.evaluate(
       () =>
         new Promise<number>((resolve) => {
-          const open = indexedDB.open("jaga-queue", 1);
+          const open = indexedDB.open("jaga-queue");
           open.onsuccess = () => {
             const request = open.result.transaction("pending").objectStore("pending").getAll();
             request.onsuccess = () => resolve(request.result.length);

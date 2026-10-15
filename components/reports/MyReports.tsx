@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckIcon } from "@/components/icons";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { pickName } from "@/lib/area";
@@ -55,6 +56,7 @@ export function MyReportsView({
                   disabled={busy !== null}
                   onClick={() => onEnd(r.id)}
                 >
+                  <CheckIcon size={22} />
                   {t(busy === r.id ? "ending" : "end")}
                 </button>
               </>

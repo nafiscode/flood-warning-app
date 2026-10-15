@@ -379,3 +379,115 @@ export function TrophyIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/*
+ * Actions (A9 low-literacy pass, 15 Oct 2026): every primary button carries an icon beside its
+ * words, for readers who recognise a picture faster than a sentence.
+ */
+
+/** Find my position (GPS): a crosshair. */
+export function LocateIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="7" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </Icon>
+  );
+}
+
+/** Choose from a list. */
+export function ListIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9 6h11M9 12h11M9 18h11" />
+      <path d="M4 6h.01M4 12h.01M4 18h.01" strokeWidth={3} />
+    </Icon>
+  );
+}
+
+/** Send: a paper plane. */
+export function SendIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M21 3L10 14" />
+      <path d="M21 3l-7 18-4-7-7-4z" />
+    </Icon>
+  );
+}
+
+/** Add a photo: a camera. */
+export function CameraIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </Icon>
+  );
+}
+
+/** Record a voice note: a microphone. */
+export function MicIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+    </Icon>
+  );
+}
+
+/** Stop a recording: a square. */
+export function StopIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="6" y="6" width="12" height="12" rx="1.5" />
+    </Icon>
+  );
+}
+
+/** Try again, refresh: a circular arrow. */
+export function RetryIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 12a8 8 0 1 1-2.3-5.6" />
+      <path d="M20 4v5h-5" />
+    </Icon>
+  );
+}
+
+/** Back: an arrow pointing to where the line starts (turns with the text in a right-to-left script). */
+export function BackIcon(props: IconProps) {
+  return (
+    <Icon {...props} className={`rtl:-scale-x-100 ${props.className ?? ""}`}>
+      <path d="M19 12H5M11 6l-6 6 6 6" />
+    </Icon>
+  );
+}
+
+/** Cancel, no: a cross. */
+export function CrossIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Icon>
+  );
+}
+
+/** A text message (SMS): a speech bubble. */
+export function MessageIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 5h16v11H9l-5 4z" />
+    </Icon>
+  );
+}
+
+/** Change or manage something chosen: a pencil. */
+export function EditIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 20h4L19 9l-4-4L4 16z" />
+      <path d="M13 7l4 4" />
+    </Icon>
+  );
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { CameraIcon, MicIcon, StopIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { MAX_PHOTOS, MAX_VOICE_SECONDS, type Recorder, startRecording } from "@/lib/media";
@@ -78,6 +79,7 @@ export function MediaFields({ photos, onPhotos, voice, onVoice }: Props) {
           disabled={photos.length >= MAX_PHOTOS}
           className={buttonSecondary}
         >
+          <CameraIcon size={22} />
           {t("addPhoto")}
         </button>
         {photos.length > 0 && (
@@ -103,6 +105,7 @@ export function MediaFields({ photos, onPhotos, voice, onVoice }: Props) {
         {recorder ? (
           <>
             <button type="button" onClick={() => void stop()} className={buttonSecondary}>
+              <StopIcon size={22} />
               {t("stopRecording")}
             </button>
             <p role="status" className={hint}>
@@ -111,6 +114,7 @@ export function MediaFields({ photos, onPhotos, voice, onVoice }: Props) {
           </>
         ) : (
           <button type="button" onClick={() => void record()} className={buttonSecondary}>
+            <MicIcon size={22} />
             {t("record")}
           </button>
         )}

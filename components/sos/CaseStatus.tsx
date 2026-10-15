@@ -4,7 +4,7 @@ import { CasePush } from "@/components/push/PushCard";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
-import { LifebuoyIcon } from "@/components/icons";
+import { CheckIcon, CrossIcon, HouseIcon, LifebuoyIcon, RetryIcon } from "@/components/icons";
 import { SosDetailsForm } from "@/components/sos/SosDetailsForm";
 import { Journey } from "@/components/journey/Journey";
 import { TeamStatus } from "@/components/sos/TeamStatus";
@@ -313,10 +313,12 @@ export function CaseStatus({ id, merged }: Props) {
         <p className={notice}>{t("status.notFound")}</p>
         {others.length > 0 && (
           <Link href={`/sos/${others[0]!.id}`} className={buttonSecondary}>
+            <LifebuoyIcon size={22} />
             {t("status.openCaseLink")}
           </Link>
         )}
         <Link href="/sos" className={buttonPrimary}>
+          <LifebuoyIcon size={22} />
           {t("action")}
         </Link>
         <CallNow />
@@ -422,6 +424,7 @@ export function CaseStatus({ id, merged }: Props) {
             data-confirm-yes="true"
             className={buttonPrimary}
           >
+            <CheckIcon size={22} />
             {closing ? t("status.closing") : t(supplies ? "supplies.confirm.yes" : "confirm.yes")}
           </button>
           <button
@@ -431,6 +434,7 @@ export function CaseStatus({ id, merged }: Props) {
             data-confirm-no="true"
             className={buttonSecondary}
           >
+            <CrossIcon size={22} />
             {t(supplies ? "supplies.confirm.no" : "confirm.no")}
           </button>
           <p className={hint}>{t(supplies ? "supplies.confirm.noHint" : "confirm.noHint")}</p>
@@ -456,6 +460,7 @@ export function CaseStatus({ id, merged }: Props) {
 
       {state === "failed" && <p className={notice}>{t("status.loadFailed")}</p>}
       <button type="button" onClick={load} className={buttonSecondary}>
+        <RetryIcon size={22} />
         {t("status.refresh")}
       </button>
 
@@ -482,6 +487,7 @@ export function CaseStatus({ id, merged }: Props) {
                 {t("supplies.escalate.failed")}
               </p>
               <Link href="/sos" className={buttonPrimary}>
+                <LifebuoyIcon size={22} />
                 {t("send")}
               </Link>
             </>
@@ -502,6 +508,7 @@ export function CaseStatus({ id, merged }: Props) {
               data-case-safe="true"
               className={buttonSecondary}
             >
+              <CheckIcon size={22} />
               {closing
                 ? t("status.closing")
                 : supplies
@@ -516,6 +523,7 @@ export function CaseStatus({ id, merged }: Props) {
               data-case-rescued="true"
               className={buttonSecondary}
             >
+              <CheckIcon size={22} />
               {supplies ? t("supplies.gotIt") : t("status.rescuedNow")}
             </button>
           </div>
@@ -526,6 +534,7 @@ export function CaseStatus({ id, merged }: Props) {
         <div className="flex flex-col gap-3">
           <p className={notice}>{supplies ? t("supplies.closed") : t("status.closed")}</p>
           <Link href="/" className={buttonSecondary}>
+            <HouseIcon size={22} />
             {t("back")}
           </Link>
         </div>

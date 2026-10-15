@@ -4,7 +4,14 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
 import { AreaChooser } from "@/components/home/AreaChooser";
-import { LifebuoyIcon, ParcelIcon } from "@/components/icons";
+import {
+  LifebuoyIcon,
+  ListIcon,
+  LocateIcon,
+  MapIcon,
+  ParcelIcon,
+  RetryIcon,
+} from "@/components/icons";
 import { PinOnMap } from "@/components/sos/PinOnMap";
 import { Link, useRouter } from "@/i18n/navigation";
 import { normalizePhone } from "@/lib/phone";
@@ -173,6 +180,7 @@ export function SendSupplies() {
         {toSos}
         <CallNow />
         <button type="button" onClick={() => void queue.run()} className={buttonSecondary}>
+          <RetryIcon size={22} />
           {t("sent.retry")}
         </button>
       </section>
@@ -306,10 +314,18 @@ export function SendSupplies() {
       {!point && (
         <div className="flex flex-col gap-3" data-supplies-nolocation="true">
           <p className={notice}>{t("location.needed")}</p>
-          <button type="button" onClick={gps.locate} className={buttonSecondary}>
-            {t("location.locating")}
+          <button
+            type="button"
+            onClick={gps.locate}
+            disabled={gps.state === "locating"}
+            className={buttonSecondary}
+          >
+            <LocateIcon size={22} />
+            {/* Idle, it is a button to try GPS again; it says "finding" only while it is (A9). */}
+            {gps.state === "locating" ? t("location.locating") : t("location.tryAgain")}
           </button>
           <button type="button" onClick={() => setShowMap(!showMap)} className={buttonSecondary}>
+            <MapIcon size={22} />
             {showMap ? t("location.hideMap") : t("location.useMap")}
           </button>
           {showMap && (
@@ -320,6 +336,7 @@ export function SendSupplies() {
             />
           )}
           <button type="button" onClick={() => setShowArea(!showArea)} className={buttonSecondary}>
+            <ListIcon size={22} />
             {t("location.area")}
           </button>
           {showArea && (

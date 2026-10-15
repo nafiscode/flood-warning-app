@@ -12,9 +12,11 @@
  * and writes the case into the phone's memory of its own cases (lib/sos.ts, lib/use-sending.ts).
  */
 const DB_NAME = "jaga-queue";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const PENDING = "pending";
 const DELIVERED = "delivered";
+/** A9: photos and voice of a report sent offline, kept until the report has an id to hang them on. */
+const MEDIA = "media";
 
 export const SYNC_TAG = "jaga-queue";
 
@@ -32,6 +34,20 @@ export type Queued = {
   failed?: string;
 };
 
+/**
+ * The photos and voice note of a queued report (A9: they used to be dropped when the report was
+ * queued). Same key as the queued item. `reportId` is written when the report is delivered, by the
+ * page or the service worker; the page then uploads the files (it holds the signed-in session).
+ */
+export type QueuedMedia = {
+  key: string;
+  photos: Blob[];
+  voice: { blob: Blob; extension: string } | null;
+  createdAt: string;
+  reportId?: string;
+  tries: number;
+};
+
 export type Delivered = {
   key: string;
   kind: QueuedKind;
@@ -47,6 +63,7 @@ function open(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(PENDING)) db.createObjectStore(PENDING, { keyPath: "key" });
       if (!db.objectStoreNames.contains(DELIVERED))
         db.createObjectStore(DELIVERED, { keyPath: "key" });
+      if (!db.objectStoreNames.contains(MEDIA)) db.createObjectStore(MEDIA, { keyPath: "key" });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error("IndexedDB is not available"));
@@ -80,6 +97,7 @@ export async function enqueue(
   kind: QueuedKind,
   url: string,
   body: Record<string, unknown>,
+  media?: Pick<QueuedMedia, "photos" | "voice">,
 ): Promise<string | null> {
   const item: Queued = {
     key: newKey(),
@@ -93,6 +111,17 @@ export async function enqueue(
     await run(PENDING, "readwrite", (s) => s.put(item));
   } catch {
     return null;
+  }
+  if (media && (media.photos.length > 0 || media.voice)) {
+    const kept: QueuedMedia = {
+      key: item.key,
+      photos: media.photos,
+      voice: media.voice,
+      createdAt: item.createdAt,
+      tries: 0,
+    };
+    // The text is queued already; files that cannot be kept are the only loss.
+    await run(MEDIA, "readwrite", (s) => s.put(kept)).catch(() => {});
   }
   // Not awaited: the item is already safe on the phone, and nothing the person sees may wait for
   // the service worker (navigator.serviceWorker.ready never resolves where there is none).
@@ -202,6 +231,8 @@ async function run_(): Promise<FlushResult> {
         } as Delivered),
       );
       await run(PENDING, "readwrite", (s) => s.delete(item.key));
+      if (item.kind === "report" && typeof result.id === "string")
+        await giveMediaId(item.key, result.id);
       sent += 1;
       continue;
     }
@@ -226,5 +257,39 @@ export async function drop(key: string): Promise<void> {
     await run(PENDING, "readwrite", (s) => s.delete(key));
   } catch {
     // Nothing to do: the queue is gone anyway.
+  }
+}
+
+/** The delivered report's id goes onto its kept files, so the page can upload them. */
+async function giveMediaId(key: string, reportId: string): Promise<void> {
+  try {
+    const media = await run<QueuedMedia | undefined>(MEDIA, "readonly", (s) => s.get(key));
+    if (media) await run(MEDIA, "readwrite", (s) => s.put({ ...media, reportId }));
+  } catch {
+    // No media for this report, or the store is gone.
+  }
+}
+
+/** Kept files whose report has been delivered: ready to upload. */
+export async function mediaReady(): Promise<QueuedMedia[]> {
+  try {
+    const all = await run<QueuedMedia[]>(MEDIA, "readonly", (s) => s.getAll());
+    return all.filter((m) => typeof m.reportId === "string");
+  } catch {
+    return [];
+  }
+}
+
+/** After an upload: forget the files, or count a try that did not get them all through. */
+export async function settleMedia(key: string, done: boolean): Promise<void> {
+  try {
+    if (done) {
+      await run(MEDIA, "readwrite", (s) => s.delete(key));
+      return;
+    }
+    const media = await run<QueuedMedia | undefined>(MEDIA, "readonly", (s) => s.get(key));
+    if (media) await run(MEDIA, "readwrite", (s) => s.put({ ...media, tries: media.tries + 1 }));
+  } catch {
+    // Nothing to do.
   }
 }

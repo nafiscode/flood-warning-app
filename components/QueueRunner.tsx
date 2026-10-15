@@ -27,5 +27,28 @@ export function QueueRunner() {
     window.addEventListener("online", flush);
     return () => window.removeEventListener("online", flush);
   }, []);
+  // The photos and voice of a report sent without signal, once the report itself has arrived
+  // (A9). Tried a little after the queue's own run, when the connection returns, and every 30 s.
+  useEffect(() => {
+    const send = async () => {
+      try {
+        if (!navigator.onLine) return;
+        const list = await indexedDB.databases?.();
+        if (list && !list.some((db) => db.name === "jaga-queue")) return;
+        const { sendQueuedMedia } = await import("@/lib/queued-media");
+        await sendQueuedMedia();
+      } catch {
+        // No IndexedDB, or nothing waiting.
+      }
+    };
+    const first = window.setTimeout(send, 5000);
+    const every = window.setInterval(send, 30_000);
+    window.addEventListener("online", send);
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(every);
+      window.removeEventListener("online", send);
+    };
+  }, []);
   return null;
 }

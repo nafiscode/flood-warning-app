@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckIcon, ListIcon, LocateIcon } from "@/components/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
@@ -96,6 +97,7 @@ export function AreaChooser({ onChoose, onCancel }: Props) {
   return (
     <div className="flex flex-col gap-3" data-area-chooser="true">
       <button type="button" onClick={locate} disabled={locating} className={buttonPrimary}>
+        <LocateIcon size={22} />
         {locating ? t("locating") : t("useGps")}
       </button>
       {!loaded && (
@@ -105,6 +107,7 @@ export function AreaChooser({ onChoose, onCancel }: Props) {
           disabled={directory === "loading"}
           className={buttonSecondary}
         >
+          <ListIcon size={22} />
           {t("fromList")}
         </button>
       )}
@@ -178,6 +181,7 @@ export function AreaChooser({ onChoose, onCancel }: Props) {
             </select>
           </div>
           <button type="button" onClick={confirm} disabled={!chosen} className={buttonPrimary}>
+            <CheckIcon size={22} />
             {t("use")}
           </button>
         </div>
