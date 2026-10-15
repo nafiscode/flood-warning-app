@@ -1,7 +1,8 @@
+import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HomeView, type HomeViewProps } from "@/components/home/HomeView";
 import { TambonRiskView } from "@/components/home/TambonRisk";
-import { MapFeatureChips, MapFeatureTiles } from "@/components/map/MapFeatures";
+import { chipsGone, MapFeatureChips, MapFeatureTiles } from "@/components/map/MapFeatures";
 import type { Dam } from "@/lib/dam";
 import { EXAMPLE_NOW, EXAMPLE_PLACES, homeExample, type HomeScenario } from "@/lib/dev-examples";
 import { CHIP_ORDER, focusHref, mainDam, MAP_FOCUSES, readFocus, zoneFrame } from "@/lib/map-focus";
@@ -145,6 +146,42 @@ describe("the six features", () => {
     ]);
     chips[4]!.click();
     expect(toggled).toEqual(["damzone"]);
+  });
+
+  it("stay frozen under the header once scrolled past, as drawings only on a phone", async () => {
+    expect(chipsGone(-20, 155)).toBe(true);
+    expect(chipsGone(200, 155)).toBe(false);
+    const on = { risk: true, gauges: true, sea: true, dam: true, damzone: true, places: false };
+    const toggled: string[] = [];
+    const rect = vi
+      .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockReturnValue({ top: -300, bottom: -100, height: 200 } as DOMRect);
+    const c = renderWithIntl(
+      <MapFeatureChips
+        on={on}
+        onToggle={(f) => toggled.push(f)}
+        after={<button data-open-sea="true">sea</button>}
+      />,
+    ).container;
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+      await new Promise((done) => setTimeout(done, 50));
+    });
+    rect.mockRestore();
+    const float = c.querySelector<HTMLElement>("[data-map-chips-float]")!;
+    expect(float).not.toBeNull();
+    // Both rows say the same, and a tap on the frozen one works the same switch.
+    const chips = [...float.querySelectorAll<HTMLButtonElement>("[data-map-chip]")];
+    expect(chips.map((b) => b.getAttribute("data-map-chip"))).toEqual([...CHIP_ORDER]);
+    expect(chips[0]!.querySelector(".max-sm\\:sr-only")?.textContent).toBe(
+      th.mapFeatures.risk.short,
+    );
+    chips[5]!.click();
+    expect(toggled).toEqual(["places"]);
+    // The fishermen's button rides along from tablet width up, not on a phone.
+    expect(float.querySelector("[data-open-sea]")?.parentElement?.className).toContain(
+      "max-sm:hidden",
+    );
   });
 
   it("widen the map's first view to the wave points off the person's own provinces only", () => {

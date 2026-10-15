@@ -568,7 +568,10 @@ export function DashboardView(props: DashboardViewProps) {
     const bring = (behavior: ScrollBehavior) => {
       const panel = document.querySelector<HTMLElement>("[data-selected-panel]");
       if (!panel) return null;
-      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      // The frozen row of chips sits under the header once the page has scrolled past it.
+      const header =
+        (document.querySelector("header")?.getBoundingClientRect().height ?? 0) +
+        (document.querySelector("[data-map-chips-float]")?.getBoundingClientRect().height ?? 0);
       const gap = panel.getBoundingClientRect().top - header - 12;
       if (Math.abs(gap) > 4) window.scrollTo({ top: Math.max(0, window.scrollY + gap), behavior });
       return panel;
@@ -943,24 +946,29 @@ export function DashboardView(props: DashboardViewProps) {
                   <p className={hint}>{t("province.failed")}</p>
                 )
               )}
-              <MapFeatureChips on={featuresOn} onToggle={toggleFeature} />
-              {/* The sea's own report, for fishermen, right under its chip while the sea is shown
+              {/* The sea's own report, for fishermen, right under the chips while the sea is shown
                   (the owner, 15 Oct: the switches under the map are gone, the chips do that). */}
-              {showSea && (
-                <button
-                  type="button"
-                  data-open-sea="true"
-                  onClick={() => {
-                    setSelection({ kind: "sea", id: nearestCoast(props.area) });
-                    revealPanel();
-                  }}
-                  className={`${buttonQuiet} justify-between self-start text-start`}
-                >
-                  <SeaGradeIcon grade="calm" size={24} />
-                  {tSea("open")}
-                  <span aria-hidden="true">→</span>
-                </button>
-              )}
+              <MapFeatureChips
+                on={featuresOn}
+                onToggle={toggleFeature}
+                after={
+                  showSea ? (
+                    <button
+                      type="button"
+                      data-open-sea="true"
+                      onClick={() => {
+                        setSelection({ kind: "sea", id: nearestCoast(props.area) });
+                        revealPanel();
+                      }}
+                      className={`${buttonQuiet} justify-between self-start text-start`}
+                    >
+                      <SeaGradeIcon grade="calm" size={24} />
+                      {tSea("open")}
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  ) : undefined
+                }
+              />
               <MapMethod />
             </>
           )}
@@ -1035,7 +1043,7 @@ export function DashboardView(props: DashboardViewProps) {
                * of its top edge, opposite the zoom buttons.
                */}
               <div
-                className={`relative ${tourIndex !== null ? "[&_.maplibregl-ctrl-top-right]:top-16!" : ""}`}
+                className={`relative isolate ${tourIndex !== null ? "[&_.maplibregl-ctrl-top-right]:top-16!" : ""}`}
                 data-map-frame="true"
               >
                 {tourIndex !== null && mine.length > 0 ? (
