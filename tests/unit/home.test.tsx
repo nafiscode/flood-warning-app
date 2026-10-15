@@ -126,13 +126,19 @@ describe("the dam's figure on the home screen", () => {
    * one button - and it names the dam, so the map arrives with that report already open rather
    * than leaving somebody to find a mark a few pixels wide.
    */
-  it("sits directly above the way into the map and opens the dam's whole report", () => {
-    const c = home("normal", { dams: [{ ...DAM, signal: exampleDamSignal("quiet") }], area: BANA });
+  it("sits at the bottom, just before Share Jaga, and opens the dam's whole report", () => {
+    const c = home("normal", {
+      dams: [{ ...DAM, signal: exampleDamSignal("quiet") }],
+      area: BANA,
+      install: <div data-install-slot="true" />,
+      share: <div data-share-slot="true" />,
+    });
     const card = c.querySelector("[data-dam-figure-card]")!;
-    // Since 15 Oct the way into the map is the five feature tiles, ending in the map button.
-    const tiles = c.querySelector("[data-map-features='home']")!;
-    expect(card.nextElementSibling).toBe(tiles);
-    expect(tiles.querySelector("[data-map-link]")).toBeTruthy();
+    // The owner, 15 Oct: after the install card, directly before Share Jaga, the last thing.
+    const share = c.querySelector("[data-share-slot]")!;
+    expect(card.nextElementSibling).toBe(share);
+    expect(share.nextElementSibling).toBeNull();
+    expect(card.previousElementSibling?.hasAttribute("data-install-slot")).toBe(true);
     const links = [...card.querySelectorAll("a")];
     expect(links.length).toBe(1);
     expect(links[0]!.getAttribute("href")).toContain(`dam=${DAM.code}`);

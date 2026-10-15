@@ -56,8 +56,10 @@ export type HomeViewProps = {
   myReports?: ReactNode;
   /** "Turn on notifications": drawn while there is something for the person to do about it. */
   push?: ReactNode;
-  /** The "put Jaga on your home screen" card. Drawn last, and not at Warning or Evacuate. */
+  /** The "put Jaga on your home screen" card. Near the end, and not at Warning or Evacuate. */
   install?: ReactNode;
+  /** "Share Jaga". Drawn last, after the dam's card, and not at Warning or Evacuate either. */
+  share?: ReactNode;
   /**
    * The long-term flood risk of the person's own tambon (the owner, 15 Oct): under the hero on an
    * ordinary day, after the checklist when somewhere of theirs is at Warning or Evacuate.
@@ -338,21 +340,6 @@ export function HomeView(props: HomeViewProps) {
         {/* What an account gives, where a visitor would otherwise see their watched places. */}
         {!me?.signedIn && !loading && !choosing && !tense && props.signInOffer}
 
-        {/*
-         * The same dam, for everyone the notice does not reach: the drawing and what it means,
-         * with nothing saying water is coming to them, because it is not. It sits in the smaller
-         * column, directly above the map button on every screen size (owner, 13 Oct), which is
-         * why the card has no map link of its own.
-         */}
-        {damsNearMe.map(({ dam, hit }) => (
-          <DamFigureCard
-            key={dam.code}
-            dam={dam}
-            tambonCode={hit?.code ?? null}
-            tambonName={hit ? areaNameOf(hit.code) : null}
-          />
-        ))}
-
         {/* The map comes straight after the person's own places, and the safe places after it,
             folded under their own button (owner, 12 Oct). Since 15 Oct the way in is the map's five
             features as tiles, each opening the map on itself (the owner: the science should be seen). */}
@@ -366,6 +353,24 @@ export function HomeView(props: HomeViewProps) {
         {!loading && !choosing && props.push}
 
         {!loading && !choosing && !tense && props.install}
+
+        {/*
+         * The same dam, for everyone the notice does not reach: the drawing and what it means,
+         * with nothing saying water is coming to them, because it is not. Background, not news,
+         * so it sits at the bottom, just before "Share Jaga" (owner, 15 Oct; it was above the map
+         * button). The notice at the top of the left column still speaks when the dam has
+         * something to say to someone on its river.
+         */}
+        {damsNearMe.map(({ dam, hit }) => (
+          <DamFigureCard
+            key={dam.code}
+            dam={dam}
+            tambonCode={hit?.code ?? null}
+            tambonName={hit ? areaNameOf(hit.code) : null}
+          />
+        ))}
+
+        {!loading && !choosing && !tense && props.share}
       </div>
     </div>
   );

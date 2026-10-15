@@ -69,12 +69,8 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       push={<PushCard place="home" />}
       tambonRisk={(code, name) => <TambonRiskCard code={code} name={name} />}
       signInOffer={<SignInOffer />}
-      install={
-        <>
-          <InstallCard place="home" />
-          <ShareApp />
-        </>
-      }
+      install={<InstallCard place="home" />}
+      share={<ShareApp />}
     />
   );
 }
