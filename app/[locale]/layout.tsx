@@ -181,7 +181,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     prefetch={false}
                     className="inline-flex min-h-tap items-center rounded px-2 text-small font-medium text-white underline"
                   >
-                    {tNav("map")}
+                    {/* The full name does not fit beside Home and Sign in on a phone in Thai (16 Oct). */}
+                    <span className="sm:hidden">{tNav("mapShort")}</span>
+                    <span className="max-sm:hidden">{tNav("map")}</span>
                   </Link>
                   {/* "Sign in" for a visitor, "Account" once signed in (the owner, 15 Oct). */}
                   <AccountLink />

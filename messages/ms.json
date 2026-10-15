@@ -686,7 +686,8 @@
     "signIn": "Log masuk",
     "backHome": "Kembali ke halaman utama",
     "backAccount": "Kembali ke akaun",
-    "backBoard": "Kembali ke papan kes"
+    "backBoard": "Kembali ke papan kes",
+    "mapShort": "Peta Risiko"
   },
   "notices": {
     "title": "Pemberitahuan",

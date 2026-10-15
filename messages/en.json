@@ -686,7 +686,8 @@
     "signIn": "Sign in",
     "backHome": "Back to the home screen",
     "backAccount": "Back to your account",
-    "backBoard": "Back to the case board"
+    "backBoard": "Back to the case board",
+    "mapShort": "Risk & Live Map"
   },
   "notices": {
     "title": "Notifications",

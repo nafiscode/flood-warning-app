@@ -147,7 +147,10 @@ test.describe("home", () => {
     const header = page.locator("header");
     // Home as a link of its own: a logo is not what people tap to go back.
     await expect(header.locator('a[href="/"]', { hasText: th.nav.home })).toBeVisible();
-    await expect(header.getByRole("link", { name: th.nav.map })).toBeVisible();
+    // A phone gets the short name: the full one wrapped every link onto two lines (16 Oct).
+    await expect(header.getByRole("link", { name: th.nav.mapShort })).toBeVisible();
+    const homeLink = (await header.locator('a[href="/"]', { hasText: th.nav.home }).boundingBox())!;
+    expect(homeLink.height).toBeLessThan(56);
     // A visitor is invited to sign in where a signed-in person sees Account (15 Oct, 012ec5a).
     await expect(header.locator('[data-account-link="sign-in"]')).toHaveText(th.nav.signIn);
     const home = (await header.locator('a[href="/"]', { hasText: th.nav.home }).boundingBox())!;
