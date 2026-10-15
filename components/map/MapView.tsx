@@ -29,6 +29,7 @@ import {
   TRIBUTARY_WIDTH,
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
+import { PlaceRain } from "./PlaceRain";
 import { HOME_TIP_DY, MINE_IMAGE_RATIO, mineImage, mineImageName } from "@/lib/mine-marks";
 import {
   HAZARD_OPACITY,
@@ -366,6 +367,8 @@ export function MapView({
   // Which data object each source holds, so data is sent again only when it changed.
   const held = useRef(new Map<string, Collection>());
   const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
+  // The map itself once it has loaded, for what is drawn over it in HTML (the rain clouds).
+  const [loaded, setLoaded] = useState<MapLibreMap | null>(null);
   // The basemap the map was made with, and the one it shows now: changing it later swaps the
   // ground under our layers without making the map again (lib/map.ts, setBasemap).
   const basemapAtStart = useRef(basemap);
@@ -1022,6 +1025,7 @@ export function MapView({
         created.once("load", () => {
           redraw();
           setState("ready");
+          setLoaded(created);
         });
         // After the basemap replaces the style, sources may hold their first data again.
         created.on("style.load", () => held.current.clear());
@@ -1287,6 +1291,8 @@ export function MapView({
   return (
     <div className="relative">
       {peekAt && peek && createPortal(peek(peekAt.target), peekAt.node)}
+      {/* Rain falling now over the person's own places (owner, 15 Oct), with the pins. */}
+      {loaded && <PlaceRain map={loaded} places={showMine ? mine : []} />}
       <div
         ref={container}
         data-map="true"

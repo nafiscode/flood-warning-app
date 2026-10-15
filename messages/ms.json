@@ -3752,7 +3752,11 @@
       "text": "Sekolah, wat, masjid, pejabat kerajaan dan tanah tinggi daripada OpenStreetMap, disusun menurut ketinggiannya di atas banjir lalu dan sama ada jalan ke sana pernah banjir. Belum disemak di lapangan."
     },
     "limits": "Satu anggaran, bukan ramalan dan bukan amaran. Tempat tanpa warna bukan tempat tanpa risiko: hujan lebat dan banjir kilat boleh berlaku di mana-mana. Amaran datang daripada pentadbir Jaga dan DDPM (1784).",
-    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Jabatan Pengairan Diraja, penyumbang OpenStreetMap, Google Open Buildings."
+    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Jabatan Pengairan Diraja, Open-Meteo (model cuaca), penyumbang OpenStreetMap, Google Open Buildings.",
+    "weather": {
+      "lead": "Hujan di atas tempat anda",
+      "text": "Apabila hujan sedang turun di rumah anda atau tempat yang anda pantau, awan kecil menurunkan hujan di atas pinnya, dengan kilat ketika ribut petir dan matahari atau bulan di sebalik hujan sekejap. Daripada model cuaca Open-Meteo di titik itu, dikemas kini setiap 15 minit: gambaran model, bukan tolok hujan, dan bukan amaran."
+    }
   },
   "tambonRisk": {
     "eyebrow": "Risiko banjir jangka panjang, bukan amaran hari ini",

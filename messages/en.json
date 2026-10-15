@@ -3752,7 +3752,11 @@
       "text": "Schools, temples, mosques, government offices and high ground from OpenStreetMap, ranked by how far above past floods they sit and whether the roads to them flooded. Not yet checked on the ground."
     },
     "limits": "An estimate, not a forecast and not an alert. A place without colour is not a place without risk: heavy rain and flash floods can happen anywhere. Alerts come from Jaga's admins and DDPM (1784).",
-    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Royal Irrigation Department, OpenStreetMap contributors, Google Open Buildings."
+    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Royal Irrigation Department, Open-Meteo (weather model), OpenStreetMap contributors, Google Open Buildings.",
+    "weather": {
+      "lead": "Rain over your own places",
+      "text": "When rain is falling now at your home or a place you watch, a small cloud rains over its pin, with lightning in a thunderstorm and the sun or moon behind a passing shower. From Open-Meteo's weather model at that point, asked again every 15 minutes: a model's picture of now, not a rain gauge, and not an alert."
+    }
   },
   "tambonRisk": {
     "eyebrow": "Long-term flood risk, not today's alert",

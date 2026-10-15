@@ -1,0 +1,287 @@
+/*
+ * The rain cloud over one of the person's own places (components/map/PlaceRain.tsx). Drawn in
+ * HTML above the map, so it moves with the pin and costs nothing when nothing is falling. It
+ * never takes a tap: the pin underneath answers as before.
+ *
+ * No alert colour anywhere: the clouds are greys, the rain a pale steel blue (far from Return's
+ * #1F6FD1), lightning white with a dark edge (yellow is the Watch level; docs/brand.md). A white
+ * rim and a soft shadow keep every cloud readable on the day map, the night map and photos.
+ */
+.cloud {
+  position: relative;
+  width: 46px;
+  height: 58px;
+  pointer-events: none;
+  --body-top: #f4f7f9;
+  --body-bottom: #c3ced6;
+  --rain: #8fbbd9;
+  --rain-edge: rgba(23, 40, 54, 0.55);
+}
+
+.dark {
+  --body-top: #9aa7b1;
+  --body-bottom: #5c6a75;
+}
+
+.shape {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  width: 46px;
+  height: 28px;
+  z-index: 2;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.45));
+  animation: drift 6s ease-in-out infinite alternate;
+}
+
+.shape path {
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1.4;
+}
+
+/* The sun or moon behind a shower cloud. */
+.peek {
+  position: absolute;
+  top: 1px;
+  inset-inline-end: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  z-index: 1;
+  background: radial-gradient(circle at 40% 40%, #fff6d6, #f2d68a);
+  box-shadow: 0 0 6px rgba(255, 236, 170, 0.9);
+}
+
+.moon {
+  background: radial-gradient(circle at 40% 40%, #ffffff, #d6dde6);
+  box-shadow: 0 0 5px rgba(230, 237, 245, 0.8);
+}
+
+.drop {
+  position: absolute;
+  top: 22px;
+  width: 2px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--rain);
+  box-shadow: 0 0 0 0.5px var(--rain-edge);
+  opacity: 0;
+  animation: fall var(--fall, 1s) linear var(--delay, 0s) infinite;
+}
+
+.long {
+  height: 9px;
+  width: 1.6px;
+}
+
+.slant {
+  transform-origin: top;
+  animation-name: fall-slant;
+}
+
+/* Showers come and go: each drop falls in a burst, then rests. */
+.bursts {
+  animation-duration: calc(var(--fall, 1s) * 3);
+  animation-name: burst;
+}
+
+.bursts.slant {
+  animation-name: burst-slant;
+}
+
+.pellet {
+  position: absolute;
+  top: 22px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 0.75px rgba(23, 40, 54, 0.6);
+  opacity: 0;
+  animation: hail 1.1s ease-in var(--delay, 0s) infinite;
+}
+
+.bolt {
+  position: absolute;
+  top: 18px;
+  inset-inline-start: 17px;
+  width: 13px;
+  height: 26px;
+  z-index: 3;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.95));
+  animation: strike 4.6s linear var(--strike, 0s) infinite;
+}
+
+.bolt path {
+  fill: #ffffff;
+  stroke: #1a2833;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+/* The cloud lights up from inside when the bolt strikes. */
+.glow {
+  position: absolute;
+  top: 2px;
+  inset-inline-start: 4px;
+  width: 38px;
+  height: 22px;
+  border-radius: 50%;
+  z-index: 2;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.85), transparent 70%);
+  opacity: 0;
+  animation: strike 4.6s linear var(--strike, 0s) infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(-1.5px);
+  }
+  to {
+    transform: translateX(1.5px);
+  }
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(26px);
+    opacity: 0;
+  }
+}
+
+@keyframes fall-slant {
+  0% {
+    transform: translate(0, 0) rotate(14deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-6px, 26px) rotate(14deg);
+    opacity: 0;
+  }
+}
+
+@keyframes burst {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  28% {
+    opacity: 1;
+  }
+  33% {
+    transform: translateY(26px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(26px);
+    opacity: 0;
+  }
+}
+
+@keyframes burst-slant {
+  0% {
+    transform: translate(0, 0) rotate(14deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  28% {
+    opacity: 1;
+  }
+  33% {
+    transform: translate(-6px, 26px) rotate(14deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-6px, 26px) rotate(14deg);
+    opacity: 0;
+  }
+}
+
+@keyframes hail {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(28px);
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(24px);
+  }
+  100% {
+    transform: translateY(28px);
+    opacity: 0;
+  }
+}
+
+/* Mostly dark; a double flash, as lightning does. */
+@keyframes strike {
+  0%,
+  86% {
+    opacity: 0;
+  }
+  87% {
+    opacity: 1;
+  }
+  89% {
+    opacity: 0.15;
+  }
+  91% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/*
+ * Without motion: a still cloud with its rain drawn where it falls, and the bolt shown, so the
+ * picture still says what is happening.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .shape,
+  .drop,
+  .pellet,
+  .bolt,
+  .glow {
+    animation: none;
+  }
+  .drop,
+  .pellet {
+    opacity: 1;
+    transform: translateY(var(--rest, 10px));
+  }
+  .slant {
+    transform: translate(-2px, var(--rest, 10px)) rotate(14deg);
+  }
+  .bolt {
+    opacity: 1;
+  }
+}

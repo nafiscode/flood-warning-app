@@ -11,6 +11,7 @@ const POINTS = [
   "damzone",
   "live",
   "places",
+  "weather",
 ] as const;
 
 /**
