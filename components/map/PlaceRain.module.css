@@ -7,8 +7,9 @@
  * #1F6FD1), lightning white with a dark edge (yellow is the Watch level; docs/brand.md). A white
  * rim and a soft shadow keep every cloud readable on the day map, the night map and photos.
  */
+/* No position here: MapLibre places the marker absolutely, and a position of our own would
+ * stack every cloud below the last instead of over its pin. */
 .cloud {
-  position: relative;
   width: 46px;
   height: 58px;
   pointer-events: none;
