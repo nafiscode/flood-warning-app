@@ -622,6 +622,21 @@ Read docs/science-plan.md Module 8, pipeline/highway_paths/METHODS.md, docs/spec
 Acceptance: a verified planning unit in Pattani signs in and sees the 32 flagged stretches of Pattani with their reasons, a map and a download, and nothing of the other three provinces; a rescue team and a resident cannot reach the page or the rows at all (RLS tests); nothing of it appears in the public app; the owner has read the Thai.
 ```
 
+### A20: About page (before launch)
+
+Added 16 Oct 2026 (owner's request): one short public page that says what Jaga is, who runs it and how to reach it, and that holds the links to the other "about Jaga" pages.
+```text
+Read docs/spec.md sections 1, 9 and 16, docs/brand.md, docs/attributions.md, NOTICE and README.md, and CLAUDE.md safety rules 4, 9 and 10.
+
+1. One public page, `/about`, open without an account: what Jaga is in a few lines (a non-profit flood early-warning and help app for Pattani, Yala, Narathiwat and Songkhla; the name means "watch over, take care of"); what it is not (it carries alerts and requests, the teams rescue; it does not replace 1784 or 1669); who runs it (a small group of volunteer admins, by role, never a personal phone or address); the areas it covers and the ones it does not yet ("Jaga doesn't cover this province yet. In an emergency call 1784 or 1669").
+2. Links to the other pages: What Jaga can do (A17), How Jaga works (A18, once built), the data credits and licences (from docs/attributions.md, Open-Meteo attribution included), a plain privacy summary (what is never public, what is logged, how to ask for data to be removed), and the source code (Apache-2.0; the Jaga name and logo are not covered, as NOTICE says).
+3. Contact: the project email from CONTACT_EMAIL, never hardcoded; a line for agencies and rescue teams on how to register.
+4. Donations: none while the feature flag is off; when it is on, at most one plain link to the Transparency tab, never a prompt (safety rule 9).
+5. Reachable from the end of every page (beside "What Jaga can do"), from Account, and from the guided tours (A16); never from SOS, report or alert screens. Same light-page rules as A17: 360 px, slow 3G, both themes, words in messages/*.json, Thai first.
+
+Acceptance: a visitor learns in a minute what Jaga is, who runs it, what it covers and how to reach it; every link on it opens; no personal detail and no donation prompt appears; the owner has read the Thai.
+```
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.
