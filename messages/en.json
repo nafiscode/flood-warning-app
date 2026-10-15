@@ -3987,5 +3987,226 @@
     "amount": "{mm} mm · {chance}% chance",
     "modelTime": "Model data for {time}",
     "note": "A forecast from a weather model (Open-Meteo); it can change. It is not a flood alert. Alerts come from Jaga's admins and DDPM (1784)."
+  },
+  "capabilities": {
+    "title": "What Jaga can do",
+    "lead": "Jaga watches the rivers and carries messages for people in Pattani, Yala, Narathiwat and Songkhla: flood alerts to you, and your request for help to teams nearby. Free, for everyone.",
+    "link": "What Jaga can do",
+    "stats": {
+      "provinces": "4 provinces",
+      "tambons": "377 tambons",
+      "rivers": "Rivers checked every 15 minutes",
+      "offline": "The essentials work with no signal"
+    },
+    "hub": {
+      "rivers": "Rivers, rain and the dam",
+      "admins": "Jaga's admins, who write the alerts",
+      "you": "You and your family",
+      "teams": "Teams near you",
+      "caption": "Alerts written by people reach you. Your request reaches teams nearby, and the teams do the helping."
+    },
+    "emergency": "In an emergency, don't read on: press SOS, or call 1784 or 1669 below.",
+    "is": {
+      "title": "What Jaga is, and what it is not",
+      "doesTitle": "Jaga does",
+      "does1": "Carry alerts written by people who watch the water",
+      "does2": "Carry your request for help to teams nearby",
+      "does3": "Show what is known, with times and sources",
+      "notTitle": "Jaga does not",
+      "not1": "Rescue anyone itself: the teams do",
+      "not2": "Replace 1784 or 1669: call them any time",
+      "not3": "Promise a forecast: it shows ranges, never certainty"
+    },
+    "picker": {
+      "title": "Who are you?",
+      "label": "Choose who you are",
+      "hint": "Pick one to see what Jaga does for you."
+    },
+    "roles": {
+      "resident": {
+        "name": "Residents and visitors",
+        "who": "Anyone living in or visiting the four provinces",
+        "intro": "No account is needed for alerts, the map or SOS. Sign in only to watch over more places."
+      },
+      "team": {
+        "name": "Rescue teams",
+        "who": "Rescue units and volunteer teams",
+        "intro": "Register once. After a Jaga admin calls your team's official number, requests in your area come to you."
+      },
+      "supplies": {
+        "name": "Food and water teams",
+        "who": "Groups that bring food, water and essentials",
+        "intro": "You see only requests for food and water. Rescue requests never come to your team."
+      },
+      "admin": {
+        "name": "Jaga's admins",
+        "who": "The small group of people who run Jaga",
+        "intro": "Admins are invited only. This shows how Jaga is run, so you know who stands behind each alert."
+      }
+    },
+    "canDo": "What you can do",
+    "whereLabel": "Where",
+    "open": "Open",
+    "alsoTitle": "Also for you",
+    "items": {
+      "alert": {
+        "title": "Know your area's alert level",
+        "text": "Choose your tambon once. See the level, the reason, when it was issued and what to do now.",
+        "where": "Home"
+      },
+      "map": {
+        "title": "See where floods reach",
+        "text": "Flood-prone areas, river levels, the dam, rain and the sea, on one map.",
+        "where": "Risk & Live Map"
+      },
+      "sos": {
+        "title": "Ask for help, even without an account",
+        "text": "Only your location is needed. You see when a team accepts, and when it is on its way.",
+        "where": "Home › SOS"
+      },
+      "supplies": {
+        "title": "Ask for food and water",
+        "text": "Safe but cut off? Tell nearby teams what your household needs.",
+        "where": "Home › Request food and water"
+      },
+      "places": {
+        "title": "Find a safe place",
+        "text": "The nearest safe places, and high ground to park a car, with directions.",
+        "where": "Home › Safe places near you, and the map"
+      },
+      "watch": {
+        "title": "Watch over family elsewhere",
+        "text": "Add your parents' village or your shop, and get their alerts too.",
+        "where": "My account › Places I watch"
+      },
+      "register": {
+        "title": "Register your team",
+        "text": "Choose the tambons your team covers. A Jaga admin calls your official number before you start.",
+        "where": "My account › Register a unit"
+      },
+      "offer": {
+        "title": "Requests come to you, with an alarm",
+        "text": "A request in your area rings on your case board. Accept it in one tap, or let it pass to the next team.",
+        "where": "My account › Open the case board"
+      },
+      "eta": {
+        "title": "Tell them you're on the way",
+        "text": "Pick an arrival time band. The person sees your team is coming and can call you.",
+        "where": "Case board › the case you accepted"
+      },
+      "finish": {
+        "title": "Finish with a photo",
+        "text": "Report the rescue with a photo. The person confirms they are safe.",
+        "where": "Case board › the case you accepted"
+      },
+      "field": {
+        "title": "Record people you found",
+        "text": "Rescued someone who never sent a request? Record it on the spot.",
+        "where": "Case board › Record a rescue your team did"
+      },
+      "coverage": {
+        "title": "See your area and your points",
+        "text": "Your coverage map, the places no team covers yet, and points for confirmed rescues.",
+        "where": "Case board › Coverage, Points"
+      },
+      "suppliesRegister": {
+        "title": "Register as a food and water team",
+        "text": "Tick \"Food and water distribution\" when you register. A Jaga admin calls to verify your team.",
+        "where": "My account › Register a unit"
+      },
+      "suppliesBoard": {
+        "title": "See what each household is missing",
+        "text": "Each request lists what is needed. A softer sound, and never a rescue request.",
+        "where": "My account › Open the case board"
+      },
+      "escalate": {
+        "title": "When it turns serious",
+        "text": "If the household needs rescue after all, they switch the request to rescue teams in one tap.",
+        "where": "The request's own page"
+      },
+      "console": {
+        "title": "Issue alerts, with a review step",
+        "text": "Pick a reviewed template and the tambons, see who it reaches, then publish.",
+        "where": "Admin › Alerts"
+      },
+      "signals": {
+        "title": "Watch rivers, rain and the dam",
+        "text": "River levels every 15 minutes and rain forecasts, with a suggested level. A suggestion, never an alert.",
+        "where": "Admin › Signals"
+      },
+      "autoAlarm": {
+        "title": "One automated alarm, people first",
+        "text": "When a river gauge an admin has chosen reaches its level, every admin's phone rings with a draft. If nobody sends or dismisses it within 20 minutes, Jaga publishes it, marked as not reviewed.",
+        "where": "Admin › Alerts"
+      },
+      "warRoom": {
+        "title": "See every open request",
+        "text": "Requests no team has taken yet come first, and an admin can hand one to a team.",
+        "where": "Admin › War room"
+      },
+      "verify": {
+        "title": "Verify every team",
+        "text": "An admin calls each team's official number before the team can see anyone's request.",
+        "where": "Admin › Verify units"
+      },
+      "dam": {
+        "title": "Send a dam release notice",
+        "text": "Tells the land below Bang Lang dam when the water may arrive, as time ranges.",
+        "where": "Admin › Dam release"
+      }
+    },
+    "extras": {
+      "report": {
+        "title": "Report flooding near you",
+        "text": "Shown on the map as an area, never as your house."
+      },
+      "notify": {
+        "title": "Get notifications on your phone and in LINE",
+        "text": "Missed one? It waits in the bell at the top."
+      },
+      "requests": {
+        "title": "Follow my requests",
+        "text": "Every request you sent, step by step."
+      },
+      "weather": {
+        "title": "Weather for your place",
+        "text": "Rain, wind and the hours ahead."
+      }
+    },
+    "admin": {
+      "note": "Only Jaga's admins can open these pages."
+    },
+    "hazards": {
+      "title": "Floods now. Other hazards later.",
+      "now": "Covered",
+      "soon": "Coming soon",
+      "call": "Call {number}",
+      "note": "For hazards still to come, Jaga has no forecasts yet. In an emergency, press SOS or call the number shown."
+    },
+    "closing": {
+      "title": "Free, non-profit, for everyone",
+      "free": "No fees, no ads",
+      "languages": "Thai, Malay and English",
+      "offline": "Alerts, safe places, hotlines and SOS work with no signal",
+      "privacy": "Your phone number and exact location are never public",
+      "home": "Open Jaga",
+      "map": "Open the Risk & Live Map"
+    },
+    "scene": {
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "coming": "On the way",
+      "km": "{n} km",
+      "minutes": "{n} min",
+      "home": "Home",
+      "family": "Mum",
+      "shop": "Shop",
+      "verified": "Verified",
+      "newRequest": "New request",
+      "accept": "Accept",
+      "safe": "Safe",
+      "reviewed": "Reviewed",
+      "publish": "Publish"
+    }
   }
 }

@@ -1,0 +1,380 @@
+/*
+ * The small moving pictures on "What Jaga can do" (A17). Each is a drawing of the real screen,
+ * not a screenshot: HTML and SVG in the brand tokens, so it costs no download, follows the day
+ * and night theme, and stays sharp at any size.
+ *
+ * The resting state of every element is the finished picture, and the keyframes only take it
+ * away and bring it back. So under reduced motion (globals.css turns every animation off) each
+ * picture simply shows its last frame: the ticks ticked, the request accepted, the water risen.
+ * One loop lasts 6 s for every picture, so a row of them breathes together rather than flicker.
+ */
+
+.frame {
+  position: relative;
+  height: 10rem;
+  overflow: hidden;
+  border-radius: 0.875rem;
+  border: 1px solid var(--jaga-line);
+  background:
+    radial-gradient(
+      circle at 18% 22%,
+      color-mix(in srgb, var(--jaga-teal) 16%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 85% 90%,
+      color-mix(in srgb, var(--jaga-teal-ink) 12%, transparent),
+      transparent 50%
+    ),
+    var(--jaga-ground);
+  contain: content;
+}
+
+/* A piece of a phone screen in the middle of the frame. */
+.screen {
+  position: absolute;
+  inset-inline: 12%;
+  top: 0.9rem;
+  bottom: -0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  border-radius: 0.9rem 0.9rem 0 0;
+  border: 1px solid var(--jaga-line);
+  background: var(--jaga-surface);
+  padding: 0.7rem 0.75rem;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--jaga-slate) 14%, transparent);
+  font-size: 0.8rem;
+  line-height: 1.25;
+  color: var(--jaga-text);
+}
+.bar {
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: var(--jaga-line);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--jaga-line);
+  padding: 0.15rem 0.5rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.chipOn {
+  border-color: var(--jaga-teal-ink);
+  background: color-mix(in srgb, var(--jaga-teal-ink) 16%, transparent);
+  color: var(--jaga-ink);
+}
+
+/* Steps that arrive one after another and leave together at the end of the loop. */
+.s1 {
+  animation: in1 6s ease-out infinite;
+}
+.s2 {
+  animation: in2 6s ease-out infinite;
+}
+.s3 {
+  animation: in3 6s ease-out infinite;
+}
+.s4 {
+  animation: in4 6s ease-out infinite;
+}
+@keyframes in1 {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  16%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes in2 {
+  0%,
+  26% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  34%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes in3 {
+  0%,
+  44% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  52%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes in4 {
+  0%,
+  62% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  70%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* "Tap here": a ring that widens and fades, in the teal that means something to press. */
+.ping {
+  position: relative;
+}
+.ping::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+  border: 2px solid var(--jaga-teal-ink);
+  opacity: 0;
+  animation: ping 1.5s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ping {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+/* A button being pressed once, early in the loop. */
+.press {
+  animation: press 6s ease-in-out infinite;
+}
+@keyframes press {
+  0%,
+  6%,
+  14%,
+  100% {
+    transform: none;
+  }
+  10% {
+    transform: scale(0.93);
+  }
+}
+
+/* Water coming up: the drawing grows from its bottom edge. */
+.rise {
+  transform-origin: bottom;
+  animation: rise 6s ease-in-out infinite;
+}
+@keyframes rise {
+  0%,
+  5% {
+    transform: scaleY(0.35);
+  }
+  60%,
+  100% {
+    transform: none;
+  }
+}
+
+/* A line drawn from start to end (path with pathLength="100"). */
+.draw {
+  stroke-dasharray: 100;
+  animation: draw 6s ease-out infinite;
+}
+@keyframes draw {
+  0%,
+  6% {
+    stroke-dashoffset: 100;
+  }
+  60%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Water running along a river: the dashes travel, the line stays. */
+.flow {
+  stroke-dasharray: 5 7;
+  animation: flow 1.6s linear infinite;
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+/* A countdown ring emptying over the loop (circle with pathLength="100"). */
+.sweep {
+  stroke-dasharray: 100;
+  animation: sweep 6s linear infinite;
+}
+@keyframes sweep {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 72;
+  }
+}
+
+/* A camera's flash, once. At rest there is no flash. */
+.flash {
+  opacity: 0;
+  animation: flash 6s ease-out infinite;
+}
+@keyframes flash {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  33% {
+    opacity: 0.85;
+  }
+  42%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A bell that rings. */
+.swing {
+  transform-origin: 50% 10%;
+  animation: swing 2.4s ease-in-out infinite;
+}
+@keyframes swing {
+  0%,
+  40%,
+  100% {
+    transform: none;
+  }
+  8% {
+    transform: rotate(14deg);
+  }
+  16% {
+    transform: rotate(-12deg);
+  }
+  24% {
+    transform: rotate(8deg);
+  }
+  32% {
+    transform: rotate(-4deg);
+  }
+}
+
+/* Something moving along a route: from the start of the line to where it rests. */
+.travel {
+  animation: travel 6s ease-in-out infinite;
+}
+@keyframes travel {
+  0%,
+  10% {
+    transform: translateX(-120%);
+  }
+  70%,
+  100% {
+    transform: none;
+  }
+}
+
+/* A pin falling into place. */
+.drop {
+  animation: drop 6s cubic-bezier(0.3, 1.5, 0.5, 1) infinite;
+}
+@keyframes drop {
+  0%,
+  10% {
+    transform: translateY(-140%);
+    opacity: 0;
+  }
+  22%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* A slow float, for the hub's centre. */
+.float {
+  animation: float 5s ease-in-out infinite;
+}
+@keyframes float {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* The hub's links: dashes that run the way a message travels (down, up, left, right). */
+.vline,
+.hline {
+  background-repeat: repeat;
+  animation-duration: 0.9s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.vline {
+  width: 3px;
+  height: 1.75rem;
+  margin-inline: auto;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--jaga-teal-light) 0 6px,
+    transparent 6px 12px
+  );
+}
+.hline {
+  height: 3px;
+  width: 100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--jaga-teal-light) 0 6px,
+    transparent 6px 12px
+  );
+}
+.down {
+  animation-name: down;
+}
+.up {
+  animation-name: down;
+  animation-direction: reverse;
+}
+.right {
+  animation-name: right;
+}
+.left {
+  animation-name: right;
+  animation-direction: reverse;
+}
+@keyframes down {
+  to {
+    background-position: 0 12px;
+  }
+}
+@keyframes right {
+  to {
+    background-position: 12px 0;
+  }
+}

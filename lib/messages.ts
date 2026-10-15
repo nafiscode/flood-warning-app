@@ -188,6 +188,8 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     weather: { chip: weather.chip, codes: weather.codes },
     notices: all.notices!,
     alert: { level: (all.alert as Messages).level! },
+    // The "What Jaga can do" line at the end of each page (A17): one word.
+    capabilities: { link: (all.capabilities as Messages).link! },
   };
 }
 
@@ -205,5 +207,7 @@ export function damReleaseMessages(messages: AbstractIntlMessages): AbstractIntl
     admin: { damRelease: admin.damRelease! },
     dam: { release: dam.release!, operators: dam.operators! },
     alert: { level: (all.alert as Messages).level! },
+    // The "What Jaga can do" line at the end of each page (A17): one word.
+    capabilities: { link: (all.capabilities as Messages).link! },
   };
 }

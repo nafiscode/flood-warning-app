@@ -576,7 +576,7 @@ Read docs/spec.md sections 3 and 4, docs/brand.md, and CLAUDE.md safety rules 1,
 Acceptance: a new visitor, a new team and a new admin each see their tours on the first two visits and not on the third; nothing appears on SOS or during Warning/Evacuate; every tour can be replayed; the owner has read the Thai.
 ```
 
-### A17: "What Jaga can do" page (before launch)
+### A17: "What Jaga can do" page (built 16 October 2026, `/features`)
 
 Added 15 Oct 2026 (owner's request): one page that shows, for each role, what Jaga lets them do. Not a manual: short, visual, and enough to show what the app is capable of.
 ```text

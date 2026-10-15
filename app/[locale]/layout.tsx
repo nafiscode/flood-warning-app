@@ -9,6 +9,7 @@ import { AdminLink } from "@/components/AdminLink";
 import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
 import { DaylightTheme } from "@/components/DaylightTheme";
+import { FeaturesLink } from "@/components/FeaturesLink";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { OfflineWarmup } from "@/components/OfflineWarmup";
 import { QueueRunner } from "@/components/QueueRunner";
@@ -213,6 +214,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               className="mx-auto w-full max-w-screen-sm flex-1 px-4 py-6 lg:max-w-6xl lg:px-6"
             >
               {children}
+              {/* What Jaga can do (A17), at the end of every page but the ones for asking help. */}
+              <FeaturesLink />
             </main>
             <footer className="sticky bottom-0 z-10">
               <HotlineBar />

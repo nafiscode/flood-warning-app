@@ -18,6 +18,7 @@ import {
   HouseIcon,
   LifebuoyIcon,
   ListIcon,
+  MapIcon,
   PinIcon,
   ShieldIcon,
   SignOutIcon,
@@ -41,6 +42,7 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
   if (!session) redirect(localePath(locale, "/sign-in"));
   if (needsName(session)) redirect(localePath(locale, "/account/setup"));
   const t = await getTranslations("account");
+  const tCapabilities = await getTranslations("capabilities");
   const tWatched = await getTranslations("watched");
   const tHousehold = await getTranslations("household");
   const tJourney = await getTranslations("journey");
@@ -113,6 +115,22 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
           {t("authority.register")}
         </Link>
       </section>
+
+      {/* What Jaga can do (A17), opened on this person's own kind of role. */}
+      <Link
+        href={
+          isAdminRole(session.role)
+            ? "/features#admin"
+            : (units ?? []).length > 0
+              ? "/features#team"
+              : "/features"
+        }
+        className={buttonSecondary}
+        data-features-link="account"
+      >
+        <MapIcon size={22} />
+        {tCapabilities("link")}
+      </Link>
 
       {isAdminRole(session.role) && (
         <Link href="/admin" className={buttonSecondary}>

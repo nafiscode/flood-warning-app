@@ -3987,5 +3987,226 @@
     "amount": "{mm} mm · peluang {chance}%",
     "modelTime": "Data model untuk {time}",
     "note": "Ramalan daripada model cuaca (Open-Meteo); ia boleh berubah. Ia bukan amaran banjir. Amaran datang daripada pentadbir Jaga dan DDPM (1784)."
+  },
+  "capabilities": {
+    "title": "Apa yang Jaga boleh buat",
+    "lead": "Jaga memerhati sungai dan menyampaikan berita untuk penduduk Pattani, Yala, Narathiwat dan Songkhla: amaran banjir kepada anda, dan permintaan bantuan anda kepada pasukan berhampiran. Percuma untuk semua.",
+    "link": "Apa yang Jaga boleh buat",
+    "stats": {
+      "provinces": "4 wilayah",
+      "tambons": "377 tambon",
+      "rivers": "Paras sungai disemak setiap 15 minit",
+      "offline": "Bahagian penting berfungsi tanpa isyarat"
+    },
+    "hub": {
+      "rivers": "Sungai, hujan dan empangan",
+      "admins": "Pentadbir Jaga yang menulis amaran",
+      "you": "Anda dan keluarga",
+      "teams": "Pasukan berhampiran anda",
+      "caption": "Amaran yang ditulis oleh manusia sampai kepada anda. Permintaan anda sampai kepada pasukan berhampiran, dan pasukan itulah yang membantu."
+    },
+    "emergency": "Jika kecemasan, jangan baca lagi: tekan SOS, atau hubungi 1784 atau 1669 di bawah.",
+    "is": {
+      "title": "Apa itu Jaga, dan apa yang bukan",
+      "doesTitle": "Apa yang Jaga buat",
+      "does1": "Menyampaikan amaran yang ditulis oleh orang yang memerhati air",
+      "does2": "Menyampaikan permintaan bantuan anda kepada pasukan berhampiran",
+      "does3": "Menunjukkan apa yang diketahui, dengan masa dan sumbernya",
+      "notTitle": "Apa yang Jaga tidak buat",
+      "not1": "Menyelamatkan sesiapa sendiri: pasukan yang melakukannya",
+      "not2": "Menggantikan 1784 atau 1669: hubungi bila-bila masa",
+      "not3": "Menjamin ramalan: ia menunjukkan julat, bukan kepastian"
+    },
+    "picker": {
+      "title": "Siapa anda?",
+      "label": "Pilih siapa anda",
+      "hint": "Pilih satu untuk melihat apa yang Jaga boleh buat untuk anda."
+    },
+    "roles": {
+      "resident": {
+        "name": "Penduduk dan pelawat",
+        "who": "Sesiapa yang tinggal atau berkunjung ke empat wilayah",
+        "intro": "Tanpa akaun pun anda boleh melihat amaran dan peta, dan menghantar SOS. Log masuk hanya untuk menjaga tempat lain juga."
+      },
+      "team": {
+        "name": "Pasukan penyelamat",
+        "who": "Unit penyelamat dan pasukan sukarelawan",
+        "intro": "Daftar sekali. Selepas pentadbir Jaga menelefon nombor rasmi pasukan anda, permintaan di kawasan anda akan sampai kepada anda."
+      },
+      "supplies": {
+        "name": "Pasukan makanan dan air",
+        "who": "Kumpulan yang menghantar makanan, air dan barang keperluan",
+        "intro": "Anda hanya melihat permintaan makanan dan air. Permintaan menyelamat tidak akan sampai kepada pasukan anda."
+      },
+      "admin": {
+        "name": "Pentadbir Jaga",
+        "who": "Sekumpulan kecil yang menjalankan Jaga",
+        "intro": "Pentadbir hanya melalui jemputan. Bahagian ini menunjukkan cara Jaga dijalankan, supaya anda tahu siapa di sebalik setiap amaran."
+      }
+    },
+    "canDo": "Apa yang anda boleh buat",
+    "whereLabel": "Di mana",
+    "open": "Buka",
+    "alsoTitle": "Juga untuk anda",
+    "items": {
+      "alert": {
+        "title": "Ketahui tahap amaran kawasan anda",
+        "text": "Pilih tambon anda sekali. Lihat tahap, sebab, masa dikeluarkan dan apa yang perlu dibuat sekarang.",
+        "where": "Utama"
+      },
+      "map": {
+        "title": "Lihat ke mana banjir sampai",
+        "text": "Kawasan berisiko banjir, paras sungai, empangan, hujan dan laut, dalam satu peta.",
+        "where": "Peta Risiko & Semasa"
+      },
+      "sos": {
+        "title": "Minta bantuan, walaupun tanpa akaun",
+        "text": "Hanya lokasi anda diperlukan. Anda akan nampak bila pasukan menerima dan bila mereka dalam perjalanan.",
+        "where": "Utama › SOS"
+      },
+      "supplies": {
+        "title": "Minta makanan dan air",
+        "text": "Selamat tetapi terkepung? Beritahu pasukan berhampiran apa yang isi rumah anda perlukan.",
+        "where": "Utama › Minta makanan dan air"
+      },
+      "places": {
+        "title": "Cari tempat selamat",
+        "text": "Tempat selamat terdekat, dan tanah tinggi untuk meletak kereta, dengan arah jalan.",
+        "where": "Utama › Tempat selamat berhampiran anda, dan peta"
+      },
+      "watch": {
+        "title": "Jaga keluarga di tempat lain",
+        "text": "Tambah kampung ibu bapa atau kedai anda, dan terima amaran untuk tempat itu juga.",
+        "where": "Akaun saya › Tempat yang saya jaga"
+      },
+      "register": {
+        "title": "Daftar pasukan anda",
+        "text": "Pilih tambon yang pasukan anda jaga. Pentadbir Jaga menelefon nombor rasmi sebelum anda mula.",
+        "where": "Akaun saya › Daftar pasukan"
+      },
+      "offer": {
+        "title": "Permintaan sampai kepada anda, dengan penggera",
+        "text": "Permintaan di kawasan anda berbunyi di papan kes. Terima dengan satu ketikan, atau biarkan ia beralih ke pasukan seterusnya.",
+        "where": "Akaun saya › Buka papan kes"
+      },
+      "eta": {
+        "title": "Beritahu anda sedang datang",
+        "text": "Pilih julat masa tiba. Peminta nampak pasukan anda sedang datang dan boleh menelefon anda.",
+        "where": "Papan kes › kes yang diterima"
+      },
+      "finish": {
+        "title": "Tutup dengan gambar",
+        "text": "Laporkan penyelamatan dengan gambar. Peminta mengesahkan mereka selamat.",
+        "where": "Papan kes › kes yang diterima"
+      },
+      "field": {
+        "title": "Rekod orang yang anda temui",
+        "text": "Menyelamatkan orang yang tidak menghantar permintaan? Rekodkan di tempat kejadian.",
+        "where": "Papan kes › Rekod penyelamatan yang ditemui sendiri"
+      },
+      "coverage": {
+        "title": "Lihat kawasan dan mata pasukan",
+        "text": "Peta kawasan jagaan, tempat yang belum dijaga sesiapa, dan mata untuk penyelamatan yang disahkan.",
+        "where": "Papan kes › Kawasan jagaan, Mata"
+      },
+      "suppliesRegister": {
+        "title": "Daftar sebagai pasukan makanan dan air",
+        "text": "Pilih \"Agihan makanan dan air\" semasa mendaftar. Pentadbir Jaga akan menelefon untuk mengesahkan pasukan anda.",
+        "where": "Akaun saya › Daftar pasukan"
+      },
+      "suppliesBoard": {
+        "title": "Lihat apa yang setiap isi rumah perlukan",
+        "text": "Setiap permintaan menyatakan apa yang kurang. Bunyi yang lebih lembut, dan tiada permintaan menyelamat.",
+        "where": "Akaun saya › Buka papan kes"
+      },
+      "escalate": {
+        "title": "Apabila keadaan menjadi serius",
+        "text": "Jika isi rumah memerlukan penyelamatan, mereka boleh menukar permintaan kepada pasukan penyelamat dengan satu ketikan.",
+        "where": "Halaman permintaan itu"
+      },
+      "console": {
+        "title": "Keluarkan amaran, dengan langkah semakan",
+        "text": "Pilih templat yang telah disemak dan tambon, lihat siapa yang akan menerimanya, kemudian siarkan.",
+        "where": "Pentadbir › Amaran"
+      },
+      "signals": {
+        "title": "Pantau sungai, hujan dan empangan",
+        "text": "Paras sungai setiap 15 minit dan ramalan hujan, dengan tahap yang dicadangkan. Hanya cadangan, bukan amaran.",
+        "where": "Pentadbir › Isyarat"
+      },
+      "autoAlarm": {
+        "title": "Satu penggera automatik, manusia didahulukan",
+        "text": "Apabila stesen paras air yang dipilih pentadbir mencapai tahapnya, telefon setiap pentadbir berbunyi dengan draf amaran. Jika tiada siapa menghantar atau menolaknya dalam 20 minit, Jaga menyiarkannya sendiri, ditanda belum disemak.",
+        "where": "Pentadbir › Amaran"
+      },
+      "warRoom": {
+        "title": "Lihat semua permintaan yang masih terbuka",
+        "text": "Permintaan yang belum diterima mana-mana pasukan didahulukan, dan pentadbir boleh menyerahkannya kepada pasukan.",
+        "where": "Pentadbir › Bilik gerakan"
+      },
+      "verify": {
+        "title": "Semak setiap pasukan",
+        "text": "Pentadbir menelefon nombor rasmi setiap pasukan sebelum pasukan itu boleh melihat permintaan sesiapa.",
+        "where": "Pentadbir › Semak pasukan"
+      },
+      "dam": {
+        "title": "Hantar notis pelepasan empangan",
+        "text": "Memberitahu kawasan di hilir Empangan Bang Lang bila air mungkin tiba, sebagai julat masa.",
+        "where": "Pentadbir › Notis pelepasan"
+      }
+    },
+    "extras": {
+      "report": {
+        "title": "Lapor banjir berhampiran anda",
+        "text": "Ditunjukkan pada peta sebagai kawasan, bukan rumah anda."
+      },
+      "notify": {
+        "title": "Terima pemberitahuan di telefon dan LINE",
+        "text": "Terlepas? Ia menunggu di loceng di atas."
+      },
+      "requests": {
+        "title": "Jejaki permintaan saya",
+        "text": "Setiap permintaan yang anda hantar, langkah demi langkah."
+      },
+      "weather": {
+        "title": "Cuaca di tempat anda",
+        "text": "Hujan, angin dan jam-jam akan datang."
+      }
+    },
+    "admin": {
+      "note": "Halaman ini hanya boleh dibuka oleh pentadbir Jaga."
+    },
+    "hazards": {
+      "title": "Kini banjir. Bencana lain kemudian.",
+      "now": "Diliputi",
+      "soon": "Akan datang",
+      "call": "Hubungi {number}",
+      "note": "Untuk bencana yang belum dibuka, Jaga belum ada ramalan. Jika kecemasan, tekan SOS atau hubungi nombor yang ditunjukkan."
+    },
+    "closing": {
+      "title": "Percuma, bukan untung, untuk semua",
+      "free": "Tiada bayaran, tiada iklan",
+      "languages": "Bahasa Thai, Melayu dan Inggeris",
+      "offline": "Amaran, tempat selamat, talian kecemasan dan SOS berfungsi tanpa isyarat",
+      "privacy": "Nombor telefon dan lokasi tepat anda tidak pernah didedahkan kepada umum",
+      "home": "Buka Jaga",
+      "map": "Buka Peta Risiko & Semasa"
+    },
+    "scene": {
+      "sent": "Dihantar",
+      "accepted": "Diterima",
+      "coming": "Dalam perjalanan",
+      "km": "{n} km",
+      "minutes": "{n} min",
+      "home": "Rumah",
+      "family": "Mak",
+      "shop": "Kedai",
+      "verified": "Disahkan",
+      "newRequest": "Permintaan baru",
+      "accept": "Terima",
+      "safe": "Selamat",
+      "reviewed": "Disemak",
+      "publish": "Siarkan"
+    }
   }
 }
