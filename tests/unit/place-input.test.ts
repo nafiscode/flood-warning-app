@@ -200,6 +200,9 @@ describe("the only places the server may follow a link to", () => {
       "localhost",
       "169.254.169.254",
       "goo.gl.attacker.net",
+      // "google." + a shared suffix anyone can register under (A10 security review).
+      "google.pp.ua",
+      "maps.google.co.com",
     ]) {
       expect(isMapLinkHost(host)).toBe(false);
     }

@@ -5,11 +5,28 @@ function prefixed(locale: string, path: string): string {
   return locale === routing.defaultLocale ? path : `/${locale}${path === "/" ? "" : path}`;
 }
 
+/**
+ * A same-site path to go to after sign-in, or null. Browsers and Node drop tabs and newlines from
+ * a URL before reading it, so "/<tab>/evil.com" would become "//evil.com", another site: anything with
+ * a control character or a space is refused, and the path must still be on this site once parsed.
+ */
+export function sameSitePath(next: string | null | undefined): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) return null;
+  if (/[\u0000-\u001f\u007f\s]/.test(next)) return null;
+  const here = "https://same.invalid";
+  let url: URL;
+  try {
+    url = new URL(next, here);
+  } catch {
+    return null;
+  }
+  if (url.origin !== here) return null;
+  return url.pathname + url.search + url.hash;
+}
+
 /** The page to come back to, as a locale-prefixed same-site path; the home page otherwise. */
 function backTo(locale: string, back: string | null): string {
-  const here =
-    back && back.startsWith("/") && !back.startsWith("//") && !back.includes("\\") ? back : "/";
-  return prefixed(locale, here);
+  return prefixed(locale, sameSitePath(back) ?? "/");
 }
 
 /**

@@ -205,7 +205,16 @@ type Due = DueRow & { endpoint: string; keys: { p256dh: string; auth: string } }
  * Never throws and never matters to the request it rides on: a case is on every covering team's
  * board whether or not a single notification leaves (safety rule 1).
  */
+/** When this server instance last started a tick: many requests in a burst share one. */
+let lastTickAt = 0;
+const TICK_GAP_MS = 3_000;
+
 export async function runPushTick(): Promise<PushOutcome> {
+  // A burst of requests (a poll every 20 s from every open case, a cron, an action) would
+  // otherwise each run the whole tick; one every few seconds hands out everything that is due.
+  const now = Date.now();
+  if (now - lastTickAt < TICK_GAP_MS) return { skipped: "recent" };
+  lastTickAt = now;
   try {
     const token = gateToken();
     // The LINE half runs beside this one, whatever happens to web push.

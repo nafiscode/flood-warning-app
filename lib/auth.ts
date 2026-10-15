@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { hasLocale } from "next-intl";
 import { routing, type Locale } from "@/i18n/routing";
 import { isAdminRole, type Role } from "@/lib/roles";
+import { sameSitePath } from "@/lib/sign-in-link";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -59,10 +60,9 @@ export function setupPath(locale: string, back: string): string {
   return `${localePath(locale, "/account/setup")}?${new URLSearchParams({ next })}`;
 }
 
-/** Only same-site paths are followed after sign-in. */
+/** Only same-site paths are followed after sign-in (see `sameSitePath`). */
 export function safeNextPath(next: string | null | undefined): string | null {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) return null;
-  return next;
+  return sameSitePath(next);
 }
 
 /** The address this request came to, for links that must come back to the same deployment. */
@@ -75,7 +75,10 @@ export async function requestOrigin(): Promise<string> {
 
 /** A path with the locale prefix the routing uses (Thai has none). */
 export function localePath(locale: string, path: string): string {
-  return locale === routing.defaultLocale ? path : `/${locale}${path === "/" ? "" : path}`;
+  // A locale from a form or a query is the caller's: anything not ours is Thai, so it can never
+  // turn the path into another site's address ("//evil.com/sign-in").
+  if (!hasLocale(routing.locales, locale) || locale === routing.defaultLocale) return path;
+  return `/${locale}${path === "/" ? "" : path}`;
 }
 
 /**

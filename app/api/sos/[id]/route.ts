@@ -8,6 +8,7 @@ import {
   type SosStatus,
   type SosTeam,
   type SosTimeline,
+  VULNERABLE,
 } from "@/lib/sos";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
@@ -41,9 +42,6 @@ export async function GET(request: Request, context: RouteContext<"/api/sos/[id]
   if (!supabaseConfigured()) return answer({ error: "unavailable" }, 503);
   const token = request.headers.get(TOKEN_HEADER);
 
-  // Whoever is owed a notification about a case is told now, after this answer has gone back:
-  // the team whose turn it is, or the sender (A7). It never holds up or fails the request.
-  after(() => void runPushTick());
   const supabase = await createClient();
   // Who is coming is asked beside the timeline, behind the same gate (the sender or the token).
   const [{ data, error }, responder] = await Promise.all([
@@ -52,6 +50,10 @@ export async function GET(request: Request, context: RouteContext<"/api/sos/[id]
   ]);
   const row = Array.isArray(data) ? data[0] : data;
   if (error || !row) return refused(error?.code);
+  // Whoever is owed a notification about a case is told now, after this answer has gone back:
+  // the team whose turn it is, or the sender (A7). Only for the case's own sender, so asking
+  // about made-up cases cannot set off the work (A10 security review).
+  after(() => void runPushTick());
   const who = Array.isArray(responder.data) ? responder.data[0] : responder.data;
   const team: SosTeam | null =
     responder.error || !who
@@ -130,8 +132,14 @@ export async function POST(request: Request, context: RouteContext<"/api/sos/[id
   const supabase = await createClient();
 
   if (input.action === "details") {
+    // Only the known flags, so nothing else can be stored on the case (A10 security review).
     const flags = Array.isArray(input.vulnerable)
-      ? Object.fromEntries((input.vulnerable as string[]).map((v) => [v, true]))
+      ? Object.fromEntries(
+          VULNERABLE.filter((v) => (input.vulnerable as unknown[]).includes(v)).map((v) => [
+            v,
+            true,
+          ]),
+        )
       : null;
     const { error } = await supabase.rpc("sos_add_details", {
       p_sos_id: id,

@@ -172,8 +172,27 @@ export function coordinatesFromUrl(address: string): Point | null {
 /** Hosts whose links only they can open: the position is behind a redirect. */
 const SHORT_HOSTS = new Set(["maps.app.goo.gl", "goo.gl", "g.co", "share.google"]);
 
+/**
+ * Google's own country domains a person here is likely to copy a link from. A list, not a
+ * pattern: "google." followed by any short ending would also take names anyone can register
+ * under a shared suffix (google.pp.ua), and the server follows these links (A10 security review).
+ */
+const GOOGLE_DOMAINS = new Set([
+  "google.com",
+  "google.co.th",
+  "google.com.my",
+  "google.com.sg",
+  "google.co.id",
+  "google.com.au",
+  "google.co.uk",
+  "google.co.jp",
+]);
+const GOOGLE_PREFIXES = ["", "www.", "maps.", "consent."];
+
 function isGoogle(host: string): boolean {
-  return /(^|\.)google\.[a-z.]{2,6}$/i.test(host);
+  return GOOGLE_PREFIXES.some(
+    (p) => host.startsWith(p) && GOOGLE_DOMAINS.has(host.slice(p.length)),
+  );
 }
 
 /**
