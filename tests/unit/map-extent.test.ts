@@ -1,6 +1,16 @@
 import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
 import { describe, expect, it } from "vitest";
-import { PROVINCE_BOUNDS, provincesBox, setBasemap, tambonLinePaint } from "@/lib/map";
+import {
+  PROVINCE_BOUNDS,
+  provincesBox,
+  SCENE_EXAGGERATION,
+  SCENE_PITCH,
+  SCENE_SOURCE,
+  setBasemap,
+  setScene,
+  tambonLinePaint,
+  withScene,
+} from "@/lib/map";
 
 describe("the map opens on the provinces of the person's own places", () => {
   it("is the whole province of the chosen area", () => {
@@ -82,5 +92,56 @@ describe("the tambon outlines on each background", () => {
 
   it("stay quiet slate on the street map", () => {
     expect(lineOn("streets").paint).toMatchObject({ "line-color": "#1d3b53", "line-opacity": 0.6 });
+  });
+});
+
+describe("the 3D scene", () => {
+  it("adds the raised ground and a sky only while 3D is on", () => {
+    const base = { version: 8, sources: {}, layers: [] } as unknown as StyleSpecification;
+    expect(withScene(base, false)).toBe(base);
+    const raised = withScene(base, true);
+    expect(raised.terrain).toEqual({ source: SCENE_SOURCE, exaggeration: SCENE_EXAGGERATION });
+    expect(raised.sources[SCENE_SOURCE]).toMatchObject({
+      type: "raster-dem",
+      encoding: "terrarium",
+    });
+    expect(raised.sky?.["sky-color"]).toBeTruthy();
+  });
+
+  it("raises and tilts the map for 3D, and lays it flat again, north up, for 2D", () => {
+    const calls: string[] = [];
+    const handler = (name: string) => ({
+      enable: () => calls.push(`${name}+`),
+      disable: () => calls.push(`${name}-`),
+      enableRotation: () => calls.push(`${name}+`),
+      disableRotation: () => calls.push(`${name}-`),
+    });
+    let terrain: unknown = "unset";
+    let eased: Record<string, number> = {};
+    const map = {
+      getSource: () => undefined,
+      addSource: (id: string) => calls.push(`source ${id}`),
+      setTerrain: (t: unknown) => (terrain = t),
+      setSky: () => calls.push("sky"),
+      setMaxPitch: () => {},
+      dragRotate: handler("rotate"),
+      touchZoomRotate: handler("twist"),
+      touchPitch: handler("tilt"),
+      easeTo: (o: Record<string, number>) => (eased = o),
+    } as unknown as MapLibreMap;
+    setScene(map, true);
+    expect(terrain).toEqual({ source: SCENE_SOURCE, exaggeration: SCENE_EXAGGERATION });
+    expect(eased.pitch).toBe(SCENE_PITCH);
+    expect(calls).toEqual(
+      expect.arrayContaining([`source ${SCENE_SOURCE}`, "sky", "rotate+", "twist+", "tilt+"]),
+    );
+    // While in 3D, a change of background keeps the ground raised.
+    expect(
+      withScene({ version: 8, sources: {}, layers: [] } as unknown as StyleSpecification).terrain,
+    ).toBeTruthy();
+    setScene(map, false);
+    expect(terrain).toBeNull();
+    expect(eased).toMatchObject({ pitch: 0, bearing: 0 });
+    expect(calls.slice(-3)).toEqual(["rotate-", "twist-", "tilt-"]);
   });
 });

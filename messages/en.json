@@ -639,6 +639,12 @@
     "zoomMine": "My places",
     "peek": {
       "more": "See all details"
+    },
+    "scene": {
+      "label": "Map view",
+      "flat": "2D",
+      "threeD": "3D",
+      "note": "3D: the ground is raised from elevation data and drawn {times} times its real height, so low ground stands out. Tilt and turn the map with two fingers on a phone, or drag with the right mouse button on a computer. 3D uses more data and battery."
     }
   },
   "attribution": {

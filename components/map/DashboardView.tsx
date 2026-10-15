@@ -12,6 +12,7 @@ import { HAZARD_CLASSES, hazardColor, hazardKey } from "@/lib/hazard-layer";
 import {
   BASEMAPS,
   isPhotoBasemap,
+  SCENE_EXAGGERATION,
   satelliteProvider,
   subscribeSatellite,
   type Basemap,
@@ -263,6 +264,8 @@ export function DashboardView(props: DashboardViewProps) {
   // says most about where water goes.
   const [showHazard, setShowHazard] = useState(true);
   const [basemap, setBasemapChoice] = useState<Basemap>("satelliteTerrain");
+  // 2D or 3D (the owner, 15 Oct): flat by default; the switch sits on the map itself.
+  const [scene, setScene] = useState(false);
   // Esri's picture, or EOX's once Esri stops answering (lib/map.ts): the note says which.
   const satellite = useSyncExternalStore(subscribeSatellite, satelliteProvider, satelliteProvider);
   /*
@@ -853,6 +856,31 @@ export function DashboardView(props: DashboardViewProps) {
                     </button>
                   )}
                 </div>
+                {/*
+                 * 2D or 3D, on the map itself (the owner, 15 Oct): at the start of its bottom
+                 * edge, clear of the zoom buttons and the credits.
+                 */}
+                <div
+                  role="group"
+                  aria-label={t("scene.label")}
+                  data-scene-switch={scene ? "3d" : "2d"}
+                  className="absolute bottom-2 start-2 z-10 flex overflow-hidden rounded-lg border border-jaga-line bg-jaga-surface shadow-sm"
+                >
+                  {([false, true] as const).map((on) => (
+                    <button
+                      key={String(on)}
+                      type="button"
+                      data-scene-choice={on ? "3d" : "2d"}
+                      aria-pressed={scene === on}
+                      onClick={() => setScene(on)}
+                      className={`min-h-tap min-w-12 px-3 text-small font-bold ${
+                        scene === on ? "bg-jaga-slate text-white" : "text-jaga-ink"
+                      }`}
+                    >
+                      {t(on ? "scene.threeD" : "scene.flat")}
+                    </button>
+                  ))}
+                </div>
                 <MapView
                   layers={mapLayers}
                   status={fresh ? status : null}
@@ -874,6 +902,7 @@ export function DashboardView(props: DashboardViewProps) {
                       : null
                   }
                   basemap={basemap}
+                  scene={scene}
                   damText={{
                     spillway: tDam("mark.spillway"),
                     outlet: tDam("mark.outlet"),
@@ -901,6 +930,11 @@ export function DashboardView(props: DashboardViewProps) {
                     </button>
                   ))}
                 </div>
+                {scene && (
+                  <p className={hint} data-scene-note="true">
+                    {t("scene.note", { times: SCENE_EXAGGERATION })}
+                  </p>
+                )}
                 {isPhotoBasemap(basemap) && (
                   <p className={hint} data-satellite-note={satellite}>
                     {t(

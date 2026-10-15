@@ -639,6 +639,12 @@
     "zoomMine": "Tempat saya",
     "peek": {
       "more": "Lihat semua butiran"
+    },
+    "scene": {
+      "label": "Paparan peta",
+      "flat": "2D",
+      "threeD": "3D",
+      "note": "3D: bukit dan lembah dinaikkan daripada data ketinggian dan dilukis {times} kali lebih tinggi daripada sebenar supaya kawasan rendah lebih jelas. Condongkan dan pusingkan peta dengan dua jari pada telefon, atau seret dengan butang kanan tetikus pada komputer. Mod 3D menggunakan lebih banyak data internet dan bateri."
     }
   },
   "attribution": {

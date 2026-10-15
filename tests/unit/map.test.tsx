@@ -20,7 +20,7 @@ import {
 } from "@/lib/dev-examples";
 import { damFrame, type Dam } from "@/lib/dam";
 import { layersFor } from "@/lib/hazards";
-import { boundsAround, MARGIN, MIN_SPAN } from "@/lib/map";
+import { boundsAround, MARGIN, MIN_SPAN, PROVINCE_BOUNDS, provincesBox } from "@/lib/map";
 import { alertFillColor, staleTambons } from "@/lib/map-style";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
@@ -472,6 +472,22 @@ describe("map dashboard (spec 4.2)", () => {
     expect(c.textContent).toContain(th.map.basemap.satelliteNote);
   });
 
+  it("has a 2D / 3D switch on the map, flat by default, and says what 3D draws", () => {
+    const c = dashboard({ status: exampleStatus([]) });
+    const frame = c.querySelector("[data-map-frame]")!;
+    const choices = [...frame.querySelectorAll<HTMLButtonElement>("[data-scene-choice]")];
+    expect(choices.map((b) => b.textContent)).toEqual([th.map.scene.flat, th.map.scene.threeD]);
+    expect(choices.map((b) => b.getAttribute("aria-pressed"))).toEqual(["true", "false"]);
+    expect(c.querySelector("[data-scene-note]")).toBeNull();
+    fireEvent.click(choices[1]!);
+    expect(frame.querySelector("[data-scene-switch]")?.getAttribute("data-scene-switch")).toBe(
+      "3d",
+    );
+    expect(c.querySelector("[data-scene-note]")?.textContent).toContain("1.5");
+    fireEvent.click(choices[0]!);
+    expect(c.querySelector("[data-scene-note]")).toBeNull();
+  });
+
   it("safe places wait behind a switch that says how many there are", () => {
     const c = dashboard({ status: exampleStatus([]) });
     const toggle = c.querySelector<HTMLInputElement>("[data-places-toggle] input")!;
@@ -746,16 +762,27 @@ describe("the map opens where the person already is", () => {
     const c = dashboard({ area: BANA });
     // The province selector is already on theirs (Pattani, 94), not "all four".
     expect((c.querySelector("#map-province") as HTMLSelectElement).value).toBe("94");
-    // The map looks at a box around their tambon, not the whole province.
-    const bounds = c
-      .querySelector("[data-map]")!
-      .getAttribute("data-bounds")!
-      .split(",")
-      .map(Number);
-    expect(bounds[0]).toBeCloseTo(BANA.lon - 0.1, 2);
-    expect(bounds[3]).toBeCloseTo(BANA.lat + 0.08, 2);
+    // The map looks at the whole of their province (the owner, 15 Oct).
+    expect(c.querySelector("[data-map]")?.getAttribute("data-bounds")).toBe(
+      PROVINCE_BOUNDS["94"]!.join(","),
+    );
     // And their tambon's alert is the one shown, without tapping anything.
     expect(c.querySelector("[data-selected-panel]")?.textContent).toContain("บานา");
+  });
+
+  it("a watched place in another province brings that province into the opening view", () => {
+    const nara = { ...BANA, code: "960101", lat: 6.42, lon: 101.82 };
+    const c = dashboard({
+      area: BANA,
+      me: {
+        signedIn: true,
+        home: null,
+        places: [{ id: "p1", label: "Mum", area: nara, contactName: null, contactPhone: null }],
+      },
+    });
+    expect(c.querySelector("[data-map]")?.getAttribute("data-bounds")).toBe(
+      provincesBox(["940101", "960101"])!.join(","),
+    );
   });
 
   it("a visitor with no area chosen still sees all four provinces", () => {

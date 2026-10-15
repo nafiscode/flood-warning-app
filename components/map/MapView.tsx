@@ -61,6 +61,7 @@ import {
   mapIsDark,
   SERVICE_BOUNDS,
   setBasemap,
+  setScene,
   TAMBON_FILL_LAYER,
   TAMBON_LINE_LAYER,
   TAMBON_SOURCE,
@@ -117,6 +118,8 @@ type Props = {
   hazardUrl?: string | null;
   /** The basemap under our layers (lib/map.ts). */
   basemap?: Basemap;
+  /** 3D: the ground raised and the map tilted (lib/map.ts, setScene). 2D when left out. */
+  scene?: boolean;
   /**
    * Hexagons where a satellite pass saw flood water (lib/satellite-flood.ts); null or empty
    * draws nothing. The caller says in words what an empty map means.
@@ -341,6 +344,7 @@ export function MapView({
   damText = { spillway: "", outlet: "", locale: "th" },
   hazardUrl = null,
   basemap = "streets",
+  scene = false,
   satellite = null,
   gaugeWords = { near: "", over: "" },
   peek,
@@ -372,6 +376,14 @@ export function MapView({
     applied.current = basemap;
     setBasemap(m, basemap);
   }, [basemap, state]);
+  // 2D or 3D: the map is never made again for it, only raised or laid flat.
+  const sceneApplied = useRef(false);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready" || sceneApplied.current === scene) return;
+    sceneApplied.current = scene;
+    setScene(m, scene);
+  }, [scene, state]);
   const select = useRef(onSelect);
   const draw = useRef<() => void>(() => {});
   // The places as the handlers below need them, without rebuilding the map when they change.
@@ -997,6 +1009,8 @@ export function MapView({
     if (!container.current) return;
     let cancelled = false;
     applied.current = basemapAtStart.current;
+    // A new map starts flat; the scene effect raises it again if 3D is chosen.
+    sceneApplied.current = false;
     createServiceAreaMap(container.current, basemapAtStart.current)
       .then((created) => {
         if (cancelled) {

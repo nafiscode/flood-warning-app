@@ -280,7 +280,7 @@ export const TAMBON_SELECTED_LAYER = "jaga-tambon-selected";
  */
 /** Parts of a basemap that are ours to add and must not be carried from one basemap to the next. */
 const BASE_PARTS = ["jaga-ground", "jaga-base-satellite", "jaga-base-hillshade"];
-const BASE_SOURCES = ["jaga-base-satellite", "jaga-base-dem"];
+const BASE_SOURCES = ["jaga-base-satellite", "jaga-base-dem", "jaga-base-scene"];
 const isBaseSource = (id: string) => BASE_SOURCES.includes(id) || id.startsWith(ESRI_SOURCE_PREFIX);
 
 /** The satellite picture as a whole style: one raster layer, and the font server our labels need. */
@@ -348,7 +348,9 @@ export function setBasemap(map: MapLibreMap, basemap: Basemap): void {
     void fetchEsriTerrain(esriLanguage()).then((style) => {
       if (chosen !== "terrain") return;
       if (style) {
-        map.setStyle(style, { transformStyle: (previous, next) => carryOwn(previous, next) });
+        map.setStyle(style, {
+          transformStyle: (previous, next) => withScene(carryOwn(previous, next)),
+        });
         return;
       }
       giveUpOnEsri();
@@ -360,15 +362,99 @@ export function setBasemap(map: MapLibreMap, basemap: Basemap): void {
   const style = photo ? satelliteStyle() : dark ? BASEMAP_STYLE_DARK : BASEMAP_STYLE;
   map.setStyle(style, {
     transformStyle: (previous, next) =>
-      carryOwn(
-        previous,
-        basemap === "terrain"
-          ? withHillshade(next, dark ? "mapDark" : "map")
-          : basemap === "satelliteTerrain"
-            ? withHillshade(next, "photo")
-            : next,
+      withScene(
+        carryOwn(
+          previous,
+          basemap === "terrain"
+            ? withHillshade(next, dark ? "mapDark" : "map")
+            : basemap === "satelliteTerrain"
+              ? withHillshade(next, "photo")
+              : next,
+        ),
       ),
   });
+}
+
+/*
+ * The 3D scene (the owner, 15 Oct 2026: "like a scene in ArcGIS Pro", with a 2D / 3D button on
+ * the map). The ground is raised from the same free elevation tiles the hill shading uses, under
+ * whichever background is chosen, and the map tilts. Heights are drawn SCENE_EXAGGERATION times
+ * their real size, or the coastal plain, where the floods are, would look flat; the page says so.
+ * It is never the default: a tilted map with raised ground costs a cheap phone far more.
+ */
+export const SCENE_SOURCE = "jaga-base-scene";
+export const SCENE_EXAGGERATION = 1.5;
+export const SCENE_PITCH = 60;
+const SCENE_MAX_PITCH = 70;
+let scene = false;
+/** Whether the map is in 3D right now. */
+export const inScene = () => scene;
+const sceneSource = () => ({
+  type: "raster-dem" as const,
+  tiles: [TERRAIN_TILES],
+  tileSize: 256,
+  maxzoom: 13,
+  encoding: "terrarium" as const,
+  attribution: TERRAIN_CREDIT,
+});
+/** A sky behind the tilted map: daylight, or the night's blue over the dark map. */
+export function sceneSky(dark: boolean) {
+  return dark
+    ? {
+        "sky-color": "#0b1620",
+        "horizon-color": "#1d3b53",
+        "fog-color": "#0f1c26",
+        "sky-horizon-blend": 0.6,
+        "horizon-fog-blend": 0.6,
+        "fog-ground-blend": 0.85,
+        "atmosphere-blend": 0.6,
+      }
+    : {
+        "sky-color": "#79acd6",
+        "horizon-color": "#dde9f0",
+        "fog-color": "#e8eef1",
+        "sky-horizon-blend": 0.6,
+        "horizon-fog-blend": 0.6,
+        "fog-ground-blend": 0.85,
+        "atmosphere-blend": 0.8,
+      };
+}
+/** The style with the raised ground and the sky added, while the map is in 3D. */
+export function withScene(style: StyleSpecification, on: boolean = scene): StyleSpecification {
+  if (!on) return style;
+  return {
+    ...style,
+    sources: { ...style.sources, [SCENE_SOURCE]: sceneSource() },
+    terrain: { source: SCENE_SOURCE, exaggeration: SCENE_EXAGGERATION },
+    sky: sceneSky(mapIsDark()),
+  };
+}
+const motionOk = () =>
+  typeof window === "undefined" || !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * Into 3D or back to 2D. In 3D the map may be tilted and turned (two fingers on a phone, the right
+ * mouse button on a computer); back in 2D it lies flat again, north up, as it always was.
+ */
+export function setScene(map: MapLibreMap, on: boolean): void {
+  scene = on;
+  const duration = motionOk() ? 1200 : 0;
+  if (on) {
+    if (!map.getSource(SCENE_SOURCE)) map.addSource(SCENE_SOURCE, sceneSource());
+    map.setTerrain({ source: SCENE_SOURCE, exaggeration: SCENE_EXAGGERATION });
+    map.setSky(sceneSky(mapIsDark()));
+    map.setMaxPitch(SCENE_MAX_PITCH);
+    map.dragRotate.enable();
+    map.touchZoomRotate.enableRotation();
+    map.touchPitch.enable();
+    map.easeTo({ pitch: SCENE_PITCH, duration });
+    return;
+  }
+  map.setTerrain(null);
+  map.dragRotate.disable();
+  map.touchZoomRotate.disableRotation();
+  map.touchPitch.disable();
+  map.easeTo({ pitch: 0, bearing: 0, duration });
 }
 
 /** Everything of ours (sources with the data they hold, layers in their order) on a new base. */
@@ -425,6 +511,7 @@ export async function createServiceAreaMap(
   basemap: Basemap = "streets",
 ): Promise<MapLibreMap> {
   chosen = basemap;
+  scene = false;
   const maplibre = await import("maplibre-gl");
   // The worker is served from public/vendor (scripts/vendor-maplibre.mjs), not from the bundle.
   maplibre.setWorkerUrl(`/vendor/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`);
@@ -443,6 +530,8 @@ export async function createServiceAreaMap(
     attributionControl: { compact: true },
   });
   map.touchZoomRotate.disableRotation();
+  // Flat in 2D: a two-finger drag would otherwise tilt it (setScene turns this on in 3D).
+  map.touchPitch.disable();
   /*
    * When Esri stops answering (the month's free tiles used up, or the key refused), the
    * satellite view falls back to EOX for the rest of the visit rather than going blank.
