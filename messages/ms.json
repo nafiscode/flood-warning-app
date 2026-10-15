@@ -70,7 +70,8 @@
       "details": "Lihat butiran amaran"
     },
     "mapLink": "Buka Peta Risiko & Semasa",
-    "projectLine": "Talian bantuan Jaga"
+    "projectLine": "Talian bantuan Jaga",
+    "issuerAuto": "Penggera automatik Jaga (daripada bacaan paras air, bukan dikeluarkan oleh pentadbir)"
   },
   "install": {
     "title": {
@@ -197,7 +198,6 @@
     "sending": "Menghantar…",
     "phoneLabel": "Nombor telefon (pilihan)",
     "phoneHint": "Tanpa nombor, penyelamat tidak dapat menelefon anda.",
-    "phoneBad": "Nombor itu tidak sah, tetapi permintaan anda tetap dihantar.",
     "location": {
       "locating": "Mencari lokasi…",
       "found": "Lokasi diperoleh (mungkin tersasar lebih kurang {meters} m)",
@@ -221,7 +221,7 @@
     },
     "sent": {
       "title": "Permintaan dihantar",
-      "body": "Permintaan ini sudah sampai kepada penyelamat di kawasan anda. Ikuti status di halaman ini.",
+      "body": "Permintaan anda sudah sampai kepada Jaga. Kami sedang mencari pasukan penyelamat bagi kawasan anda, dan pentadbir Jaga juga boleh melihatnya. Ikuti status di halaman ini.",
       "merged": "Permintaan ini digabungkan dengan permintaan anda yang masih terbuka. Maklumat terbaru anda telah ditambah.",
       "queuedTitle": "Belum dapat dihantar, sedang cuba lagi",
       "queuedBody": "Tiada isyarat internet. Permintaan anda disimpan dalam peranti dan akan dihantar sebaik sahaja ada isyarat. Jangan tutup aplikasi. Jika kecemasan, telefon atau hantar SMS guna butang di bawah.",
@@ -240,7 +240,7 @@
       "rescued": "Sudah diselamatkan",
       "safe_cancelled": "Anda kata anda sudah selamat",
       "dismissed": "Permintaan ini ditutup",
-      "waiting": "Belum ada unit yang menerima permintaan. Penyelamat boleh melihat permintaan anda.",
+      "waiting": "Permintaan anda sudah sampai kepada pasukan penyelamat. Sila tunggu jawapan mereka.",
       "repeat_merged": "Permintaan berulang ditambah ke dalam kes ini",
       "details_added": "Butiran sudah ditambah",
       "unit": "Unit bertanggungjawab: {unit}",
@@ -335,7 +335,7 @@
     "confirm": {
       "title": "{unit} kata anda sudah diselamatkan",
       "titleNoUnit": "Pasukan kata anda sudah diselamatkan",
-      "body": "Betulkah? Jawapan anda yang menutup permintaan ini.",
+      "body": "Betulkah? Sila sahkan supaya permintaan ini boleh ditutup.",
       "yes": "Ya, saya sudah diselamatkan",
       "no": "Tidak, saya masih perlukan bantuan",
       "noHint": "Jika tekan \"Tidak\", permintaan anda akan kembali mencari pasukan bantuan serta-merta.",
@@ -394,7 +394,7 @@
       "confirm": {
         "title": "{unit} mengatakan bekalan anda telah dihantar",
         "titleNoUnit": "Pasukan mengatakan bekalan anda telah dihantar",
-        "body": "Betulkah? Jawapan anda yang menutup permintaan ini.",
+        "body": "Betulkah? Sila sahkan supaya permintaan ini boleh ditutup.",
         "yes": "Ya, saya sudah terima bekalan",
         "no": "Tidak, belum terima lagi",
         "noHint": "Jika anda jawab tidak, permintaan anda akan kembali mencari pasukan baharu serta-merta."
@@ -464,7 +464,7 @@
     "straight": "jarak garis lurus",
     "walk": "kira-kira {minutes} minit berjalan kaki",
     "drive": "kira-kira {minutes} minit naik kereta",
-    "freeboard": "Kira-kira {value} m lebih tinggi daripada banjir tertinggi yang lalu",
+    "freeboard": "Kira-kira {value} m lebih tinggi daripada banjir tertinggi baru-baru ini (anggaran daripada peta)",
     "floodedBoth": "Pernah banjir pada 2024 dan 2025",
     "flooded2024": "Pernah banjir pada 2024",
     "flooded2025": "Pernah banjir pada 2025",
@@ -595,7 +595,7 @@
         "low": "Rendah"
       },
       "here": "Kawasan berisiko banjir di sini: {level}",
-      "note": "Peta ini dianggar daripada ketinggian tanah dan imej satelit bagi 9 musim banjir. Ia belum disemak dengan banjir sebenar dan bukan ramalan. Kawasan tanpa warna tidak bermakna tiada risiko.",
+      "note": "Peta ini dianggar daripada ketinggian tanah, imej satelit bagi 9 musim banjir dan peta banjir berulang GISTDA. Ia belum disemak di lapangan dan bukan ramalan. Kawasan tanpa warna tidak bermakna tiada risiko.",
       "toggle": "Tunjukkan kawasan berisiko banjir"
     },
     "basemap": {
@@ -638,7 +638,7 @@
       },
       "skill": "Ramalan musim seperti ini hanya betul di kawasan ini kira-kira {n} kali daripada 10.",
       "bursts": "Banjir paling teruk datang daripada hujan lebat beberapa hari yang tidak dapat diramal sejauh ini. Bersedialah seperti setiap tahun.",
-      "alerts": "Amaran untuk kawasan anda datang daripada pentadbir Jaga dan DDPM, bukan daripada tinjauan ini.",
+      "alerts": "Amaran dalam Jaga dikeluarkan oleh Jaga, bukan diambil daripada tinjauan ini. Ikuti juga amaran rasmi DDPM.",
       "issued": "Dikeluarkan {date}",
       "source": "Daripada data hujan 45 musim (CHIRPS, ERA5-Land), indeks ENSO dan ramalan musim NOAA."
     },
@@ -705,7 +705,7 @@
     "yourArea": "Kawasan anda",
     "see": "Lihat butiran",
     "ended": "Amaran sudah tamat",
-    "announcement": "Pengumuman daripada Jaga",
+    "announcement": "Makluman daripada Jaga",
     "announcementNote": "Bukan amaran bahaya",
     "sos": {
       "title": "Permintaan bantuan anda",
@@ -1695,7 +1695,7 @@
     },
     "assign": {
       "title": "Serah kepada unit mana",
-      "note": "Sistem belum hantar amaran kepada unit sendiri (akan datang di A7). Selepas serah, telefon unit itu sendiri.",
+      "note": "Pasukan tidak dimaklumkan tentang serahan ini; kes akan muncul di papan mereka. Selepas menyerah, telefon pasukan itu sendiri.",
       "noUnits": "Tiada unit disahkan yang menjaga tambon ini.",
       "what": "Catatan pendek (tidak wajib)",
       "openCases": "Sedang jaga {count} kes",
@@ -1927,7 +1927,7 @@
       "province": "Wilayah",
       "teams": "Pasukan",
       "opened": "Dibuka",
-      "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri dan menukar kod peranti setiap hari, jadi satu peranti tidak boleh diikut dari hari ke hari; tiada perkhidmatan analitik syarikat lain digunakan.",
+      "usageNote": "Angka penggunaan dikira setiap wilayah setiap hari. Jaga mengiranya dengan kodnya sendiri, menggunakan kod rawak pada peranti yang tidak pernah dikaitkan dengan akaun, nama atau nombor telefon; ia disimpan 90 hari, selepas itu hanya jumlah harian yang tinggal. Tiada perkhidmatan analitik syarikat lain digunakan.",
       "ringNote": "Gelang menunjukkan bahagian permintaan wilayah itu yang disahkan oleh pasukan",
       "share": "{percent}% disahkan"
     },
@@ -2488,7 +2488,7 @@
   },
   "alertConsole": {
     "title": "Amaran",
-    "intro": "Setiap amaran dikeluarkan oleh pentadbir sahaja. Sistem tidak mengeluarkan amaran sendiri. Setiap tindakan di halaman ini direkodkan.",
+    "intro": "Amaran dikeluarkan oleh pentadbir, kecuali penggera automatik: bagi stesen yang ditanda oleh pentadbir, jika tiada sesiapa menghantar atau menolak drafnya dalam masa yang ditetapkan, sistem akan mengeluarkannya sendiri dan menandanya sebagai belum disemak. Setiap tindakan di halaman ini direkodkan.",
     "new": "Keluarkan amaran baharu",
     "drillMode": "Perkhidmatan belum dibuka: pada langkah semakan anda memilih sama ada menyimpan sebagai “latihan” (orang awam tidak nampak) atau mengeluarkan “amaran sebenar” (semua orang di kawasan itu nampak). Pilihan asal ialah latihan.",
     "drillTag": "Latihan",
@@ -2609,7 +2609,7 @@
       "back": "Kembali untuk mengubah",
       "title": "Semakan: amaran akan dikeluarkan seperti ini",
       "drill": "Latihan: orang awam tidak akan melihat amaran ini; hanya pentadbir yang nampak.",
-      "real": "Amaran sebenar: sesiapa yang membuka aplikasi di kawasan ini akan melihatnya dalam kira-kira 1 minit, dan aplikasi yang sedang dibuka akan berbunyi bagi tahap Amaran dan Pindah.",
+      "real": "Amaran sebenar: orang di kawasan ini yang menghidupkan pemberitahuan, atau menerima Jaga di LINE, dimaklumkan serta-merta; sesiapa yang membuka aplikasi akan melihatnya, dan aplikasi yang sedang dibuka berbunyi bagi setiap tahap.",
       "tambons": "{count} mukim",
       "nextUpdate": "Kemas kini seterusnya",
       "reason": "Sebab",
@@ -2623,7 +2623,7 @@
         "people": "{count} orang mempunyai rumah atau tempat yang dipantau di kawasan ini",
         "detail": "Rumah {homes} · tempat dipantau {watched}",
         "channels": "Pemberitahuan pada peranti: {push} orang · LINE disambung: {line} orang",
-        "notYet": "Pemberitahuan pada peranti dan LINE belum disambungkan (peringkat A7). Buat masa ini amaran hanya dipaparkan dalam aplikasi, pada peta dan dalam loceng."
+        "notYet": "Pemberitahuan peranti dan LINE hanya sampai kepada orang yang menghidupkannya. Orang lain melihat amaran apabila membuka aplikasi, pada peta dan dalam loceng."
       },
       "quota": "Kuota LINE bulan ini selepas dihantar: {after} daripada {limit}",
       "quotaOver": "Melebihi kuota LINE bulan ini: {after} daripada {limit}",
@@ -2642,7 +2642,7 @@
         "drill": "Latihan",
         "drillHint": "Orang awam tidak nampak; tiada bunyi.",
         "real": "Amaran sebenar",
-        "realHint": "Dipaparkan pada peta, halaman utama dan loceng semua orang di kawasan itu, walaupun perkhidmatan belum dibuka."
+        "realHint": "Dipaparkan pada peta, halaman utama dan loceng semua orang di kawasan itu, dan dihantar melalui pemberitahuan peranti dan LINE, walaupun perkhidmatan belum dibuka."
       }
     },
     "auto": {
@@ -2677,7 +2677,7 @@
     },
     "moderation": {
       "title": "Semakan laporan banjir",
-      "intro": "Laporan yang diluluskan dikira dalam heksagon pada peta awam. Laporan yang disembunyikan tidak dikira dan tidak ditunjukkan kepada pasukan penyelamat. Tiada yang dipadam, dan keputusan boleh diubah kemudian. Halaman ini tidak menunjukkan siapa penghantarnya.",
+      "intro": "Setiap laporan yang masih berkuat kuasa dikira dalam heksagon pada peta awam kecuali yang disembunyikan; laporan yang disembunyikan tidak dikira dan tidak ditunjukkan kepada pasukan penyelamat. Meluluskan bermaksud pentadbir telah menyemaknya. Tiada yang dipadam, dan keputusan boleh diubah kemudian. Halaman ini tidak menunjukkan siapa penghantarnya.",
       "status": {
         "pending": "Menunggu semakan",
         "approved": "Diluluskan",
@@ -3035,7 +3035,7 @@
         "dismissed": "Permintaan ini ditutup"
       },
       "wait": {
-        "accepted": "Sedang mencari pasukan. Pasukan penyelamat di kawasan ini sudah nampak permintaan anda. Jika nyawa terancam, hubungi 1669 atau 1784.",
+        "accepted": "Sedang mencari pasukan. Permintaan anda sudah sampai kepada pasukan penyelamat; sila tunggu jawapan mereka. Jika nyawa terancam, hubungi 1669 atau 1784.",
         "en_route": "Pasukan telah menerima dan sedang bersiap untuk bertolak.",
         "on_site": "Pasukan sedang dalam perjalanan ke tempat anda.",
         "finished": "Pasukan sudah bersama anda.",
@@ -3472,14 +3472,14 @@
       "note": "Pasukan makanan dan air hanya melihat permintaan bekalan; permintaan menyelamat tidak pernah ditawarkan kepadanya."
     },
     "pending": {
-      "note": "Apa yang dilihat pasukan yang baru mendaftar pada halaman akaun dan konsol, sehingga pentadbir menelefon nombor rasminya dan mengesahkannya."
+      "note": "Apa yang dilihat pasukan yang baru mendaftar pada halaman akaun dan konsol, sehingga pentadbir menelefon orang hubungannya dan meluluskannya."
     },
     "operator": {
       "note": "Skrin yang akan digunakan oleh pengendali empangan untuk memberi notis pelepasan air.",
       "lead": "Pengendali mengisi bila pintu air dibuka, berapa banyak air dilepaskan, dan bila dijangka tamat; ayatnya datang daripada templat yang telah disemak. Notis dihantar serta-merta kepada semua orang dalam zon hilir empangan, dan pentadbir Jaga dimaklumkan pada masa yang sama serta boleh melanjutkan atau membatalkannya.",
       "notYet": "Belum ada sesiapa boleh mendaftar sebagai pengendali empangan sehingga wakil di empangan bersetuju.",
       "send": "Hantar notis pelepasan air",
-      "sent": "Pratonton: tiada apa-apa dihantar. Pada skrin sebenar, notis ini akan sampai kepada semua orang dalam zon serta-merta, dan pentadbir akan melihatnya pada masa yang sama."
+      "sent": "Pratonton: tiada apa-apa dihantar. Pada skrin sebenar, notis ini akan dikeluarkan untuk zon itu serta-merta, dan pentadbir akan melihatnya pada masa yang sama."
     }
   },
   "usage": {
@@ -3754,7 +3754,7 @@
     "live": "Langsung",
     "risk": {
       "name": "Kawasan berisiko banjir",
-      "note": "Dianalisis daripada imej radar satelit 9 musim hujan dan ketinggian tanah",
+      "note": "Dianalisis daripada imej radar satelit 9 musim hujan, ketinggian tanah dan peta banjir berulang GISTDA",
       "short": "Kawasan berisiko"
     },
     "places": {
@@ -3769,7 +3769,7 @@
     },
     "gauges": {
       "name": "Paras air sungai",
-      "note": "Stesen paras air, dikemas kini setiap 15 minit",
+      "note": "Stesen paras air; Jaga menyemak bacaan baharu setiap 15 minit",
       "short": "Paras sungai"
     },
     "dam": {
@@ -3844,7 +3844,7 @@
       "low": "Rendah",
       "minimal": "Tidak ditanda"
     },
-    "note": "Dianggar daripada radar satelit 9 musim hujan dan ketinggian tanah. Satu anggaran, bukan ramalan.",
+    "note": "Dianggar daripada radar satelit 9 musim hujan, ketinggian tanah dan peta banjir berulang GISTDA. Satu anggaran, bukan ramalan.",
     "open": "Lihat di Peta Risiko & Semasa"
   },
   "signInOffer": {

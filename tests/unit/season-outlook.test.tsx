@@ -58,7 +58,7 @@ describe("the season outlook's public line", () => {
     expect(text).toContain("An El Niño in the Pacific points to less rain than usual.");
     expect(text).toContain("about 5 times in 10");
     expect(text).toContain("cannot be foreseen this far ahead. Prepare as for any year.");
-    expect(text).toContain("not from this outlook");
+    expect(text).toContain("not taken from this outlook");
     expect(text).toContain("Issued October 14, 2026");
   });
 

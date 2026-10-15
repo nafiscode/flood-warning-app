@@ -70,7 +70,8 @@
       "details": "See the alert details"
     },
     "mapLink": "Open the Risk & Live Map",
-    "projectLine": "Jaga help line"
+    "projectLine": "Jaga help line",
+    "issuerAuto": "Jaga's automatic alarm (from a river gauge reading, not issued by an admin)"
   },
   "install": {
     "title": {
@@ -197,7 +198,6 @@
     "sending": "Sending…",
     "phoneLabel": "Phone number (optional)",
     "phoneHint": "Without a number, rescuers can't call you.",
-    "phoneBad": "That number isn't valid, but your request was still sent.",
     "location": {
       "locating": "Finding your location…",
       "found": "Location found (about {meters} m)",
@@ -221,7 +221,7 @@
     },
     "sent": {
       "title": "Request sent",
-      "body": "Rescuers covering your area have this request. Follow it on this page.",
+      "body": "Your request has reached Jaga. We are looking for a rescue team covering your area, and Jaga's admins can see it too. Follow it on this page.",
       "merged": "This was added to your request that is still open, with your latest details.",
       "queuedTitle": "Not sent yet, still trying",
       "queuedBody": "There is no connection. Your request is kept on this device and goes out as soon as there is signal. Keep the app open. If it is urgent, call or send an SMS below.",
@@ -240,7 +240,7 @@
       "rescued": "Rescued",
       "safe_cancelled": "You said you are safe",
       "dismissed": "This request was closed",
-      "waiting": "No unit has taken it yet. Rescuers can see your request.",
+      "waiting": "Your request has reached the rescuers. Please wait for them to respond.",
       "repeat_merged": "A repeat request was added to this case",
       "details_added": "Details added",
       "unit": "Unit responsible: {unit}",
@@ -335,7 +335,7 @@
     "confirm": {
       "title": "{unit} says you have been rescued",
       "titleNoUnit": "The team says you have been rescued",
-      "body": "Is that right? Your answer is what closes this request.",
+      "body": "Is that right? Please confirm, so this request can be closed.",
       "yes": "Yes, I have been rescued",
       "no": "No, I still need help",
       "noHint": "If you say no, your request goes straight back to looking for a team.",
@@ -394,7 +394,7 @@
       "confirm": {
         "title": "{unit} says it has delivered your supplies",
         "titleNoUnit": "The team says it has delivered your supplies",
-        "body": "Is that right? Your answer is what closes this request.",
+        "body": "Is that right? Please confirm, so this request can be closed.",
         "yes": "Yes, I received them",
         "no": "No, nothing has arrived",
         "noHint": "If you say no, your request goes straight back to looking for a team."
@@ -464,7 +464,7 @@
     "straight": "in a straight line",
     "walk": "about {minutes} min on foot",
     "drive": "about {minutes} min by car",
-    "freeboard": "About {value} m above the highest recent flood",
+    "freeboard": "About {value} m above the highest recent flood (estimated from maps)",
     "floodedBoth": "Flooded in 2024 and 2025",
     "flooded2024": "Flooded in 2024",
     "flooded2025": "Flooded in 2025",
@@ -595,7 +595,7 @@
         "low": "Low"
       },
       "here": "Flood-prone area here: {level}",
-      "note": "This map is estimated from the height of the land and nine flood seasons of satellite images. It has not been checked against real floods and it is not a forecast. A place without colour does not mean no risk.",
+      "note": "This map is estimated from the height of the land, nine flood seasons of satellite images and GISTDA's map of repeated floods. It has not been checked on the ground and it is not a forecast. A place without colour does not mean no risk.",
       "toggle": "Show flood-risk areas"
     },
     "basemap": {
@@ -638,7 +638,7 @@
       },
       "skill": "Seasonal outlooks like this have been right here only about {n} times in 10.",
       "bursts": "The worst floods come from a few days of heavy rain that cannot be foreseen this far ahead. Prepare as for any year.",
-      "alerts": "Alerts for your area come from Jaga's admins and from DDPM, not from this outlook.",
+      "alerts": "Alerts in Jaga are issued by Jaga, not taken from this outlook. Follow DDPM's official warnings too.",
       "issued": "Issued {date}",
       "source": "From 45 seasons of rain (CHIRPS, ERA5-Land), the ENSO index and NOAA's seasonal forecasts."
     },
@@ -1695,7 +1695,7 @@
     },
     "assign": {
       "title": "Which unit takes it",
-      "note": "Nothing is sent to the unit yet (notifications land in A7). After assigning, call them yourself.",
+      "note": "The team is not notified of an assignment; the case appears on their board as theirs. After assigning, call them yourself.",
       "noUnits": "No verified unit covers this tambon.",
       "what": "Short note (optional)",
       "openCases": "{count} open cases",
@@ -1927,7 +1927,7 @@
       "province": "Province",
       "teams": "Teams",
       "opened": "Openings",
-      "usageNote": "Usage is counted per province per day. Jaga counts it with its own code and changes the device code every day, so one device cannot be followed from day to day, and no outside analytics service is used.",
+      "usageNote": "Usage is counted per province per day. Jaga counts it with its own code, using a random code on the device that is never linked to an account, name or phone number; it is kept 90 days, after which only daily totals remain. No outside analytics service is used.",
       "ringNote": "Each ring is the share of that province's requests a team confirmed",
       "share": "{percent}% confirmed"
     },
@@ -2488,7 +2488,7 @@
   },
   "alertConsole": {
     "title": "Alerts",
-    "intro": "Every alert is published by an admin. The system never publishes one by itself. Everything done on this page is logged.",
+    "intro": "Alerts are published by admins, with one exception: the automatic alarm. For a gauge an admin has ticked, if nobody sends or dismisses its draft within the grace time, the system publishes it itself, marked as not reviewed. Everything done on this page is logged.",
     "new": "New alert",
     "drillMode": "The service is not switched on yet: at the review step you choose between a drill (the public does not see it) and a real alert (everyone in the area sees it). It starts on drill.",
     "drillTag": "Drill",
@@ -2609,7 +2609,7 @@
       "back": "Go back and change it",
       "title": "Review: this is what will be published",
       "drill": "Drill: the public will not see this alert; only admins do.",
-      "real": "Real alert: anyone who opens the app in this area sees it within about 1 minute, and an open app rings for Warning and Evacuate.",
+      "real": "Real alert: people in this area with notifications on, or who get Jaga on LINE, are told at once; anyone who opens the app sees it, and an open app rings for every level.",
       "tambons": "{count, plural, one {# tambon} other {# tambons}}",
       "nextUpdate": "Next update",
       "reason": "Reason",
@@ -2623,7 +2623,7 @@
         "people": "{count, plural, one {# person has} other {# people have}} a home or a watched place in this area",
         "detail": "Homes {homes} · watched places {watched}",
         "channels": "Device notifications: {push} · LINE connected: {line}",
-        "notYet": "Phone notifications and LINE are not connected yet (phase A7). For now the alert shows in the app, on the map and in the bell only."
+        "notYet": "Phone notifications and LINE reach only the people who turned them on. Everyone else sees the alert when they open the app, on the map and in the bell."
       },
       "quota": "LINE quota this month after sending: {after} of {limit}",
       "quotaOver": "Over this month's LINE quota: {after} of {limit}",
@@ -2642,7 +2642,7 @@
         "drill": "Drill",
         "drillHint": "The public does not see it; nothing rings.",
         "real": "Real alert",
-        "realHint": "Shown on the map, the home screen and the bell of everyone in the area, even though the service is not switched on yet."
+        "realHint": "Shown on the map, the home screen and the bell of everyone in the area, and sent by phone notification and LINE, even though the service is not switched on yet."
       }
     },
     "auto": {
@@ -2677,7 +2677,7 @@
     },
     "moderation": {
       "title": "Flood report moderation",
-      "intro": "An approved report counts in the hexagons on the public map. A hidden one does not, and is not shown to rescue teams. Nothing is deleted and either answer can be changed later. This page never says who sent a report.",
+      "intro": "Every report that is still standing counts in the hexagons on the public map unless it is hidden; a hidden one does not count and is not shown to rescue teams. Approving marks it as checked by an admin. Nothing is deleted and either answer can be changed later. This page never says who sent a report.",
       "status": {
         "pending": "Waiting",
         "approved": "Approved",
@@ -3035,7 +3035,7 @@
         "dismissed": "This request was closed"
       },
       "wait": {
-        "accepted": "Looking for a team. Rescue teams covering your area can see your request. If life is in danger, call 1669 or 1784.",
+        "accepted": "Looking for a team. Your request has reached the rescuers; please wait for them to respond. If life is in danger, call 1669 or 1784.",
         "en_route": "The team has accepted and is getting ready to set out.",
         "on_site": "The team is on its way to you.",
         "finished": "The team is with you.",
@@ -3472,14 +3472,14 @@
       "note": "A food and water team sees only requests for supplies; a request for rescue is never offered to it."
     },
     "pending": {
-      "note": "What a newly registered team sees on its account page and on the console, until an admin has called its official number and verified it."
+      "note": "What a newly registered team sees on its account page and on the console, until an admin has called its contact person and approved it."
     },
     "operator": {
       "note": "The screen a dam operator would use to announce a release.",
       "lead": "The operator enters when the gates open, how much water is released and when it is expected to end; the words come from the reviewed template. The notice goes out at once to everyone in the zone below the dam, and Jaga's admins are told at the same moment and can extend or cancel it.",
       "notYet": "Nobody can register as a dam operator yet: this waits for a contact at the dam to agree.",
       "send": "Send the release notice",
-      "sent": "Preview: nothing was sent. On the real screen this notice would now reach everyone in the zone, and the admins would see it at once."
+      "sent": "Preview: nothing was sent. On the real screen this notice would be published for the zone at once, and the admins would see it at the same time."
     }
   },
   "usage": {
@@ -3754,7 +3754,7 @@
     "live": "Live",
     "risk": {
       "name": "Flood-risk areas",
-      "note": "Analysed from 9 rainy seasons of satellite radar and the height of the land",
+      "note": "Analysed from 9 rainy seasons of satellite radar, the height of the land and GISTDA's map of repeated floods",
       "short": "Flood risk"
     },
     "places": {
@@ -3769,7 +3769,7 @@
     },
     "gauges": {
       "name": "River levels",
-      "note": "River gauges, updated every 15 minutes",
+      "note": "River gauges; Jaga checks for new readings every 15 minutes",
       "short": "River gauges"
     },
     "dam": {
@@ -3844,7 +3844,7 @@
       "low": "Low",
       "minimal": "Not marked"
     },
-    "note": "Estimated from 9 rainy seasons of satellite radar and the height of the land. An estimate, not a forecast.",
+    "note": "Estimated from 9 rainy seasons of satellite radar, the height of the land and GISTDA's map of repeated floods. An estimate, not a forecast.",
     "open": "See it on the Risk & Live Map"
   },
   "signInOffer": {

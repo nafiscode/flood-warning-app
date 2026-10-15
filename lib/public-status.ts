@@ -15,9 +15,14 @@ export type PublicAlert = {
   /** Expected flooding and return windows: always ranges, always estimates (safety rule 8). */
   onset: [string, string] | null;
   returnWindow: [string, string] | null;
-  /** Where the information came from; the issuer is always shown as "Jaga admin". */
+  /** Where the information came from. */
   source: string | null;
   tambons: string[];
+  /**
+   * Published by the automated alarm with no admin acting (safety rule 2's one exception), so the
+   * issuer line must not say an admin issued it.
+   */
+  auto?: boolean;
   /**
    * A dam release notice carries the figures a screen needs to say when the water reaches **this**
    * place: the dam it came from and the time a person said the gates opened. Null on every other
@@ -141,8 +146,17 @@ export function toPublicAlert(row: Record<string, unknown>): PublicAlert | null 
     returnWindow: range(row.return_from, row.return_to),
     source: typeof row.source === "string" && row.source !== "" ? row.source : null,
     tambons: row.tambons.map(String),
+    auto: isAutoAlarm(row.details),
     release: toRelease(row.details),
   };
+}
+
+function isAutoAlarm(details: unknown): boolean {
+  return (
+    !!details &&
+    typeof details === "object" &&
+    (details as { kind?: unknown }).kind === "auto_alarm"
+  );
 }
 
 /**

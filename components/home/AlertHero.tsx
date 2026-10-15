@@ -71,7 +71,7 @@ export function AlertDetails({ alert, areaName }: { alert: PublicAlert; areaName
       )}
       <dl className="flex flex-col gap-2">
         <Row term={t("reason")}>{reasonFor(alert, locale)}</Row>
-        <Row term={t("issuedBy")}>{t("issuer")}</Row>
+        <Row term={t("issuedBy")}>{t(alert.auto ? "issuerAuto" : "issuer")}</Row>
         {alert.source && <Row term={t("source")}>{alert.source}</Row>}
         <div className="grid grid-cols-2 gap-2">
           <Row term={t("issued")}>{time(alert.issuedAt)}</Row>

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AlertDetails } from "@/components/home/AlertHero";
 import { alertWords, fillArea } from "@/lib/alert-words";
 import { tambonName } from "@/lib/area";
-import type { PublicAlert } from "@/lib/public-status";
+import { toPublicAlert, type PublicAlert } from "@/lib/public-status";
 import { alertPayload } from "@/lib/push";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
@@ -93,5 +93,30 @@ describe("where the words are shown", () => {
     expect(
       alertPayload({ id: ALERT.id, level: "warning", messages: MESSAGES }, "ms", level)!.body,
     ).toBe(MESSAGES.ms);
+  });
+});
+
+describe("who issued an alert", () => {
+  it("an alert the automatic alarm published by itself never says an admin issued it", () => {
+    const row = {
+      alert_id: ALERT.id,
+      hazard_type: "flood",
+      level: "warning",
+      reason: "X.40A 16.1 m",
+      messages: MESSAGES,
+      issued_at: ALERT.issuedAt,
+      next_update_at: ALERT.nextUpdateAt,
+      tambons: ["950101"],
+      details: { kind: "auto_alarm" },
+    };
+    const auto = toPublicAlert(row)!;
+    expect(auto.auto).toBe(true);
+    expect(toPublicAlert({ ...row, details: null })!.auto).toBe(false);
+    const { container } = renderWithIntl(<AlertDetails alert={auto} />);
+    expect(container.textContent).toContain(th.home.issuerAuto);
+    expect(container.textContent).not.toContain(th.home.issuer);
+    const byAdmin = renderWithIntl(<AlertDetails alert={ALERT} />).container;
+    expect(byAdmin.textContent).toContain(th.home.issuer);
+    expect(byAdmin.textContent).not.toContain(th.home.issuerAuto);
   });
 });
