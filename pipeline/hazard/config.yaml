@@ -101,5 +101,15 @@ tiles:
   attribution: "Jaga; FABDEM (Hawker et al. 2022); Copernicus Sentinel-1; OpenStreetMap contributors; Google Open Buildings; GISTDA"
   licence: "CC BY-NC-SA 4.0"
 
+# The classes per village (villages.py; decision 2026-10-16). Villages are points: each cell of a
+# tambon goes to the nearest village point of that tambon. The 2012 layer is used where it has
+# points (teams and admins only: its terms are unknown, so its seed goes to the private data repo);
+# OpenStreetMap's villages and hamlets fill the tambons it leaves empty.
+villages:
+  dopa2012_url: https://raw.githubusercontent.com/prasertcbs/thailand_gis/main/village/TH_VILLAGE2012.zip
+  osm_url: https://production-raw-data-api.s3.amazonaws.com/ISO3/THA/populated_places/hotosm_tha_populated_places_osm_gpkg.zip
+  match_m: 1500                       # a 2012 village with an OpenStreetMap village of the same name this near is public
+  seed: villages/villages_seed.sql    # inside the private data repo (pipeline/data)
+
 # Local outputs, relative to pipeline/ (ignored by git through the root rule "out/").
 output_dir: out/hazard

@@ -193,6 +193,35 @@ seed were rebuilt. **The classes now depend on GISTDA's layer**, whose licence (
 still to be confirmed in writing before launch; setting `outside_flag` aside in the config and
 rebuilding takes the dependence out again.
 
+## The classes per village (16 Oct 2026, not validated)
+
+`hazard villages` sums the classes for every village (muban). There is no open layer of village
+outlines here, only points, so each cell of a tambon goes to the nearest village point of that
+tambon (a Voronoi cell cut at the tambon's edge) and the village gets the Open Buildings counts of
+its cells, per class.
+
+Points come from two places (decision 16 Oct 2026):
+
+| Source | Villages used | Who may read them |
+|---|---|---|
+| 2012 national village layer (a copy on GitHub, `prasertcbs/thailand_gis`, no licence stated; names and tambon, no village number) | 2,211 | Verified teams and admins only; the seed lives in the private data repo |
+| OpenStreetMap villages and hamlets (HOT's monthly export on HDX, 14 Oct 2026; ODbL) | 39, in tambons the 2012 layer leaves empty | Everyone |
+
+307 of the 2012 villages have an OpenStreetMap village of the same name within 1.5 km; those are
+public, under OpenStreetMap's names (346 public villages in all). Where both name a village they
+sit 340 m apart (median), 1.1 km at the 90th percentile.
+
+Result on the c97e0bf classes: 2,250 villages in 355 of 377 tambons; the villages' building counts
+add up to the tambon table's to within 2 buildings per tambon (rounding). The 22 tambons without a
+village are nearly all town centres (Songkhla, Pattani and Narathiwat towns, Hat Yai's centre),
+which are run as municipal communities, not villages. Median 649 buildings a village.
+
+Limits: a village's share is a geometric guess, not its real boundary, so a suburb can fall to the
+nearest village name (บ้านทุ่งรี near Hat Yai holds 50,851 buildings); the 2012 points are 14 years
+old and the layer has 65,213 villages nationally against 74,944 administrative villages in 2008;
+the official DOPA set ("village locations, 76 provinces", Open Data Common) is listed on the
+government data catalog but its download server does not answer.
+
 ## Known issues and open points
 
 - Stream threshold, river burning and the coastal rule were decided on 8 Oct 2026 (above). The burn depth (10 m) and the choice of rivers only are first values.

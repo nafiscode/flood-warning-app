@@ -18,6 +18,9 @@ Commands
   tambons [--radar-hash HASH]  area and buildings per class in every tambon, from the class raster
                                -> <output_dir>/tambons/hazard_by_tambon_<hash>.csv and the table's
                                seed, supabase/seed/45_hazard_by_tambon.sql
+  villages [--radar-hash HASH] buildings per class around every village point (2012 layer, else
+                               OpenStreetMap) -> <output_dir>/villages/hazard_by_village_<hash>.csv and
+                               the seed in the private data repo (pipeline/data/villages/)
   tiles [--radar-hash HASH]    the classes as vector tiles in one PMTiles file for the map
                                -> <output_dir>/tiles/hazard_classes_<hash>.pmtiles
   streams-compare              score every candidate stream network against OpenStreetMap waterways
@@ -42,7 +45,7 @@ from ingest_thaiwater.settings import PIPELINE_DIR, REPO_DIR, env_value
 from sar_floods import aoi as aoi_module
 from sar_floods import ee_ops, settings as sar_settings
 
-from . import buildings, classes, compare, hand, sources, tambons, tiles
+from . import buildings, classes, compare, hand, sources, tambons, tiles, villages
 
 CONFIG_PATH = Path(__file__).resolve().parent / "config.yaml"
 
@@ -287,6 +290,53 @@ def run_tambons(cfg: dict, radar_hash: str | None) -> None:
           f"{sum(r['buildings'] for r in rows)} buildings; without any classed cell: {empty or 'none'}")
 
 
+def run_villages(cfg: dict, radar_hash: str | None) -> None:
+    import rasterio
+    import shapely
+    from rasterio import features
+    from rasterio.warp import transform_geom
+    from rasterio.windows import Window, transform as window_transform
+
+    from ingest_thaiwater.settings import data_dir
+
+    path, h = _class_raster(cfg, radar_hash)
+    root = output_dir(cfg)
+    v = cfg["villages"]
+    got = villages.fetch({"dopa": v["dopa2012_url"], "osm": v["osm_url"]}, root / "villages" / "sources")
+    places = tambons.tambon_geometries()
+    box = tuple(shapely.unary_union([t["geometry"] for t in places]).bounds)
+    dopa = villages.read_dopa2012(got["dopa"])
+    osm = villages.read_osm(got["osm"], box)
+    villages.place_in_tambons(dopa, places)
+    villages.place_in_tambons(osm, places)
+    with rasterio.open(path) as src:
+        cls, transform, crs = src.read(1), src.transform, src.crs.to_string()
+    with rasterio.open(root / "buildings" / f"buildings_{cfg['buildings']['year']}_{cfg['export']['scale_m']}m.tif") as src:
+        building_count = src.read(2)
+    matched = villages.match_osm(dopa, osm, crs, v["match_m"])
+    chosen = villages.choose(dopa, osm)
+
+    def index_window(t, rows, cols):
+        wt = window_transform(Window(cols[0], rows[0], cols[1] - cols[0], rows[1] - rows[0]), transform)
+        shape = transform_geom("EPSG:4326", crs, shapely.geometry.mapping(t["geometry"]))
+        return features.rasterize([(shape, 1)], out_shape=(rows[1] - rows[0], cols[1] - cols[0]),
+                                  transform=wt, fill=0, dtype="uint8").astype(bool)
+
+    rows = villages.summarise(chosen, places, cls, building_count, transform, crs, transform.a ** 2 / 1e6, index_window)
+    dest = root / "villages" / f"hazard_by_village_{h}.csv"
+    villages.write_csv(dest, chosen, rows, h)
+    seed = data_dir() / v["seed"]
+    seed.parent.mkdir(parents=True, exist_ok=True)
+    seed.write_text(villages.seed_sql(chosen, rows, h), encoding="utf-8", newline="\n")
+    covered = {c["tambon"] for c in chosen}
+    by_source = {s: sum(1 for c in chosen if c["source"] == s) for s in ("dopa2012", "osm")}
+    print(json.dumps({"villages": len(chosen), "by_source": by_source, "public": sum(1 for c in chosen if c.get("public")),
+                      "dopa2012_matched_in_osm": matched, "tambons_with_villages": len(covered),
+                      "tambons_without": sorted(t["code"] for t in places if t["code"] not in covered),
+                      "buildings": sum(r["buildings"] for r in rows if r),
+                      "csv": str(dest), "seed": str(seed)}, ensure_ascii=False, indent=1))
+
+
 def run_tiles(cfg: dict, radar_hash: str | None) -> None:
     path, h = _class_raster(cfg, radar_hash)
     t = cfg["tiles"]
@@ -332,7 +382,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("classes")
     p.add_argument("--hold-out", type=int, default=None)
     p.add_argument("--radar-hash", default=None)
-    for name in ("tambons", "tiles"):
+    for name in ("tambons", "tiles", "villages"):
         sub.add_parser(name).add_argument("--radar-hash", default=None)
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -358,6 +408,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "tiles":
             run_tiles(cfg, args.radar_hash)
+            return 0
+        if args.command == "villages":
+            run_villages(cfg, args.radar_hash)
             return 0
         project = sar_settings.ee_project()
         if args.command == "sources-export":
