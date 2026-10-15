@@ -89,6 +89,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       status={status}
       checkedAt={checkedAt}
       failed={failed}
+      dataServedAt={data.servedAt}
       hazards={hazards.data?.hazards ?? null}
       hazardsState={hazards.state}
       directory={directory.data}

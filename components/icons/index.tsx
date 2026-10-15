@@ -491,3 +491,41 @@ export function EditIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Onward, see more: an arrow pointing the way the text reads (it turns round in Jawi). */
+export function ForwardIcon(props: IconProps) {
+  return (
+    <Icon {...props} className={`rtl:-scale-x-100 ${props.className ?? ""}`}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </Icon>
+  );
+}
+
+/** Sign out: an arrow leaving through a door. */
+export function SignOutIcon(props: IconProps) {
+  return (
+    <Icon {...props} className={`rtl:-scale-x-100 ${props.className ?? ""}`}>
+      <path d="M10 4H5v16h5" />
+      <path d="M14 8l4 4-4 4M18 12H9" />
+    </Icon>
+  );
+}
+
+/** Delete: a bin. */
+export function TrashIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+      <path d="M10 11v5M14 11v5" />
+    </Icon>
+  );
+}
+
+/** The admins' pages: a shield. */
+export function ShieldIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" />
+    </Icon>
+  );
+}

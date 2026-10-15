@@ -7,6 +7,7 @@ import type { Located } from "@/lib/area";
 import { createServiceAreaMap } from "@/lib/map";
 import { buttonSecondary, hint } from "@/lib/ui";
 import { PlaceFinder, type FinderText } from "./PlaceFinder";
+import { LocateIcon, MapIcon } from "@/components/icons";
 
 type Props = {
   /** Text comes from the server page, so no messages are shipped to the browser for this. */
@@ -187,6 +188,7 @@ export function HomeLocationField({ text, initial = null, finder, locale = "th" 
         disabled={state === "locating"}
         className={buttonSecondary}
       >
+        <LocateIcon size={22} />
         {state === "locating" ? text.locating : text.useGps}
       </button>
       {finder && (
@@ -206,6 +208,7 @@ export function HomeLocationField({ text, initial = null, finder, locale = "th" 
         aria-expanded={open}
         className={buttonSecondary}
       >
+        <MapIcon size={22} />
         {open ? text.hideMap : text.useMap}
       </button>
       {open && mapState !== "failed" && (

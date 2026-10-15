@@ -20,6 +20,7 @@ import {
   notice,
 } from "@/lib/ui";
 import { deleteHousehold, saveHousehold } from "../actions";
+import { BackIcon, CheckIcon, TrashIcon } from "@/components/icons";
 
 /**
  * A short box for a count, at the end of its row. Not the shared `input` class: that one is full
@@ -233,6 +234,7 @@ export default async function HouseholdPage({
             </label>
           )}
           <button type="submit" className={buttonPrimary}>
+            <CheckIcon size={22} />
             {t("save")}
           </button>
         </section>
@@ -249,6 +251,7 @@ export default async function HouseholdPage({
             <input type="hidden" name="id" value={household.id} />
             <p className={hint}>{t("deleteNote")}</p>
             <button type="submit" className={buttonSecondary} data-household-delete="true">
+              <TrashIcon size={22} />
               {t("delete")}
             </button>
           </form>
@@ -256,6 +259,7 @@ export default async function HouseholdPage({
       )}
 
       <Link href="/account" className={buttonSecondary}>
+        <BackIcon size={22} />
         {t("back")}
       </Link>
     </div>

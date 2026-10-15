@@ -656,7 +656,9 @@
       "option": "{name} ({n}/{total})",
       "reset": "Set semula",
       "resetLabel": "Kembali ke paparan asal peta"
-    }
+    },
+    "savedAt": "Tiada sambungan. Peta ini menunjukkan maklumat yang disimpan dalam telefon pada {time}.",
+    "savedOld": "Tiada sambungan. Peta ini menunjukkan maklumat yang disimpan dalam telefon."
   },
   "attribution": {
     "openMeteo": "Data cuaca daripada Open-Meteo.com (CC BY 4.0)"
@@ -3092,7 +3094,9 @@
       "openAccount": "Ke akaun saya",
       "openReport": "Ke laporan saya",
       "signInNote": "Permintaan bantuan boleh dijejaki tanpa akaun. Pendaftaran pasukan dan laporan banjir dipaparkan selepas log masuk.",
-      "openField": "Ke rekod pasukan"
+      "openField": "Ke rekod pasukan",
+      "savedAt": "Tiada sambungan. Menunjukkan status yang disimpan dalam telefon pada {time}.",
+      "savedOld": "Tiada sambungan. Menunjukkan status yang disimpan dalam telefon."
     },
     "field": {
       "titleNamed": "Penyelamatan ditemui sendiri: {place}",

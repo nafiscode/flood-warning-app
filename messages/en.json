@@ -656,7 +656,9 @@
       "option": "{name} ({n}/{total})",
       "reset": "Reset",
       "resetLabel": "Back to the map's first view"
-    }
+    },
+    "savedAt": "No connection. This map shows what was saved on this phone at {time}.",
+    "savedOld": "No connection. This map shows what was saved on this phone."
   },
   "attribution": {
     "openMeteo": "Weather data by Open-Meteo.com (CC BY 4.0)"
@@ -3092,7 +3094,9 @@
       "openAccount": "Go to my account",
       "openReport": "Go to my reports",
       "signInNote": "Requests for help can be followed without an account. A team's registration and flood reports appear once you are signed in.",
-      "openField": "Go to the team's records"
+      "openField": "Go to the team's records",
+      "savedAt": "No connection. Showing where things stood when this phone saved them, at {time}.",
+      "savedOld": "No connection. Showing where things stood when this phone last saved them."
     },
     "field": {
       "titleNamed": "Field rescue: {place}",

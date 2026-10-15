@@ -18,6 +18,7 @@ import {
   notice,
 } from "@/lib/ui";
 import { saveProfile } from "../actions";
+import { CheckIcon } from "@/components/icons";
 
 const ERRORS = ["name", "phone", "location", "consent", "save"] as const;
 
@@ -149,6 +150,7 @@ export default async function AccountSetup({
       </section>
 
       <button type="submit" className={buttonPrimary}>
+        <CheckIcon size={22} />
         {t("save")}
       </button>
     </form>

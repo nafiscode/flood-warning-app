@@ -79,6 +79,31 @@ test.describe("airplane mode (A9, safety rule 7)", () => {
     ).toBeVisible();
   });
 
+  test("the map, never opened online, opens with no signal and says it is the phone's copy", async ({
+    page,
+    context,
+  }) => {
+    await underWorker(page);
+    await page.evaluate((area) => {
+      window.localStorage.setItem("jaga.area", JSON.stringify(area));
+    }, BANA);
+    await page.reload();
+    await page.waitForFunction(() => window.localStorage.getItem("jaga.status") !== null, null, {
+      timeout: 30_000,
+    });
+    await page.waitForFunction(() => window.localStorage.getItem("jaga.warm.th") !== null, null, {
+      timeout: 60_000,
+    });
+
+    await context.setOffline(true);
+    await page.goto("/map");
+    // Every saved thing says how old it is (A9).
+    await expect(page.locator("[data-map-saved]")).toHaveAttribute("data-map-saved", "time", {
+      timeout: 30_000,
+    });
+    await expect(page.locator('footer a[href="tel:1784"]')).toBeVisible();
+  });
+
   test("a page never kept shows the offline page in its own language", async ({
     page,
     context,

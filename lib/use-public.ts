@@ -196,26 +196,51 @@ export function useNearbyPlaces(point: { lat: number; lon: number } | null): {
   };
 }
 
-/** Fetch a public JSON address once (and again when `url` changes). Null `url`: nothing yet. */
-export function useFetched<T>(url: string | null): { data: T | null; state: LoadState } {
-  const [result, setResult] = useState<{ url: string; data: T | null } | null>(null);
+/**
+ * Fetch a public JSON address once (and again when `url` changes). Null `url`: nothing yet.
+ * `servedAt` is when the server made the answer (its Date header): without signal the service
+ * worker hands back the copy it kept, Date and all, so this says how old that copy is (A9).
+ */
+export function useFetched<T>(url: string | null): {
+  data: T | null;
+  state: LoadState;
+  servedAt: number | null;
+} {
+  const [result, setResult] = useState<{
+    url: string;
+    data: T | null;
+    servedAt: number | null;
+  } | null>(null);
   useEffect(() => {
     if (!url) return;
     let cancelled = false;
-    getJson<T>(url).then(
-      (data) => {
-        if (!cancelled) setResult({ url, data });
-      },
-      () => {
-        if (!cancelled) setResult({ url, data: null });
-      },
-    );
+    fetch(url, { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`${url}: ${response.status}`);
+        const date = Date.parse(response.headers.get("date") ?? "");
+        return {
+          data: (await response.json()) as T,
+          servedAt: Number.isFinite(date) ? date : null,
+        };
+      })
+      .then(
+        ({ data, servedAt }) => {
+          if (!cancelled) setResult({ url, data, servedAt });
+        },
+        () => {
+          if (!cancelled) setResult({ url, data: null, servedAt: null });
+        },
+      );
     return () => {
       cancelled = true;
     };
   }, [url]);
-  if (!url || result?.url !== url) return { data: null, state: "loading" };
-  return { data: result.data, state: result.data ? "ok" : "unavailable" };
+  if (!url || result?.url !== url) return { data: null, state: "loading", servedAt: null };
+  return {
+    data: result.data,
+    state: result.data ? "ok" : "unavailable",
+    servedAt: result.servedAt,
+  };
 }
 
 const TICK_MS = 30_000;

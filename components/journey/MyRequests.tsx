@@ -15,11 +15,12 @@ import {
   type UnitRequest,
 } from "@/lib/journey";
 import type { KnownCase } from "@/lib/notices";
-import { readStored, useOnPhone } from "@/lib/phone-store";
+import { readStored, useOnPhone, writeStored } from "@/lib/phone-store";
 import { caseToken, rememberedCases, type SosTimeline } from "@/lib/sos";
 import { isSessionCookie } from "@/lib/supabase/env";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonSecondary, card, hint, notice } from "@/lib/ui";
+import { ForwardIcon } from "@/components/icons";
 
 export type MyRequestsData = {
   cases: KnownCase[];
@@ -29,6 +30,18 @@ export type MyRequestsData = {
   field?: MyFieldRescue[];
   /** False for a visitor: teams and reports belong to an account. */
   signedIn: boolean;
+  /** Something shown is this phone's copy because the connection failed (A9). */
+  fromPhone?: boolean;
+  /** When the oldest copy shown was saved; null when unknown. */
+  savedAt?: number | null;
+};
+
+/** The last answer about teams, reports and field rescues, kept for offline (no phone numbers). */
+type StoredRequests = {
+  units: UnitRequest[];
+  reports: MyReport[];
+  field: MyFieldRescue[];
+  savedAt: number;
 };
 
 /**
@@ -107,6 +120,20 @@ export function MyRequestsView({ data, loading }: { data: MyRequestsData; loadin
         </p>
       )}
       {unread > 0 && !loading && <p className={hint}>{t("page.unread", { count: unread })}</p>}
+      {/* Every saved thing says how old it is (A9). */}
+      {data.fromPhone && cards.length > 0 && (
+        <p
+          className={notice}
+          role="status"
+          data-requests-saved={data.savedAt != null ? "time" : "old"}
+        >
+          {data.savedAt != null
+            ? t("page.savedAt", {
+                time: format.dateTime(new Date(data.savedAt), BANGKOK_DATE_TIME),
+              })
+            : t("page.savedOld")}
+        </p>
+      )}
       <div className="grid gap-5 lg:grid-cols-2">
         {cards.map((c) => (
           <article
@@ -124,6 +151,7 @@ export function MyRequestsView({ data, loading }: { data: MyRequestsData; loadin
             </h2>
             <Journey journey={c.journey} />
             <Link href={c.href} prefetch={false} className={buttonSecondary}>
+              <ForwardIcon size={22} />
               {c.open}
             </Link>
           </article>
@@ -137,11 +165,17 @@ export function MyRequestsView({ data, loading }: { data: MyRequestsData; loadin
 const hasSession = () =>
   document.cookie.split(";").some((c) => isSessionCookie(c.trim().split("=")[0] ?? ""));
 
-async function getJson<T>(url: string, init?: RequestInit): Promise<T | null> {
+/** Null for a refusal or no connection; `missed` is set only for no connection. */
+async function getJson<T>(
+  url: string,
+  init?: RequestInit,
+  missed?: { any: boolean },
+): Promise<T | null> {
   try {
     const response = await fetch(url, { cache: "no-store", ...init });
     return response.ok ? ((await response.json()) as T) : null;
   } catch {
+    if (missed) missed.any = true;
     return null;
   }
 }
@@ -162,16 +196,23 @@ export function MyRequests() {
     let cancelled = false;
     const load = async () => {
       const signedIn = hasSession();
-      const stored = readStored<{ cases: KnownCase[] }>("noticeCases")?.cases ?? [];
+      // A personal copy is kept only while someone is signed in (like their places).
+      if (!signedIn && readStored("requests") !== null) writeStored("requests", null);
+      const noticeCases = readStored<{ cases: KnownCase[]; checkedAt?: number }>("noticeCases");
+      const stored = noticeCases?.cases ?? [];
+      const caseMissed = { any: false };
+      const accountMissed = { any: false };
       const [cases, units, reports, field] = await Promise.all([
         Promise.all(
           rememberedCases()
             .slice(0, 8)
             .map(async (one): Promise<KnownCase> => {
               const token = caseToken(one.id);
-              const timeline = await getJson<SosTimeline>(`/api/sos/${one.id}`, {
-                headers: token ? { "x-jaga-sos-token": token } : undefined,
-              });
+              const timeline = await getJson<SosTimeline>(
+                `/api/sos/${one.id}`,
+                { headers: token ? { "x-jaga-sos-token": token } : undefined },
+                caseMissed,
+              );
               // A case that could not be read keeps what was last known of it.
               return {
                 id: one.id,
@@ -179,11 +220,26 @@ export function MyRequests() {
               };
             }),
         ),
-        signedIn ? getJson<{ units: UnitRequest[] }>(REQUESTS_URL) : null,
-        signedIn ? getJson<{ reports: MyReport[] }>("/api/report/mine") : null,
-        signedIn ? getJson<{ rescues: MyFieldRescue[] }>(FIELD_URL) : null,
+        signedIn ? getJson<{ units: UnitRequest[] }>(REQUESTS_URL, {}, accountMissed) : null,
+        signedIn ? getJson<{ reports: MyReport[] }>("/api/report/mine", {}, accountMissed) : null,
+        signedIn ? getJson<{ rescues: MyFieldRescue[] }>(FIELD_URL, {}, accountMissed) : null,
       ]);
       if (cancelled) return;
+      const kept = signedIn ? readStored<StoredRequests>("requests") : null;
+      const fromKept = accountMissed.any && kept !== null;
+      if (signedIn && !accountMissed.any && units && reports && field) {
+        writeStored("requests", {
+          units: units.units,
+          reports: reports.reports,
+          field: field.rescues,
+          savedAt: Date.now(),
+        } satisfies StoredRequests);
+      }
+      const fromCases = caseMissed.any && stored.length > 0;
+      const times = [
+        fromKept ? kept.savedAt : null,
+        fromCases ? (noticeCases?.checkedAt ?? null) : null,
+      ].filter((x): x is number => x !== null);
       setData({
         cases: cases.map((c) =>
           c.timeline
@@ -197,10 +253,12 @@ export function MyRequests() {
               }
             : c,
         ),
-        units: units?.units ?? [],
-        reports: reports?.reports ?? [],
-        field: field?.rescues ?? [],
+        units: units?.units ?? (fromKept ? kept.units : []),
+        reports: reports?.reports ?? (fromKept ? kept.reports : []),
+        field: field?.rescues ?? (fromKept ? kept.field : []),
         signedIn,
+        fromPhone: fromKept || fromCases,
+        savedAt: times.length > 0 ? Math.min(...times) : null,
       });
     };
     void load();

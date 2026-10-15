@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { PhoneIcon } from "@/components/icons";
+import { AddSquareIcon, EditIcon, PhoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { pickName } from "@/lib/area";
 import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
@@ -81,6 +81,7 @@ export default async function WatchedPlaces({
               </a>
             )}
             <Link href={`/account/places/${place.id}`} className={buttonSecondary}>
+              <EditIcon size={22} />
               {t("edit")}
             </Link>
           </li>
@@ -88,6 +89,7 @@ export default async function WatchedPlaces({
       </ul>
       {places.length < MAX_PLACES ? (
         <Link href="/account/places/new" className={buttonPrimary}>
+          <AddSquareIcon size={22} />
           {t("add")}
         </Link>
       ) : (

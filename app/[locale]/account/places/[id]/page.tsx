@@ -18,6 +18,7 @@ import {
   label,
 } from "@/lib/ui";
 import { deletePlace, savePlace } from "../actions";
+import { CheckIcon, HouseIcon } from "@/components/icons";
 
 const ERRORS = ["label", "location", "phone", "name", "consent", "limit", "save"] as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -172,6 +173,7 @@ export default async function WatchedPlace({
         </section>
 
         <button type="submit" className={buttonPrimary}>
+          <CheckIcon size={22} />
           {t("save")}
         </button>
       </form>
@@ -182,6 +184,7 @@ export default async function WatchedPlace({
           className={buttonSecondary}
           data-household-link="place"
         >
+          <HouseIcon size={22} />
           {tHousehold("linkPlace")}
         </Link>
       )}

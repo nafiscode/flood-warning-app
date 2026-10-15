@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { ForwardIcon } from "@/components/icons";
 import { DamStateChip } from "@/components/map/Dam";
 import { NavigateChooser } from "@/components/places/SafePlaceCard";
 import { type Dam } from "@/lib/dam";
@@ -27,9 +28,10 @@ export function MoreButton({ onMore }: More) {
       type="button"
       onClick={onMore}
       data-peek-more="true"
-      className="inline-flex min-h-tap items-center self-start text-small font-medium text-jaga-ink underline"
+      className="inline-flex min-h-tap items-center gap-1 self-start text-small font-medium text-jaga-ink underline"
     >
       {t("more")}
+      <ForwardIcon size={18} />
     </button>
   );
 }

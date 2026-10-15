@@ -2,7 +2,14 @@
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
-import { ParcelIcon, PhoneIcon, WaveIcon } from "@/components/icons";
+import {
+  AddSquareIcon,
+  EditIcon,
+  ParcelIcon,
+  PhoneIcon,
+  PinIcon,
+  WaveIcon,
+} from "@/components/icons";
 import { MapFeatureTiles } from "@/components/map/MapFeatures";
 import { SignInHint } from "@/components/account/SignInOffer";
 import { SafePlaces } from "@/components/places/SafePlaces";
@@ -182,12 +189,18 @@ export function HomeView(props: HomeViewProps) {
         <Link
           href="/account/setup"
           prefetch={false}
-          className="inline-flex min-h-tap items-center underline"
+          className="inline-flex min-h-tap items-center gap-1.5 underline"
         >
+          <EditIcon size={20} />
           {t("area.change")}
         </Link>
       ) : (
-        <button type="button" onClick={() => setChoosing(true)} className="min-h-tap underline">
+        <button
+          type="button"
+          onClick={() => setChoosing(true)}
+          className="inline-flex min-h-tap items-center gap-1.5 underline"
+        >
+          <EditIcon size={20} />
           {t("area.change")}
         </button>
       )}
@@ -334,8 +347,9 @@ export function HomeView(props: HomeViewProps) {
             href="/account/places"
             prefetch={false}
             data-manage-places="true"
-            className="inline-flex min-h-tap items-center underline"
+            className="inline-flex min-h-tap items-center gap-1.5 underline"
           >
+            {watched.length > 0 ? <PinIcon size={20} /> : <AddSquareIcon size={20} />}
             {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
           </Link>
         )}

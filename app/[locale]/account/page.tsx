@@ -12,6 +12,16 @@ import { toUnitRequest, unitJourney } from "@/lib/journey";
 import { installMessages } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
 import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
+import {
+  AddSquareIcon,
+  EditIcon,
+  HouseIcon,
+  LifebuoyIcon,
+  ListIcon,
+  PinIcon,
+  ShieldIcon,
+  SignOutIcon,
+} from "@/components/icons";
 
 export async function generateMetadata({
   params,
@@ -53,17 +63,21 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
         <p className="text-h3 font-bold">{session.displayName}</p>
         <p className={hint}>{t(`role.${session.role}`)}</p>
         <Link href="/account/setup" className={buttonSecondary}>
+          <EditIcon size={22} />
           {t("edit")}
         </Link>
       </section>
 
       <Link href="/requests" className={buttonSecondary} data-requests-link="account">
+        <ListIcon size={22} />
         {tJourney("link")}
       </Link>
       <Link href="/account/places" className={buttonSecondary}>
+        <PinIcon size={22} />
         {tWatched("title")}
       </Link>
       <Link href="/account/household/home" className={buttonSecondary} data-household-link="home">
+        <HouseIcon size={22} />
         {tHousehold("link")}
       </Link>
 
@@ -88,17 +102,20 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
         })}
         {(units ?? []).some((unit) => unit.status === "verified") && (
           <Link href="/authority" className={buttonPrimary}>
+            <LifebuoyIcon size={22} />
             {t("authority.console")}
           </Link>
         )}
         {(units ?? []).length === 0 && <p className={hint}>{t("authority.intro")}</p>}
         <Link href="/authority/register" className={buttonSecondary}>
+          <AddSquareIcon size={22} />
           {t("authority.register")}
         </Link>
       </section>
 
       {isAdminRole(session.role) && (
         <Link href="/admin" className={buttonSecondary}>
+          <ShieldIcon size={22} />
           {t("adminLink")}
         </Link>
       )}
@@ -111,6 +128,7 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
 
       <form action="/api/auth/sign-out" method="post">
         <button type="submit" className={buttonSecondary}>
+          <SignOutIcon size={22} />
           {t("signOut")}
         </button>
       </form>

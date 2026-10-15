@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { BellIcon } from "@/components/icons";
+import { BellIcon, CrossIcon } from "@/components/icons";
 import { QuietGuideView, useQuietGuide } from "@/components/push/QuietGuide";
 import type { Area } from "@/lib/area";
 import type { MyPlaces } from "@/lib/me";
@@ -83,6 +83,7 @@ export function PushCardView(props: ViewProps) {
               onClick={props.onEnable}
               data-push-enable="true"
             >
+              <BellIcon size={22} />
               {t(props.busy ? "busy" : "button")}
             </button>
           )}
@@ -100,6 +101,7 @@ export function PushCardView(props: ViewProps) {
               disabled={props.busy}
               onClick={props.onDisable}
             >
+              <CrossIcon size={22} />
               {t("off")}
             </button>
           )}

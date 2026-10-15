@@ -18,7 +18,7 @@ import {
   type Basemap,
 } from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
-import { PhoneIcon, WaveIcon } from "@/components/icons";
+import { CrossIcon, PhoneIcon, PinIcon, WaveIcon } from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import {
   areaName,
@@ -109,6 +109,8 @@ export type DashboardViewProps = {
   checkedAt: number | null;
   /** The latest try to load the alert status failed. */
   failed: boolean;
+  /** When the server made the map's data (its Date header); offline, the kept copy's age. */
+  dataServedAt?: number | null;
   /** Null while loading; the switcher then offers floods only. */
   hazards: Hazard[] | null;
   hazardsState: LoadState;
@@ -450,6 +452,8 @@ export function DashboardView(props: DashboardViewProps) {
   const mode: MapMode = chosenMode ?? (hasActiveAlerts(status) ? "live" : "risk");
   const layers = layersFor(hazard, mode);
   const fresh = checkedAt !== null && now - checkedAt < NORMAL_NEEDS_CHECK_WITHIN_MS;
+  const kept = [checkedAt, props.dataServedAt ?? null].filter((x): x is number => x !== null);
+  const savedAt = kept.length > 0 ? Math.min(...kept) : null;
 
   const tambonName = (code: string) => {
     const entry = directory?.tambons.find((x) => x.code === code);
@@ -796,7 +800,12 @@ export function DashboardView(props: DashboardViewProps) {
           </a>
         )}
         <p className={hint}>{t("mine.note")}</p>
-        <Link href="/account/places" prefetch={false} className="min-h-tap underline">
+        <Link
+          href="/account/places"
+          prefetch={false}
+          className="inline-flex min-h-tap items-center gap-1.5 self-start underline"
+        >
+          <PinIcon size={20} />
           {t("mine.manage")}
         </Link>
       </section>
@@ -877,6 +886,17 @@ export function DashboardView(props: DashboardViewProps) {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
+      {/*
+       * Without signal the map draws what this phone kept (A9: every saved thing says how old it
+       * is). The time given is the older of the alert status and the map's own data.
+       */}
+      {failed && (
+        <p className={notice} role="status" data-map-saved={savedAt !== null ? "time" : "old"}>
+          {savedAt !== null
+            ? t("savedAt", { time: format.dateTime(new Date(savedAt), BANGKOK_DATE_TIME) })
+            : t("savedOld")}
+        </p>
+      )}
 
       {props.transparency && (
         <div role="tablist" aria-label={t("tabs.label")} className="flex gap-2">
@@ -1279,8 +1299,9 @@ export function DashboardView(props: DashboardViewProps) {
                   <button
                     type="button"
                     onClick={() => setSelection(null)}
-                    className="min-h-tap self-start underline"
+                    className="inline-flex min-h-tap items-center gap-1.5 self-start underline"
                   >
+                    <CrossIcon size={20} />
                     {t("close")}
                   </button>
                 </div>

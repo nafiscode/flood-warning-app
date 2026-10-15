@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { CheckIcon, ClockIcon, TriangleIcon, WaveIcon } from "@/components/icons";
+import { CheckIcon, ClockIcon, MapIcon, TriangleIcon, WaveIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import {
   ageHours,
@@ -285,7 +285,12 @@ export function DamNotice({
           <p>{t("disclaimer.noArrivalTime")}</p>
         )}
         <p className={hint}>{t("source", { operator: operatorName(dam.operator, t) })}</p>
-        <Link href="/map" prefetch={false} className="min-h-tap self-start underline">
+        <Link
+          href="/map"
+          prefetch={false}
+          className="inline-flex min-h-tap items-center gap-1.5 self-start underline"
+        >
+          <MapIcon size={20} />
           {t("notice.openMap")}
         </Link>
       </div>
