@@ -1,11 +1,11 @@
 import type { Dam } from "@/lib/dam";
 
 /**
- * The five things the Flood Risk Map is for (the owner, 15 Oct: people should find them without
- * hunting through the legend). The home screen's tiles open the map on one with `?focus=`, and the
+ * The six things the Flood Risk Map is for (the owner, 15 Oct: people should find them without
+ * hunting through the legend; the sea and coast added the same day). The home screen's tiles open the map on one with `?focus=`, and the
  * row of chips above the map goes to one in place. Pure, so both can be tested without a map.
  */
-export const MAP_FOCUSES = ["risk", "places", "damzone", "gauges", "dam"] as const;
+export const MAP_FOCUSES = ["risk", "places", "damzone", "gauges", "dam", "sea"] as const;
 export type MapFocus = (typeof MAP_FOCUSES)[number];
 
 export function readFocus(value: string | null | undefined): MapFocus | null {

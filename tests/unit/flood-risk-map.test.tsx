@@ -99,9 +99,9 @@ describe("the header's last link", () => {
   });
 });
 
-describe("the five features", () => {
+describe("the six features", () => {
   it("are read from the address and nothing else", () => {
-    expect(MAP_FOCUSES).toEqual(["risk", "places", "damzone", "gauges", "dam"]);
+    expect(MAP_FOCUSES).toEqual(["risk", "places", "damzone", "gauges", "dam", "sea"]);
     expect(readFocus("gauges")).toBe("gauges");
     expect(readFocus("hazard")).toBeNull();
     expect(readFocus(null)).toBeNull();
@@ -132,7 +132,7 @@ describe("the five features", () => {
       <MapFeatureChips active="dam" onPick={(f) => picked.push(f)} />,
     ).container;
     const chips = [...c.querySelectorAll<HTMLButtonElement>("[data-map-chip]")];
-    expect(chips).toHaveLength(5);
+    expect(chips).toHaveLength(6);
     expect(c.querySelector("[data-map-chip='dam']")?.getAttribute("aria-pressed")).toBe("true");
     chips[2]!.click();
     expect(picked).toEqual(["damzone"]);

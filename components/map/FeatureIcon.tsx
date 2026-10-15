@@ -3,10 +3,10 @@ import type { MapFocus } from "@/lib/map-focus";
 import styles from "./FeatureIcon.module.css";
 
 /**
- * A small picture of each of the map's five features, drawn the way the map draws it: the risk
- * pinks, the safe-place square, the hatched land below the dam, a river gauge's glass of water and
- * the dam's wall. Decorative; the words beside it say what it is. Light enough for the home screen
- * (no map library). The risk pinks are never the alert colours (lib/hazard-layer.ts).
+ * A small picture of each of the map's six features, drawn the way the map draws it: the risk
+ * pinks, the safe-place square, the hatched land below the dam, a river gauge's glass of water,
+ * the dam's wall and the sea's crests. Decorative; the words beside it say what it is. Light
+ * enough for the home screen (no map library). The risk pinks are never the alert colours (lib/hazard-layer.ts).
  */
 export function FeatureIcon({ feature, size = 32 }: { feature: MapFocus; size?: number }) {
   return (
@@ -87,6 +87,18 @@ export function FeatureIcon({ feature, size = 32 }: { feature: MapFocus; size?: 
           <path d="M14 5 L20 5 L24 29 L14 29 Z" className="fill-jaga-ink" />
           <path d="M24 22 Q27 20 30 22 V29 H24 Z" className={styles.water} opacity="0.6" />
           <circle cx="27" cy="6" r="3.2" className={`${styles.water} ${styles.live}`} />
+        </>
+      )}
+      {feature === "sea" && (
+        <>
+          <rect x="3" y="3" width="26" height="26" rx="6" className={styles.seaGround} />
+          <g className={styles.waterLine} strokeWidth="2.4" strokeLinecap="round" fill="none">
+            <path d="M5 13 Q9.5 9.5 14 13 T23 13" className={styles.roll} />
+            <path d="M8 19 Q12.5 15.5 17 19 T26 19" className={styles.roll} />
+            <path d="M5 25 Q9.5 21.5 14 25 T23 25" className={styles.roll} />
+          </g>
+          <path d="M20 6 L27 6 L25 9 L21.5 9 Z" className="fill-jaga-ink" />
+          <path d="M23.5 6 V2.5" className="stroke-jaga-ink" strokeWidth="1.4" />
         </>
       )}
     </svg>

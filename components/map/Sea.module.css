@@ -1,0 +1,67 @@
+/* The sea's drawings take the map's water colour, by day and by night; never an alert colour. */
+.ink {
+  stroke: #1b6e8c;
+}
+.bar {
+  fill: #1b6e8c;
+}
+.tideArea {
+  fill: #1b6e8c;
+  opacity: 0.14;
+}
+.tideLine {
+  fill: none;
+  stroke: #1b6e8c;
+  stroke-width: 2px;
+}
+/* A lighter run along the curve: the water moving with the tide. */
+.tideFlow {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2px;
+  stroke-dasharray: 6 18;
+  opacity: 0.8;
+  animation: flow 3.5s linear infinite;
+}
+.nowDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: #1b6e8c;
+  box-shadow: 0 0 0 3px var(--jaga-surface);
+  animation: lap 2.4s ease-in-out infinite;
+}
+:global(:root[data-theme="dark"]) .ink,
+:global(:root[data-theme="dark"]) .tideLine {
+  stroke: #7ec8e3;
+}
+:global(:root[data-theme="dark"]) .bar,
+:global(:root[data-theme="dark"]) .tideArea {
+  fill: #7ec8e3;
+}
+:global(:root[data-theme="dark"]) .tideFlow {
+  stroke: #0f1c26;
+}
+:global(:root[data-theme="dark"]) .nowDot {
+  background: #7ec8e3;
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+@keyframes lap {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tideFlow,
+  .nowDot {
+    animation: none;
+  }
+}

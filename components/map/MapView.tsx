@@ -37,6 +37,8 @@ import {
   HAZARD_SOURCE_LAYER,
   hazardFillColor,
 } from "@/lib/hazard-layer";
+import { SEA_IMAGE_RATIO, SEA_RANK, seaImage, seaImageName, seaPaint } from "@/lib/sea-marks";
+import type { SeaGrade } from "@/lib/sea";
 import { SATELLITE_OPACITY, satelliteColor, type SatelliteCell } from "@/lib/satellite-flood";
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
@@ -78,7 +80,8 @@ export type MapSelection =
   | { kind: "gauge"; id: string }
   | { kind: "mine"; id: string }
   | { kind: "dam"; code: string }
-  | { kind: "hazard"; value: number };
+  | { kind: "hazard"; value: number }
+  | { kind: "sea"; id: string };
 
 /** What can say how it stands in a pop-up on the map itself (the owner, 14 Oct). */
 export type PeekTarget = Extract<MapSelection, { kind: "gauge" | "place" | "dam" }>;
@@ -112,6 +115,19 @@ export type MinePlace = {
   call: { tel: string; label: string } | null;
 };
 
+/** A point off the coast as the map draws it; the words are already in the person's language. */
+export type SeaMark = {
+  id: string;
+  lat: number;
+  lon: number;
+  grade: SeaGrade;
+  /** Where the waves travel to, degrees clockwise from north. */
+  bearing: number;
+  /** Written far out (empty for a calm sea), and close in. */
+  short: string;
+  long: string;
+};
+
 type Props = {
   /** What may be drawn. Empty: nothing of ours but the tambon outlines. */
   layers: MapLayer[];
@@ -126,6 +142,12 @@ type Props = {
    * draws nothing. The caller says in words what an empty map means.
    */
   satellite?: SatelliteCell[] | null;
+  /**
+   * The sea off the coast (lib/sea.ts): one mark per point, its waves rolling the way the model's
+   * waves travel (lib/sea-marks.ts), with the note's words beside any that is not calm. Null or
+   * empty draws nothing.
+   */
+  sea?: SeaMark[] | null;
   /** The person's own places, drawn on top of everything when they ask for them. */
   mine?: MinePlace[];
   showMine?: boolean;
@@ -177,6 +199,8 @@ const HAZARD = "jaga-hazard";
 const HAZARD_FILL = "jaga-hazard-fill";
 const SATELLITE = "jaga-satellite";
 const SATELLITE_LINE = "jaga-satellite-line";
+const SEA = "jaga-sea";
+const SEA_LABEL = "jaga-sea-label";
 const GAUGES = "jaga-gauges";
 const GAUGE_LABEL = "jaga-gauge-label";
 const MINE = "jaga-mine";
@@ -347,10 +371,30 @@ export function MapView({
   basemap = "streets",
   scene = false,
   satellite = null,
+  sea = null,
   gaugeWords = { near: "", over: "" },
   peek,
 }: Props) {
   const { near: nearWord, over: overWord } = gaugeWords;
+  // One object for as long as the sea's marks are the same.
+  const seaData = useMemo(
+    () =>
+      collection(
+        (sea ?? []).map((s) => ({
+          type: "Feature" as const,
+          geometry: { type: "Point" as const, coordinates: [s.lon, s.lat] },
+          properties: {
+            id: s.id,
+            grade: s.grade,
+            bearing: s.bearing,
+            short: s.short,
+            long: s.long,
+            rank: SEA_RANK[s.grade],
+          },
+        })) as GeoJSON.Feature[],
+      ),
+    [sea],
+  );
   // One object for as long as the hexagons are the same, so they are sent to the map once.
   const satelliteData = useMemo(
     () => collection((satellite ?? []) as GeoJSON.Feature[]),
@@ -444,6 +488,7 @@ export function MapView({
         { near: nearWord, over: overWord },
       ),
       [SATELLITE]: satelliteData,
+      [SEA]: seaData,
     };
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
     const dark = darkNow();
@@ -851,6 +896,61 @@ export function MapView({
         m.setPaintProperty(GAUGE_LABEL, "text-halo-color", gp.halo);
         m.setPaintProperty(GAUGE_LABEL, "text-halo-width", 1.8);
         /*
+         * The sea off the coast: a patch of water whose crests roll the way the model's waves
+         * travel, more and quicker the rougher the sea (lib/sea-marks.ts). Turned to the bearing
+         * on the map itself, so it keeps pointing the right way when the map is turned.
+         */
+        for (const grade of new Set(seaData.features.map((f) => f.properties?.grade as SeaGrade))) {
+          const name = seaImageName(grade, night);
+          if (!m.hasImage(name)) {
+            const picture = seaImage(grade, night, moving);
+            if (picture) m.addImage(name, picture, { pixelRatio: SEA_IMAGE_RATIO });
+          }
+        }
+        const seaIcon = [
+          "concat",
+          "jaga-sea-",
+          ["get", "grade"],
+          night ? "-night" : "-day",
+        ] as unknown as string;
+        if (!m.getLayer(SEA)) {
+          m.addLayer({
+            id: SEA,
+            type: "symbol",
+            source: SEA,
+            layout: {
+              "icon-image": seaIcon,
+              "icon-size": ["interpolate", ["linear"], ["zoom"], 7, 0.65, 9, 0.9, 12, 1.2],
+              "icon-rotate": ["get", "bearing"],
+              "icon-rotation-alignment": "map",
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
+              "symbol-sort-key": ["get", "rank"],
+            },
+          });
+          m.addLayer({
+            id: SEA_LABEL,
+            type: "symbol",
+            source: SEA,
+            layout: {
+              // Far out only a sea that is not calm is named; close in, every point's waves.
+              "text-field": ["step", ["zoom"], ["get", "short"], 9, ["get", "long"]],
+              "text-font": ["Noto Sans Regular"],
+              "text-size": 12,
+              "text-anchor": "left",
+              "text-offset": [1.6, 0],
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+              "symbol-sort-key": ["get", "rank"],
+            },
+          });
+        }
+        m.setLayoutProperty(SEA, "icon-image", seaIcon);
+        const sp = seaPaint(night);
+        m.setPaintProperty(SEA_LABEL, "text-color", sp.water);
+        m.setPaintProperty(SEA_LABEL, "text-halo-color", sp.halo);
+        m.setPaintProperty(SEA_LABEL, "text-halo-width", 1.8);
+        /*
          * The person's own places: a pin with a house for their home, and focus brackets around
          * a dot for each watched place, each moving slowly (lib/mine-marks.ts). Their own shapes,
          * so they are never mistaken for the round gauges. One picture per colour and theme.
@@ -1004,6 +1104,7 @@ export function MapView({
     damLocale,
     hazardUrl,
     satelliteData,
+    seaData,
     nearWord,
     overWord,
   ]);
@@ -1201,6 +1302,7 @@ export function MapView({
           const ids = [
             MINE,
             GAUGES,
+            SEA,
             PLACES,
             DAM_MARKS,
             REPORTS,
@@ -1236,6 +1338,7 @@ export function MapView({
           ) {
             select.current({ kind: "dam", code: String(p.code) });
           } else if (hit.layer.id === GAUGES) select.current({ kind: "gauge", id: String(p.id) });
+          else if (hit.layer.id === SEA) select.current({ kind: "sea", id: String(p.id) });
           else if (hit.layer.id === PLACES) select.current({ kind: "place", id: String(p.id) });
           else if (hit.layer.id === REPORTS) {
             select.current({ kind: "reports", index: Number(p.index) });

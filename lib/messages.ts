@@ -98,6 +98,9 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
       "mapFeatures",
       "mapMethod",
       "signInOffer",
+      // The Sea and coast section (15 Oct), with the credit Open-Meteo asks for.
+      "sea",
+      "attribution",
     ]),
     // Residents' flood reports near the person (13 Oct), with the report form's own words for
     // depth, trend and road so they read the same on every screen.

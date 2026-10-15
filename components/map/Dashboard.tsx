@@ -11,6 +11,7 @@ import type { Hazard } from "@/lib/hazards";
 import { readFocus } from "@/lib/map-focus";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
+import { SEA_URL, type SeaData } from "@/lib/sea";
 import { satelliteUrl, type SatelliteFlood, type SatelliteWindow } from "@/lib/satellite-flood";
 import { useFetched, useLiveGauges, useMyPlaces, useNow, usePublicStatus } from "@/lib/use-public";
 import { DashboardView } from "./DashboardView";
@@ -74,6 +75,9 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   // when they change how far back to look (lib/satellite-flood.ts).
   const [satelliteDays, setSatelliteDays] = useState<SatelliteWindow | null>(null);
   const satellite = useFetched<SatelliteFlood>(satelliteDays ? satelliteUrl(satelliteDays) : null);
+  // The sea off the coast (lib/sea.ts): small, the same for everyone and kept at the edge for
+  // half an hour, so it is asked for with the map, like the dam.
+  const sea = useFetched<SeaData>(SEA_URL);
   const me = useMyPlaces();
   // Where the person said they are on the home screen: their saved home first, else the area
   // they chose on this phone. The map opens there (the owner's note, 9 Oct).
@@ -105,6 +109,8 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       openDam={openDam}
       openReports={openReports}
       openFocus={openFocus}
+      sea={sea.data}
+      seaLoad={sea.state}
       reports={reports.data?.tambons ?? null}
       userAgent={ready ? navigator.userAgent : ""}
     />

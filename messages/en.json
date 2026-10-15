@@ -3714,6 +3714,11 @@
       "name": "Dams right now",
       "note": "Bang Lang dam: storage and release, hour by hour",
       "short": "Dam"
+    },
+    "sea": {
+      "name": "Sea and coast",
+      "note": "Waves, wind and tide, with a note for fishermen",
+      "short": "Sea"
     }
   },
   "mapMethod": {
@@ -3752,10 +3757,14 @@
       "text": "Schools, temples, mosques, government offices and high ground from OpenStreetMap, ranked by how far above past floods they sit and whether the roads to them flooded. Not yet checked on the ground."
     },
     "limits": "An estimate, not a forecast and not an alert. A place without colour is not a place without risk: heavy rain and flash floods can happen anywhere. Alerts come from Jaga's admins and DDPM (1784).",
-    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Royal Irrigation Department, Open-Meteo (weather model), OpenStreetMap contributors, Google Open Buildings.",
+    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Royal Irrigation Department, Open-Meteo (wave and weather models), OpenStreetMap contributors, Google Open Buildings.",
     "weather": {
       "lead": "Rain over your own places",
       "text": "When rain is falling now at your home or a place you watch, a small cloud rains over its pin, with lightning in a thunderstorm and the sun or moon behind a passing shower. From Open-Meteo's weather model at that point, asked again every 15 minutes: a model's picture of now, not a rain gauge, and not an alert."
+    },
+    "sea": {
+      "lead": "The sea, from wave and weather models",
+      "text": "Seven points off the coast from Songkhla to Tak Bai, read from Open-Meteo's wave and weather models every half hour. Waves from 1 m, wind from 30 km/h or thunderstorms count as rough; waves from 2 m, wind from 40 km/h or gusts from 60 km/h mean small boats should stay in port, in TMD's own words. It never says the sea is safe, and tide heights are not shown because the model differs from the tide gauges by about 0.7 m."
     }
   },
   "tambonRisk": {
@@ -3810,5 +3819,97 @@
       "places": "Watch your parents' home or other places you care about, and get their alerts."
     },
     "hintLink": "Sign in"
+  },
+  "sea": {
+    "title": "Sea and coast",
+    "intro": "Waves, wind and tide off the coast of Songkhla, Pattani and Narathiwat for the next 24–48 hours, from a model.",
+    "loading": "Loading the sea…",
+    "failed": "The sea forecast could not be loaded right now. Before you go out, check the Thai Meteorological Department's marine forecast.",
+    "toggle": "Waves and tide at sea",
+    "open": "See the sea and coast, for fishermen",
+    "pick": "Choose a point off the coast",
+    "offshore": "Off {place}",
+    "mark": "Waves {range} m",
+    "points": {
+      "songkhla": "Songkhla",
+      "chana": "Chana",
+      "thepha": "Thepha",
+      "pattani": "Pattani",
+      "saiburi": "Sai Buri",
+      "narathiwat": "Narathiwat",
+      "takbai": "Tak Bai"
+    },
+    "headline": {
+      "stay": "In places along the coast, small boats should stay in port",
+      "rough": "In places along the coast, the sea is rough for small boats",
+      "calm": "Low waves in the model all along the coast",
+      "unknown": "No sea forecast right now"
+    },
+    "grade": {
+      "stay": {
+        "title": "Small boats should stay in port",
+        "short": "Small boats stay in"
+      },
+      "rough": {
+        "title": "Rough for small boats: think twice",
+        "short": "Rough"
+      },
+      "calm": {
+        "title": "Low waves in the model",
+        "short": "Low waves"
+      },
+      "unknown": {
+        "title": "No sea forecast right now",
+        "short": "No data"
+      }
+    },
+    "note": {
+      "calm": "Waves about {range} m and wind up to about {wind} km/h in the next 24 hours, in the model.",
+      "high": "Waves up to about {max} m (around {at}), wind up to about {wind} km/h and gusts up to {gust} km/h in the next 24 hours, in the model."
+    },
+    "reason": {
+      "waves": "High waves",
+      "wind": "Strong wind",
+      "gusts": "Strong gusts",
+      "thunder": "Thunderstorms possible: lightning and sudden squalls at sea"
+    },
+    "advice": {
+      "stay": "Small boats should not go out. Larger boats: go with great care.",
+      "rough": "If you go out, go with care: wear a life jacket, stay near the coast and tell someone at home when you will be back.",
+      "calm": "Low waves in a model are not a promise that the sea is safe. Before you go out, check TMD's warnings and wear a life jacket.",
+      "unknown": "Jaga has no sea forecast right now. Before you go out, check TMD's marine forecast."
+    },
+    "waves": {
+      "title": "Wave height, next 48 hours",
+      "line": {
+        "rough": "{m} m rough",
+        "stay": "{m} m small boats stay in"
+      },
+      "table": "Show the figures",
+      "col": {
+        "time": "Time",
+        "wave": "Waves (m)",
+        "wind": "Wind (km/h)",
+        "gust": "Gusts (km/h)"
+      }
+    },
+    "tide": {
+      "title": "Tide",
+      "rising": "rising now",
+      "falling": "falling now",
+      "nowLabel": "Now",
+      "high": "High tide about {time}",
+      "low": "Low tide about {time}",
+      "note": "Tide times from the model. Heights in metres are not shown: the model's sea level does not match the tide gauges on this coast.",
+      "none": "The model has no tide at this point right now."
+    },
+    "model": "From a computer model (Open-Meteo), not an official warning. Near the shore and at river mouths waves can be higher than the model says. Official marine warnings come from the Thai Meteorological Department (TMD).",
+    "call": {
+      "marine": "Trouble at sea: Marine Department",
+      "tmd": "Weather: Thai Meteorological Department"
+    },
+    "tmdLink": "TMD's forecasts and warnings",
+    "surge": "Coastal flooding from the sea in a storm (storm surge) is not forecast here.",
+    "fetched": "Forecast fetched {time}"
   }
 }

@@ -6,8 +6,14 @@ import { focusHref, MAP_FOCUSES, type MapFocus } from "@/lib/map-focus";
 import { FeatureIcon } from "./FeatureIcon";
 import styles from "./FeatureIcon.module.css";
 
-/** The two features that change while someone looks: they carry a small "live" mark. */
-const LIVE: ReadonlySet<MapFocus> = new Set(["gauges", "dam"]);
+/** The features that change while someone looks: they carry a small "live" mark. */
+const LIVE: ReadonlySet<MapFocus> = new Set(["gauges", "dam", "sea"]);
+
+/**
+ * The flood-risk tile is wide; so is the last one when it would otherwise sit alone on its row.
+ */
+const wide = (i: number) =>
+  i === 0 || (i === MAP_FOCUSES.length - 1 && (MAP_FOCUSES.length - 1) % 2 === 1);
 
 function LiveTag() {
   const t = useTranslations("mapFeatures");
@@ -22,7 +28,7 @@ function LiveTag() {
 }
 
 /**
- * The home screen's way into the map (the owner, 15 Oct: the science should not go unseen). Five
+ * The home screen's way into the map (the owner, 15 Oct: the science should not go unseen). Six
  * tiles, one per feature, each opening the map on it; the flood-risk one first and wide. Plain
  * links with words and a small drawing: no map is loaded here, so the home screen stays light on
  * a slow connection (CLAUDE.md).
@@ -43,7 +49,7 @@ export function MapFeatureTiles() {
       </div>
       <ul className="grid grid-cols-2 gap-2">
         {MAP_FOCUSES.map((f, i) => (
-          <li key={f} className={i === 0 ? "col-span-2" : undefined}>
+          <li key={f} className={wide(i) ? "col-span-2" : undefined}>
             <Link
               href={focusHref(f)}
               prefetch={false}
@@ -74,7 +80,7 @@ export function MapFeatureTiles() {
 }
 
 /**
- * The same five on the map page itself, as a row of buttons above the map: each one switches its
+ * The same six on the map page itself, as a row of buttons above the map: each one switches its
  * layer on, frames it and brings the map into view, so a first visit shows what the map can do
  * instead of leaving it in the legend.
  */

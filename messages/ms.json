@@ -3714,6 +3714,11 @@
       "name": "Keadaan empangan",
       "note": "Empangan Bang Lang: simpanan dan lepasan air setiap jam",
       "short": "Empangan"
+    },
+    "sea": {
+      "name": "Laut dan pantai",
+      "note": "Ombak, angin dan pasang surut, dengan nota untuk nelayan",
+      "short": "Laut"
     }
   },
   "mapMethod": {
@@ -3752,10 +3757,14 @@
       "text": "Sekolah, wat, masjid, pejabat kerajaan dan tanah tinggi daripada OpenStreetMap, disusun menurut ketinggiannya di atas banjir lalu dan sama ada jalan ke sana pernah banjir. Belum disemak di lapangan."
     },
     "limits": "Satu anggaran, bukan ramalan dan bukan amaran. Tempat tanpa warna bukan tempat tanpa risiko: hujan lebat dan banjir kilat boleh berlaku di mana-mana. Amaran datang daripada pentadbir Jaga dan DDPM (1784).",
-    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Jabatan Pengairan Diraja, Open-Meteo (model cuaca), penyumbang OpenStreetMap, Google Open Buildings.",
+    "credits": "Data: Copernicus Sentinel-1 (ESA), FABDEM, GISTDA, ThaiWater (HII), EGAT, Jabatan Pengairan Diraja, Open-Meteo (model ombak dan cuaca), penyumbang OpenStreetMap, Google Open Buildings.",
     "weather": {
       "lead": "Hujan di atas tempat anda",
       "text": "Apabila hujan sedang turun di rumah anda atau tempat yang anda pantau, awan kecil menurunkan hujan di atas pinnya, dengan kilat ketika ribut petir dan matahari atau bulan di sebalik hujan sekejap. Daripada model cuaca Open-Meteo di titik itu, dikemas kini setiap 15 minit: gambaran model, bukan tolok hujan, dan bukan amaran."
+    },
+    "sea": {
+      "lead": "Laut, daripada model ombak dan cuaca",
+      "text": "Tujuh tempat di luar pantai dari Songkhla hingga Tak Bai, dibaca daripada model ombak dan model cuaca Open-Meteo setiap setengah jam. Ombak 1 m, angin 30 km/j atau ribut petir dikira bergelora; ombak 2 m, angin 40 km/j atau tiupan 60 km/j bermakna bot kecil patut tidak keluar, mengikut kata-kata TMD. Ia tidak pernah berkata laut selamat, dan ketinggian pasang surut tidak ditunjukkan kerana model berbeza kira-kira 0.7 m daripada stesen air."
     }
   },
   "tambonRisk": {
@@ -3810,5 +3819,97 @@
       "places": "Pantau rumah ibu bapa atau tempat yang anda sayangi, dan terima amarannya."
     },
     "hintLink": "Log masuk"
+  },
+  "sea": {
+    "title": "Laut dan pantai",
+    "intro": "Ombak, angin dan pasang surut di luar pantai Songkhla, Pattani dan Narathiwat untuk 24–48 jam akan datang, daripada model.",
+    "loading": "Memuatkan data laut…",
+    "failed": "Data laut tidak dapat dimuatkan sekarang. Sebelum turun ke laut, semak ramalan cuaca marin Jabatan Meteorologi Thailand (TMD).",
+    "toggle": "Ombak dan pasang surut di laut",
+    "open": "Lihat laut dan pantai, untuk nelayan",
+    "pick": "Pilih tempat di luar pantai",
+    "offshore": "Luar pantai {place}",
+    "mark": "Ombak {range} m",
+    "points": {
+      "songkhla": "Songkhla",
+      "chana": "Chana",
+      "thepha": "Thepha",
+      "pattani": "Pattani",
+      "saiburi": "Saiburi",
+      "narathiwat": "Narathiwat",
+      "takbai": "Tak Bai"
+    },
+    "headline": {
+      "stay": "Di beberapa tempat sepanjang pantai, bot kecil patut tidak turun ke laut",
+      "rough": "Di beberapa tempat sepanjang pantai, laut bergelora bagi bot kecil",
+      "calm": "Ombak rendah dalam model sepanjang pantai",
+      "unknown": "Tiada ramalan laut sekarang"
+    },
+    "grade": {
+      "stay": {
+        "title": "Bot kecil patut tidak turun ke laut",
+        "short": "Bot kecil jangan keluar"
+      },
+      "rough": {
+        "title": "Laut bergelora bagi bot kecil: fikir dahulu",
+        "short": "Bergelora"
+      },
+      "calm": {
+        "title": "Ombak rendah dalam model",
+        "short": "Ombak rendah"
+      },
+      "unknown": {
+        "title": "Tiada ramalan laut sekarang",
+        "short": "Tiada data"
+      }
+    },
+    "note": {
+      "calm": "Ombak kira-kira {range} m dan angin sehingga kira-kira {wind} km/j dalam 24 jam akan datang, menurut model.",
+      "high": "Ombak sehingga kira-kira {max} m (sekitar {at}), angin sehingga kira-kira {wind} km/j dan tiupan kencang sehingga {gust} km/j dalam 24 jam akan datang, menurut model."
+    },
+    "reason": {
+      "waves": "Ombak tinggi",
+      "wind": "Angin kencang",
+      "gusts": "Tiupan angin kencang",
+      "thunder": "Mungkin ribut petir: kilat dan angin kencang mengejut di laut"
+    },
+    "advice": {
+      "stay": "Bot kecil patut tidak turun ke laut. Bot besar, belayarlah dengan sangat berhati-hati.",
+      "rough": "Jika turun ke laut, berhati-hatilah: pakai jaket keselamatan, jangan jauh dari pantai dan beritahu orang di rumah bila akan pulang.",
+      "calm": "Ombak rendah dalam model bukan jaminan laut selamat. Sebelum turun ke laut, semak amaran TMD dan pakai jaket keselamatan.",
+      "unknown": "Jaga tiada ramalan laut sekarang. Sebelum turun ke laut, semak ramalan cuaca marin TMD."
+    },
+    "waves": {
+      "title": "Ketinggian ombak, 48 jam akan datang",
+      "line": {
+        "rough": "{m} m bergelora",
+        "stay": "{m} m bot kecil jangan keluar"
+      },
+      "table": "Tunjukkan angka",
+      "col": {
+        "time": "Masa",
+        "wave": "Ombak (m)",
+        "wind": "Angin (km/j)",
+        "gust": "Tiupan kencang (km/j)"
+      }
+    },
+    "tide": {
+      "title": "Pasang surut",
+      "rising": "Air sedang pasang",
+      "falling": "Air sedang surut",
+      "nowLabel": "Sekarang",
+      "high": "Air pasang penuh kira-kira {time}",
+      "low": "Air surut kira-kira {time}",
+      "note": "Masa pasang surut daripada model. Ketinggian dalam meter tidak ditunjukkan kerana paras laut model tidak sepadan dengan stesen air di pantai ini.",
+      "none": "Model tiada data pasang surut di tempat ini sekarang."
+    },
+    "model": "Daripada model komputer (Open-Meteo), bukan amaran rasmi. Dekat pantai dan muara sungai, ombak boleh lebih tinggi daripada model. Amaran laut rasmi datang daripada Jabatan Meteorologi Thailand.",
+    "call": {
+      "marine": "Kecemasan di air: Jabatan Marin",
+      "tmd": "Cuaca: Jabatan Meteorologi Thailand"
+    },
+    "tmdLink": "Ramalan dan amaran Jabatan Meteorologi Thailand",
+    "surge": "Banjir pantai akibat air laut naik semasa ribut (storm surge) tidak diramalkan di sini.",
+    "fetched": "Ramalan diambil pada {time}"
   }
 }

@@ -122,6 +122,13 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 - safe places with status
 - aggregated reports (hex bins) plus moderated photos
 - river gauges with status (normal / above watch / above warning), last reading time, and a small chart
+- the sea off the coast (added 15 Oct 2026, see "Sea and coast" below)
+
+**Sea and coast** (the owner, 15 Oct 2026; one of the map's six features, `?focus=sea`):
+- Seven points a few kilometres offshore from Songkhla to Tak Bai, read from Open-Meteo's marine model (waves, swell, sea level) and weather model (wind, gusts, thunder) through `/api/public/sea` (edge-cached 30 min). On by default, with a switch.
+- On the map, each point is an animated patch of sea: wave crests roll in the direction the waves travel, more and faster the rougher the sea, still under reduced motion. The colour is the map's water colour, never an alert colour; the grade is written beside every point that is not calm.
+- A **note for fishermen** per point, graded on the next 24 hours: "small boats should stay in port" (waves ≥ 2 m, wind ≥ 40 km/h or gusts ≥ 60 km/h; TMD's own wording), "rough for small boats: think twice" (waves ≥ 1 m, wind ≥ 30 km/h, gusts ≥ 45 km/h, or thunderstorms), "low waves in the model", or "no sea forecast" when data is missing. It never says the sea is safe, gives the range and the time of the highest waves, says it is a model and not an official warning, and points to TMD (1182, tmd.go.th) and the Marine Department (1199). Advisory only: no push, no alert (safety rules 2 and 8).
+- A wave chart for 48 hours with the two cut-offs drawn, and an animated tide curve that says when the sea rises, falls and turns, **without heights** (the model's sea level sits about 0.7 m off the tide gauges, A8 14 Oct). Storm surge is not forecast and the section says so.
 
 **Modes:**
 - Pre-season: the risk view (hazard + safe places) is the default.

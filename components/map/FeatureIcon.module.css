@@ -30,6 +30,26 @@
   stroke: #7ec8e3;
 }
 
+.seaGround {
+  fill: #eaf5f9;
+}
+:global(:root[data-theme="dark"]) .seaGround {
+  fill: #0f1c26;
+}
+
+/* The sea's crests drift sideways, slowly; still for someone who asked for less motion. */
+.roll {
+  animation: roll 3.2s ease-in-out infinite alternate;
+}
+@keyframes roll {
+  from {
+    transform: translateX(-1.5px);
+  }
+  to {
+    transform: translateX(1.5px);
+  }
+}
+
 /* "Live": a slow pulse on the dot, nothing at all for someone who asked for less motion. */
 .live {
   animation: pulse 2.4s ease-in-out infinite;
@@ -48,7 +68,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .live {
+  .live,
+  .roll {
     animation: none;
   }
 }

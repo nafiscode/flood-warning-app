@@ -48,7 +48,24 @@ import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
 import { Link } from "@/i18n/navigation";
 import { checkBox, checkRow } from "@/lib/ui";
 import { DamPeek, GaugePeek, PlacePeek } from "./MapPeek";
-import { MapView, type MapSelection, type MinePlace, type PeekTarget } from "./MapView";
+import {
+  MapView,
+  type MapSelection,
+  type MinePlace,
+  type PeekTarget,
+  type SeaMark,
+} from "./MapView";
+import { SeaGradeIcon, SeaSection } from "./Sea";
+import {
+  coastBox,
+  hourNow,
+  isCoastId,
+  nearestCoast,
+  outlook,
+  travelBearing,
+  waveRange,
+  type SeaData,
+} from "@/lib/sea";
 import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
@@ -124,8 +141,11 @@ export type DashboardViewProps = {
   openDam?: string | null;
   /** A tambon whose residents' flood reports were asked for from the home screen. */
   openReports?: { tambon: string; lat: number; lon: number } | null;
-  /** One of the map's five features, asked for from a tile on the home screen (?focus=). */
+  /** One of the map's six features, asked for from a tile on the home screen (?focus=). */
   openFocus?: MapFocus | null;
+  /** The sea off the coast (lib/sea.ts), and how asking for it went. */
+  sea?: SeaData | null;
+  seaLoad?: LoadState;
   /** Tambons with a standing flood report from residents. Null while loading or unavailable. */
   reports?: TambonReports[] | null;
   userAgent?: string;
@@ -245,6 +265,7 @@ export function DashboardView(props: DashboardViewProps) {
   const t = useTranslations("map");
   const tHome = useTranslations("home");
   const tDam = useTranslations("dam");
+  const tSea = useTranslations("sea");
   const tNear = useTranslations("reportsNear");
   const locale = useLocale();
   const format = useFormatter();
@@ -278,10 +299,12 @@ export function DashboardView(props: DashboardViewProps) {
    * card first.
    */
   const asked = props.openDam ?? (props.openFocus === "dam" ? MAIN_DAM : null);
+  // "?focus=sea" opens the Sea and coast section on the point off the person's own coast.
+  const askedSea = props.openFocus === "sea" ? nearestCoast(props.area) : null;
   const [picked, setPicked] = useState<MapSelection | null>(
-    asked ? { kind: "dam", code: asked } : null,
+    asked ? { kind: "dam", code: asked } : askedSea ? { kind: "sea", id: askedSea } : null,
   );
-  const [touched, setTouched] = useState(asked !== null);
+  const [touched, setTouched] = useState(asked !== null || askedSea !== null);
   const areaSelection: MapSelection | null = props.area
     ? {
         kind: "tambon",
@@ -315,6 +338,8 @@ export function DashboardView(props: DashboardViewProps) {
   // the terrain from 13 Oct): the real ground people recognise, and where the hills are, which
   // says most about where water goes.
   const [showHazard, setShowHazard] = useState(true);
+  // The sea's waves along the coast start on (the owner, 15 Oct 2026), and can be switched off.
+  const [showSea, setShowSea] = useState(true);
   const [basemap, setBasemapChoice] = useState<Basemap>("satelliteTerrain");
   // 2D or 3D (the owner, 15 Oct): flat by default; the switch sits on the map itself.
   const [scene, setScene] = useState(false);
@@ -484,14 +509,16 @@ export function DashboardView(props: DashboardViewProps) {
       ? (boundsAround(zoneFrame(zoneDam)) ?? null)
       : props.openFocus === "gauges"
         ? SERVICE_BOUNDS
-        : props.openReports
-          ? [
-              props.openReports.lon - 0.06,
-              props.openReports.lat - 0.05,
-              props.openReports.lon + 0.06,
-              props.openReports.lat + 0.05,
-            ]
-          : null;
+        : props.openFocus === "sea"
+          ? coastBox()
+          : props.openReports
+            ? [
+                props.openReports.lon - 0.06,
+                props.openReports.lat - 0.05,
+                props.openReports.lon + 0.06,
+                props.openReports.lat + 0.05,
+              ]
+            : null;
 
   /*
    * The pop-ups on the map itself (the owner, 14 Oct): a reservoir, a gauge or a safe place says
@@ -638,6 +665,11 @@ export function DashboardView(props: DashboardViewProps) {
     } else if (f === "gauges") {
       flyTo(SERVICE_BOUNDS);
       frameMap();
+    } else if (f === "sea") {
+      setShowSea(true);
+      setSelection({ kind: "sea", id: nearestCoast(props.area) });
+      flyTo(coastBox());
+      frameMap();
     } else {
       const dam = mainDam(dams);
       if (!dam) return;
@@ -646,6 +678,32 @@ export function DashboardView(props: DashboardViewProps) {
       revealPanel();
     }
   };
+
+  /*
+   * The sea's marks (lib/sea-marks.ts): each point's grade for the next day, its waves heading
+   * where the model's waves travel now, and the words beside it - the grade far out for any sea
+   * that is not calm, the waves' range close in.
+   */
+  const seaMarks: SeaMark[] | null =
+    showSea && props.sea
+      ? props.sea.points.map((point) => {
+          const view = outlook(point, now);
+          const word = view.grade === "calm" ? "" : tSea(`grade.${view.grade}.short`);
+          const range =
+            view.grade === "unknown"
+              ? tSea("grade.unknown.short")
+              : tSea("mark", { range: waveRange(view.waveMin, view.waveMax) });
+          return {
+            id: point.id,
+            lat: point.lat,
+            lon: point.lon,
+            grade: view.grade,
+            bearing: travelBearing(hourNow(point, now)?.waveFrom ?? null),
+            short: word,
+            long: [tSea(`points.${point.id}`), range, word].filter(Boolean).join(" · "),
+          };
+        })
+      : null;
 
   let selected: React.ReactNode = null;
   if (selection?.kind === "tambon" && layers.includes("alerts")) {
@@ -729,6 +787,16 @@ export function DashboardView(props: DashboardViewProps) {
         tambonName={props.area ? tambonName(props.area.code) : null}
       />
     ) : null;
+  } else if (selection?.kind === "sea") {
+    selected = (
+      <SeaSection
+        data={props.sea ?? null}
+        state={props.seaLoad ?? "loading"}
+        now={now}
+        pointId={isCoastId(selection.id) ? selection.id : null}
+        onPoint={(id) => setSelection({ kind: "sea", id })}
+      />
+    );
   } else if (selection?.kind === "gauge") {
     const gauge = data?.gauges.find((g) => g.id === selection.id);
     selected = gauge ? (
@@ -1043,6 +1111,7 @@ export function DashboardView(props: DashboardViewProps) {
                   showMine={showMine}
                   dams={dams}
                   hazardUrl={props.hazardTiles ?? null}
+                  sea={seaMarks}
                   satellite={
                     props.satelliteDays && props.satellite?.days === props.satelliteDays
                       ? props.satellite.features
@@ -1112,6 +1181,33 @@ export function DashboardView(props: DashboardViewProps) {
                   </span>
                   <span>{t("risk.toggle")}</span>
                 </label>
+              )}
+              <label
+                data-sea-toggle="true"
+                className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
+              >
+                <input
+                  type="checkbox"
+                  className={`${checkBox} mt-0`}
+                  checked={showSea}
+                  onChange={(event) => setShowSea(event.target.checked)}
+                />
+                <SeaGradeIcon grade="calm" size={24} />
+                <span>{tSea("toggle")}</span>
+              </label>
+              {showSea && (
+                <button
+                  type="button"
+                  data-open-sea="true"
+                  onClick={() => {
+                    setSelection({ kind: "sea", id: nearestCoast(props.area) });
+                    revealPanel();
+                  }}
+                  className={`${buttonQuiet} w-full justify-between text-start`}
+                >
+                  {tSea("open")}
+                  <span aria-hidden="true">→</span>
+                </button>
               )}
               {props.onSatelliteDays && (
                 <SatelliteFloodPanel
