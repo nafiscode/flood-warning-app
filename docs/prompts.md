@@ -576,6 +576,34 @@ Read docs/spec.md sections 3 and 4, docs/brand.md, and CLAUDE.md safety rules 1,
 Acceptance: a new visitor, a new team and a new admin each see their tours on the first two visits and not on the third; nothing appears on SOS or during Warning/Evacuate; every tour can be replayed; the owner has read the Thai.
 ```
 
+### A17: "What Jaga can do" page (before launch)
+
+Added 15 Oct 2026 (owner's request): one page that shows, for each role, what Jaga lets them do. Not a manual: short, visual, and enough to show what the app is capable of.
+```text
+Read docs/spec.md sections 3 and 4, docs/brand.md, and CLAUDE.md safety rules 1, 4 and 9.
+
+1. One public page, open without an account, linked from About, the footer, Account and the guided tours (A16). Sections per role: resident and visitor, response team, food-and-water team, admin (and the dam operator once it exists). Each section: a few capabilities, each one line with an icon and a picture or short animation of the real screen, and a button that opens that feature.
+2. Honest: says what Jaga is (a carrier of alerts and requests, never the rescuer), shows "coming soon" hazards as placeholders only (safety rule 10), and puts the hotlines and the SOS button where they always are.
+3. Light: usable at 360 px on slow 3G, pictures lazy-loaded, no motion under reduced motion, works in both themes; words in messages/*.json, Thai first.
+4. No donation prompt on it (safety rule 9).
+
+Acceptance: a person in each role can find, in under a minute, what they can do and open it; the owner has read the Thai.
+```
+
+### A18: "How Jaga works" knowledge pages (before launch, or soon after if time is short)
+
+Added 15 Oct 2026 (owner's request): for academics and partners who want to understand the science and the system. Conceptual, not a recipe.
+```text
+Read docs/science-plan.md, the pipeline METHODS.md files, docs/spec.md and docs/attributions.md.
+
+1. The science page: what each part of the map is and why (flood history from satellite radar, the flood-prone classes and how they were checked against real floods, the dam release zone and travel times, gauge thresholds and the automated alarm, safe places, the seasonal outlook, the sea), the concept and logic of each in plain terms, the open data sources with their credits and licences, what each part can and cannot tell, and how it was validated. No parameter values, thresholds, code paths or step-by-step methods: enough to understand and judge it, not enough to replicate it.
+2. The system page: how the app works as a concept, in general terms only (a web app that works offline, a database that enforces who may see what, scheduled jobs that read river gauges and the dam, a notification service for phones and LINE, file storage for map layers). Never a vendor or product name. Covers privacy by design (what is never shown, what is logged), how a request for help travels to a team, how alerts are issued and why only people publish them (with the one automated alarm), and how it keeps working when parts fail.
+3. Public, open without an account, linked from About and the footer only; never from SOS, report or alert screens. Same light-page rules as A17. Words in messages/*.json; English may lead for this page, Thai and Malay follow.
+4. A contact line for researchers who want to collaborate (CONTACT_EMAIL), not the methods themselves.
+
+Acceptance: an academic reader understands what each layer means, where its data come from and how far to trust it, without being given a method to copy; no vendor name appears on the system page (a test checks the words); the owner has approved both pages.
+```
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.
