@@ -1231,7 +1231,23 @@ export function MapView({
             const opened = new Popup({
               closeButton: false,
               closeOnClick: false,
-              offset: hit.offset ?? 14,
+              /*
+               * Above a raised mark (a cloud over its pin) the pop-up opens higher; when the map
+               * edge turns it to open below or beside the point, it sits close as usual.
+               */
+              offset: hit.offset
+                ? {
+                    top: [0, 14],
+                    "top-left": [0, 14],
+                    "top-right": [0, 14],
+                    bottom: [0, -hit.offset],
+                    "bottom-left": [0, -hit.offset],
+                    "bottom-right": [0, -hit.offset],
+                    left: [14, -hit.offset / 2],
+                    right: [-14, -hit.offset / 2],
+                    center: [0, 0],
+                  }
+                : 14,
               maxWidth: "290px",
             })
               .setLngLat(hit.lngLat)

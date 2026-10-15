@@ -110,7 +110,10 @@ export function RainSection({
         {t("now", { what: tCodes(nowGroup ?? RAIN_GROUP[kind]) })}
       </p>
       {!data && state === "loading" && <p>{t("loading")}</p>}
-      {!data && state === "unavailable" && <p data-rain-failed="true">{t("failed")}</p>}
+      {((!data && state === "unavailable") || (ahead && ahead.hours.length === 0)) && (
+        // No answer, or one too old to have any hour ahead of now: nothing is shown as current.
+        <p data-rain-failed="true">{t("failed")}</p>
+      )}
       {data && ahead && ahead.hours.length > 0 && (
         <>
           <p data-rain-eases={ahead.easesAt ? "yes" : "no"}>

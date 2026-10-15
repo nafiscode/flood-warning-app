@@ -75,7 +75,7 @@ function forecast(rain: number[]): Weather {
     humidity: 90,
     rainMm: 3,
     windKmh: 10,
-    windFrom: "NE",
+    windFrom: "ne",
     isDay: true,
     code: 63,
     hours: rain.map((mm, i) => ({
@@ -117,6 +117,19 @@ describe("the rain's own section", () => {
     expect(c.textContent).toContain("Open-Meteo");
     // The point is rounded to about a kilometre, as the weather page asks.
     expect(vi.mocked(fetch).mock.calls[0]![0]).toBe("/api/public/weather?lat=6.87&lon=101.25");
+  });
+
+  it("shows nothing as current from a forecast with no hour ahead", async () => {
+    const old = forecast([3, 2, 1]);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify(old))),
+    );
+    const c = renderWithIntl(
+      <RainSection name="Home" lat={6.87} lon={101.25} kind="rain" now={NOW + 10 * HOUR} />,
+    ).container;
+    await waitFor(() => expect(c.querySelector("[data-rain-failed]")).not.toBeNull());
+    expect(c.querySelector("[data-rain-hours]")).toBeNull();
   });
 
   it("says so when the forecast cannot be loaded", async () => {
