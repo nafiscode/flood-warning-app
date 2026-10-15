@@ -741,6 +741,12 @@
       "body": "Log masuk dengan LINE, dan amaran untuk rumah anda serta tempat yang anda pantau sampai walaupun aplikasi ditutup.",
       "button": "Log masuk dengan LINE",
       "later": "Nanti dahulu"
+    },
+    "report": {
+      "title": "Laporan banjir anda",
+      "approved": "Pentadbir telah menyemak laporan banjir anda di {tambon}. Terima kasih kerana melaporkan.",
+      "hidden": "Pentadbir telah mengeluarkan laporan banjir anda di {tambon} dari peta. Jika ini satu kesilapan, laporkan semula.",
+      "see": "Lihat permintaan saya"
     }
   },
   "placeFinder": {
@@ -3082,7 +3088,9 @@
     "answeredNotYours": "Butang ini hanya untuk pengirim permintaan ini.",
     "menuStatus": "Status kawasan saya",
     "menuPlaces": "Tempat selamat",
-    "menuSos": "Minta bantuan"
+    "menuSos": "Minta bantuan",
+    "menuMap": "Peta Risiko Banjir",
+    "menuUnit": "Daftar pasukan bantuan"
   },
   "fieldRescue": {
     "title": "Rekod penyelamatan yang ditemui sendiri",

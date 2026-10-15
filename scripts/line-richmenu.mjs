@@ -1,14 +1,19 @@
 #!/usr/bin/env node
 /**
- * The menu under the chat with Jaga's LINE Official Account (A7, spec 4.8): three buttons that
- * are always there.
+ * The menu under the chat with Jaga's LINE Official Account (A7, spec 4.8): five buttons that
+ * are always there, in two rows.
  *
  *   - "My area status": answered in the chat by LINE's free reply, from the person's own places
  *   - "Safe places near me": opens Jaga's home screen, where the nearest safe places are listed
  *   - "Ask for help": opens Jaga's SOS screen; it never sends anything by itself (safety rule 1:
  *     a request is sent from the SOS screen, where the location is taken)
+ *   - "Flood Risk Map": opens the map (owner, 15 Oct)
+ *   - "Register a response team": opens the team registration, through sign-in (owner, 15 Oct)
  *
- *   node scripts/line-richmenu.mjs draw          only draw public/line/richmenu-1.png
+ * The everyday three keep the top row at the same size as before; the two newer ones sit under
+ * them on the light ground, so the SOS button stays where people have learned it is.
+ *
+ *   node scripts/line-richmenu.mjs draw          only draw public/line/richmenu-2.png
  *   node scripts/line-richmenu.mjs publish <site> draw, upload to LINE, make it everyone's menu
  *
  * The words are read from messages/th.json (`line.menu*`), Thai first and Malay under it. It uses
@@ -21,10 +26,11 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = join(repo, "public", "line", "richmenu-1.png");
+const OUT = join(repo, "public", "line", "richmenu-2.png");
 const NAME = "jaga-main";
 const W = 2500;
-const H = 843;
+const H = 1686;
+const ROW = 843;
 const th = JSON.parse(readFileSync(join(repo, "messages", "th.json"), "utf8")).line;
 const ms = JSON.parse(readFileSync(join(repo, "messages", "ms.json"), "utf8")).line;
 
@@ -36,6 +42,8 @@ const icons = {
   status: `<svg viewBox="0 0 24 24" width="170" height="170" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>`,
   places: `<svg viewBox="0 0 24 24" width="170" height="170" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>`,
   sos: `<svg viewBox="0 0 24 24" width="170" height="170" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg>`,
+  map: `<svg viewBox="0 0 24 24" width="170" height="170" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>`,
+  unit: `<svg viewBox="0 0 24 24" width="170" height="170" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/><path d="M12 9v6M9 12h6"/></svg>`,
 };
 const panel = (key, title, sub, bg, fg) => `
   <div class="p" style="background:${bg};color:${fg}">
@@ -48,15 +56,22 @@ const html = `<!doctype html><html lang="th"><head><meta charset="utf-8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@500;700&display=block">
 <style>
   html,body{margin:0}
-  body{width:${W}px;height:${H}px;overflow:hidden;display:flex;gap:10px;background:#0F1C26;
-    font-family:"IBM Plex Sans Thai",system-ui,sans-serif}
+  body{width:${W}px;height:${H}px;overflow:hidden;display:flex;flex-direction:column;gap:10px;
+    background:#0F1C26;font-family:"IBM Plex Sans Thai",system-ui,sans-serif}
+  .row{display:flex;gap:10px;height:${ROW - 5}px}
   .p{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
   .t{font-size:84px;font-weight:700;line-height:1.35;text-align:center;white-space:nowrap;margin-top:24px}
   .s{font-size:58px;font-weight:500;opacity:.85;text-align:center}
 </style></head><body>
+  <div class="row">
   ${panel("status", th.menuStatus, ms.menuStatus, "#1D3B53", "#FFFFFF")}
   ${panel("places", th.menuPlaces, ms.menuPlaces, "#1F7A74", "#FFFFFF")}
   ${panel("sos", th.menuSos, ms.menuSos, "#C62828", "#FFFFFF")}
+  </div>
+  <div class="row">
+  ${panel("map", th.menuMap, ms.menuMap, "#F0F2EE", "#1D3B53")}
+  ${panel("unit", th.menuUnit, ms.menuUnit, "#F0F2EE", "#1D3B53")}
+  </div>
 </body></html>`;
 
 async function draw() {
@@ -88,6 +103,7 @@ async function publish(site) {
   }
   const auth = { Authorization: `Bearer ${token()}` };
   const third = Math.floor(W / 3);
+  const half = Math.floor(W / 2);
   const menu = {
     size: { width: W, height: H },
     selected: true,
@@ -95,16 +111,24 @@ async function publish(site) {
     chatBarText: "Jaga",
     areas: [
       {
-        bounds: { x: 0, y: 0, width: third, height: H },
+        bounds: { x: 0, y: 0, width: third, height: ROW },
         action: { type: "postback", data: "status", displayText: th.menuStatus },
       },
       {
-        bounds: { x: third, y: 0, width: third, height: H },
+        bounds: { x: third, y: 0, width: third, height: ROW },
         action: { type: "uri", uri: `${site}/` },
       },
       {
-        bounds: { x: third * 2, y: 0, width: W - third * 2, height: H },
+        bounds: { x: third * 2, y: 0, width: W - third * 2, height: ROW },
         action: { type: "uri", uri: `${site}/sos` },
+      },
+      {
+        bounds: { x: 0, y: ROW, width: half, height: H - ROW },
+        action: { type: "uri", uri: `${site}/map` },
+      },
+      {
+        bounds: { x: half, y: ROW, width: W - half, height: H - ROW },
+        action: { type: "uri", uri: `${site}/authority/register` },
       },
     ],
   };

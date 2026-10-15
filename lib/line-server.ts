@@ -5,7 +5,10 @@ import {
   answerText,
   batches,
   caseLineMessage,
+  decisionLineMessage,
   readPress,
+  type DecisionRow,
+  type DecisionWords,
   statusText,
   type LineStatus,
   type LineWords,
@@ -309,17 +312,35 @@ export async function lineCaseTick(): Promise<
     if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
     let sent = 0;
     let failed = 0;
+    const owed: { to: string; message: Record<string, unknown> }[] = [];
     for (const row of data as (DueRow & { line_user_id: string })[]) {
       const locale = localeOf(row.locale);
       const message = caseLineMessage(row, SEND_WORDS[locale], wordsOf(locale), siteUrl());
-      if (!message) continue;
+      if (message) owed.push({ to: row.line_user_id, message });
+    }
+    // An admin's decision on something the person was waiting for (owner, 15 Oct): a team's
+    // registration, a team's field-rescue record, a flood report. Same words as the bell.
+    const decided = await supabase.rpc("line_decisions_due", { p_token: token });
+    if (!decided.error && Array.isArray(decided.data)) {
+      for (const row of decided.data as (DecisionRow & { line_user_id: string })[]) {
+        const locale = localeOf(row.locale);
+        const message = decisionLineMessage(
+          { ...row, locale },
+          ALL[locale].notices as unknown as DecisionWords,
+          wordsOf(locale),
+          siteUrl(),
+        );
+        if (message) owed.push({ to: row.line_user_id, message });
+      }
+    }
+    for (const { to, message } of owed) {
       const retryKey = randomUUID();
       let ok = false;
       for (let attempt = 0; attempt < 3 && !ok; attempt++) {
         try {
           const r = await call("/message/push", {
             method: "POST",
-            body: { to: row.line_user_id, messages: [message] },
+            body: { to, messages: [message] },
             retryKey,
           });
           ok = r.ok || r.status === 409;

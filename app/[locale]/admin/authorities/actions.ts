@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { runPushTick } from "@/lib/push-server";
 import { localePath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,6 +31,8 @@ export async function verifyUnit(form: FormData) {
     p_phone_confirmed_by_call: field(form, "called") === "yes",
   });
   if (error) back(form, { error: error.code === "23514" ? "call" : "save", reveal: unit });
+  // The team's LINE hears of it at once (owner, 15 Oct); the minute's cron is the backstop.
+  after(runPushTick);
   back(form, { done: "verified" });
 }
 
@@ -41,5 +45,6 @@ export async function suspendUnit(form: FormData) {
     p_reason: field(form, "reason"),
   });
   if (error) back(form, { error: "save" });
+  after(runPushTick);
   back(form, { done: "suspended" });
 }

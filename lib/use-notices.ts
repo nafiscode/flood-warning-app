@@ -10,6 +10,7 @@ import {
   type KnownCase,
   type NoticeItem,
   type NoticeRow,
+  type ReportDecision,
 } from "@/lib/notices";
 import { FIELD_URL, type MyFieldRescue } from "@/lib/field-rescue";
 import { REQUESTS_URL, type FieldWaiting, type UnitRequest } from "@/lib/journey";
@@ -27,6 +28,8 @@ type StoredUnits = {
   units: UnitRequest[];
   field?: MyFieldRescue[];
   fieldWaiting?: FieldWaiting | null;
+  /** What an admin decided about their own flood reports. */
+  reports?: ReportDecision[];
   checkedAt: number;
 };
 
@@ -162,7 +165,11 @@ export function useNotices(options: {
     }
     let cancelled = false;
     const load = () => {
-      getJson<{ units: UnitRequest[]; fieldWaiting?: FieldWaiting | null }>(REQUESTS_URL).then(
+      getJson<{
+        units: UnitRequest[];
+        fieldWaiting?: FieldWaiting | null;
+        reports?: ReportDecision[];
+      }>(REQUESTS_URL).then(
         async (answer) => {
           // Only someone with a verified team has field records to hear about.
           const field = answer.units.some((u) => u.status === "verified")
@@ -176,6 +183,7 @@ export function useNotices(options: {
               units: answer.units,
               field,
               fieldWaiting: answer.fieldWaiting ?? null,
+              reports: answer.reports ?? [],
               checkedAt: Date.now(),
             } satisfies StoredUnits);
           }
@@ -201,6 +209,7 @@ export function useNotices(options: {
       units: storedUnits?.units ?? [],
       field: storedUnits?.field ?? [],
       fieldWaiting: storedUnits?.fieldWaiting ?? null,
+      reports: storedUnits?.reports ?? [],
       // Zero until the phone's clock is readable (the server's HTML draws an empty bell).
       now,
       homeLabel,

@@ -1,7 +1,7 @@
 "use server";
 
 import { after } from "next/server";
-import { pushAnnouncement } from "@/lib/push-server";
+import { pushAnnouncement, runPushTick } from "@/lib/push-server";
 import { redirect } from "next/navigation";
 import { readAreas, zoneMap } from "@/lib/admin-alerts";
 import {
@@ -36,6 +36,8 @@ export async function moderateReport(locale: string, form: FormData) {
   if (!isUuid(id) || !to) redirect(`${back}&error=save`);
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_moderate_report", { p_report: id, p_status: to });
+  // The reporter hears of it in LINE at once (owner, 15 Oct); the minute's cron is the backstop.
+  if (!error) after(runPushTick);
   redirect(error ? `${back}&error=save` : `${back}&done=${to}`);
 }
 
@@ -208,5 +210,7 @@ export async function reviewFieldRescue(locale: string, form: FormData) {
     p_note: note || null,
   });
   if (error) redirect(`${back}&error=${error.code === "23514" ? "gone" : "save"}`);
+  // The team hears of it in LINE at once (owner, 15 Oct); the minute's cron is the backstop.
+  after(runPushTick);
   redirect(`${back}&done=${approve ? "approved" : "rejected"}`);
 }

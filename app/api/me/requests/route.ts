@@ -1,4 +1,5 @@
 import { toUnitRequest, type UnitRequest } from "@/lib/journey";
+import { toReportDecision, type ReportDecision } from "@/lib/notices";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -35,8 +36,14 @@ export async function GET() {
     !waiting.error && row && Number(row.waiting) > 0 && typeof row.newest_id === "string"
       ? { count: Number(row.waiting), newestId: row.newest_id, newestAt: String(row.newest_at) }
       : null;
+  // What an admin decided about the caller's own flood reports, for the bell (owner, 15 Oct).
+  const decided = await supabase.rpc("my_report_decisions");
+  const reports = (Array.isArray(decided.data) ? (decided.data as Record<string, unknown>[]) : [])
+    .map(toReportDecision)
+    .filter((r): r is ReportDecision => r !== null);
   return answer({
     fieldWaiting,
+    reports,
     units: ((data ?? []) as Record<string, unknown>[])
       .map(toUnitRequest)
       .filter((u): u is UnitRequest => u !== null),

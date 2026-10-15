@@ -29,6 +29,8 @@ export type LineWords = {
   menuStatus: string;
   menuPlaces: string;
   menuSos: string;
+  menuMap: string;
+  menuUnit: string;
   open: string;
   nextUpdate: string;
   /** "your area", put where the alert's own text lists its tambons. */
@@ -272,6 +274,72 @@ export function caseLineMessage(
     };
   }
   return null;
+}
+
+/** One admin decision owed to someone's LINE, as line_decisions_due() gives it. */
+export type DecisionRow = {
+  kind: string;
+  locale: string;
+  ref: string;
+  data: Record<string, string | null> | null;
+};
+
+/** The words of a decision: the `notices` group of a language (the bell says the same). */
+export type DecisionWords = {
+  unit: { title: string; verified: string; suspended: string };
+  field: { title: string; approved: string; rejected: string };
+  report: { title: string; approved: string; hidden: string };
+  yourArea: string;
+};
+
+/**
+ * An admin's decision as a LINE message (owner, 15 Oct): a team's registration verified or
+ * suspended, a team's field-rescue record approved or refused, a flood report checked or taken off
+ * the map. The same words as the bell, and one button into Jaga where the rest is shown. It names
+ * the team or the tambon, never a person or a place.
+ */
+export function decisionLineMessage(
+  row: DecisionRow,
+  words: DecisionWords,
+  line: LineWords,
+  site: string,
+): Record<string, unknown> | null {
+  const d = row.data ?? {};
+  const tambon = (row.locale === "th" ? d.tambon_th : d.tambon_en) || d.tambon_th || words.yourArea;
+  const unit = d.unit ?? "";
+  const parts: Record<string, [string, string, string]> = {
+    unit_verified: [words.unit.title, words.unit.verified.replace("{name}", unit), "/authority"],
+    unit_suspended: [words.unit.title, words.unit.suspended.replace("{name}", unit), "/requests"],
+    field_approved: [words.field.title, words.field.approved, "/authority/field-rescue"],
+    field_rejected: [words.field.title, words.field.rejected, "/authority/field-rescue"],
+    report_approved: [
+      words.report.title,
+      words.report.approved.replace("{tambon}", tambon),
+      "/requests",
+    ],
+    report_hidden: [
+      words.report.title,
+      words.report.hidden.replace("{tambon}", tambon),
+      "/requests",
+    ],
+  };
+  const part = parts[row.kind];
+  if (!part) return null;
+  const [title, body, path] = part;
+  const locale = row.locale === "ms" || row.locale === "en" ? row.locale : "th";
+  // Thai is the default language and has no prefix in Jaga's addresses.
+  const url = `${site}${locale === "th" ? "" : `/${locale}`}${path}`;
+  const text = `${title}
+${body}`;
+  return {
+    type: "template",
+    altText: clip(text, 380),
+    template: {
+      type: "buttons",
+      text: clip(text, 160),
+      actions: [{ type: "uri", label: line.open, uri: url }],
+    },
+  };
 }
 
 /** What a LINE button pressed means: the area status, or an answer about one request. */

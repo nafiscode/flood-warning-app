@@ -47,13 +47,15 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
             <LifebuoyIcon size={24} />
             {item.kind === "fieldWaiting"
               ? t("fieldWaiting.title")
-              : item.kind === "field"
-                ? t("field.title")
-                : item.kind === "unit"
-                  ? t("unit.title")
-                  : item.kind === "sos" && item.supplies
-                    ? t("supply.title")
-                    : t("sos.title")}
+              : item.kind === "report"
+                ? t("report.title")
+                : item.kind === "field"
+                  ? t("field.title")
+                  : item.kind === "unit"
+                    ? t("unit.title")
+                    : item.kind === "sos" && item.supplies
+                      ? t("supply.title")
+                      : t("sos.title")}
           </span>
         )}
         {unread && (
@@ -78,6 +80,17 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
       )}
       {item.kind === "unit" && <p>{t(`unit.${item.event}`, { name: item.unitName })}</p>}
       {item.kind === "field" && <p>{t(`field.${item.event}`)}</p>}
+      {item.kind === "report" && (
+        <p>
+          {t(`report.${item.event}`, {
+            tambon: item.tambon
+              ? locale === "th"
+                ? item.tambon.th
+                : item.tambon.en
+              : t("yourArea"),
+          })}
+        </p>
+      )}
       {item.kind === "fieldWaiting" && <p>{t("fieldWaiting.body", { count: item.count })}</p>}
       {item.kind === "sos" && (
         <>
@@ -111,6 +124,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         {item.kind === "field" && (
           <Link href="/authority/field-rescue" prefetch={false} className="underline">
             {t("field.see")}
+          </Link>
+        )}
+        {item.kind === "report" && (
+          <Link href="/requests" prefetch={false} className="underline">
+            {t("report.see")}
           </Link>
         )}
         {/* An alert leads to the home screen, which shows it in full: level, area, issuer, time,

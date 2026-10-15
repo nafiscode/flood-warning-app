@@ -65,7 +65,34 @@ export type NoticeItem = Base &
     | { kind: "unit"; event: "verified" | "suspended"; unitName: string }
     | { kind: "field"; event: "approved" | "rejected" }
     | { kind: "fieldWaiting"; count: number }
+    | { kind: "report"; event: "approved" | "hidden"; tambon: { th: string; en: string } | null }
   );
+
+/**
+ * An admin's decision on one of the person's own flood reports (/api/me/requests, from
+ * my_report_decisions): checked, or taken off the map. The latest decision per report.
+ */
+export type ReportDecision = {
+  reportId: string;
+  status: "approved" | "hidden";
+  decidedAt: string;
+  tambonTh: string | null;
+  tambonEn: string | null;
+};
+
+/** One row of my_report_decisions() as a ReportDecision, or null when it is not one. */
+export function toReportDecision(row: Record<string, unknown>): ReportDecision | null {
+  const decidedAt = isoOrNull(row.decided_at);
+  if (typeof row.report_id !== "string" || !decidedAt) return null;
+  if (row.status !== "approved" && row.status !== "hidden") return null;
+  return {
+    reportId: row.report_id,
+    status: row.status,
+    decidedAt,
+    tambonTh: typeof row.tambon_th === "string" ? row.tambon_th : null,
+    tambonEn: typeof row.tambon_en === "string" ? row.tambon_en : null,
+  };
+}
 
 /** One row of public_notices(), as /api/public/notices gives it. */
 export type NoticeRow = {
@@ -201,13 +228,15 @@ export function buildNotices(input: {
   field?: MyFieldRescue[];
   /** For an admin: field rescues waiting to be checked. */
   fieldWaiting?: FieldWaiting | null;
+  /** What an admin decided about the person's own flood reports. */
+  reports?: ReportDecision[];
   now: number;
   /** The word for the person's own home, and how to name a chosen area, both translated. */
   homeLabel: string;
   areaLabel: (area: Area) => string;
 }): NoticeItem[] {
   const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
-  const { fieldWaiting } = input;
+  const { fieldWaiting, reports = [] } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -313,6 +342,27 @@ export function buildNotices(input: {
     const news = fieldNews(record);
     if (!news || !within(news.at)) continue;
     items.push({ kind: "field", id: news.id, at: news.at, places: [], event: news.event });
+  }
+
+  for (const decision of reports) {
+    const at = isoOrNull(decision.decidedAt);
+    if (!at || !within(at)) continue;
+    if (decision.status !== "approved" && decision.status !== "hidden") continue;
+    items.push({
+      kind: "report",
+      // The decision and its time are in the id: a report checked and later hidden is news twice.
+      id: `report:${decision.reportId}:${decision.status}:${at}`,
+      at,
+      places: [],
+      event: decision.status,
+      tambon:
+        decision.tambonTh || decision.tambonEn
+          ? {
+              th: decision.tambonTh ?? decision.tambonEn ?? "",
+              en: decision.tambonEn ?? decision.tambonTh ?? "",
+            }
+          : null,
+    });
   }
 
   items.sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || a.id.localeCompare(b.id));

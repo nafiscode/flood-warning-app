@@ -741,6 +741,12 @@
       "body": "Sign in with LINE, and alerts for your home and the places you watch reach you even with the app closed.",
       "button": "Sign in with LINE",
       "later": "Not now"
+    },
+    "report": {
+      "title": "Your flood report",
+      "approved": "An admin has checked your flood report in {tambon}. Thank you for reporting.",
+      "hidden": "An admin has taken your flood report in {tambon} off the map. If this is a mistake, report again.",
+      "see": "See my requests"
     }
   },
   "placeFinder": {
@@ -3082,7 +3088,9 @@
     "answeredNotYours": "This button is only for the person who sent this request.",
     "menuStatus": "My area status",
     "menuPlaces": "Safe places near me",
-    "menuSos": "Ask for help"
+    "menuSos": "Ask for help",
+    "menuMap": "Flood Risk Map",
+    "menuUnit": "Register a response team"
   },
   "fieldRescue": {
     "title": "Record a rescue your team did",
