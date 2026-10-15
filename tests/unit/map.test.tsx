@@ -472,6 +472,44 @@ describe("map dashboard (spec 4.2)", () => {
     expect(c.textContent).toContain(th.map.basemap.satelliteNote);
   });
 
+  it("My places tours the person's own places one by one, and Reset goes back", () => {
+    const c = dashboard({ me: EXAMPLE_ME });
+    const bounds = () => c.querySelector("[data-map]")!.getAttribute("data-bounds");
+    const opening = bounds();
+    const places = EXAMPLE_ME.signedIn ? EXAMPLE_ME.places.filter((p) => p.area) : [];
+    expect(places.length).toBeGreaterThan(1);
+    const near = (area: { lon: number; lat: number }) =>
+      [area.lon - 0.025, area.lat - 0.02, area.lon + 0.025, area.lat + 0.02]
+        .map((n) => n.toFixed(2))
+        .join(",");
+    fireEvent.click(c.querySelector("[data-zoom-mine]")!);
+    // The first place: the map comes close to it and its card opens.
+    expect(c.querySelector("[data-tour]")?.getAttribute("data-tour")).toBe(places[0]!.id);
+    expect(bounds()).toBe(near(places[0]!.area!));
+    expect(c.querySelector('[data-selected="mine"]')?.textContent).toContain(places[0]!.label);
+    // The two buttons on the map give way to the tour while it is open.
+    expect(c.querySelector("[data-zoom-all]")).toBeNull();
+    fireEvent.click(c.querySelector('[data-tour-step="next"]')!);
+    expect(c.querySelector("[data-tour]")?.getAttribute("data-tour")).toBe(places[1]!.id);
+    expect(bounds()).toBe(near(places[1]!.area!));
+    // Previous from the first goes round to the last.
+    fireEvent.change(c.querySelector("[data-tour-pick]")!, { target: { value: "0" } });
+    expect(c.querySelector("[data-tour]")?.getAttribute("data-tour")).toBe(places[0]!.id);
+    fireEvent.click(c.querySelector('[data-tour-step="back"]')!);
+    expect(c.querySelector("[data-tour]")?.getAttribute("data-tour")).toBe(
+      places[places.length - 1]!.id,
+    );
+    // The list names each place with its number.
+    const options = [...c.querySelectorAll("[data-tour-pick] option")].map((o) => o.textContent);
+    expect(options[0]).toBe(`1/${places.length} · ${places[0]!.label}`);
+    // Reset: the first view again, no card, and the two buttons are back.
+    fireEvent.click(c.querySelector("[data-tour-reset]")!);
+    expect(c.querySelector("[data-tour]")).toBeNull();
+    expect(bounds()).toBe(opening === "" ? "99.95,5.55,102.25,8.00" : opening);
+    expect(c.querySelector('[data-selected="mine"]')).toBeNull();
+    expect(c.querySelector("[data-zoom-all]")).not.toBeNull();
+  });
+
   it("has a 2D / 3D switch on the map, flat by default, and says what 3D draws", () => {
     const c = dashboard({ status: exampleStatus([]) });
     const frame = c.querySelector("[data-map-frame]")!;

@@ -645,6 +645,14 @@
       "flat": "2D",
       "threeD": "3D",
       "note": "3D: bukit dan lembah dinaikkan daripada data ketinggian dan dilukis {times} kali lebih tinggi daripada sebenar supaya kawasan rendah lebih jelas. Condongkan dan pusingkan peta dengan dua jari pada telefon, atau seret dengan butang kanan tetikus pada komputer. Mod 3D menggunakan lebih banyak data internet dan bateri."
+    },
+    "tour": {
+      "prev": "Tempat sebelumnya",
+      "next": "Tempat seterusnya",
+      "pick": "Pilih tempat anda",
+      "option": "{n}/{total} · {name}",
+      "reset": "Set semula",
+      "resetLabel": "Kembali ke paparan asal peta"
     }
   },
   "attribution": {

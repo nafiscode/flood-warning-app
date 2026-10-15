@@ -169,6 +169,32 @@ function HomePinIcon() {
   );
 }
 
+/** A chevron for "previous" (back) or "next"; mirrored in a right-to-left layout. */
+function ChevronIcon({ next }: { next: boolean }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="rtl:-scale-x-100"
+    >
+      <path d={next ? "M9 5l7 7-7 7" : "M15 5l-7 7 7 7"} />
+    </svg>
+  );
+}
+
+/**
+ * How close the map comes to one of the person's own places on the "My places" tour: about
+ * 5.5 by 4.4 km, so the place and the streets and fields around it are both readable.
+ */
+const TOUR_HALF = { lon: 0.025, lat: 0.02 };
+
 /** Four corners of a frame: "show the whole area". */
 function ZoomOutIcon() {
   return (
@@ -250,6 +276,12 @@ export function DashboardView(props: DashboardViewProps) {
     setPicked(next);
   };
   const [showMine, setShowMine] = useState(true);
+  /*
+   * "My places" as a tour (the owner, 15 Oct): the map visits the person's home and each place
+   * they watch in turn, with previous / next and a list to jump to one, and Reset to go back to the
+   * map's first view. Null while no tour is open.
+   */
+  const [tourAt, setTourAt] = useState<number | null>(null);
   /*
    * Safe places are drawn only when asked for (the owner, 12 Oct 2026): there are thousands, and
    * all of them at once bury the map. The switch sits right under the map and says how many.
@@ -510,6 +542,41 @@ export function DashboardView(props: DashboardViewProps) {
     ...(mine.length === 0 && props.area ? [{ lon: props.area.lon, lat: props.area.lat }] : []),
   ];
   const myBox = myPoints.length > 0 ? boundsAround(myPoints) : null;
+
+  /*
+   * The tour. The place shown is the one whose card is open when that is one of theirs (they may
+   * have tapped a pin meanwhile), else the one the tour last went to.
+   */
+  const tourIndex =
+    tourAt === null
+      ? null
+      : selection?.kind === "mine" && mine.some((p) => p.id === selection.id)
+        ? mine.findIndex((p) => p.id === selection.id)
+        : Math.min(tourAt, mine.length - 1);
+  const tourTo = (index: number) => {
+    const count = mine.length;
+    if (count === 0) return;
+    const at = ((index % count) + count) % count;
+    const place = mine[at]!;
+    setTourAt(at);
+    setShowMine(true);
+    setSelection({ kind: "mine", id: place.id });
+    setFocus((was) => ({
+      box: [
+        place.lon - TOUR_HALF.lon,
+        place.lat - TOUR_HALF.lat,
+        place.lon + TOUR_HALF.lon,
+        place.lat + TOUR_HALF.lat,
+      ],
+      key: (was?.key ?? 0) + 1,
+    }));
+  };
+  // Back to the view the map opened on, with no card open.
+  const tourReset = () => {
+    setTourAt(null);
+    setSelection(null);
+    setFocus((was) => ({ box: mapBounds ?? SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }));
+  };
 
   /*
    * The chips above the map (the owner, 15 Oct): each switches its feature on, frames it and
@@ -828,34 +895,92 @@ export function DashboardView(props: DashboardViewProps) {
                * of its top edge, opposite the zoom buttons.
                */}
               <div className="relative" data-map-frame="true">
-                <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12">
-                  <button
-                    type="button"
-                    data-zoom-all="true"
-                    onClick={() =>
-                      setFocus((was) => ({ box: SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }))
-                    }
-                    className={mapButton}
+                {tourIndex !== null && mine.length > 0 ? (
+                  <div
+                    role="group"
+                    aria-label={t("zoomMine")}
+                    data-tour={mine[tourIndex]!.id}
+                    className="absolute start-2 top-2 z-10 flex max-w-[calc(100%-4rem)] items-center gap-1 rounded-lg border border-jaga-line bg-jaga-surface p-1 shadow-sm"
                   >
-                    <ZoomOutIcon />
-                    {t("zoomAll")}
-                  </button>
-                  {myBox && (
                     <button
                       type="button"
-                      data-zoom-mine="true"
-                      onClick={() => {
-                        // The pins are what the button is for, so it shows them if hidden.
-                        setShowMine(true);
-                        setFocus((was) => ({ box: myBox, key: (was?.key ?? 0) + 1 }));
-                      }}
+                      data-tour-step="back"
+                      aria-label={t("tour.prev")}
+                      onClick={() => tourTo(tourIndex - 1)}
+                      className="grid min-h-tap min-w-12 shrink-0 place-items-center rounded-md text-jaga-ink"
+                    >
+                      <ChevronIcon next={false} />
+                    </button>
+                    <select
+                      data-tour-pick="true"
+                      aria-label={t("tour.pick")}
+                      value={tourIndex}
+                      onChange={(event) => tourTo(Number(event.target.value))}
+                      className="min-h-tap min-w-0 flex-1 truncate rounded-md border border-jaga-line bg-jaga-surface px-2 text-small font-bold text-jaga-ink"
+                    >
+                      {mine.map((place, index) => (
+                        <option key={place.id} value={index}>
+                          {t("tour.option", {
+                            n: index + 1,
+                            total: mine.length,
+                            name: place.label,
+                          })}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      data-tour-step="next"
+                      aria-label={t("tour.next")}
+                      onClick={() => tourTo(tourIndex + 1)}
+                      className="grid min-h-tap min-w-12 shrink-0 place-items-center rounded-md text-jaga-ink"
+                    >
+                      <ChevronIcon next />
+                    </button>
+                    <button
+                      type="button"
+                      data-tour-reset="true"
+                      aria-label={t("tour.resetLabel")}
+                      onClick={tourReset}
+                      className="min-h-tap shrink-0 rounded-md px-2 text-small font-bold text-jaga-ink underline underline-offset-2"
+                    >
+                      {t("tour.reset")}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12">
+                    <button
+                      type="button"
+                      data-zoom-all="true"
+                      onClick={() =>
+                        setFocus((was) => ({ box: SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }))
+                      }
                       className={mapButton}
                     >
-                      <HomePinIcon />
-                      {t("zoomMine")}
+                      <ZoomOutIcon />
+                      {t("zoomAll")}
                     </button>
-                  )}
-                </div>
+                    {myBox && (
+                      <button
+                        type="button"
+                        data-zoom-mine="true"
+                        onClick={() => {
+                          // A tour of their own places; with none saved, the chosen area as before.
+                          if (mine.length > 0) {
+                            tourTo(0);
+                            return;
+                          }
+                          setShowMine(true);
+                          setFocus((was) => ({ box: myBox, key: (was?.key ?? 0) + 1 }));
+                        }}
+                        className={mapButton}
+                      >
+                        <HomePinIcon />
+                        {t("zoomMine")}
+                      </button>
+                    )}
+                  </div>
+                )}
                 {/*
                  * 2D or 3D, on the map itself (the owner, 15 Oct): at the start of its bottom
                  * edge, clear of the zoom buttons and the credits.
