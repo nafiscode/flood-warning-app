@@ -15,13 +15,6 @@ type Props = { place: WeatherPlace | null; places: MinePlace[] };
 const STEP_MS = 1100;
 
 /** True when the person has asked their phone for less movement. */
-function reducedMotion(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
 
 /**
  * The live weather maps. Nothing here is loaded until the section is actually scrolled to:
@@ -37,13 +30,12 @@ export function WeatherMaps({ place, places }: Props) {
   const [span, setSpan] = useState<number>(GRIDS[0].span);
   const { grid, state } = useWeatherGrid(place, span, seen);
   /*
-   * The hours play by themselves, round and round (the owner, 10 Oct), slowly enough to follow
-   * a band of rain across the province. Anyone who has asked for less movement gets it still,
-   * and the button starts it; a touch of the slider stops it, so nothing fights the person's
-   * hand. It also stops while the page is in the background, where it would only drain a
-   * battery for nobody.
+   * The hours wait for the play button (the owner, 16 Oct; they played by themselves from 10 Oct).
+   * Once started they go round and round, slowly enough to follow a band of rain across the
+   * province; a touch of the slider stops them, so nothing fights the person's hand, and they
+   * stop while the page is in the background, where they would only drain a battery for nobody.
    */
-  const [playing, setPlaying] = useState(!reducedMotion());
+  const [playing, setPlaying] = useState(false);
   const hours = grid?.hours.length ?? 0;
 
   useEffect(() => {

@@ -267,9 +267,7 @@ test.describe("weather", () => {
     await maps.scrollIntoViewIfNeeded();
     const label = maps.locator("label[for='weather-map-hour']");
     await expect(label).toContainText(th.weather.days.today);
-    // The hours run on their own by default; stop them before taking the slider by hand.
-    await expect(maps.locator('[data-weather-play="on"]')).toBeVisible();
-    await maps.locator("[data-weather-play]").click();
+    // The hours wait for the play button (the owner, 16 Oct).
     await expect(maps.locator('[data-weather-play="off"]')).toBeVisible();
     const slider = maps.locator("#weather-map-hour");
     await slider.fill("23");
@@ -280,7 +278,9 @@ test.describe("weather", () => {
     );
   });
 
-  test("the hours play round by themselves, and the button stops them", async ({ page }) => {
+  test("the hours stay still until play is pressed, then go round until it is pressed again", async ({
+    page,
+  }) => {
     await serve(page, { area: true });
     await page.goto("/weather");
     const maps = page.locator('[data-weather-maps="true"]');
@@ -288,7 +288,11 @@ test.describe("weather", () => {
     const slider = maps.locator("#weather-map-hour");
     await expect(slider).toBeEnabled();
     const started = await slider.inputValue();
-    // It moves on without anyone touching it.
+    // Nothing moves by itself (the owner, 16 Oct).
+    await page.waitForTimeout(3_000);
+    expect(await slider.inputValue()).toBe(started);
+    await maps.locator("[data-weather-play]").click();
+    await expect(maps.locator('[data-weather-play="on"]')).toBeVisible();
     await expect.poll(async () => slider.inputValue(), { timeout: 8_000 }).not.toBe(started);
     await maps.locator("[data-weather-play]").click();
     const held = await slider.inputValue();

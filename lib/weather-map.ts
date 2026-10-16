@@ -117,3 +117,39 @@ export function coverCamera(
     zoom: Math.max(limits.min, Math.min(limits.max, zoom)),
   };
 }
+
+/** The narrowest box the map opens on around the person's places, in degrees (about 30 km). */
+export const PINS_MIN_SPAN = 0.3;
+
+/**
+ * The box the weather map opens on when the person has more than one place of their own (the
+ * owner, 16 Oct): their home, the place the page is showing and every watched place, with a
+ * margin so no pin sits on the edge. Null with fewer than two places in different spots; then
+ * the map opens on the forecast grid around the one place, as before.
+ */
+export function pinsBox(
+  pins: { lat: number; lon: number }[],
+  minSpan = PINS_MIN_SPAN,
+): [number, number, number, number] | null {
+  const points = pins.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+  if (points.length < 2) return null;
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
+  for (const p of points) {
+    west = Math.min(west, p.lon);
+    east = Math.max(east, p.lon);
+    south = Math.min(south, p.lat);
+    north = Math.max(north, p.lat);
+  }
+  if (east - west < 0.01 && north - south < 0.01) return null;
+  const grow = (lo: number, hi: number): [number, number] => {
+    const middle = (lo + hi) / 2;
+    const half = Math.max((hi - lo) * 1.2, minSpan) / 2;
+    return [middle - half, middle + half];
+  };
+  const [w, e] = grow(west, east);
+  const [s, n] = grow(south, north);
+  return [w, s, e, n];
+}

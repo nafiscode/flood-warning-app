@@ -19,7 +19,7 @@ import {
   windArrow,
   wrapLon,
 } from "@/lib/weather-grid";
-import { coverCamera } from "@/lib/weather-map";
+import { coverCamera, PINS_MIN_SPAN, pinsBox } from "@/lib/weather-map";
 import { renderWithIntl } from "./render";
 
 describe("the grid asked for", () => {
@@ -305,5 +305,38 @@ describe("the weather maps section", () => {
     const c = maps();
     expect(c.querySelector("[data-level]")).toBeNull();
     expect(c.innerHTML).not.toMatch(/alert-(normal|watch|warning|evacuate|return)/);
+  });
+});
+
+describe("where the weather map opens (owner, 16 Oct)", () => {
+  it("frames every place of the person's own, with a margin", () => {
+    const box = pinsBox([
+      { lat: 6.87, lon: 101.25 },
+      { lat: 6.43, lon: 101.82 },
+      { lat: 7.0, lon: 100.47 },
+    ])!;
+    const [w, s, e, n] = box;
+    expect(w).toBeLessThan(100.47);
+    expect(e).toBeGreaterThan(101.82);
+    expect(s).toBeLessThan(6.43);
+    expect(n).toBeGreaterThan(7.0);
+  });
+
+  it("is never narrower than about 30 km, and leaves one place to the forecast grid", () => {
+    const [w, s, e, n] = pinsBox([
+      { lat: 6.87, lon: 101.25 },
+      { lat: 6.88, lon: 101.26 },
+    ])!;
+    expect(e - w).toBeCloseTo(PINS_MIN_SPAN, 5);
+    expect(n - s).toBeCloseTo(PINS_MIN_SPAN, 5);
+    expect(pinsBox([{ lat: 6.87, lon: 101.25 }])).toBeNull();
+    expect(pinsBox([])).toBeNull();
+    // The home and the place shown in the same spot are one place.
+    expect(
+      pinsBox([
+        { lat: 6.87, lon: 101.25 },
+        { lat: 6.871, lon: 101.251 },
+      ]),
+    ).toBeNull();
   });
 });

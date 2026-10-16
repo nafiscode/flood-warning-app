@@ -16,7 +16,7 @@ import {
   type WeatherField,
   type WeatherGrid,
 } from "@/lib/weather-grid";
-import { coverCamera, createWeatherMap } from "@/lib/weather-map";
+import { coverCamera, createWeatherMap, pinsBox } from "@/lib/weather-map";
 
 const FIELD = "jaga-wx-field";
 const WIND = "jaga-wx-wind";
@@ -286,12 +286,31 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
   }, []);
 
   /*
-   * The map is built before the first grid arrives, so it opens on the service area; once the
-   * grid is here, the view moves to the square it covers. A grid for another place does the
-   * same, but a map the person has panned or zoomed themselves is left alone.
+   * Where the map opens. With two places or more of the person's own (home, the place shown,
+   * watched places) it frames them all (the owner, 16 Oct), and asks for the wider grid when
+   * they spread beyond the near one. With one place it covers the forecast grid around it.
+   * The map is built before the first grid arrives; a map the person has panned or zoomed
+   * themselves is left alone.
    */
+  const pinsKey = places.map((p) => `${p.lat.toFixed(3)},${p.lon.toFixed(3)}`).join(";");
   useEffect(() => {
-    if (!grid || state !== "ready" || moved.current) return;
+    if (state !== "ready" || moved.current) return;
+    const box = pinsBox(places);
+    if (box) {
+      const key = `pins:${pinsKey}`;
+      if (fitted.current === key) return;
+      fitted.current = key;
+      fitTo.current = () => {
+        const m = map.current;
+        if (!m) return;
+        m.fitBounds(box, { padding: 40, maxZoom: 11, animate: false });
+        const view = m.getBounds();
+        span.current(Math.abs(view.getEast() - view.getWest()));
+      };
+      fitTo.current();
+      return;
+    }
+    if (!grid) return;
     const key = `${grid.lat},${grid.lon}`;
     if (fitted.current === key) return;
     fitted.current = key;
@@ -310,7 +329,9 @@ export function WeatherMapCanvas({ grid, field, hour, places, centre, onViewSpan
       m.jumpTo({ center: camera.center, zoom: camera.zoom });
     };
     fitTo.current();
-  }, [grid, state]);
+    // `pinsKey` stands for the places: a new array of the same places must not move the map.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grid, state, pinsKey]);
 
   if (state === "failed") {
     return (
