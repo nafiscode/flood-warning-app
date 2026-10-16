@@ -90,6 +90,17 @@ export function ConsoleSky() {
         {
           "--veil-day": veil.light,
           "--veil-night": veil.dark,
+          /*
+           * The sun and the moon are moved out of the top right, where the temperature is
+           * written (the owner, 16 Oct: the moon sat behind the number). They go to the foot of
+           * the bar instead: the left of it is taken by the page's title and by the hazard
+           * buttons, which are solid and would simply hide them, while the lower right is clear
+           * in every language at every laptop width - 155 px at its narrowest, which is room
+           * enough for a 44 px moon.
+           */
+          "--sky-light-top": "auto",
+          "--sky-light-bottom": "8%",
+          "--sky-light-end": "2%",
         } as React.CSSProperties
       }
     >

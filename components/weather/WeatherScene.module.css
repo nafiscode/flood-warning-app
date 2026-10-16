@@ -18,8 +18,14 @@
 
 /* The sun: a soft disc with a halo that breathes. Pale, never the yellow of a Watch badge. */
 .sun {
-  top: 14%;
-  inset-inline-end: 12%;
+  /*
+   * Where the sun and the moon hang. The card and the header's pill keep the top right; the
+   * laptop console's weather bar moves them, because up there the top right is where the
+   * temperature is written (the owner, 16 Oct: the moon sat behind the number).
+   */
+  top: var(--sky-light-top, 14%);
+  bottom: var(--sky-light-bottom, auto);
+  inset-inline-end: var(--sky-light-end, 12%);
   width: 54px;
   height: 54px;
   border-radius: 50%;
@@ -30,8 +36,9 @@
 
 /* The moon keeps its own shape (an SVG drawn from the phase); here it only glows. */
 .moon {
-  top: 16%;
-  inset-inline-end: 13%;
+  top: var(--sky-light-top, 16%);
+  bottom: var(--sky-light-bottom, auto);
+  inset-inline-end: var(--sky-light-end, 13%);
   width: 44px;
   height: 44px;
   filter: drop-shadow(0 0 10px rgba(226, 238, 248, 0.5));
