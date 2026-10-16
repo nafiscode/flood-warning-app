@@ -1,0 +1,135 @@
+/*
+ * The drawings on "How Jaga works" (A18). Everything is drawn in the page - no picture to
+ * download on a slow connection - and every colour is a brand or a map token, so the figures
+ * follow the day and night theme and match what the map itself shows.
+ *
+ * Nothing here moves: these pages are read, not watched, and a reader on a cheap phone should
+ * not pay for animation.
+ */
+
+.fig {
+  /* The flood-hazard classes, exactly the colours the map draws (lib/hazard-layer.ts). */
+  --risk-high: #7a1238;
+  --risk-medium: #db6a9a;
+  --risk-low: #f2b8c6;
+  --risk-ink: var(--jaga-ink);
+  /* Water, and the ground the section is cut through. */
+  --water: #1b6e8c;
+  --land: color-mix(in srgb, var(--jaga-text-2) 25%, var(--jaga-surface));
+  --flood: color-mix(in srgb, var(--water) 55%, var(--jaga-surface));
+}
+
+:root[data-theme="dark"] .fig {
+  --risk-high: #ffc4d6;
+  --risk-medium: #e0679e;
+  --risk-low: #7e5c74;
+  --water: #7ec8e3;
+  --land: color-mix(in srgb, var(--jaga-text-2) 30%, var(--jaga-surface));
+  --flood: color-mix(in srgb, var(--water) 40%, var(--jaga-surface));
+}
+
+.frame {
+  width: 100%;
+  height: auto;
+  border-radius: 0.875rem;
+  border: 1px solid var(--jaga-line);
+  background: var(--jaga-ground);
+}
+
+/* The numbers in a drawing answer the numbered lines under it. */
+.marker {
+  fill: var(--jaga-slate);
+}
+.markerText {
+  fill: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+:root[data-theme="dark"] .marker {
+  fill: var(--jaga-teal-ink);
+}
+:root[data-theme="dark"] .markerText {
+  fill: #0f1c26;
+}
+
+.land {
+  fill: var(--land);
+}
+.water {
+  fill: var(--water);
+}
+.flood {
+  fill: var(--flood);
+}
+.high {
+  fill: var(--risk-high);
+}
+.medium {
+  fill: var(--risk-medium);
+}
+.low {
+  fill: var(--risk-low);
+}
+.line {
+  fill: none;
+  stroke: var(--jaga-text-2);
+  stroke-width: 1;
+}
+.levelLine {
+  fill: none;
+  stroke: var(--jaga-text-2);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.curve {
+  fill: none;
+  stroke: var(--water);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.edge {
+  fill: none;
+  stroke: var(--jaga-ink);
+  stroke-width: 1.4;
+}
+.swath {
+  fill: color-mix(in srgb, var(--jaga-teal) 16%, transparent);
+  stroke: var(--jaga-teal-ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+/* A dot on a river, and the swatch beside a legend line. */
+.dot {
+  fill: var(--jaga-surface);
+  stroke: var(--jaga-ink);
+  stroke-width: 1.6;
+}
+.swatch {
+  display: inline-block;
+  inline-size: 1.25rem;
+  block-size: 0.875rem;
+  border-radius: 0.1875rem;
+  border: 1px solid color-mix(in srgb, var(--jaga-ink) 35%, transparent);
+}
+
+/* The parts of the system, joined by dashed lines that run the way things travel. */
+.hline,
+.vline {
+  border-color: var(--jaga-teal-light);
+}
+.hline {
+  border-top-width: 2px;
+  border-top-style: dashed;
+  block-size: 0;
+  inline-size: 100%;
+}
+.vline {
+  border-inline-start-width: 2px;
+  border-inline-start-style: dashed;
+  inline-size: 0;
+  block-size: 1.25rem;
+  justify-self: center;
+}

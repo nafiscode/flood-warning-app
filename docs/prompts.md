@@ -590,7 +590,7 @@ Read docs/spec.md sections 3 and 4, docs/brand.md, and CLAUDE.md safety rules 1,
 Acceptance: a person in each role can find, in under a minute, what they can do and open it; the owner has read the Thai.
 ```
 
-### A18: "How Jaga works" knowledge pages (before launch, or soon after if time is short)
+### A18: "How Jaga works" knowledge pages (built 16 October 2026, `/how-it-works` and `/how-it-works/system`)
 
 Added 15 Oct 2026 (owner's request): for academics and partners who want to understand the science and the system. Conceptual, not a recipe.
 ```text

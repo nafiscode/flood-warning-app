@@ -4219,5 +4219,396 @@
       "open": "See what Jaga can do",
       "close": "Don't show this again"
     }
+  },
+  "howItWorks": {
+    "link": "How Jaga works",
+    "nav": {
+      "label": "These two pages",
+      "science": "The science",
+      "system": "The system"
+    },
+    "science": {
+      "title": "How Jaga works: the science",
+      "lead": "Jaga's flood map is not an opinion about which places are dangerous. It is a measurement: nine rainy seasons of satellite radar, a bare-earth elevation model, river and dam records reaching back fifteen years, and forty-five years of rainfall, put together for Pattani, Yala, Narathiwat and Songkhla. This page explains each part of it, what it can and cannot tell you, and how it was tested.",
+      "audience": "Written for readers who want to judge the work: researchers, agencies, students, and anyone who has to decide whether to trust a map. Every dataset behind it is open; nothing was bought.",
+      "stats": {
+        "seasons": "9 rainy seasons of radar, 2017-2025",
+        "passes": "About 400 satellite passes processed",
+        "land": "18,772 km² classified",
+        "buildings": "2.26 million buildings counted",
+        "gauges": "46 river gauges, hour by hour",
+        "places": "2,600 safe places ranked"
+      },
+      "labels": {
+        "concept": "The idea",
+        "can": "What it can tell you",
+        "cannot": "What it cannot tell you",
+        "checked": "How it was checked",
+        "sources": "Data"
+      },
+      "read": {
+        "title": "How to read this page",
+        "text": "Every part below is set out the same way, in the same order, so that nothing can hide behind good writing.",
+        "concept": "the thinking behind the layer, in plain terms",
+        "can": "the questions it is honest enough to answer",
+        "cannot": "the questions people will ask it anyway, and where it has to go quiet",
+        "checked": "what it was measured against, and what that measurement does and does not prove",
+        "notRecipe": "This is a page to understand and to judge, not a recipe: it carries no parameter values, no thresholds and no processing order. The full method notes exist for every part, and researchers who ask for them get them."
+      },
+      "contents": "What is on this page",
+      "parts": {
+        "radar": {
+          "title": "Nine rainy seasons, seen through cloud",
+          "concept": "Flood maps made from ordinary satellite pictures fail in the monsoon, because the flood is underneath the cloud that caused it. Radar is not stopped by cloud and does not need daylight. Smooth open water throws the radar's signal away from the satellite, so flooded ground suddenly looks dark. Jaga compares every rainy-season pass over these provinces with how the same ground looked, from the same orbit, in the driest months of that same year, so the large difference that remains is water. Every season from 2017 to 2025 was processed this way, pass by pass, and the result is how often each small cell of land was seen under water.",
+          "can": "Where water has actually stood in the open, over nine seasons, and how often. The two great floods of November 2024 and November 2025 are in it at a finer resolution. It is a record of what was observed, not a model of what might happen.",
+          "cannot": "It cannot see into towns: among buildings the radar is confused by walls and roofs, and the flooded centre of Hat Yai in November 2025 reads as almost dry. It gives no depth. It sees only the moments the satellite passed over, roughly every six to twelve days, so a flood that rose and drained in between is missed entirely. Steep mountain valleys, where a slope hides the ground from the radar, are unreliable. A single flagged pass can also be a wet paddy field, a ploughed field or noise.",
+          "checked": "The instrument sets the ceiling. Where two passes twelve hours apart looked at the same flood, they agreed with each other with a critical success index of about 0.41 at high water, so roughly 0.4 is the most any radar flood map can score here, and every figure further down is read against that ceiling rather than against a perfect 1.0. The flood frequency is also set against GISTDA's independent record of repeatedly flooded land."
+        },
+        "classes": {
+          "title": "Flood-prone land, in four classes",
+          "concept": "Being flooded once, by a satellite's reckoning, is not the same as being flood-prone. The classes rest on two independent pieces of evidence: how often the radar saw a place under water across nine seasons, and how high that place stands above the stream its own water drains into, computed from a bare-earth elevation model with the mapped rivers used to correct where the water routes run. Low land that floods often is the highest class; land that is merely low, or that flooded once, sits lower. In built-up land, where the radar is blind, the height of the land decides and the radar is set aside. Low land that an outside agency recorded as flooded is lifted out of the lowest class.",
+          "can": "Which land should be treated as flood-prone, and why, for all 377 tambons; and how many buildings stand in each class, so a village or a tambon can be compared with its neighbours.",
+          "cannot": "It is not a forecast, not a depth, not a water level and not a promise. A place with no colour is not a safe place: it is a place this evidence did not mark, and a tenth of the 2025 flood fell on land the classes call minimal. In towns the class rests on height alone, which the radar cannot confirm. An elevation model with an error of a metre or more cannot see an embankment, a drain, a wall or a new housing estate.",
+          "checked": "Built again from nothing with the November 2025 flood left out, then scored against it: 74% of the land the radar saw flooded that season fell inside the two highest classes, a critical success index of 0.36 against the instrument's own ceiling of about 0.4. Set against GISTDA's record of repeatedly flooded land for 2011-2024, 96% of the land they flag in three years or more is in those same two classes. Both checks compare satellite with satellite; neither proves that anyone's house was flooded."
+        },
+        "gauges": {
+          "title": "River gauges, and the levels that mean something",
+          "concept": "Thai agencies publish river levels from telemetry gauges, often every fifteen minutes. A number in metres above sea level means nothing to a resident, so each gauge needs levels: a height at which to get ready, a height at which to warn, and the bank itself. For the rivers that matter most, those levels were chosen by replaying every season back to 2017 and asking which height, once crossed, was most often followed by the river leaving its bank, and how many hours of warning that bought. Where a gauge has too few floods on record, the level comes from how fast that river rises instead, and it is marked as what it is: an informed placeholder.",
+          "can": "For 46 gauges, a level an admin can act on, with the lead time it has given in the past. Gauges upstream usually cross their levels before the gauge in town does, and that is where most of the warning time comes from.",
+          "cannot": "It cannot forecast a flood. Streets flood from local rain before a river leaves its bank: in Yala in November 2025 there was water in the streets two days before the gauge went over. A rainfall threshold knows nothing about how wet the ground already is. A gauge can also fail at the height of a flood, and one did.",
+          "checked": "Scored by probability of detection, false-alarm ratio and lead time over six seasons of records. The honest limit is the sample: one zone has fourteen floods on record and another has one, and each threshold was chosen on the same floods it is scored against, with no held-out test. They are provisional, the app says so, and an admin can change any of them."
+        },
+        "alarm": {
+          "title": "The one thing that can publish by itself",
+          "concept": "The rule is that people publish alerts and the system only computes signals and suggests a level. There is exactly one exception, chosen deliberately, because at three in the morning there may be nobody awake. For a river gauge an admin has ticked, when the two latest readings both reach the zone's level, every admin's phone rings with a draft alert already written from a reviewed template. If no admin sends or dismisses it within a grace time, Jaga publishes that draft itself, marked as not reviewed by a person and written to the audit log. If the river has fallen back below the level by then, nothing is published.",
+          "can": "It closes the gap between a river reaching a level and a human being reaching their phone, without anyone ever having to write a warning in a hurry.",
+          "cannot": "Nothing else in Jaga publishes anything at all. Rain, rainfall forecasts, the dam's figures, the seasonal outlook and every computed suggestion are advisory, and they stay on the admins' screens until a person decides.",
+          "checked": "Two readings and not one, so a single bad reading cannot ring the alarm; both must be recent, so a stale feed cannot; and the draft is built from reviewed wording, never translated by machine at the moment of sending. Until the service opens, the alarm publishes drills only."
+        },
+        "dam": {
+          "title": "Below the dam: which land, and how long",
+          "concept": "Bang Lang dam stands on the Pattani River above Yala. When it releases water, the rise travels downstream for a day or more, so two questions matter: how far the water can spread, and when it arrives. The zone is the land low enough against the river's own surface, and physically joined to the river, to be reached at the highest levels its gauges have ever recorded, plus a band one metre higher so the edge is not a false promise. The travel times were measured twice over, independently: from the daily pulses the power station's turbines send down the river in the dry months, and from the rise and the peak of every flood since 2020 passing gauge after gauge.",
+          "can": "Which tambons lie on the river's reachable land, 51 in the zone and 55 with the outer band, and a range of hours for the first rise and for the highest water at each place along the river. A warning counts down to the earliest of those hours with a safety margin taken off.",
+          "cannot": "There is no hydraulic model here, no volume and no duration: it cannot say whether a release of a given size will fill the zone, or how deep the water will be. Rain falling below the dam adds water these times know nothing about. The published figures also lag by hours, so they are a record that trails reality rather than a warning in time; the operator's own screen is what gives warning.",
+          "checked": "The two methods agree. An ordinary flood's peak takes about fourteen hours from Bannang Sata to Yala by the flood record, and fourteen by the turbine pulses. The zone holds 62 to 67% of what the radar saw flooded in the river's corridor in three separate flood seasons, and covers it better per square kilometre than a uniform rise along the whole river would. It was also checked against the operator's own record of the largest release on file."
+        },
+        "places": {
+          "title": "Safe places, ranked but not confirmed",
+          "concept": "A safe place has to be above the water and reachable by the roads a flood leaves open. Candidates come from the map anyone can edit, schools, mosques, temples and government buildings, plus two kinds of high ground: terrain that stands well above its stream, and the main highway embankments, which are built on about two metres of fill and are the real high ground on these plains, invisible to a coarse elevation model. Each site gets a freeboard, its own height above the stream minus the height the flood's edge reached nearby, and a route check that closes every road the radar saw under water and then asks how many houses can still reach it on foot, or by car where the place is for parking.",
+          "can": "A ranked shortlist for every tambon with its reasons in the open: how far the site stands above past floods, how often its own ground flooded, and what share of the houses it serves can still reach it when the flooded roads are closed. Nothing is hidden: a doubtful site keeps its place and carries its flags.",
+          "cannot": "Not one of these places has been confirmed on the ground. Capacity, toilets, water and whether a building may be used as a shelter at all are unknown. The map it is built from is thin here: 54 named mosques in four provinces that have thousands. The route check is blind inside towns. And whether cars may stand on a highway shoulder is for the highway authority to say, not for a map."
+        },
+        "return": {
+          "title": "When it is safe to go home",
+          "concept": "Going home too early is a danger of its own. Nobody can forecast the fall of a river, but the record can say how long it has taken before. Every flood in the hourly record at every gauge was measured from its peak to the moment the river was back inside its bank, and to the moment it was below its warning level. An admin issuing a Return alert sees those figures for that gauge, a middle value and a spread, and issues the window as a range.",
+          "can": "At 46 gauges, how long past falls took: at Yala the river is usually back inside its bank about a day and a half after the peak, and the fall slows markedly downstream. 456 past events in all.",
+          "cannot": "It is a record of past falls, not a forecast of this one: rain on a falling river starts it rising again. Below the bank at the gauge is not the same as dry streets, because low land behind the bank drains later and roads stay cut by debris. The longest falls are also the most likely to be missing from the record, so the figures lean short.",
+          "checked": "456 events at 46 gauges, but the three key gauges carry only 11, 19 and 2 of them. Where a gauge has one flood on record, the app says so instead of quoting a number as if it were a rule."
+        },
+        "outlook": {
+          "title": "The season ahead, and what cannot be known",
+          "concept": "Before a season, can anything be said at all? Forty-five years of rainfall over the four provinces were set against the state of the Pacific, El Niño and La Niña, and against the free seasonal forecast models, and each method was then scored on how often it had been right here. What comes out is an outlook in thirds, the odds of a drier, a normal or a wetter season, and only when every method that passed the test agrees.",
+          "can": "An honest lean with its own skill printed beside it, and a plain statement of what the record shows: the two wettest five-day bursts in forty-five years were the last two seasons, and seasons in this record have grown wetter by about 14% a decade.",
+          "cannot": "The floods that do the damage come from bursts of a few days, and nobody can foresee those more than one or two weeks ahead. The state of the Pacific explains about a sixth of the difference between seasons, and both 2024 and 2025 followed a neutral Pacific that gave no hint at all. A dry-leaning outlook never lowers readiness, and the app says so wherever it appears.",
+          "checked": "Each method had to beat \"always say normal\" on two independent rainfall records before it was used at all, and most did not. Seasonal forecasts have been right here about four times in ten, and that figure is printed beside the outlook."
+        },
+        "sea": {
+          "title": "The sea at the river mouths",
+          "concept": "On this coast the sea acts as a gate. The northeast monsoon pushes water onshore and, with a high tide and the lake level behind it, the rivers cannot drain, which is why the water stays for days rather than hours. Waves, swell, wind and sea level are read from global wave and weather models at seven points off the coast, and the wording for a rough sea follows the national meteorological department's own thresholds rather than any of ours.",
+          "can": "Whether the sea is rough enough that small boats should stay in port, in the words the fishermen already know; and the slow build-up of water against the coast, which is the part that keeps a flood standing.",
+          "cannot": "Tide heights are not shown at all, because the model disagrees with the tide gauges by about 0.7 m, a number that would look precise and be wrong. It never says the sea is safe. Storm surge is untested: no year in the record had one large enough to separate from the monsoon's own set-up.",
+          "checked": "The model's tide was compared with the river gauges the tide reaches. At Pattani town, five kilometres from the mouth, it matches them within an hour in timing and within 7% in range, and the slow part of the level follows theirs closely. Inside Songkhla Lake the sea's tide arrives damped to a third or a half, which is why the lake is not treated as the open sea."
+        },
+        "reports": {
+          "title": "What residents report",
+          "concept": "No instrument sees a street. Residents report depth by body reference, ankle, knee, waist, chest, above the head, because nobody measures water in centimetres while standing in it. Those reports are moderated and aggregated, shown on the public map as areas and never as a person's position, and they are the only evidence Jaga has from inside a town where the radar is blind.",
+          "can": "Confirm or correct the satellite picture locally, while it still matters; and, after the season, become the dataset against which the classes and the thresholds are tested for real.",
+          "cannot": "Reports come from where people are and where phones work: a place with no reports is not a dry place. Depth by body reference is a range, not a measurement. A report is never an alert, and it reaches the public map only after moderation."
+        }
+      },
+      "checks": {
+        "title": "What was checked, and against what",
+        "lead": "Every figure here is a measured result with the run that produced it on record. Two of the rows are deliberately unflattering, because that is the point of the table.",
+        "holdout": {
+          "title": "The classes, against a flood they had never seen",
+          "text": "Rebuilt without November 2025 and scored against it: 74% of that flood fell in the two highest classes, critical success index 0.36."
+        },
+        "radarSelf": {
+          "title": "What the instrument can score at best",
+          "text": "Two radar passes twelve hours apart over the same flood agree with each other at about 0.41. Read every score above against that ceiling, not against 1.0."
+        },
+        "gistda": {
+          "title": "Against an independent agency's record",
+          "text": "79 to 97% of the floods GISTDA mapped in 2017-2024 lie within 60 m of a flood Jaga's radar mapped. Jaga maps more flood than they do, and this comparison cannot say how much of that is extra truth and how much is noise."
+        },
+        "travel": {
+          "title": "Two independent ways to time the river",
+          "text": "The flood record and the dry-season turbine pulses give the same fourteen hours from Bannang Sata to Yala."
+        },
+        "thresholds": {
+          "title": "The thin sample behind the thresholds",
+          "text": "Between 1 and 14 floods per zone in six seasons, chosen and scored on the same events. Provisional, and marked as such everywhere they appear."
+        },
+        "recession": {
+          "title": "Falls measured, not forecast",
+          "text": "456 past falls at 46 gauges feed the safe-return window; two of the three key gauges have fewer than twenty."
+        },
+        "sea": {
+          "title": "The tide model against real gauges",
+          "text": "At Pattani town the model's tidal range is within 7% of the gauges and within an hour in timing. Tide heights are still not published."
+        },
+        "outlook": {
+          "title": "The seasonal outlook's own skill",
+          "text": "About four times in ten, and that is printed beside the outlook every time it is shown."
+        },
+        "note": "None of this is a ground survey. The floods of 2024 and 2025 were not mapped on the ground, and the strongest check Jaga has is still one satellite against another. Resident reports from this season are the first independent evidence it will get."
+      },
+      "leftOut": {
+        "title": "What was built and deliberately left out",
+        "lead": "Two finished pieces of analysis are kept off the public map, and one tested idea is not allowed to raise an alert. A method that has not earned its place is worse than no method, and a safety app is the wrong place to find that out.",
+        "stage": {
+          "title": "A live flood outline from the river level",
+          "text": "A library that turns a gauge reading into a flood outline was built and calibrated at three gauges. Against the radar it scored about a third of what two radar passes score against each other: too weak to draw as if it were the flood. It stays in the drawer until the elevation model, or the evidence, is better."
+        },
+        "highways": {
+          "title": "Where a highway holds water back",
+          "text": "Comparing the radar record on both sides of every short section of main highway shows where water appears to stand on one side. That is advice for the highway and irrigation offices, to be checked on the ground, and never a public alert: the radar sees extent and not depth, and most culverts are on no map, so \"no opening\" usually means \"not mapped\"."
+        },
+        "forecast": {
+          "title": "Rainfall forecasts as a trigger",
+          "text": "Tested against the floods on record, every global model was far too dry, by a factor of two to forty. So a forecast never raises an alert level on its own here, and when a forecast says little, the app does not treat that as reassurance."
+        }
+      },
+      "open": {
+        "title": "Open data in, open layers out",
+        "text": "Every dataset behind this work is open and most of it is free to anyone: the radar, the elevation model, the rainfall records, the river telemetry, the roads and the buildings. Nothing was bought, and no paid map service is used anywhere in the app.",
+        "layers": "The code is public under a permissive licence. The layers derived from the elevation model carry its own non-commercial, share-alike licence, and the app says so wherever they are shown.",
+        "caution": "One consequence is worth stating plainly: because the inputs are open, anyone can check this work, and anyone can find where it is wrong. That is the point of writing it down."
+      },
+      "contact": {
+        "title": "For researchers, agencies and students",
+        "text": "The full method notes, the parameter sets, the run logs and the validation figures exist for every part above, and they are deliberately not on this page: a short page that can be judged is more useful than a long one that can be copied. If you work on floods in the far south, in hydrology, remote sensing or emergency management, write and ask for them. Joint validation, field checks and a better elevation model are all more welcome than citations."
+      },
+      "closing": {
+        "map": "Open the flood risk map",
+        "features": "What Jaga can do",
+        "system": "Read how the system works"
+      }
+    },
+    "credits": {
+      "title": "The data, and the people who gave it away",
+      "thanks": "Jaga is a non-profit app built by volunteers, and almost every number in it came from somebody else's work, given away for free: a European radar satellite that has flown over this coast every few days since 2017, an elevation model built from satellite data and corrected for trees and buildings, a Thai institute that publishes river levels every fifteen minutes, agencies that publish flood maps and dam figures, weather and wave models served without a bill, and tens of thousands of people who mapped the roads, villages and buildings of these four provinces by hand. Without any one of them there would be no flood map for Pattani, Yala, Narathiwat and Songkhla. Thank you.",
+      "endorse": "None of these organisations runs Jaga, has checked it, or endorses it. Naming them is a licence requirement and a thank-you, not a claim of support.",
+      "licenceNote": "Licences are named as the licensors name them, and where a credit line is required it is printed word for word. The file docs/attributions.md in the public code repository is the record, with the date each licence was read.",
+      "groups": {
+        "satellites": "Satellites and elevation",
+        "agencies": "Thai agencies",
+        "models": "Weather and climate models",
+        "maps": "Maps, buildings and tools"
+      },
+      "use": {
+        "sentinel1": "The radar that sees the floods, every few days since 2017.",
+        "fabdem": "The bare-earth elevation model behind every height in Jaga.",
+        "jrcwater": "Tells permanent water apart from a flood.",
+        "meritHydro": "A first, coarse height above drainage, used to mask the hills.",
+        "openBuildings": "Counts the buildings in each flood class, village by village.",
+        "gsmap": "Observed rainfall over each river basin, hour by hour.",
+        "thaiwater": "River levels and rainfall from the telemetry network, live and years back.",
+        "rid": "Bank levels, flood reports and the gauges in the four provinces.",
+        "egat": "Bang Lang dam: storage, level, inflow, release and spill.",
+        "gistda": "An independent flood record, and the flood extent during a season.",
+        "rtsd": "The province, district and tambon boundaries everything is counted in.",
+        "tmd": "The words and cut-offs for a rough sea, so Jaga says it the way they do.",
+        "esri": "The satellite and terrain pictures on the map, where Jaga has a key for them.",
+        "openMeteo": "Rain, wave and river-discharge forecasts, free for non-commercial use.",
+        "chirps": "Forty-five years of rainfall, for the seasonal outlook.",
+        "era5land": "A second rainfall record, to check the first.",
+        "noaa": "The state of the Pacific, and the seasonal forecasts.",
+        "osm": "Rivers, roads, buildings, villages and the candidate safe places.",
+        "basemap": "The map under Jaga's own layers.",
+        "s2cloudless": "The satellite picture people can switch to.",
+        "terrain": "The hill shading on the terrain view.",
+        "earthEngine": "Where nine seasons of radar were processed.",
+        "tools": "The open-source tools the whole pipeline is built from."
+      }
+    },
+    "system": {
+      "title": "How Jaga works: the system",
+      "lead": "Jaga has to work on a cheap phone, on a slow connection, in a power cut, at three in the morning, in three languages. And it must never show a stranger where somebody is waiting on a roof. This page is the shape of the thing: how it is put together, what it refuses to do, and what happens when parts of it fail.",
+      "noNames": "No supplier, product or brand is named on this page. Two reasons: what matters is the shape and not our shopping list, and a public page listing every service a safety app depends on is a map for anyone looking for a way in. A test keeps the page that way.",
+      "stats": {
+        "tables": "Over 70 tables, each with its own access rules",
+        "migrations": "Over 80 database changes, every one kept",
+        "tests": "About 1,300 automated checks on every change",
+        "languages": "Three languages, one source of truth"
+      },
+      "contents": "What is on this page",
+      "parts": {
+        "shape": {
+          "title": "Five parts, and one place where the rules live",
+          "text": "Five parts, no more: an app that lives on the phone, one database that holds everything and decides who may read each row, scheduled readers that fetch the rivers and the dam, a notifier that sends warnings, and a file store for the map layers. Nearly everything else is a consequence of those five.",
+          "points": {
+            "1": "The public map layers are files rather than questions put to a database, so the map stays fast and cheap and a layer can be replaced without a new version of the app.",
+            "2": "Residents' phones ask for their alert status on a timer, not over a live connection: a hundred thousand phones must not become a hundred thousand open connections. The teams' and admins' consoles do get live updates, because there are few of them and seconds matter there.",
+            "3": "Nothing in it runs on a machine inside the flood area, and the app itself is a web page, so there is no app store between a fix and the people who need it."
+          }
+        },
+        "rules": {
+          "title": "The database decides who may see what",
+          "text": "A screen can be lied to. So the rules about who may see a phone number or an exact location are written into the database itself, as rules on the rows, and they apply to every way in: the app, an export, a direct query, a mistake in new code.",
+          "points": {
+            "1": "Every table is closed by default and opens only to a named role. Nothing is private merely because no screen happens to show it.",
+            "2": "A rescue team sees requests for help in the areas it covers and nothing outside them. Data about vulnerable households needs a rescue or coordination role as well.",
+            "3": "The rules are tested like code: a suite of policy tests runs for every role, a visitor, a resident, a team in the wrong district, a team in the right one and an admin, and a change that opens a row it should not opens fails the build.",
+            "4": "An admin's console and a team's console are the same database seen through different rules, not a separate, more trusting system."
+          }
+        },
+        "privacy": {
+          "title": "What is never shown, and what is written down",
+          "text": "The app carries the most sensitive thing a person can send: where they are, at the moment they are in danger. The design starts from what must never leave.",
+          "points": {
+            "1": "Never public: the exact location of anyone who asked for help, of a household, or of a person who reported a flood, and every personal phone number.",
+            "2": "The public map carries only aggregated or moderated information. No requests for help as points, no rescue teams' positions, no reporter's identity.",
+            "3": "One exception, and only one: the number of the unit that has accepted a request is shown to the person who sent it, while their case is open, so they can reach the team on its way. The unit can switch that off.",
+            "4": "Every reveal of a phone number or a vulnerable-household record is written to an audit log, whoever read it, admins included."
+          }
+        },
+        "sos": {
+          "title": "How a request for help travels",
+          "text": "A request for help is the one thing in Jaga that must never be blocked, delayed or refused. Everything on this path is built around that sentence.",
+          "points": {
+            "1": "The only thing Jaga needs is where you are. No account, no sign-in, no verification step, no puzzle to prove you are human. A phone number is optional, and the form says plainly that rescuers cannot call you without one.",
+            "2": "No request is ever rejected, even when something looks like abuse. A repeat from the same phone or device joins the open case as an update; beyond that, a case is flagged for an admin to look at, and still delivered.",
+            "3": "With no signal the request waits on the phone and keeps trying, and the screen offers the hotlines to call or text instead.",
+            "4": "It reaches the verified teams whose coverage includes that place, on their own board, within seconds.",
+            "5": "The person who sent it sees that it was accepted, and by whom."
+          }
+        },
+        "alerts": {
+          "title": "How an alert is published, and why a person publishes it",
+          "text": "Jaga carries alerts; it does not invent them. Only a person publishes, with a single exception, and every alert has to answer the same questions.",
+          "points": {
+            "1": "Every alert states its level, its area, who issued it, when, why, and when the next update is due. Once that time passes it keeps its level and gains a grey marker saying it has not been updated since: stale is a marker, never a lower level.",
+            "2": "Alert wording comes only from templates reviewed in all three languages. Nothing in a warning is machine-translated at the moment of sending.",
+            "3": "The computed signals, rain, river levels, forecasts, the dam and the seasonal outlook, suggest a level and show their reasons. They never publish.",
+            "4": "The one exception is the automatic alarm on a river gauge an admin has ticked: two recent readings at the level ring every admin's phone with a draft, and if nobody sends or dismisses it within a grace time the draft publishes itself, marked as not reviewed by a person and recorded in the audit log."
+          }
+        },
+        "fails": {
+          "title": "What still works when things break",
+          "text": "Floods take out power, mobile data and roads. The app is designed to lose parts of itself and keep the parts that save a life.",
+          "points": {
+            "1": "Once it is installed on the phone these keep working with no connection at all: the app itself, your area's current alert, the nearest safe places, the hotline numbers, and the queue holding your request for help until there is signal again.",
+            "2": "The home screen is usable before the map loads and is built for a low-end phone on a slow connection. The map is an extra, never the way in.",
+            "3": "Every live figure carries the time it was read. When a feed goes quiet the app says the figure is old instead of showing a confident number.",
+            "4": "Hazards Jaga does not cover yet, and provinces it does not cover yet, are shown as plainly unavailable with the right hotline, never with a colour that could read as all clear."
+          }
+        },
+        "built": {
+          "title": "Built to be checked",
+          "text": "A life-safety app that nobody can check is only a claim. This is what is written down.",
+          "points": {
+            "1": "Every database change is a numbered file, applied once and never edited afterwards, so the whole database can be rebuilt from nothing, in order, at any time.",
+            "2": "About 1,300 automated checks run on every change: unit tests, tests that drive the real screens end to end, and the access-rule tests above.",
+            "3": "The code is public under a permissive licence, so the claims on these pages can be read against the thing itself.",
+            "4": "The system has had a written security review, and its findings and fixes sit in the repository beside the code, including the embarrassing ones."
+          }
+        },
+        "cost": {
+          "title": "What it costs to run",
+          "text": "Money decides what a volunteer project can promise. Jaga is built to be cheap enough that nobody has to find money in a hurry to keep it alive.",
+          "points": {
+            "1": "Out of season it runs for roughly the price of a phone contract, and a few times that in the three months of the flood season.",
+            "2": "No paid map service anywhere. Photographs are shrunk on the phone before they are uploaded, voice notes are kept short, and free allowances are watched and warned about before they run out.",
+            "3": "The app does not collect money or goods for people affected by a flood: the official relief channels are the place for that. What it spends keeps the app itself running."
+          }
+        }
+      },
+      "closing": {
+        "title": "Two pages, one app",
+        "text": "The science page is the other half of this: what each layer of the map means, where its data came from, and how far to trust it.",
+        "science": "Read how the science works",
+        "map": "Open the flood risk map"
+      }
+    },
+    "figures": {
+      "radar": {
+        "title": "One place, two passes",
+        "alt": "Two radar views of the same ground, the dry months and a flood day, and the difference between them",
+        "step1": "The same ground in the dry months of the same year, seen from the same orbit. This is the baseline.",
+        "step2": "A pass during the rainy season. Smooth water throws the radar's signal away, so flooded land turns dark.",
+        "step3": "What changed between the two is the flood. Patches too small to be real are dropped, and what remains is counted, pass by pass, for nine seasons.",
+        "caption": "Comparing like with like, the same orbit, the same geometry, the same year, is what makes the difference mean water."
+      },
+      "height": {
+        "title": "Why low land is marked, and towns differently",
+        "alt": "A valley in cross-section: the stream, the classes on the low land, and a town on the plain",
+        "step1": "The stream that the land around it drains into. Every height in Jaga is measured from there, not from sea level.",
+        "step2": "The less a place stands above its own stream, the sooner water reaches it. With how often the radar saw it flooded, that gives the class.",
+        "step3": "In built-up land the radar cannot see water between the houses, so the height of the land decides on its own.",
+        "legend": {
+          "high": "Highest class",
+          "medium": "Middle class",
+          "low": "Lowest class drawn",
+          "none": "No colour: not marked, not safe"
+        },
+        "caption": "The classes are warm pinks on purpose. They are a risk map, never the yellow, orange and red that mean an alert level."
+      },
+      "gauge": {
+        "title": "A river against its levels",
+        "alt": "A rising river level crossing its watch, warning and evacuate lines",
+        "step1": "The river rises. The first line it crosses is the one that says: get ready.",
+        "step2": "The hours between that crossing and the water arriving are the warning time. Gauges upstream cross earlier, which is where most of it comes from.",
+        "step3": "A person reads this, with the rain and the forecasts beside it, and decides whether to publish. The levels suggest; they do not send.",
+        "legend": {
+          "watch": "Watch",
+          "warning": "Warning",
+          "evacuate": "Evacuate"
+        },
+        "caption": "The levels were chosen from past floods at that gauge, they are provisional, and an admin can change any of them."
+      },
+      "river": {
+        "title": "From the dam to the sea",
+        "alt": "The Pattani River below Bang Lang dam, with the gauges measured along it",
+        "place": "Place",
+        "firstRise": "First rise",
+        "highest": "Highest water",
+        "range": "{from}-{to} h",
+        "atOnce": "at once",
+        "stops": {
+          "dam": "Below the dam",
+          "bannangSata": "Bannang Sata",
+          "yala": "Yala town",
+          "brido": "Ban Brido",
+          "pattani": "Pattani town"
+        },
+        "caption": "Hours after the gates open, measured from past floods and from the daily turbine pulses. A range, never a single time: rain below the dam adds water these figures know nothing about."
+      },
+      "system": {
+        "title": "The five parts",
+        "alt": "The five parts of the system and the paths between them",
+        "readers": "Scheduled readers: rivers, dam, rain, sea",
+        "db": "One database, with the access rules inside it",
+        "app": "The app on the phone, working offline",
+        "notifier": "Notifications to phones",
+        "files": "Map layers as files",
+        "step1": "Scheduled readers fetch the river gauges, the dam, the rain, the forecasts and the sea on their own timetable, and write down what they found with the time they read it.",
+        "step2": "Everything lands in one database that holds both the data and the rules about who may see each row. There is no second, more trusting way in.",
+        "step3": "The app on the phone reads what it is allowed to read, keeps what it needs to work with no signal, and queues what it cannot send yet.",
+        "step4": "When a person publishes an alert, the notifier sends it to the phones in the areas that alert covers, and nowhere else.",
+        "step5": "The map layers are files, served from a file store and cached close to the reader, so replacing a layer needs no new version of the app.",
+        "caption": "Five parts, so that there are few places for a mistake to hide."
+      },
+      "sos": {
+        "title": "A request for help, end to end",
+        "alt": "The path of a request for help, from the tap to the team on its way",
+        "step1": "One tap. Where you are is the only thing Jaga needs; a phone number helps and is optional.",
+        "step2": "No signal: it waits on the phone and keeps trying, and the hotlines are there to call instead.",
+        "step3": "It becomes a case the moment it arrives. Nothing can refuse it.",
+        "step4": "The verified teams covering that place see it on their board within seconds.",
+        "step5": "A team accepts, and the person who sent it sees who is coming and can reach them.",
+        "caption": "Nothing on this path asks who you are, and nothing on it can turn you away."
+      }
+    }
   }
 }

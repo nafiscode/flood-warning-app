@@ -4219,5 +4219,396 @@
       "open": "Lihat apa yang Jaga boleh buat",
       "close": "Jangan tunjuk lagi"
     }
+  },
+  "howItWorks": {
+    "link": "Bagaimana Jaga berfungsi",
+    "nav": {
+      "label": "Dua halaman ini",
+      "science": "Sains di sebaliknya",
+      "system": "Sistem"
+    },
+    "science": {
+      "title": "Bagaimana Jaga berfungsi: sains di sebaliknya",
+      "lead": "Peta banjir Jaga bukan pendapat tentang tempat mana yang bahaya. Ia hasil pengukuran: radar satelit sembilan musim hujan, model ketinggian tanah sebenar, rekod sungai dan empangan yang menjangkau lima belas tahun dan empat puluh lima tahun data hujan, disatukan untuk Pattani, Yala, Narathiwat dan Songkhla. Halaman ini menerangkan setiap bahagiannya, apa yang boleh dan tidak boleh diberitahunya, dan bagaimana ia diuji.",
+      "audience": "Ditulis untuk pembaca yang mahu menilai kerja ini: penyelidik, agensi, pelajar, dan sesiapa yang perlu memutuskan sama ada sebuah peta boleh dipercayai. Setiap set data di sebaliknya adalah data terbuka; tiada apa-apa yang dibeli.",
+      "stats": {
+        "seasons": "Radar numbor sembilan musim hujan, 2017-2025",
+        "passes": "Kira-kira 400 lintasan satelit diproses",
+        "land": "18,772 km² dikelaskan",
+        "buildings": "2.26 juta bangunan dikira",
+        "gauges": "46 stesen paras sungai, jam demi jam",
+        "places": "2,600 tempat selamat disusun"
+      },
+      "labels": {
+        "concept": "Ideanya",
+        "can": "Apa yang ia boleh beritahu",
+        "cannot": "Apa yang ia tidak boleh beritahu",
+        "checked": "Bagaimana ia diperiksa",
+        "sources": "Data"
+      },
+      "read": {
+        "title": "Cara membaca halaman ini",
+        "text": "Setiap bahagian di bawah disusun dengan cara yang sama, dalam susunan yang sama, supaya tiada batasan yang boleh bersembunyi di belakang tulisan yang cantik.",
+        "concept": "pemikiran di belakang lapisan itu, secara terus",
+        "can": "soalan yang ia cukup jujur untuk menjawab",
+        "cannot": "soalan yang orang akan tanya juga, dan di mana ia perlu berdiam",
+        "checked": "ia dibandingkan dengan apa, dan apa yang perbandingan itu buktikan atau tidak",
+        "notRecipe": "Ini halaman untuk difahami dan dinilai, bukan satu resipi: tiada nilai parameter, tiada nilai ambang dan tiada susunan langkah di sini. Nota kaedah penuh ada untuk setiap bahagian, dan penyelidik yang meminta akan menerimanya."
+      },
+      "contents": "Apa yang ada di halaman ini",
+      "parts": {
+        "radar": {
+          "title": "Sembilan musim hujan, dilihat melalui awan",
+          "concept": "Peta banjir daripada gambar satelit biasa gagal pada musim tengkujuh, kerana banjir itu berada di bawah awan yang menyebabkannya. Radar tidak dihalang awan dan tidak perlukan cahaya matahari. Permukaan air yang tenang melantunkan isyarat radar jauh daripada satelit, jadi tanah yang dibanjiri tiba-tiba kelihatan gelap. Jaga membandingkan setiap lintasan musim hujan dengan rupa tanah yang sama, dari orbit yang sama, pada bulan-bulan paling kering tahun yang sama, supaya perbezaan besar yang tinggal itu bermakna air. Setiap musim dari 2017 hingga 2025 diproses begitu, lintasan demi lintasan, dan hasilnya ialah berapa kerap setiap petak kecil tanah dilihat berada di bawah air.",
+          "can": "Di mana air benar-benar bertakung di tempat terbuka, sepanjang sembilan musim, dan berapa kerap. Dua banjir besar November 2024 dan November 2025 ada di dalamnya dengan resolusi yang lebih halus. Ia rekod apa yang diperhatikan, bukan model apa yang mungkin berlaku.",
+          "cannot": "Ia tidak dapat melihat ke dalam pekan: di kawasan bangunan radar keliru dengan dinding dan bumbung, dan pusat Hat Yai yang dibanjiri pada November 2025 terbaca hampir kering. Ia tidak memberi kedalaman. Ia hanya melihat saat satelit lintas, kira-kira setiap enam hingga dua belas hari, jadi banjir yang naik dan surut antara dua lintasan terlepas sepenuhnya. Lembah gunung yang curam, di mana lereng melindung tanah daripada radar, tidak boleh dipercayai. Satu lintasan yang bertanda juga boleh jadi sawah berair, tanah yang baru ditenggala, atau hanya hingar.",
+          "checked": "Alat itu sendiri yang menetapkan hadnya. Apabila dua lintasan berselang dua belas jam melihat banjir yang sama, keduanya bersetuju sesama sendiri pada indeks kejayaan kritikal kira-kira 0.41 ketika air tinggi, jadi kira-kira 0.4 ialah paling tinggi yang boleh dicapai oleh mana-mana peta banjir radar di sini, dan setiap angka selepas ini dibaca berbanding had itu, bukan berbanding 1.0. Kekerapan banjir juga dibandingkan dengan rekod kawasan banjir berulang GISTDA yang bebas daripada kami."
+        },
+        "classes": {
+          "title": "Tanah mudah banjir, dalam empat kelas",
+          "concept": "Dibanjiri sekali, pada kiraan satelit, tidak sama dengan mudah banjir. Kelas-kelas ini berdiri atas dua bukti yang bebas satu sama lain: berapa kerap radar melihat tempat itu di bawah air sepanjang sembilan musim, dan berapa tinggi tempat itu berbanding anak sungai yang menerima airnya sendiri, dihitung daripada model ketinggian tanah sebenar dengan sungai yang telah dipetakan digunakan untuk membetulkan arah aliran. Tanah rendah yang kerap banjir masuk kelas tertinggi; tanah yang hanya rendah, atau yang banjir sekali, berada lebih bawah. Di kawasan bangunan, di mana radar buta, ketinggian tanah yang memutuskan dan radar diketepikan. Tanah rendah yang direkodkan banjir oleh agensi luar diangkat keluar daripada kelas terendah.",
+          "can": "Tanah mana yang patut dianggap mudah banjir, dan mengapa, untuk kesemua 377 tambon; dan berapa banyak bangunan berada dalam setiap kelas, supaya sebuah kampung atau tambon boleh dibandingkan dengan jirannya.",
+          "cannot": "Ia bukan ramalan, bukan kedalaman, bukan paras air dan bukan jaminan. Tempat tanpa warna bukan tempat yang selamat: ia tempat yang tidak ditanda oleh bukti ini, dan satu persepuluh daripada banjir 2025 jatuh di tanah yang dikelaskan paling rendah. Di pekan, kelas itu bergantung pada ketinggian sahaja, yang radar tidak dapat mengesahkan. Model ketinggian dengan ralat satu meter atau lebih tidak nampak benteng, parit, dinding atau taman perumahan baharu.",
+          "checked": "Dibina semula dari kosong tanpa banjir November 2025, kemudian diukur terhadap banjir itu: 74% daripada tanah yang radar lihat dibanjiri musim itu jatuh dalam dua kelas tertinggi, indeks kejayaan kritikal 0.36 berbanding had alat itu sendiri kira-kira 0.4. Dibandingkan dengan rekod kawasan banjir berulang GISTDA 2011-2024, 96% daripada tanah yang mereka tandakan tiga tahun atau lebih berada dalam dua kelas yang sama. Kedua-dua pemeriksaan ini satelit lawan satelit; tiada satu pun membuktikan rumah sesiapa dibanjiri."
+        },
+        "gauges": {
+          "title": "Stesen paras sungai, dan paras yang bermakna",
+          "concept": "Agensi Thai menerbitkan paras sungai daripada stesen telemetri, banyak yang setiap lima belas minit. Angka dalam meter dari paras laut tidak bermakna bagi penduduk, jadi setiap stesen perlukan parasnya sendiri: paras untuk mula bersiap, paras untuk memberi amaran, dan tebing itu sendiri. Untuk sungai yang paling penting, paras itu dipilih dengan memainkan semula setiap musim sejak 2017 dan bertanya paras mana, apabila dilepasi, paling kerap diikuti sungai melimpah tebing, dan berapa jam amaran yang diperoleh. Di stesen yang terlalu sedikit banjir dalam rekod, paras itu diambil daripada kadar naik sungai, dan ditandakan seperti keadaannya: nilai permulaan yang ada asas, bukan nilai yang diuji.",
+          "can": "Untuk 46 stesen, satu paras yang boleh ditindak oleh pentadbir, dengan masa amaran yang pernah diberinya dahulu. Stesen di hulu biasanya melepasi parasnya sebelum stesen di pekan, dan di situlah datangnya sebahagian besar masa amaran.",
+          "cannot": "Ia tidak boleh meramal banjir. Jalan dibanjiri oleh hujan setempat sebelum sungai melimpah tebingnya: di Yala pada November 2025 ada air di jalan dua hari sebelum stesen melepasi tebing. Nilai ambang hujan tidak tahu betapa basahnya tanah sebelum itu. Sebuah stesen juga boleh rosak pada kemuncak banjir, dan itu pernah berlaku.",
+          "checked": "Diberi skor melalui kebolehan mengesan, nisbah amaran palsu dan masa amaran, atas rekod enam musim. Batasnya yang jujur ialah bilangan contoh: satu zon ada empat belas banjir dalam rekod, satu lagi ada satu, dan setiap nilai ambang dipilih atas banjir yang sama yang digunakan untuk menilainya, tanpa ujian berasingan. Ia sementara, aplikasi menyatakannya, dan pentadbir boleh mengubah mana-mana daripadanya."
+        },
+        "alarm": {
+          "title": "Satu-satunya perkara yang boleh menghantar sendiri",
+          "concept": "Peraturannya ialah manusia yang mengeluarkan amaran dan sistem hanya mengira isyarat dan mencadangkan paras. Ada satu pengecualian sahaja, dipilih dengan sengaja, kerana pada pukul tiga pagi mungkin tiada sesiapa yang berjaga. Bagi stesen paras sungai yang ditanda oleh pentadbir, apabila dua bacaan terakhir kedua-duanya mencapai paras zon itu, telefon setiap pentadbir berbunyi dengan draf amaran yang sudah ditulis daripada templat yang telah disemak. Jika tiada pentadbir menghantar atau menolaknya dalam masa tenggang, Jaga menerbitkan draf itu sendiri, bertanda belum disemak oleh manusia dan dicatat dalam log audit. Jika sungai sudah turun di bawah paras itu ketika itu, tiada apa-apa diterbitkan.",
+          "can": "Ia menutup jurang antara masa sungai mencapai satu paras dan masa seorang manusia sampai ke telefonnya, tanpa sesiapa perlu menulis amaran dalam keadaan tergesa-gesa.",
+          "cannot": "Tiada apa-apa lain dalam Jaga yang menerbitkan apa-apa. Hujan, ramalan hujan, angka empangan, tinjauan musim dan setiap cadangan yang dikira adalah maklumat sokongan, dan kekal di skrin pentadbir sampai seorang manusia membuat keputusan.",
+          "checked": "Dua bacaan dan bukan satu, supaya satu bacaan rosak tidak boleh membunyikan loceng; kedua-duanya mesti bacaan baharu, supaya suapan yang terhenti tidak boleh; dan draf itu dibina daripada ayat yang telah disemak, tidak pernah diterjemah mesin ketika hantar. Sebelum perkhidmatan dibuka, loceng ini hanya menerbitkan latihan."
+        },
+        "dam": {
+          "title": "Di bawah empangan: tanah mana, dan berapa lama",
+          "concept": "Empangan Bang Lang berada di Sungai Pattani di hulu Yala. Apabila ia melepaskan air, kenaikan itu bergerak ke hilir selama sehari atau lebih, jadi dua soalan penting: sejauh mana air boleh merebak, dan bila ia sampai. Zon itu ialah tanah yang cukup rendah berbanding permukaan sungai itu sendiri, dan bersambung benar dengan sungai, sehingga boleh dicapai pada paras tertinggi yang pernah direkodkan oleh stesen sungai itu, ditambah satu jalur satu meter lebih tinggi supaya pinggirnya bukan satu janji palsu. Masa perjalanan air diukur dua kali secara bebas: daripada denyut harian turbin stesen janakuasa pada bulan kering, dan daripada kenaikan serta kemuncak setiap banjir sejak 2020 yang melintasi stesen demi stesen.",
+          "can": "Tambon mana yang berada di tanah yang boleh dicapai air sungai, 51 dalam zon dan 55 dengan jalur luar, serta satu julat jam bagi kenaikan pertama dan bagi air tertinggi di setiap tempat sepanjang sungai. Amaran mengira detik ke arah jam paling awal dalam julat itu selepas satu margin keselamatan ditolak.",
+          "cannot": "Tiada model hidraulik di sini, tiada isi padu dan tiada tempoh: ia tidak boleh berkata sama ada pelepasan satu saiz tertentu akan memenuhi zon itu, atau berapa dalam airnya. Hujan yang turun di bawah empangan menambah air yang masa-masa ini tidak tahu. Angka yang diterbitkan juga lewat beberapa jam, jadi ia rekod yang mengekori kenyataan, bukan amaran yang tepat pada masanya; skrin pengendali empangan itu sendiri yang memberi amaran.",
+          "checked": "Dua kaedah itu bersetuju. Kemuncak banjir biasa mengambil kira-kira empat belas jam dari Bannang Sata ke Yala menurut rekod banjir, dan empat belas jam menurut denyut turbin. Zon itu menampung 62 hingga 67% daripada apa yang radar lihat dibanjiri dalam koridor sungai, dalam tiga musim banjir berasingan, dan menampungnya lebih baik bagi setiap kilometer persegi daripada kenaikan seragam sepanjang sungai. Ia juga diperiksa terhadap rekod pengendali empangan sendiri bagi pelepasan terbesar yang ada."
+        },
+        "places": {
+          "title": "Tempat selamat, disusun tetapi belum disahkan",
+          "concept": "Tempat selamat mesti berada di atas paras air dan boleh dicapai melalui jalan yang masih terbuka ketika banjir. Calonnya datang daripada peta yang sesiapa boleh sunting, iaitu sekolah, masjid, tokong dan bangunan kerajaan, ditambah dua jenis tanah tinggi: rupa bumi yang jauh lebih tinggi daripada anak sungainya, dan benteng lebuh raya utama, yang dibina atas timbunan kira-kira dua meter dan merupakan tanah tinggi yang sebenar di dataran ini, tetapi tidak nampak pada model ketinggian yang kasar. Setiap tapak diberi ketinggian bebas air, iaitu ketinggiannya sendiri di atas anak sungai tolak paras yang dicapai pinggir banjir berdekatan, dan satu pemeriksaan laluan yang menutup setiap jalan yang radar lihat di bawah air, kemudian bertanya berapa rumah masih boleh sampai ke situ dengan berjalan, atau dengan kereta jika tapak itu untuk meletak kenderaan.",
+          "can": "Satu senarai pendek yang disusun untuk setiap tambon dengan sebabnya terbuka: berapa tinggi tapak itu di atas banjir lalu, berapa kerap tanahnya sendiri dibanjiri, dan berapa bahagian daripada rumah yang dilayaninya masih boleh sampai apabila jalan yang banjir ditutup. Tiada apa-apa disembunyikan: tapak yang diragui kekal dalam senarai dengan tandanya.",
+          "cannot": "Tiada satu pun daripada tempat ini disahkan di lapangan. Kapasiti, tandas, air dan sama ada sebuah bangunan boleh digunakan sebagai pusat pemindahan sama sekali masih tidak diketahui. Peta yang menjadi asasnya pun tipis di sini: 54 masjid bernama dalam empat wilayah yang sebenarnya ada beribu. Pemeriksaan laluan buta di dalam pekan. Dan sama ada kereta boleh berhenti di bahu lebuh raya adalah hak pihak berkuasa lebuh raya untuk menjawab, bukan peta."
+        },
+        "return": {
+          "title": "Bila selamat untuk pulang",
+          "concept": "Pulang terlalu awal adalah bahaya tersendiri. Tiada sesiapa boleh meramal turunnya sebuah sungai, tetapi rekod boleh berkata berapa lama ia mengambil masa dahulu. Setiap banjir dalam rekod jam demi jam di setiap stesen diukur dari kemuncaknya sampai ke saat sungai kembali dalam tebingnya, dan sampai ke saat ia turun di bawah paras amarannya. Pentadbir yang mengeluarkan amaran pulang melihat angka-angka stesen itu, satu nilai tengah dan sebaran, lalu mengeluarkan tempohnya sebagai satu julat.",
+          "can": "Di 46 stesen, berapa lama penurunan dahulu mengambil masa: di Yala sungai biasanya kembali dalam tebingnya kira-kira satu setengah hari selepas kemuncak, dan penurunan itu jelas lebih lambat ke arah hilir. 456 peristiwa lalu keseluruhannya.",
+          "cannot": "Ia rekod penurunan yang lalu, bukan ramalan penurunan kali ini: hujan atas sungai yang sedang turun membuatnya naik semula. Di bawah tebing di stesen bukan bermakna jalan sudah kering, kerana tanah rendah di belakang tebing lambat mengering dan jalan masih terputus kerana serpihan. Penurunan yang paling lama juga paling mungkin tiada dalam rekod, jadi angka-angka ini cenderung terlalu singkat.",
+          "checked": "456 peristiwa di 46 stesen, tetapi tiga stesen utama hanya membawa 11, 19 dan 2 daripadanya. Jika sebuah stesen ada satu banjir dalam rekod, aplikasi menyatakannya dan tidak memetik angka seolah-olah ia satu peraturan."
+        },
+        "outlook": {
+          "title": "Musim yang akan datang, dan apa yang tidak dapat diketahui",
+          "concept": "Sebelum sebuah musim, ada apa-apa yang boleh dikatakan? Empat puluh lima tahun data hujan di atas empat wilayah ini dibandingkan dengan keadaan Lautan Pasifik, iaitu El Niño dan La Niña, dan dengan model ramalan musim yang boleh digunakan tanpa bayaran, kemudian setiap kaedah diberi skor berdasarkan berapa kerap ia pernah betul di sini. Hasilnya ialah tinjauan dalam tiga bahagian, iaitu kebarangkalian musim yang lebih kering, biasa atau lebih hujan, dan ditunjukkan hanya apabila setiap kaedah yang lulus ujian bersetuju.",
+          "can": "Satu kecenderungan yang jujur dengan ketepatannya sendiri dicetak di sebelahnya, dan satu pernyataan terus tentang apa yang ditunjukkan rekod: dua hujan lebat lima hari paling banyak dalam empat puluh lima tahun ialah dua musim terakhir, dan musim dalam rekod ini menjadi lebih hujan kira-kira 14% setiap dekad.",
+          "cannot": "Banjir yang mendatangkan kerosakan datang daripada hujan lebat beberapa hari, dan tiada sesiapa dapat melihatnya lebih daripada satu hingga dua minggu lebih awal. Keadaan Lautan Pasifik hanya menerangkan kira-kira satu perenam daripada perbezaan antara musim, dan kedua-dua 2024 dan 2025 datang selepas Pasifik yang neutral yang tidak memberi apa-apa petunjuk. Tinjauan yang cenderung kering tidak pernah menurunkan kesiapsiagaan, dan aplikasi menyatakannya di mana-mana tinjauan itu muncul.",
+          "checked": "Setiap kaedah mesti mengalahkan \"sebut biasa setiap kali\" atas dua rekod hujan yang bebas sebelum digunakan sama sekali, dan kebanyakannya gagal. Ramalan musim pernah betul di sini kira-kira empat kali daripada sepuluh, dan angka itu dicetak di sebelah tinjauan."
+        },
+        "sea": {
+          "title": "Laut di muara sungai",
+          "concept": "Di pantai ini laut bertindak seperti pintu air. Monsun timur laut menolak air ke pantai dan, dengan air pasang tinggi serta paras tasik di belakangnya, sungai tidak dapat mengalir keluar, dan itulah sebabnya air bertakung berhari-hari, bukan berjam-jam. Gelombang, alun, angin dan paras laut dibaca daripada model gelombang dan cuaca global di tujuh titik luar pantai, dan ayat tentang laut bergelora mengikut nilai ambang jabatan meteorologi negara sendiri, bukan nilai kami.",
+          "can": "Sama ada laut cukup bergelora sehingga bot kecil patut berlabuh di pangkalan, dalam ayat yang sudah dikenali nelayan; dan himpunan air yang perlahan menekan ke pantai, bahagian yang membuat banjir bertakung lama.",
+          "cannot": "Ketinggian air pasang tidak ditunjukkan sama sekali, kerana model itu berbeza daripada tolok pasang surut kira-kira 0.7 m, satu angka yang akan kelihatan tepat tetapi salah. Ia tidak pernah berkata laut selamat. Gelombang badai belum diuji: tiada tahun dalam rekod yang mempunyai gelombang badai cukup besar untuk dipisahkan daripada kenaikan air monsun.",
+          "checked": "Pasang surut model dibandingkan dengan stesen sungai yang dicapai air pasang. Di bandar Pattani, lima kilometer dari muara, ia sepadan dalam satu jam pada masanya dan dalam 7% pada julatnya, dan bahagian perlahan paras itu mengikut rapat. Di dalam Tasik Songkhla pasang surut laut masuk hanya satu pertiga hingga separuh, dan itulah sebabnya tasik itu tidak dianggap laut terbuka."
+        },
+        "reports": {
+          "title": "Apa yang dilaporkan penduduk",
+          "concept": "Tiada alat yang melihat sebuah jalan. Penduduk melaporkan kedalaman dengan merujuk badan, iaitu buku lali, lutut, pinggang, dada dan melebihi kepala, kerana tiada sesiapa mengukur air dalam sentimeter sambil berdiri di dalamnya. Laporan itu disaring dan dihimpunkan, ditunjukkan di peta umum sebagai kawasan dan bukan kedudukan seseorang, dan itulah satu-satunya bukti yang Jaga ada dari dalam pekan tempat radar buta.",
+          "can": "Mengesahkan atau membetulkan gambaran satelit secara setempat, ketika ia masih bermakna; dan selepas musim, menjadi set data untuk menguji kelas dan nilai ambang dengan sebenar.",
+          "cannot": "Laporan datang dari tempat ada orang dan tempat telefon berfungsi: tempat tanpa laporan bukan tempat yang kering. Kedalaman rujukan badan ialah satu julat, bukan satu ukuran. Satu laporan bukan amaran, dan ia hanya sampai ke peta umum selepas disaring."
+        }
+      },
+      "checks": {
+        "title": "Apa yang diperiksa, dan terhadap apa",
+        "lead": "Setiap angka di sini ialah hasil ukuran dengan rekod larian yang menghasilkannya. Dua baris sengaja tidak menyenangkan, kerana itulah tujuan jadual ini.",
+        "holdout": {
+          "title": "Kelas-kelas itu, terhadap banjir yang belum pernah dilihatnya",
+          "text": "Dibina semula tanpa November 2025 dan diukur terhadapnya: 74% daripada banjir itu jatuh dalam dua kelas tertinggi, indeks kejayaan kritikal 0.36."
+        },
+        "radarSelf": {
+          "title": "Had tertinggi yang alat itu mampu",
+          "text": "Dua lintasan radar berselang dua belas jam di atas banjir yang sama bersetuju sesama sendiri kira-kira 0.41. Baca setiap skor di atas berbanding had itu, bukan berbanding 1.0."
+        },
+        "gistda": {
+          "title": "Terhadap rekod sebuah agensi yang bebas",
+          "text": "79 hingga 97% daripada banjir yang dipetakan GISTDA pada 2017-2024 terletak dalam 60 m daripada banjir yang dipetakan radar Jaga. Jaga memetakan lebih banyak banjir daripada mereka, dan perbandingan ini tidak dapat berkata berapa banyak daripadanya kebenaran tambahan dan berapa banyak hingar."
+        },
+        "travel": {
+          "title": "Dua cara bebas untuk mengukur masa sungai",
+          "text": "Rekod banjir dan denyut turbin musim kering memberi empat belas jam yang sama dari Bannang Sata ke Yala."
+        },
+        "thresholds": {
+          "title": "Contoh yang tipis di belakang nilai ambang",
+          "text": "Antara 1 hingga 14 banjir setiap zon dalam enam musim, dipilih dan dinilai atas peristiwa yang sama. Sementara, dan ditandakan begitu di mana-mana ia muncul."
+        },
+        "recession": {
+          "title": "Penurunan yang diukur, bukan diramal",
+          "text": "456 penurunan lalu di 46 stesen menjadi asas tempoh pulang; dua daripada tiga stesen utama ada kurang daripada dua puluh."
+        },
+        "sea": {
+          "title": "Model pasang surut terhadap tolok sebenar",
+          "text": "Di bandar Pattani julat pasang surut model berbeza kurang daripada 7% dengan tolok dan kurang daripada satu jam pada masanya. Ketinggian air pasang masih tidak diterbitkan."
+        },
+        "outlook": {
+          "title": "Ketepatan tinjauan musim itu sendiri",
+          "text": "Kira-kira empat kali daripada sepuluh, dan itu dicetak di sebelah tinjauan setiap kali ia ditunjukkan."
+        },
+        "note": "Tiada satu pun daripada ini ialah kerja lapangan. Banjir 2024 dan 2025 tidak dipetakan di lapangan, dan pemeriksaan paling kuat yang Jaga ada masih satu satelit terhadap satu satelit lain. Laporan penduduk musim ini akan menjadi bukti bebas yang pertama diterimanya."
+      },
+      "leftOut": {
+        "title": "Apa yang dibina dan sengaja tidak digunakan",
+        "lead": "Dua kerja analisis yang sudah siap disimpan dan tidak dipaparkan di peta umum, dan satu idea yang telah diuji tidak dibenarkan menaikkan paras amaran. Kaedah yang belum membuktikan dirinya lebih buruk daripada tiada kaedah, dan aplikasi keselamatan nyawa bukan tempat untuk mengetahui hal itu kemudian.",
+        "stage": {
+          "title": "Garis banjir langsung daripada paras sungai",
+          "text": "Satu pustaka yang menukar bacaan stesen menjadi garis banjir dibina dan ditentukur di tiga stesen. Terhadap radar ia memperoleh kira-kira satu pertiga daripada skor yang dua lintasan radar peroleh sesama sendiri: terlalu lemah untuk dilukis seolah-olah ia banjir yang sebenar. Ia disimpan sampai model ketinggian, atau buktinya, menjadi lebih baik."
+        },
+        "highways": {
+          "title": "Di mana lebuh raya menahan air",
+          "text": "Membandingkan rekod radar di kedua-dua sisi setiap bahagian pendek lebuh raya utama menunjukkan di mana air kelihatan bertakung di satu sisi. Itu nasihat untuk pejabat lebuh raya dan pengairan, untuk diperiksa di lapangan, dan bukan amaran umum: radar melihat luas dan bukan kedalaman, dan kebanyakan pembetung tiada dalam mana-mana peta, jadi \"tiada bukaan\" biasanya bermaksud \"belum dipetakan\"."
+        },
+        "forecast": {
+          "title": "Ramalan hujan sebagai pencetus",
+          "text": "Diuji terhadap banjir yang ada dalam rekod, setiap model global jauh terlalu kering, dengan beza dua hingga empat puluh kali. Jadi satu ramalan tidak pernah menaikkan paras amaran dengan sendirinya di sini, dan apabila ramalan berkata sedikit, aplikasi tidak menganggapnya satu jaminan."
+        }
+      },
+      "open": {
+        "title": "Data terbuka masuk, lapisan terbuka keluar",
+        "text": "Setiap set data di belakang kerja ini terbuka dan kebanyakannya bebas untuk sesiapa: radar, model ketinggian, rekod hujan, telemetri sungai, jalan dan bangunan. Tiada apa-apa yang dibeli, dan tiada perkhidmatan peta berbayar digunakan di mana-mana dalam aplikasi ini.",
+        "layers": "Kodnya terbuka kepada umum di bawah lesen terbuka. Lapisan yang diterbitkan daripada model ketinggian membawa lesennya sendiri, yang tidak membenarkan penggunaan komersial dan menuntut syarat yang sama bagi penerbitan semula, dan aplikasi menyatakannya di mana-mana lapisan itu ditunjukkan.",
+        "caution": "Satu akibatnya patut dikatakan terus: kerana data masukannya terbuka, sesiapa boleh memeriksa kerja ini, dan sesiapa boleh mencari di mana ia salah. Itulah tujuan menulisnya."
+      },
+      "contact": {
+        "title": "Untuk penyelidik, agensi dan pelajar",
+        "text": "Nota kaedah penuh, set parameter, log larian dan angka pengesahan ada untuk setiap bahagian di atas, dan sengaja tidak diletakkan di halaman ini: halaman pendek yang boleh dinilai lebih berguna daripada halaman panjang yang boleh disalin. Jika anda bekerja tentang banjir di selatan jauh, dalam hidrologi, penderiaan jauh atau pengurusan bencana, tulis dan mintalah. Pengesahan bersama, pemeriksaan lapangan dan model ketinggian yang lebih baik lebih dihargai daripada sitasi."
+      },
+      "closing": {
+        "map": "Buka peta risiko banjir",
+        "features": "Apa yang Jaga boleh buat",
+        "system": "Baca bagaimana sistemnya berfungsi"
+      }
+    },
+    "credits": {
+      "title": "Data, dan orang yang memberikannya",
+      "thanks": "Jaga ialah aplikasi bukan untung yang dibina oleh sukarelawan, dan hampir setiap angka di dalamnya datang daripada kerja orang lain yang diberikan tanpa bayaran: sebuah satelit radar Eropah yang terbang di atas pantai ini setiap beberapa hari sejak 2017, sebuah model ketinggian yang dibina daripada data satelit dan dibetulkan daripada pokok dan bangunan, sebuah institut Thai yang menerbitkan paras sungai setiap lima belas minit, agensi yang menerbitkan peta banjir dan angka empangan, model cuaca dan gelombang yang diberi tanpa bil, dan berpuluh ribu orang yang memetakan jalan, kampung dan bangunan empat wilayah ini dengan tangan. Tanpa mana-mana satu daripada mereka, tiada peta banjir untuk Pattani, Yala, Narathiwat dan Songkhla. Terima kasih.",
+      "endorse": "Tiada satu pun daripada organisasi ini mengendalikan Jaga, memeriksanya, atau mengesahkannya. Menamakan mereka ialah syarat lesen dan satu ucapan terima kasih, bukan tuntutan sokongan.",
+      "licenceNote": "Lesen dinamakan seperti pemberi lesen menamakannya, dan di mana satu baris kredit dituntut, ia dicetak perkataan demi perkataan. Fail docs/attributions.md dalam repositori kod umum ialah rekod rasminya, dengan tarikh setiap lesen dibaca.",
+      "groups": {
+        "satellites": "Satelit dan ketinggian",
+        "agencies": "Agensi Thai",
+        "models": "Model cuaca dan iklim",
+        "maps": "Peta, bangunan dan alat"
+      },
+      "use": {
+        "sentinel1": "Radar yang melihat banjir, setiap beberapa hari sejak 2017.",
+        "fabdem": "Model ketinggian tanah sebenar di belakang setiap nilai ketinggian dalam Jaga.",
+        "jrcwater": "Membezakan air kekal daripada banjir.",
+        "meritHydro": "Ketinggian kasar pertama di atas saliran, untuk menutup kawasan bukit.",
+        "openBuildings": "Mengira bangunan dalam setiap kelas banjir, kampung demi kampung.",
+        "gsmap": "Hujan yang dicerap di atas setiap lembangan sungai, jam demi jam.",
+        "thaiwater": "Paras sungai dan hujan daripada rangkaian telemetri, terkini dan bertahun ke belakang.",
+        "rid": "Paras tebing, laporan banjir dan stesen di empat wilayah.",
+        "egat": "Empangan Bang Lang: simpanan, paras, air masuk, pelepasan dan limpahan.",
+        "gistda": "Satu rekod banjir yang bebas, dan luas banjir dalam musim.",
+        "rtsd": "Sempadan wilayah, daerah dan tambon yang menjadi unit kiraan.",
+        "tmd": "Ayat dan nilai ambang bagi laut bergelora, supaya Jaga menyebutnya seperti mereka.",
+        "esri": "Gambar satelit dan rupa bumi pada peta, di tempat Jaga ada kunci untuknya.",
+        "openMeteo": "Ramalan hujan, gelombang dan aliran sungai, bebas untuk kegunaan bukan komersial.",
+        "chirps": "Empat puluh lima tahun data hujan, untuk tinjauan musim.",
+        "era5land": "Rekod hujan kedua, untuk memeriksa yang pertama.",
+        "noaa": "Keadaan Lautan Pasifik, dan ramalan musim.",
+        "osm": "Sungai, jalan, bangunan, kampung dan calon tempat selamat.",
+        "basemap": "Peta asas di bawah lapisan Jaga sendiri.",
+        "s2cloudless": "Gambar satelit yang boleh dipilih orang.",
+        "terrain": "Lorekan bukit pada paparan rupa bumi.",
+        "earthEngine": "Tempat radar sembilan musim diproses.",
+        "tools": "Alat sumber terbuka yang membina seluruh saluran pemprosesan."
+      }
+    },
+    "system": {
+      "title": "Bagaimana Jaga berfungsi: sistem",
+      "lead": "Jaga mesti berfungsi pada telefon murah, pada sambungan yang perlahan, ketika bekalan elektrik terputus, pada pukul tiga pagi, dalam tiga bahasa. Dan ia tidak boleh sekali-kali menunjukkan kepada orang asing di mana seseorang sedang menunggu di atas bumbung. Halaman ini ialah bentuk sistemnya: bagaimana ia disusun, apa yang ia enggan lakukan, dan apa yang berlaku apabila sebahagiannya gagal.",
+      "noNames": "Tiada pembekal, produk atau jenama dinamakan di halaman ini. Dua sebabnya: yang penting ialah bentuknya dan bukan senarai belanja kami, dan satu halaman umum yang menyenaraikan setiap perkhidmatan yang bergantung padanya sebuah aplikasi keselamatan ialah peta bagi sesiapa yang mencari jalan masuk. Satu ujian mengekalkan halaman ini begitu.",
+      "stats": {
+        "tables": "Lebih 70 jadual, setiap satu dengan peraturan aksesnya sendiri",
+        "migrations": "Lebih 80 perubahan pangkalan data, setiap satu disimpan",
+        "tests": "Kira-kira 1,300 pemeriksaan automatik pada setiap perubahan",
+        "languages": "Tiga bahasa, satu sumber rujukan"
+      },
+      "contents": "Apa yang ada di halaman ini",
+      "parts": {
+        "shape": {
+          "title": "Lima bahagian, dan satu tempat peraturan tinggal",
+          "text": "Lima bahagian, tidak lebih: sebuah aplikasi yang tinggal di telefon, satu pangkalan data yang menyimpan semuanya dan memutuskan siapa boleh membaca setiap baris, pembaca berjadual yang mengambil data sungai dan empangan, satu penghantar pemberitahuan, dan satu simpanan fail untuk lapisan peta. Hampir semua yang lain ialah akibat daripada lima bahagian itu.",
+          "points": {
+            "1": "Lapisan peta umum ialah fail dan bukan soalan kepada pangkalan data, jadi peta kekal pantas dan murah, dan satu lapisan boleh digantikan tanpa versi aplikasi yang baharu.",
+            "2": "Telefon penduduk bertanya status amarannya mengikut selang masa, bukan melalui sambungan yang terbuka berterusan: seratus ribu telefon tidak boleh menjadi seratus ribu sambungan terbuka. Skrin pasukan dan pentadbir memang menerima data langsung, kerana jumlahnya sedikit dan di situ setiap detik bermakna.",
+            "3": "Tiada bahagiannya berjalan pada mesin yang terletak di dalam kawasan banjir, dan aplikasi itu sendiri sebuah halaman web, jadi tiada gedung aplikasi antara satu pembetulan dengan orang yang memerlukannya."
+          }
+        },
+        "rules": {
+          "title": "Pangkalan data yang memutuskan siapa boleh melihat apa",
+          "text": "Skrin boleh ditipu. Jadi peraturan tentang siapa boleh melihat nombor telefon atau kedudukan tepat ditulis di dalam pangkalan data itu sendiri, sebagai peraturan pada baris data, dan ia berkuat kuasa pada setiap jalan masuk: aplikasi, eksport data, pertanyaan terus, dan kesilapan dalam kod baharu.",
+          "points": {
+            "1": "Setiap jadual tertutup secara lalai dan hanya terbuka kepada peranan yang dinamakan. Tiada apa-apa yang rahsia semata-mata kerana tiada skrin yang menunjukkannya.",
+            "2": "Pasukan penyelamat melihat permintaan bantuan di kawasan yang diliputinya dan tiada apa-apa di luarnya. Data rumah yang terdedah memerlukan peranan penyelamat atau penyelarasan sebagai syarat tambahan.",
+            "3": "Peraturan diuji seperti kod: satu set ujian polisi dijalankan untuk setiap peranan, iaitu pelawat, penduduk, pasukan di daerah yang salah, pasukan di daerahnya sendiri dan pentadbir, dan satu perubahan yang membuka baris yang tidak sepatutnya terbuka akan menggagalkan binaan.",
+            "4": "Skrin pentadbir dan skrin pasukan ialah pangkalan data yang sama dilihat melalui peraturan yang berbeza, bukan sistem berasingan yang lebih dipercayai."
+          }
+        },
+        "privacy": {
+          "title": "Apa yang tidak ditunjukkan sama sekali, dan apa yang dicatat",
+          "text": "Aplikasi ini membawa perkara paling sensitif yang boleh dihantar seseorang: di mana dia berada, pada saat dia dalam bahaya. Reka bentuknya bermula daripada apa yang tidak boleh keluar.",
+          "points": {
+            "1": "Tidak pernah umum: kedudukan tepat sesiapa yang meminta bantuan, kedudukan sebuah rumah, dan kedudukan orang yang melaporkan banjir, serta setiap nombor telefon peribadi.",
+            "2": "Peta umum hanya membawa maklumat yang dihimpunkan atau disaring. Tiada permintaan bantuan sebagai titik, tiada kedudukan pasukan penyelamat, tiada identiti pelapor.",
+            "3": "Satu pengecualian, satu sahaja: nombor unit yang telah menerima satu permintaan ditunjukkan kepada orang yang menghantarnya, selagi kesnya terbuka, supaya dia boleh menghubungi pasukan yang sedang dalam perjalanan. Unit itu boleh mematikannya.",
+            "4": "Setiap kali satu nombor telefon atau satu rekod rumah terdedah dibuka, ia ditulis ke log audit, siapa pun yang membukanya, termasuk pentadbir."
+          }
+        },
+        "sos": {
+          "title": "Bagaimana satu permintaan bantuan bergerak",
+          "text": "Permintaan bantuan ialah satu-satunya perkara dalam Jaga yang tidak boleh dihalang, dilengahkan atau ditolak. Semua di laluan ini dibina di sekeliling ayat itu.",
+          "points": {
+            "1": "Satu-satunya yang Jaga perlukan ialah di mana anda berada. Tiada akaun, tiada log masuk, tiada langkah pengesahan, tiada ujian untuk membuktikan anda manusia. Nombor telefon adalah pilihan, dan borang itu menyatakan terus bahawa tanpa nombor, penyelamat tidak dapat menghubungi anda.",
+            "2": "Tiada permintaan ditolak, walaupun sesuatu kelihatan seperti penyalahgunaan. Permintaan berulang daripada telefon atau peranti yang sama akan bergabung ke dalam kes yang terbuka sebagai maklumat tambahan; melebihi itu, kes ditandakan untuk pentadbir melihatnya, dan tetap dihantar.",
+            "3": "Tanpa liputan, permintaan menunggu di dalam telefon dan terus mencuba, dan skrin menawarkan nombor talian hayat untuk dihubungi atau dihantar mesej.",
+            "4": "Ia sampai kepada pasukan yang telah disahkan yang liputannya merangkumi tempat itu, pada skrin pasukan itu sendiri, dalam beberapa detik.",
+            "5": "Orang yang menghantarnya melihat bahawa kesnya telah diterima, dan oleh siapa."
+          }
+        },
+        "alerts": {
+          "title": "Bagaimana satu amaran dikeluarkan, dan mengapa manusia yang mengeluarkannya",
+          "text": "Jaga membawa amaran; ia tidak menciptanya. Hanya manusia yang mengeluarkannya, dengan satu pengecualian, dan setiap amaran mesti menjawab soalan yang sama.",
+          "points": {
+            "1": "Setiap amaran menyatakan parasnya, kawasannya, siapa yang mengeluarkannya, bila, mengapa, dan bila kemas kini berikutnya dijangka. Selepas masa itu berlalu, ia mengekalkan parasnya dan mendapat satu tanda kelabu yang berkata ia belum dikemas kini sejak bila: lapuk ialah satu tanda, bukan paras yang lebih rendah.",
+            "2": "Ayat amaran hanya datang daripada templat yang disemak dalam ketiga-tiga bahasa. Tiada bahagian satu amaran diterjemah mesin pada saat hantar.",
+            "3": "Isyarat yang dikira, iaitu hujan, paras sungai, ramalan, empangan dan tinjauan musim, hanya mencadangkan satu paras dan menunjukkan sebabnya. Ia tidak pernah mengeluarkan amaran.",
+            "4": "Satu pengecualian itu ialah loceng automatik pada stesen paras sungai yang ditanda pentadbir: dua bacaan baharu pada paras itu membuat telefon setiap pentadbir berbunyi dengan satu draf, dan jika tiada sesiapa menghantar atau menolaknya dalam masa tenggang, draf itu terbit sendiri, bertanda belum disemak oleh manusia dan dicatat dalam log audit."
+          }
+        },
+        "fails": {
+          "title": "Apa yang masih berfungsi apabila sesuatu rosak",
+          "text": "Banjir memutuskan bekalan elektrik, data mudah alih dan jalan raya. Aplikasi ini direka untuk kehilangan sebahagian dirinya dan mengekalkan bahagian yang menyelamatkan nyawa.",
+          "points": {
+            "1": "Setelah dipasang pada telefon, ini terus berfungsi tanpa sambungan sama sekali: aplikasi itu sendiri, amaran terkini kawasan anda, tempat selamat yang terdekat, nombor talian hayat, dan baris gilir yang menyimpan permintaan bantuan anda sampai ada liputan.",
+            "2": "Halaman utama boleh digunakan sebelum peta siap dimuatkan dan dibina untuk telefon kelas bawah pada sambungan perlahan. Peta ialah tambahan, bukan jalan masuk.",
+            "3": "Setiap angka terkini membawa masa ia dibaca. Apabila satu suapan terhenti, aplikasi berkata angka itu sudah lama dan tidak menunjukkan angka itu dengan yakin.",
+            "4": "Bahaya yang Jaga belum liputi, dan wilayah yang belum diliputinya, ditunjukkan dengan jelas sebagai belum ada data dengan nombor talian hayat yang betul, dan tidak pernah dengan warna yang boleh terbaca sebagai sudah selamat."
+          }
+        },
+        "built": {
+          "title": "Dibina untuk diperiksa",
+          "text": "Aplikasi keselamatan nyawa yang tidak boleh diperiksa sesiapa hanyalah satu tuntutan. Inilah yang ditulis.",
+          "points": {
+            "1": "Setiap perubahan pangkalan data ialah satu fail bernombor, digunakan sekali dan tidak pernah disunting selepas itu, jadi seluruh pangkalan data boleh dibina semula dari kosong, mengikut susunan, pada bila-bila masa.",
+            "2": "Kira-kira 1,300 pemeriksaan automatik dijalankan pada setiap perubahan: ujian unit, ujian yang memandu skrin sebenar dari mula hingga akhir, dan ujian peraturan akses di atas.",
+            "3": "Kodnya terbuka kepada umum di bawah lesen terbuka, jadi tuntutan di halaman ini boleh dibaca berbanding kerja yang sebenar.",
+            "4": "Sistem ini telah melalui semakan keselamatan yang bertulis, dan penemuan serta pembetulannya berada di dalam repositori bersama kodnya, termasuk yang memalukan."
+          }
+        },
+        "cost": {
+          "title": "Berapa kosnya untuk dikendalikan",
+          "text": "Wang menentukan apa yang boleh dijanjikan sebuah projek sukarelawan. Jaga dibina supaya cukup murah sehingga tiada sesiapa perlu mencari wang dengan tergesa-gesa untuk mengekalkannya.",
+          "points": {
+            "1": "Di luar musim, kosnya kira-kira sama dengan satu pakej telefon, dan beberapa kali itu dalam tiga bulan musim banjir.",
+            "2": "Tiada perkhidmatan peta berbayar di mana-mana. Gambar dikecilkan di telefon sebelum dihantar, nota suara dibataskan supaya pendek, dan kuota percuma dipantau dan diberi peringatan sebelum habis.",
+            "3": "Aplikasi ini tidak mengumpul wang atau barang untuk mangsa banjir: saluran bantuan rasmi tempatnya untuk itu. Perbelanjaannya hanya untuk memastikan aplikasi terus berjalan."
+          }
+        }
+      },
+      "closing": {
+        "title": "Dua halaman, satu aplikasi",
+        "text": "Halaman sains ialah separuh yang lain: apa makna setiap lapisan peta, dari mana datang datanya, dan sejauh mana ia boleh dipercayai.",
+        "science": "Baca sains di sebaliknya",
+        "map": "Buka peta risiko banjir"
+      }
+    },
+    "figures": {
+      "radar": {
+        "title": "Satu tempat, dua lintasan",
+        "alt": "Dua paparan radar bagi tanah yang sama, bulan kering dan hari banjir, dan perbezaan antara keduanya",
+        "step1": "Tanah yang sama pada bulan kering tahun yang sama, dilihat dari orbit yang sama. Ini garis asasnya.",
+        "step2": "Satu lintasan dalam musim hujan. Permukaan air yang tenang melantunkan isyarat radar jauh, jadi tanah yang dibanjiri menjadi gelap.",
+        "step3": "Apa yang berubah antara keduanya ialah banjir. Tompok yang terlalu kecil untuk menjadi benar dibuang, dan yang tinggal dikira, lintasan demi lintasan, selama sembilan musim.",
+        "caption": "Membandingkan yang setara, iaitu orbit yang sama, geometri yang sama, tahun yang sama, itulah yang membuat perbezaan itu bermakna air."
+      },
+      "height": {
+        "title": "Mengapa tanah rendah ditanda, dan pekan secara berbeza",
+        "alt": "Satu lembah dalam potongan rentas: anak sungai, kelas-kelas di tanah rendah, dan sebuah pekan di dataran",
+        "step1": "Anak sungai yang menerima air tanah di sekelilingnya. Setiap ketinggian dalam Jaga diukur dari situ, bukan dari paras laut.",
+        "step2": "Semakin rendah satu tempat berbanding anak sungainya sendiri, semakin cepat air sampai. Bersama kekerapan radar melihatnya dibanjiri, itu memberi kelasnya.",
+        "step3": "Di kawasan bangunan radar tidak dapat melihat air antara rumah, jadi ketinggian tanah yang memutuskan dengan sendirinya.",
+        "legend": {
+          "high": "Kelas tertinggi",
+          "medium": "Kelas tengah",
+          "low": "Kelas terendah yang dilukis",
+          "none": "Tiada warna: tidak ditanda, bukan selamat"
+        },
+        "caption": "Kelas-kelas ini berwarna merah jambu dengan sengaja. Ia peta risiko, bukan kuning, jingga dan merah yang bermakna paras amaran."
+      },
+      "gauge": {
+        "title": "Sebuah sungai berbanding parasnya sendiri",
+        "alt": "Paras sungai yang naik melepasi garis awas, amaran dan pindah",
+        "step1": "Sungai naik. Garis pertama yang dilepasinya ialah garis yang berkata: mula bersiap.",
+        "step2": "Jam antara lintasan garis itu dengan ketibaan air ialah masa amaran. Stesen di hulu melepasinya lebih awal, dan di situlah datangnya sebahagian besarnya.",
+        "step3": "Seorang manusia membaca ini, dengan data hujan dan ramalan di sebelahnya, lalu memutuskan sama ada hendak mengeluarkan amaran. Paras ini mencadangkan; ia tidak menghantar.",
+        "legend": {
+          "watch": "Awas",
+          "warning": "Amaran",
+          "evacuate": "Pindah"
+        },
+        "caption": "Paras ini dipilih daripada banjir lalu di stesen itu, ia sementara, dan pentadbir boleh mengubah mana-mana daripadanya."
+      },
+      "river": {
+        "title": "Dari empangan ke laut",
+        "alt": "Sungai Pattani di bawah empangan Bang Lang, dengan stesen yang diukur sepanjangnya",
+        "place": "Tempat",
+        "firstRise": "Kenaikan pertama",
+        "highest": "Air tertinggi",
+        "range": "{from}-{to} jam",
+        "atOnce": "serta-merta",
+        "stops": {
+          "dam": "Di bawah empangan",
+          "bannangSata": "Bannang Sata",
+          "yala": "Bandar Yala",
+          "brido": "Ban Brido",
+          "pattani": "Bandar Pattani"
+        },
+        "caption": "Jam selepas pintu dibuka, diukur daripada banjir lalu dan daripada denyut turbin harian. Satu julat, bukan satu masa: hujan di bawah empangan menambah air yang angka ini tidak tahu."
+      },
+      "system": {
+        "title": "Lima bahagian itu",
+        "alt": "Lima bahagian sistem dan laluan antara keduanya",
+        "readers": "Pembaca berjadual: sungai, empangan, hujan, laut",
+        "db": "Satu pangkalan data, dengan peraturan akses di dalamnya",
+        "app": "Aplikasi di telefon, berfungsi luar sambungan",
+        "notifier": "Pemberitahuan ke telefon",
+        "files": "Lapisan peta sebagai fail",
+        "step1": "Pembaca berjadual mengambil data stesen sungai, empangan, hujan, ramalan dan laut mengikut jadualnya sendiri, dan mencatat apa yang ditemuinya dengan masa ia dibaca.",
+        "step2": "Semuanya masuk ke satu pangkalan data yang menyimpan data dan juga peraturan tentang siapa boleh melihat setiap baris. Tiada jalan masuk kedua yang lebih dipercayai.",
+        "step3": "Aplikasi di telefon membaca apa yang dibenarkan, menyimpan apa yang diperlukannya untuk berfungsi tanpa liputan, dan menyimpan dalam baris gilir apa yang belum dapat dihantar.",
+        "step4": "Apabila seorang manusia mengeluarkan amaran, penghantar pemberitahuan menghantarnya ke telefon di kawasan yang diliputi amaran itu, dan tidak ke tempat lain.",
+        "step5": "Lapisan peta ialah fail, dihantar daripada simpanan fail dan disimpan salinannya dekat dengan pembaca, jadi menggantikan satu lapisan tidak memerlukan versi aplikasi yang baharu.",
+        "caption": "Lima bahagian, supaya sedikit sahaja tempat untuk satu kesilapan bersembunyi."
+      },
+      "sos": {
+        "title": "Satu permintaan bantuan, dari mula ke akhir",
+        "alt": "Laluan satu permintaan bantuan, dari satu tekan sampai ke pasukan yang dalam perjalanan",
+        "step1": "Satu tekan. Di mana anda berada ialah satu-satunya yang Jaga perlukan; nombor telefon membantu dan ia pilihan.",
+        "step2": "Tanpa liputan: ia menunggu di dalam telefon dan terus mencuba, dan nombor talian hayat ada untuk dihubungi.",
+        "step3": "Ia menjadi satu kes pada saat ia sampai. Tiada apa-apa boleh menolaknya.",
+        "step4": "Pasukan yang telah disahkan yang meliputi tempat itu melihatnya di skrin mereka dalam beberapa detik.",
+        "step5": "Satu pasukan menerimanya, dan orang yang menghantarnya melihat siapa yang datang dan boleh menghubunginya.",
+        "caption": "Tiada langkah di laluan ini bertanya siapa anda, dan tiada langkah yang boleh menolak anda."
+      }
+    }
   }
 }
