@@ -147,7 +147,7 @@ describe("ways into What Jaga can do", () => {
     window.localStorage.clear();
     window.sessionStorage.clear();
     const { container } = renderWithIntl(<NewToJaga />, "en");
-    expect(container.querySelector('[data-new-to-jaga] a')?.getAttribute("href")).toBe(
+    expect(container.querySelector("[data-new-to-jaga] a")?.getAttribute("href")).toBe(
       "/en/features",
     );
     fireEvent.click(container.querySelector("[data-new-to-jaga-close]")!);
@@ -159,5 +159,33 @@ describe("ways into What Jaga can do", () => {
     for (const messages of Object.values(ALL)) {
       expect(typeof (messages.line as Record<string, string>).menuFeatures).toBe("string");
     }
+  });
+});
+
+describe("the admins' section", () => {
+  const SESSION = "sb-test-auth-token";
+
+  it("offers its Open buttons only to someone signed in as an admin", () => {
+    window.localStorage.clear();
+    const visitor = renderWithIntl(<Capabilities />, "en");
+    const panel = () => visitor.container.querySelector('[data-role-panel="admin"]')!;
+    expect(panel().querySelectorAll("[data-capability]").length).toBe(6);
+    expect(panel().querySelectorAll("[data-capability-open]").length).toBe(0);
+    // The residents' buttons are for everyone.
+    expect(
+      visitor.container.querySelectorAll('[data-role-panel="resident"] [data-capability-open]')
+        .length,
+    ).toBe(6);
+    visitor.unmount();
+
+    document.cookie = `${SESSION}=present; path=/`;
+    window.localStorage.setItem("jaga.role", JSON.stringify("admin"));
+    const admin = renderWithIntl(<Capabilities />, "en");
+    expect(
+      admin.container.querySelectorAll('[data-role-panel="admin"] [data-capability-open]').length,
+    ).toBe(6);
+    admin.unmount();
+    document.cookie = `${SESSION}=; path=/; max-age=0`;
+    window.localStorage.clear();
   });
 });

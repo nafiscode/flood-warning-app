@@ -35,6 +35,7 @@ import {
   type CapabilityRole,
 } from "@/lib/capabilities";
 import { buttonPrimary, buttonQuiet, buttonSecondary } from "@/lib/ui";
+import { AdminOnly } from "./AdminOnly";
 import { Hub } from "./Hub";
 import { RolePicker } from "./RolePicker";
 import { Scene } from "./Scene";
@@ -236,7 +237,7 @@ function RolePanel({ role }: { role: CapabilityRole }) {
       <h3 className="sr-only">{t("canDo")}</h3>
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CAPABILITIES[role].map((item) => (
-          <CapabilityCard key={item.key} item={item} />
+          <CapabilityCard key={item.key} item={item} adminOnly={role === "admin"} />
         ))}
       </ul>
       {role === "admin" && <p className="text-small text-jaga-text-2">{t("admin.note")}</p>}
@@ -277,8 +278,19 @@ function RolePanel({ role }: { role: CapabilityRole }) {
   );
 }
 
-function CapabilityCard({ item }: { item: Capability }) {
+function CapabilityCard({ item, adminOnly }: { item: Capability; adminOnly: boolean }) {
   const t = useTranslations("capabilities");
+  const open = (
+    <Link
+      href={item.href}
+      prefetch={false}
+      className={`${buttonQuiet} justify-center`}
+      data-capability-open={item.key}
+    >
+      {t("open")}
+      <ForwardIcon size={20} className="rtl:-scale-x-100" />
+    </Link>
+  );
   return (
     <li
       className="flex min-w-0 flex-col gap-3 rounded-2xl border border-jaga-line bg-jaga-surface p-3"
@@ -296,15 +308,7 @@ function CapabilityCard({ item }: { item: Capability }) {
           {t(`items.${item.key}.where`)}
         </p>
       </div>
-      <Link
-        href={item.href}
-        prefetch={false}
-        className={`${buttonQuiet} justify-center`}
-        data-capability-open={item.key}
-      >
-        {t("open")}
-        <ForwardIcon size={20} className="rtl:-scale-x-100" />
-      </Link>
+      {adminOnly ? <AdminOnly>{open}</AdminOnly> : open}
     </li>
   );
 }
