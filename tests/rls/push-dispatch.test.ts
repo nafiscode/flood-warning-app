@@ -169,3 +169,119 @@ describe("the sender hears about their own case", () => {
     ).toEqual([]);
   });
 });
+
+describe("a request no team has taken", () => {
+  const ADMIN_PHONE = "https://fcm.googleapis.com/fcm/send/admin-phone";
+
+  /** What is owed for one particular case (the dev database may hold other open requests). */
+  async function dueFor(sos: string): Promise<Due[]> {
+    await as(db, "anon");
+    const all = await rows<Due>(db, "select * from push_due($1)", [TOKEN]);
+    await asOwner(db);
+    return all.filter((r) => r.sos_id === sos);
+  }
+
+  /**
+   * Every row owed is an 'unclaimed' to an admin, and this test's own admin phone is among them.
+   * The dev database has admins of its own with notifications on, so the list is not only ours.
+   */
+  function onlyAdmins(ring: Due[]): Due {
+    expect([...new Set(ring.map((x) => x.kind))]).toEqual(["unclaimed"]);
+    const ours = ring.find((x) => x.endpoint === ADMIN_PHONE);
+    expect(ours).toBeDefined();
+    return ours!;
+  }
+
+  const age = (sos: string, minutes: number) =>
+    db.query(
+      "update sos_requests set created_at = now() - make_interval(mins => $2) where id = $1",
+      [sos, minutes],
+    );
+
+  beforeEach(async () => {
+    // An admin with notifications on, and nobody listening for the team's offer.
+    await as(db, { uid: w.admin });
+    await db.query("select push_subscribe($1, $2::jsonb, '{}', 'th')", [ADMIN_PHONE, KEYS]);
+    await asOwner(db);
+  });
+
+  it("reaches the admins' phones at their overdue mark when no unit covers the tambon", async () => {
+    // yala2 has no coverage: the relay has nobody to ask, so no queue is ever built.
+    const point = (
+      await rows<{ wkt: string }>(
+        db,
+        `select extensions.st_astext(extensions.st_pointonsurface(geom)) as wkt
+           from tambons where code = $1`,
+        [w.yala2],
+      )
+    )[0]!.wkt;
+    const [lon, lat] = point
+      .replace(/^POINT\(|\)$/g, "")
+      .split(" ")
+      .map(Number) as [number, number];
+    await as(db, "anon");
+    const sent = (
+      await rows<{ sos_id: string; token: string }>(
+        db,
+        "select sos_id, token from submit_sos(p_lat => $1, p_lon => $2, p_device_id => 'uncovered-device')",
+        [lat, lon],
+      )
+    )[0]!;
+    // The sender is told their case is with the admins...
+    const who = (
+      await rows<{ searching: boolean; exhausted: boolean }>(
+        db,
+        "select searching, exhausted from sos_responder($1, $2)",
+        [sent.sos_id, sent.token],
+      )
+    )[0]!;
+    expect([who.searching, who.exhausted]).toEqual([true, true]);
+    await asOwner(db);
+    expect(
+      await rows(db, "select 1 from sos_requests where id = $1 and dispatch_started_at is null", [
+        sent.sos_id,
+      ]),
+    ).toHaveLength(1);
+    expect(await rows(db, "select 1 from sos_offers where sos_id = $1", [sent.sos_id])).toEqual([]);
+
+    // ...and nothing rings before the mark the war room itself uses.
+    expect(await dueFor(sent.sos_id)).toEqual([]);
+    await age(sent.sos_id, 16);
+
+    const ring = await dueFor(sent.sos_id);
+    const theirs = onlyAdmins(ring);
+    expect(Object.keys(theirs.data).sort()).toEqual(["request", "tambon_en", "tambon_th"]);
+    expect(JSON.stringify(ring)).not.toContain("uncovered-device");
+    // Handed out once.
+    expect(await dueFor(sent.sos_id)).toEqual([]);
+  });
+
+  it("waits for the same mark when the queue of teams simply ran out", async () => {
+    // The relay started long enough ago that its one team's window has passed.
+    await db.query(
+      "update sos_requests set dispatch_started_at = now() - interval '10 minutes' where id = $1",
+      [w.yalaSos],
+    );
+    expect(
+      await rows<{ exhausted: boolean }>(db, "select exhausted from sos_offer_now($1)", [
+        w.yalaSos,
+      ]),
+    ).toEqual([{ exhausted: true }]);
+
+    expect(await dueFor(w.yalaSos)).toEqual([]);
+    await age(w.yalaSos, 16);
+    onlyAdmins(await dueFor(w.yalaSos));
+  });
+
+  it("follows the admins' own setting when they tighten it", async () => {
+    await db.query(
+      "update system_settings set value = '{\"minutes\": 5}' where key = 'sos_unclaimed_minutes'",
+    );
+    await db.query(
+      "update sos_requests set dispatch_started_at = now() - interval '10 minutes' where id = $1",
+      [w.yalaSos],
+    );
+    await age(w.yalaSos, 6);
+    onlyAdmins(await dueFor(w.yalaSos));
+  });
+});
