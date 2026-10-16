@@ -279,6 +279,14 @@ test.describe("the live map on a laptop", () => {
     expect(bar!.y + bar!.height).toBeLessThanOrEqual(tiles!.y);
     expect(bar!.y + bar!.height).toBeLessThan(rail!.y);
 
+    // The province list rides in the bar with the hazard buttons (the owner, 16 Oct), not at the
+    // top of the left rail, and the note that explains it stays beside it (safety rule 10).
+    const prov = await box("[data-console-province]");
+    expect(prov!.y).toBeGreaterThanOrEqual(bar!.y);
+    expect(prov!.y + prov!.height).toBeLessThanOrEqual(bar!.y + bar!.height + 2);
+    expect(prov!.y).toBeLessThan(rail!.y);
+    await expect(page.locator("[data-console-province] [data-not-covered-note]")).toBeVisible();
+
     // The weather in words, in the empty half of the first line.
     const readout = page.locator("[data-console-weather]");
     await expect(readout).toBeVisible();

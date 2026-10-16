@@ -1090,6 +1090,33 @@ export function DashboardView(props: DashboardViewProps) {
               )}
             </ul>
             {props.hazardsState === "unavailable" && <p className={hint}>{t("hazard.failed")}</p>}
+            {/*
+             * The province goes in the empty half of the hazard line (the owner, 16 Oct), which on
+             * the console is inside the weather bar. It shares the row with the hazard buttons and
+             * wraps under them when they leave no room, so a long language simply takes two lines
+             * instead of being squeezed.
+             *
+             * It stays here, in the page's own order, so a phone and a tablet see it exactly where
+             * they saw it: straight after the hazard buttons. `mt-3` makes up the difference
+             * between this row's gap and the gap it used to have as the next block down.
+             */}
+            {hazard.status === "active" && (
+              <div data-console-province="true" className="mt-3 console:mt-0 console:ms-auto">
+                {directory ? (
+                  <ProvinceSelect
+                    id="map-province"
+                    provinces={directory.provinces}
+                    value={province}
+                    onChange={setProvince}
+                    emptyLabel={t("province.all")}
+                  />
+                ) : (
+                  props.directoryState === "unavailable" && (
+                    <p className={hint}>{t("province.failed")}</p>
+                  )
+                )}
+              </div>
+            )}
           </div>
 
           {hazard.status !== "active" ? (
@@ -1114,19 +1141,6 @@ export function DashboardView(props: DashboardViewProps) {
               {/* The hazard comes first, then the province, then what the map shows for it (owner,
                   15 Oct). On the console the same four are the left rail. */}
               <div className="contents" data-console-area="rail" data-console-rail="true">
-                {directory ? (
-                  <ProvinceSelect
-                    id="map-province"
-                    provinces={directory.provinces}
-                    value={province}
-                    onChange={setProvince}
-                    emptyLabel={t("province.all")}
-                  />
-                ) : (
-                  props.directoryState === "unavailable" && (
-                    <p className={hint}>{t("province.failed")}</p>
-                  )
-                )}
                 {/* The sea's own report, for fishermen, right under the chips while the sea is
                     shown (the owner, 15 Oct: the switches under the map are gone, the chips do
                     that). */}
