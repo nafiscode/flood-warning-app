@@ -25,6 +25,9 @@ export const DAYS = 7;
 /** A reading older than this is shown with its time, so nobody reads it as "now". */
 export const STALE_MS = 3 * 60 * 60_000;
 
+/** Below this an hour is read as dry: a model's trace of rain is not rain. */
+export const DRY_MM = 0.1;
+
 /**
  * WMO weather codes grouped into what the app can say in three languages and draw an icon for.
  * Codes Open-Meteo doesn't use here (freezing rain, hail) fall into the nearest group.

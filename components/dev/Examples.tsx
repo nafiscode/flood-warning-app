@@ -10,11 +10,14 @@ import { WeatherMapCanvas } from "@/components/weather/WeatherMapCanvas";
 import { WeatherMapsView } from "@/components/weather/WeatherMapsView";
 import { WeatherView } from "@/components/weather/WeatherView";
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { DAM_URL, type Dam, type DamData } from "@/lib/dam";
 import { useFetched } from "@/lib/use-public";
 import { areaName } from "@/lib/area";
 import { MyReportsView } from "@/components/reports/MyReports";
+import { MonitoringNow } from "@/components/monitoring/MonitoringNow";
+import { localName } from "@/lib/places";
+import { BANGKOK_DATE_TIME } from "@/lib/time";
 import {
   BANA,
   EXAMPLE_DIRECTORY,
@@ -37,6 +40,7 @@ import {
   type DamScenario,
   EXAMPLE_MY_REPORTS,
   EXAMPLE_REPORTS_NEAR,
+  exampleMonitoring,
   homeExample,
   type HomeScenario,
   type WeatherScenario,
@@ -51,6 +55,8 @@ import type { WeatherField } from "@/lib/weather-grid";
  */
 export function HomeExample({ scenario }: { scenario: HomeScenario }) {
   const example = homeExample(scenario);
+  const locale = useLocale();
+  const format = useFormatter();
   const { data } = useFetched<DamData>(DAM_URL);
   return (
     <HomeView
@@ -72,6 +78,25 @@ export function HomeExample({ scenario }: { scenario: HomeScenario }) {
       onChooseArea={() => {}}
       onRetry={() => {}}
       projectLine={null}
+      /*
+       * The live measurements under the hero (17 Oct). The "unavailable" example is the one that
+       * could read nothing, so the three states can all be judged here; everywhere else the
+       * example is a busy day, which is when the section has the most to say.
+       */
+      monitoringNow={() => (
+        <MonitoringNow
+          summary={exampleMonitoring(
+            scenario === "unavailable" ? "unknown" : scenario === "normal" ? "quiet" : "active",
+            data?.dams?.[0] ?? null,
+          )}
+          scopeWords={{ myPlace: BANA.nameTh }}
+          damName={data?.dams?.[0] ? localName(data.dams[0].name, locale) : null}
+          damTambon={BANA.nameTh}
+          rainPlace={BANA.nameTh}
+          time={(iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME)}
+          place="home"
+        />
+      )}
     />
   );
 }

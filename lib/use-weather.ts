@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { whenIdle } from "@/lib/idle";
 import { areaName, pickName, type Area } from "@/lib/area";
 import type { MinePlace } from "@/components/map/MapView";
 import type { MyPlaces } from "@/lib/me";
@@ -109,21 +110,6 @@ function load(key: string, lat: number, lon: number): Promise<Weather> {
     .finally(() => inflight.delete(key));
   inflight.set(key, request);
   return request;
-}
-
-/** Wait for a quiet moment: the alert status and the SOS button come first on a slow phone. */
-function whenIdle(run: () => void): () => void {
-  type WithIdle = Window & {
-    requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
-    cancelIdleCallback?: (handle: number) => void;
-  };
-  const w = window as WithIdle;
-  if (w.requestIdleCallback) {
-    const handle = w.requestIdleCallback(run, { timeout: 3_000 });
-    return () => w.cancelIdleCallback?.(handle);
-  }
-  const timer = window.setTimeout(run, 1_500);
-  return () => window.clearTimeout(timer);
 }
 
 /**

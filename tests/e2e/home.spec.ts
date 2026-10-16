@@ -398,3 +398,155 @@ test.describe("the install card", () => {
     await expect(page.locator("[data-install]")).toHaveCount(0);
   });
 });
+
+/*
+ * "What the monitoring shows now" on the home screen (the owner, 17 Oct 2026). The two things
+ * checked here are the two the feature rests on: at Warning and Evacuate it must not come
+ * between a person and what to do, and a feed that failed must say so rather than read as
+ * "nothing is happening" (safety rules 2 and 10).
+ */
+test.describe("what the monitoring shows now, on the home screen", () => {
+  test.use({ serviceWorkers: "block" });
+
+  /** The gauge counts and the standing reports the section counts from. */
+  async function serveMonitoring(
+    page: Page,
+    options: { gauges?: "ok" | "fail"; reports?: "ok" | "fail" | "empty" } = {},
+  ) {
+    const gauges = options.gauges ?? "ok";
+    const reports = options.reports ?? "ok";
+    await page.route("**/api/public/gauges/summary", (route) =>
+      gauges === "fail"
+        ? route.fulfill({ status: 503, json: { error: "unavailable" } })
+        : route.fulfill({
+            json: {
+              generatedAt: new Date().toISOString(),
+              gauges: [
+                { lat: 6.9, lon: 101.3, status: "above_warning", observedAt: minutes(-25) },
+                { lat: 6.85, lon: 101.25, status: "normal", observedAt: minutes(-25) },
+              ],
+            },
+          }),
+    );
+    await page.route("**/api/public/reports", (route) =>
+      reports === "fail"
+        ? route.fulfill({ status: 503, json: { error: "unavailable" } })
+        : route.fulfill({
+            json: {
+              generatedAt: new Date().toISOString(),
+              tambons:
+                reports === "empty"
+                  ? []
+                  : [
+                      {
+                        tambon: BANA.code,
+                        nameTh: BANA.nameTh,
+                        nameEn: BANA.nameEn,
+                        district: BANA.code.slice(0, 4),
+                        districtTh: "เมืองปัตตานี",
+                        districtEn: "Mueang Pattani",
+                        lat: BANA.lat,
+                        lon: BANA.lon,
+                        reports: 3,
+                        people: 2,
+                        deepest: "knee",
+                        worstRoad: "motorbike_only",
+                        trend: "rising",
+                        firstAt: minutes(-200),
+                        latestAt: minutes(-40),
+                        confirmed: true,
+                      },
+                    ],
+            },
+          }),
+    );
+    await page.route("**/api/public/dam", (route) =>
+      route.fulfill({ status: 503, json: { error: "unavailable" } }),
+    );
+  }
+
+  test("sits under the hero on a quiet day, as measurements and not as a level", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await serveMonitoring(page);
+    await page.goto("/");
+    const section = page.locator('[data-monitoring="home"]');
+    await expect(section).toBeVisible();
+
+    // Under the hero, which stays the one place that says what level is in force.
+    const hero = await page.locator("[data-hero]").boundingBox();
+    const box = await section.boundingBox();
+    expect(box!.y).toBeGreaterThan(hero!.y);
+
+    // One river over its bank, in words, with its own source named.
+    const rivers = section.locator('[data-monitoring-note="gauges"]');
+    await expect(rivers).toHaveAttribute("data-monitoring-say", "active");
+    await expect(rivers).toContainText(th.monitoring.gauges.who);
+
+    // Nothing in it wears an alert hue or a level badge (safety rule 2).
+    await expect(section.locator("[data-level]")).toHaveCount(0);
+    expect(
+      await section.evaluate((el) =>
+        [...el.querySelectorAll("*")].some((e) =>
+          /alert-(normal|watch|warning|evacuate|return|stale)/.test(e.className ?? ""),
+        ),
+      ),
+    ).toBe(false);
+    await noSidewaysScroll(page);
+  });
+
+  test("waits until after the checklist at Evacuate", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [alert("evacuate")] });
+    await serveMonitoring(page);
+    await page.goto("/");
+    const section = page.locator('[data-monitoring="home"]');
+    await expect(section).toBeVisible();
+    const box = await section.boundingBox();
+    const checklist = await page.locator("[data-checklist]").boundingBox();
+    const sos = await page.locator('a[href="/sos"]').first().boundingBox();
+    expect(box!.y).toBeGreaterThan(checklist!.y);
+    expect(box!.y).toBeGreaterThan(sos!.y);
+  });
+
+  test("says the rivers could not be read, never that they are below their bank", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await serveMonitoring(page, { gauges: "fail" });
+    await page.goto("/");
+    const rivers = page.locator('[data-monitoring-note="gauges"]');
+    await expect(rivers).toBeVisible();
+    await expect(rivers).toHaveAttribute("data-monitoring-say", "unknown");
+    await expect(rivers).toContainText(th.monitoring.gauges.unknown);
+    // The quiet sentence claims every station is below its bank: it must not appear.
+    await expect(page.locator('[data-monitoring="home"]')).not.toContainText("ต่ำกว่าระดับตลิ่ง");
+    await expect(page.locator("[data-monitoring-incomplete]")).toBeVisible();
+  });
+
+  test("says residents' reports could not be loaded, never that none stand", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await serveMonitoring(page, { reports: "fail" });
+    await page.goto("/");
+    const reports = page.locator('[data-monitoring-note="reports"]');
+    await expect(reports).toBeVisible();
+    await expect(reports).toHaveAttribute("data-monitoring-say", "unknown");
+    await expect(page.locator('[data-monitoring="home"]')).not.toContainText(
+      th.monitoring.reports.quiet.slice(0, 30),
+    );
+  });
+
+  test("says nothing could be read at all, and no quiet line, when every feed fails", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await serveMonitoring(page, { gauges: "fail", reports: "fail" });
+    await page.goto("/");
+    const section = page.locator('[data-monitoring="home"]');
+    await expect(section).toBeVisible();
+    await expect(section.locator('[data-monitoring-say="allUnknown"]')).toContainText(
+      th.monitoring.allUnknown.slice(0, 30),
+    );
+    await expect(section.locator("[data-monitoring-note]")).toHaveCount(0);
+  });
+});

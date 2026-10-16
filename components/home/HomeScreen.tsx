@@ -18,6 +18,7 @@ import { MyReports } from "@/components/reports/MyReports";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
 import { SignInOffer } from "@/components/account/SignInOffer";
 import { NewToJaga } from "@/components/home/NewToJaga";
+import { HomeMonitoring } from "./HomeMonitoring";
 import { TambonRiskCard } from "./TambonRisk";
 import { HomeView } from "./HomeView";
 
@@ -71,6 +72,20 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       userAgent={ready ? navigator.userAgent : ""}
       push={<PushCard place="home" />}
       tambonRisk={(code, name) => <TambonRiskCard code={code} name={name} />}
+      /*
+       * The live measurements under the hero (17 Oct). The feeds' load states go in with them,
+       * because the section must be able to say "Jaga could not read this" - a failed request
+       * drawn as "nothing to report" would be an all-clear nobody wrote (safety rule 10).
+       */
+      monitoringNow={(args) => (
+        <HomeMonitoring
+          {...args}
+          damsState={dam.state}
+          reports={reports.data?.tambons ?? null}
+          reportsState={reports.state}
+          now={now}
+        />
+      )}
       signInOffer={<SignInOffer />}
       welcome={<NewToJaga />}
       install={<InstallCard place="home" />}

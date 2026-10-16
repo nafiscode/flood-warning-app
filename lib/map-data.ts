@@ -41,6 +41,23 @@ export type Gauge = {
 /** Answer of /api/public/gauges: the gauges alone, small enough to ask for again every few minutes. */
 export type GaugeData = { gauges: Gauge[] };
 
+/**
+ * The least of a station the counting needs: where it is, what it reads and when it last spoke.
+ * The home screen asks for this alone (`/api/public/gauges/summary`), because a phone on slow 3G
+ * should not download every station's name and bank level to be told how its own rivers stand.
+ */
+export type GaugeReading = Pick<Gauge, "lat" | "lon" | "status" | "observedAt">;
+
+/** Answer of /api/public/gauges/summary. */
+export type GaugeSummary = { generatedAt: string; gauges: GaugeReading[] };
+
+export const GAUGES_SUMMARY_URL = "/api/public/gauges/summary";
+
+export function toGaugeReading(row: Record<string, unknown>): GaugeReading {
+  const { lat, lon, status, observedAt } = toGauge(row);
+  return { lat, lon, status, observedAt };
+}
+
 /** One row of `station_status()` as the map draws it. */
 export function toGauge(row: Record<string, unknown>): Gauge {
   const num = (v: unknown) =>

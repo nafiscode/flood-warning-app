@@ -51,6 +51,7 @@ const PUBLIC_DATA_PATHS = new Set([
   "/api/public/map",
   "/api/public/hazards",
   "/api/public/gauges",
+  "/api/public/gauges/summary",
 ]);
 
 export function isPublicData(pathname: string): boolean {

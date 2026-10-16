@@ -75,6 +75,19 @@ export type HomeViewProps = {
    * ordinary day, after the checklist when somewhere of theirs is at Warning or Evacuate.
    */
   tambonRisk?: (code: string, name: string) => ReactNode;
+  /**
+   * "What the monitoring shows now" (the owner, 17 Oct): the live measurements under the hero on
+   * an ordinary day, and **after the action checklist** at Warning or Evacuate, so that nothing
+   * ever sits between a person and what to do. It is not a level and carries no alert colour:
+   * the hero above it stays the one place that says what level is in force.
+   */
+  monitoringNow?: (args: {
+    myCodes: string[];
+    myPoint: { lat: number; lon: number } | null;
+    dam: Dam | null;
+    onMyRiver: boolean;
+    damTambon: string | null;
+  }) => ReactNode;
   /** "What you get by signing in": a visitor only, and never at Warning or Evacuate. */
   signInOffer?: ReactNode;
   /** "New to Jaga?" into What Jaga can do: the first visits only, never at Warning or Evacuate. */
@@ -189,6 +202,21 @@ export function HomeView(props: HomeViewProps) {
   const riskCard =
     !loading && !choosing && home && props.tambonRisk
       ? props.tambonRisk(home.code, tambonName(locale, home))
+      : null;
+  /*
+   * The dam the section speaks about is the one this screen has already picked: the river they
+   * are on when there is a notice for it, else the figure's dam. Picked here, never in the lib.
+   */
+  const monitoringDam = damsOnMyPath[0] ?? damsNearMe[0] ?? null;
+  const monitoring =
+    !loading && !choosing && home && props.monitoringNow
+      ? props.monitoringNow({
+          myCodes,
+          myPoint: home ? { lat: home.lat, lon: home.lon } : null,
+          dam: monitoringDam?.dam ?? null,
+          onMyRiver: damsOnMyPath.length > 0,
+          damTambon: monitoringDam?.hit ? areaNameOf(monitoringDam.hit.code) : null,
+        })
       : null;
   const checklist =
     hero?.kind === "alert" ? (
@@ -323,10 +351,19 @@ export function HomeView(props: HomeViewProps) {
 
         {!tense && riskCard}
 
+        {/* An ordinary day: the measurements sit under the hero and its reports. */}
+        {!tense && monitoring}
+
         {evacuate && sos}
         {!choosing && checklist}
 
         {tense && riskCard}
+
+        {/*
+         * At Warning or Evacuate the same section waits until after the checklist (and after the
+         * SOS button, which moves up at Evacuate): what to do comes before what the rivers read.
+         */}
+        {tense && monitoring}
 
         {/* Laptop only: under the flood-risk summary (the owner, 16 Oct). */}
         <div className="hidden console:contents">{damCards}</div>

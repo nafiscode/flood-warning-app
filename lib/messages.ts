@@ -27,7 +27,14 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       "mapFeatures",
       "tambonRisk",
       "signInOffer",
+      // "What the monitoring shows now" under the hero (17 Oct), and the credit it carries for
+      // the one line of it that comes from a weather model.
+      "monitoring",
+      "attribution",
     ]),
+    // The weather widget's words for what is falling, so the monitoring section says it the same
+    // way the header's chip does. Four lines, not the whole weather page.
+    weather: { codes: (all.weather as Messages).codes! },
     // The area chooser's province list.
     map: { province: all.map!.province! },
     // "New to Jaga?": the way into What Jaga can do for a first-time visitor (A17, 16 Oct).
@@ -108,6 +115,8 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
       "attribution",
       // The rain over the person's own places, opened from a cloud (15 Oct).
       "mapRain",
+      // "What the monitoring shows now", inside the summary above the map (17 Oct).
+      "monitoring",
     ]),
     // The weather widget's words for what is falling, so the map says it the same way.
     weather: { codes: (all.weather as Messages).codes! },

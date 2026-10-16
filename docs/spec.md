@@ -101,6 +101,7 @@ The home screen is the most important screen. It must be fully usable without lo
 - Top-3 safe places (4.3).
 - Large SOS button and "Report flooding" button.
 - Hotlines: 1784 (DDPM), 1669 (medical), 191 (police), 199 (fire), plus the project SOS line (see open items).
+- **What the monitoring shows now** (the owner, 17 Oct 2026): the live measurements in plain words — river gauges against their own levels, the figures the dam publishes itself, residents' standing reports, and the forecast model's rain — each with its own time, its own scope and its own named source. It carries **no alert colour, no badge, no pill and none of the level icons**: the hero above it stays the one place that says what level is in force, because only a person issues one (safety rule 2). Under the hero on an ordinary day; **after the action checklist at Warning and Evacuate**, so nothing ever sits between a person and what to do. Each feed answers in one of three states, never two: a feed that could not be read says so, and a feed with nothing in it says what was measured, where and when, rather than that all is well (safety rule 10). Rivers are scoped by distance from the person's own area, because the public gauge feed carries a point and not a province.
 - Language switch (th / ms / en).
 
 ### 4.2 Map dashboard (main public page)
@@ -135,6 +136,12 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 **Modes:**
 - Pre-season: the risk view (hazard + safe places) is the default.
 - During an event: the live view (alerts, reports, flood extent, gauges) is the default.
+
+**Overview summary above the map** (the owner, 17 Oct 2026), on **every** screen size — until then a phone saw no overall status on this page at all until it tapped a subdistrict, and the laptop console's four readouts are drawn only there:
+- **The person's own subdistrict first**, with everything safety rule 3 requires (level, area, issuer, issue time, reason, next update, and the grey marker when it is late). It is drawn by the same component as the home screen's hero, so there is no second piece of level markup in the app. A visitor who has saved no area is told so and shown the province alone — never a level.
+- **Then the province around them:** how many subdistricts stand at each level, how many river gauges are at or over their bank, and how many residents' reports are standing, in the same scope wording the console readouts use. No alert in force is written out in full with the reason it is not an all-clear; a status that could not be loaded says so and draws no counts, because a figure of nought and a figure nobody could read are different things.
+- **Then the same "what the monitoring shows now" section as the home screen** (4.1).
+- The laptop console keeps its four readouts; the card and the strip are counted from the same pure functions, so they cannot disagree. The card sits at the top of the console's left rail rather than in a row of its own, because the page's order of blocks is the console's reading order and a phone must meet the card above the map.
 
 ### 4.3 Safe places
 - Show the top 3 ranked from the user's location or a chosen point. The ranking comes from the science pipeline (science-plan Module 2); a PostGIS function combines the stored score with distance.

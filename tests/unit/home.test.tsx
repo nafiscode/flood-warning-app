@@ -391,3 +391,51 @@ describe("toPublicAlert", () => {
     expect(toPublicAlert({ ...row, messages: { en: "only English" } })).toBeNull();
   });
 });
+
+/*
+ * "What the monitoring shows now" (the owner, 17 Oct). Two things are tested here and nowhere
+ * else: that it never comes between a person and what to do, and that it is never drawn before
+ * the screen knows whose area it is talking about.
+ */
+describe("where the live measurements sit on the home screen", () => {
+  const monitoringNow = () => <section data-monitoring="home">measurements</section>;
+  const screen = (scenario: HomeScenario) => home(scenario, { monitoringNow });
+  const at = (c: Element, selector: string) => c.querySelector(selector)!;
+
+  it("sits under the hero on an ordinary day, before what the neighbours said", () => {
+    const c = screen("normal");
+    const section = at(c, "[data-monitoring]");
+    expect(section).not.toBeNull();
+    expect(follows(at(c, "[data-hero]"), section)).toBe(true);
+    expect(follows(section, at(c, "[data-checklist]"))).toBe(true);
+  });
+
+  it("still sits under the hero at Watch: a go-bag is not an emergency", () => {
+    const c = screen("watch");
+    expect(follows(at(c, "[data-hero]"), at(c, "[data-monitoring]"))).toBe(true);
+    expect(follows(at(c, "[data-monitoring]"), at(c, "[data-checklist]"))).toBe(true);
+  });
+
+  /*
+   * The rule the owner asked for: at Warning and Evacuate the measurements wait. A reader at
+   * Evacuate must meet the level, the SOS button and the checklist before anything else.
+   */
+  it("waits until after the checklist at Warning", () => {
+    const c = screen("warning");
+    expect(follows(at(c, "[data-checklist]"), at(c, "[data-monitoring]"))).toBe(true);
+  });
+
+  it("waits until after both the SOS button and the checklist at Evacuate", () => {
+    const c = screen("evacuate");
+    const section = at(c, "[data-monitoring]");
+    expect(follows(at(c, 'a[href="/sos"]'), section)).toBe(true);
+    expect(follows(at(c, "[data-checklist]"), section)).toBe(true);
+  });
+
+  it("is not drawn while the screen is still waking, or while it asks for an area", () => {
+    const waking = home("normal", { monitoringNow, ready: false });
+    expect(waking.querySelector("[data-monitoring]")).toBeNull();
+    // Nobody has said where they are yet: there is no area for the measurements to be about.
+    expect(screen("choose").querySelector("[data-monitoring]")).toBeNull();
+  });
+});

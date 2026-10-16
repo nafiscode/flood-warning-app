@@ -703,6 +703,19 @@
         "none": "Tiada laporan",
         "window": "Masih berkuat kuasa, sehingga 72 jam"
       }
+    },
+    "summary": {
+      "title": "Keadaan semasa",
+      "mine": "Mukim anda",
+      "province": "Mukim dengan amaran berkuat kuasa · {scope}",
+      "noneInForce": "Tiada amaran berkuat kuasa di {scope}. Itu bukan bermakna tiada risiko: amaran muncul di sini hanya setelah seseorang mengeluarkannya.",
+      "statusUnknown": "Jaga tidak dapat memuatkan status amaran, jadi ia tidak dapat menyatakan apa yang berkuat kuasa.",
+      "notInService": "Jaga belum beroperasi, jadi tiada tahap diterbitkan untuk mana-mana mukim.",
+      "gaugesOver": "{count} tolok sungai mencecah atau melepasi tebing · {scope}",
+      "reports": "{count} laporan penduduk masih berkuat kuasa · {scope}",
+      "unknownFigure": "tidak dapat dimuatkan",
+      "noArea": "Anda belum memberitahu Jaga di mana anda berada, jadi ini menunjukkan seluruh kawasan liputan Jaga. Pilih mukim anda di laman utama untuk melihat tahap anda sendiri dahulu.",
+      "openArea": "Lihat amaran penuh untuk {tambon}"
     }
   },
   "attribution": {
@@ -4955,6 +4968,59 @@
           "reach": "amaran keluar, permintaan masuk, dan satu salinan disimpan di telefon untuk waktu liputan hilang"
         }
       }
+    }
+  },
+  "monitoring": {
+    "title": "Bacaan pemantauan terkini",
+    "caption": "Semua ini ialah nilai yang diukur, setiap satu dengan waktunya: tolok sungai, angka yang diterbitkan oleh empangan sendiri, laporan daripada penduduk, dan model cuaca. Ini bukan amaran daripada Jaga. Hanya orang yang mengeluarkan amaran, dan tahap yang berkuat kuasa ialah tahap di atas.",
+    "asOf": "Bacaan terbaharu {time}",
+    "age": "{minutes} minit lalu",
+    "hours": "{hours} jam lalu",
+    "someUnknown": "Sebahagian daripadanya tidak dapat dimuatkan, jadi senarai ini belum lengkap.",
+    "allUnknown": "Peranti ini tidak dapat memuatkan bacaan pemantauan sama sekali. Itu tidak bermakna tiada apa-apa berlaku. Ikut amaran rasmi; jika darurat hubungi 1784.",
+    "scope": {
+      "nearMe": "dekat kawasan anda",
+      "myAreas": "kawasan anda",
+      "province": "wilayah yang dipilih",
+      "fourProvinces": "keempat-empat wilayah",
+      "myPlace": "kawasan anda"
+    },
+    "gauges": {
+      "who": "Diukur oleh pengendali stesen, dibaca melalui ThaiWater",
+      "over": "{count} daripada {total} tolok sungai mencecah atau melepasi tebing · {scope}",
+      "near": "{count} tolok sungai hampir dengan tebing · {scope}",
+      "overNear": "{over} tolok sungai mencecah atau melepasi tebing, {near} hampir dengannya · {scope}",
+      "quiet": "{reporting} daripada {total} tolok sungai menghantar bacaan, dan semuanya di bawah tebing · {scope}",
+      "noneReporting": "Tiada tolok sungai menghantar bacaan, jadi sungai di {scope} tidak diukur sekarang",
+      "unknown": "Jaga tidak dapat membaca tolok sungai",
+      "silent": "{count} tolok tidak menghantar apa-apa selama enam jam atau lebih"
+    },
+    "dam": {
+      "who": "Angka empangan sendiri, bukan amaran",
+      "theDam": "Empangan",
+      "releasing": "{dam} sedang melepaskan {value} m³/s",
+      "spilling": "{dam} mengalirkan {value} m³/s melalui alur limpah",
+      "watch": "{dam} menerbitkan angka yang perlu diperhatikan: {percent}% penuh, {value} m³/s keluar",
+      "awaiting": "Satu bacaan {dam} memenuhi syarat pelepasan; Jaga menunggu bacaan seterusnya sebelum berkata lebih",
+      "quiet": "{dam} menerbitkan {percent}% penuh dan {value} m³/s keluar",
+      "unknown": "{dam} belum menerbitkan angka yang boleh dibaca Jaga",
+      "stale": "angka empangan lewat",
+      "onMyRiver": "di sungai yang melalui {tambon}"
+    },
+    "reports": {
+      "who": "Dilaporkan oleh penduduk; Jaga belum menyemaknya",
+      "here": "{reports} laporan penduduk masih berkuat kuasa di mukim anda sendiri",
+      "near": "{reports} laporan penduduk masih berkuat kuasa di {tambons} mukim · {scope}",
+      "quiet": "Tiada laporan penduduk berkuat kuasa di {scope} sekarang. Satu laporan berkuat kuasa sehingga 72 jam, jadi ini menyatakan apa yang orang beritahu Jaga, bukan di mana air berada.",
+      "unknown": "Jaga tidak dapat memuatkan laporan penduduk",
+      "confirmed": "{count} mukim yang beberapa penduduk berbeza melaporkan perkara sama"
+    },
+    "rain": {
+      "who": "Daripada model ramalan, bukan ukuran di rumah anda",
+      "now": "{what} di {place} dalam model",
+      "dry": "Model tidak menunjukkan hujan di {place} pada jam ini",
+      "unknown": "Belum ada bacaan cuaca disimpan pada peranti ini",
+      "stale": "bacaan ini lebih tiga jam lama"
     }
   }
 }

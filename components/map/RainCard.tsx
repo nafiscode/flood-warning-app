@@ -4,7 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { OpenMeteoAttribution } from "@/components/OpenMeteoAttribution";
 import type { RainKind } from "@/lib/place-rain";
 import { useFetched } from "@/lib/use-public";
-import { roundCoord, weatherGroup, type Weather, type WeatherGroup } from "@/lib/weather";
+import { DRY_MM, roundCoord, weatherGroup, type Weather, type WeatherGroup } from "@/lib/weather";
 import { MoreButton } from "./MapPeek";
 
 /** The weather widget's word for each kind of cloud (lib/place-rain.ts follows the same groups). */
@@ -21,8 +21,9 @@ export const RAIN_GROUP: Record<RainKind, WeatherGroup> = {
 
 /** Hours shown under "the next hours". */
 export const RAIN_HOURS = 6;
-/** Below this an hour is read as dry: a model's trace of rain is not rain. */
-export const DRY_MM = 0.1;
+
+/** Kept here as well, where it was first written, so older imports still find it. */
+export { DRY_MM };
 
 const BANGKOK_HOUR = {
   hour: "2-digit",

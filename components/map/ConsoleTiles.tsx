@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { AlertBadge } from "@/components/alerts/AlertBadge";
+import { LevelCounts } from "@/components/alerts/LevelCounts";
 import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
 import {
@@ -130,20 +130,8 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
     if (tally.length === 0) {
       return <Figure>{status.inService ? t("alerts.none") : tHome("notInService.title")}</Figure>;
     }
-    /*
-     * The level is drawn and written as well as coloured - the badge carries its own icon and
-     * word (safety rule 3) - so a count never rests on a colour a reader may not see.
-     */
-    return (
-      <ul className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        {tally.map(({ level, tambons }) => (
-          <li key={level} className="flex items-center gap-1.5" data-console-level={level}>
-            <AlertBadge level={level} />
-            <span className="text-h3 font-bold text-jaga-ink">{tambons}</span>
-          </li>
-        ))}
-      </ul>
-    );
+    // Drawn by LevelCounts, which the summary above the map shares, so the two cannot disagree.
+    return <LevelCounts tally={tally} />;
   };
 
   const gaugeFigures = () => {

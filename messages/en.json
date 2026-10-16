@@ -703,6 +703,19 @@
         "none": "No report stands",
         "window": "Standing, up to 72 hours"
       }
+    },
+    "summary": {
+      "title": "Where things stand",
+      "mine": "Your subdistrict",
+      "province": "Subdistricts with an alert in force · {scope}",
+      "noneInForce": "No alert is in force in {scope}. That is not the same as no risk: an alert appears here only once a person issues one.",
+      "statusUnknown": "Jaga could not load the alert status, so it cannot say what is in force.",
+      "notInService": "Jaga is not in service yet, so no level is published for any subdistrict.",
+      "gaugesOver": "{count} river gauges at or over their bank · {scope}",
+      "reports": "{count} standing reports from residents · {scope}",
+      "unknownFigure": "could not be loaded",
+      "noArea": "You have not told Jaga where you are, so this shows the whole area Jaga covers. Choose your subdistrict on the home screen to see your own level first.",
+      "openArea": "See the whole alert for {tambon}"
     }
   },
   "attribution": {
@@ -4955,6 +4968,59 @@
           "reach": "alerts out, requests in, and a copy kept on the phone for when the signal goes"
         }
       }
+    }
+  },
+  "monitoring": {
+    "title": "What the monitoring shows now",
+    "caption": "These are measurements, each with the time it was taken: river gauges, the figures the dam publishes itself, reports from residents, and a weather model. They are not an alert from Jaga. Only people issue alerts, and the only level in force is the one above.",
+    "asOf": "Newest measurement {time}",
+    "age": "{minutes} min ago",
+    "hours": "{hours} h ago",
+    "someUnknown": "Some of these could not be loaded, so this list is not complete.",
+    "allUnknown": "Jaga could not load any of the live measurements on this device. That does not mean nothing is happening. Follow official warnings; in an emergency call 1784.",
+    "scope": {
+      "nearMe": "near you",
+      "myAreas": "your areas",
+      "province": "the province shown",
+      "fourProvinces": "all four provinces",
+      "myPlace": "your place"
+    },
+    "gauges": {
+      "who": "Measured by the station operators, read through ThaiWater",
+      "over": "{count} of {total} river gauges read at or over their bank · {scope}",
+      "near": "{count} river gauges read near their bank · {scope}",
+      "overNear": "{over} river gauges at or over their bank, {near} near it · {scope}",
+      "quiet": "{reporting} of {total} river gauges are reporting, and all of them read below their bank · {scope}",
+      "noneReporting": "No river gauge is reporting, so the rivers in {scope} are not being measured right now",
+      "unknown": "Jaga could not read the river gauges",
+      "silent": "{count} gauges have sent nothing for six hours or more"
+    },
+    "dam": {
+      "who": "The dam's own figures, not an alert",
+      "theDam": "The dam",
+      "releasing": "{dam} is releasing {value} m³/s",
+      "spilling": "{dam} is passing {value} m³/s over its spillway",
+      "watch": "{dam} published figures worth watching: {percent}% full, {value} m³/s leaving",
+      "awaiting": "One reading from {dam} met a release rule; Jaga is waiting for the next reading before saying more",
+      "quiet": "{dam} published {percent}% full and {value} m³/s leaving",
+      "unknown": "{dam} has published no figures Jaga can read",
+      "stale": "the dam's figures are late",
+      "onMyRiver": "on the river that runs through {tambon}"
+    },
+    "reports": {
+      "who": "Said by residents; Jaga has not checked them",
+      "here": "{reports} standing reports from residents in your own subdistrict",
+      "near": "{reports} standing reports from residents in {tambons} subdistricts · {scope}",
+      "quiet": "No resident report stands in {scope} right now. A report stands for up to 72 hours, so this says what people have told Jaga, not where the water is.",
+      "unknown": "Jaga could not load residents' reports",
+      "confirmed": "{count} subdistricts where several different residents agree"
+    },
+    "rain": {
+      "who": "From a forecast model, not a measurement at your house",
+      "now": "{what} at {place} in the model",
+      "dry": "The model has no rain at {place} in this hour",
+      "unknown": "No weather reading is kept on this device yet",
+      "stale": "the reading is more than three hours old"
     }
   }
 }

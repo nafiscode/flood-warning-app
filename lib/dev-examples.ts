@@ -4,9 +4,11 @@
  * the screens read naturally; the alerts, places, reports and gauges are invented.
  */
 import type { Area, AreaDirectory } from "@/lib/area";
+import type { GaugeReading } from "@/lib/map-data";
+import { monitoring, type Monitoring } from "@/lib/monitoring";
 import type { Hazard } from "@/lib/hazards";
 import type { MapData } from "@/lib/map-data";
-import type { DamDaily, DamSignal } from "@/lib/dam";
+import type { Dam, DamDaily, DamSignal } from "@/lib/dam";
 import type { DamDay } from "@/lib/dam-chart";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces, SafePlace } from "@/lib/places";
@@ -754,3 +756,60 @@ export const EXAMPLE_MY_REPORTS: import("@/lib/flood-reports").MyReport[] = [
     state: "standing",
   },
 ];
+
+/*
+ * "What the monitoring shows now" for the review page (17 Oct 2026). Three states, because all
+ * three have to be judged by eye: something happening, a quiet day, and a device that could read
+ * nothing at all. The last one matters most - it is the one a reader must never mistake for
+ * calm (safety rule 10).
+ */
+export type MonitoringExample = "active" | "quiet" | "unknown";
+
+/** A few stations around Bana, so the counting and the distance filter have something to chew. */
+export const EXAMPLE_GAUGE_READINGS: GaugeReading[] = [
+  { lat: BANA.lat + 0.05, lon: BANA.lon + 0.04, status: "above_warning", observedAt: ago(45) },
+  { lat: BANA.lat - 0.08, lon: BANA.lon + 0.11, status: "above_watch", observedAt: ago(50) },
+  { lat: BANA.lat + 0.12, lon: BANA.lon - 0.06, status: "normal", observedAt: ago(40) },
+  { lat: BANA.lat - 0.15, lon: BANA.lon - 0.12, status: "normal", observedAt: ago(55) },
+  { lat: BANA.lat + 0.2, lon: BANA.lon + 0.2, status: "no_recent_data", observedAt: ago(600) },
+];
+
+/** The same stations with nothing over or near its bank: an ordinary day, still measured. */
+const QUIET_GAUGE_READINGS: GaugeReading[] = EXAMPLE_GAUGE_READINGS.map((g) =>
+  g.status === "no_recent_data" ? g : { ...g, status: "normal" },
+);
+
+export function exampleMonitoring(which: MonitoringExample, dam: Dam | null): Monitoring {
+  if (which === "unknown") {
+    return monitoring({
+      now: EXAMPLE_NOW,
+      myCodes: [BANA.code],
+      myPoint: { lat: BANA.lat, lon: BANA.lon },
+      narrowed: false,
+      gauges: { state: "unavailable", data: null },
+      dam: { state: "unavailable", data: null },
+      onMyRiver: false,
+      reports: { state: "unavailable", data: null },
+      rain: { state: "unavailable", data: null },
+    });
+  }
+  const busy = which === "active";
+  return monitoring({
+    now: EXAMPLE_NOW,
+    myCodes: [BANA.code],
+    myPoint: { lat: BANA.lat, lon: BANA.lon },
+    narrowed: false,
+    gauges: { state: "ok", data: busy ? EXAMPLE_GAUGE_READINGS : QUIET_GAUGE_READINGS },
+    dam: { state: "ok", data: dam },
+    onMyRiver: busy,
+    reports: { state: "ok", data: busy ? EXAMPLE_REPORTS_NEAR : [] },
+    rain: {
+      state: "ok",
+      data: {
+        group: busy ? "rainHeavy" : "partlyCloudy",
+        rainMm: busy ? 12 : 0,
+        at: ago(20),
+      },
+    },
+  });
+}

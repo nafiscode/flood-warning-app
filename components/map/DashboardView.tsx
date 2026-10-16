@@ -29,6 +29,10 @@ import {
 } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { DamCard, DamLegendKeys, DamLegendRow, DamNotice } from "@/components/map/Dam";
+import { MapSummary } from "@/components/map/MapSummary";
+import { MonitoringNow } from "@/components/monitoring/MonitoringNow";
+import { monitoring } from "@/lib/monitoring";
+import { useKeptRain } from "@/lib/use-rain";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
@@ -37,6 +41,7 @@ import { boundsAround, darkNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } 
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
+import { gaugeTally, levelTally, reportTally } from "@/lib/map-console";
 import { localName } from "@/lib/places";
 import { isAdminRoleName } from "@/lib/roles";
 import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
@@ -452,6 +457,11 @@ export function DashboardView(props: DashboardViewProps) {
       hotline: "1784",
     },
   ];
+  /*
+   * The forecast model's rain for the summary's monitoring section, from the reading this
+   * device already keeps for the header's chip: nothing is asked for here (lib/use-rain).
+   */
+  const rain = useKeptRain();
   const hazard = hazards.find((h) => h.code === hazardCode) ?? hazards[0]!;
   // Pre-season the risk view opens first; with any alert in force, the live view (spec 4.2).
   const mode: MapMode = chosenMode ?? (hasActiveAlerts(status) ? "live" : "risk");
@@ -965,6 +975,51 @@ export function DashboardView(props: DashboardViewProps) {
       ? null
       : pickName(locale, provinceEntry.nameTh, provinceEntry.nameEn);
 
+  /*
+   * "Where things stand", above the map at every screen size (the owner, 17 Oct 2026): the
+   * person's own subdistrict first, then the province around it. A phone saw no overall status
+   * on this page at all until it tapped a subdistrict.
+   *
+   * Every figure is counted from the same pure functions the laptop's readout strip uses, so
+   * the card and the strip can never disagree, and a feed that could not be read is passed as
+   * null rather than nought - the card words those differently (safety rule 10).
+   */
+  const myTambon = props.area?.code ?? (props.me?.signedIn ? props.me.home?.code : null) ?? null;
+  /** Opens a subdistrict in the map's own panel, named as the panel needs it. */
+  const openTambon = (code: string) => {
+    const entry = directory?.tambons.find((x) => x.code === code);
+    setSelection({
+      kind: "tambon",
+      code,
+      nameTh: entry?.nameTh ?? code,
+      nameEn: entry?.nameEn ?? code,
+    });
+    revealPanel();
+  };
+  const summaryDam = damsOnMyPath[0]?.dam ?? mainDam(dams) ?? null;
+  const summaryMonitoring = (
+    <MonitoringNow
+      summary={monitoring({
+        now,
+        myCodes: myTambons,
+        myPoint: props.area ? { lat: props.area.lat, lon: props.area.lon } : null,
+        narrowed: chosenProvince !== null,
+        // The map has the whole station list already; no extra request for the card.
+        gauges: { state: data?.gauges ? "ok" : props.dataState, data: data?.gauges ?? null },
+        dam: { state: props.dams ? "ok" : "loading", data: summaryDam },
+        onMyRiver: damsOnMyPath.length > 0,
+        reports: { state: props.reports ? "ok" : "loading", data: props.reports ?? null },
+        rain: { state: rain.state, data: rain.data },
+      })}
+      scopeWords={{ province: scopeWord, myPlace: rain.place?.name ?? null }}
+      damName={summaryDam ? localName(summaryDam.name, locale) : null}
+      damTambon={damsOnMyPath[0] ? tambonName(damsOnMyPath[0].hit.code) : null}
+      rainPlace={rain.place?.name ?? null}
+      time={time}
+      place="map"
+    />
+  );
+
   return (
     <div
       className="flex flex-col gap-4"
@@ -1148,6 +1203,33 @@ export function DashboardView(props: DashboardViewProps) {
               {/* The hazard comes first, then the province, then what the map shows for it (owner,
                   15 Oct). On the console the same four are the left rail. */}
               <div className="contents" data-console-area="rail" data-console-rail="true">
+                {/*
+                 * The overview summary (the owner, 17 Oct), first in the rail.
+                 *
+                 * It sits here rather than in a row of its own because **the page's order of
+                 * blocks is the console's reading order**: below the breakpoint every
+                 * `data-console-area` is `display: contents`, so a phone meets this card
+                 * straight after the province selector and before the map - which is the gap
+                 * the owner named, and which a row under the map could not fill. A full-width
+                 * row of its own would also take its height off the map, and the map row has
+                 * only 18rem to give.
+                 */}
+                <MapSummary
+                  hero={myTambon ? heroStatusFor(status, myTambon, fresh) : null}
+                  myTambonCode={myTambon}
+                  myTambonName={myTambon ? tambonName(myTambon) : null}
+                  levels={levelTally(alerts.map(({ alert }) => alert))}
+                  statusKnown={!!status && !(failed && !fresh)}
+                  inService={status?.inService ?? false}
+                  gaugesOver={data?.gauges ? gaugeTally(data.gauges).over : null}
+                  reportsTotal={props.reports ? reportTally(props.reports).reports : null}
+                  provinceWord={scopeWord}
+                  allWord={t("console.scope.all")}
+                  monitoring={summaryMonitoring}
+                  now={now}
+                  onOpenMyArea={myTambon ? () => openTambon(myTambon) : undefined}
+                />
+
                 {/* The sea's own report, for fishermen, right under the chips while the sea is
                     shown (the owner, 15 Oct: the switches under the map are gone, the chips do
                     that). */}

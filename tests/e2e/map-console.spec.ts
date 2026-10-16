@@ -216,8 +216,12 @@ test.describe("the live map on a laptop", () => {
     for (const tile of ["alerts", "gauges", "dam", "reports"]) {
       await expect(page.locator(`[data-console-tile="${tile}"]`)).toBeVisible();
     }
-    // One tambon at Warning: the badge carries the word, and the count is beside it.
-    const warning = page.locator('[data-console-level="warning"]');
+    /*
+     * One tambon at Warning: the badge carries the word, and the count is beside it. Scoped to
+     * the alerts tile, because the summary above the map counts the same levels with the same
+     * component (17 Oct) - which is the point of sharing it, and makes a page-wide locator two.
+     */
+    const warning = page.locator('[data-console-tile="alerts"] [data-console-level="warning"]');
     await expect(warning).toContainText(th.alert.level.warning);
     await expect(warning).toContainText("1");
     // A measurement is never dressed as an alert level (safety rule 2).
@@ -355,5 +359,134 @@ test.describe("the live map on a phone is untouched", () => {
     // Straight down the page, one block after another, and all in the same column.
     expect([...tops].sort((a, b) => a - b)).toEqual(tops);
     expect(new Set(lefts).size).toBe(1);
+  });
+});
+
+/*
+ * The overview summary above the map (the owner, 17 Oct 2026). Its whole reason for existing is
+ * the phone: until now a 360 px screen saw no overall status on this page at all until it tapped
+ * a subdistrict. So it is checked on a phone first, and then on a laptop for agreement with the
+ * readout strip beside it.
+ */
+test.describe("where things stand, above the map", () => {
+  test.use({ serviceWorkers: "block" });
+
+  test("gives a phone its own level and the province, above the map", async ({ page }) => {
+    await serve(page);
+    await serveWeather(page);
+    await page.goto("/th/map");
+    const summary = page.locator("[data-map-summary]");
+    await expect(summary).toBeVisible();
+
+    // Above the map, which is the gap it was added to fill.
+    const card = await summary.boundingBox();
+    const frame = await page.locator("[data-map-frame]").boundingBox();
+    expect(card!.y).toBeLessThan(frame!.y);
+
+    // Their own subdistrict first, with the level and everything it must carry (safety rule 3).
+    const mine = summary.locator('[data-map-summary-part="area"]');
+    await expect(mine).toContainText(BANA.nameTh);
+    await expect(mine.locator('[data-level="warning"]')).toBeVisible();
+    await expect(mine).toContainText(th.home.nextUpdate);
+
+    // Then the province around them.
+    await expect(summary.locator('[data-console-level="warning"]')).toContainText("1");
+
+    // And no horizontal scroll at 360 px.
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+  });
+
+  test("tells a visitor with no area saved, and shows them no level", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    const summary = page.locator("[data-map-summary]");
+    await expect(summary).toBeVisible();
+    await expect(summary.locator("[data-map-summary-noarea]")).toContainText(
+      th.map.summary.noArea.slice(0, 25),
+    );
+    // Nobody has said where they are: there is nothing to grade, so no level is drawn.
+    await expect(summary.locator('[data-map-summary-part="area"] [data-level]')).toHaveCount(0);
+  });
+
+  test("says what the monitoring shows, as measurements and not as a level", async ({ page }) => {
+    await serve(page);
+    await serveWeather(page);
+    await page.goto("/th/map");
+    const section = page.locator('[data-monitoring="map"]');
+    await expect(section).toBeVisible();
+
+    // One gauge over its bank, of the two served: a measurement, in words.
+    await expect(section.locator('[data-monitoring-note="gauges"]')).toContainText(
+      th.monitoring.gauges.who,
+    );
+    // Nothing in the section wears an alert hue, a badge or a pill (safety rule 2).
+    await expect(section.locator("[data-level]")).toHaveCount(0);
+    await expect(section.locator("[data-dam-chip]")).toHaveCount(0);
+    expect(
+      await section.evaluate((el) =>
+        [...el.querySelectorAll("*")].some((e) =>
+          /alert-(normal|watch|warning|evacuate|return|stale)/.test(e.className ?? ""),
+        ),
+      ),
+    ).toBe(false);
+    // It says whose figures these are, and that a level comes only from a person.
+    await expect(section).toContainText(th.monitoring.caption.slice(0, 30));
+  });
+
+  /*
+   * The rule the whole feature rests on: a feed that could not be read must say so. A reader
+   * who is told "no resident report stands" when the request failed has been given an all-clear
+   * nobody wrote (safety rule 10).
+   */
+  test("says a feed could not be read, never that there is nothing to report", async ({ page }) => {
+    await serve(page);
+    await serveWeather(page);
+    await page.route("**/api/public/reports", (route) =>
+      route.fulfill({ status: 503, json: { error: "unavailable" } }),
+    );
+    await page.goto("/th/map");
+    const reports = page.locator('[data-monitoring-note="reports"]');
+    await expect(reports).toBeVisible();
+    await expect(reports).toHaveAttribute("data-monitoring-say", "unknown");
+    await expect(reports).toContainText(th.monitoring.reports.unknown);
+    // And not the quiet sentence, which would read as "the water has gone".
+    await expect(page.locator('[data-monitoring="map"]')).not.toContainText(
+      th.monitoring.reports.quiet.slice(0, 30),
+    );
+    // The section also warns that the list is short of something.
+    await expect(page.locator("[data-monitoring-incomplete]")).toBeVisible();
+  });
+
+  test.describe("on a laptop", () => {
+    test.use({
+      viewport: { width: 1440, height: 900 },
+      isMobile: false,
+      hasTouch: false,
+      deviceScaleFactor: 1,
+    });
+
+    test("agrees with the readout strip beside it, and leaves the map its height", async ({
+      page,
+    }) => {
+      await serve(page);
+      await serveWeather(page);
+      await page.goto("/th/map");
+      await expect(page.locator("[data-map-summary]")).toBeVisible();
+      await expect(page.locator("[data-console-tiles]")).toBeVisible();
+
+      // Both count the same warning, because both count it with the same function.
+      await expect(
+        page.locator('[data-map-summary] [data-console-level="warning"]'),
+      ).toContainText("1");
+      await expect(
+        page.locator('[data-console-tile="alerts"] [data-console-level="warning"]'),
+      ).toContainText("1");
+
+      // The card lives in the rail, which scrolls by itself, so the map keeps its height.
+      const frame = await page.locator("[data-map-frame]").boundingBox();
+      expect(frame!.height).toBeGreaterThan(280);
+    });
   });
 });

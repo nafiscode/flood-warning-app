@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { coarse } from "@/lib/area";
+import { whenIdle } from "@/lib/idle";
 import { withoutPhones, type MyPlaces } from "@/lib/me";
 import { readStored, useStored, writeStored } from "@/lib/phone-store";
 import type { GaugeData } from "@/lib/map-data";
@@ -201,11 +202,22 @@ export function useNearbyPlaces(point: { lat: number; lon: number } | null): {
  * `servedAt` is when the server made the answer (its Date header): without signal the service
  * worker hands back the copy it kept, Date and all, so this says how old that copy is (A9).
  */
-export function useFetched<T>(url: string | null): {
+export function useFetched<T>(
+  url: string | null,
+  options: {
+    /**
+     * Hold the request until the page is quiet. For a background figure only - the hero, the
+     * checklist and the SOS button must never wait behind one on a slow phone. Off by default,
+     * so nothing that was asked for at once now arrives later.
+     */
+    afterIdle?: boolean;
+  } = {},
+): {
   data: T | null;
   state: LoadState;
   servedAt: number | null;
 } {
+  const afterIdle = options.afterIdle ?? false;
   const [result, setResult] = useState<{
     url: string;
     data: T | null;
@@ -214,27 +226,30 @@ export function useFetched<T>(url: string | null): {
   useEffect(() => {
     if (!url) return;
     let cancelled = false;
-    fetch(url, { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error(`${url}: ${response.status}`);
-        const date = Date.parse(response.headers.get("date") ?? "");
-        return {
-          data: (await response.json()) as T,
-          servedAt: Number.isFinite(date) ? date : null,
-        };
-      })
-      .then(
-        ({ data, servedAt }) => {
-          if (!cancelled) setResult({ url, data, servedAt });
-        },
-        () => {
-          if (!cancelled) setResult({ url, data: null, servedAt: null });
-        },
-      );
+    const ask = () =>
+      fetch(url, { cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error(`${url}: ${response.status}`);
+          const date = Date.parse(response.headers.get("date") ?? "");
+          return {
+            data: (await response.json()) as T,
+            servedAt: Number.isFinite(date) ? date : null,
+          };
+        })
+        .then(
+          ({ data, servedAt }) => {
+            if (!cancelled) setResult({ url, data, servedAt });
+          },
+          () => {
+            if (!cancelled) setResult({ url, data: null, servedAt: null });
+          },
+        );
+    const cancelIdle = afterIdle ? whenIdle(ask) : (ask(), () => {});
     return () => {
       cancelled = true;
+      cancelIdle();
     };
-  }, [url]);
+  }, [url, afterIdle]);
   if (!url || result?.url !== url) return { data: null, state: "loading", servedAt: null };
   return {
     data: result.data,

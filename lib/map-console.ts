@@ -3,7 +3,7 @@ import { ALERT_LEVELS, brand, darkBrand, type AlertLevel } from "@/lib/brand/tok
 import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
 import { gaugeLook, type GaugeLook } from "@/lib/gauge-marks";
-import type { Gauge } from "@/lib/map-data";
+import type { GaugeReading } from "@/lib/map-data";
 import type { PublicAlert } from "@/lib/public-status";
 
 /**
@@ -56,7 +56,7 @@ export type GaugeTally = {
   newestAt: string | null;
 };
 
-export function gaugeTally(gauges: readonly Gauge[]): GaugeTally {
+export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
   const looks = gauges.map((g): GaugeLook => gaugeLook(g.status));
   const count = (look: GaugeLook) => looks.filter((l) => l === look).length;
   return {
