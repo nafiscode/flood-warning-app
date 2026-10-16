@@ -544,7 +544,7 @@ Spec 4.10. A second kind of request beside the rescue SOS, for people who are sa
 
 ### A15: Ratings, feedback and the public comments page (after launch)
 
-Added 15 Oct 2026 (owner's request); the page of its own, public comments and public figures added 16 Oct 2026 (owner).
+Added 15 Oct 2026 (owner's request); the page of its own, public comments and public figures added 16 Oct 2026 (owner). **The owner approved the page on 16 Oct 2026** (“nice love this, save for A15”) from a drawing of the phone and laptop screens and the approval queue: the four-step form, both chip lists, the approval queue and the published counts are settled, so build what section 17 describes rather than re-proposing a shape. Open when it is built: the Thai and Malay wording (Thai to the owner's reviewer), and whether approved comments also appear on About.
 ```text
 Read docs/spec.md sections 17 and 9, and CLAUDE.md safety rules 1, 5 and 9.
 
