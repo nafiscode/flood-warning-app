@@ -29,6 +29,12 @@ export type TeamMember = {
   /** The last four digits, or null when no number is on file. */
   phoneLast4: string | null;
   hasPhone: boolean;
+  /**
+   * An account exists for this address. Without one there is nothing to sign in to: the Auth
+   * admin API is the only thing that opens an account, and its key is not on the live site, so
+   * somebody added from jagaapp.org waits for `npm run admin:invite` on the laptop.
+   */
+  hasAccount: boolean;
   /** Their LINE account is known, so Jaga can send them their way in. */
   lineReady: boolean;
   lineSentAt: string | null;
@@ -71,6 +77,7 @@ export function toTeamMember(row: Record<string, unknown>): TeamMember {
     status: status(row.status),
     phoneLast4: typeof row.phone_last4 === "string" ? row.phone_last4 : null,
     hasPhone: row.has_phone === true,
+    hasAccount: row.has_account === true,
     lineReady: row.line_ready === true,
     lineSentAt: typeof row.line_sent_at === "string" ? row.line_sent_at : null,
     createdAt: typeof row.created_at === "string" ? row.created_at : "",
@@ -103,6 +110,11 @@ export function waiting(members: TeamMember[]): TeamMember[] {
 /** How many admins have no phone number on file. The page says so: the number is mandatory. */
 export function missingPhones(members: TeamMember[]): number {
   return members.filter((m) => m.status === "active" && !m.hasPhone).length;
+}
+
+/** Those who cannot sign in yet because no account has been opened for their address. */
+export function missingAccounts(members: TeamMember[]): TeamMember[] {
+  return members.filter((m) => m.status !== "revoked" && !m.hasAccount);
 }
 
 /** "••••1234", or null when there is nothing on file. */

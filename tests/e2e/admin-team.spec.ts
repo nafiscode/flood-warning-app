@@ -36,7 +36,10 @@ const url = envValue("NEXT_PUBLIC_SUPABASE_URL");
 const secret = envValue("SUPABASE_SECRET_KEY");
 const dbUrl = envValue("SUPABASE_DB_URL");
 const run = randomUUID().slice(0, 8);
+// Typed the way a Thai person types it; stored and shown as +66..., which is what somebody
+// reading the page from another country can actually dial.
 const PHONE = "0891234567";
+const PHONE_STORED = "+66891234567";
 const emails = {
   superAdmin: `e2e-team-super-${run}@test.invalid`,
   member: `e2e-team-member-${run}@test.invalid`,
@@ -73,10 +76,10 @@ async function signIn(page: Page, email: string) {
 
 test.beforeAll(async () => {
   const superId = await createAccount(emails.superAdmin);
-  await sql("update public.profiles set role = 'super_admin', display_name = $2 where user_id = $1", [
-    superId,
-    `E2E team super ${run}`,
-  ]);
+  await sql(
+    "update public.profiles set role = 'super_admin', display_name = $2 where user_id = $1",
+    [superId, `E2E team super ${run}`],
+  );
   const plain = await createAccount(emails.plain);
   await sql("update public.profiles set role = 'admin', display_name = $2 where user_id = $1", [
     plain,
@@ -89,16 +92,24 @@ test.beforeAll(async () => {
   ]);
 });
 
+/**
+ * Everything these tests made, removed — and anything an interrupted earlier run stranded.
+ *
+ * This is not tidiness. A run that stops between `beforeAll` and here leaves a test account
+ * holding **super_admin** on the project the live site reads: exactly what happened on 15 Oct
+ * 2026 and was found nine days before go-live. So the sweep is by address pattern, not by
+ * this run's ids, and the invitation rows go first because `admin_invitations.invited_by` is
+ * `on delete no action` and will otherwise refuse the delete.
+ */
 test.afterAll(async () => {
-  const users = await sql("select id from auth.users where email = any($1)", [
-    Object.values(emails),
-  ]);
-  const ids = users.map((u) => u.id as string);
-  await sql("delete from public.admin_members where email = any($1)", [Object.values(emails)]);
-  await sql("delete from public.admin_invitations where email_or_phone = any($1)", [
-    Object.values(emails),
-  ]);
-  for (const id of ids) await admin().auth.admin.deleteUser(id);
+  const mine = "e2e-team-%@test.invalid";
+  const stale = await sql("select id from auth.users where email ilike $1", [mine]);
+  await sql("delete from public.admin_members where email ilike $1", [mine]);
+  await sql("delete from public.admin_invitations where email_or_phone ilike $1", [mine]);
+  for (const u of stale) {
+    await sql("delete from public.admin_invitations where invited_by = $1", [u.id as string]);
+    await admin().auth.admin.deleteUser(u.id as string);
+  }
 });
 
 test("the team page belongs to the super admin; an ordinary admin does not have it", async ({
@@ -135,14 +146,45 @@ test("the super admin adds somebody with a duty and a phone number, which stays 
   const [member] = await sql("select id from public.admin_members where email = $1", [
     emails.member,
   ]);
+  // An account exists for this address (beforeAll opened one), so the row must not carry the
+  // "no account yet" warning: that notice only earns its place when they truly cannot sign in.
+  await expect(page.locator(`[data-admin-noaccount="${member!.id}"]`)).toHaveCount(0);
   await row.locator(`[data-admin-reveal="${member!.id}"]`).click();
-  await expect(page.locator(`[data-admin-phone="${member!.id}"]`)).toContainText("66891234567");
+  await expect(page.locator(`[data-admin-phone="${member!.id}"]`)).toContainText(PHONE_STORED);
   // The look is written down (safety rule 5).
   const log = await sql(
     "select 1 from public.audit_log where action = 'reveal_admin_phone' and entity_id = $1",
     [member!.id],
   );
   expect(log).toHaveLength(1);
+});
+
+test("an address with no account is called out, because they cannot sign in yet", async ({
+  page,
+}) => {
+  const stranger = `e2e-team-none-${run}@test.invalid`;
+  await signIn(page, emails.superAdmin);
+  await page.goto("/admin/members");
+  await page.locator("#new-name").fill(`E2E stranger ${run}`);
+  await page.locator("#new-email").fill(stranger);
+  await page.locator("#new-phone").fill("0890000000");
+  await page.locator("#new-duty").fill(th.admin.members.duties.moderation);
+  await page.getByRole("button", { name: th.admin.members.add }).click();
+
+  // On this laptop the secret key is present, so the account is opened and nothing is flagged.
+  // The warning below is what the live site shows instead, where the key is deliberately absent.
+  const [added] = await sql("select id from public.admin_members where email = $1", [stranger]);
+  const [account] = await sql("select 1 from auth.users where lower(email) = $1", [stranger]);
+  expect(Boolean(account)).toBe(true);
+  await expect(page.locator(`[data-admin-noaccount="${added!.id}"]`)).toHaveCount(0);
+
+  // Take the account away and the page must say so rather than look finished.
+  await sql("delete from auth.users where lower(email) = $1", [stranger]);
+  await page.reload();
+  await expect(page.locator(`[data-admin-noaccount="${added!.id}"]`)).toBeVisible();
+  await expect(page.locator("[data-admin-noaccounts]")).toBeVisible();
+  await sql("delete from public.admin_members where email = $1", [stranger]);
+  await sql("delete from public.admin_invitations where email_or_phone = $1", [stranger]);
 });
 
 test("the person added is an admin, and sees the console but not the team page", async ({
@@ -153,9 +195,7 @@ test("the person added is an admin, and sees the console but not the team page",
   expect((await page.goto("/admin/members"))?.status()).toBe(404);
 });
 
-test("a deputy super admin sees the page; the super admin alone appoints one", async ({
-  page,
-}) => {
+test("a deputy super admin sees the page; the super admin alone appoints one", async ({ page }) => {
   const [member] = await sql("select id from public.admin_members where email = $1", [
     emails.member,
   ]);

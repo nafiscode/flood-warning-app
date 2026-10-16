@@ -1700,7 +1700,8 @@
       "wayIn": {
         "sent": "Their way in was sent on LINE",
         "ready": "Ready to send on LINE",
-        "email": "Signs in with the email link (the account is not a LINE account)"
+        "email": "Signs in with the email link (the account is not a LINE account)",
+        "noAccount": "No account for this address yet, so they cannot sign in. Open one with npm run admin:invite followed by the address."
       },
       "duties": {
         "alerts": "Alerts",
@@ -1724,8 +1725,10 @@
         "added": "Added to the team",
         "approved": "Approved",
         "saved": "Saved",
-        "revoked": "Access taken away"
-      }
+        "revoked": "Access taken away",
+        "addedNoAccount": "Added to the team, but there is no account for that address yet. Open one from the set-up laptop before they can sign in."
+      },
+      "missingAccounts": "{count} have no account for their address yet, so they cannot sign in. Open one from the set-up laptop with npm run admin:invite followed by the address."
     }
   },
   "warRoom": {

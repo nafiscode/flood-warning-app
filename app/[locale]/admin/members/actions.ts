@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { localePath } from "@/lib/auth";
+import { normalizePhone } from "@/lib/phone";
 import { sendAdminWelcome } from "@/lib/line-server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -39,19 +40,28 @@ function failed(form: FormData, code: string | undefined): never {
  */
 export async function addMember(form: FormData) {
   const email = field(form, "email").toLowerCase();
-  const phone = field(form, "phone");
+  // The same shape as every other phone number in Jaga (+66...): an admin's number is read by
+  // somebody who may not be in Thailand, and "089..." cannot be dialled from abroad.
+  const phone = normalizePhone(field(form, "phone"));
   const duty = field(form, "duty");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) back(form, { error: "email" });
-  if (!/^\+?[0-9\s-]{8,20}$/.test(phone)) back(form, { error: "phone" });
+  if (!phone) back(form, { error: "phone" });
   if (duty === "") back(form, { error: "duty" });
 
+  // No secret key means no Auth admin API, which is the only thing that can open an account
+  // for an address — and it is deliberately absent from the live site. The row is still
+  // written, because the team list is worth keeping either way, but the admin is told plainly
+  // that this person cannot sign in yet rather than left to find out when they try.
   const admin = createAdminClient();
+  let opened = true;
   if (admin) {
     const { error } = await admin.auth.admin.createUser({ email, email_confirm: true });
     // "Already registered" is the ordinary case: they then just sign in.
     if (error && error.status !== 422 && error.code !== "email_exists") {
       back(form, { error: "account" });
     }
+  } else {
+    opened = false;
   }
 
   const supabase = await createClient();
@@ -64,7 +74,7 @@ export async function addMember(form: FormData) {
   });
   if (error) failed(form, error.code);
   if (typeof data === "string") await sendAdminWelcome(supabase, data);
-  back(form, { done: "added" });
+  back(form, { done: opened ? "added" : "addedNoAccount" });
 }
 
 /** Say yes to somebody who asked from their account page, and give them their duty. */
@@ -88,14 +98,16 @@ export async function approveMember(form: FormData) {
 export async function updateMember(form: FormData) {
   const member = field(form, "member");
   if (!UUID.test(member)) back(form, { error: "save" });
-  const phone = field(form, "phone");
-  if (phone !== "" && !/^\+?[0-9\s-]{8,20}$/.test(phone)) back(form, { error: "phone" });
+  // Empty means "leave the number as it is"; anything else is normalised as above.
+  const typed = field(form, "phone");
+  const phone = typed === "" ? null : normalizePhone(typed);
+  if (typed !== "" && !phone) back(form, { error: "phone" });
   const supabase = await createClient();
   const { error } = await supabase.rpc("update_admin_member", {
     p_member_id: member,
     p_full_name: field(form, "name") || null,
     p_email: field(form, "email").toLowerCase() || null,
-    p_phone: phone || null,
+    p_phone: phone,
     p_duty: field(form, "duty") || null,
     p_note: null,
   });

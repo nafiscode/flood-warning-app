@@ -1700,7 +1700,8 @@
       "wayIn": {
         "sent": "Jalan masuk sudah dihantar melalui LINE",
         "ready": "Sedia dihantar melalui LINE",
-        "email": "Log masuk melalui pautan e-mel (akaun belum berkait dengan LINE)"
+        "email": "Log masuk melalui pautan e-mel (akaun belum berkait dengan LINE)",
+        "noAccount": "Belum ada akaun untuk alamat ini, jadi dia belum boleh log masuk. Buka satu dengan npm run admin:invite diikuti alamat itu."
       },
       "duties": {
         "alerts": "Amaran",
@@ -1724,8 +1725,10 @@
         "added": "Sudah ditambah ke pasukan",
         "approved": "Sudah diluluskan",
         "saved": "Sudah disimpan",
-        "revoked": "Akses sudah ditarik balik"
-      }
+        "revoked": "Akses sudah ditarik balik",
+        "addedNoAccount": "Sudah ditambah ke pasukan, tetapi belum ada akaun untuk alamat itu. Buka satu dari komputer yang disediakan sebelum dia boleh log masuk."
+      },
+      "missingAccounts": "{count} orang belum mempunyai akaun untuk alamat e-mel mereka, jadi mereka belum boleh log masuk. Buka akaun dari komputer yang disediakan dengan npm run admin:invite diikuti alamat e-mel."
     }
   },
   "warRoom": {

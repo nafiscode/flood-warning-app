@@ -20,7 +20,9 @@ import { buildWorld, type World } from "./fixtures";
 let db: Client;
 let w: World;
 
-const PHONE = "66891234567";
+// The shape every phone number in Jaga is stored in; the server actions normalise what
+// somebody types ("089...") into it before the call reaches these functions.
+const PHONE = "+66891234567";
 
 /** Add somebody as the super admin and give back the new row's id. */
 async function add(
@@ -94,12 +96,14 @@ describe("who may work the admin team page", () => {
     const member = await add(email);
     for (const caller of [{ uid: w.admin }, { uid: w.requester }] as const) {
       await as(db, caller);
-      expect(await expectDenied(db, "select add_admin_member($1, $2, $3, $4)", [
-        "someone@example.com",
-        "x",
-        PHONE,
-        "Alerts",
-      ])).toBe("42501");
+      expect(
+        await expectDenied(db, "select add_admin_member($1, $2, $3, $4)", [
+          "someone@example.com",
+          "x",
+          PHONE,
+          "Alerts",
+        ]),
+      ).toBe("42501");
       expect(await expectDenied(db, "select update_admin_member($1, $2)", [member, "x"])).toBe(
         "42501",
       );
@@ -153,6 +157,41 @@ describe("adding somebody", () => {
     const plain = team.find((r) => r.user_id === w.admin);
     expect(plain?.member_id).toBeNull();
     expect(team.some((r) => r.user_id === w.superAdmin && r.role === "super_admin")).toBe(true);
+  });
+
+  it("says whether an account exists for the address, because nothing else can", async () => {
+    // Added by email from a site with no Auth admin key: the row is written, but there is
+    // nothing for that person to sign in to until an account is opened for the address.
+    await as(db, { uid: w.superAdmin });
+    await db.query("select add_admin_member($1, $2, $3, $4)", [
+      "nobody-yet@example.com",
+      "Nobody",
+      PHONE,
+      "Alerts",
+    ]);
+    const invited = (
+      await rows<{ has_account: boolean; status: string }>(
+        db,
+        "select has_account, status from admin_team() where email = $1",
+        ["nobody-yet@example.com"],
+      )
+    )[0]!;
+    expect(invited.status).toBe("invited");
+    expect(invited.has_account).toBe(false);
+
+    // One that does have an account reads the other way round.
+    const email = await emailOf(w.otherUser);
+    await as(db, { uid: w.superAdmin });
+    const member = await add(email);
+    expect(
+      (
+        await rows<{ has_account: boolean }>(
+          db,
+          "select has_account from admin_team() where member_id = $1",
+          [member],
+        )
+      )[0]!.has_account,
+    ).toBe(true);
   });
 
   it("refuses a second row for the same address", async () => {
@@ -270,9 +309,9 @@ describe("asking from the account page", () => {
     await asOwner(db);
     expect(await roleOf(w.requester)).toBe("user");
     await as(db, { uid: w.requester });
-    expect(
-      await expectDenied(db, "select request_admin_access($1, $2)", [PHONE, "again"]),
-    ).toBe("23505");
+    expect(await expectDenied(db, "select request_admin_access($1, $2)", [PHONE, "again"])).toBe(
+      "23505",
+    );
     // Their own row, and nothing else, is readable from their account page.
     const mine = await rows<{ status: string }>(db, "select * from my_admin_request()");
     expect(mine[0]!.status).toBe("requested");
@@ -384,10 +423,10 @@ describe("binding an invitation at sign-in", () => {
     ]);
     await asOwner(db);
     const newcomer = await createUser(db, { name: "newcomer" });
-    await db.query(
-      "update auth.users set email = $2, email_confirmed_at = now() where id = $1",
-      [newcomer, "newcomer@example.com"],
-    );
+    await db.query("update auth.users set email = $2, email_confirmed_at = now() where id = $1", [
+      newcomer,
+      "newcomer@example.com",
+    ]);
 
     await as(db, { uid: newcomer });
     const got = await rows<{ member_id: string; send: boolean }>(

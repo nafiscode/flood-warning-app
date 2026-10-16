@@ -94,14 +94,34 @@ test.beforeAll(async () => {
   );
 });
 
+/**
+ * Everything these tests made, removed — and anything an earlier run stranded.
+ *
+ * A run that stops between `beforeAll` and here leaves a test account holding **super_admin**
+ * on the project the live site reads. That happened on 15 Oct 2026 and was only found nine
+ * days before go-live, so the sweep goes by this file's own address prefixes rather than by
+ * this run's ids: the next complete run clears up after an interrupted one. The prefixes are
+ * this file's alone, so a spec running beside it is never touched.
+ */
+const MINE = [
+  "e2e-super-%@test.invalid",
+  "e2e-admin-%@test.invalid",
+  "e2e-unit-%@test.invalid",
+  "e2e-noname-%@test.invalid",
+];
+
 test.afterAll(async () => {
-  const users = await sql("select id from auth.users where email = any($1)", [
-    Object.values(emails),
-  ]);
+  const users = await sql("select id from auth.users where email ilike any($1)", [MINE]);
   const ids = users.map((u) => u.id as string);
   await sql("delete from public.admin_invitations where invited_by = any($1)", [ids]);
+  await sql("delete from public.admin_invitations where email_or_phone ilike any($1)", [MINE]);
+  await sql("delete from public.admin_members where email ilike any($1)", [MINE]);
   for (const id of ids) await admin().auth.admin.deleteUser(id);
-  await sql("delete from public.organizations where name = $1", [ORG]);
+  // Organisations belong to nobody, so they outlive the accounts that registered them.
+  await sql(
+    "delete from public.organizations where name = $1 or name ilike 'E2E Trying It Out %'",
+    [ORG],
+  );
 });
 
 test("first sign-in asks for a name, then shows the account as a plain user", async ({ page }) => {

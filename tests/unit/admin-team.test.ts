@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import {
   DUTY_SUGGESTIONS,
   maskedPhone,
+  missingAccounts,
   missingPhones,
   sortTeam,
   toTeamMember,
@@ -25,6 +26,7 @@ const row = (over: Record<string, unknown> = {}) => ({
   role: "admin",
   phone_last4: "4567",
   has_phone: true,
+  has_account: true,
   line_ready: false,
   line_sent_at: null,
   created_at: "2026-10-16T09:00:00Z",
@@ -95,6 +97,16 @@ describe("what the page has to say out loud", () => {
       member({ status: "revoked" }),
     ];
     expect(waiting(team).map((m) => m.status)).toEqual(["requested", "invited"]);
+  });
+
+  it("names those who cannot sign in because no account exists for their address", () => {
+    const team = [
+      member({ memberId: "waiting", status: "invited", hasAccount: false }),
+      member({ memberId: "fine", status: "active", hasAccount: true }),
+      // Somebody whose access was taken away is not waiting for an account.
+      member({ memberId: "gone", status: "revoked", hasAccount: false }),
+    ];
+    expect(missingAccounts(team).map((m) => m.memberId)).toEqual(["waiting"]);
   });
 
   it("counts the admins with no phone number, because every admin needs one", () => {

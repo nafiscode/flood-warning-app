@@ -336,6 +336,7 @@ Built 14 Oct 2026 (`/authority/field-rescue`, `/admin/field-rescues`). For peopl
   - **Phone numbers** live in `admin_member_contacts`, which has no select policy: the list shows the last four digits and the number itself comes from `reveal_admin_phone()`, which writes the look to `audit_log` (safety rule 5).
   - **Deputy super admin** is a flag on the roster row, not a role in `user_role`. Only a super admin sets it, and a deputy cannot appoint another or touch a super admin.
   - **Removing access** puts the role back (to `authority` when they lead a verified unit, otherwise `user`) and leaves the row on the list, marked, with the reason in the log.
+  - **An address with no account** cannot sign in, whatever the list says: the Auth admin API is the only thing that opens one and its key is deliberately not on the live site, while the email link refuses to create accounts. The page says so on the row, counts them at the top and says it again when the person is added, naming `npm run admin:invite <address>`.
   - **The way in sent over LINE** once somebody is approved is the console's plain address. It carries no token: their role is what lets them in, and it lasts until a super admin takes it away. It reaches only an admin whose Jaga account is their LINE account; everyone else signs in with the email link, and the page says which of the two each person is.
 - **Invitations (`/admin/invitations`):** the plain record of invitations by address, and the super admin's alone.
 - **Authority verification queue:** check the details, call the official phone, then verify, reject or suspend.
@@ -495,7 +496,7 @@ Admins decide. The system never auto-publishes, with one exception (owner, 14 Oc
 - `thresholds`: per zone and signal, the values for each level, with a `provisional` flag and `set_by`.
 - `admin_invitations`: `email_or_phone`, `role`, `invited_by`, `status`.
 - `admin_members`: the admin team (6.1). `user_id` (null until their first sign-in), `email`, `full_name`, `duty` (a label), `deputy`, `status` (`invited` / `requested` / `active` / `revoked`), `added_by`, `note`, `line_sent_at`. Read by a super admin and a deputy; every write is a security-definer function.
-- `admin_member_contacts`: `member_id`, `phone`. **No select policy**: the number comes only from `reveal_admin_phone()`, which logs the look (safety rule 5).
+- `admin_member_contacts`: `member_id`, `phone` (stored international, `+66…`, like every other phone in Jaga: an admin's number is read by people who may not be in Thailand). **No select policy**: the number comes only from `reveal_admin_phone()`, which logs the look (safety rule 5).
 - `audit_log`: `actor`, `action`, `entity`, `entity_id`, `ts`, `details`.
 - `handover_notes`: shift log entries.
 - `impact_daily` (A13): one row per province per day — app openings, alerts delivered, SOS sent and their outcomes, reports, safe-place lookups, waiting-time medians and spreads. Written by a nightly job; the raw rows it counts are dropped.

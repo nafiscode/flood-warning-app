@@ -8,6 +8,7 @@ import {
   canManageAdmins,
   DUTY_SUGGESTIONS,
   maskedPhone,
+  missingAccounts,
   missingPhones,
   readTeam,
   revealAdminPhone,
@@ -32,7 +33,7 @@ import {
 import { addMember, approveMember, revokeMember, setDeputy, updateMember } from "./actions";
 
 const ERRORS = ["email", "phone", "duty", "duplicate", "account", "save"] as const;
-const DONE = ["added", "approved", "saved", "revoked"] as const;
+const DONE = ["added", "addedNoAccount", "approved", "saved", "revoked"] as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function generateMetadata({
@@ -77,6 +78,7 @@ export default async function AdminMembers({
   const pending = waiting(team);
   const active = sortTeam(team.filter((m) => m.status === "active" || m.status === "revoked"));
   const noPhone = missingPhones(team);
+  const noAccount = missingAccounts(team);
 
   /** Super admin, deputy super admin or admin, with the duty under it. */
   function Rank({ member }: { member: TeamMember }) {
@@ -117,8 +119,20 @@ export default async function AdminMembers({
     );
   }
 
-  /** How that person gets in, said plainly, because the two ways in differ. */
+  /**
+   * How that person gets in, said plainly, because the ways in differ — and because one of
+   * them does not exist yet. No account for their address means nothing to sign in to, and
+   * the key that opens one is deliberately not on the live site, so the page says so and
+   * names the command rather than letting the row look finished.
+   */
   function WayIn({ member }: { member: TeamMember }) {
+    if (!member.hasAccount) {
+      return (
+        <p className={errorNotice} data-admin-noaccount={member.memberId}>
+          {t("members.wayIn.noAccount")}
+        </p>
+      );
+    }
     const key = member.lineSentAt ? "sent" : member.lineReady ? "ready" : "email";
     return <p className={hint}>{t(`members.wayIn.${key}`)}</p>;
   }
@@ -142,6 +156,11 @@ export default async function AdminMembers({
           {t("members.missingPhones", { count: noPhone })}
         </p>
       )}
+      {noAccount.length > 0 && (
+        <p className={errorNotice} data-admin-noaccounts={noAccount.length}>
+          {t("members.missingAccounts", { count: noAccount.length })}
+        </p>
+      )}
 
       {/* Waiting: somebody who asked from their account page, or an invitation not taken up. */}
       {pending.length > 0 && (
@@ -159,6 +178,7 @@ export default async function AdminMembers({
               <p className={hint}>
                 {t(`members.status.${member.status}`)} · <DualTime iso={member.createdAt} />
               </p>
+              <WayIn member={member} />
               {member.status === "requested" && (
                 <form action={approveMember} className="flex flex-col gap-2">
                   <input type="hidden" name="locale" value={locale} />
