@@ -166,6 +166,26 @@ export function HomeView(props: HomeViewProps) {
     (s) => s?.kind === "alert" && (s.alert.level === "warning" || s.alert.level === "evacuate"),
   );
   const sos = <SOSButton href={getPathname({ href: "/sos", locale })} />;
+  /*
+   * The dam's drawing and figures. On a laptop the owner wants it in the left-hand column, under
+   * the flood-risk summary (16 Oct); on a phone it stays at the foot of the page, which is where
+   * the owner put it on 15 Oct because it is background, not news.
+   *
+   * The two places are in different columns of the grid, and a grid cannot move an item from one
+   * column's run of blocks into another's, so it is written in both and each width shows one.
+   * `display: none` keeps the other out of the page for a screen reader as well as for the eye,
+   * so nobody meets it twice. The copy at the foot of the page is written with no wrapper around
+   * it, so that the page a phone builds is the same one it built before, element for element -
+   * the laptop's copy is the one in a wrapper, and app/globals.css hides the other.
+   */
+  const damCards = damsNearMe.map(({ dam, hit }) => (
+    <DamFigureCard
+      key={dam.code}
+      dam={dam}
+      tambonCode={hit?.code ?? null}
+      tambonName={hit ? areaNameOf(hit.code) : null}
+    />
+  ));
   const riskCard =
     !loading && !choosing && home && props.tambonRisk
       ? props.tambonRisk(home.code, tambonName(locale, home))
@@ -307,6 +327,9 @@ export function HomeView(props: HomeViewProps) {
         {!choosing && checklist}
 
         {tense && riskCard}
+
+        {/* Laptop only: under the flood-risk summary (the owner, 16 Oct). */}
+        <div className="hidden console:contents">{damCards}</div>
       </div>
 
       <div data-home-col="act" className="flex flex-col gap-5 lg:col-start-2 lg:row-start-1">
@@ -400,14 +423,7 @@ export function HomeView(props: HomeViewProps) {
          * button). The notice at the top of the left column still speaks when the dam has
          * something to say to someone on its river.
          */}
-        {damsNearMe.map(({ dam, hit }) => (
-          <DamFigureCard
-            key={dam.code}
-            dam={dam}
-            tambonCode={hit?.code ?? null}
-            tambonName={hit ? areaNameOf(hit.code) : null}
-          />
-        ))}
+        {damCards}
 
         {!loading && !choosing && !tense && props.share}
       </div>

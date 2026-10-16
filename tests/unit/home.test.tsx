@@ -133,7 +133,13 @@ describe("the dam's figure on the home screen", () => {
       install: <div data-install-slot="true" />,
       share: <div data-share-slot="true" />,
     });
-    const card = c.querySelector("[data-dam-figure-card]")!;
+    /*
+     * The card is written twice since 16 Oct - once at the foot of the page and once under the
+     * flood-risk summary, where a laptop shows it instead. This is the one at the foot, which a
+     * phone and a tablet see; the laptop's copy is checked below.
+     */
+    const card = c.querySelector('[data-home-col="places"] [data-dam-figure-card]')!;
+    expect(card).not.toBeNull();
     // The owner, 15 Oct: after the install card, directly before Share Jaga, the last thing.
     const share = c.querySelector("[data-share-slot]")!;
     expect(card.nextElementSibling).toBe(share);
@@ -143,6 +149,23 @@ describe("the dam's figure on the home screen", () => {
     expect(links.length).toBe(1);
     expect(links[0]!.getAttribute("href")).toContain(`dam=${DAM.code}`);
     expect(links[0]!.textContent).toContain(th.dam.legend.open.replace("{dam}", DAM.name.th!));
+  });
+
+  /** The owner, 16 Oct: on a laptop the dam belongs under the flood-risk summary instead. */
+  it("is written a second time in the left-hand column, hidden until the screen is a laptop", () => {
+    const c = home("normal", {
+      dams: [{ ...DAM, signal: exampleDamSignal("quiet") }],
+      area: BANA,
+      share: <div data-share-slot="true" />,
+    });
+    const cards = c.querySelectorAll("[data-dam-figure-card]");
+    expect(cards.length).toBe(2);
+    const laptop = c.querySelector('[data-home-col="now"] [data-dam-figure-card]')!;
+    expect(laptop).not.toBeNull();
+    // Out of the page entirely - for a screen reader too - until the console's own breakpoint.
+    const wrapper = laptop.parentElement!;
+    expect(wrapper.className).toContain("hidden");
+    expect(wrapper.className).toContain("console:contents");
   });
 
   it("Songkhla gets neither: the dam's water never reaches it", () => {

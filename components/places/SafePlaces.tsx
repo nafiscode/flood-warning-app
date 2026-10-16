@@ -1,4 +1,5 @@
 import { useFormatter, useTranslations } from "next-intl";
+import { useConsoleView } from "@/lib/console-view";
 import type { NearbyPlaces } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import type { LoadState } from "@/lib/use-public";
@@ -29,8 +30,14 @@ export function SafePlaces({ places, state, userAgent, fromPhone, savedAt }: Pro
   const t = useTranslations("places");
   const format = useFormatter();
   const count = places ? places.people.length + places.parking.length : null;
+  /*
+   * Folded on a phone, where it would otherwise push everything below it off the screen; open
+   * from the start on a laptop console, where there is a column to spare (the owner, 16 Oct).
+   * It is still a fold: anyone can close it, and it stays closed until the width changes.
+   */
+  const open = useConsoleView();
   return (
-    <details className="group flex flex-col" data-safe-places={state}>
+    <details className="group flex flex-col" data-safe-places={state} open={open}>
       <summary className="flex min-h-tap cursor-pointer list-none items-center justify-between gap-3 rounded-xl border-2 border-jaga-edge bg-jaga-surface px-5 py-2 font-medium text-jaga-ink [&::-webkit-details-marker]:hidden">
         <h2 className="text-body font-bold">
           {t("title")}

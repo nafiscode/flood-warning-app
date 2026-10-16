@@ -243,6 +243,12 @@
   [data-console-page="home"] > [data-home-col] {
     grid-area: auto;
   }
+  /* The dam's card is written twice - at the foot of the page, where a phone has had it since
+     15 Oct, and under the flood-risk summary, where the owner wants it on a laptop (16 Oct).
+     Here the one at the foot gives way. */
+  [data-home-col="places"] > [data-dam-figure-card] {
+    display: none;
+  }
 
   /*
    * The account and the admin home on a laptop (the owner, 16 Oct: the same treatment as the
