@@ -661,7 +661,49 @@
       "resetLabel": "Kembali ke paparan asal peta"
     },
     "savedAt": "Tiada sambungan. Peta ini menunjukkan maklumat yang disimpan dalam telefon pada {time}.",
-    "savedOld": "Tiada sambungan. Peta ini menunjukkan maklumat yang disimpan dalam telefon."
+    "savedOld": "Tiada sambungan. Peta ini menunjukkan maklumat yang disimpan dalam telefon.",
+    "console": {
+      "note": "Data awam, jawapan yang sama seperti di telefon, diringkaskan pada peringkat mukim. Tiada lokasi tepat dan tiada maklumat peribadi.",
+      "unknown": "Tidak diketahui",
+      "newest": "Terbaharu {time}",
+      "age": "{minutes} minit lalu",
+      "scope": {
+        "all": "Keempat-empat wilayah",
+        "areas": "Peringkat mukim · {scope}"
+      },
+      "alerts": {
+        "label": "Amaran berkuat kuasa",
+        "none": "Tiada amaran",
+        "unknownNote": "Status amaran tidak dapat dimuatkan"
+      },
+      "gauges": {
+        "label": "Stesen paras sungai",
+        "high": "Mencapai atau melepasi tebing {over} · hampir tebing {near}",
+        "allBelow": "Semua di bawah tebing",
+        "reporting": "{count}/{total} stesen menghantar data",
+        "silent": "{count} stesen tiada data",
+        "none": "Belum ada bacaan",
+        "over": "{count} stesen mencapai tebing",
+        "near": "{count} stesen hampir tebing"
+      },
+      "dam": {
+        "label": "Empangan",
+        "full": "Takungan {percent}%",
+        "out": "Keluar {value} m³/s",
+        "outUnknown": "Tiada data pelepasan air",
+        "unknown": "Belum ada bacaan empangan",
+        "noReading": "Tiada masa bacaan",
+        "stale": "belum dikemas kini"
+      },
+      "reports": {
+        "label": "Laporan penduduk",
+        "count": "{reports} laporan · {tambons} mukim",
+        "people": "daripada {count} orang",
+        "confirmed": "{count} mukim disahkan beberapa orang",
+        "none": "Tiada laporan",
+        "window": "Masih berkuat kuasa, sehingga 72 jam"
+      }
+    }
   },
   "attribution": {
     "openMeteo": "Data cuaca daripada Open-Meteo.com (CC BY 4.0)"

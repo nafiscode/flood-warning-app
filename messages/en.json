@@ -661,7 +661,49 @@
       "resetLabel": "Back to the map's first view"
     },
     "savedAt": "No connection. This map shows what was saved on this phone at {time}.",
-    "savedOld": "No connection. This map shows what was saved on this phone."
+    "savedOld": "No connection. This map shows what was saved on this phone.",
+    "console": {
+      "note": "Public data, the same answers a phone gets, summarised by subdistrict. No exact locations and no personal details.",
+      "unknown": "Unknown",
+      "newest": "Newest {time}",
+      "age": "{minutes} min ago",
+      "scope": {
+        "all": "All four provinces",
+        "areas": "Subdistricts · {scope}"
+      },
+      "alerts": {
+        "label": "Alerts in force",
+        "none": "No alert in force",
+        "unknownNote": "The alert status could not be loaded"
+      },
+      "gauges": {
+        "label": "River gauges",
+        "high": "{over} at or over the bank · {near} near it",
+        "allBelow": "All below their banks",
+        "reporting": "{count}/{total} stations reporting",
+        "silent": "{count} with no data",
+        "none": "No reading yet",
+        "over": "{count} at or over the bank",
+        "near": "{count} near the bank"
+      },
+      "dam": {
+        "label": "Dam",
+        "full": "Reservoir {percent}%",
+        "out": "Out {value} m³/s",
+        "outUnknown": "No release figure published",
+        "unknown": "No dam reading yet",
+        "noReading": "No reading time",
+        "stale": "not updated"
+      },
+      "reports": {
+        "label": "Resident reports",
+        "count": "{reports} reports · {tambons} subdistricts",
+        "people": "from {count} people",
+        "confirmed": "{count} subdistricts confirmed by several",
+        "none": "No report stands",
+        "window": "Standing, up to 72 hours"
+      }
+    }
   },
   "attribution": {
     "openMeteo": "Weather data by Open-Meteo.com (CC BY 4.0)"

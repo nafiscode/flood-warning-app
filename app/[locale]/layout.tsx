@@ -128,7 +128,12 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               skip link.
             */}
             <header className="sticky top-0 z-20 bg-jaga-slate">
-              <div className="mx-auto flex w-full max-w-screen-sm flex-wrap items-center justify-between gap-x-2 px-2 lg:max-w-6xl lg:px-4">
+              {/* The laptop console runs edge to edge, and the header goes with it
+                  (app/globals.css, the console block). */}
+              <div
+                data-header-bar="true"
+                className="mx-auto flex w-full max-w-screen-sm flex-wrap items-center justify-between gap-x-2 px-2 lg:max-w-6xl lg:px-4"
+              >
                 <div className="flex items-center gap-2">
                   <Link href="/" prefetch={false} className="inline-flex min-h-tap items-center">
                     <Logo size={40} tone="reverse" animated />

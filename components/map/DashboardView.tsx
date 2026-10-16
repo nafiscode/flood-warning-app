@@ -42,6 +42,7 @@ import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-s
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
+import { ConsoleTiles } from "./ConsoleTiles";
 import { HazardPlaceholder } from "./HazardPlaceholder";
 import { SatelliteFloodPanel } from "./SatelliteFlood";
 import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
@@ -574,6 +575,19 @@ export function DashboardView(props: DashboardViewProps) {
     const bring = (behavior: ScrollBehavior) => {
       const panel = document.querySelector<HTMLElement>("[data-selected-panel]");
       if (!panel) return null;
+      /*
+       * On the laptop console the card sits in a rail that scrolls on its own, so moving the
+       * window would do nothing: the rail is scrolled instead. Everywhere else that wrapper is
+       * `display: contents` and has no scrolling of its own, which is what this asks it.
+       */
+      const rail = panel.closest<HTMLElement>("[data-console-rail]");
+      if (rail && window.getComputedStyle(rail).overflowY === "auto") {
+        const off = panel.getBoundingClientRect().top - rail.getBoundingClientRect().top - 12;
+        if (Math.abs(off) > 4) {
+          rail.scrollTo({ top: Math.max(0, rail.scrollTop + off), behavior });
+        }
+        return panel;
+      }
       // The frozen row of chips sits under the header once the page has scrolled past it.
       const header =
         (document.querySelector("header")?.getBoundingClientRect().height ?? 0) +
@@ -902,23 +916,69 @@ export function DashboardView(props: DashboardViewProps) {
   const others = hazards.filter((h) => h.code !== hazard.code);
   const othersSoon = others.every((h) => h.status !== "active");
 
+  /*
+   * The laptop console (the owner, 16 Oct 2026): "people who view this page from a laptop are
+   * usually GIS, or work for an authority or in an office, and are familiar with a dashboard".
+   * The arrangement is marked here and done entirely in CSS (the console block in
+   * app/globals.css), so a phone and a tablet are left exactly as they were.
+   *
+   * It is marked only where the dashboard has all of its parts: not on the transparency tab, and
+   * not for a hazard that is still to come, whose screen is a placeholder that must not be
+   * dressed up as a console with nothing in it (safety rule 10).
+   */
+  const consoleOn = tab === "map" && hazard.status === "active";
+
+  /*
+   * How far the alert and report figures reach, in words: the province the page is narrowed to,
+   * or null for all four. The river gauges and the dam are stations, not areas, so their tiles
+   * say "all four provinces" for themselves - a readout that does not say what it covers is a
+   * readout waiting to be misread.
+   */
+  const provinceEntry = directory?.provinces.find((p) => p.code === province);
+  const scopeWord =
+    chosenProvince === null || !provinceEntry
+      ? null
+      : pickName(locale, provinceEntry.nameTh, provinceEntry.nameEn);
+
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
+    <div className="flex flex-col gap-4" data-map-console={consoleOn ? "true" : undefined}>
       {/*
-       * Without signal the map draws what this phone kept (A9: every saved thing says how old it
-       * is). The time given is the older of the alert status and the map's own data.
+       * The blocks below carry `data-console-area`, and on a laptop the console block in
+       * app/globals.css lays them out as a dashboard: a rail of controls, the map at the full
+       * height left over, and a rail of readouts. Everywhere else - every phone and every tablet,
+       * which the owner asked to leave alone - the wrappers are `display: contents` and this is
+       * the same single column it has always been.
+       *
+       * The page's order of blocks is also the console's reading order, column by column, so no
+       * wrapper reorders anything and a keyboard meets the page as the eye does.
        */}
-      {failed && (
-        <p className={notice} role="status" data-map-saved={savedAt !== null ? "time" : "old"}>
-          {savedAt !== null
-            ? t("savedAt", { time: format.dateTime(new Date(savedAt), BANGKOK_DATE_TIME) })
-            : t("savedOld")}
+      <div className="contents" data-console-area="head">
+        <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
+        {/* Who the console is for and what it may show: public, aggregated answers, the same
+            ones the phone gets, and never an exact point (safety rule 6). */}
+        <p className="hidden text-small text-jaga-text-2 console:block" data-console-note="true">
+          {t("console.note")}
         </p>
-      )}
+        {/*
+         * Without signal the map draws what this phone kept (A9: every saved thing says how old
+         * it is). The time given is the older of the alert status and the map's own data.
+         */}
+        {failed && (
+          <p className={notice} role="status" data-map-saved={savedAt !== null ? "time" : "old"}>
+            {savedAt !== null
+              ? t("savedAt", { time: format.dateTime(new Date(savedAt), BANGKOK_DATE_TIME) })
+              : t("savedOld")}
+          </p>
+        )}
+      </div>
 
       {props.transparency && (
-        <div role="tablist" aria-label={t("tabs.label")} className="flex gap-2">
+        <div
+          role="tablist"
+          aria-label={t("tabs.label")}
+          className="flex gap-2"
+          data-console-area="tabs"
+        >
           {(["map", "transparency"] as const).map((id) => (
             <button
               key={id}
@@ -939,7 +999,7 @@ export function DashboardView(props: DashboardViewProps) {
         <div role="tabpanel" data-transparency-slot="true" />
       ) : (
         <>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1" data-console-area="hazard">
             <p className="font-medium" id="hazard-label">
               {t("hazard.label")}
             </p>
@@ -1003,572 +1063,607 @@ export function DashboardView(props: DashboardViewProps) {
             {props.hazardsState === "unavailable" && <p className={hint}>{t("hazard.failed")}</p>}
           </div>
 
-          {/* The hazard comes first, then the province, then what the map shows for it (owner,
-              15 Oct). */}
-          {hazard.status === "active" && (
-            <>
-              {directory ? (
-                <ProvinceSelect
-                  id="map-province"
-                  provinces={directory.provinces}
-                  value={province}
-                  onChange={setProvince}
-                  emptyLabel={t("province.all")}
-                />
-              ) : (
-                props.directoryState === "unavailable" && (
-                  <p className={hint}>{t("province.failed")}</p>
-                )
-              )}
-              {/* The sea's own report, for fishermen, right under the chips while the sea is shown
-                  (the owner, 15 Oct: the switches under the map are gone, the chips do that). */}
-              <MapFeatureChips
-                on={featuresOn}
-                onToggle={toggleFeature}
-                after={
-                  showSea ? (
-                    <button
-                      type="button"
-                      data-open-sea="true"
-                      onClick={() => {
-                        setSelection({ kind: "sea", id: nearestCoast(props.area) });
-                        revealPanel();
-                      }}
-                      className={`${buttonQuiet} justify-between self-start text-start`}
-                    >
-                      <SeaGradeIcon grade="calm" size={24} />
-                      {tSea("open")}
-                      <span aria-hidden="true">→</span>
-                    </button>
-                  ) : undefined
-                }
-              />
-              <MapMethod />
-            </>
-          )}
-
           {hazard.status !== "active" ? (
             <HazardPlaceholder hazard={hazard} />
           ) : (
             <>
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium" id="mode-label">
-                  {t("mode.label")}
-                </p>
-                <div role="group" aria-labelledby="mode-label" className="flex gap-2">
-                  {(["risk", "live"] as const).map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      aria-pressed={mode === m}
-                      data-mode={m}
-                      onClick={() => {
-                        setChosenMode(m);
-                        setSelection(null);
-                      }}
-                      className={`${chip} ${mode === m ? chipOn : chipOff}`}
-                    >
-                      {t(`mode.${m}`)}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* The four readouts across the top of the console; nothing at all on a phone. */}
+              <ConsoleTiles
+                status={status}
+                alerts={alerts.map(({ alert }) => alert)}
+                fresh={fresh}
+                failed={failed}
+                gauges={data?.gauges ?? null}
+                dams={dams}
+                reports={props.reports ?? null}
+                scope={scopeWord}
+                now={now}
+                time={time}
+                locale={locale}
+              />
 
-              {damsOnMyPath.map(({ dam, hit }) => (
-                <DamNotice
-                  key={dam.code}
-                  dam={dam}
-                  via={hit.via}
-                  tambonCode={hit.code}
-                  tambonName={tambonName(hit.code)}
-                  now={now}
-                  gatesOpenAt={damReleaseAt(status, dam.code, hit.code)}
-                />
-              ))}
-
-              {/*
-               * What residents have reported in the person's own tambons and districts, and in
-               * the tambon they came here to look at (the owner, 13 Oct). Only in the current
-               * situation: the hexagons it speaks of are drawn in that view. Counts only, and
-               * the panel says it is neighbours speaking, not Jaga.
-               */}
-              {mode === "live" && props.reports && (
-                <>
-                  <ReportsNear
-                    title={tNear("mapTitle")}
-                    link={false}
-                    near={reportsNearMe(props.reports, [
-                      ...myTambons,
-                      ...(props.openReports ? [props.openReports.tambon] : []),
-                    ])}
+              {/* The hazard comes first, then the province, then what the map shows for it (owner,
+                  15 Oct). On the console the same four are the left rail. */}
+              <div className="contents" data-console-area="rail" data-console-rail="true">
+                {directory ? (
+                  <ProvinceSelect
+                    id="map-province"
+                    provinces={directory.provinces}
+                    value={province}
+                    onChange={setProvince}
+                    emptyLabel={t("province.all")}
                   />
-                  {props.openReports &&
-                    !props.reports.some((r) => r.tambon === props.openReports!.tambon) && (
-                      <p className={hint} data-reports-none="true">
-                        {tNear("none")}
-                      </p>
-                    )}
-                </>
-              )}
-
-              {/*
-               * The map opens close around the person's own area; this button pulls back to all
-               * four provinces in one tap (the owner, 13 Oct). It sits on the map, at the start
-               * of its top edge, opposite the zoom buttons.
-               */}
-              <div
-                className={`relative isolate ${tourIndex !== null ? "[&_.maplibregl-ctrl-top-right]:top-16!" : ""}`}
-                data-map-frame="true"
-              >
-                {tourIndex !== null && mine.length > 0 ? (
-                  <div
-                    role="group"
-                    aria-label={t("zoomMine")}
-                    data-tour={mine[tourIndex]!.id}
-                    className="absolute inset-x-2 top-2 z-10 flex items-center gap-1 rounded-lg border border-jaga-line bg-jaga-surface p-1 shadow-sm"
-                  >
-                    <button
-                      type="button"
-                      data-tour-step="back"
-                      aria-label={t("tour.prev")}
-                      onClick={() => tourTo(tourIndex - 1)}
-                      className="grid min-h-tap min-w-12 shrink-0 place-items-center rounded-md text-jaga-ink"
-                    >
-                      <ChevronIcon next={false} />
-                    </button>
-                    <select
-                      data-tour-pick="true"
-                      aria-label={t("tour.pick")}
-                      value={tourIndex}
-                      onChange={(event) => tourTo(Number(event.target.value))}
-                      className="min-h-tap min-w-0 flex-1 truncate rounded-md border border-jaga-line bg-jaga-surface px-2 text-small font-bold text-jaga-ink"
-                    >
-                      {mine.map((place, index) => (
-                        <option key={place.id} value={index}>
-                          {t("tour.option", {
-                            n: index + 1,
-                            total: mine.length,
-                            name: place.label,
-                          })}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      data-tour-step="next"
-                      aria-label={t("tour.next")}
-                      onClick={() => tourTo(tourIndex + 1)}
-                      className="grid min-h-tap min-w-12 shrink-0 place-items-center rounded-md text-jaga-ink"
-                    >
-                      <ChevronIcon next />
-                    </button>
-                    <button
-                      type="button"
-                      data-tour-reset="true"
-                      aria-label={t("tour.resetLabel")}
-                      title={t("tour.resetLabel")}
-                      onClick={tourReset}
-                      className="inline-flex min-h-tap min-w-12 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-small font-bold text-jaga-ink"
-                    >
-                      <ResetIcon />
-                      <span className="hidden sm:inline">{t("tour.reset")}</span>
-                    </button>
-                  </div>
                 ) : (
-                  <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12">
-                    <button
-                      type="button"
-                      data-zoom-all="true"
-                      onClick={() =>
-                        setFocus((was) => ({ box: SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }))
-                      }
-                      className={mapButton}
-                    >
-                      <ZoomOutIcon />
-                      {t("zoomAll")}
-                    </button>
-                    {myBox && (
+                  props.directoryState === "unavailable" && (
+                    <p className={hint}>{t("province.failed")}</p>
+                  )
+                )}
+                {/* The sea's own report, for fishermen, right under the chips while the sea is
+                    shown (the owner, 15 Oct: the switches under the map are gone, the chips do
+                    that). */}
+                <MapFeatureChips
+                  on={featuresOn}
+                  onToggle={toggleFeature}
+                  after={
+                    showSea ? (
                       <button
                         type="button"
-                        data-zoom-mine="true"
+                        data-open-sea="true"
                         onClick={() => {
-                          // A tour of their own places; with none saved, the chosen area as before.
-                          if (mine.length > 0) {
-                            tourTo(0);
-                            return;
-                          }
-                          setShowMine(true);
-                          setFocus((was) => ({ box: myBox, key: (was?.key ?? 0) + 1 }));
+                          setSelection({ kind: "sea", id: nearestCoast(props.area) });
+                          revealPanel();
                         }}
-                        className={mapButton}
+                        className={`${buttonQuiet} justify-between self-start text-start`}
                       >
-                        <HomePinIcon />
-                        {t("zoomMine")}
+                        <SeaGradeIcon grade="calm" size={24} />
+                        {tSea("open")}
+                        <span aria-hidden="true">→</span>
                       </button>
-                    )}
+                    ) : undefined
+                  }
+                />
+                <MapMethod />
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium" id="mode-label">
+                    {t("mode.label")}
+                  </p>
+                  <div role="group" aria-labelledby="mode-label" className="flex gap-2">
+                    {(["risk", "live"] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        aria-pressed={mode === m}
+                        data-mode={m}
+                        onClick={() => {
+                          setChosenMode(m);
+                          setSelection(null);
+                        }}
+                        className={`${chip} ${mode === m ? chipOn : chipOff}`}
+                      >
+                        {t(`mode.${m}`)}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/*
+               * The map, with the notices that belong to the person's own area above it: on the
+               * console this is the middle column, and the map takes whatever height is left.
+               */}
+              <div className="contents" data-console-area="map">
+                {damsOnMyPath.map(({ dam, hit }) => (
+                  <DamNotice
+                    key={dam.code}
+                    dam={dam}
+                    via={hit.via}
+                    tambonCode={hit.code}
+                    tambonName={tambonName(hit.code)}
+                    now={now}
+                    gatesOpenAt={damReleaseAt(status, dam.code, hit.code)}
+                  />
+                ))}
+
                 {/*
-                 * 2D or 3D, on the map itself (the owner, 15 Oct): at the start of its bottom
-                 * edge, clear of the zoom buttons and the credits.
+                 * What residents have reported in the person's own tambons and districts, and in
+                 * the tambon they came here to look at (the owner, 13 Oct). Only in the current
+                 * situation: the hexagons it speaks of are drawn in that view. Counts only, and
+                 * the panel says it is neighbours speaking, not Jaga.
+                 */}
+                {mode === "live" && props.reports && (
+                  <>
+                    <ReportsNear
+                      title={tNear("mapTitle")}
+                      link={false}
+                      near={reportsNearMe(props.reports, [
+                        ...myTambons,
+                        ...(props.openReports ? [props.openReports.tambon] : []),
+                      ])}
+                    />
+                    {props.openReports &&
+                      !props.reports.some((r) => r.tambon === props.openReports!.tambon) && (
+                        <p className={hint} data-reports-none="true">
+                          {tNear("none")}
+                        </p>
+                      )}
+                  </>
+                )}
+
+                {/*
+                 * The map opens close around the person's own area; this button pulls back to all
+                 * four provinces in one tap (the owner, 13 Oct). It sits on the map, at the start
+                 * of its top edge, opposite the zoom buttons.
                  */}
                 <div
-                  role="group"
-                  aria-label={t("scene.label")}
-                  data-scene-switch={scene ? "3d" : "2d"}
-                  className="absolute bottom-2 start-2 z-10 flex overflow-hidden rounded-lg border border-jaga-line bg-jaga-surface shadow-sm"
+                  className={`relative isolate ${tourIndex !== null ? "[&_.maplibregl-ctrl-top-right]:top-16!" : ""}`}
+                  data-map-frame="true"
                 >
-                  {([false, true] as const).map((on) => (
-                    <button
-                      key={String(on)}
-                      type="button"
-                      data-scene-choice={on ? "3d" : "2d"}
-                      aria-pressed={scene === on}
-                      onClick={() => setScene(on)}
-                      className={`min-h-tap min-w-12 px-3 text-small font-bold ${
-                        scene === on ? "bg-jaga-slate text-white" : "text-jaga-ink"
-                      }`}
+                  {tourIndex !== null && mine.length > 0 ? (
+                    <div
+                      role="group"
+                      aria-label={t("zoomMine")}
+                      data-tour={mine[tourIndex]!.id}
+                      className="absolute inset-x-2 top-2 z-10 flex items-center gap-1 rounded-lg border border-jaga-line bg-jaga-surface p-1 shadow-sm"
                     >
-                      {t(on ? "scene.threeD" : "scene.flat")}
-                    </button>
-                  ))}
-                </div>
-                <MapView
-                  layers={mapLayers}
-                  showDam={showDam}
-                  showDamZone={showDamZone}
-                  status={fresh ? status : null}
-                  data={data}
-                  now={now}
-                  bounds={focus?.box ?? askedBox ?? mapBounds}
-                  boundsKey={focus?.key ?? (askedBox ? 1 : 0)}
-                  onSelect={setSelection}
-                  text={{ loading: t("loading"), failed: t("failed") }}
-                  gaugeWords={{ near: t("gauge.nearShort"), over: t("gauge.overShort") }}
-                  peek={renderPeek}
-                  mine={mine}
-                  showMine={showMine}
-                  dams={dams}
-                  hazardUrl={props.hazardTiles ?? null}
-                  sea={seaMarks}
-                  satellite={
-                    props.satelliteDays && props.satellite?.days === props.satelliteDays
-                      ? props.satellite.features
-                      : null
-                  }
-                  basemap={basemap}
-                  scene={scene}
-                  damText={{
-                    spillway: tDam("mark.spillway"),
-                    outlet: tDam("mark.outlet"),
-                    locale,
-                  }}
-                />
-              </div>
-              <fieldset className="flex flex-col gap-1" data-basemap={basemap}>
-                <legend className="font-medium">{t("basemap.title")}</legend>
-                <div className="flex flex-wrap gap-2">
-                  {BASEMAPS.map((kind) => (
-                    <button
-                      key={kind}
-                      type="button"
-                      data-basemap-choice={kind}
-                      aria-pressed={basemap === kind}
-                      onClick={() => setBasemapChoice(kind)}
-                      className={`min-h-tap rounded-full border-2 px-4 font-bold ${
-                        basemap === kind
-                          ? "border-jaga-edge bg-jaga-slate text-white"
-                          : "border-jaga-line bg-jaga-surface"
-                      }`}
-                    >
-                      {t(`basemap.${kind}`)}
-                    </button>
-                  ))}
-                </div>
-                {scene && (
-                  <p className={hint} data-scene-note="true">
-                    {t("scene.note", { times: SCENE_EXAGGERATION })}
-                  </p>
-                )}
-                {isPhotoBasemap(basemap) && (
-                  <p className={hint} data-satellite-note={satellite}>
-                    {t(
-                      satellite === "esri" ? "basemap.satelliteNoteEsri" : "basemap.satelliteNote",
-                    )}
-                  </p>
-                )}
-              </fieldset>
-              {props.onSatelliteDays && (
-                <SatelliteFloodPanel
-                  days={props.satelliteDays ?? null}
-                  onDays={props.onSatelliteDays}
-                  flood={props.satellite ?? null}
-                  load={props.satelliteLoad ?? "loading"}
-                  dark={nightMap}
-                />
-              )}
-              {placesOnOffer && (
-                <label
-                  data-places-toggle="true"
-                  className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
-                >
-                  <input
-                    type="checkbox"
-                    className={`${checkBox} mt-0`}
-                    checked={showPlaces}
-                    onChange={(event) => setShowPlaces(event.target.checked)}
-                  />
-                  <PlaceMark size={26} />
-                  <span>{t("places.toggle", { count: data ? data.places.length : 0 })}</span>
-                </label>
-              )}
-              {showPlaces && placesOnOffer && <p className={hint}>{t("places.hint")}</p>}
-              {mine.length > 0 && (
-                <label className={checkRow} data-mine-toggle="true">
-                  <input
-                    type="checkbox"
-                    className={checkBox}
-                    checked={showMine}
-                    onChange={(event) => setShowMine(event.target.checked)}
-                  />
-                  <span>{t("mine.toggle", { count: mine.length })}</span>
-                </label>
-              )}
-              {/* A visitor learns their family's places could be pinned here (the owner, 15 Oct). */}
-              {!props.me?.signedIn && <SignInHint what="mapPlaces" />}
-              <p className={hint}>{t("tapHint")}</p>
-              {props.dataState === "unavailable" && (
-                <p role="status" className={notice}>
-                  {t("dataFailed")}
-                </p>
-              )}
-
-              {selected && (
-                <div
-                  className="flex flex-col gap-2 outline-none"
-                  data-selected-panel="true"
-                  tabIndex={-1}
-                >
-                  {selected}
-                  <button
-                    type="button"
-                    onClick={() => setSelection(null)}
-                    className="inline-flex min-h-tap items-center gap-1.5 self-start underline"
+                      <button
+                        type="button"
+                        data-tour-step="back"
+                        aria-label={t("tour.prev")}
+                        onClick={() => tourTo(tourIndex - 1)}
+                        className="grid min-h-tap min-w-12 shrink-0 place-items-center rounded-md text-jaga-ink"
+                      >
+                        <ChevronIcon next={false} />
+                      </button>
+                      <select
+                        data-tour-pick="true"
+                        aria-label={t("tour.pick")}
+                        value={tourIndex}
+                        onChange={(event) => tourTo(Number(event.target.value))}
+                        className="min-h-tap min-w-0 flex-1 truncate rounded-md border border-jaga-line bg-jaga-surface px-2 text-small font-bold text-jaga-ink"
+                      >
+                        {mine.map((place, index) => (
+                          <option key={place.id} value={index}>
+                            {t("tour.option", {
+                              n: index + 1,
+                              total: mine.length,
+                              name: place.label,
+                            })}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        data-tour-step="next"
+                        aria-label={t("tour.next")}
+                        onClick={() => tourTo(tourIndex + 1)}
+                        className="grid min-h-tap min-w-12 shrink-0 place-items-center rounded-md text-jaga-ink"
+                      >
+                        <ChevronIcon next />
+                      </button>
+                      <button
+                        type="button"
+                        data-tour-reset="true"
+                        aria-label={t("tour.resetLabel")}
+                        title={t("tour.resetLabel")}
+                        onClick={tourReset}
+                        className="inline-flex min-h-tap min-w-12 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-small font-bold text-jaga-ink"
+                      >
+                        <ResetIcon />
+                        <span className="hidden sm:inline">{t("tour.reset")}</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12">
+                      <button
+                        type="button"
+                        data-zoom-all="true"
+                        onClick={() =>
+                          setFocus((was) => ({ box: SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }))
+                        }
+                        className={mapButton}
+                      >
+                        <ZoomOutIcon />
+                        {t("zoomAll")}
+                      </button>
+                      {myBox && (
+                        <button
+                          type="button"
+                          data-zoom-mine="true"
+                          onClick={() => {
+                            // A tour of their own places; with none saved, the chosen area as before.
+                            if (mine.length > 0) {
+                              tourTo(0);
+                              return;
+                            }
+                            setShowMine(true);
+                            setFocus((was) => ({ box: myBox, key: (was?.key ?? 0) + 1 }));
+                          }}
+                          className={mapButton}
+                        >
+                          <HomePinIcon />
+                          {t("zoomMine")}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {/*
+                   * 2D or 3D, on the map itself (the owner, 15 Oct): at the start of its bottom
+                   * edge, clear of the zoom buttons and the credits.
+                   */}
+                  <div
+                    role="group"
+                    aria-label={t("scene.label")}
+                    data-scene-switch={scene ? "3d" : "2d"}
+                    className="absolute bottom-2 start-2 z-10 flex overflow-hidden rounded-lg border border-jaga-line bg-jaga-surface shadow-sm"
                   >
-                    <CrossIcon size={20} />
-                    {t("close")}
-                  </button>
+                    {([false, true] as const).map((on) => (
+                      <button
+                        key={String(on)}
+                        type="button"
+                        data-scene-choice={on ? "3d" : "2d"}
+                        aria-pressed={scene === on}
+                        onClick={() => setScene(on)}
+                        className={`min-h-tap min-w-12 px-3 text-small font-bold ${
+                          scene === on ? "bg-jaga-slate text-white" : "text-jaga-ink"
+                        }`}
+                      >
+                        {t(on ? "scene.threeD" : "scene.flat")}
+                      </button>
+                    ))}
+                  </div>
+                  <MapView
+                    layers={mapLayers}
+                    showDam={showDam}
+                    showDamZone={showDamZone}
+                    status={fresh ? status : null}
+                    data={data}
+                    now={now}
+                    bounds={focus?.box ?? askedBox ?? mapBounds}
+                    boundsKey={focus?.key ?? (askedBox ? 1 : 0)}
+                    onSelect={setSelection}
+                    text={{ loading: t("loading"), failed: t("failed") }}
+                    gaugeWords={{ near: t("gauge.nearShort"), over: t("gauge.overShort") }}
+                    peek={renderPeek}
+                    mine={mine}
+                    showMine={showMine}
+                    dams={dams}
+                    hazardUrl={props.hazardTiles ?? null}
+                    sea={seaMarks}
+                    satellite={
+                      props.satelliteDays && props.satellite?.days === props.satelliteDays
+                        ? props.satellite.features
+                        : null
+                    }
+                    basemap={basemap}
+                    scene={scene}
+                    fill
+                    damText={{
+                      spillway: tDam("mark.spillway"),
+                      outlet: tDam("mark.outlet"),
+                      locale,
+                    }}
+                  />
                 </div>
-              )}
+              </div>
 
-              <section className={card} data-legend={mode}>
-                <h2 className="text-body font-bold">{t("layers.title")}</h2>
-                {layers.includes("alerts") && (
-                  <div className="flex flex-col gap-2">
-                    <p className="font-medium">{t("layers.alerts")}</p>
-                    <ul className="flex flex-wrap gap-2">
-                      {ALERT_LEVELS.filter((l) => l !== "normal" || status?.inService).map(
-                        (level) => (
-                          <li key={level}>
-                            <AlertBadge level={level} />
+              {/*
+               * Everything from here down is the console's right-hand rail, in the order the page
+               * has always had it: what is drawn on the map, then what a tap selected, then the
+               * legend and the alerts in force.
+               *
+               * The switches sit at the top of the rail rather than on a shelf under the map. A
+               * shelf cost the map 140 px, and a laptop screen is only about 790 px tall inside
+               * the browser - the map is the one thing here that must not be squeezed.
+               */}
+              <div className="contents" data-console-area="side" data-console-rail="true">
+                <fieldset className="flex flex-col gap-1" data-basemap={basemap}>
+                  <legend className="font-medium">{t("basemap.title")}</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {BASEMAPS.map((kind) => (
+                      <button
+                        key={kind}
+                        type="button"
+                        data-basemap-choice={kind}
+                        aria-pressed={basemap === kind}
+                        onClick={() => setBasemapChoice(kind)}
+                        className={`min-h-tap rounded-full border-2 px-4 font-bold ${
+                          basemap === kind
+                            ? "border-jaga-edge bg-jaga-slate text-white"
+                            : "border-jaga-line bg-jaga-surface"
+                        }`}
+                      >
+                        {t(`basemap.${kind}`)}
+                      </button>
+                    ))}
+                  </div>
+                  {scene && (
+                    <p className={hint} data-scene-note="true">
+                      {t("scene.note", { times: SCENE_EXAGGERATION })}
+                    </p>
+                  )}
+                  {isPhotoBasemap(basemap) && (
+                    <p className={hint} data-satellite-note={satellite}>
+                      {t(
+                        satellite === "esri"
+                          ? "basemap.satelliteNoteEsri"
+                          : "basemap.satelliteNote",
+                      )}
+                    </p>
+                  )}
+                </fieldset>
+                {props.onSatelliteDays && (
+                  <SatelliteFloodPanel
+                    days={props.satelliteDays ?? null}
+                    onDays={props.onSatelliteDays}
+                    flood={props.satellite ?? null}
+                    load={props.satelliteLoad ?? "loading"}
+                    dark={nightMap}
+                  />
+                )}
+                {placesOnOffer && (
+                  <label
+                    data-places-toggle="true"
+                    className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
+                  >
+                    <input
+                      type="checkbox"
+                      className={`${checkBox} mt-0`}
+                      checked={showPlaces}
+                      onChange={(event) => setShowPlaces(event.target.checked)}
+                    />
+                    <PlaceMark size={26} />
+                    <span>{t("places.toggle", { count: data ? data.places.length : 0 })}</span>
+                  </label>
+                )}
+                {showPlaces && placesOnOffer && <p className={hint}>{t("places.hint")}</p>}
+                {mine.length > 0 && (
+                  <label className={checkRow} data-mine-toggle="true">
+                    <input
+                      type="checkbox"
+                      className={checkBox}
+                      checked={showMine}
+                      onChange={(event) => setShowMine(event.target.checked)}
+                    />
+                    <span>{t("mine.toggle", { count: mine.length })}</span>
+                  </label>
+                )}
+                {/* A visitor learns their family's places could be pinned here (the owner, 15 Oct). */}
+                {!props.me?.signedIn && <SignInHint what="mapPlaces" />}
+                <p className={hint}>{t("tapHint")}</p>
+                {props.dataState === "unavailable" && (
+                  <p role="status" className={notice}>
+                    {t("dataFailed")}
+                  </p>
+                )}
+
+                {/* A tap on the map is answered here: revealPanel scrolls the rail to the card. */}
+                {selected && (
+                  <div
+                    className="flex flex-col gap-2 outline-none"
+                    data-selected-panel="true"
+                    tabIndex={-1}
+                  >
+                    {selected}
+                    <button
+                      type="button"
+                      onClick={() => setSelection(null)}
+                      className="inline-flex min-h-tap items-center gap-1.5 self-start underline"
+                    >
+                      <CrossIcon size={20} />
+                      {t("close")}
+                    </button>
+                  </div>
+                )}
+
+                <section className={card} data-legend={mode}>
+                  <h2 className="text-body font-bold">{t("layers.title")}</h2>
+                  {layers.includes("alerts") && (
+                    <div className="flex flex-col gap-2">
+                      <p className="font-medium">{t("layers.alerts")}</p>
+                      <ul className="flex flex-wrap gap-2">
+                        {ALERT_LEVELS.filter((l) => l !== "normal" || status?.inService).map(
+                          (level) => (
+                            <li key={level}>
+                              <AlertBadge level={level} />
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                      <p className={hint}>{t("legendStale")}</p>
+                    </div>
+                  )}
+                  {showMine && mine.length > 0 && (
+                    /* Each place with its own colour, so the pins can be told apart without
+                     hovering over every one of them, and so the colours mean something to
+                     someone who cannot tell these hues apart. */
+                    <div className="flex flex-col gap-1" data-layer="mine">
+                      <p className="font-medium">{t("layers.mine")}</p>
+                      <ul className="flex flex-col gap-1">
+                        {mine.map((place) => (
+                          <li
+                            key={place.id}
+                            className="flex items-center gap-2"
+                            data-mine-legend={place.id}
+                          >
+                            <MineGlyph home={place.home} color={place.color} />
+                            <span>{place.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className={hint}>{t("mine.hint")}</p>
+                    </div>
+                  )}
+                  {drawn.length > 0 && (
+                    <ul className="flex flex-col gap-1">
+                      {drawn.map((layer) =>
+                        layer === "hazard" ? (
+                          <li key={layer} className="flex flex-col gap-1" data-layer={layer}>
+                            <span className="font-medium">{t("layers.hazard")}</span>
+                            <ul className="flex flex-wrap gap-x-4 gap-y-1">
+                              {HAZARD_CLASSES.map((c) => (
+                                <li
+                                  key={c.key}
+                                  className="flex items-center gap-2"
+                                  data-hazard-class={c.key}
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className="size-4 shrink-0 rounded-[3px] border border-jaga-edge"
+                                    style={{ backgroundColor: hazardColor(c, nightMap) }}
+                                  />
+                                  {t(`risk.level.${c.key}`)}
+                                </li>
+                              ))}
+                            </ul>
+                            <span className={hint} data-hazard-note="true">
+                              {t("risk.note")}
+                            </span>
+                          </li>
+                        ) : layer === "gauges" ? (
+                          <li key={layer} className="flex flex-col gap-1" data-layer={layer}>
+                            <span className="flex flex-wrap items-center gap-2 font-medium">
+                              {t("layers.gauges")}
+                              <span
+                                className="inline-flex items-center gap-1 text-small font-bold uppercase tracking-wide"
+                                data-gauges-live="true"
+                              >
+                                <LiveDot dark={nightMap} />
+                                {t("gauge.live")}
+                              </span>
+                            </span>
+                            <ul className="flex flex-col gap-1">
+                              {(
+                                [
+                                  ["over", "above_warning"],
+                                  ["near", "above_watch"],
+                                  ["normal", "normal"],
+                                  ["quiet", "no_recent_data"],
+                                ] as const
+                              ).map(([look, status]) => (
+                                <li
+                                  key={look}
+                                  className="flex items-center gap-2"
+                                  data-gauge-legend={look}
+                                >
+                                  <GaugeGlyph look={look} dark={nightMap} />
+                                  {t(`gauge.${status}`)}
+                                </li>
+                              ))}
+                            </ul>
+                            <span className={hint}>{t("gauge.legendFull")}</span>
+                            <span className={hint}>{t("gauge.legendTrend")}</span>
+                            {newestGauge && (
+                              <span className={hint} data-gauges-updated="true">
+                                {t("gauge.updated", { time: time(newestGauge) })}
+                              </span>
+                            )}
+                          </li>
+                        ) : (
+                          <li key={layer} className="flex items-center gap-2" data-layer={layer}>
+                            {layer === "places" ? (
+                              <PlaceMark size={18} />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className={
+                                  layer === "reports"
+                                    ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
+                                    : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
+                                }
+                              />
+                            )}
+                            {t(`layers.${layer}`)}
                           </li>
                         ),
                       )}
                     </ul>
-                    <p className={hint}>{t("legendStale")}</p>
-                  </div>
-                )}
-                {showMine && mine.length > 0 && (
-                  /* Each place with its own colour, so the pins can be told apart without
-                     hovering over every one of them, and so the colours mean something to
-                     someone who cannot tell these hues apart. */
-                  <div className="flex flex-col gap-1" data-layer="mine">
-                    <p className="font-medium">{t("layers.mine")}</p>
-                    <ul className="flex flex-col gap-1">
-                      {mine.map((place) => (
-                        <li
-                          key={place.id}
-                          className="flex items-center gap-2"
-                          data-mine-legend={place.id}
+                  )}
+                  {dams.length > 0 && (
+                    <div className="flex flex-col gap-1" data-dam-legend="true">
+                      <p className="font-medium">{tDam("path.title")}</p>
+                      {/* The marks mean the same on every reservoir, so they are explained once. */}
+                      <ul className="flex flex-col gap-1">
+                        <DamLegendKeys />
+                      </ul>
+                      <p className={hint}>{tDam("path.limits")}</p>
+                      {/*
+                       * The way in that needs no aim at all. The card otherwise opens only by
+                       * tapping the dam itself, and a river is a thin thing to hit: 4 taps in 665
+                       * found it on the live map, and the owner could not find the card at all.
+                       * The legend names the dam anyway, so it is the natural button.
+                       */}
+                      {dams.map((dam) => (
+                        <button
+                          key={dam.code}
+                          type="button"
+                          data-open-dam={dam.code}
+                          onClick={() => {
+                            setSelection({ kind: "dam", code: dam.code });
+                            /*
+                             * The dam, and the places this person saved, in one view. Their own
+                             * pins come along only while they are shown: framing a map around
+                             * something invisible would read as a wrong zoom.
+                             */
+                            const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
+                            if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+                            // The card opens above the legend, so the page has to go to it.
+                            revealPanel();
+                          }}
+                          className={`${buttonQuiet} w-full justify-between text-start`}
                         >
-                          <MineGlyph home={place.home} color={place.color} />
-                          <span>{place.label}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className={hint}>{t("mine.hint")}</p>
-                  </div>
-                )}
-                {drawn.length > 0 && (
-                  <ul className="flex flex-col gap-1">
-                    {drawn.map((layer) =>
-                      layer === "hazard" ? (
-                        <li key={layer} className="flex flex-col gap-1" data-layer={layer}>
-                          <span className="font-medium">{t("layers.hazard")}</span>
-                          <ul className="flex flex-wrap gap-x-4 gap-y-1">
-                            {HAZARD_CLASSES.map((c) => (
-                              <li
-                                key={c.key}
-                                className="flex items-center gap-2"
-                                data-hazard-class={c.key}
-                              >
-                                <span
-                                  aria-hidden="true"
-                                  className="size-4 shrink-0 rounded-[3px] border border-jaga-edge"
-                                  style={{ backgroundColor: hazardColor(c, nightMap) }}
-                                />
-                                {t(`risk.level.${c.key}`)}
-                              </li>
-                            ))}
-                          </ul>
-                          <span className={hint} data-hazard-note="true">
-                            {t("risk.note")}
+                          <DamLegendRow dam={dam} />
+                          <WaveIcon size={20} aria-hidden="true" />
+                          <span className="sr-only">
+                            {tDam("legend.open", { dam: localName(dam.name, locale) })}
                           </span>
-                        </li>
-                      ) : layer === "gauges" ? (
-                        <li key={layer} className="flex flex-col gap-1" data-layer={layer}>
-                          <span className="flex flex-wrap items-center gap-2 font-medium">
-                            {t("layers.gauges")}
-                            <span
-                              className="inline-flex items-center gap-1 text-small font-bold uppercase tracking-wide"
-                              data-gauges-live="true"
-                            >
-                              <LiveDot dark={nightMap} />
-                              {t("gauge.live")}
-                            </span>
-                          </span>
-                          <ul className="flex flex-col gap-1">
-                            {(
-                              [
-                                ["over", "above_warning"],
-                                ["near", "above_watch"],
-                                ["normal", "normal"],
-                                ["quiet", "no_recent_data"],
-                              ] as const
-                            ).map(([look, status]) => (
-                              <li
-                                key={look}
-                                className="flex items-center gap-2"
-                                data-gauge-legend={look}
-                              >
-                                <GaugeGlyph look={look} dark={nightMap} />
-                                {t(`gauge.${status}`)}
-                              </li>
-                            ))}
-                          </ul>
-                          <span className={hint}>{t("gauge.legendFull")}</span>
-                          <span className={hint}>{t("gauge.legendTrend")}</span>
-                          {newestGauge && (
-                            <span className={hint} data-gauges-updated="true">
-                              {t("gauge.updated", { time: time(newestGauge) })}
-                            </span>
-                          )}
-                        </li>
-                      ) : (
-                        <li key={layer} className="flex items-center gap-2" data-layer={layer}>
-                          {layer === "places" ? (
-                            <PlaceMark size={18} />
-                          ) : (
-                            <span
-                              aria-hidden="true"
-                              className={
-                                layer === "reports"
-                                  ? "size-4 shrink-0 border-2 border-jaga-edge bg-jaga-slate/40"
-                                  : "size-4 shrink-0 rounded-full border-2 border-white bg-jaga-slate"
-                              }
-                            />
-                          )}
-                          {t(`layers.${layer}`)}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                )}
-                {dams.length > 0 && (
-                  <div className="flex flex-col gap-1" data-dam-legend="true">
-                    <p className="font-medium">{tDam("path.title")}</p>
-                    {/* The marks mean the same on every reservoir, so they are explained once. */}
-                    <ul className="flex flex-col gap-1">
-                      <DamLegendKeys />
-                    </ul>
-                    <p className={hint}>{tDam("path.limits")}</p>
-                    {/*
-                     * The way in that needs no aim at all. The card otherwise opens only by
-                     * tapping the dam itself, and a river is a thin thing to hit: 4 taps in 665
-                     * found it on the live map, and the owner could not find the card at all.
-                     * The legend names the dam anyway, so it is the natural button.
-                     */}
-                    {dams.map((dam) => (
-                      <button
-                        key={dam.code}
-                        type="button"
-                        data-open-dam={dam.code}
-                        onClick={() => {
-                          setSelection({ kind: "dam", code: dam.code });
-                          /*
-                           * The dam, and the places this person saved, in one view. Their own
-                           * pins come along only while they are shown: framing a map around
-                           * something invisible would read as a wrong zoom.
-                           */
-                          const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
-                          if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
-                          // The card opens above the legend, so the page has to go to it.
-                          revealPanel();
-                        }}
-                        className={`${buttonQuiet} w-full justify-between text-start`}
-                      >
-                        <DamLegendRow dam={dam} />
-                        <WaveIcon size={20} aria-hidden="true" />
-                        <span className="sr-only">
-                          {tDam("legend.open", { dam: localName(dam.name, locale) })}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {pending.length > 0 && (
-                  <div className="flex flex-col gap-1" data-pending="true">
-                    <p className="font-medium">{t("pending.title")}</p>
-                    <ul className={`flex list-disc flex-col gap-1 ps-5 ${hint}`}>
-                      {pending.map((layer) => (
-                        <li key={layer} data-pending-layer={layer}>
-                          {t(`pending.${layer}`)}
-                        </li>
+                        </button>
                       ))}
-                    </ul>
-                  </div>
-                )}
-              </section>
-
-              {mode === "live" && (
-                <section className={card} data-alerts-list="true">
-                  <h2 className="text-body font-bold">{t("alertsList.title")}</h2>
-                  {!status || (failed && !fresh) ? (
-                    <p>{t("alertsList.unknown")}</p>
-                  ) : alerts.length === 0 ? (
-                    <p>{status.inService ? t("alertsList.none") : tHome("notInService.body")}</p>
-                  ) : (
-                    <ul className="flex flex-col gap-4">
-                      {alerts.map(({ alert, tambons }) => (
-                        <li key={alert.id} className="flex flex-col gap-1">
-                          <AlertStatus
-                            level={alert.level}
-                            nextUpdateAt={new Date(alert.nextUpdateAt)}
-                            now={new Date(now)}
-                          />
-                          <p>
-                            <span className={`block ${hint}`}>{t("alertsList.areas")}</span>
-                            {tambons.map(tambonName).join(", ")}
-                          </p>
-                          <p className={hint}>
-                            {t("alertsList.nextUpdate", { time: time(alert.nextUpdateAt) })}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
+                    </div>
+                  )}
+                  {pending.length > 0 && (
+                    <div className="flex flex-col gap-1" data-pending="true">
+                      <p className="font-medium">{t("pending.title")}</p>
+                      <ul className={`flex list-disc flex-col gap-1 ps-5 ${hint}`}>
+                        {pending.map((layer) => (
+                          <li key={layer} data-pending-layer={layer}>
+                            {t(`pending.${layer}`)}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </section>
-              )}
+
+                {mode === "live" && (
+                  <section className={card} data-alerts-list="true">
+                    <h2 className="text-body font-bold">{t("alertsList.title")}</h2>
+                    {!status || (failed && !fresh) ? (
+                      <p>{t("alertsList.unknown")}</p>
+                    ) : alerts.length === 0 ? (
+                      <p>{status.inService ? t("alertsList.none") : tHome("notInService.body")}</p>
+                    ) : (
+                      <ul className="flex flex-col gap-4">
+                        {alerts.map(({ alert, tambons }) => (
+                          <li key={alert.id} className="flex flex-col gap-1">
+                            <AlertStatus
+                              level={alert.level}
+                              nextUpdateAt={new Date(alert.nextUpdateAt)}
+                              now={new Date(now)}
+                            />
+                            <p>
+                              <span className={`block ${hint}`}>{t("alertsList.areas")}</span>
+                              {tambons.map(tambonName).join(", ")}
+                            </p>
+                            <p className={hint}>
+                              {t("alertsList.nextUpdate", { time: time(alert.nextUpdateAt) })}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                )}
+              </div>
             </>
           )}
         </>

@@ -156,6 +156,12 @@ type Props = {
   /** 3D: the ground raised and the map tilted (lib/map.ts, setScene). 2D when left out. */
   scene?: boolean;
   /**
+   * The map fills the height it is given instead of taking 60% of the screen. Only the laptop
+   * console asks for this (app/globals.css, the console block), and only there does it change
+   * anything: every other width, and every picker that borrows this map, keeps the fixed height.
+   */
+  fill?: boolean;
+  /**
    * Hexagons where a satellite pass saw flood water (lib/satellite-flood.ts); null or empty
    * draws nothing. The caller says in words what an empty map means.
    */
@@ -390,6 +396,7 @@ export function MapView({
   hazardUrl = null,
   basemap = "streets",
   scene = false,
+  fill = false,
   satellite = null,
   sea = null,
   gaugeWords = { near: "", over: "" },
@@ -1512,7 +1519,7 @@ export function MapView({
     );
   }
   return (
-    <div className="relative">
+    <div className={`relative${fill ? " console:h-full" : ""}`}>
       {peekAt && peek && createPortal(peek(peekAt.target), peekAt.node)}
       {/* Rain falling now over the person's own places (owner, 15 Oct), with the pins. */}
       {loaded && (
@@ -1526,7 +1533,9 @@ export function MapView({
         ref={container}
         data-map="true"
         data-map-ready={state === "ready"}
-        className="h-[60vh] min-h-80 w-full overflow-hidden rounded-xl border border-jaga-line"
+        className={`h-[60vh] min-h-80 w-full overflow-hidden rounded-xl border border-jaga-line${
+          fill ? " console:h-full console:min-h-0" : ""
+        }`}
       />
       {state === "loading" && (
         <p className="absolute inset-x-0 top-3 text-center text-small text-jaga-text-2">

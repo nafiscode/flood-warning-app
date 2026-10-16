@@ -111,6 +111,156 @@
   --spacing-tap: 3rem;
 }
 
+/*
+ * The laptop console (the owner, 16 Oct 2026): the live map becomes an operations dashboard on a
+ * laptop - layer rail, full-height map, readout panels - and stays exactly as it is on a phone or
+ * a tablet, which the owner asked to leave alone.
+ *
+ * "Laptop" is a wide screen with a mouse or a trackpad. Width alone is not enough: a tablet in
+ * landscape is 1180 px wide and must keep the phone layout, so the pointer decides. The console
+ * is this variant plus the one plain-CSS block below it, and nothing else in the app.
+ */
+@custom-variant console (@media (min-width: 1024px) and (pointer: fine));
+
+/* The same query in plain CSS, for the few console rules Tailwind cannot say cheaply. Keep the
+   two in step; they are side by side so they stay that way. */
+@media (min-width: 1024px) and (pointer: fine) {
+  /* A surveyor's hairline grid behind the console shell: the lightest hint of graph paper, drawn
+     from the theme's own line colour, so it follows the clock from light to dark with everything
+     else (docs/brand.md: the clock decides, there is nothing to switch). */
+  [data-map-console] {
+    --jaga-grid: color-mix(in oklab, var(--jaga-line) 60%, transparent);
+    background-image:
+      linear-gradient(to right, var(--jaga-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--jaga-grid) 1px, transparent 1px);
+    background-size: 2.5rem 2.5rem;
+    background-position: center center;
+  }
+  /* Readings line up in a column, the way an instrument panel reads. The brand face stays: a
+     monospace fallback would break Thai (docs/brand.md), so only the figures are tabular. */
+  [data-console-readout] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+  /* Each rail keeps its own scrollbar out of the way until it is needed. */
+  [data-console-rail] {
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+  }
+  /* A panel heading reads as an instrument label. Thai has no capital letters and does not take
+     letter-spacing kindly, so this is for the Latin scripts only. */
+  html:not(:lang(th)) [data-console-label] {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  /* Four readouts in a row once there is room for four; two on a 1024 px screen. */
+  @media (min-width: 1280px) {
+    [data-console-tiles] {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /*
+   * The console's own shape. Written here rather than as a wall of arbitrary Tailwind because
+   * the whole arrangement wants to be read in one place; these rules sit outside Tailwind's
+   * layers, so they take over from the phone's flex column without !important anywhere.
+   *
+   * Reading order and visual order agree column by column: the page's own order of blocks runs
+   * left rail (province, layers, method, risk or live), then the map, then the right rail (the
+   * map's switches, what a tap selected, the legend, the alerts) - so a keyboard or a screen
+   * reader meets them exactly as the eye does, and the phone's order is untouched.
+   */
+  #main:has([data-map-console]) {
+    max-width: none;
+    padding-inline: 1.25rem;
+  }
+  /* ...and the header follows the page out to the edges, or it would float in the middle of it. */
+  body:has(#main [data-map-console]) [data-header-bar] {
+    max-width: none;
+  }
+  [data-map-console] {
+    display: grid;
+    grid-template-columns: 19rem minmax(0, 1fr) 22rem;
+    grid-template-areas:
+      "head   head   head"
+      "tabs   tabs   tabs"
+      "hazard hazard hazard"
+      "tiles  tiles  tiles"
+      "rail   map    side";
+    /* The tabs row is empty until donations are switched on (safety rule 9), and an empty auto
+       row takes no height, so the console is the same shape with or without it. */
+    grid-template-rows: auto auto auto auto minmax(18rem, 1fr);
+    column-gap: 1rem;
+    row-gap: 0.75rem;
+    /*
+     * A definite height, so the map row can take what the rows above it leave and the two rails
+     * scroll inside it instead of stretching the page. --console-chrome is the one figure to turn
+     * if the console does not sit in the screen: the room the header, the hotline bar and the
+     * page's own padding take, which the Thai header (three lines) sets.
+     */
+    height: calc(100dvh - var(--console-chrome, 14rem));
+    min-height: 34rem;
+  }
+  [data-console-area] {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  [data-console-area="head"] {
+    grid-area: head;
+    flex-flow: row wrap;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+  }
+  [data-console-area="tabs"] {
+    grid-area: tabs;
+    flex-flow: row wrap;
+  }
+  /* One line: the label beside its pills, because every line here is a line off the map. */
+  [data-console-area="hazard"] {
+    grid-area: hazard;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+  [data-console-tiles] {
+    grid-area: tiles;
+  }
+  [data-console-area="rail"] {
+    grid-area: rail;
+  }
+  [data-console-area="map"] {
+    grid-area: map;
+  }
+  [data-console-area="side"] {
+    grid-area: side;
+  }
+  /*
+   * Each rail scrolls on its own, so the map never leaves the screen while someone reads a card.
+   * `relative` is not decoration: without it, anything inside a card that is positioned - and the
+   * cards are full of small marks that are - is laid out against the page instead of the rail, so
+   * it escapes the rail's clipping and leaves the page scrolling over a thousand pixels of
+   * nothing below the console.
+   */
+  [data-console-rail] {
+    position: relative;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* The map takes whatever height is left in its column. */
+  [data-console-area="map"] [data-map-frame] {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  /* The frozen copy of the chip row is a phone's answer to a long page; the console's rail keeps
+     the real one in view, so the copy would only cover the map. */
+  [data-map-chips-float] {
+    display: none;
+  }
+}
+
 /* A9 (decision 15 Oct 2026): Thai body text is never below 18 px (CLAUDE.md), so in Thai the
    small style is the body size; hierarchy is kept by colour and weight. Malay and English keep
    16 px. The page's language is on <html>, so this follows the language switch. */

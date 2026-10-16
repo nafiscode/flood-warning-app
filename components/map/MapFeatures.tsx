@@ -154,6 +154,12 @@ function Chip({
   const t = useTranslations("mapFeatures");
   // In the floating row a phone shows the drawings only; the name stays for screen readers.
   const small = floating ? "max-sm:size-12 max-sm:justify-center max-sm:p-0" : "";
+  /*
+   * In the console's left rail the six are a layer list, one to a line, so they read as the
+   * layer switches a GIS user expects rather than as a wrapped row of pills. The frozen copy is
+   * not drawn on the console at all (app/globals.css), so it never wants this.
+   */
+  const rail = floating ? "" : "console:w-full console:justify-start";
   return (
     <button
       type="button"
@@ -161,7 +167,7 @@ function Chip({
       aria-pressed={on}
       title={floating ? t(`${f}.short`) : undefined}
       onClick={() => onToggle(f)}
-      className={`inline-flex min-h-tap items-center gap-2 rounded-full border-2 py-1 ps-1.5 pe-4 font-bold active:translate-y-px ${small} ${
+      className={`inline-flex min-h-tap items-center gap-2 rounded-full border-2 py-1 ps-1.5 pe-4 font-bold active:translate-y-px ${small} ${rail} ${
         on
           ? "border-jaga-edge bg-jaga-slate text-white"
           : "border-jaga-line bg-jaga-surface text-jaga-ink hover:border-jaga-teal-ink"
@@ -245,9 +251,9 @@ export function MapFeatureChips({
         <p id="map-chips-title" className="font-medium">
           {t("mapTitle")}
         </p>
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap gap-2 console:flex-col console:flex-nowrap">
           {CHIP_ORDER.map((f) => (
-            <li key={f}>
+            <li key={f} className="console:w-full">
               <Chip focus={f} on={on[f]} onToggle={onToggle} />
             </li>
           ))}
