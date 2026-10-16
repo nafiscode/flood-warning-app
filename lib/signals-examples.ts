@@ -85,7 +85,9 @@ const rising: Zone = {
     EXAMPLE_SIGNALS_NOW + (i - 7) * 24 * HOUR,
     60 + (i > 4 ? (i - 4) * 140 : 0) - (i > 9 ? (i - 9) * 220 : 0),
   ]),
-  tide: hourly(-24, 72, (h) => 0.7 + 0.45 * Math.sin((h / 12.4) * 2 * Math.PI)),
+  // Monsoon set-up with the tidal range squeezed: the low water never drops, which is the case
+  // the coastal gate is there to show (science plan Module 10).
+  tide: hourly(-24, 72, (h) => 1.25 + 0.28 * Math.sin((h / 12.4) * 2 * Math.PI)),
   forecastIssuedAt: EXAMPLE_SIGNALS_NOW - 0.5 * HOUR,
 };
 
@@ -207,5 +209,61 @@ export const EXAMPLE_GAUGE_LEVELS = [
     evacuate_m: 1.15,
     provisional: false,
     method: { how: "set by an admin" },
+  },
+];
+
+/**
+ * Made-up rows of `admin_coastal_gate()` for the example page. The percentiles are the shape of
+ * the real ones (seed 49), including a mouth with no warning zone, so the example shows both the
+ * gate panel and the line that names a mouth Jaga has no live feed for.
+ */
+export const EXAMPLE_COASTAL_GATE = [
+  {
+    id: "pattani_river",
+    basin: "pattani_river",
+    name: { th: "ปากแม่น้ำปัตตานี", ms: "Muara Sungai Patani", en: "Pattani River mouth" },
+    lat: 6.958,
+    lon: 101.292,
+    llw_p50: 0.75,
+    llw_p90: 0.94,
+    llw_p98: 1.1,
+    setup_p50: 1.0,
+    setup_p90: 1.19,
+    setup_p98: 1.3,
+    season_days: 450,
+    method: { source: "example" },
+    updated_at: "2026-10-16T00:00:00Z",
+  },
+  {
+    id: "kolok",
+    basin: "kolok",
+    name: { th: "ปากแม่น้ำโก-ลก (ตากใบ)", ms: "Muara Sungai Golok (Tak Bai)", en: "Kolok River mouth (Tak Bai)" },
+    lat: 6.375,
+    lon: 102.125,
+    llw_p50: 0.61,
+    llw_p90: 0.82,
+    llw_p98: 0.99,
+    setup_p50: 1.0,
+    setup_p90: 1.18,
+    setup_p98: 1.29,
+    season_days: 450,
+    method: { source: "example" },
+    updated_at: "2026-10-16T00:00:00Z",
+  },
+  {
+    id: "bang_nara",
+    basin: null,
+    name: { th: "ปากแม่น้ำบางนรา", ms: "Muara Sungai Bang Nara", en: "Bang Nara River mouth" },
+    lat: 6.542,
+    lon: 101.875,
+    llw_p50: 0.68,
+    llw_p90: 0.89,
+    llw_p98: 1.03,
+    setup_p50: 1.0,
+    setup_p90: 1.19,
+    setup_p98: 1.29,
+    season_days: 450,
+    method: { source: "example" },
+    updated_at: "2026-10-16T00:00:00Z",
   },
 ];

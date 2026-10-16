@@ -15,7 +15,7 @@ Each basin behaves differently, so we analyze them separately:
 Three drivers combine:
 1. **Upstream mountain rain** travels downstream with a lag of hours to 1–2 days. This lag is the main source of warning lead time.
 2. **Intense local rain** causes ponding with little lead time.
-3. **The coastal "gate."** The northeast monsoon pushes water onshore and, with high tide, surge and the Songkhla Lake level, it slows drainage at the river mouths. That is why water stays for days.
+3. **The coastal "gate."** The northeast monsoon pushes water onshore and, with high tide, surge and the Songkhla Lake level, it slows drainage at the river mouths. That is why water stays for days. Measured in Module 10 (16 Oct 2026): what decides it is the daily *low* water, not the high one.
 
 ## 2. Open data sources
 
@@ -194,6 +194,20 @@ Added 14 Oct 2026 at the owner's request: can Jaga say ahead of the season wheth
 6. **Rain to flood.** Tie season rain and burst size to flooded area (the nine radar seasons) and to the gauges, so the outlook can say what a wet third has meant on the ground.
 
 **Where it is shown.** To the admins first (the signal dashboard of A8), as one of the things a person weighs. Whether it is shown to the public at all, and in what words, is the owner's decision after the hindcast check; if it is, it sits apart from the alert levels and wears none of their colours.
+
+### Module 10: The coastal gate (how long the water stays)
+
+Added 16 Oct 2026 at the owner's request, after a friend in Narathiwat described the Bang Nara flooding while the sea stood high and the water could not get out. Driver 3 of section 1 had been named since the first draft and never measured. **Built the same day** (`pipeline/coastal_gate`, METHODS.md, report.md).
+
+**The mechanism.** Three days of rain put the same volume of water in a basin whether the sea is high or low; what differs is how long it takes to leave. A river drains while the sea is below it, so the figure that decides whether water leaves or stays is not the high tide but the **low** tide: the floor the river has to get over. Two things lift that floor together on this coast — the north-east monsoon's **set-up**, which piles water against the shore for days at a time, and a **collapsing tidal range**, because the Gulf's tide is largely diurnal and its range varies far more than a semidiurnal coast's. High mean plus small range is the case where the gate never opens, and a spring-tide calendar would miss it: at springs the low waters go *lower*, which helps a river drain.
+
+1. **The record (built).** Open-Meteo's marine model, hourly sea level at four river mouths — the three warning zones' tide points plus the Bang Nara, which has no zone. The archive starts in late 2022, so it is four seasons. The slow part comes out with a Godin filter (24-24-25 h moving means), not the single 25-hour mean of the tide check, which passes several centimetres of the diurnal tide. Per Bangkok day: lower low water, higher high water, range, and the set-up; percentiles over October to January only.
+2. **What the floods show.** At all four mouths, in both the 2024 and the 2025 flood, the **low water** stood at the 96th to 99th percentile of season days while the **high water** was unremarkable (81st to 97th) and the set-up at the 94th to 98th. The one flood that was rain without a sea component — Hat Yai, 18 December 2025 — sits at the 78th. That contrast is why this is a modifier and not a trigger.
+3. **The wind explains it,** so it is forecastable: onshore wind stress against the set-up gives r = +0.72 to +0.89 depending on the mouth, and the marine forecast runs 7 days out, far beyond the rain-driven lead time.
+4. **The live flag (built).** A day is *shut* when its lowest sea level stays at or over the mouth's low-water p90; the flag is raised at two shut days running. Base rate over four seasons: about three spells a season per mouth, one of which is the flood. Far too noisy for a trigger; the right cost for a modifier, where being wrong means an admin reads "the water will leave slowly" on a day when no water needs to leave.
+5. **Where it is shown.** The admins' signal dashboard, beside the tide chart, in words and never in an alert colour, and as a note on the safe-return window (Module 5) for the gauges the tide reaches. It can never raise a level and never publish (safety rule 2), and it is not shown to the public (safety rule 8: a bare sea-level percentile would read as a forecast).
+6. **Honest limits.** A model, not a gauge: it sat about 0.7 m off the Pattani tide gauge and its cell is a few kilometres offshore, so only percentiles within one mouth's own series mean anything. Four seasons is a first estimate — re-cut the reference after this one. ThaiWater lists station 2143 `NR` at the Bang Nara mouth but answers no readings for 2024-2026, so there is no observed tide here to test against; getting one is the first thing to fix if the gate is ever to do more than advise.
+7. **The gap it turned up.** No warning zone covers Mueang Narathiwat (tambons 9601xx), so the Bang Nara — the provincial capital's river — has no signals, no thresholds and no gauge in the tide's reach. Its only reporting gauge in the catchment, X.73 at Tanyong Mat, sits about 14 m above mean sea level, well above the tide. A zone of its own is a separate decision (`docs/decisions.md`, 16 Oct 2026); until then the Kolok mouth at Tak Bai, 20 km along the same shore, stands in.
 
 ## 4. Validation metrics
 

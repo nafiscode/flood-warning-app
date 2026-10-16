@@ -3,6 +3,12 @@ import { Link } from "@/i18n/navigation";
 import { RefreshEvery } from "@/components/admin/RefreshEvery";
 import { SignalsMap, type MapPoint } from "@/components/admin/SignalsMap";
 import {
+  coastalGate,
+  slowReturn,
+  type Gate,
+  type GateReference,
+} from "@/lib/coastal-gate";
+import {
   FORECAST_STALE_H,
   gaugeNow,
   gaugeState,
@@ -358,6 +364,7 @@ export function draftNote(zone: Zone, now: number, locale: string): string {
 
 function ZoneCard({
   zone,
+  gate,
   now,
   locale,
   t,
@@ -367,6 +374,7 @@ function ZoneCard({
   saved,
 }: {
   zone: Zone;
+  gate: Gate | null;
   now: number;
   locale: string;
   t: T;
@@ -553,13 +561,14 @@ function ZoneCard({
             emptyText={t("tide.none")}
           />
           <p className={hint}>{t("tide.caveat")}</p>
+          <GatePanel gate={gate} locale={locale} t={t} />
         </section>
       </div>
       {zone.forecastIssuedAt ? (
         <p className={hint}>{t("forecastAt", { time: when(locale, zone.forecastIssuedAt) })}</p>
       ) : null}
 
-      <RecessionBlock zone={zone} t={t} />
+      <RecessionBlock zone={zone} gate={gate} t={t} />
 
       <details
         className="rounded-xl border border-jaga-line p-3"
@@ -668,7 +677,66 @@ function median(t: T, hours: number): string {
  * How fast past floods fell back at the zone's gauges (science plan Module 5): the record an admin
  * reads before writing a Return alert's window. Never a forecast, so no colour and no level.
  */
-function RecessionBlock({ zone, t }: { zone: Zone; t: T }) {
+/**
+ * The coastal gate (science plan Module 10): what the sea's low water is doing to this river's way
+ * out. Written out in words beside the tide chart, never as a level and never in an alert colour -
+ * it cannot raise anything and it cannot publish (safety rule 2). A state of `open` is still shown,
+ * because "the sea is letting the river out" is worth knowing when deciding a return window.
+ */
+function GatePanel({ gate, locale, t }: { gate: Gate | null; locale: string; t: T }) {
+  if (!gate) return <p className={hint}>{t("gate.none")}</p>;
+  const { state, days, shutRun, shutFrom, reference } = gate;
+  const line = reference.llw.p90;
+  const metre = (v: number) => v.toFixed(2);
+  return (
+    <div
+      className="flex flex-col gap-2 rounded-xl border border-jaga-line p-3"
+      data-signal-gate={state}
+      data-signal-gate-mouth={reference.id}
+    >
+      <h4 className="font-bold text-jaga-ink">{t("gate.title")}</h4>
+      <p className="font-bold" data-gate-state>
+        {t(`gate.state.${state}`)}
+      </p>
+      <p className={hint}>
+        {state === "shut" && shutFrom !== null
+          ? t("gate.shutRun", { days: shutRun, from: dayLabel(locale, shutFrom) })
+          : state === "narrowing"
+            ? t("gate.narrowingLine")
+            : state === "open"
+              ? t("gate.openLine")
+              : t("gate.unknownLine")}
+      </p>
+      <p className={hint}>{t("gate.meaning")}</p>
+      {days.length > 0 ? (
+        <>
+          <p className={hint}>{t("gate.days")}</p>
+          <ul className="list-disc ps-5">
+            {days.map((d) => (
+              <li key={d.at} data-gate-day={d.shut ? "shut" : "open"}>
+                {t("gate.day", {
+                  day: dayLabel(locale, d.at),
+                  low: metre(d.low),
+                  high: metre(d.high),
+                })}
+                {d.shut ? <span className={`${hint} ps-1`}>({t("gate.dayShut")})</span> : null}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      {line !== null ? (
+        <p className={hint}>
+          {t("gate.line", { line: metre(line), days: reference.seasonDays })}
+        </p>
+      ) : null}
+      <p className={hint}>{t("gate.intro")}</p>
+      <p className={hint}>{t("gate.caveat")}</p>
+    </div>
+  );
+}
+
+function RecessionBlock({ zone, gate, t }: { zone: Zone; gate: Gate | null; t: T }) {
   const gauges = [
     ...(zone.key ? [[zone.key, "key"] as const] : []),
     ...(zone.upstream ? [[zone.upstream, "upstream"] as const] : []),
@@ -687,6 +755,8 @@ function RecessionBlock({ zone, t }: { zone: Zone; t: T }) {
             const r = g.recession!;
             const notes = [
               r.tidal ? t("recession.tidal") : null,
+              // Only where the tide reaches the gauge: above its reach the sea adds nothing.
+              slowReturn(gate, r.tidal) ? t("recession.slowReturn") : null,
               r.lake ? t("recession.lake") : null,
               r.bankSuspect ? t("recession.bankSuspect") : null,
               r.censored > 0 ? t("recession.censored", { count: r.censored }) : null,
@@ -1009,6 +1079,7 @@ function mapPoints(data: Signals, locale: string): MapPoint[] {
 
 export function SignalsView({
   data,
+  gates = [],
   locale,
   t,
   action,
@@ -1023,6 +1094,8 @@ export function SignalsView({
   refreshMinutes,
 }: {
   data: Signals;
+  /** One row per river mouth (`coastal_gate_reference`); empty until the migration is applied. */
+  gates?: GateReference[];
   locale: string;
   t: T;
   action?: (form: FormData) => void;
@@ -1162,6 +1235,7 @@ export function SignalsView({
         <ZoneCard
           key={zone.id}
           zone={zone}
+          gate={gateFor(gates, zone, data.now)}
           now={data.now}
           locale={locale}
           t={t}
@@ -1171,6 +1245,43 @@ export function SignalsView({
           saved={savedZone === zone.id}
         />
       ))}
+      {view === "map" ? null : <MouthsWithoutZone gates={gates} locale={locale} t={t} />}
     </div>
+  );
+}
+
+/** The gate for one zone, when a reference for its mouth exists. */
+function gateFor(gates: GateReference[], zone: Zone, now: number): Gate | null {
+  const reference = gates.find((g) => g.basin === zone.basin);
+  return reference ? coastalGate(zone.tide, reference, now) : null;
+}
+
+/**
+ * Mouths with a reference and no warning zone, so no live forecast is stored for them. Today that
+ * is the Bang Nara: no zone covers Mueang Narathiwat, which is the gap the owner's question of
+ * 16 Oct 2026 turned up. Named here so it is not quietly missing from the dashboard.
+ */
+function MouthsWithoutZone({
+  gates,
+  locale,
+  t,
+}: {
+  gates: GateReference[];
+  locale: string;
+  t: T;
+}) {
+  const orphans = gates.filter((g) => g.basin === null);
+  if (orphans.length === 0) return null;
+  return (
+    <section className={card} data-signal-gate-nozone>
+      <h2 className="font-bold text-jaga-ink">{t("gate.noZoneTitle")}</h2>
+      <ul className="list-disc ps-5">
+        {orphans.map((g) => (
+          <li key={g.id} className={hint}>
+            {t("gate.noZone", { name: localName(g.name, locale) })}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

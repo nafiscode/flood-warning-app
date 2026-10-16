@@ -1,0 +1,62 @@
+# Module 10 of docs/science-plan.md: the coastal gate. How much of a low-water window the sea
+# leaves a river to drain through, at each river mouth. Nothing here publishes anything and nothing
+# here can raise an alert level: it is a modifier an admin reads beside the rain and the gauges
+# (safety rule 2), and it tells the safe-return window which end of its range to expect.
+#
+# The owner asked for this on 16 Oct 2026 after a friend in Narathiwat described the Bang Nara
+# flooding while the sea stood high and the water could not get out.
+
+output_dir: out/coastal_gate
+
+# Open-Meteo's marine model is the only sea level we have. Its archive of sea_level_height_msl
+# starts in late 2022 (2022-10-01 answers nulls, 2022-12-01 answers values), so this is the whole
+# record, not a choice.
+archive:
+  first: "2022-11-01"
+  last: "2026-10-15"
+
+# The mouths. lon, lat - the same order and the same three points as thresholds/config.yaml
+# tide_point, so the reference and the live feed always talk about the same water.
+mouths:
+  pattani_river:
+    name: {th: "ปากแม่น้ำปัตตานี", ms: "Muara Sungai Patani", en: "Pattani River mouth"}
+    point: [101.27, 6.96]
+    zone: pattani_river
+  kolok:
+    name: {th: "ปากแม่น้ำโก-ลก (ตากใบ)", ms: "Muara Sungai Golok (Tak Bai)", en: "Kolok River mouth (Tak Bai)"}
+    point: [102.10, 6.27]
+    zone: kolok
+  u_taphao:
+    name: {th: "ปากทะเลสาบสงขลา", ms: "Muara Tasik Songkhla", en: "Songkhla Lake outlet"}
+    point: [100.62, 7.25]
+    zone: u_taphao
+  # No warning zone covers Mueang Narathiwat (tambons 9601xx), so nothing live is fetched here yet.
+  # Kept because it is the mouth the owner asked about and because the figures say whether a zone
+  # of its own is worth building (docs/decisions.md, 16 Oct 2026).
+  bang_nara:
+    name: {th: "ปากแม่น้ำบางนรา", ms: "Muara Sungai Bang Nara", en: "Bang Nara River mouth"}
+    point: [101.84, 6.44]
+    zone: null
+
+# Splitting the hourly series. The tide in the Gulf of Thailand turns diurnal, so a single 25-hour
+# mean (what thresholds/tide.py `split` uses for its correlation check) leaves a few centimetres of
+# K1/O1 in the slow part. The set-up here is read at that size, so it uses the Godin filter instead:
+# three moving means of 24, 24 and 25 hours, the standard way to take both the diurnal and the
+# semidiurnal tide out of a sea-level record.
+filter:
+  godin: [24, 24, 25]
+  # A day needs this many of its 24 hours before its low and high water are counted.
+  min_hours_per_day: 20
+
+# The reference the live flag is measured against: percentiles of the daily lower low water and of
+# the set-up, over the flood-season months only (a June low water says nothing about December).
+reference:
+  months: [10, 11, 12, 1]
+  percentiles: [50, 90, 98]
+
+# When the sea is holding the river in. Read off the forecast, in Bangkok days.
+flag:
+  # A day counts as shut when its lowest sea level stays at or above the reference low water p90.
+  shut_percentile: 90
+  # This many shut days in a row before the flag is raised: one high day is a tide, several is a gate.
+  shut_days: 2

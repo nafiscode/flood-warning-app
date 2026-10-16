@@ -3,7 +3,12 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SignalsView } from "@/components/admin/Signals";
 import { devPagesEnabled } from "@/lib/dev-pages";
-import { EXAMPLE_GAUGE_LEVELS, EXAMPLE_SIGNALS } from "@/lib/signals-examples";
+import {
+  EXAMPLE_COASTAL_GATE,
+  EXAMPLE_GAUGE_LEVELS,
+  EXAMPLE_SIGNALS,
+} from "@/lib/signals-examples";
+import { toReferences } from "@/lib/coastal-gate";
 import { withGaugeLevels } from "@/lib/signals";
 import { hint } from "@/lib/ui";
 
@@ -32,6 +37,7 @@ export default async function SignalsExamplePage({
       </header>
       <SignalsView
         data={withGaugeLevels(EXAMPLE_SIGNALS, EXAMPLE_GAUGE_LEVELS)}
+        gates={toReferences(EXAMPLE_COASTAL_GATE)}
         view={query.view === "map" ? "map" : "cards"}
         locale={locale}
         t={(key, values) => t(key as never, values as never)}

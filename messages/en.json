@@ -3442,7 +3442,31 @@
       "lake": "This gauge falls with Songkhla Lake, which falls slowly.",
       "bankSuspect": "Its listed bank looks too low.",
       "censored": "{count, plural, one {One more flood} other {# more floods}} lost the record before the water fell and {count, plural, one {is} other {are}} not counted, so these figures may be short.",
-      "notUsable": "Do not use this gauge's figures."
+      "notUsable": "Do not use this gauge's figures.",
+      "slowReturn": "The sea is holding the water in just now, so take the slow end of these figures."
+    },
+    "gate": {
+      "title": "The river's way out to sea",
+      "intro": "A river drains while the sea is below it, so the figure that matters is the lowest the sea gets each day, not the highest. When the monsoon pushes the sea up and the tidal range collapses at the same time, the low water stops dropping, the river cannot get out and the water stays for days.",
+      "state": {
+        "shut": "The sea is holding the water in",
+        "narrowing": "The way out is narrowing",
+        "open": "Draining to sea as usual",
+        "unknown": "Cannot be read yet"
+      },
+      "shutRun": "The daily low water stays above the reference line for {days} days running, from {from}.",
+      "narrowingLine": "A day with the low water above the reference line, but not two days running.",
+      "openLine": "The daily low water drops as usual across the forecast.",
+      "unknownLine": "Too little sea-level forecast stored to read, so this is not the same as draining normally.",
+      "days": "The lowest and highest the sea gets each day",
+      "day": "{day} low {low} m, high {high} m",
+      "dayShut": "no low-water window",
+      "line": "This mouth's reference line: a low water of {line} m or more (the 90th percentile of {days} flood-season days, October to January).",
+      "meaning": "Read it for how slowly the water will leave. When the sea is holding the water in, take the slow end of what past floods took to fall back.",
+      "caveat": "Advisory only: it never raises an alert level and it never publishes. The sea floods nothing on its own; it decides how long the water stays. The model reads about 0.7 m above the Pattani tide gauge and its cell is a few kilometres offshore of the mouth, so compare it only with the same mouth's own record. The record is four seasons.",
+      "none": "No record for this mouth yet.",
+      "noZoneTitle": "Mouths with no warning zone yet",
+      "noZone": "{name}: it has a record but no live forecast, because no warning zone covers Mueang Narathiwat. In the 2024 and 2025 floods its low water stood at the 96th and 98th percentile. The Kolok mouth at Tak Bai is 20 km along the same shore, so it stands in for now."
     }
   },
   "lineQuota": {

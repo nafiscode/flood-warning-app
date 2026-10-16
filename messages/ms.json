@@ -3442,7 +3442,31 @@
       "lake": "Stesen ini surut mengikut Tasik Songkhla, yang surut perlahan.",
       "bankSuspect": "Paras tebing yang disenaraikan kelihatan terlalu rendah.",
       "censored": "{count} kali lagi rekod terputus sebelum air surut dan tidak dikira, jadi angka ini mungkin terlalu pendek.",
-      "notUsable": "Angka stesen ini tidak patut digunakan."
+      "notUsable": "Angka stesen ini tidak patut digunakan.",
+      "slowReturn": "Laut sedang menutup laluan keluar sekarang, jadi ambil penghujung lambat angka ini."
+    },
+    "gate": {
+      "title": "Laluan air ke laut",
+      "intro": "Sungai hanya mengalir keluar apabila paras laut lebih rendah daripada paras sungai, jadi angka yang penting ialah air pasang paling rendah setiap hari, bukan yang paling tinggi. Apabila monsun menolak laut naik dan julat pasang surut mengecil pada masa yang sama, paras terendah tidak turun, sungai tidak dapat mengalir keluar dan air bertakung berhari-hari.",
+      "state": {
+        "shut": "Laut menutup laluan",
+        "narrowing": "Laluan semakin sempit",
+        "open": "Mengalir ke laut seperti biasa",
+        "unknown": "Belum dapat dinilai"
+      },
+      "shutRun": "Paras terendah laut kekal di atas garis rujukan selama {days} hari berturut-turut, dari {from}",
+      "narrowingLine": "Ada hari dengan paras terendah di atas garis rujukan, tetapi belum dua hari berturut-turut.",
+      "openLine": "Paras terendah laut turun seperti biasa dalam tempoh ramalan.",
+      "unknownLine": "Ramalan paras laut belum cukup untuk dinilai, jadi ini bukan bermakna laluan terbuka.",
+      "days": "Paras laut terendah dan tertinggi setiap hari",
+      "day": "{day} terendah {low} m, tertinggi {high} m",
+      "dayShut": "tiada waktu air surut",
+      "line": "Garis rujukan muara ini: paras terendah {line} m atau lebih (persentil ke-90 bagi {days} hari musim banjir, Oktober hingga Januari).",
+      "meaning": "Gunakannya untuk menilai berapa lama air akan surut. Apabila laut menutup laluan, ambil penghujung lambat bagi tempoh surut yang pernah dicatatkan.",
+      "caveat": "Maklumat sampingan sahaja: ia tidak menaikkan tahap amaran dan tidak mengeluarkan amaran sendiri. Laut sendiri tidak menyebabkan banjir; ia hanya menentukan berapa lama air bertakung. Model ini kira-kira 0.7 m lebih tinggi daripada tolok pasang surut di Pattani dan selnya beberapa kilometer di luar muara, jadi bandingkan hanya dengan rekod muara yang sama. Rekod ini hanya empat musim.",
+      "none": "Belum ada rekod bagi muara ini.",
+      "noZoneTitle": "Muara yang belum mempunyai zon amaran",
+      "noZone": "{name}: ada rekod tetapi tiada ramalan langsung, kerana tiada zon amaran meliputi Mueang Narathiwat. Dalam banjir 2024 dan 2025 paras terendah di sini berada pada persentil ke-96 dan ke-98. Muara Sungai Golok (Tak Bai) terletak 20 km di pantai yang sama, jadi ia boleh digunakan sebagai ganti buat sementara."
     }
   },
   "lineQuota": {
