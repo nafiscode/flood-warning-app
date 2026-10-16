@@ -492,7 +492,7 @@ Admins decide. The system never auto-publishes, with one exception (owner, 14 Oc
 - `impact_daily` (A13): one row per province per day — app openings, alerts delivered, SOS sent and their outcomes, reports, safe-place lookups, waiting-time medians and spreads. Written by a nightly job; the raw rows it counts are dropped.
 - `impact_unit_totals` (A13): per verified unit — cases accepted, confirmed rescues, people reached, seasons active. Volume of help only; no score and no per-unit times.
 - `usage_events` (A13): the short-lived raw counter rows, with a device hash that is salted per day so a phone cannot be followed across days. Deleted once the day is aggregated.
-- `feedback` (A15, section 17): `kind` (rating, problem, idea, other), `rating` (1–5, optional), `topic`, `screen`, `locale`, `app_version`, `device_kind`, `district_code` (optional, never finer), `role_at_time` (visitor, resident, authority, admin), `user_id` (optional), `message` (optional), `contact_ok` and `contact` (only with consent; cleared when the item is closed), `moment` (where it was asked: menu, after a closed request, after an ended report, after a finished case), `status` (new, read, planned, done, wont_do, hidden), `admin_note`, `handled_by`, `handled_at`, `change_ref` (the decision entry or commit it led to).
+- `feedback` (A15, section 17): `kind` (rating, problem, idea, other), `rating` (1–5, optional), `topic`, `screen`, `locale`, `app_version`, `device_kind`, `district_code` (optional, never finer), `role_at_time` (visitor, resident, authority, admin), `user_id` (optional), `message` (optional), `contact_ok` and `contact` (only with consent; cleared when the item is closed), `moment` (where it was asked: menu, after a closed request, after an ended report, after a finished case), `status` (new, read, planned, done, wont_do, hidden), `admin_note`, `handled_by`, `handled_at`, `change_ref` (the decision entry or commit it led to). For the public page (16 Oct 2026): `public_ok` (the sender's separate consent to show it), `display_name` (optional, anonymous by default), `public_status` (`not_requested`, `pending`, `approved`, `refused`), `approved_by`, `approved_at`, and `withdraw_key` (kept on the sender's phone so an anonymous comment can be taken back).
 
 ### Dam release (section 15)
 All public to read and written only by the hourly job and the seed; the one exception is the
@@ -552,7 +552,7 @@ These tables are created in phase A11 only, not with the initial schema.
 | Coverage / responsibility map | none | none | read | read |
 | Audit log | none | none | none | read |
 | App usage counts (install code, chosen tambon, rough city, device; 14 Oct) | none | none | none | counts only, via `admin_usage()`; never one phone's row |
-| Ratings and feedback (section 17) | write only (send) | send; read and delete own | send; read and delete own | read, triage and reply; the contact given for a reply is shown on a logged tap |
+| Ratings and feedback (section 17) | send; read the approved comments and the published figures | send; read and delete own, published or not; read the approved comments | same as a user | read all, triage, approve or refuse for the public page; the contact given for a reply is shown on a logged tap |
 | Monthly finance summary, opted-in donor wall | read | read | read | read |
 | Donation records (amount, name, message) | none | own | none | read/write if finance permission |
 | Transfer slips | none | own (upload) | none | read if finance permission; deleted 30 days after verification |
@@ -889,7 +889,7 @@ Added 9 Oct 2026 (decision of that date), built after launch (A13) on the first 
 
 **Export:** the published aggregates can be downloaded as CSV and JSON, so anyone can check the arithmetic and a funder can reuse it without asking.
 
-## 17. Experience rating and feedback (after launch)
+## 17. Ratings, feedback and the public comments page (after launch)
 
 Added 15 Oct 2026 (owner's request), built after launch (A15). People who use Jaga rate it and say what worked and what did not, and every answer is kept in the database with what the team did about it, so the app improves season by season on evidence rather than guesses.
 
@@ -899,7 +899,8 @@ Added 15 Oct 2026 (owner's request), built after launch (A15). People who use Ja
 - Nothing is ever required: no rating before a feature works, no sign-in to send one, no "rate us" pop-up over a page.
 
 **Where people can give it:**
-- Always: "Rate Jaga / tell us something" on the Account page, in About and in the footer, for visitors and signed-in people alike.
+- **A page of its own, `/feedback`** (owner, 16 Oct 2026): the rating, the topic and the comment at the top; Jaga's own figures and the approved comments below them. Open without an account, in all three languages. Its words, like every other screen's, come from `messages/*.json`, with the Thai approved by the Thai reviewer.
+- Always: "Rate Jaga / tell us something" on the Account page, in About and in the footer, for visitors and signed-in people alike, each going to that page.
 - At a few quiet moments, asked once and never repeated within 30 days on that phone (the phone remembers): after the person's own request has closed and been confirmed; after their flood report has ended; for a team, after it has finished a case. Admins see an ask after their first week and then once a season.
 - In LINE: a reply to a short question in the rich menu ("How is Jaga for you?") lands in the same table.
 
@@ -912,6 +913,17 @@ Added 15 Oct 2026 (owner's request), built after launch (A15). People who use Ja
 - A contact (phone, LINE or email) is stored only if they tick "you may contact me about this" (consent recorded with its purpose), shown to an admin only on a logged tap, and cleared when the item is closed.
 - Comments are free text and may contain personal details: admins only. Comments are anonymised after 12 months; ratings and topics are kept as figures.
 - Rate-limited per phone and per account. Abusive or spam items are hidden by an admin, never deleted silently.
+
+**The public page (owner, 16 Oct 2026).** `/feedback` both collects and publishes.
+
+- **A comment is public only after an admin approves it**, the same discipline as report photos (6.5). Sending is not publishing: the sender ticks "you may show this on Jaga's feedback page" as a consent separate from sending at all, and may give a display name or stay anonymous (anonymous is the default). Without that tick the comment is admins-only, exactly as before.
+- **What an admin may approve:** a comment about the app — what worked, what did not, what is missing. **Never** one that asserts anything about flooding, water levels or whether an area is safe, even if it is true; and never one carrying a phone number, an address, a vehicle plate, a named person, or anything about a particular SOS case. Those stay admins-only. A page of Jaga's own must not carry an unchecked claim about the water (safety rules 3, 6 and 8).
+- Above the published list, in words: these are people's opinions of the app, not flood information. The list carries no alert colour, no level and no hazard icon, and no comment is ever quoted on an alert, map or home screen.
+- **Taking it back.** A signed-in person deletes their own comment, published or not, and it leaves the page at once. An anonymous sender has the same power through a key kept on their phone, the way a request for help is read back without an account — otherwise a published anonymous comment could never be withdrawn.
+- An approved comment that later proves wrong or abusive is hidden by an admin, never silently edited. The 12-month anonymisation keeps only what was consented to and already shown (the display name and the words); everything stored around it is anonymised on the same clock.
+- **Jaga's own figures, published with the unflattering ones** (the discipline of section 16): the average rating and the number of answers for the period, the trend by month, and **the lowest-rated screens named**, beside what was changed about them. A figure is published only once a period has at least 20 answers; below that the page says so instead of showing a number (my call, overrulable).
+- The finest grain published is the whole service area, by month, by screen and by language. District, role, device kind, the moment of the ask and any link to a case never leave the admin console.
+- No donation prompt on the page (safety rule 9); no link to it from the SOS, food-and-water, report or alert screens, from a notification, or from home while the person's area or a watched place is at Warning or Evacuate. The page stays reachable at its address throughout: it is the invitation that stops, not the door.
 
 **The record for continuous improvement:**
 - An admin page lists every item with filters (rating, topic, screen, language, role, status) and a trend view: average rating per month, per screen and per language, and the share of each topic. Charts follow the dataviz skill.
