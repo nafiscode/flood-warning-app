@@ -35,6 +35,17 @@ export async function GET() {
     .order("created_at", { ascending: false })
     .limit(20);
   if (error) return answer({ error: "unavailable" }, 503);
+  // Why an admin turned a registration down, in their own words: the audit log is admins-only,
+  // so the function hands the caller the reason on their own rejected units and nothing else
+  // (owner, 16 Oct). No row for a unit that still waits or was verified.
+  const reviewed = await supabase.rpc("my_unit_reviews");
+  const reasons = new Map<string, string>();
+  const reviews = Array.isArray(reviewed.data) ? (reviewed.data as Record<string, unknown>[]) : [];
+  for (const r of reviews) {
+    if (typeof r.unit_id === "string" && typeof r.reason === "string" && r.reason) {
+      reasons.set(r.unit_id, r.reason);
+    }
+  }
   // For an admin: how many field rescues wait for them. The function refuses everyone else,
   // which simply leaves this out.
   const waiting = await supabase.rpc("admin_field_waiting");
@@ -74,7 +85,7 @@ export async function GET() {
     fieldWaiting,
     reports,
     units: ((data ?? []) as Record<string, unknown>[])
-      .map(toUnitRequest)
+      .map((unit) => toUnitRequest({ ...unit, review_note: reasons.get(String(unit.id)) ?? null }))
       .filter((u): u is UnitRequest => u !== null),
   });
 }

@@ -337,14 +337,14 @@ test("an admin verifies the unit only after confirming the phone by a call", asy
   await page.goto("/admin/authorities");
   const unit = page.locator("section", { hasText: ORG });
   await expect(unit).not.toContainText("+66812345678");
-  await unit.getByRole("link").click();
+  await unit.getByRole("link", { name: th.admin.authorities.reveal }).click();
   await expect(unit).toContainText("+66812345678");
 
-  await unit.locator('button[type="submit"]').click();
+  await unit.locator("button[data-verify]").click();
   await expect(page.locator('p[role="alert"]')).toHaveText(th.admin.authorities.error.call);
 
   await page.locator("section", { hasText: ORG }).locator('input[name="called"]').check();
-  await page.locator("section", { hasText: ORG }).locator('button[type="submit"]').click();
+  await page.locator("section", { hasText: ORG }).locator("button[data-verify]").click();
   await expect(page.locator('p[role="status"]')).toHaveText(th.admin.authorities.done.verified);
 
   const [row] = await sql(
@@ -364,6 +364,64 @@ test("an admin verifies the unit only after confirming the phone by a call", asy
     role: "authority",
   });
   expect(row!.reveals).toBeGreaterThanOrEqual(1);
+});
+
+test("an admin turns a registration down with a reason, and can approve it after all", async ({
+  page,
+}) => {
+  // A second registration of its own, so the verified one above is left alone: this is the kind
+  // an admin turns down - somebody trying the app out.
+  const ORG2 = `E2E Trying It Out ${run}`;
+  const REASON = `This looks like a test registration ${run}`;
+  const [owner] = await sql(
+    `select u.user_id from public.authority_units u
+       join public.organizations o on o.id = u.org_id where o.name = $1`,
+    [ORG],
+  );
+  const [made] = await sql(
+    `with org as (
+       insert into public.organizations (name, type) values ($1, 'volunteer') returning id
+     ), unit as (
+       insert into public.authority_units (org_id, user_id, unit_name, capabilities, status)
+       select org.id, $2, 'Test unit', '{rescue}'::public.authority_capability[], 'pending'
+       from org returning id
+     ), contact as (
+       insert into public.authority_unit_contacts (unit_id, poc_name, poc_phone)
+       select unit.id, 'Test POC', '+66899999999' from unit returning unit_id
+     )
+     insert into public.authority_coverage (unit_id, tambon, selected_level, selected_code)
+     select unit.id, t.code, 'tambon', t.code from unit,
+       (select code from public.tambons where province_code = '94' limit 1) t
+     returning unit_id`,
+    [ORG2, owner!.user_id],
+  );
+
+  await signIn(page, emails.invited);
+  await page.goto("/admin/authorities");
+  const waiting = page.locator("section", { hasText: ORG2 });
+  await waiting.getByText(th.admin.authorities.reject).click();
+  await waiting.locator('input[name="reason"]').fill(REASON);
+  await waiting.locator("button[data-reject]").click();
+  await expect(page.locator('p[role="status"]')).toHaveText(th.admin.authorities.done.rejected);
+
+  // Out of the queue, with the reason beside it, and the reason in the audit log.
+  const turnedDown = page.locator("section", { hasText: ORG2 });
+  await expect(turnedDown).toContainText(th.admin.authorities.status.rejected);
+  await expect(turnedDown).toContainText(REASON);
+  const [row] = await sql(
+    `select u.status, (a.details ->> 'reason') as reason
+       from public.authority_units u
+       left join public.audit_log a
+              on a.entity_id = u.id::text and a.action = 'reject_authority'
+      where u.id = $1`,
+    [made!.unit_id],
+  );
+  expect(row).toMatchObject({ status: "rejected", reason: REASON });
+
+  // Said no by mistake: the registration is still there, and the contact can still be called.
+  await turnedDown.getByText(th.admin.authorities.verifyAnyway).click();
+  await turnedDown.getByRole("link", { name: th.admin.authorities.reveal }).click();
+  await expect(page.locator("section", { hasText: ORG2 })).toContainText("+66899999999");
 });
 
 test("signing out ends the session", async ({ page }) => {

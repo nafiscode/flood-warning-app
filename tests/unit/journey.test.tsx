@@ -182,11 +182,29 @@ describe("the journey of a team's registration", () => {
     });
   });
 
+  it("says it was turned down, and carries the reason an admin wrote", () => {
+    const no = unitJourney(unit({ status: "rejected", reviewNote: "Looks like a test." }));
+    expect(no.open).toBe(false);
+    expect(no.steps.map((s) => `${s.key}:${s.state}`)).toEqual([
+      "sent:done",
+      "review:done",
+      "rejected:stopped",
+    ]);
+    expect(no.steps[2]).toMatchObject({ note: "Looks like a test.", at: at(0) });
+    // No reason, no note: the step never invents words.
+    expect(unitJourney(unit({ status: "rejected" })).steps[2]!.note).toBeNull();
+  });
+
   it("is news only for the steps somebody else took", () => {
     expect(unitNews(unit())).toBeNull();
     expect(unitNews(unit({ status: "verified", verifiedAt: at(90) }))).toEqual({
       id: `unit:u1:verified:${at(90)}`,
       event: "verified",
+      at: at(90),
+    });
+    expect(unitNews(unit({ status: "rejected", updatedAt: at(90) }))).toEqual({
+      id: `unit:u1:rejected:${at(90)}`,
+      event: "rejected",
       at: at(90),
     });
   });
@@ -196,6 +214,15 @@ describe("the journey of a team's registration", () => {
       toUnitRequest({ id: "u1", unit_name: "A", status: "verified", created_at: at(0) }),
     ).toMatchObject({ name: "A", status: "verified", verifiedAt: null });
     expect(toUnitRequest({ id: "u1", status: "banned", created_at: at(0) })).toBeNull();
+    expect(
+      toUnitRequest({
+        id: "u1",
+        unit_name: "A",
+        status: "rejected",
+        created_at: at(0),
+        review_note: "Not a real unit.",
+      }),
+    ).toMatchObject({ status: "rejected", reviewNote: "Not a real unit." });
   });
 });
 

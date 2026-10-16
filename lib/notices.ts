@@ -67,7 +67,13 @@ export type NoticeItem = Base &
         /** A request for food and water reads differently from a rescue. */
         supplies: boolean;
       }
-    | { kind: "unit"; event: "verified" | "suspended"; unitName: string }
+    | {
+        kind: "unit";
+        event: "verified" | "rejected" | "suspended";
+        unitName: string;
+        /** The admin's reason, when the registration was turned down. */
+        reason?: string | null;
+      }
     | { kind: "field"; event: "approved" | "rejected" }
     | { kind: "fieldWaiting"; count: number }
     | { kind: "report"; event: "approved" | "hidden"; tambon: { th: string; en: string } | null }
@@ -390,6 +396,7 @@ export function buildNotices(input: {
       places: [],
       event: news.event,
       unitName: unit.name,
+      reason: news.event === "rejected" ? (unit.reviewNote ?? null) : null,
     });
   }
 

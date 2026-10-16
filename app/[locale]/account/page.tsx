@@ -53,6 +53,14 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
     .select("id, unit_name, status, created_at, verified_at, updated_at")
     .eq("user_id", session.userId)
     .order("created_at");
+  // Why an admin turned a registration down (owner, 16 Oct): read through the function, because
+  // the audit log that holds the words is admins-only.
+  const { data: reviewed } = await supabase.rpc("my_unit_reviews");
+  const reasons = new Map<string, string>(
+    (Array.isArray(reviewed) ? (reviewed as Record<string, unknown>[]) : [])
+      .filter((r) => typeof r.unit_id === "string" && typeof r.reason === "string")
+      .map((r) => [r.unit_id as string, r.reason as string]),
+  );
 
   return (
     <div className="flex flex-col gap-5" data-console-page="account" data-console-flow="true">
@@ -90,13 +98,18 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
         <h2 className="text-body font-bold">{t("authority.title")}</h2>
         {(units ?? []).map((unit) => {
           // Where the registration stands, as steps (the owner, 13 Oct).
-          const request = toUnitRequest(unit);
+          const request = toUnitRequest({
+            ...unit,
+            review_note: reasons.get(String(unit.id)) ?? null,
+          });
           return (
             <div key={unit.id as string} className="flex flex-col gap-2" data-unit={unit.id}>
               <p>
                 {unit.unit_name as string}
                 <span className={`block ${hint}`}>
-                  {t(`authority.status.${unit.status as "pending" | "verified" | "suspended"}`)}
+                  {t(
+                    `authority.status.${unit.status as "pending" | "verified" | "rejected" | "suspended"}`,
+                  )}
                 </span>
               </p>
               {request && (

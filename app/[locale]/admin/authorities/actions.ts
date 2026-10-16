@@ -36,6 +36,27 @@ export async function verifyUnit(form: FormData) {
   back(form, { done: "verified" });
 }
 
+/**
+ * Turn a registration down (owner, 16 Oct 2026): a test registration, or somebody trying the app
+ * out. The reason is not an internal note - the team is told it, in the bell and in LINE - so the
+ * database function refuses an empty one, and refuses a registration that is no longer waiting.
+ */
+export async function rejectUnit(form: FormData) {
+  const unit = field(form, "unit");
+  if (!UUID.test(unit)) back(form, { error: "save" });
+  const reason = field(form, "reason");
+  if (reason.length < 3) back(form, { error: "reason", reject: unit });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("reject_authority_unit", {
+    p_unit_id: unit,
+    p_reason: reason,
+  });
+  if (error) back(form, { error: error.code === "23514" ? "reason" : "save", reject: unit });
+  // The team's LINE hears of it at once; the minute's cron is the backstop.
+  after(runPushTick);
+  back(form, { done: "rejected" });
+}
+
 export async function suspendUnit(form: FormData) {
   const unit = field(form, "unit");
   if (!UUID.test(unit)) back(form, { error: "save" });

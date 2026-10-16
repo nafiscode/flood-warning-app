@@ -85,7 +85,20 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
           <p className="text-small text-jaga-text-2">{t("announcementNote")}</p>
         </>
       )}
-      {item.kind === "unit" && <p>{t(`unit.${item.event}`, { name: item.unitName })}</p>}
+      {item.kind === "unit" && (
+        <>
+          <p>{t(`unit.${item.event}`, { name: item.unitName })}</p>
+          {/* A registration turned down: the admin's reason as they wrote it, then what to do. */}
+          {item.event === "rejected" && item.reason && (
+            <p className="text-small text-jaga-text-2">
+              {t("unit.reason", { reason: item.reason })}
+            </p>
+          )}
+          {item.event === "rejected" && (
+            <p className="text-small text-jaga-text-2">{t("unit.rejectedNote")}</p>
+          )}
+        </>
+      )}
       {item.kind === "field" && <p>{t(`field.${item.event}`)}</p>}
       {item.kind === "report" && (
         <p>

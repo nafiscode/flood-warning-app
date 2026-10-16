@@ -22,6 +22,8 @@ export type JourneyStep = {
   at: string | null;
   /** A name to put in the step's words: the team that accepted. */
   name?: string | null;
+  /** Words somebody wrote about this step: the reason a registration was turned down. */
+  note?: string | null;
 };
 
 export type JourneyKind = "rescue" | "supplies" | "unit" | "report" | "field";
@@ -119,10 +121,12 @@ export function sosJourney(timeline: SosTimeline): Journey {
 export type UnitRequest = {
   id: string;
   name: string;
-  status: "pending" | "verified" | "suspended";
+  status: "pending" | "verified" | "rejected" | "suspended";
   createdAt: string;
   verifiedAt: string | null;
   updatedAt: string | null;
+  /** Why an admin turned the registration down, in their own words. Rejected units only. */
+  reviewNote?: string | null;
 };
 
 /** A team's registration: sent, checked by an admin (who calls the official phone), verified. */
@@ -145,6 +149,18 @@ export function unitJourney(unit: UnitRequest): Journey {
       kind: "unit",
       open: false,
       steps: [sent, reviewed, { key: "verified", state: "done", at: unit.verifiedAt }],
+    };
+  }
+  // Turned down by an admin: the reason they wrote stands on the step (owner, 16 Oct).
+  if (unit.status === "rejected") {
+    return {
+      kind: "unit",
+      open: false,
+      steps: [
+        sent,
+        reviewed,
+        { key: "rejected", state: "stopped", at: unit.updatedAt, note: unit.reviewNote ?? null },
+      ],
     };
   }
   return {
@@ -204,7 +220,10 @@ export function toUnitRequest(row: Record<string, unknown>): UnitRequest | null 
   if (
     typeof row.id !== "string" ||
     typeof row.created_at !== "string" ||
-    (status !== "pending" && status !== "verified" && status !== "suspended")
+    (status !== "pending" &&
+      status !== "verified" &&
+      status !== "rejected" &&
+      status !== "suspended")
   )
     return null;
   return {
@@ -214,13 +233,14 @@ export function toUnitRequest(row: Record<string, unknown>): UnitRequest | null 
     createdAt: row.created_at,
     verifiedAt: typeof row.verified_at === "string" ? row.verified_at : null,
     updatedAt: typeof row.updated_at === "string" ? row.updated_at : null,
+    reviewNote: typeof row.review_note === "string" && row.review_note ? row.review_note : null,
   };
 }
 
 /** Bell news about a team's registration: only the steps somebody else took. */
 export function unitNews(
   unit: UnitRequest,
-): { id: string; event: "verified" | "suspended"; at: string } | null {
+): { id: string; event: "verified" | "rejected" | "suspended"; at: string } | null {
   if (unit.status === "pending") return null;
   const at = unit.status === "verified" ? unit.verifiedAt : unit.updatedAt;
   if (!at) return null;

@@ -79,6 +79,12 @@ export function Journey({ journey, compact = false }: { journey: JourneyData; co
               {step.state === "now" && !compact && (
                 <p className={hint}>{t(`${journey.kind}.wait.${step.key}`)}</p>
               )}
+              {/* Words an admin wrote about this step, shown as they wrote them. */}
+              {step.note && (
+                <p className={hint} data-step-note={step.key}>
+                  {step.note}
+                </p>
+              )}
               {step.at && (
                 <p className={`${hint} tabular-nums`}>
                   {format.dateTime(new Date(step.at), BANGKOK_DATE_TIME)}

@@ -286,7 +286,7 @@ export type DecisionRow = {
 
 /** The words of a decision: the `notices` group of a language (the bell says the same). */
 export type DecisionWords = {
-  unit: { title: string; verified: string; suspended: string };
+  unit: { title: string; verified: string; rejected: string; reason: string; suspended: string };
   field: { title: string; approved: string; rejected: string };
   report: { title: string; approved: string; hidden: string };
   yourArea: string;
@@ -307,8 +307,17 @@ export function decisionLineMessage(
   const d = row.data ?? {};
   const tambon = (row.locale === "th" ? d.tambon_th : d.tambon_en) || d.tambon_th || words.yourArea;
   const unit = d.unit ?? "";
+  // A registration turned down carries the admin's own words. The message holds what fits and the
+  // whole of it is in Jaga, one button away.
+  const reason = (d.reason ?? "").trim();
   const parts: Record<string, [string, string, string]> = {
     unit_verified: [words.unit.title, words.unit.verified.replace("{name}", unit), "/authority"],
+    unit_rejected: [
+      words.unit.title,
+      words.unit.rejected.replace("{name}", unit) +
+        (reason ? ` ${words.unit.reason.replace("{reason}", reason)}` : ""),
+      "/requests",
+    ],
     unit_suspended: [words.unit.title, words.unit.suspended.replace("{name}", unit), "/requests"],
     field_approved: [words.field.title, words.field.approved, "/authority/field-rescue"],
     field_rejected: [words.field.title, words.field.rejected, "/authority/field-rescue"],

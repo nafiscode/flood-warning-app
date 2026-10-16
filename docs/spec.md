@@ -79,7 +79,8 @@ It lets government and volunteer responders coordinate rescues without duplicati
 - **Coverage:** multi-select at any level. Selecting a province means all its districts and tambons; selecting a district means all its tambons. Store both what was selected and the expanded tambon list.
 - **Capabilities** (multi-select): coordination, rescue, supplies (food and water distribution, 4.10), planning, support.
 - **Same team, different areas:** register separately under the same organization name with a different POC phone.
-- **Status:** `pending` → `verified` → `suspended`. Unverified authorities cannot see personal data.
+- **Status:** `pending` → `verified` → `suspended`, or `pending` → `rejected`. Unverified authorities cannot see personal data.
+- **Turning a registration down (16 Oct 2026):** an admin can reject a registration that is still waiting — a test registration, or somebody trying the app out — and must write a reason. The reason is shown to the account that registered, in the bell and in LINE, inside a polite message from Jaga; it is written to `audit_log` like every other decision, and read back only through `my_unit_reviews()`. Nothing is deleted: the registration stays, and an admin can still verify it after all. A verified team is suspended, never rejected.
 - **Sign-in fallback:** if the SMS provider is not ready by launch, authorities can also sign in with LINE Login. The admin then verifies the POC phone by calling it during verification.
 - **Public contact:** the organization's official phone is shown publicly only if the organization opts in (`public_contact_opt_in`, default off).
 

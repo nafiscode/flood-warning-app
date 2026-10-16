@@ -776,6 +776,9 @@
     "unit": {
       "title": "Your team's registration",
       "verified": "{name} has been verified and can start taking requests.",
+      "rejected": "Thank you for registering {name}. The Jaga admins could not approve this registration.",
+      "reason": "Reason given: {reason}",
+      "rejectedNote": "If you think this is a mistake, correct the details and register again, or contact the Jaga admins.",
       "suspended": "{name} has been suspended. Please contact the Jaga admins.",
       "see": "See the steps"
     },
@@ -940,6 +943,7 @@
       "status": {
         "pending": "Waiting for an admin to verify",
         "verified": "Verified",
+        "rejected": "Not approved",
         "suspended": "Suspended"
       },
       "console": "Open the case board"
@@ -1467,27 +1471,37 @@
       "open": "Open the queue",
       "pending": "Waiting ({count})",
       "none": "No units are waiting.",
-      "others": "Verified or suspended",
+      "others": "Verified, turned down or suspended",
       "coverage": "Selected: {provinces} provinces, {districts} districts, {tambons} tambons · {total} tambons in total",
       "registered": "Registered",
       "contact": "Contact person",
       "reveal": "Show the contact's name and phone (logged every time)",
       "called": "I called this number and the contact confirmed the registration",
       "verify": "Approve this unit",
+      "reject": "Turn this registration down",
+      "rejectReason": "The reason the team will be told",
+      "rejectExample": "e.g. This looks like a test registration, not a real response unit.",
+      "rejectHint": "The team reads this reason in Jaga and in LINE, so write it plainly and politely. The registration is kept, not deleted, and you can still approve it later.",
+      "rejectConfirm": "Turn it down and tell the team",
+      "rejectedReason": "Reason given: {reason}",
+      "verifyAnyway": "Approve this unit after all",
       "suspend": "Suspend this unit",
       "reason": "Reason",
       "suspendConfirm": "Confirm suspension",
       "status": {
         "pending": "Waiting",
         "verified": "Verified",
+        "rejected": "Turned down",
         "suspended": "Suspended"
       },
       "error": {
         "call": "Call the contact's phone to confirm it before approving.",
+        "reason": "Write the reason the team will be told, at least a few words.",
         "save": "That didn't work. Try again."
       },
       "done": {
         "verified": "Unit approved.",
+        "rejected": "Registration turned down. The team has been told.",
         "suspended": "Unit suspended."
       }
     },
@@ -3114,6 +3128,7 @@
         "sent": "Registration sent",
         "review": "Checked by an admin",
         "verified": "Verified; can start taking requests",
+        "rejected": "The registration was not approved",
         "suspended": "The team was suspended"
       },
       "wait": {

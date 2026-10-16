@@ -776,6 +776,9 @@
     "unit": {
       "title": "Pendaftaran pasukan anda",
       "verified": "Pasukan {name} telah disahkan dan boleh mula menerima permintaan.",
+      "rejected": "Terima kasih kerana mendaftarkan {name}. Pentadbir Jaga belum dapat meluluskan pendaftaran ini.",
+      "reason": "Sebab: {reason}",
+      "rejectedNote": "Jika anda rasa ini satu kesilapan, perbetulkan butiran dan daftar semula, atau hubungi pentadbir Jaga.",
       "suspended": "Pasukan {name} digantung. Sila hubungi pentadbir Jaga.",
       "see": "Lihat langkah"
     },
@@ -940,6 +943,7 @@
       "status": {
         "pending": "Menunggu semakan pentadbir",
         "verified": "Sudah disahkan",
+        "rejected": "Tidak diluluskan",
         "suspended": "Digantung"
       },
       "console": "Buka papan kes"
@@ -1467,27 +1471,37 @@
       "open": "Buka senarai",
       "pending": "Menunggu ({count})",
       "none": "Tiada pasukan yang menunggu.",
-      "others": "Sudah disahkan atau digantung",
+      "others": "Sudah disahkan, ditolak atau digantung",
       "coverage": "Dipilih: {provinces} wilayah, {districts} daerah, {tambons} tambon · jumlah {total} tambon",
       "registered": "Didaftar pada",
       "contact": "Penyelaras",
       "reveal": "Tengok nama dan nombor penyelaras (direkod setiap kali)",
       "called": "Saya sudah telefon nombor ini dan penyelaras mengesahkan pendaftaran",
       "verify": "Luluskan unit ini",
+      "reject": "Tolak pendaftaran ini",
+      "rejectReason": "Sebab yang akan diberitahu kepada pasukan",
+      "rejectExample": "cth. Ini nampak seperti pendaftaran untuk mencuba, bukan unit bantuan sebenar.",
+      "rejectHint": "Pasukan akan membaca sebab ini dalam Jaga dan dalam LINE. Tulis dengan jelas dan sopan. Pendaftaran tidak dibuang, dan anda masih boleh meluluskannya kemudian.",
+      "rejectConfirm": "Tolak dan beritahu pasukan",
+      "rejectedReason": "Sebab: {reason}",
+      "verifyAnyway": "Luluskan unit ini kemudian",
       "suspend": "Gantung unit ini",
       "reason": "Sebab",
       "suspendConfirm": "Sahkan penggantungan",
       "status": {
         "pending": "Menunggu",
         "verified": "Sudah disahkan",
+        "rejected": "Ditolak",
         "suspended": "Digantung"
       },
       "error": {
         "call": "Telefon nombor penyelaras untuk pengesahan sebelum meluluskan.",
+        "reason": "Sila tulis sebab yang akan diberitahu kepada pasukan, sekurang-kurangnya beberapa perkataan.",
         "save": "Tidak berjaya. Sila cuba lagi."
       },
       "done": {
         "verified": "Unit sudah diluluskan.",
+        "rejected": "Pendaftaran ditolak. Pasukan sudah diberitahu.",
         "suspended": "Unit sudah digantung."
       }
     },
@@ -3114,6 +3128,7 @@
         "sent": "Pendaftaran dihantar",
         "review": "Semakan oleh pentadbir",
         "verified": "Disahkan; boleh mula menerima permintaan",
+        "rejected": "Pendaftaran tidak diluluskan",
         "suspended": "Pasukan digantung"
       },
       "wait": {

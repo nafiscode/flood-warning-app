@@ -14,13 +14,13 @@ import {
   input,
   label,
 } from "@/lib/ui";
-import { suspendUnit, verifyUnit } from "./actions";
+import { rejectUnit, suspendUnit, verifyUnit } from "./actions";
 
 type Unit = {
   id: string;
   unit_name: string;
   capabilities: string[];
-  status: "pending" | "verified" | "suspended";
+  status: "pending" | "verified" | "rejected" | "suspended";
   created_at: string;
   organizations: { name: string; type: string; official_phone: string | null } | null;
   authority_coverage: { selected_level: string; selected_code: string }[];
@@ -60,6 +60,25 @@ export default async function AdminAuthorities({
   const units = (data ?? []) as unknown as Unit[];
   const pending = units.filter((u) => u.status === "pending");
   const others = units.filter((u) => u.status !== "pending");
+
+  // What an admin wrote when they turned a registration down. From the audit log, which only
+  // admins may read: the reason belongs with the unit in this list, and an admin about to verify
+  // it after all needs to see the earlier no.
+  const turnedDown = units.filter((u) => u.status === "rejected").map((u) => u.id);
+  const notes = new Map<string, string>();
+  if (turnedDown.length > 0) {
+    const { data: log } = await supabase
+      .from("audit_log")
+      .select("entity_id, details, ts")
+      .eq("entity", "authority_units")
+      .eq("action", "reject_authority")
+      .in("entity_id", turnedDown)
+      .order("ts", { ascending: false });
+    for (const entry of (log ?? []) as { entity_id: string; details: { reason?: string } }[]) {
+      const reason = entry.details?.reason;
+      if (reason && !notes.has(entry.entity_id)) notes.set(entry.entity_id, reason);
+    }
+  }
 
   let contact: { poc_name: string; poc_phone: string } | null = null;
   if (units.some((u) => u.id === reveal)) {
@@ -106,6 +125,65 @@ export default async function AdminAuthorities({
     </>
   );
 
+  // Shown for a registration still waiting, and again for one turned down: an admin who said no
+  // by mistake can still call the contact and verify it.
+  const verifyBlock = (unit: Unit) =>
+    reveal === unit.id && contact ? (
+      <form action={verifyUnit} className="flex flex-col gap-3 border-t border-jaga-line pt-3">
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="unit" value={unit.id} />
+        <p>
+          {t("authorities.contact")}: <b>{contact.poc_name}</b>
+          <a
+            href={`tel:${contact.poc_phone}`}
+            className="block min-h-tap py-2 text-h3 font-bold underline"
+          >
+            {contact.poc_phone}
+          </a>
+        </p>
+        <label className={checkRow}>
+          <input type="checkbox" name="called" value="yes" className={checkBox} />
+          <span>{t("authorities.called")}</span>
+        </label>
+        <button type="submit" data-verify={unit.id} className={buttonPrimary}>
+          {t("authorities.verify")}
+        </button>
+      </form>
+    ) : (
+      <Link href={`/admin/authorities?reveal=${unit.id}`} className={buttonSecondary}>
+        {t("authorities.reveal")}
+      </Link>
+    );
+
+  // Turning a registration down. The team is told the reason, so the form says so.
+  const rejectBlock = (unit: Unit) => (
+    <details open={query.reject === unit.id}>
+      <summary className="min-h-tap cursor-pointer py-2 underline">
+        {t("authorities.reject")}
+      </summary>
+      <form action={rejectUnit} className="flex flex-col gap-3">
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="unit" value={unit.id} />
+        <label htmlFor={`reject-${unit.id}`} className={label}>
+          {t("authorities.rejectReason")}
+        </label>
+        <input
+          id={`reject-${unit.id}`}
+          name="reason"
+          maxLength={500}
+          minLength={3}
+          required
+          placeholder={t("authorities.rejectExample")}
+          className={input}
+        />
+        <p className={hint}>{t("authorities.rejectHint")}</p>
+        <button type="submit" data-reject={unit.id} className={buttonSecondary}>
+          {t("authorities.rejectConfirm")}
+        </button>
+      </form>
+    </details>
+  );
+
   return (
     <div className="flex flex-col gap-5">
       <h1 className="text-h3 font-bold text-jaga-ink">{t("authorities.title")}</h1>
@@ -119,7 +197,12 @@ export default async function AdminAuthorities({
           {t("authorities.error.save")}
         </p>
       )}
-      {(query.done === "verified" || query.done === "suspended") && (
+      {query.error === "reason" && (
+        <p role="alert" className={errorNotice}>
+          {t("authorities.error.reason")}
+        </p>
+      )}
+      {(query.done === "verified" || query.done === "rejected" || query.done === "suspended") && (
         <p role="status" className={errorNotice}>
           {t(`authorities.done.${query.done}`)}
         </p>
@@ -130,35 +213,8 @@ export default async function AdminAuthorities({
       {pending.map((unit) => (
         <section key={unit.id} className={card}>
           {details(unit)}
-          {reveal === unit.id && contact ? (
-            <form
-              action={verifyUnit}
-              className="flex flex-col gap-3 border-t border-jaga-line pt-3"
-            >
-              <input type="hidden" name="locale" value={locale} />
-              <input type="hidden" name="unit" value={unit.id} />
-              <p>
-                {t("authorities.contact")}: <b>{contact.poc_name}</b>
-                <a
-                  href={`tel:${contact.poc_phone}`}
-                  className="block min-h-tap py-2 text-h3 font-bold underline"
-                >
-                  {contact.poc_phone}
-                </a>
-              </p>
-              <label className={checkRow}>
-                <input type="checkbox" name="called" value="yes" className={checkBox} />
-                <span>{t("authorities.called")}</span>
-              </label>
-              <button type="submit" className={buttonPrimary}>
-                {t("authorities.verify")}
-              </button>
-            </form>
-          ) : (
-            <Link href={`/admin/authorities?reveal=${unit.id}`} className={buttonSecondary}>
-              {t("authorities.reveal")}
-            </Link>
-          )}
+          {verifyBlock(unit)}
+          {rejectBlock(unit)}
         </section>
       ))}
 
@@ -167,6 +223,22 @@ export default async function AdminAuthorities({
         <section key={unit.id} className={card}>
           {details(unit)}
           <p className="font-medium">{t(`authorities.status.${unit.status}`)}</p>
+          {unit.status === "rejected" && (
+            <>
+              {notes.has(unit.id) && (
+                <p className={hint}>
+                  {t("authorities.rejectedReason", { reason: notes.get(unit.id)! })}
+                </p>
+              )}
+              {/* Open when the contact has just been asked for, so the form is in view. */}
+              <details open={reveal === unit.id}>
+                <summary className="min-h-tap cursor-pointer py-2 underline">
+                  {t("authorities.verifyAnyway")}
+                </summary>
+                {verifyBlock(unit)}
+              </details>
+            </>
+          )}
           {unit.status === "verified" && (
             <details>
               <summary className="min-h-tap cursor-pointer py-2 underline">

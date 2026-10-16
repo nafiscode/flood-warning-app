@@ -29,6 +29,30 @@ describe("an admin's decision as a LINE message", () => {
     ]);
   });
 
+  it("tells a team it was turned down, with the admin's reason, inside LINE's 160", () => {
+    const long = "ลงทะเบียนเพื่อทดลองใช้งาน ไม่พบหน่วยงานจริงในพื้นที่ที่เลือก ".repeat(4);
+    for (const reason of ["ดูเหมือนเป็นการทดลองใช้", long]) {
+      const m = decisionLineMessage(
+        { kind: "unit_rejected", locale: "th", ref: "u1", data: { unit: "กู้ภัยบานา", reason } },
+        words(th),
+        th.line,
+        SITE,
+      ) as { template: { text: string; actions: { uri: string }[] } };
+      expect(m.template.text).toContain("กู้ภัยบานา");
+      expect([...m.template.text].length).toBeLessThanOrEqual(160);
+      // The whole of it is in Jaga, one button away.
+      expect(m.template.actions[0]!.uri).toBe(`${SITE}/requests`);
+    }
+    // A reason is required in the database, but a message is never left with an empty "Reason:".
+    const bare = decisionLineMessage(
+      { kind: "unit_rejected", locale: "en", ref: "u1", data: { unit: "Bana rescue" } },
+      words(en as unknown as typeof th),
+      en.line,
+      SITE,
+    ) as { template: { text: string } };
+    expect(bare.template.text).not.toContain(en.notices.unit.reason.replace("{reason}", ""));
+  });
+
   it("names the tambon of a report in the reader's language, and links in that language", () => {
     const m = decisionLineMessage(
       {
@@ -51,6 +75,7 @@ describe("an admin's decision as a LINE message", () => {
       expect([...lang.line.open].length).toBeLessThanOrEqual(LINE_LABEL_MAX);
       for (const kind of [
         "unit_verified",
+        "unit_rejected",
         "unit_suspended",
         "field_approved",
         "field_rejected",
@@ -65,7 +90,7 @@ describe("an admin's decision as a LINE message", () => {
         ) as { template: { text: string } } | null;
         expect(m, kind).not.toBeNull();
         expect([...m!.template.text].length).toBeLessThanOrEqual(160);
-        expect(m!.template.text).not.toMatch(/\{(name|tambon)\}/);
+        expect(m!.template.text).not.toMatch(/\{(name|tambon|reason)\}/);
       }
     }
     expect(
@@ -76,6 +101,75 @@ describe("an admin's decision as a LINE message", () => {
         SITE,
       ),
     ).toBeNull();
+  });
+});
+
+describe("a registration turned down, in the bell", () => {
+  const NOW = Date.parse("2026-11-20T06:00:00Z");
+
+  it("says it was not approved, gives the admin's reason, and says what to do next", () => {
+    const items = buildNotices({
+      rows: [],
+      area: null,
+      me: null,
+      cases: [],
+      units: [
+        {
+          id: "u1",
+          name: "Bana test team",
+          status: "rejected",
+          createdAt: "2026-11-19T05:00:00Z",
+          verifiedAt: null,
+          updatedAt: "2026-11-20T05:00:00Z",
+          reviewNote: "This looks like a test registration.",
+        },
+      ],
+      now: NOW,
+      homeLabel: "Home",
+      areaLabel: () => "",
+    });
+    expect(items.map((i) => i.kind)).toEqual(["unit"]);
+
+    const { container } = renderWithIntl(
+      <ul>
+        <NoticeList items={items} read={[]} locale="en" emptyHint="" />
+      </ul>,
+      "en",
+    );
+    expect(container.textContent).toContain(en.notices.unit.title);
+    expect(container.textContent).toContain("Bana test team");
+    expect(container.textContent).toContain("This looks like a test registration.");
+    expect(container.textContent).toContain(en.notices.unit.rejectedNote);
+    expect(container.querySelector('a[href="/en/requests"]')).not.toBeNull();
+  });
+
+  it("a verified team hears no reason and no next step", () => {
+    const items = buildNotices({
+      rows: [],
+      area: null,
+      me: null,
+      cases: [],
+      units: [
+        {
+          id: "u2",
+          name: "Bana rescue",
+          status: "verified",
+          createdAt: "2026-11-19T05:00:00Z",
+          verifiedAt: "2026-11-20T05:00:00Z",
+          updatedAt: "2026-11-20T05:00:00Z",
+        },
+      ],
+      now: NOW,
+      homeLabel: "Home",
+      areaLabel: () => "",
+    });
+    const { container } = renderWithIntl(
+      <ul>
+        <NoticeList items={items} read={[]} locale="en" emptyHint="" />
+      </ul>,
+      "en",
+    );
+    expect(container.textContent).not.toContain(en.notices.unit.rejectedNote);
   });
 });
 
