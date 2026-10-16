@@ -51,7 +51,11 @@ function CreditCard({ credit }: { credit: Credit }) {
       className="flex min-w-0 gap-3 rounded-2xl border border-jaga-line bg-jaga-surface p-4"
       data-credit={credit.id}
     >
-      <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl border border-jaga-line bg-jaga-ground">
+      <span
+        className={`grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl border border-jaga-line ${
+          credit.logo ? "bg-white" : "bg-jaga-ground"
+        }`}
+      >
         {credit.logo ? (
           <img
             src={`/credits/${credit.logo}`}

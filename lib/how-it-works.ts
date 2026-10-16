@@ -149,6 +149,65 @@ export const FORBIDDEN_VENDOR_WORDS = [
   "claude",
 ];
 
+export type WorkflowRow = {
+  /** Message key under `howItWorks.figures.workflow.rows.<key>`: method, product, app. */
+  key: string;
+  /** The open data it starts from, as ids of `CREDITS`. */
+  sources: string[];
+  /** Products of earlier rows that go into this one: the chains that join. */
+  feeds?: string[];
+  /** The part of the science page this chain is explained in. */
+  part: string;
+};
+
+/**
+ * The workflow, the way a GIS office would draw it: open data in, one analysis step, the product
+ * it makes, and where that product is seen in the app. Eight chains, four of which feed each
+ * other - the radar record and the height model both go into the classes, and the gauges go into
+ * both the alarm and the safe-return window.
+ *
+ * It is a map of the work, not a recipe: no parameter, no threshold and no order of operations.
+ */
+export const WORKFLOW: WorkflowRow[] = [
+  { key: "radar", sources: ["sentinel1", "jrcwater", "meritHydro"], part: "radar" },
+  { key: "hand", sources: ["fabdem", "osm"], part: "classes" },
+  { key: "classes", sources: ["openBuildings", "gistda"], feeds: ["radar", "hand"], part: "classes" },
+  { key: "gauges", sources: ["thaiwater", "rid", "gsmap"], part: "gauges" },
+  { key: "dam", sources: ["egat", "thaiwater"], feeds: ["hand"], part: "dam" },
+  { key: "places", sources: ["osm", "openBuildings"], feeds: ["radar", "hand"], part: "places" },
+  { key: "outlook", sources: ["chirps", "era5land", "noaa"], part: "outlook" },
+  { key: "sea", sources: ["openMeteo", "tmd"], part: "sea" },
+];
+
+/** The four columns of the workflow, in the order the work runs. */
+export const WORKFLOW_STAGES = ["data", "analysis", "product", "app"] as const;
+export type WorkflowStage = (typeof WORKFLOW_STAGES)[number];
+
+export type ArchTier = {
+  /** Message key under `howItWorks.figures.architecture.tiers.<key>`: title, note. */
+  key: string;
+  /** The boxes in that band, as message keys under `...boxes.<key>`: title, text. */
+  boxes: string[];
+  /** The arrow under the band, as a message key under `...flows.<key>`; the last band has none. */
+  flow?: string;
+};
+
+/**
+ * The architecture, end to end (the owner's request, 16 Oct 2026): five bands, read downwards -
+ * where the figures come from, what fetches them, the one place that holds everything and decides
+ * who may read it, what delivers it, and the people at the end of it.
+ *
+ * In general terms only: no supplier, product or brand appears here, by the same rule as the rest
+ * of the system page (`FORBIDDEN_VENDOR_WORDS`).
+ */
+export const ARCHITECTURE: ArchTier[] = [
+  { key: "sources", boxes: ["agencies", "models", "layers"], flow: "fetch" },
+  { key: "readers", boxes: ["schedule", "watch", "stamp"], flow: "write" },
+  { key: "core", boxes: ["tables", "rules", "audit"], flow: "serve" },
+  { key: "delivery", boxes: ["app", "notifier", "files"], flow: "reach" },
+  { key: "people", boxes: ["residents", "teams", "admins"] },
+];
+
 export type CreditGroup = "satellites" | "agencies" | "models" | "maps";
 
 export type Credit = {
@@ -232,6 +291,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "gsmap",
+    logo: "gsmap.svg",
     short: "GSMaP",
     name: "JAXA",
     dataset: "GSMaP, and NASA's GPM IMERG as a check",
@@ -241,6 +301,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "thaiwater",
+    logo: "thaiwater.webp",
     short: "ThaiWater (HII)",
     name: "Hydro-Informatics Institute (HII)",
     dataset: "ThaiWater",
@@ -252,6 +313,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "rid",
+    logo: "rid.webp",
     short: "Royal Irrigation Department",
     name: "Royal Irrigation Department",
     group: "agencies",
@@ -260,6 +322,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "egat",
+    logo: "egat.webp",
     short: "EGAT",
     name: "Electricity Generating Authority of Thailand",
     dataset: "Bang Lang dam, through ThaiWater",
@@ -269,6 +332,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "gistda",
+    logo: "gistda.svg",
     short: "GISTDA",
     name: "GISTDA",
     dataset: "Repeated-flood and flood-extent maps",
@@ -280,6 +344,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "tmd",
+    logo: "tmd.webp",
     name: "Thai Meteorological Department",
     short: "TMD",
     dataset: "Sea and weather warnings",
@@ -308,6 +373,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "chirps",
+    logo: "chirps.svg",
     short: "CHIRPS",
     name: "Climate Hazards Center, UC Santa Barbara",
     dataset: "CHIRPS rainfall, 1981 onwards",
@@ -328,6 +394,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "noaa",
+    logo: "noaa.webp",
     short: "NOAA CPC",
     name: "NOAA Climate Prediction Center",
     dataset: "ENSO index and seasonal forecasts",
@@ -337,6 +404,7 @@ export const CREDITS: Credit[] = [
   },
   {
     id: "osm",
+    logo: "osm.svg",
     short: "OpenStreetMap",
     name: "OpenStreetMap contributors",
     dataset: "Rivers, roads, buildings, places and villages",

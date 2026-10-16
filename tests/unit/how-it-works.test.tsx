@@ -1,13 +1,18 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { HowScience } from "@/components/how/HowScience";
 import { HowSystem } from "@/components/how/HowSystem";
+import { MapMethod } from "@/components/map/MapMethod";
 import {
   CREDIT_GROUPS,
   CREDITS,
   FORBIDDEN_VENDOR_WORDS,
   initialsOf,
+  ARCHITECTURE,
   SCIENCE_PARTS,
   SYSTEM_PARTS,
+  WORKFLOW,
+  WORKFLOW_STAGES,
 } from "@/lib/how-it-works";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
@@ -114,6 +119,7 @@ describe("how Jaga works: the system page names no vendor", () => {
         read(root(messages), "system"),
         figures.system,
         figures.sos,
+        figures.architecture,
         read(root(messages), "nav"),
         read(root(messages), "link"),
       ]);
@@ -167,6 +173,15 @@ describe("how Jaga works: the credits", () => {
         expect((read(root(messages), key) as string).length, `${locale} ${key}`).toBeGreaterThan(20);
       }
     }
+  });
+
+  it("has the file on disk for every logo it names, and a note on where it came from", () => {
+    const withLogo = CREDITS.filter((c) => c.logo);
+    expect(withLogo.length).toBeGreaterThan(5);
+    for (const credit of withLogo) {
+      expect(existsSync(`public/credits/${credit.logo}`), credit.id).toBe(true);
+    }
+    expect(existsSync("public/credits/SOURCES.md")).toBe(true);
   });
 
   it("draws initials when an organisation has no logo file", () => {
@@ -223,5 +238,102 @@ describe("how Jaga works: the pages", () => {
       if (card.getAttribute("data-how-part") === "gauges") continue;
       expect(card.outerHTML, card.getAttribute("data-how-part") ?? "").not.toMatch(/alert-/);
     }
+  });
+});
+
+describe("how Jaga works: the workflow chart", () => {
+  it("joins every chain to data that is credited and to a part of the page", () => {
+    const credits = new Set(CREDITS.map((c) => c.id));
+    const parts = new Set(SCIENCE_PARTS.map((p) => p.key));
+    const rows = new Set(WORKFLOW.map((r) => r.key));
+    expect(WORKFLOW.length).toBeGreaterThan(5);
+    for (const row of WORKFLOW) {
+      expect(row.sources.length, row.key).toBeGreaterThan(0);
+      for (const id of row.sources) expect(credits.has(id), `${row.key}: ${id}`).toBe(true);
+      for (const from of row.feeds ?? []) expect(rows.has(from), `${row.key}: ${from}`).toBe(true);
+      expect(parts.has(row.part), row.key).toBe(true);
+    }
+  });
+
+  it("has the four stages and every row's words in three languages", () => {
+    for (const [locale, messages] of Object.entries(ALL)) {
+      for (const stage of WORKFLOW_STAGES) {
+        expect(
+          typeof read(root(messages), `figures.workflow.stages.${stage}`),
+          `${locale} ${stage}`,
+        ).toBe("string");
+      }
+      for (const row of WORKFLOW) {
+        for (const key of ["method", "product", "app"]) {
+          expect(
+            typeof read(root(messages), `figures.workflow.rows.${row.key}.${key}`),
+            `${locale} ${row.key}.${key}`,
+          ).toBe("string");
+        }
+      }
+    }
+  });
+
+  it("draws one row per chain, each ending in the part that explains it", () => {
+    const { container } = renderWithIntl(<HowScience />, "en");
+    const rows = container.querySelectorAll("[data-workflow-row]");
+    expect(rows).toHaveLength(WORKFLOW.length);
+    const classes = container.querySelector('[data-workflow-row="classes"]')!;
+    // The classes chain takes the radar record and the height model from the rows above it.
+    expect(classes.querySelectorAll("[data-workflow-feed]")).toHaveLength(2);
+    expect(classes.querySelector("a")?.getAttribute("href")).toBe("#part-classes");
+  });
+});
+
+describe("how this map was made", () => {
+  it("ends with the way into the whole method", () => {
+    const { container } = renderWithIntl(<MapMethod />, "en");
+    const link = container.querySelector("[data-method-more]");
+    expect(link?.getAttribute("href")).toBe("/en/how-it-works");
+    expect(link?.textContent).toContain("how Jaga works");
+  });
+});
+
+describe("how Jaga works: the architecture diagram", () => {
+  it("has every band, box and arrow in three languages", () => {
+    expect(ARCHITECTURE.map((t) => t.key)).toContain("core");
+    for (const [locale, messages] of Object.entries(ALL)) {
+      for (const tier of ARCHITECTURE) {
+        for (const key of ["title", "note"]) {
+          expect(
+            typeof read(root(messages), `figures.architecture.tiers.${tier.key}.${key}`),
+            `${locale} ${tier.key}.${key}`,
+          ).toBe("string");
+        }
+        for (const box of tier.boxes) {
+          for (const key of ["title", "text"]) {
+            expect(
+              typeof read(root(messages), `figures.architecture.boxes.${box}.${key}`),
+              `${locale} ${box}.${key}`,
+            ).toBe("string");
+          }
+        }
+        if (tier.flow) {
+          expect(
+            typeof read(root(messages), `figures.architecture.flows.${tier.flow}`),
+            `${locale} ${tier.flow}`,
+          ).toBe("string");
+        }
+      }
+    }
+  });
+
+  it("draws the bands in order, with the database in the middle", () => {
+    const { container } = renderWithIntl(<HowSystem />, "en");
+    const tiers = [...container.querySelectorAll("[data-arch-tier]")].map((t) =>
+      t.getAttribute("data-arch-tier"),
+    );
+    expect(tiers).toEqual(ARCHITECTURE.map((t) => t.key));
+    expect(container.querySelector('[data-arch-tier="core"]')?.getAttribute("data-core")).toBe(
+      "true",
+    );
+    expect(container.querySelectorAll("[data-arch-flow]")).toHaveLength(
+      ARCHITECTURE.filter((t) => t.flow).length,
+    );
   });
 });

@@ -133,3 +133,230 @@
   block-size: 1.25rem;
   justify-self: center;
 }
+
+/*
+ * The workflow chart (A18, the owner's request of 16 Oct): drawn the way a GIS office draws a
+ * model - data in a parallelogram, an analysis step in a plain box with a bar at its leading
+ * edge, a product in a filled box, and where it is seen in the app as a dashed box you can open.
+ *
+ * On a laptop the four stages run across; at 360 px each chain becomes a card and the stages run
+ * down it, with the arrows turned a quarter. Everything is text in a grid, so each label wraps in
+ * every language and nothing is cut off.
+ */
+.wf {
+  display: grid;
+  gap: 14px;
+}
+.wfHead {
+  display: none;
+}
+.wfRow {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--jaga-line);
+  border-radius: 0.875rem;
+  background: var(--jaga-surface);
+  padding: 12px;
+}
+.wfCell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.wfLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jaga-text-2);
+  font-weight: 500;
+}
+.wfData,
+.wfFeed,
+.wfProcess,
+.wfProduct,
+.wfApp {
+  display: block;
+  padding: 8px 12px;
+  font-size: 1rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+/* Data: the parallelogram of a flow chart, with room inside for its slanted edges. */
+.wfData {
+  background: var(--jaga-ground);
+  border: 1px solid var(--jaga-line);
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  padding-inline: 20px;
+  font-weight: 500;
+  color: var(--jaga-ink);
+}
+/* A product of another chain that joins this one. */
+.wfFeed {
+  background: color-mix(in srgb, var(--jaga-teal) 12%, transparent);
+  border: 1px dashed var(--jaga-teal-ink);
+  border-radius: 0.5rem;
+  color: var(--jaga-text);
+  font-size: 0.9375rem;
+}
+/* Analysis: a process box. */
+.wfProcess {
+  border: 1px solid var(--jaga-line);
+  border-inline-start: 4px solid var(--jaga-slate);
+  border-radius: 0.25rem;
+  background: var(--jaga-surface);
+  color: var(--jaga-text);
+}
+:root[data-theme="dark"] .wfProcess {
+  border-inline-start-color: var(--jaga-teal-ink);
+}
+/* Product: what the analysis leaves behind. */
+.wfProduct {
+  border-radius: 0.5rem;
+  background: var(--jaga-slate);
+  color: #ffffff;
+  font-weight: 500;
+}
+:root[data-theme="dark"] .wfProduct {
+  background: var(--jaga-teal-ink);
+  color: #0f1c26;
+}
+/* Where it is seen: a way into the part that explains it. */
+.wfApp {
+  border: 1px dashed var(--jaga-edge);
+  border-radius: 999px;
+  color: var(--jaga-ink);
+  text-decoration: underline;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+.wfArrow {
+  display: grid;
+  place-items: center;
+  color: var(--jaga-teal-ink);
+  min-height: 18px;
+}
+.wfArrow svg {
+  width: 18px;
+  height: 18px;
+  transform: rotate(90deg);
+}
+
+@media (min-width: 900px) {
+  .wfHead,
+  .wfRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) 22px minmax(0, 1.15fr) 22px minmax(0, 1fr) 22px minmax(0, 0.95fr);
+    align-items: start;
+    gap: 8px;
+  }
+  .wfHead {
+    padding-inline: 12px;
+  }
+  .wfRow .wfLabel {
+    display: none;
+  }
+  .wfArrow svg {
+    transform: none;
+  }
+  .wfArrow {
+    padding-top: 14px;
+  }
+}
+
+/* The key to the shapes. */
+.wfKey {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  font-size: 1rem;
+}
+.wfKey span[data-shape] {
+  padding: 2px 10px;
+  font-size: 0.875rem;
+}
+
+/*
+ * The architecture, end to end (A18, the owner's request of 16 Oct): five bands read downwards,
+ * each with its own label and its boxes, and a labelled arrow between one band and the next.
+ * Bands rather than a drawing, so every box wraps like text at 360 px and in three languages.
+ */
+.arch {
+  display: grid;
+  gap: 0;
+}
+.archTier {
+  border: 1px solid var(--jaga-line);
+  border-radius: 0.875rem;
+  background: var(--jaga-surface);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.archTier[data-core="true"] {
+  border-color: var(--jaga-teal-ink);
+  border-width: 2px;
+  background: color-mix(in srgb, var(--jaga-teal) 8%, var(--jaga-surface));
+}
+.archHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.archTitle {
+  font-weight: 700;
+  color: var(--jaga-ink);
+}
+.archNote {
+  font-size: 0.9375rem;
+  color: var(--jaga-text-2);
+}
+.archBoxes {
+  display: grid;
+  gap: 8px;
+}
+@media (min-width: 640px) {
+  .archBoxes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.archBox {
+  border: 1px solid var(--jaga-line);
+  border-radius: 0.5rem;
+  background: var(--jaga-ground);
+  padding: 8px 12px;
+  min-width: 0;
+}
+.archTier[data-core="true"] .archBox {
+  background: var(--jaga-surface);
+}
+.archBox b {
+  display: block;
+  color: var(--jaga-ink);
+  font-weight: 500;
+}
+.archBox span {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--jaga-text-2);
+  overflow-wrap: anywhere;
+}
+/* The arrow between two bands, with what travels along it written beside it. */
+.archFlow {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 6px 12px;
+  color: var(--jaga-text-2);
+  font-size: 0.9375rem;
+}
+.archFlow svg {
+  width: 18px;
+  height: 18px;
+  color: var(--jaga-teal-ink);
+  justify-self: center;
+}

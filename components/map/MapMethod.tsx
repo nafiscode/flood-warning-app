@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 const POINTS = [
   "radar",
@@ -51,6 +52,17 @@ export function MapMethod() {
         </ul>
         <p className="rounded-lg bg-jaga-ground p-3 text-small">{t("limits")}</p>
         <p className="text-small text-jaga-text-2">{t("credits")}</p>
+        {/* The whole method, for anyone who wants it in full (the owner, 16 Oct): phase A18. */}
+        <p>
+          <Link
+            href="/how-it-works"
+            prefetch={false}
+            data-method-more
+            className="inline-flex min-h-tap items-center font-medium text-jaga-ink underline"
+          >
+            {t("more")}
+          </Link>
+        </p>
       </div>
     </details>
   );

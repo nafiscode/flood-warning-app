@@ -3832,7 +3832,8 @@
     "sea": {
       "lead": "Laut, daripada model ombak dan cuaca",
       "text": "Tujuh tempat di luar pantai dari Songkhla hingga Tak Bai, dibaca daripada model ombak dan model cuaca Open-Meteo setiap setengah jam. Ombak 1 m, angin 30 km/j atau ribut petir dikira bergelora; ombak 2 m, angin 40 km/j atau tiupan 60 km/j bermakna bot kecil patut tidak keluar, mengikut kata-kata TMD. Ia tidak pernah berkata laut selamat, dan ketinggian pasang surut tidak ditunjukkan kerana model berbeza kira-kira 0.7 m daripada stesen air."
-    }
+    },
+    "more": "Keseluruhan kaedahnya, lapisan demi lapisan: bagaimana Jaga berfungsi"
   },
   "tambonRisk": {
     "eyebrow": "Risiko banjir jangka panjang, bukan amaran hari ini",
@@ -4393,13 +4394,18 @@
         "map": "Buka peta risiko banjir",
         "features": "Apa yang Jaga boleh buat",
         "system": "Baca bagaimana sistemnya berfungsi"
+      },
+      "workflow": {
+        "title": "Keseluruhan aliran kerja, dalam satu carta",
+        "lead": "Setiap rantaian kerja dalam Jaga: data terbuka yang menjadi permulaannya, satu langkah analisis yang mengubahnya, produk yang ditinggalkan langkah itu, dan skrin tempat produk itu dilihat. Empat rantaian menyuap satu sama lain: rekod radar dan model ketinggian kedua-duanya masuk ke dalam kelas tanah mudah banjir, dan stesen sungai masuk ke dalam loceng automatik dan juga tempoh pulang.",
+        "note": "Ia peta kerja, bukan resipi: tiada nama parameter, tiada nilai ambang dan tiada susunan langkah. Setiap baris membuka bahagian halaman ini yang menerangkannya."
       }
     },
     "credits": {
       "title": "Data, dan orang yang memberikannya",
       "thanks": "Jaga ialah aplikasi bukan untung yang dibina oleh sukarelawan, dan hampir setiap angka di dalamnya datang daripada kerja orang lain yang diberikan tanpa bayaran: sebuah satelit radar Eropah yang terbang di atas pantai ini setiap beberapa hari sejak 2017, sebuah model ketinggian yang dibina daripada data satelit dan dibetulkan daripada pokok dan bangunan, sebuah institut Thai yang menerbitkan paras sungai setiap lima belas minit, agensi yang menerbitkan peta banjir dan angka empangan, model cuaca dan gelombang yang diberi tanpa bil, dan berpuluh ribu orang yang memetakan jalan, kampung dan bangunan empat wilayah ini dengan tangan. Tanpa mana-mana satu daripada mereka, tiada peta banjir untuk Pattani, Yala, Narathiwat dan Songkhla. Terima kasih.",
       "endorse": "Tiada satu pun daripada organisasi ini mengendalikan Jaga, memeriksanya, atau mengesahkannya. Menamakan mereka ialah syarat lesen dan satu ucapan terima kasih, bukan tuntutan sokongan.",
-      "licenceNote": "Lesen dinamakan seperti pemberi lesen menamakannya, dan di mana satu baris kredit dituntut, ia dicetak perkataan demi perkataan. Fail docs/attributions.md dalam repositori kod umum ialah rekod rasminya, dengan tarikh setiap lesen dibaca.",
+      "licenceNote": "Lesen dinamakan seperti pemberi lesen menamakannya, dan di mana satu baris kredit dituntut, ia dicetak perkataan demi perkataan. Fail docs/attributions.md dalam repositori kod umum ialah rekod rasminya, dengan tarikh setiap lesen dibaca. Logo organisasi yang ditunjukkan di sini ialah fail berlesen bebas yang disenaraikan dalam public/credits/SOURCES.md; tanda dagangan kekal milik pemiliknya, dan mana-mana satu akan dibuang apabila diminta.",
       "groups": {
         "satellites": "Satelit dan ketinggian",
         "agencies": "Agensi Thai",
@@ -4529,6 +4535,11 @@
         "text": "Halaman sains ialah separuh yang lain: apa makna setiap lapisan peta, dari mana datang datanya, dan sejauh mana ia boleh dipercayai.",
         "science": "Baca sains di sebaliknya",
         "map": "Buka peta risiko banjir"
+      },
+      "architecture": {
+        "title": "Seni bina sistem, dari hujung ke hujung",
+        "lead": "Lima jalur, dibaca ke bawah: dari mana angka itu datang, apa yang mengambilnya, satu tempat yang menyimpan semuanya dan memutuskan siapa boleh membaca setiap baris, apa yang menghantarnya, dan orang di hujungnya. Apa yang bergerak antara dua jalur ditulis pada anak panahnya.",
+        "note": "Dilukis secara umum dengan sengaja: yang penting ialah bentuknya, dan satu halaman umum yang menyenaraikan setiap perkhidmatan yang disandari sebuah aplikasi keselamatan ialah peta bagi sesiapa yang mencari jalan masuk."
       }
     },
     "figures": {
@@ -4608,6 +4619,158 @@
         "step4": "Pasukan yang telah disahkan yang meliputi tempat itu melihatnya di skrin mereka dalam beberapa detik.",
         "step5": "Satu pasukan menerimanya, dan orang yang menghantarnya melihat siapa yang datang dan boleh menghubunginya.",
         "caption": "Tiada langkah di laluan ini bertanya siapa anda, dan tiada langkah yang boleh menolak anda."
+      },
+      "workflow": {
+        "title": "Data, analisis, produk, skrin",
+        "caption": "Baca satu baris dari kiri ke kanan pada komputer, dari atas ke bawah pada telefon.",
+        "key": {
+          "data": "Data terbuka",
+          "analysis": "Langkah analisis",
+          "product": "Produk",
+          "feed": "Produk rantaian lain"
+        },
+        "stages": {
+          "data": "Data terbuka",
+          "analysis": "Analisis",
+          "product": "Produk",
+          "app": "Di mana ia dilihat"
+        },
+        "rows": {
+          "radar": {
+            "method": "Setiap lintasan radar musim hujan dibandingkan dengan tanah yang sama, orbit yang sama, pada bulan kering tahun itu; air kekal dan lereng curam diketepikan",
+            "product": "Rekod banjir sembilan musim: berapa kerap setiap petak dilihat di bawah air",
+            "app": "Di belakang kawasan mudah banjir"
+          },
+          "hand": {
+            "method": "Model ketinggian dibetulkan dengan sungai yang dipetakan, aliran air dijejak ke hilir, dan setiap petak diukur terhadap anak sungai yang menerima airnya",
+            "product": "Ketinggian di atas anak sungai terdekat, bagi setiap petak tanah",
+            "app": "Di belakang kawasan mudah banjir"
+          },
+          "classes": {
+            "method": "Kekerapan radar dan ketinggian digabung menjadi kelas, dengan ketinggian sahaja memutuskan di kawasan bangunan; diperiksa terhadap satu banjir yang ditinggalkan keluar",
+            "product": "Empat kelas tanah mudah banjir, dan jadual bagi setiap tambon dan kampung",
+            "app": "Kawasan mudah banjir pada peta"
+          },
+          "gauges": {
+            "method": "Setiap musim sejak 2017 dimainkan semula untuk mencari paras yang paling kerap diikuti sungai melimpah tebing, dan masa amaran yang diberinya",
+            "product": "Awas, Amaran dan Pindah di 46 stesen, serta tempoh penurunan yang lalu",
+            "app": "Skrin isyarat pentadbir, loceng automatik, tempoh pulang"
+          },
+          "dam": {
+            "method": "Lengah denyut turbin harian dan kemuncak banjir yang lalu, stesen demi stesen; dan tanah yang cukup rendah serta bersambung dengan sungai pada paras tertinggi dalam rekod",
+            "product": "Julat masa ketibaan bagi setiap tambon, dan tanah yang boleh dicapai pelepasan",
+            "app": "Notis empangan dan zon pelepasan"
+          },
+          "places": {
+            "method": "Ketinggian di atas pinggir banjir yang lalu, ditambah pemeriksaan laluan yang menutup setiap jalan yang radar lihat di bawah air dan mengira rumah yang masih boleh sampai",
+            "product": "2,600 tempat selamat yang disusun, dengan sebab dan tandanya",
+            "app": "Tempat selamat pada peta"
+          },
+          "outlook": {
+            "method": "Empat puluh lima musim hujan dibandingkan dengan keadaan Pasifik dan model musim, setiap kaedah diberi skor mengikut berapa kerap ia betul di sini",
+            "product": "Kebarangkalian musim lebih kering, biasa atau lebih hujan, dengan ketepatannya",
+            "app": "Tinjauan musim pada peta"
+          },
+          "sea": {
+            "method": "Gelombang, alun, angin dan paras laut dibaca di tujuh titik luar pantai dan dinilai dengan nilai ambang jabatan meteorologi negara sendiri",
+            "product": "Keadaan laut untuk bot kecil, dan himpunan air yang perlahan ke pantai",
+            "app": "Laut dan pantai pada peta"
+          }
+        }
+      },
+      "architecture": {
+        "title": "Dari stesen agensi ke sebuah telefon di kampung yang dibanjiri",
+        "caption": "Jalur tengah itulah keseluruhan reka bentuknya: satu simpanan, dengan peraturan tentang siapa boleh melihat apa ditulis di dalamnya, bukan di dalam skrin.",
+        "tiers": {
+          "sources": {
+            "title": "Dari mana angka itu datang",
+            "note": "tiada satu pun milik kami"
+          },
+          "readers": {
+            "title": "Pembaca berjadual",
+            "note": "berselang beberapa minit, sepanjang tahun"
+          },
+          "core": {
+            "title": "Satu pangkalan data, dengan peraturan di dalamnya",
+            "note": "satu-satunya jalan masuk"
+          },
+          "delivery": {
+            "title": "Apa yang menghantarnya",
+            "note": "tiga laluan, setiap satu boleh gagal sendiri"
+          },
+          "people": {
+            "title": "Orang di hujungnya",
+            "note": "peraturan berbeza bagi setiap satu"
+          }
+        },
+        "boxes": {
+          "agencies": {
+            "title": "Telemetri agensi",
+            "text": "Stesen paras sungai, angka empangan setiap jam, hujan daripada rangkaian kebangsaan"
+          },
+          "models": {
+            "title": "Model cuaca, gelombang dan aliran",
+            "text": "Ramalan hujan dan sungai, gelombang dan paras laut di luar pantai"
+          },
+          "layers": {
+            "title": "Lapisan peta daripada analisis",
+            "text": "Kelas tanah mudah banjir, zon pelepasan empangan, tempat selamat: dibuat sekali, bukan langsung"
+          },
+          "schedule": {
+            "title": "Mengikut jadual",
+            "text": "Setiap suapan dengan jamnya sendiri, berjalan di dalam pangkalan data dan bukan pada mesin kami"
+          },
+          "watch": {
+            "title": "Pemeriksaan pada setiap bacaan",
+            "text": "Suapan yang terhenti, atau stesen yang mencapai parasnya, disedari pada saat ia berlaku"
+          },
+          "stamp": {
+            "title": "Dicap dengan masa ia dibaca",
+            "text": "Tiada apa-apa disimpan tanpanya, jadi aplikasi sentiasa boleh berkata berapa lama angka itu"
+          },
+          "tables": {
+            "title": "Data",
+            "text": "Amaran, permintaan bantuan, laporan, pasukan, kawasan, stesen dan indeks lapisan peta"
+          },
+          "rules": {
+            "title": "Peraturan pada baris data",
+            "text": "Siapa boleh membaca setiap baris, dikuatkuasakan di sini dan bukan oleh skrin: aplikasi, eksport dan pertanyaan terus semuanya bertemu dinding yang sama"
+          },
+          "audit": {
+            "title": "Log audit",
+            "text": "Setiap nombor telefon yang dibuka, setiap rekod rumah terdedah yang dibaca, dan siapa yang membacanya"
+          },
+          "app": {
+            "title": "Aplikasi di telefon",
+            "text": "Dipasang ke skrin utama, menyimpan apa yang perlu untuk berfungsi tanpa liputan, menyimpan dalam baris gilir apa yang belum dapat dihantar"
+          },
+          "notifier": {
+            "title": "Penghantar pemberitahuan",
+            "text": "Satu amaran pergi ke telefon di kawasan yang diliputinya sahaja; satu saluran kedua membawanya untuk orang yang lebih suka aplikasi sembang mereka"
+          },
+          "files": {
+            "title": "Fail lapisan peta",
+            "text": "Lapisan dihantar sebagai fail dan disimpan dekat dengan pembaca, jadi satu lapisan boleh diganti tanpa versi aplikasi baharu"
+          },
+          "residents": {
+            "title": "Penduduk dan pelawat",
+            "text": "Amaran kawasan sendiri, peta, nombor talian hayat, dan satu tekan untuk meminta bantuan"
+          },
+          "teams": {
+            "title": "Pasukan penyelamat dan bekalan",
+            "text": "Papan langsung permintaan di kawasan yang mereka liputi, dan tiada apa-apa di luarnya"
+          },
+          "admins": {
+            "title": "Pentadbir Jaga",
+            "text": "Isyarat, konsol amaran, bilik gerakan, dan satu loceng automatik itu"
+          }
+        },
+        "flows": {
+          "fetch": "dibaca setiap beberapa minit, tidak pernah ditulis balik",
+          "write": "dicatat dengan masa ia dibaca",
+          "serve": "hanya baris yang dibenarkan untuk pembaca itu",
+          "reach": "amaran keluar, permintaan masuk, dan satu salinan disimpan di telefon untuk waktu liputan hilang"
+        }
       }
     }
   }

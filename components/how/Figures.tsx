@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
+import { ARCHITECTURE, creditById, WORKFLOW, WORKFLOW_STAGES } from "@/lib/how-it-works";
 import s from "./How.module.css";
 
 /**
@@ -395,6 +396,177 @@ export function SOSFigure() {
             </li>
           ))}
         </ol>
+      }
+    />
+  );
+}
+
+/** The chevron between two stages of the workflow: across on a laptop, down on a phone. */
+function Arrow() {
+  return (
+    <span className={s.wfArrow} aria-hidden="true">
+      <svg viewBox="0 0 18 18">
+        <path
+          d="M3 9h11M10 4.5L14.5 9L10 13.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * The workflow, as a GIS office would draw a model (the owner's request, 16 Oct): every chain of
+ * work on one chart, from the open data it starts with, through the one analysis step that makes
+ * it, to the product and the place in the app where that product is seen.
+ *
+ * Four shapes, the ones a flow chart uses: a parallelogram for data, a process box for the
+ * analysis, a filled box for the product, and a dashed pill for the screen - which is a link into
+ * the part of this page that explains that chain. The chains that feed each other say so, because
+ * that is the part a reader cannot get from a list of layers.
+ */
+export function WorkflowFigure() {
+  const t = useTranslations("howItWorks.figures.workflow");
+  return (
+    <Figure
+      title={t("title")}
+      caption={t("caption")}
+      legend={
+        <ul className={`${s.wfKey} text-jaga-text`}>
+          <li>
+            <span className={s.wfData} data-shape="data">
+              {t("key.data")}
+            </span>
+          </li>
+          <li>
+            <span className={s.wfProcess} data-shape="analysis">
+              {t("key.analysis")}
+            </span>
+          </li>
+          <li>
+            <span className={s.wfProduct} data-shape="product">
+              {t("key.product")}
+            </span>
+          </li>
+          <li>
+            <span className={s.wfFeed} data-shape="feed">
+              {t("key.feed")}
+            </span>
+          </li>
+        </ul>
+      }
+      drawing={
+        <div className={`${s.wf} ${s.fig}`} data-workflow>
+          <div className={s.wfHead} aria-hidden="true">
+            <span className={s.wfLabel}>{t("stages.data")}</span>
+            <span />
+            <span className={s.wfLabel}>{t("stages.analysis")}</span>
+            <span />
+            <span className={s.wfLabel}>{t("stages.product")}</span>
+            <span />
+            <span className={s.wfLabel}>{t("stages.app")}</span>
+          </div>
+          {WORKFLOW.map((row) => (
+            <div key={row.key} className={s.wfRow} data-workflow-row={row.key}>
+              <div className={s.wfCell}>
+                <span className={s.wfLabel}>{t("stages.data")}</span>
+                {row.sources.map((id) => (
+                  <span key={id} className={s.wfData} data-workflow-source={id}>
+                    {creditById(id)?.short ?? id}
+                  </span>
+                ))}
+                {row.feeds?.map((from) => (
+                  <span key={from} className={s.wfFeed} data-workflow-feed={from}>
+                    {t(`rows.${from}.product`)}
+                  </span>
+                ))}
+              </div>
+              <Arrow />
+              <div className={s.wfCell}>
+                <span className={s.wfLabel}>{t("stages.analysis")}</span>
+                <span className={s.wfProcess}>{t(`rows.${row.key}.method`)}</span>
+              </div>
+              <Arrow />
+              <div className={s.wfCell}>
+                <span className={s.wfLabel}>{t("stages.product")}</span>
+                <span className={s.wfProduct}>{t(`rows.${row.key}.product`)}</span>
+              </div>
+              <Arrow />
+              <div className={s.wfCell}>
+                <span className={s.wfLabel}>{t("stages.app")}</span>
+                <a className={s.wfApp} href={`#part-${row.part}`}>
+                  {t(`rows.${row.key}.app`)}
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      }
+    />
+  );
+}
+
+/** The four stages, for a test that holds the chart to them. */
+export const WORKFLOW_COLUMNS = WORKFLOW_STAGES;
+
+/**
+ * The architecture, end to end (the owner's request, 16 Oct): five bands read downwards, from
+ * where the figures come from to the people at the end of it, with what travels between each
+ * band written on the arrow. The middle band - the one place that holds everything and decides
+ * who may read each row - is the one drawn differently, because that is the whole design.
+ *
+ * In general terms only: no supplier, product or brand is named here.
+ */
+export function ArchitectureFigure() {
+  const t = useTranslations("howItWorks.figures.architecture");
+  return (
+    <Figure
+      title={t("title")}
+      caption={t("caption")}
+      drawing={
+        <div className={`${s.arch} ${s.fig}`} data-architecture>
+          {ARCHITECTURE.map((tier) => (
+            <div key={tier.key}>
+              <div
+                className={s.archTier}
+                data-arch-tier={tier.key}
+                data-core={tier.key === "core" ? "true" : undefined}
+              >
+                <div className={s.archHead}>
+                  <span className={s.archTitle}>{t(`tiers.${tier.key}.title`)}</span>
+                  <span className={s.archNote}>{t(`tiers.${tier.key}.note`)}</span>
+                </div>
+                <div className={s.archBoxes}>
+                  {tier.boxes.map((box) => (
+                    <span key={box} className={s.archBox} data-arch-box={box}>
+                      <b>{t(`boxes.${box}.title`)}</b>
+                      <span>{t(`boxes.${box}.text`)}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {tier.flow && (
+                <p className={s.archFlow} data-arch-flow={tier.flow}>
+                  <svg viewBox="0 0 18 18" aria-hidden="true">
+                    <path
+                      d="M9 3v11M4.5 9.5L9 14l4.5-4.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {t(`flows.${tier.flow}`)}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
       }
     />
   );

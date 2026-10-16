@@ -36,6 +36,15 @@ test("a reader finds every layer, what it cannot tell, and who the data came fro
     "href",
     /openstreetmap\.org/,
   );
+  // The logos the owner cleared are served from the app itself and really load.
+  const logo = page.locator('[data-credit="gistda"] img');
+  await expect(logo).toHaveAttribute("src", "/credits/gistda.svg");
+  expect((await page.request.get("/credits/gistda.svg")).status()).toBe(200);
+
+  // The workflow chart: one row per chain, and the stage it ends in opens that part.
+  await expect(page.locator("[data-workflow-row]")).toHaveCount(8);
+  await page.locator('[data-workflow-row="classes"] a').click();
+  await expect(page).toHaveURL(/#part-classes$/);
 
   // The hotlines stay where they always are, and nothing pushes the page sideways.
   await expect(page.locator('footer a[href="tel:1784"]')).toBeVisible();

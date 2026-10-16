@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { creditById, SCIENCE_PARTS, type SciencePart } from "@/lib/how-it-works";
 import { buttonPrimary, buttonSecondary } from "@/lib/ui";
 import { Credits } from "./Credits";
-import { FIGURES } from "./Figures";
+import { FIGURES, WorkflowFigure } from "./Figures";
 import { HowNav } from "./HowNav";
 import { HOW_ICONS } from "./icons";
 
@@ -75,6 +75,16 @@ export function HowScience() {
           ))}
         </ul>
         <p className="text-small text-jaga-text-2">{t("read.notRecipe")}</p>
+      </section>
+
+      {/* The whole workflow on one chart: data in, analysis, product, screen (owner, 16 Oct). */}
+      <section className="flex flex-col gap-3" aria-labelledby="how-workflow" id="workflow">
+        <h2 id="how-workflow" className="text-h3 font-bold text-jaga-ink">
+          {t("workflow.title")}
+        </h2>
+        <p className="text-jaga-text">{t("workflow.lead")}</p>
+        <WorkflowFigure />
+        <p className="text-small text-jaga-text-2">{t("workflow.note")}</p>
       </section>
 
       {/* The contents: ten parts, each its own address. */}

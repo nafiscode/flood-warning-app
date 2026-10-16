@@ -3832,7 +3832,8 @@
     "sea": {
       "lead": "The sea, from wave and weather models",
       "text": "Seven points off the coast from Songkhla to Tak Bai, read from Open-Meteo's wave and weather models every half hour. Waves from 1 m, wind from 30 km/h or thunderstorms count as rough; waves from 2 m, wind from 40 km/h or gusts from 60 km/h mean small boats should stay in port, in TMD's own words. It never says the sea is safe, and tide heights are not shown because the model differs from the tide gauges by about 0.7 m."
-    }
+    },
+    "more": "The whole method, layer by layer: how Jaga works"
   },
   "tambonRisk": {
     "eyebrow": "Long-term flood risk, not today's alert",
@@ -4393,13 +4394,18 @@
         "map": "Open the flood risk map",
         "features": "What Jaga can do",
         "system": "Read how the system works"
+      },
+      "workflow": {
+        "title": "The whole workflow, on one chart",
+        "lead": "Every chain of work in Jaga: the open data it starts from, the one analysis step that turns it into something, the product that step leaves behind, and the screen where that product is seen. Four chains feed each other - the radar record and the height model both go into the flood-prone classes, and the river gauges go into both the automatic alarm and the safe-return window.",
+        "note": "A map of the work, not a recipe: it names no parameter, no threshold and no order of operations. Each row opens the part of this page that explains it."
       }
     },
     "credits": {
       "title": "The data, and the people who gave it away",
       "thanks": "Jaga is a non-profit app built by volunteers, and almost every number in it came from somebody else's work, given away for free: a European radar satellite that has flown over this coast every few days since 2017, an elevation model built from satellite data and corrected for trees and buildings, a Thai institute that publishes river levels every fifteen minutes, agencies that publish flood maps and dam figures, weather and wave models served without a bill, and tens of thousands of people who mapped the roads, villages and buildings of these four provinces by hand. Without any one of them there would be no flood map for Pattani, Yala, Narathiwat and Songkhla. Thank you.",
       "endorse": "None of these organisations runs Jaga, has checked it, or endorses it. Naming them is a licence requirement and a thank-you, not a claim of support.",
-      "licenceNote": "Licences are named as the licensors name them, and where a credit line is required it is printed word for word. The file docs/attributions.md in the public code repository is the record, with the date each licence was read.",
+      "licenceNote": "Licences are named as the licensors name them, and where a credit line is required it is printed word for word. The file docs/attributions.md in the public code repository is the record, with the date each licence was read. The organisations' logos shown here are the free-licensed files listed in public/credits/SOURCES.md; a trademark stays its owner's, and any one of them is removed on request.",
       "groups": {
         "satellites": "Satellites and elevation",
         "agencies": "Thai agencies",
@@ -4529,6 +4535,11 @@
         "text": "The science page is the other half of this: what each layer of the map means, where its data came from, and how far to trust it.",
         "science": "Read how the science works",
         "map": "Open the flood risk map"
+      },
+      "architecture": {
+        "title": "The architecture, end to end",
+        "lead": "Five bands, read downwards: where the figures come from, what fetches them, the one place that holds everything and decides who may read each row, what delivers it, and the people at the end of it. What travels between two bands is written on the arrow.",
+        "note": "Drawn in general terms on purpose: what matters is the shape, and a public page naming every service a safety app leans on is a map for anyone looking for a way in."
       }
     },
     "figures": {
@@ -4608,6 +4619,158 @@
         "step4": "The verified teams covering that place see it on their board within seconds.",
         "step5": "A team accepts, and the person who sent it sees who is coming and can reach them.",
         "caption": "Nothing on this path asks who you are, and nothing on it can turn you away."
+      },
+      "workflow": {
+        "title": "Data, analysis, product, screen",
+        "caption": "Read a row from left to right on a laptop, from top to bottom on a phone.",
+        "key": {
+          "data": "Open data",
+          "analysis": "Analysis step",
+          "product": "Product",
+          "feed": "Product of another chain"
+        },
+        "stages": {
+          "data": "Open data",
+          "analysis": "Analysis",
+          "product": "Product",
+          "app": "Where it is seen"
+        },
+        "rows": {
+          "radar": {
+            "method": "Every rainy-season radar pass compared with the same ground, same orbit, in the dry months of that year; permanent water and steep terrain set aside",
+            "product": "Flood record, nine seasons: how often each cell was seen under water",
+            "app": "Behind the flood-prone areas"
+          },
+          "hand": {
+            "method": "The elevation model conditioned with the mapped rivers, water routed downhill, and each cell measured against the stream it drains into",
+            "product": "Height above the nearest stream, for every cell of land",
+            "app": "Behind the flood-prone areas"
+          },
+          "classes": {
+            "method": "Radar frequency and height combined into classes, with height alone deciding in built-up land; checked against a flood left out of the build",
+            "product": "Four flood-prone classes, and a table per tambon and per village",
+            "app": "Flood-prone areas on the map"
+          },
+          "gauges": {
+            "method": "Every season since 2017 replayed to find the level whose crossing was most often followed by the river leaving its bank, and the lead time it gave",
+            "product": "Watch, Warning and Evacuate at 46 gauges, and how long past falls took",
+            "app": "The admins' signals, the automatic alarm, the return window"
+          },
+          "dam": {
+            "method": "The lag of the turbines' daily pulses and of past flood peaks, gauge by gauge; the land low enough and joined to the river at its highest recorded levels",
+            "product": "Arrival ranges per tambon, and the land a release can reach",
+            "app": "The dam notice and the release zone"
+          },
+          "places": {
+            "method": "Height above past flood edges, plus a route check that closes every road the radar saw under water and counts the houses that can still get there",
+            "product": "2,600 ranked safe places, with their reasons and their flags",
+            "app": "Safe places on the map"
+          },
+          "outlook": {
+            "method": "Forty-five seasons of rain set against the state of the Pacific and the seasonal models, each method scored on how often it was right here",
+            "product": "Odds of a drier, normal or wetter season, with their own skill",
+            "app": "The season outlook on the map"
+          },
+          "sea": {
+            "method": "Waves, swell, wind and sea level read at seven points off the coast and graded by the national weather service's own cut-offs",
+            "product": "A sea state for small boats, and the slow build-up against the coast",
+            "app": "Sea and coast on the map"
+          }
+        }
+      },
+      "architecture": {
+        "title": "From the agencies' gauges to a phone in a flooded village",
+        "caption": "The middle band is the whole design: one store, with the rules about who may see what written into it rather than into the screens.",
+        "tiers": {
+          "sources": {
+            "title": "Where the figures come from",
+            "note": "none of it ours"
+          },
+          "readers": {
+            "title": "Scheduled readers",
+            "note": "a few minutes apart, all year"
+          },
+          "core": {
+            "title": "One database, with the rules inside it",
+            "note": "the only way in"
+          },
+          "delivery": {
+            "title": "What delivers it",
+            "note": "three paths, each able to fail alone"
+          },
+          "people": {
+            "title": "The people at the end",
+            "note": "different rules for each"
+          }
+        },
+        "boxes": {
+          "agencies": {
+            "title": "Agency telemetry",
+            "text": "River gauges, the dam's hourly figures, rainfall from the national networks"
+          },
+          "models": {
+            "title": "Weather, wave and flow models",
+            "text": "Rain and river forecasts, waves and sea level off the coast"
+          },
+          "layers": {
+            "title": "Map layers from the analysis",
+            "text": "Flood-prone classes, the dam's release zone, safe places: made once, not live"
+          },
+          "schedule": {
+            "title": "On a timetable",
+            "text": "Each feed on its own clock, running inside the database rather than on a machine of ours"
+          },
+          "watch": {
+            "title": "A check on every reading",
+            "text": "A feed that goes quiet, or a gauge at its level, is noticed the moment it happens"
+          },
+          "stamp": {
+            "title": "Stamped with the time it was read",
+            "text": "Nothing is stored without it, so the app can always say how old a figure is"
+          },
+          "tables": {
+            "title": "The data",
+            "text": "Alerts, requests for help, reports, teams, areas, gauges and the layers' index"
+          },
+          "rules": {
+            "title": "The rules on the rows",
+            "text": "Who may read each row, enforced here and not by the screens: the app, an export and a direct query all meet the same wall"
+          },
+          "audit": {
+            "title": "The audit log",
+            "text": "Every phone number revealed, every vulnerable-household record read, whoever read it"
+          },
+          "app": {
+            "title": "The app on the phone",
+            "text": "Installs to the home screen, keeps what is needed to work with no signal, queues what it cannot send yet"
+          },
+          "notifier": {
+            "title": "The notifier",
+            "text": "An alert goes to the phones in the area it covers, and nowhere else; a second channel carries it for people who prefer their chat app"
+          },
+          "files": {
+            "title": "The layer files",
+            "text": "Map layers served as files and cached close to the reader, so a layer can be replaced without a new version of the app"
+          },
+          "residents": {
+            "title": "Residents and visitors",
+            "text": "Their own area's alert, the map, the hotlines, and one tap to ask for help"
+          },
+          "teams": {
+            "title": "Rescue and supply teams",
+            "text": "A live board of the requests in the areas they cover, and nothing outside them"
+          },
+          "admins": {
+            "title": "Jaga's admins",
+            "text": "The signals, the alert console, the war room, and the one automatic alarm"
+          }
+        },
+        "flows": {
+          "fetch": "read every few minutes, never written back to",
+          "write": "written down with the time they were read",
+          "serve": "only the rows the reader is allowed",
+          "reach": "alerts out, requests in, and a copy kept on the phone for when the signal goes"
+        }
       }
     }
   }

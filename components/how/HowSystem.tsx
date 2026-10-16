@@ -3,7 +3,7 @@ import { CheckIcon, ForwardIcon, MapIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { SYSTEM_PARTS, type SystemPart } from "@/lib/how-it-works";
 import { buttonSecondary } from "@/lib/ui";
-import { FIGURES } from "./Figures";
+import { ArchitectureFigure, FIGURES } from "./Figures";
 import { HowNav } from "./HowNav";
 import { HOW_ICONS } from "./icons";
 
@@ -40,6 +40,16 @@ export function HowSystem() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* The whole architecture on one picture, before the parts (the owner, 16 Oct). */}
+      <section className="flex flex-col gap-3" aria-labelledby="sys-arch" id="architecture">
+        <h2 id="sys-arch" className="text-h3 font-bold text-jaga-ink">
+          {t("architecture.title")}
+        </h2>
+        <p className="text-jaga-text">{t("architecture.lead")}</p>
+        <ArchitectureFigure />
+        <p className="text-small text-jaga-text-2">{t("architecture.note")}</p>
       </section>
 
       <nav aria-labelledby="sys-contents" className="flex flex-col gap-3">
