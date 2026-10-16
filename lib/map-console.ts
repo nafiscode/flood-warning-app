@@ -102,6 +102,10 @@ export function reportTally(rows: readonly TambonReports[]): ReportTally {
 export type DamTally = {
   dam: Dam;
   percentFull: number | null;
+  /** Going over the spillway, m3/s. */
+  spilledCms: number | null;
+  /** The share of the reservoir it is normally held at, 0-1, or null when it is not published. */
+  normalMark: number | null;
   /** Everything leaving the dam, m3/s: turbines and spillway together. */
   outflowCms: number | null;
   inflowCms: number | null;
@@ -114,9 +118,13 @@ export type DamTally = {
 export function damTally(dam: Dam | undefined): DamTally | null {
   if (!dam) return null;
   const signal = dam.signal;
+  const max = dam.storageMaxMcm;
+  const normal = dam.storageNormalMcm;
   return {
     dam,
     percentFull: signal?.percentFull ?? null,
+    spilledCms: signal?.spilledCms ?? null,
+    normalMark: max && normal && max > 0 ? normal / max : null,
     outflowCms: signal?.outflowCms ?? signal?.releasedCms ?? null,
     inflowCms: signal?.inflowCms ?? null,
     observedAt: signal?.observedAt ?? null,
@@ -177,4 +185,46 @@ export function consoleVeil(sky: readonly string[]): { light: number; dark: numb
     light: veilAlpha(sky, brand["jaga-text-2"], VEIL_COLOR.light),
     dark: veilAlpha(sky, darkBrand["jaga-text-2"], VEIL_COLOR.dark),
   };
+}
+
+/*
+ * When a readout asks for an admin's eye (the owner, 16 Oct 2026: the four cards blink for
+ * admins on a laptop). It is a nudge, never a level: only the alerts card wears the alert
+ * palette, because only it repeats levels an admin published. The river, the dam and residents'
+ * reports pulse in a plain colour, because a reading is a measurement and a resident's report is
+ * not an alert - neither may be dressed as a level Jaga issued (safety rules 2 and 3; the same
+ * reason gauges are drawn in the water colour and not in alert colours).
+ *
+ * Nothing here decides anything. The card says in words what it says either way; the pulse only
+ * asks someone to look, so a reader who cannot see it loses nothing.
+ */
+export type TileAlarm = AlertLevel | "attention" | null;
+
+/** The worst level in force, when it is one that means act. Watch does not blink. */
+export function alertsAlarm(tally: readonly LevelTally[]): TileAlarm {
+  for (const level of ["evacuate", "warning"] as const) {
+    if (tally.some((x) => x.level === level && x.tambons > 0)) return level;
+  }
+  return null;
+}
+
+/** A river at or over its bank. Near the bank is not enough: it would blink most of a wet week. */
+export function gaugeAlarm(tally: Pick<GaugeTally, "over">): TileAlarm {
+  return tally.over > 0 ? "attention" : null;
+}
+
+/** Water going over the spillway, or a reservoir past the level it is normally held at. */
+export function damAlarm(tally: DamTally | null): TileAlarm {
+  if (!tally) return null;
+  if ((tally.spilledCms ?? 0) > 0) return "attention";
+  const { percentFull, normalMark } = tally;
+  if (percentFull !== null && normalMark !== null && percentFull / 100 > normalMark) {
+    return "attention";
+  }
+  return null;
+}
+
+/** A tambon where several different residents report the same thing. */
+export function reportsAlarm(tally: Pick<ReportTally, "confirmed">): TileAlarm {
+  return tally.confirmed > 0 ? "attention" : null;
 }

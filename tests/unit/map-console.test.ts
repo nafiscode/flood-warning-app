@@ -11,6 +11,7 @@ import {
   VEIL_COLOR,
   veilAlpha,
 } from "@/lib/map-console";
+import { alertsAlarm, damAlarm, gaugeAlarm, reportsAlarm } from "@/lib/map-console";
 import { contrastRatio } from "@/lib/brand/contrast";
 import { brand, darkBrand } from "@/lib/brand/tokens";
 import { SCENE_LOOKS, SCENES } from "@/lib/weather-scene";
@@ -124,6 +125,8 @@ describe("the laptop console's readout strip", () => {
     expect(damTally({ ...base, signal: null } as Dam)).toEqual({
       dam: { ...base, signal: null },
       percentFull: null,
+      spilledCms: null,
+      normalMark: null,
       outflowCms: null,
       inflowCms: null,
       observedAt: null,
@@ -241,5 +244,65 @@ describe("the weather behind the console", () => {
 
   it("falls back to a readable veil rather than none when a sky is impossible", () => {
     expect(veilAlpha(["#4A5E68"], brand["jaga-text-2"], VEIL_COLOR.light)).toBeGreaterThan(0.5);
+  });
+});
+
+describe("the readouts that ask for an admin's eye", () => {
+  const dam = (over: Record<string, unknown>) =>
+    ({
+      dam: {} as never,
+      percentFull: null,
+      spilledCms: null,
+      normalMark: null,
+      outflowCms: null,
+      inflowCms: null,
+      observedAt: null,
+      stale: false,
+      ...over,
+    }) as Parameters<typeof damAlarm>[0];
+
+  it("blinks the alerts card at the worst level in force, and never at Watch", () => {
+    expect(alertsAlarm(levelTally([{ level: "evacuate", tambons: ["940101"] }]))).toBe("evacuate");
+    expect(alertsAlarm(levelTally([{ level: "warning", tambons: ["940101"] }]))).toBe("warning");
+    // A watch is not a thing to act on at a glance; it would blink for most of a wet week.
+    expect(alertsAlarm(levelTally([{ level: "watch", tambons: ["940101"] }]))).toBeNull();
+    expect(alertsAlarm([])).toBeNull();
+    // The worst wins when two are in force.
+    const both = levelTally([
+      { level: "warning", tambons: ["940101"] },
+      { level: "evacuate", tambons: ["940102"] },
+    ]);
+    expect(alertsAlarm(both)).toBe("evacuate");
+  });
+
+  it("never dresses a measurement or a resident's report as a level (safety rules 2 and 3)", () => {
+    // Everything but the alerts card asks in the page's own ink, never in the alert palette.
+    expect(gaugeAlarm({ over: 2 })).toBe("attention");
+    expect(damAlarm(dam({ spilledCms: 40 }))).toBe("attention");
+    expect(reportsAlarm({ confirmed: 1 })).toBe("attention");
+  });
+
+  it("asks only when it is worth asking", () => {
+    // A river near its bank is not over it.
+    expect(gaugeAlarm({ over: 0 })).toBeNull();
+    expect(reportsAlarm({ confirmed: 0 })).toBeNull();
+    expect(damAlarm(null)).toBeNull();
+    expect(damAlarm(dam({ spilledCms: 0, percentFull: 47, normalMark: 0.8 }))).toBeNull();
+  });
+
+  it("blinks the dam when the reservoir is past the level it is normally held at", () => {
+    expect(damAlarm(dam({ percentFull: 85, normalMark: 0.8 }))).toBe("attention");
+    expect(damAlarm(dam({ percentFull: 75, normalMark: 0.8 }))).toBeNull();
+    // Nothing published about the normal level is not a reason to blink.
+    expect(damAlarm(dam({ percentFull: 99, normalMark: null }))).toBeNull();
+  });
+
+  it("pulses slowly enough to be safe, and stops when less motion is asked for", () => {
+    const css = readFileSync("app/globals.css", "utf8");
+    // Three flashes a second can harm a photosensitive reader; this is about one every two.
+    const rule = css.slice(css.indexOf("[data-console-alarm] {"));
+    const seconds = Number(/animation: jaga-console-alarm ([\d.]+)s/.exec(rule)?.[1]);
+    expect(seconds).toBeGreaterThanOrEqual(1);
+    expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\[data-console-alarm\]/);
   });
 });

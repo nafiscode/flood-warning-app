@@ -13,7 +13,19 @@ export type WatchedPlace = {
 
 /** Answer of /api/me/places: the signed-in person's home and watched places. */
 export type MyPlaces =
-  { signedIn: false } | { signedIn: true; home: Area | null; places: WatchedPlace[] };
+  | { signedIn: false }
+  | {
+      signedIn: true;
+      home: Area | null;
+      places: WatchedPlace[];
+      /**
+       * The person's own role, so a screen can show an admin something extra without asking the
+       * server a second question. It is their own, read with their own session; it decides what
+       * is *shown*, never what is allowed - every door is held by the database's own rules
+       * (safety rule 5).
+       */
+      role?: string | null;
+    };
 
 /** What may be kept on the phone for offline use: everything except phone numbers. */
 export function withoutPhones(me: MyPlaces): MyPlaces {

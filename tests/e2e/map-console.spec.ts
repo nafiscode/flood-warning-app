@@ -231,6 +231,21 @@ test.describe("the live map on a laptop", () => {
     );
   });
 
+  test("the readouts never blink for anyone but an admin", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-console-tiles]")).toBeVisible();
+    /*
+     * This visitor is signed out, and a warning is in force with a gauge over its bank - the very
+     * state that makes an admin's console ask for a look. For everyone else the figures are the
+     * same and the screen is still (the owner, 16 Oct: these only appear for an admin).
+     */
+    await expect(page.locator('[data-console-tile="alerts"]')).toContainText(
+      th.alert.level.warning,
+    );
+    await expect(page.locator("[data-console-tile][data-console-alarm]")).toHaveCount(0);
+  });
+
   test("a hazard still to come is a placeholder, never an empty console", async ({ page }) => {
     await serve(page);
     await page.goto("/th/map");

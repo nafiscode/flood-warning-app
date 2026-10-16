@@ -28,7 +28,11 @@ export async function GET() {
   if (!userId) return answer({ signedIn: false });
 
   const [profile, saved] = await Promise.all([
-    supabase.from("profiles").select("home_point, home_tambon").eq("user_id", userId).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("home_point, home_tambon, role")
+      .eq("user_id", userId)
+      .maybeSingle(),
     supabase
       .from("saved_places")
       .select("id, label, point, tambon, contact_name, contact_phone")
@@ -96,5 +100,6 @@ export async function GET() {
       (profile.data?.home_point as Point) ?? null,
     ),
     places,
+    role: (profile.data?.role as string | null) ?? null,
   });
 }

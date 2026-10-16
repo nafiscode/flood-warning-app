@@ -4,7 +4,18 @@ import { useTranslations } from "next-intl";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
-import { ageMinutes, damTally, gaugeTally, levelTally, reportTally } from "@/lib/map-console";
+import {
+  ageMinutes,
+  alertsAlarm,
+  damAlarm,
+  damTally,
+  gaugeAlarm,
+  gaugeTally,
+  levelTally,
+  reportsAlarm,
+  reportTally,
+  type TileAlarm,
+} from "@/lib/map-console";
 import type { DamTally } from "@/lib/map-console";
 import type { Gauge } from "@/lib/map-data";
 import { localName } from "@/lib/places";
@@ -76,6 +87,12 @@ export type ConsoleTilesProps = {
   /** Bangkok time of an ISO stamp, written as the rest of the page writes it. */
   time: (iso: string) => string;
   locale: string;
+  /**
+   * The person reading is an admin. Only then does a card pulse for attention (the owner,
+   * 16 Oct): everyone else sees the same figures, still. It changes what is shown and nothing
+   * else - what anyone may read is held by the database's own rules (safety rule 5).
+   */
+  admin?: boolean;
 };
 
 export function ConsoleTiles(props: ConsoleTilesProps) {
@@ -89,6 +106,16 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
    * tile with nothing in it tells a reader nothing.
    */
   const dam = damTally(props.dams.find((d) => d.signal) ?? props.dams[0]);
+
+  /*
+   * Which cards ask for a look. Worked out for everyone and used only for an admin, so the rule
+   * is in one place and a test can read it without a session.
+   */
+  const levels = status && !(failed && !fresh) ? levelTally(alerts) : [];
+  const gaugeFigures0 = gauges && gauges.length > 0 ? gaugeTally(gauges) : null;
+  const reportFigures0 = reports && reports.length > 0 ? reportTally(reports) : null;
+  const alarm = (which: TileAlarm): string | undefined =>
+    props.admin && which ? which : undefined;
 
   const alertFigures = () => {
     if (!status || (failed && !fresh)) {
@@ -226,23 +253,35 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
       data-console-readout="true"
       className="hidden console:grid console:grid-cols-2 console:gap-3"
     >
-      <li className={tile} data-console-tile="alerts">
+      <li
+        className={tile}
+        data-console-tile="alerts"
+        data-console-alarm={alarm(alertsAlarm(levels))}
+      >
         <Label>{t("alerts.label")}</Label>
         {alertFigures()}
         <Foot>{t("scope.areas", { scope })}</Foot>
       </li>
 
-      <li className={tile} data-console-tile="gauges">
+      <li
+        className={tile}
+        data-console-tile="gauges"
+        data-console-alarm={alarm(gaugeFigures0 ? gaugeAlarm(gaugeFigures0) : null)}
+      >
         <Label>{t("gauges.label")}</Label>
         {gaugeFigures()}
       </li>
 
-      <li className={tile} data-console-tile="dam">
+      <li className={tile} data-console-tile="dam" data-console-alarm={alarm(damAlarm(dam))}>
         <Label>{dam ? localName(dam.dam.name, props.locale) : t("dam.label")}</Label>
         {damFigures(dam)}
       </li>
 
-      <li className={tile} data-console-tile="reports">
+      <li
+        className={tile}
+        data-console-tile="reports"
+        data-console-alarm={alarm(reportFigures0 ? reportsAlarm(reportFigures0) : null)}
+      >
         <Label>{t("reports.label")}</Label>
         {reportFigures()}
       </li>

@@ -38,6 +38,7 @@ import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
 import { localName } from "@/lib/places";
+import { isAdminRoleName } from "@/lib/roles";
 import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
@@ -1141,6 +1142,7 @@ export function DashboardView(props: DashboardViewProps) {
                 now={now}
                 time={time}
                 locale={locale}
+                admin={isAdminRoleName(props.me?.signedIn ? props.me.role : null)}
               />
 
               {/* The hazard comes first, then the province, then what the map shows for it (owner,

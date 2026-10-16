@@ -352,6 +352,47 @@
   [data-console-tiles] {
     grid-area: tiles;
   }
+  /*
+   * A readout asking for an admin's eye (the owner, 16 Oct 2026). A ring that breathes, about
+   * once every two seconds - far below the three flashes a second that can harm a photosensitive
+   * reader - and the card's own words say what is happening either way, so nothing rests on the
+   * movement or on the colour.
+   *
+   * Only the alerts card wears the alert palette: it repeats levels an admin published. A river
+   * reading, a reservoir and a resident's report are not levels and never wear one (safety rules
+   * 2 and 3), so they ask in the page's own ink.
+   */
+  @keyframes jaga-console-alarm {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 2px var(--alarm-ring),
+        0 0 0 0 transparent;
+    }
+    50% {
+      box-shadow:
+        0 0 0 2px var(--alarm-ring),
+        0 0 14px 3px var(--alarm-ring);
+    }
+  }
+  [data-console-alarm] {
+    --alarm-ring: var(--jaga-ink);
+    border-color: transparent;
+    animation: jaga-console-alarm 2.2s ease-in-out infinite;
+  }
+  [data-console-alarm="warning"] {
+    --alarm-ring: var(--alert-warning);
+  }
+  [data-console-alarm="evacuate"] {
+    --alarm-ring: var(--alert-evacuate);
+  }
+  /* Asked for less motion: the ring stays, it simply stops breathing. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-console-alarm] {
+      animation: none;
+      box-shadow: 0 0 0 2px var(--alarm-ring);
+    }
+  }
   [data-console-area="rail"] {
     grid-area: rail;
   }
