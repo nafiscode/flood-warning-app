@@ -1095,17 +1095,18 @@ export function DashboardView(props: DashboardViewProps) {
             </ul>
             {props.hazardsState === "unavailable" && <p className={hint}>{t("hazard.failed")}</p>}
             {/*
-             * The province goes in the empty half of the hazard line (the owner, 16 Oct), which on
-             * the console is inside the weather bar. It shares the row with the hazard buttons and
-             * wraps under them when they leave no room, so a long language simply takes two lines
-             * instead of being squeezed.
+             * The province goes on the hazard line (the owner, 16 Oct), which on the console is
+             * inside the weather bar. It shares the row with the hazard buttons and wraps under
+             * them when they leave no room - which they do in every language - so it comes to
+             * rest at the start of its own line, directly under the word Hazard (the owner's
+             * second note: same row level, aligned left).
              *
              * It stays here, in the page's own order, so a phone and a tablet see it exactly where
              * they saw it: straight after the hazard buttons. `mt-3` makes up the difference
              * between this row's gap and the gap it used to have as the next block down.
              */}
             {hazard.status === "active" && (
-              <div data-console-province="true" className="mt-3 console:mt-0 console:ms-auto">
+              <div data-console-province="true" className="mt-3 console:mt-0">
                 {directory ? (
                   <ProvinceSelect
                     id="map-province"
