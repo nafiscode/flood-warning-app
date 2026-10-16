@@ -121,7 +121,8 @@ export function ConsoleWeather() {
       href="/weather"
       prefetch={false}
       data-console-weather={sky.scene}
-      className="hidden min-h-tap items-center gap-2 rounded-full text-jaga-ink no-underline console:ms-auto console:inline-flex"
+      // `me-10` keeps it off the screen's edge: pushed all the way it read as falling off (owner).
+      className="hidden min-h-tap items-center gap-2 rounded-full text-jaga-ink no-underline console:ms-auto console:me-10 console:inline-flex"
       // One sentence for a screen reader, the same one the header's pill gives.
       aria-label={
         degrees === null

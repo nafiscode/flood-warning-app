@@ -142,12 +142,22 @@
   :root[data-theme="dark"] [data-map-console] {
     --console-veil-color: 9 20 30;
   }
+  /*
+   * The weather is a bar across the top of the console and no further (the owner, 16 Oct): the
+   * title, what the page is, the weather itself and the hazard buttons sit on it, and the
+   * readouts, the rails and the map below it sit on the page's own ground. It spans the first
+   * three rows of the grid and bleeds out to the screen's edges and up to meet the header, so it
+   * reads as a bar continuing from it rather than as a card floating on the page.
+   */
   [data-console-sky] {
-    position: absolute;
-    inset: 0;
+    grid-column: 1 / -1;
+    grid-row: 1 / 4;
+    position: relative;
     z-index: 0;
     overflow: hidden;
-    border-radius: 0.75rem;
+    margin-block-start: -1.5rem;
+    margin-block-end: -0.5rem;
+    margin-inline: calc(-1 * clamp(1.75rem, 2.5vw, 3.5rem));
   }
   /* --veil-day and --veil-night are set on the sky itself, worked out from that sky's own
      colours (lib/map-console.ts, consoleVeil). The fallbacks are the strongest veil any sky
@@ -199,13 +209,20 @@
    * map's switches, what a tap selected, the legend, the alerts) - so a keyboard or a screen
    * reader meets them exactly as the eye does, and the phone's order is untouched.
    */
+  /*
+   * Edge to edge, but not up against the glass: the first letter of the left rail needs room to
+   * breathe from the screen's edge (the owner, 16 Oct), and the right rail the same on its side.
+   * It grows with the screen, so a wide monitor does not leave the words hanging off the corner.
+   */
   #main:has([data-map-console]) {
     max-width: none;
-    padding-inline: 1.25rem;
+    padding-inline: clamp(1.75rem, 2.5vw, 3.5rem);
   }
-  /* ...and the header follows the page out to the edges, or it would float in the middle of it. */
+  /* ...and the header follows the page out to the edges, on the same gutter, or the logo and the
+     page's first line would start at different places. */
   body:has(#main [data-map-console]) [data-header-bar] {
     max-width: none;
+    padding-inline: clamp(1.75rem, 2.5vw, 3.5rem);
   }
   [data-map-console] {
     display: grid;

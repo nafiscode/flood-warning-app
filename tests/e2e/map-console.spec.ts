@@ -251,12 +251,33 @@ test.describe("the live map on a laptop", () => {
 
     // The same sky the weather page and the header's pill draw, for the weather where they are.
     const sky = page.locator("[data-console-sky]");
-    await expect(sky).toHaveAttribute("data-console-sky", "clearDay");
+    // Clear weather; whether that is a day sky or a night one is the clock's business, and this
+    // test must pass after sunset as well as before it.
+    await expect(sky).toHaveAttribute("data-console-sky", /^clear(Day|Night)$/);
     await expect(sky.locator("[data-weather-scene]")).toHaveCount(1);
     // It is decoration and says so.
     await expect(sky).toHaveAttribute("aria-hidden", "true");
     // The grid of lines it replaced is gone (the owner, 16 Oct).
     await expect(page.locator("[data-map-console]")).toHaveCSS("background-image", "none");
+
+    /*
+     * It is a bar across the top and no further (the owner, 16 Oct): the title, the weather and
+     * the hazard buttons sit on it, and the readouts and the rails below it do not. It runs the
+     * full width of the screen.
+     */
+    const box = async (selector: string) => await page.locator(selector).boundingBox();
+    const [bar, chips, tiles, rail] = await Promise.all([
+      box("[data-console-sky]"),
+      box('[data-console-area="hazard"]'),
+      box("[data-console-tiles]"),
+      box('[data-console-area="rail"]'),
+    ]);
+    expect(bar!.x).toBe(0);
+    expect(Math.round(bar!.width)).toBe(page.viewportSize()!.width);
+    // It reaches past the hazard buttons, and stops before the readouts and the rails.
+    expect(bar!.y + bar!.height).toBeGreaterThan(chips!.y + chips!.height);
+    expect(bar!.y + bar!.height).toBeLessThanOrEqual(tiles!.y);
+    expect(bar!.y + bar!.height).toBeLessThan(rail!.y);
 
     // The weather in words, in the empty half of the first line.
     const readout = page.locator("[data-console-weather]");
