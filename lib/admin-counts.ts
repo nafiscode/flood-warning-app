@@ -5,6 +5,7 @@ import {
   countText,
   itemsOf,
   waitingIn,
+  type AdminAccess,
   type AdminCount,
   type AdminCounts,
   type AdminGroup,
@@ -34,15 +35,19 @@ export async function readAdminCounts(supabase: SupabaseClient): Promise<AdminCo
 type Translate = (key: string, values?: Record<string, number>) => string;
 
 /** The menu as the layout and the admin home draw it, in the reader's language. */
-export function menuGroups(t: Translate, counts: AdminCounts, superAdmin: boolean): MenuGroup[] {
+export function menuGroups(
+  t: Translate,
+  counts: AdminCounts,
+  access: AdminAccess | boolean,
+): MenuGroup[] {
   return ADMIN_GROUPS.map((group: AdminGroup) => {
-    const waiting = waitingIn(group, counts, superAdmin);
+    const waiting = waitingIn(group, counts, access);
     return {
       key: group,
       title: t(`menu.groups.${group}.title`),
       waiting: countText(waiting),
       waitingLabel: waiting > 0 ? t("menu.waiting", { count: waiting }) : null,
-      items: itemsOf(group, superAdmin).map((item) => {
+      items: itemsOf(group, access).map((item) => {
         const n = item.count ? (counts[item.count] ?? 0) : 0;
         return {
           key: item.key,

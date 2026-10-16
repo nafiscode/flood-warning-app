@@ -89,3 +89,28 @@ export async function saveProfile(form: FormData) {
   const isAdmin = saved?.role === "admin" || saved?.role === "super_admin";
   redirect(localePath(preferred, isAdmin ? "/admin" : "/account"));
 }
+
+/**
+ * Ask to join the admin team (A10, owner 16 Oct 2026). Nothing is granted here: the request
+ * lands on /admin/members and waits for the super admin or a deputy. The phone number is
+ * required, as it is for every admin, and goes straight into the table that only a logged
+ * reveal can read (safety rule 5).
+ */
+export async function askForAdminAccess(form: FormData) {
+  const pageLocale = field(form, "locale");
+  const done: (query: Record<string, string>) => never = (query) =>
+    redirect(`${localePath(pageLocale, "/account")}?${new URLSearchParams(query)}`);
+
+  const phone = normalizePhone(field(form, "phone"));
+  if (!phone) done({ adminError: "phone" });
+  const note = field(form, "note");
+  if (note.length < 3) done({ adminError: "note" });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("request_admin_access", {
+    p_phone: phone,
+    p_note: note.slice(0, 500),
+  });
+  if (error) done({ adminError: error.code === "23505" ? "already" : "save" });
+  done({ adminAsked: "1" });
+}

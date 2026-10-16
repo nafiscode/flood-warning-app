@@ -966,6 +966,26 @@
       "here": "Log masuk dalam pelayar ini sahaja",
       "leave": "Keluar dari pelayar ini dan kembali ke skrin utama.",
       "tap": "Ketik ikon Jaga, seperti gambar di atas."
+    },
+    "adminAsk": {
+      "title": "Bantu menjaga Jaga",
+      "open": "Mohon menjadi pentadbir",
+      "intro": "Permohonan dihantar kepada pentadbir utama. Tiada akses diberi sehingga ia diluluskan.",
+      "phone": "Nombor telefon untuk menghubungi anda",
+      "note": "Apa yang anda boleh bantu",
+      "send": "Hantar permohonan",
+      "error": {
+        "phone": "Tulis nombor telefon untuk menghubungi anda",
+        "note": "Tulis ringkas apa yang anda boleh bantu",
+        "already": "Anda sudah menghantar permohonan",
+        "save": "Permohonan tidak dapat dihantar. Cuba lagi."
+      },
+      "status": {
+        "invited": "Anda dijemput menjadi pentadbir. Log masuk dengan e-mel yang dijemput.",
+        "requested": "Permohonan dihantar, menunggu keputusan pentadbir utama",
+        "active": "Anda sudah menjadi pentadbir",
+        "revoked": "Permohonan anda tidak diluluskan"
+      }
     }
   },
   "watched": {
@@ -1459,7 +1479,8 @@
         "operator": "Pengendali empangan"
       },
       "usage": "Penggunaan aplikasi",
-      "back": "Kembali ke utama pentadbir"
+      "back": "Kembali ke utama pentadbir",
+      "members": "Pasukan pentadbir"
     },
     "role": {
       "admin": "Pentadbir",
@@ -1632,6 +1653,78 @@
           "title": "Lihat sebagai peranan lain",
           "note": "Skrin setiap peranan dengan data rekaan, untuk melihat apa yang mereka alami. Tiada data sebenar dibaca atau dihantar."
         }
+      }
+    },
+    "members": {
+      "title": "Pasukan pentadbir",
+      "intro": "Senarai semua pentadbir: e-mel untuk log masuk, nombor telefon yang boleh dihubungi pasukan, dan tugas yang diberikan. Halaman ini hanya dilihat oleh pentadbir utama dan timbalannya.",
+      "list": "Senarai pasukan",
+      "waiting": "Menunggu kelulusan",
+      "new": "Tambah pentadbir",
+      "add": "Tambah ke pasukan",
+      "how": "Akaun akan dibuka untuk alamat ini. Dia menjadi pentadbir pada kali pertama log masuk dengan alamat itu.",
+      "name": "Nama",
+      "email": "E-mel",
+      "phone": "Nombor telefon",
+      "phoneKeep": "Biar kosong untuk kekalkan nombor sedia ada",
+      "duty": "Tugas",
+      "dutyHint": "Tugas ialah keterangan kerja, bukan had kuasa. Setiap pentadbir masih boleh membuka semua halaman.",
+      "save": "Simpan",
+      "change": "Ubah maklumat",
+      "approve": "Luluskan",
+      "turnDown": "Tolak permohonan",
+      "remove": "Tarik balik akses pentadbir",
+      "reason": "Sebab",
+      "reasonHint": "Sebab (disimpan dalam log)",
+      "reveal": "Lihat nombor",
+      "noPhone": "Tiada nombor telefon lagi",
+      "noName": "Nama belum diisi",
+      "noEmail": "Tiada e-mel (log masuk dengan LINE)",
+      "noRow": "Pentadbir sebelum halaman ini wujud. Tambah nombor dan tugasnya dengan memasukkan e-mel yang sama.",
+      "missingPhones": "{count} orang masih tiada nombor telefon. Setiap pentadbir mesti ada nombor.",
+      "invitations": "Rekod jemputan",
+      "deputyOn": "Jadikan timbalan pentadbir utama",
+      "deputyOff": "Tarik balik sebagai timbalan",
+      "deputyHint": "Melihat dan mengubah halaman ini seperti pentadbir utama. Hanya pentadbir utama boleh melantiknya.",
+      "rank": {
+        "super": "Pentadbir utama",
+        "deputy": "Timbalan pentadbir utama",
+        "admin": "Pentadbir"
+      },
+      "status": {
+        "invited": "Dijemput, menunggu log masuk pertama",
+        "requested": "Memohon menyertai",
+        "active": "Aktif",
+        "revoked": "Akses ditarik balik"
+      },
+      "wayIn": {
+        "sent": "Jalan masuk sudah dihantar melalui LINE",
+        "ready": "Sedia dihantar melalui LINE",
+        "email": "Log masuk melalui pautan e-mel (akaun belum berkait dengan LINE)"
+      },
+      "duties": {
+        "alerts": "Amaran",
+        "warRoom": "Bilik gerakan",
+        "moderation": "Semakan laporan",
+        "authorities": "Semakan pasukan",
+        "reports": "Laporan dan data",
+        "science": "Data sains",
+        "donations": "Derma",
+        "everything": "Semua"
+      },
+      "error": {
+        "email": "Tulis alamat e-mel yang betul",
+        "phone": "Tulis nombor telefon yang boleh dihubungi",
+        "duty": "Nyatakan tugas pentadbir ini",
+        "duplicate": "E-mel ini sudah ada dalam pasukan",
+        "account": "Akaun untuk e-mel ini tidak dapat dibuka. Cuba lagi.",
+        "save": "Tidak dapat disimpan. Cuba lagi."
+      },
+      "done": {
+        "added": "Sudah ditambah ke pasukan",
+        "approved": "Sudah diluluskan",
+        "saved": "Sudah disimpan",
+        "revoked": "Akses sudah ditarik balik"
       }
     }
   },
@@ -3206,7 +3299,13 @@
     "menuSos": "Minta bantuan",
     "menuMap": "Peta Risiko & Semasa",
     "menuUnit": "Daftar pasukan bantuan",
-    "menuFeatures": "Apa Jaga boleh buat"
+    "menuFeatures": "Apa Jaga boleh buat",
+    "adminWelcome": {
+      "title": "Jaga: anda kini pentadbir",
+      "body": "Buka konsol pentadbir dengan butang di bawah. Log masuk dengan akaun LINE ini.",
+      "duty": "Tugas: {duty}",
+      "open": "Buka konsol"
+    }
   },
   "fieldRescue": {
     "title": "Rekod penyelamatan yang ditemui sendiri",

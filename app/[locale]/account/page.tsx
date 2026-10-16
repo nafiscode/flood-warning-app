@@ -7,11 +7,12 @@ import { Journey } from "@/components/journey/Journey";
 import { ShareApp } from "@/components/ShareApp";
 import { PushCard } from "@/components/push/PushCard";
 import { Link } from "@/i18n/navigation";
+import { readMyAdminRequest } from "@/lib/admin-team";
 import { getSessionProfile, isAdminRole, localePath, needsName } from "@/lib/auth";
 import { toUnitRequest, unitJourney } from "@/lib/journey";
 import { installMessages } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
-import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
+import { buttonPrimary, buttonSecondary, card, hint, input, label, notice } from "@/lib/ui";
 import {
   AddSquareIcon,
   EditIcon,
@@ -24,6 +25,7 @@ import {
   SignOutIcon,
 } from "@/components/icons";
 import { SignOutForm } from "@/components/account/SignOutForm";
+import { askForAdminAccess } from "./actions";
 
 export async function generateMetadata({
   params,
@@ -56,6 +58,8 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
   // Why an admin turned a registration down (owner, 16 Oct): read through the function, because
   // the audit log that holds the words is admins-only.
   const { data: reviewed } = await supabase.rpc("my_unit_reviews");
+  // Where their own ask to help run Jaga stands, if they have made one (A10).
+  const adminRequest = isAdminRole(session.role) ? null : await readMyAdminRequest();
   const reasons = new Map<string, string>(
     (Array.isArray(reviewed) ? (reviewed as Record<string, unknown>[]) : [])
       .filter((r) => typeof r.unit_id === "string" && typeof r.reason === "string")
@@ -130,6 +134,53 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
           {t("authority.register")}
         </Link>
       </section>
+
+      {/* Helping run Jaga (A10, owner 16 Oct 2026). Nothing is granted here: the request goes
+          to the admin team page and waits for the super admin. An admin already has the role,
+          so the section is not drawn for them. */}
+      {!isAdminRole(session.role) && (
+        <section className={card} data-admin-ask="account">
+          <h2 className="text-body font-bold">{t("adminAsk.title")}</h2>
+          {query.adminError && (
+            <p role="alert" className={notice}>
+              {t(`adminAsk.error.${["phone", "note", "already", "save"].includes(String(query.adminError)) ? query.adminError : "save"}`)}
+            </p>
+          )}
+          {adminRequest ? (
+            <p className={hint} data-admin-ask-status={adminRequest.status}>
+              {t(`adminAsk.status.${adminRequest.status}`)}
+            </p>
+          ) : (
+            <details open={query.adminAsked === "1" || Boolean(query.adminError)}>
+              <summary className="min-h-tap cursor-pointer font-medium">
+                {t("adminAsk.open")}
+              </summary>
+              <form action={askForAdminAccess} className="flex flex-col gap-2 pt-2">
+                <input type="hidden" name="locale" value={locale} />
+                <p className={hint}>{t("adminAsk.intro")}</p>
+                <label htmlFor="admin-ask-phone" className={label}>
+                  {t("adminAsk.phone")}
+                </label>
+                <input
+                  id="admin-ask-phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  required
+                  className={input}
+                />
+                <label htmlFor="admin-ask-note" className={label}>
+                  {t("adminAsk.note")}
+                </label>
+                <input id="admin-ask-note" name="note" required className={input} />
+                <button type="submit" className={buttonSecondary}>
+                  {t("adminAsk.send")}
+                </button>
+              </form>
+            </details>
+          )}
+        </section>
+      )}
 
       {/* What Jaga can do (A17), opened on this person's own kind of role. */}
       <Link

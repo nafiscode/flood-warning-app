@@ -2,7 +2,7 @@
 /**
  * Admin accounts from this laptop.
  *
- *   node scripts/admin.mjs super-admin <email>   make the one super admin (the project account)
+ *   node scripts/admin.mjs super-admin <email>   make one of the project's super admins
  *   node scripts/admin.mjs invite <email>        invite an admin, in the super admin's name
  *
  * Both create an account for the email if there is none (no email is sent). The person then
@@ -57,6 +57,32 @@ if (!url || !secret || !dbUrl) {
   process.exit(2);
 }
 
+/**
+ * The addresses allowed to hold the super admin role (owner, 2026-10-16, superseding the
+ * single super admin of 2026-10-06). They are read from `SUPER_ADMIN_EMAILS` in .env.local,
+ * comma-separated, and are deliberately NOT written here: this repo is public and the owner's
+ * own address is personal data. With the variable unset the old rule stands, one super admin
+ * and no second, so a fresh machine can still start a project.
+ *
+ * The role is granted only from a laptop with database access; nothing in the app can hand it
+ * out. Everyone else who helps run Jaga is an admin, or a deputy super admin, on
+ * /admin/members.
+ */
+const SUPER_ADMINS = (envValue("SUPER_ADMIN_EMAILS") ?? "")
+  .split(",")
+  .map((a) => a.trim().toLowerCase())
+  .filter(Boolean);
+
+// An address that may not hold the role is refused before anything is created: a typo in
+// `super-admin` would otherwise leave a stray account behind on the project.
+if (command === "super-admin" && SUPER_ADMINS.length > 0 && !SUPER_ADMINS.includes(email)) {
+  console.error(
+    "That address is not in SUPER_ADMIN_EMAILS; nothing changed.\n" +
+      "Everyone else is added on /admin/members, or with `invite`.",
+  );
+  process.exit(1);
+}
+
 const supabase = createClient(url, secret, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
@@ -67,14 +93,18 @@ if (error && error.status !== 422 && error.code !== "email_exists") {
 }
 
 async function makeSuperAdmin(db) {
-  // One super admin only (decision 2026-10-06): stop if someone else already has the role.
+  // Any other account holding the role is left alone, but it is reported: a forgotten super
+  // admin (a test account from an interrupted run, say) is worth seeing.
   const others = await db.query(
-    `select 1 from public.profiles p join auth.users u on u.id = p.user_id
-     where p.role = 'super_admin' and lower(u.email) is distinct from $1`,
-    [email],
+    `select lower(u.email) as email from public.profiles p join auth.users u on u.id = p.user_id
+     where p.role = 'super_admin' and lower(u.email) <> all($1::text[])`,
+    [SUPER_ADMINS.length > 0 ? SUPER_ADMINS : [email]],
   );
-  if (others.rowCount > 0) {
-    console.error("Another account is already the super admin; nothing changed.");
+  for (const row of others.rows) {
+    console.warn(`Warning: ${row.email} is a super admin and is not in SUPER_ADMIN_EMAILS.`);
+  }
+  if (SUPER_ADMINS.length === 0 && others.rowCount > 0) {
+    console.error("Set SUPER_ADMIN_EMAILS in .env.local to allow more than one; nothing changed.");
     return 1;
   }
   const { rowCount } = await db.query(
@@ -93,7 +123,7 @@ async function makeSuperAdmin(db) {
      from auth.users u where lower(u.email) = $1`,
     [email],
   );
-  console.log(`${email} is now the super admin. Sign in at /sign-in, under "For admins".`);
+  console.log(`${email} is now a super admin. Sign in at /sign-in, under "For admins".`);
   return 0;
 }
 

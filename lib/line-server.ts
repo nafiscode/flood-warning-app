@@ -1,6 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  adminWelcomeMessage,
   alertFlex,
   answerSticker,
   answerText,
@@ -381,5 +382,39 @@ export async function lineCaseTick(): Promise<
     return { sent, failed };
   } catch {
     return { skipped: "error" };
+  }
+}
+
+/**
+ * Send an approved admin their way in over LINE (owner, 16 Oct 2026).
+ *
+ * Called twice over, on purpose: by the super admin's approval, and again when that person
+ * next signs in. Whichever comes first wins, because `admin_welcome_target` gives nothing once
+ * `line_sent_at` is set and only answers at all when Jaga already knows their LINE account.
+ * Never throws: the role is theirs whether or not LINE takes the message, and the console is
+ * on their account page either way.
+ */
+export async function sendAdminWelcome(
+  supabase: SupabaseClient,
+  memberId: string,
+): Promise<boolean> {
+  if (!accessToken()) return false;
+  try {
+    const { data } = await supabase.rpc("admin_welcome_target", { p_member_id: memberId });
+    const row = ((data as Record<string, unknown>[]) ?? [])[0];
+    const to = row && typeof row.line_user_id === "string" ? row.line_user_id : "";
+    if (!row || !to) return false;
+    const locale = localeOf(typeof row.locale === "string" ? row.locale : "th");
+    const message = adminWelcomeMessage(
+      wordsOf(locale).adminWelcome,
+      locale,
+      typeof row.duty === "string" ? row.duty : "",
+      siteUrl(),
+    );
+    if (!(await multicast([to], message))) return false;
+    await supabase.rpc("admin_welcome_sent", { p_member_id: memberId });
+    return true;
+  } catch {
+    return false;
   }
 }

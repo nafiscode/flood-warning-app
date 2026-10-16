@@ -88,6 +88,7 @@ export function localePath(locale: string, path: string): string {
 export async function finishSignIn(supabase: SupabaseClient, next: string | null): Promise<string> {
   await supabase.rpc("sync_line_identity");
   await supabase.rpc("accept_admin_invitation");
+  await linkAdminMember(supabase);
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims.sub;
   const { data: profile } = userId
@@ -104,4 +105,23 @@ export async function finishSignIn(supabase: SupabaseClient, next: string | null
   }
   if (next) return next;
   return localePath(locale, isAdminRole(profile.role as Role) ? "/admin" : "/account");
+}
+
+/**
+ * Bind a waiting place on the admin team to the account that has just signed in, and send that
+ * person their way in over LINE the first time Jaga knows their LINE account (A10, owner
+ * 16 Oct 2026). The role itself is granted in the database; this only carries the message.
+ * It never stops a sign-in: a LINE message that does not go out leaves the console exactly
+ * where it was, on their account page.
+ */
+async function linkAdminMember(supabase: SupabaseClient): Promise<void> {
+  try {
+    const { data } = await supabase.rpc("link_admin_member");
+    const row = ((data as Record<string, unknown>[]) ?? [])[0];
+    if (!row || row.send !== true || typeof row.member_id !== "string") return;
+    const { sendAdminWelcome } = await import("@/lib/line-server");
+    await sendAdminWelcome(supabase, row.member_id);
+  } catch {
+    // Signing in comes first.
+  }
 }

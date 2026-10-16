@@ -59,8 +59,9 @@ It lets government and volunteer responders coordinate rescues without duplicati
 | Visitor | No account | None | View map, alerts, safe places, hotlines. Can send SOS; the phone number is optional. |
 | User | Self sign-up | LINE Login or phone OTP (equal options) | Everything a visitor can do, plus home and watched places, household profiles, reports, SOS with status, alert notifications. |
 | Authority | Self-registration, then admin verification | Phone OTP (LINE Login as fallback, see below) | Case board for their coverage area, claim and rescue workflow, contact requesters, hero score. |
-| Admin | Invitation by super admin | Email magic link or phone OTP | Monitor, issue alerts, verify authorities, escalate and assign SOS, moderate, export. |
-| Super admin | The owner | Email magic link | Everything an admin can do, plus manage admins and system settings. |
+| Admin | Added by a super admin or a deputy, or asks from their account page and is approved | Email magic link or phone OTP | Monitor, issue alerts, verify authorities, escalate and assign SOS, moderate, export. |
+| Deputy super admin | A super admin sets the flag on an admin's row | As an admin | Everything an admin can do, plus the admin team page: add, change, approve and remove admins. Cannot appoint another deputy. |
+| Super admin | The project's two accounts, set from a laptop with database access | Email magic link | Everything a deputy can do, plus system settings and the invitation record. |
 
 **User profile:**
 - Required: display name.
@@ -330,7 +331,13 @@ Built 14 Oct 2026 (`/authority/field-rescue`, `/admin/field-rescues`). For peopl
 ## 6. Admin features
 
 ### 6.1 Accounts
-- **Invitations:** the super admin invites by email or phone and assigns the role (admin / super_admin).
+- **The admin team (`/admin/members`):** the one place every admin is kept — name, the address they sign in with, a phone number (mandatory) and a **duty** the super admin writes when adding. Seen only by a super admin and a deputy super admin; an ordinary admin gets "not found". A duty is a label and restricts nothing: every admin keeps every admin power.
+  - **Two ways onto it.** A super admin or deputy adds somebody, and that row is bound to their account the first time they sign in with that address; or a signed-in person asks from their account page ("Help run Jaga"), which grants nothing until the duty is set and the request approved.
+  - **Phone numbers** live in `admin_member_contacts`, which has no select policy: the list shows the last four digits and the number itself comes from `reveal_admin_phone()`, which writes the look to `audit_log` (safety rule 5).
+  - **Deputy super admin** is a flag on the roster row, not a role in `user_role`. Only a super admin sets it, and a deputy cannot appoint another or touch a super admin.
+  - **Removing access** puts the role back (to `authority` when they lead a verified unit, otherwise `user`) and leaves the row on the list, marked, with the reason in the log.
+  - **The way in sent over LINE** once somebody is approved is the console's plain address. It carries no token: their role is what lets them in, and it lasts until a super admin takes it away. It reaches only an admin whose Jaga account is their LINE account; everyone else signs in with the email link, and the page says which of the two each person is.
+- **Invitations (`/admin/invitations`):** the plain record of invitations by address, and the super admin's alone.
 - **Authority verification queue:** check the details, call the official phone, then verify, reject or suspend.
 
 ### 6.2 Alert console
@@ -487,6 +494,8 @@ Admins decide. The system never auto-publishes, with one exception (owner, 14 Oc
 - `forecasts`: `source`, `target` (zone or point), `issued_at`, `valid_at`, `variable`, `value`, `member`.
 - `thresholds`: per zone and signal, the values for each level, with a `provisional` flag and `set_by`.
 - `admin_invitations`: `email_or_phone`, `role`, `invited_by`, `status`.
+- `admin_members`: the admin team (6.1). `user_id` (null until their first sign-in), `email`, `full_name`, `duty` (a label), `deputy`, `status` (`invited` / `requested` / `active` / `revoked`), `added_by`, `note`, `line_sent_at`. Read by a super admin and a deputy; every write is a security-definer function.
+- `admin_member_contacts`: `member_id`, `phone`. **No select policy**: the number comes only from `reveal_admin_phone()`, which logs the look (safety rule 5).
 - `audit_log`: `actor`, `action`, `entity`, `entity_id`, `ts`, `details`.
 - `handover_notes`: shift log entries.
 - `impact_daily` (A13): one row per province per day — app openings, alerts delivered, SOS sent and their outcomes, reports, safe-place lookups, waiting-time medians and spreads. Written by a nightly job; the raw rows it counts are dropped.

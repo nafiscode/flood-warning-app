@@ -966,6 +966,26 @@
       "here": "Sign in here in this browser instead",
       "leave": "Leave this browser and go to your home screen.",
       "tap": "Tap the Jaga icon, like the one above."
+    },
+    "adminAsk": {
+      "title": "Help run Jaga",
+      "open": "Ask to be an admin",
+      "intro": "The request goes to the super admin. Nothing is granted until it is approved.",
+      "phone": "A phone number we can reach you on",
+      "note": "What you could help with",
+      "send": "Send the request",
+      "error": {
+        "phone": "Write a phone number we can reach you on",
+        "note": "Write briefly what you could help with",
+        "already": "You have asked already",
+        "save": "The request could not be sent. Try again."
+      },
+      "status": {
+        "invited": "You have been invited as an admin. Sign in with the invited address.",
+        "requested": "Sent, waiting for the super admin",
+        "active": "You are an admin",
+        "revoked": "Your request was not approved"
+      }
     }
   },
   "watched": {
@@ -1459,7 +1479,8 @@
         "operator": "Dam operator"
       },
       "usage": "App usage",
-      "back": "Back to the admin home"
+      "back": "Back to the admin home",
+      "members": "Admin team"
     },
     "role": {
       "admin": "Admin",
@@ -1632,6 +1653,78 @@
           "title": "View as another role",
           "note": "Each role's own screens with made-up data, to see what they experience. Nothing real is read or sent."
         }
+      }
+    },
+    "members": {
+      "title": "Admin team",
+      "intro": "Every admin: the address they sign in with, the phone number the team can reach them on, and the duty they were given. Only the super admin and a deputy super admin see this page.",
+      "list": "The team",
+      "waiting": "Waiting for a decision",
+      "new": "Add an admin",
+      "add": "Add to the team",
+      "how": "An account is opened for this address. They become an admin the first time they sign in with it.",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone number",
+      "phoneKeep": "Leave empty to keep the number on file",
+      "duty": "Duty",
+      "dutyHint": "A duty describes the job; it does not restrict anything. Every admin can still open every page.",
+      "save": "Save",
+      "change": "Change the details",
+      "approve": "Approve",
+      "turnDown": "Turn the request down",
+      "remove": "Take admin access away",
+      "reason": "Reason",
+      "reasonHint": "Reason (kept in the log)",
+      "reveal": "Show the number",
+      "noPhone": "No phone number yet",
+      "noName": "No name yet",
+      "noEmail": "No email (signs in with LINE)",
+      "noRow": "An admin from before this page existed. Add their number and duty by adding the same address to the team.",
+      "missingPhones": "{count} have no phone number. Every admin needs one.",
+      "invitations": "Invitation record",
+      "deputyOn": "Make a deputy super admin",
+      "deputyOff": "Stop being a deputy",
+      "deputyHint": "Sees and edits this page as the super admin does. Only the super admin can appoint one.",
+      "rank": {
+        "super": "Super admin",
+        "deputy": "Deputy super admin",
+        "admin": "Admin"
+      },
+      "status": {
+        "invited": "Invited, waiting for their first sign-in",
+        "requested": "Asked to join",
+        "active": "Active",
+        "revoked": "Access taken away"
+      },
+      "wayIn": {
+        "sent": "Their way in was sent on LINE",
+        "ready": "Ready to send on LINE",
+        "email": "Signs in with the email link (the account is not a LINE account)"
+      },
+      "duties": {
+        "alerts": "Alerts",
+        "warRoom": "War room",
+        "moderation": "Report review",
+        "authorities": "Team review",
+        "reports": "Reports and data",
+        "science": "Science data",
+        "donations": "Donations",
+        "everything": "Everything"
+      },
+      "error": {
+        "email": "Write a valid email address",
+        "phone": "Write a phone number the team can reach them on",
+        "duty": "Say what this admin is there to do",
+        "duplicate": "That address is on the team already",
+        "account": "The account for that address could not be opened. Try again.",
+        "save": "That could not be saved. Try again."
+      },
+      "done": {
+        "added": "Added to the team",
+        "approved": "Approved",
+        "saved": "Saved",
+        "revoked": "Access taken away"
       }
     }
   },
@@ -3206,7 +3299,13 @@
     "menuSos": "Ask for help",
     "menuMap": "Risk & Live Map",
     "menuUnit": "Register a response team",
-    "menuFeatures": "What Jaga can do"
+    "menuFeatures": "What Jaga can do",
+    "adminWelcome": {
+      "title": "Jaga: you are an admin",
+      "body": "Open the admin console with the button below. Sign in with this LINE account.",
+      "duty": "Duty: {duty}",
+      "open": "Open the console"
+    }
   },
   "fieldRescue": {
     "title": "Record a rescue your team did",

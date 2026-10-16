@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { menuGroups, readAdminCounts } from "@/lib/admin-counts";
+import { canManageAdmins } from "@/lib/admin-team";
 import { getSessionProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { card, hint } from "@/lib/ui";
@@ -32,7 +33,10 @@ export default async function AdminHome({ params }: PageProps<"/[locale]/admin">
   const groups = menuGroups(
     (key, values) => t(key as never, values as never),
     counts,
-    session?.role === "super_admin",
+    {
+      superAdmin: session?.role === "super_admin",
+      manages: session?.role === "super_admin" || (await canManageAdmins()),
+    },
   );
 
   return (

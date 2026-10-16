@@ -27,7 +27,11 @@ export async function generateMetadata({
   return { title: t("invitations.title") };
 }
 
-/** Super admin only: invite admins by email, withdraw invitations, remove an admin role. */
+/**
+ * The raw invitation log: invite by email, withdraw an invitation, take an admin role away.
+ * The team page (/admin/members) is where admins are kept; this stays as the plain record of
+ * the invitations themselves.
+ */
 export default async function AdminInvitations({
   params,
   searchParams,

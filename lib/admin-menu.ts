@@ -23,8 +23,15 @@ export type AdminItem = {
   href: string;
   group: AdminGroup;
   count?: AdminCount;
-  superOnly?: boolean;
+  /**
+   * Who may open it: "super" the super admin alone, "manage" those who work the admin team
+   * (the super admin and a deputy super admin). Absent means every admin.
+   */
+  only?: "super" | "manage";
 };
+
+/** What this session is allowed, as the menu needs to know it. */
+export type AdminAccess = { superAdmin: boolean; manages: boolean };
 
 export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "warRoom", href: "/admin/war-room", group: "watch" },
@@ -44,7 +51,8 @@ export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "handover", href: "/admin/handover", group: "records" },
   { key: "exports", href: "/admin/exports", group: "records" },
   { key: "log", href: "/admin/log", group: "records" },
-  { key: "invitations", href: "/admin/invitations", group: "records", superOnly: true },
+  { key: "members", href: "/admin/members", group: "records", only: "manage" },
+  { key: "invitations", href: "/admin/invitations", group: "records", only: "super" },
   { key: "preview.visitor", href: "/admin/preview/visitor", group: "preview" },
   { key: "preview.resident", href: "/admin/preview/resident", group: "preview" },
   { key: "preview.rescue", href: "/admin/preview/rescue", group: "preview" },
@@ -53,9 +61,18 @@ export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "preview.operator", href: "/admin/preview/operator", group: "preview" },
 ];
 
-/** The pages of one group this admin may open. */
-export function itemsOf(group: AdminGroup, superAdmin: boolean): AdminItem[] {
-  return ADMIN_ITEMS.filter((i) => i.group === group && (superAdmin || !i.superOnly));
+/**
+ * The pages of one group this admin may open. A plain `true` or `false` means both of
+ * `AdminAccess` at once, which is what a test or an example page wants.
+ */
+export function itemsOf(group: AdminGroup, access: AdminAccess | boolean): AdminItem[] {
+  const a: AdminAccess =
+    typeof access === "boolean" ? { superAdmin: access, manages: access } : access;
+  return ADMIN_ITEMS.filter(
+    (i) =>
+      i.group === group &&
+      (!i.only || (i.only === "super" ? a.superAdmin : a.manages)),
+  );
 }
 
 /** The address without its language prefix, e.g. "/en/admin/log" -> "/admin/log". */
@@ -71,8 +88,12 @@ export function currentItem(pathname: string): AdminItem | null {
 }
 
 /** How many wait in a group: the sum of its counted pages. */
-export function waitingIn(group: AdminGroup, counts: AdminCounts, superAdmin = true): number {
-  return itemsOf(group, superAdmin).reduce(
+export function waitingIn(
+  group: AdminGroup,
+  counts: AdminCounts,
+  access: AdminAccess | boolean = true,
+): number {
+  return itemsOf(group, access).reduce(
     (sum, i) => sum + (i.count ? (counts[i.count] ?? 0) : 0),
     0,
   );

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminBack, AdminMenu } from "@/components/admin/AdminMenu";
 import { menuGroups, readAdminCounts } from "@/lib/admin-counts";
+import { canManageAdmins } from "@/lib/admin-team";
 import { getSessionProfile, isAdminRole, localePath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,6 +20,11 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
   if (!isAdminRole(session.role)) notFound();
   const t = await getTranslations("admin");
   const counts = await readAdminCounts(await createClient());
+  // The admin team page belongs to the super admin and to a deputy super admin (A10).
+  const access = {
+    superAdmin: session.role === "super_admin",
+    manages: session.role === "super_admin" || (await canManageAdmins()),
+  };
   return (
     <div className="flex flex-col gap-5">
       <AdminMenu
@@ -27,7 +33,7 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
         groups={menuGroups(
           (key, values) => t(key as never, values as never),
           counts,
-          session.role === "super_admin",
+          access,
         )}
       />
       {children}

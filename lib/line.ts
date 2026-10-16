@@ -41,6 +41,8 @@ export type LineWords = {
   statusNone: string;
   statusUnknown: string;
   statusNoPlaces: string;
+  /** The way in sent to an approved admin (see `adminWelcomeMessage`). */
+  adminWelcome: AdminWelcomeWords;
 };
 
 export type LineAlert = {
@@ -401,4 +403,36 @@ export function answerText(outcome: string, words: LineWords): string {
       : outcome === "closed"
         ? words.answeredClosed
         : words.answeredNotYours;
+}
+
+/**
+ * The way in Jaga sends an approved admin over LINE (owner, 16 Oct 2026).
+ *
+ * There is no secret in this message. The button is the console's plain address: what lets
+ * them in is the admin role the super admin gave their account, which lasts until it is taken
+ * away. So a forwarded message, a screenshot or a borrowed phone hands nobody anything, and
+ * nothing here has to be minted, stored or expired.
+ */
+export type AdminWelcomeWords = { title: string; body: string; duty: string; open: string };
+
+export function adminWelcomeMessage(
+  words: AdminWelcomeWords,
+  locale: string,
+  duty: string,
+  site: string,
+): Record<string, unknown> {
+  const lang = locale === "ms" || locale === "en" ? locale : "th";
+  const url = `${site.replace(/\/+$/, "")}${lang === "th" ? "" : `/${lang}`}/admin`;
+  const text = [words.title, words.body, duty ? words.duty.replace("{duty}", duty) : ""]
+    .filter(Boolean)
+    .join("\n");
+  return {
+    type: "template",
+    altText: clip(text, 380),
+    template: {
+      type: "buttons",
+      text: clip(text, 160),
+      actions: [{ type: "uri", label: words.open, uri: url }],
+    },
+  };
 }

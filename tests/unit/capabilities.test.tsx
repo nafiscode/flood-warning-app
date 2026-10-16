@@ -157,7 +157,7 @@ describe("ways into What Jaga can do", () => {
 
   it("the LINE menu has a sixth button with words in every language", () => {
     for (const messages of Object.values(ALL)) {
-      expect(typeof (messages.line as Record<string, string>).menuFeatures).toBe("string");
+      expect(typeof (messages.line as Record<string, unknown>).menuFeatures).toBe("string");
     }
   });
 });

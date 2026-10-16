@@ -30,7 +30,7 @@ describe("the roles an admin can view the app as", () => {
       PREVIEW_ROLES.map((r) => `/admin/preview/${r}`),
     );
     // Not only for the super admin: every admin may look.
-    expect(ADMIN_ITEMS.filter((i) => i.group === "preview").some((i) => i.superOnly)).toBe(false);
+    expect(ADMIN_ITEMS.filter((i) => i.group === "preview").some((i) => i.only)).toBe(false);
   });
 
   it("accept only a known role, and fall back to a resident with watched places", () => {
