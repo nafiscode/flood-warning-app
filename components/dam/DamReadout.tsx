@@ -70,7 +70,7 @@ function Cell({
 }) {
   return (
     <div
-      className={`${styles.cell} ${tall ? "sm:row-span-2" : ""}`}
+      className={`${styles.cell} ${tall ? "@lg:row-span-2" : ""}`}
       style={{ "--step": step } as CSSProperties}
     >
       <dt className="text-small text-white/70">{label}</dt>
@@ -174,14 +174,24 @@ export function DamReadout({ dam }: { dam: Dam }) {
     storage === null ? null : storage.from === "hour" ? t("fromHour") : dayNote(t, format, storage);
   let step = 0;
   return (
+    /*
+     * The panel lays itself out by its own width, not the window's (`@container`). It used to use
+     * the window: on a laptop that meant three columns of figures, and once the map page became a
+     * console the panel sits in a rail a third of the window wide - the three columns came out at
+     * 23 px each with the words spilling out of them (the owner, 16 Oct: "too squeezed").
+     *
+     * The container steps are chosen to land where the window steps used to, so a phone and a
+     * tablet get exactly what they got before: stacked on a phone, the dial beside two columns of
+     * figures on a tablet.
+     */
     <section
-      className={`relative isolate flex flex-col gap-3 overflow-hidden rounded-2xl p-4 ${styles.panel}`}
+      className={`@container relative isolate flex flex-col gap-3 overflow-hidden rounded-2xl p-4 ${styles.panel}`}
       data-dam-readout={dam.code}
     >
       <h3 className="text-small font-medium tracking-wide text-white/70 uppercase">{t("title")}</h3>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+      <div className="flex flex-col gap-4 @lg:flex-row @lg:items-start">
         {full && (
-          <div className="flex flex-col items-center gap-1 self-center sm:self-start">
+          <div className="flex flex-col items-center gap-1 self-center @lg:self-start">
             <Dial
               fraction={full.ofMax}
               percent={full.percentMax}
@@ -195,7 +205,7 @@ export function DamReadout({ dam }: { dam: Dam }) {
             )}
           </div>
         )}
-        <dl className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="grid flex-1 gap-3 @lg:grid-cols-2 @3xl:grid-cols-3">
           {storage && (
             <Cell
               step={step++}

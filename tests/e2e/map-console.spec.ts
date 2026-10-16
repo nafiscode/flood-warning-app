@@ -109,6 +109,45 @@ async function serve(page: Page) {
   );
 }
 
+/** A clear day over Bana, and the area chosen on this device, so the console has a sky to draw. */
+async function serveWeather(page: Page) {
+  await page.addInitScript(
+    (area) => window.localStorage.setItem("jaga.area", JSON.stringify(area)),
+    {
+      code: BANA.code,
+      nameTh: BANA.nameTh,
+      nameEn: BANA.nameEn,
+      districtTh: "เมืองปัตตานี",
+      districtEn: "Mueang Pattani",
+      provinceTh: "ปัตตานี",
+      provinceEn: "Pattani",
+      lat: 6.87821,
+      lon: 101.27191,
+      from: "list",
+    },
+  );
+  await page.route("**/api/public/weather?**", (route) =>
+    route.fulfill({
+      json: {
+        lat: 6.87821,
+        lon: 101.27191,
+        timezone: "Asia/Bangkok",
+        at: new Date().toISOString(),
+        tempC: 28.2,
+        feelsC: 34,
+        humidity: 80,
+        rainMm: 0,
+        windKmh: 5,
+        windFrom: "se",
+        isDay: true,
+        code: 0,
+        hours: [],
+        days: [],
+      },
+    }),
+  );
+}
+
 /** Where a block sits on the page, so two layouts can be compared without reading pixels by eye. */
 const boxOf = (page: Page, selector: string) =>
   page.evaluate((s) => {
@@ -202,6 +241,30 @@ test.describe("the live map on a laptop", () => {
     await expect(page.locator("[data-map-frame]")).toHaveCount(0);
   });
 
+  test("carries the weather behind it, and says what it is, under a veil that keeps the words readable", async ({
+    page,
+  }) => {
+    await serve(page);
+    await serveWeather(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+
+    // The same sky the weather page and the header's pill draw, for the weather where they are.
+    const sky = page.locator("[data-console-sky]");
+    await expect(sky).toHaveAttribute("data-console-sky", "clearDay");
+    await expect(sky.locator("[data-weather-scene]")).toHaveCount(1);
+    // It is decoration and says so.
+    await expect(sky).toHaveAttribute("aria-hidden", "true");
+    // The grid of lines it replaced is gone (the owner, 16 Oct).
+    await expect(page.locator("[data-map-console]")).toHaveCSS("background-image", "none");
+
+    // The weather in words, in the empty half of the first line.
+    const readout = page.locator("[data-console-weather]");
+    await expect(readout).toBeVisible();
+    await expect(readout).toContainText("28");
+    await expect(readout).toContainText(th.weather.codes.clear);
+  });
+
   test("the frozen chip row stays off: the rail already keeps the switches in view", async ({
     page,
   }) => {
@@ -224,8 +287,13 @@ test.describe("the live map on a phone is untouched", () => {
     await page.goto("/th/map");
     await expect(page.locator("[data-map-frame]")).toBeVisible();
 
-    // The readout strip is a laptop's; a 360 px screen never pays a pixel for it.
+    // The readout strip and the weather sky are a laptop's; a 360 px screen never pays a pixel
+    // for either, and the sky is display:none so it is not even animated there.
     await expect(page.locator("[data-console-tiles]")).toBeHidden();
+    const sky = page.locator("[data-console-sky]");
+    if ((await sky.count()) > 0) await expect(sky).toBeHidden();
+    const readout = page.locator("[data-console-weather]");
+    if ((await readout.count()) > 0) await expect(readout).toBeHidden();
     // The wrappers that make the console vanish entirely here.
     for (const area of ["rail", "map", "side"]) {
       await expect(page.locator(`[data-console-area="${area}"]`)).toHaveCSS("display", "contents");

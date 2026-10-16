@@ -125,16 +125,45 @@
 /* The same query in plain CSS, for the few console rules Tailwind cannot say cheaply. Keep the
    two in step; they are side by side so they stay that way. */
 @media (min-width: 1024px) and (pointer: fine) {
-  /* A surveyor's hairline grid behind the console shell: the lightest hint of graph paper, drawn
-     from the theme's own line colour, so it follows the clock from light to dark with everything
-     else (docs/brand.md: the clock decides, there is nothing to switch). */
+  /*
+   * Behind the console: the moving sky of the weather widget, showing the weather where the
+   * person is (the owner, 16 Oct - it replaces a hairline grid that read as graph paper).
+   * components/map/ConsoleSky.tsx draws it; everything else on the console is lifted above it.
+   *
+   * The veil over it is set by the theme, not by the sky, because the console's words are the
+   * theme's ink: this way a word's contrast never depends on the weather. Turn --console-veil
+   * up if a sky is ever too loud under the writing.
+   */
   [data-map-console] {
-    --jaga-grid: color-mix(in oklab, var(--jaga-line) 60%, transparent);
-    background-image:
-      linear-gradient(to right, var(--jaga-grid) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--jaga-grid) 1px, transparent 1px);
-    background-size: 2.5rem 2.5rem;
-    background-position: center center;
+    position: relative;
+    isolation: isolate;
+    --console-veil-color: 250 252 253;
+  }
+  :root[data-theme="dark"] [data-map-console] {
+    --console-veil-color: 9 20 30;
+  }
+  [data-console-sky] {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 0.75rem;
+  }
+  /* --veil-day and --veil-night are set on the sky itself, worked out from that sky's own
+     colours (lib/map-console.ts, consoleVeil). The fallbacks are the strongest veil any sky
+     needs, so a sky that somehow arrives without them is still safe to read on. */
+  [data-console-veil] {
+    position: absolute;
+    inset: 0;
+    background: rgb(var(--console-veil-color) / var(--veil-day, 0.86));
+  }
+  :root[data-theme="dark"] [data-console-veil] {
+    background: rgb(var(--console-veil-color) / var(--veil-night, 0.8));
+  }
+  [data-console-area],
+  [data-console-tiles] {
+    position: relative;
+    z-index: 1;
   }
   /* Readings line up in a column, the way an instrument panel reads. The brand face stays: a
      monospace fallback would break Thai (docs/brand.md), so only the figures are tabular. */
@@ -180,7 +209,13 @@
   }
   [data-map-console] {
     display: grid;
-    grid-template-columns: 19rem minmax(0, 1fr) 22rem;
+    /*
+     * The right rail carries the cards someone actually reads - the dam's instrument panel above
+     * all - so it grows with the screen, and the map gives up the width (the owner, 16 Oct: "it's
+     * fine, decrease the map width a bit to make sure the information panel on the right displays
+     * and the user can read easily"). The left rail is only controls and stays put.
+     */
+    grid-template-columns: 19rem minmax(0, 1fr) clamp(26rem, 32vw, 38rem);
     grid-template-areas:
       "head   head   head"
       "tabs   tabs   tabs"

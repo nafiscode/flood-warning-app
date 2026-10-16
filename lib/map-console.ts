@@ -1,4 +1,5 @@
-import { ALERT_LEVELS, type AlertLevel } from "@/lib/brand/tokens";
+import { contrastRatio } from "@/lib/brand/contrast";
+import { ALERT_LEVELS, brand, darkBrand, type AlertLevel } from "@/lib/brand/tokens";
 import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
 import { gaugeLook, type GaugeLook } from "@/lib/gauge-marks";
@@ -129,4 +130,51 @@ export function ageMinutes(iso: string | null, now: number): number | null {
   const at = Date.parse(iso);
   if (!Number.isFinite(at)) return null;
   return Math.max(0, Math.floor((now - at) / 60000));
+}
+
+/*
+ * The veil over the weather's sky behind the console (components/map/ConsoleSky.tsx).
+ *
+ * The console's own words are the theme's ink, not the sky's, so the veil has to carry them: it
+ * is worked out here rather than chosen by eye, as the lightest veil that still leaves the
+ * weakest text on the console - the secondary grey - at 4.5:1 against both ends of that sky
+ * (CLAUDE.md, accessibility). A clear day therefore shows as a real blue sky, and a thunderstorm
+ * is held back far enough to read through. If the palette or a sky ever changes, this follows
+ * it; a test holds every sky in both themes to the same 4.5:1.
+ */
+
+/** The veil's own colour in each theme, the two ends the sky is mixed towards. */
+export const VEIL_COLOR = { light: "#FAFCFD", dark: "#09141E" } as const;
+
+/** A little more than the least that passes, so rounding never lands under it. */
+const VEIL_MARGIN = 0.04;
+const VEIL_MAX = 0.92;
+
+function overlay(veil: string, alpha: number, under: string): string {
+  const parts = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+  const [vr, vg, vb] = parts(veil);
+  const [ur, ug, ub] = parts(under);
+  const mix = (a: number, b: number) => Math.round(a * alpha + b * (1 - alpha));
+  return `#${[mix(vr!, ur!), mix(vg!, ug!), mix(vb!, ub!)]
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+/** The lightest veil of `veil` that keeps `ink` readable on every colour in `sky`. */
+export function veilAlpha(sky: readonly string[], ink: string, veil: string): number {
+  for (let step = 25; step <= VEIL_MAX * 100; step += 1) {
+    const alpha = step / 100;
+    if (sky.every((colour) => contrastRatio(ink, overlay(veil, alpha, colour)) >= 4.5)) {
+      return Math.min(VEIL_MAX, Math.round((alpha + VEIL_MARGIN) * 100) / 100);
+    }
+  }
+  return VEIL_MAX;
+}
+
+/** The veil for one sky in each theme: the console picks between them by the clock, as it does. */
+export function consoleVeil(sky: readonly string[]): { light: number; dark: number } {
+  return {
+    light: veilAlpha(sky, brand["jaga-text-2"], VEIL_COLOR.light),
+    dark: veilAlpha(sky, darkBrand["jaga-text-2"], VEIL_COLOR.dark),
+  };
 }

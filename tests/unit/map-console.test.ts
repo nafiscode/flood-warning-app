@@ -3,11 +3,17 @@ import { describe, expect, it } from "vitest";
 import {
   ageMinutes,
   CONSOLE_LEVELS,
+  consoleVeil,
   damTally,
   gaugeTally,
   levelTally,
   reportTally,
+  VEIL_COLOR,
+  veilAlpha,
 } from "@/lib/map-console";
+import { contrastRatio } from "@/lib/brand/contrast";
+import { brand, darkBrand } from "@/lib/brand/tokens";
+import { SCENE_LOOKS, SCENES } from "@/lib/weather-scene";
 import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
 import type { Gauge } from "@/lib/map-data";
@@ -165,7 +171,9 @@ describe("the console's arrangement", () => {
   const css = readFileSync("app/globals.css", "utf8");
 
   it("is behind one breakpoint: a wide screen with a mouse, so no tablet is touched", () => {
-    expect(css).toContain("@custom-variant console (@media (min-width: 1024px) and (pointer: fine))");
+    expect(css).toContain(
+      "@custom-variant console (@media (min-width: 1024px) and (pointer: fine))",
+    );
     // The plain-CSS half of the console must ask exactly the same question.
     const queries = css.match(/@media \(min-width: 1024px\) and \(pointer: fine\)/g) ?? [];
     expect(queries.length).toBe(2);
@@ -179,5 +187,59 @@ describe("the console's arrangement", () => {
   it("keeps the figures lined up without reaching for a font that cannot write Thai", () => {
     expect(css).toContain("font-variant-numeric: tabular-nums");
     expect(css).not.toMatch(/\[data-console-readout\][^}]*font-family/);
+  });
+});
+
+/** What a veil of `alpha` leaves behind, which is what the console's words sit on. */
+function behind(veil: string, alpha: number, sky: string): string {
+  const parts = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+  const [vr, vg, vb] = parts(veil);
+  const [sr, sg, sb] = parts(sky);
+  const mix = (a: number, b: number) => Math.round(a * alpha + b * (1 - alpha));
+  return `#${[mix(vr!, sr!), mix(vg!, sg!), mix(vb!, sb!)]
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+describe("the weather behind the console", () => {
+  it("keeps the weakest text readable on every sky, in both themes", () => {
+    for (const scene of SCENES) {
+      const sky = SCENE_LOOKS[scene].sky;
+      const veil = consoleVeil(sky);
+      for (const colour of sky) {
+        // The secondary grey is the weakest thing written on the sky; if it passes, all do.
+        expect(
+          contrastRatio(brand["jaga-text-2"], behind(VEIL_COLOR.light, veil.light, colour)),
+        ).toBeGreaterThanOrEqual(4.5);
+        expect(
+          contrastRatio(darkBrand["jaga-text-2"], behind(VEIL_COLOR.dark, veil.dark, colour)),
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it("lets a clear day through and holds a storm back", () => {
+    // The point of working it out per sky: a blue sky is a blue sky, and a dark one is not
+    // allowed to swallow the words on it.
+    expect(consoleVeil(SCENE_LOOKS.clearDay.sky).light).toBeLessThan(
+      consoleVeil(SCENE_LOOKS.thunder.sky).light,
+    );
+    expect(consoleVeil(SCENE_LOOKS.clearDay.sky).light).toBeLessThan(0.5);
+  });
+
+  it("never asks for more veil than it needs", () => {
+    // One step lighter than what it chose must fail, give or take the margin it adds.
+    const sky = SCENE_LOOKS.overcast.sky;
+    const alpha = veilAlpha(sky, brand["jaga-text-2"], VEIL_COLOR.light);
+    const lighter = Math.round((alpha - 0.06) * 100) / 100;
+    expect(
+      sky.every(
+        (c) => contrastRatio(brand["jaga-text-2"], behind(VEIL_COLOR.light, lighter, c)) >= 4.5,
+      ),
+    ).toBe(false);
+  });
+
+  it("falls back to a readable veil rather than none when a sky is impossible", () => {
+    expect(veilAlpha(["#4A5E68"], brand["jaga-text-2"], VEIL_COLOR.light)).toBeGreaterThan(0.5);
   });
 });

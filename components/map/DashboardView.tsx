@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { AlertHero } from "@/components/home/AlertHero";
@@ -42,6 +42,7 @@ import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-s
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
+import { ConsoleSky, ConsoleWeather } from "./ConsoleSky";
 import { ConsoleTiles } from "./ConsoleTiles";
 import { HazardPlaceholder } from "./HazardPlaceholder";
 import { SatelliteFloodPanel } from "./SatelliteFlood";
@@ -626,6 +627,29 @@ export function DashboardView(props: DashboardViewProps) {
       }, 1800);
     }, 60);
   };
+  /*
+   * A card asked for in the address (?dam=, ?focus=dam, ?focus=sea) is already open when the page
+   * arrives, and on the console it opens in the right-hand rail, under the map's own switches -
+   * out of sight. The rail is scrolled to it once, on arrival.
+   *
+   * Only the rail. Where the card is not in a rail that scrolls - every phone and every tablet -
+   * nothing moves: a page that scrolls itself the moment it opens is worse than a card the
+   * person scrolls to.
+   */
+  useEffect(() => {
+    if (!asked && !askedSea) return;
+    const id = window.setTimeout(() => {
+      const panel = document.querySelector<HTMLElement>("[data-selected-panel]");
+      const rail = panel?.closest<HTMLElement>("[data-console-rail]");
+      if (!panel || !rail || window.getComputedStyle(rail).overflowY !== "auto") return;
+      const off = panel.getBoundingClientRect().top - rail.getBoundingClientRect().top - 12;
+      if (Math.abs(off) > 4) rail.scrollTo({ top: Math.max(0, rail.scrollTop + off) });
+    }, 900);
+    return () => window.clearTimeout(id);
+    // Once, on arrival: later openings scroll the rail through revealPanel.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const peekMore = (target: PeekTarget) => {
     setSelection(target);
     revealPanel();
@@ -952,6 +976,9 @@ export function DashboardView(props: DashboardViewProps) {
        * The page's order of blocks is also the console's reading order, column by column, so no
        * wrapper reorders anything and a keyboard meets the page as the eye does.
        */}
+      {/* The weather behind the console, and nothing at all on a phone (components/map/ConsoleSky). */}
+      {consoleOn && <ConsoleSky />}
+
       <div className="contents" data-console-area="head">
         <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
         {/* Who the console is for and what it may show: public, aggregated answers, the same
@@ -970,6 +997,8 @@ export function DashboardView(props: DashboardViewProps) {
               : t("savedOld")}
           </p>
         )}
+        {/* The weather in words, in the empty half of this line (the owner, 16 Oct). */}
+        {consoleOn && <ConsoleWeather />}
       </div>
 
       {props.transparency && (
