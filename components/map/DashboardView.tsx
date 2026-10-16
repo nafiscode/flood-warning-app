@@ -965,7 +965,11 @@ export function DashboardView(props: DashboardViewProps) {
       : pickName(locale, provinceEntry.nameTh, provinceEntry.nameEn);
 
   return (
-    <div className="flex flex-col gap-4" data-map-console={consoleOn ? "true" : undefined}>
+    <div
+      className="flex flex-col gap-4"
+      data-map-console={consoleOn ? "true" : undefined}
+      data-console-page={consoleOn ? "map" : undefined}
+    >
       {/*
        * The blocks below carry `data-console-area`, and on a laptop the console block in
        * app/globals.css lays them out as a dashboard: a rail of controls, the map at the full

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { menuGroups, readAdminCounts } from "@/lib/admin-counts";
@@ -35,10 +36,16 @@ export default async function AdminHome({ params }: PageProps<"/[locale]/admin">
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5" data-console-page="admin">
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={hint}>{t("signedInAs", { name: session?.displayName ?? "" })}</p>
-      <div className="grid gap-5 lg:grid-cols-2">
+      {/* Two columns from a tablet's width; on a laptop as many as the screen has room for
+          (app/globals.css, the console block). */}
+      <div
+        className="grid gap-5 lg:grid-cols-2"
+        data-console-flow="true"
+        style={{ "--console-flow-width": "26rem", "--console-flow-max": 3 } as CSSProperties}
+      >
         {groups.map((g) => (
           <section key={g.key} className={card} data-admin-home-group={g.key}>
             <h2 className="flex items-center gap-2 text-body font-bold">

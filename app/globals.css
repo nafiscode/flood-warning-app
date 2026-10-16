@@ -214,15 +214,61 @@
    * breathe from the screen's edge (the owner, 16 Oct), and the right rail the same on its side.
    * It grows with the screen, so a wide monitor does not leave the words hanging off the corner.
    */
-  #main:has([data-map-console]) {
+  #main:has([data-console-page]) {
     max-width: none;
     padding-inline: clamp(1.75rem, 2.5vw, 3.5rem);
   }
   /* ...and the header follows the page out to the edges, on the same gutter, or the logo and the
      page's first line would start at different places. */
-  body:has(#main [data-map-console]) [data-header-bar] {
+  body:has(#main [data-console-page]) [data-header-bar] {
     max-width: none;
     padding-inline: clamp(1.75rem, 2.5vw, 3.5rem);
+  }
+
+  /*
+   * The home screen on a laptop (the owner, 16 Oct: "extend the screen full for laptop like the
+   * Risk & Live Map, re-arrange layout to make it symmetric"). Three even columns rather than a
+   * wide one and a narrow one: what is happening, what to do now, and the person's own places
+   * and the way into the map.
+   *
+   * The three are the page's own blocks in their own order, cut in two places - so a phone still
+   * reads them in one run, and a tablet still gets the two columns it has had since 8 Oct, with
+   * the second and third stacked in the right-hand one (the `lg:` classes in HomeView do that).
+   */
+  [data-console-page="home"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 2rem;
+    row-gap: 1.25rem;
+  }
+  [data-console-page="home"] > [data-home-col] {
+    grid-area: auto;
+  }
+
+  /*
+   * The account and the admin home on a laptop (the owner, 16 Oct: the same treatment as the
+   * home screen). Both are a single column of cards written for a phone; on a laptop they flow
+   * into as many even columns as the screen has room for, which needs no change to their order -
+   * a grid lays its items out in the order they are written, so the eye and the keyboard still
+   * meet them one after another, left to right.
+   *
+   * They flow as columns rather than as a grid of rows: a grid gives every row the height of its
+   * tallest card and leaves holes under the short ones, which on a wide screen reads as scattered
+   * rather than as the symmetry the owner asked for. Columns fill and balance by themselves, and
+   * a card is never allowed to split across a break.
+   */
+  [data-console-flow] {
+    display: block;
+    columns: var(--console-flow-width, 22rem) var(--console-flow-max, 4);
+    column-gap: 2rem;
+  }
+  [data-console-flow] > * {
+    /* A card is never split down the middle by a column break. */
+    break-inside: avoid;
+    margin-block-end: 1.25rem;
+  }
+  /* A heading or a notice belongs to the whole page, not to one column of it. */
+  [data-console-flow] > [data-console-full] {
+    column-span: all;
   }
   [data-map-console] {
     display: grid;

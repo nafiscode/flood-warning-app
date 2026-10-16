@@ -55,10 +55,12 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
     .order("created_at");
 
   return (
-    <div className="flex flex-col gap-5">
-      <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
+    <div className="flex flex-col gap-5" data-console-page="account" data-console-flow="true">
+      <h1 className="text-h3 font-bold text-jaga-ink" data-console-full="true">
+        {t("title")}
+      </h1>
       {query.registered === "1" && (
-        <p role="status" className={notice}>
+        <p role="status" className={notice} data-console-full="true">
           {t("authority.registered")}
         </p>
       )}

@@ -216,10 +216,13 @@ export function HomeView(props: HomeViewProps) {
      * the columns stack: what is happening on the left, what to do on the right. At Evacuate the
      * SOS button stays directly under the hero (decision 2026-09-29), in the left column.
      */
-    <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start lg:gap-8">
+    <div
+      data-console-page="home"
+      className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start lg:gap-x-8 lg:gap-y-5"
+    >
       <h1 className="sr-only">{t("title")}</h1>
 
-      <div className="flex flex-col gap-5">
+      <div data-home-col="now" className="flex flex-col gap-5 lg:col-start-1 lg:row-span-2">
         {worse.map((item) => (
           <WorseBanner key={item.place.id} item={item} now={now} />
         ))}
@@ -306,7 +309,7 @@ export function HomeView(props: HomeViewProps) {
         {tense && riskCard}
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div data-home-col="act" className="flex flex-col gap-5 lg:col-start-2 lg:row-start-1">
         {!evacuate && sos}
 
         {/* For someone who has just found Jaga: what it can do, one tap away (owner, 16 Oct). */}
@@ -345,7 +348,15 @@ export function HomeView(props: HomeViewProps) {
             {t("projectLine")} {props.projectLine}
           </a>
         )}
+      </div>
 
+      {/*
+       * The third column on a laptop: the person's own places, the way into the map, and
+       * everything that is background rather than something to do now. On a phone and on a
+       * tablet it is the same single run of blocks it has always been - the wrapper only
+       * becomes a column where there is room for three.
+       */}
+      <div data-home-col="places" className="flex flex-col gap-5 lg:col-start-2 lg:row-start-2">
         <WatchedPlaces items={watched} now={now} />
         {me?.signedIn && (
           <Link
