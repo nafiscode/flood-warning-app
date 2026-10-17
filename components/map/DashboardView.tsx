@@ -33,6 +33,7 @@ import { MonitoringCard } from "@/components/monitoring/MonitoringCard";
 import { MonitoringDetail } from "@/components/monitoring/MonitoringDetail";
 import { monitoring } from "@/lib/monitoring";
 import { useKeptRain } from "@/lib/use-rain";
+import { reveal } from "@/lib/reveal";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
@@ -41,7 +42,7 @@ import { boundsAround, darkNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } 
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
-import { gaugeTally, levelTally, reportTally } from "@/lib/map-console";
+import { levelTally } from "@/lib/map-console";
 import { localName } from "@/lib/places";
 import { isAdminRoleName } from "@/lib/roles";
 import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
@@ -583,67 +584,14 @@ export function DashboardView(props: DashboardViewProps) {
    * Everything that opens a card now scrolls the panel into the frame, hands it the keyboard and
    * marks it for a moment, so the eye lands on what was asked for.
    */
-  const revealPanel = () => {
-    const reduce = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    /*
-     * The header is frozen at the top of the page and is taller than the page's own scroll
-     * padding on a phone (155 px against 112 px), so scrollIntoView alone slides the first lines
-     * of the card under it. The header's own height is measured instead.
-     */
-    const bring = (behavior: ScrollBehavior) => {
-      const panel = document.querySelector<HTMLElement>("[data-selected-panel]");
-      if (!panel) return null;
-      /*
-       * On the laptop console the card sits in a rail that scrolls on its own, so moving the
-       * window would do nothing: the rail is scrolled instead. Everywhere else that wrapper is
-       * `display: contents` and has no scrolling of its own, which is what this asks it.
-       */
-      const rail = panel.closest<HTMLElement>("[data-console-rail]");
-      if (rail && window.getComputedStyle(rail).overflowY === "auto") {
-        const off = panel.getBoundingClientRect().top - rail.getBoundingClientRect().top - 12;
-        if (Math.abs(off) > 4) {
-          rail.scrollTo({ top: Math.max(0, rail.scrollTop + off), behavior });
-        }
-        return panel;
-      }
-      // The frozen row of chips sits under the header once the page has scrolled past it.
-      const header =
-        (document.querySelector("header")?.getBoundingClientRect().height ?? 0) +
-        (document.querySelector("[data-map-chips-float]")?.getBoundingClientRect().height ?? 0);
-      const gap = panel.getBoundingClientRect().top - header - 12;
-      if (Math.abs(gap) > 4) window.scrollTo({ top: Math.max(0, window.scrollY + gap), behavior });
-      return panel;
-    };
-    window.setTimeout(() => {
-      const panel = bring(reduce() ? "auto" : "smooth");
-      if (!panel) return;
-      panel.focus({ preventScroll: true });
-      panel.dataset.justOpened = "true";
-      /*
-       * The card settles as it fills - the drawing, the charts, the map's own move and whatever
-       * above it is still loading all change where it sits - so for a few seconds after the
-       * scroll it is put back under the header without another animation. Checked once at 700 ms
-       * it still ended up below the bottom of a phone screen (CI, 15 Oct). The person's own
-       * scroll or touch ends it at once.
-       */
-      let hold = 0;
-      const stop = () => {
-        window.clearInterval(hold);
-        for (const kind of ["wheel", "touchstart", "keydown"] as const)
-          window.removeEventListener(kind, stop);
-      };
-      window.setTimeout(() => {
-        bring("auto");
-        hold = window.setInterval(() => bring("auto"), 150);
-        window.setTimeout(stop, 2500);
-      }, 700);
-      for (const kind of ["wheel", "touchstart", "keydown"] as const)
-        window.addEventListener(kind, stop, { passive: true });
-      window.setTimeout(() => {
-        delete panel.dataset.justOpened;
-      }, 1800);
-    }, 60);
-  };
+  /*
+   * Bring the selected card into the frame. The how of it - the frozen header's own height, a
+   * rail that scrolls by itself on the console, and holding the card in place while it fills -
+   * lives in lib/reveal.ts, because the live monitoring's detail needs exactly the same thing
+   * (the owner, 17 Oct) and two copies of it would drift apart.
+   */
+  const revealPanel = () =>
+    reveal(() => document.querySelector<HTMLElement>("[data-selected-panel]"));
   /*
    * A card asked for in the address (?dam=, ?focus=dam, ?focus=sea) is already open when the page
    * arrives, and on the console it opens in the right-hand rail, under the map's own switches -
@@ -988,17 +936,6 @@ export function DashboardView(props: DashboardViewProps) {
    * same `summary` and share one open/shut state, so they can never disagree.
    */
   const myTambon = props.area?.code ?? (props.me?.signedIn ? props.me.home?.code : null) ?? null;
-  /** Opens a subdistrict in the map's own panel, named as the panel needs it. */
-  const openTambon = (code: string) => {
-    const entry = directory?.tambons.find((x) => x.code === code);
-    setSelection({
-      kind: "tambon",
-      code,
-      nameTh: entry?.nameTh ?? code,
-      nameEn: entry?.nameEn ?? code,
-    });
-    revealPanel();
-  };
   const summaryDam = damsOnMyPath[0]?.dam ?? mainDam(dams) ?? null;
   const monitoringSummary = monitoring({
     now,
@@ -1240,7 +1177,17 @@ export function DashboardView(props: DashboardViewProps) {
                 admin={isAdminRoleName(props.me?.signedIn ? props.me.role : null)}
                 monitoring={monitoringSummary}
                 monitoringOpen={monitoringOpen}
-                onToggleMonitoring={() => setMonitoringOpen((was) => !was)}
+                onToggleMonitoring={() => {
+                  /*
+                   * The band opens under the whole dashboard, which is below the fold on every
+                   * screen, so opening it without going to it looks as though nothing happened -
+                   * the same trap the reservoir's own card fell into on 14 Oct.
+                   */
+                  if (!monitoringOpen) {
+                    reveal(() => document.getElementById("monitoring-detail-console"));
+                  }
+                  setMonitoringOpen((was) => !was);
+                }}
               />
 
               {/* The hazard comes first, then the province, then what the map shows for it (owner,
@@ -1845,7 +1792,8 @@ export function DashboardView(props: DashboardViewProps) {
                 <div
                   className="hidden console:block"
                   data-console-area="detail"
-                  id="monitoring-detail-map"
+                  id="monitoring-detail-console"
+                  tabIndex={-1}
                 >
                   <div className={`${card} console:max-w-none`}>{monitoringDetail}</div>
                 </div>

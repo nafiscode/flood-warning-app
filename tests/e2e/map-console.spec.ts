@@ -418,6 +418,8 @@ test.describe("the live monitoring card", () => {
     await card.locator("[data-monitoring-open]").click();
     const detail = card.locator("[data-monitoring-detail]");
     await expect(detail).toBeVisible();
+    // Opening it has to bring the reader to it (the owner, 17 Oct), not just put it in the page.
+    await expect(detail).toBeInViewport();
     // Their own level first, then the province, then the measurements, then the charts.
     await expect(
       detail.locator('[data-monitoring-part="area"] [data-level="warning"]'),
@@ -496,6 +498,12 @@ test.describe("the live monitoring card", () => {
       await tile.locator("[data-monitoring-open]").click();
       const band = page.locator('[data-console-area="detail"]');
       await expect(band).toBeVisible();
+      /*
+       * And the page goes to it. The band opens below the three columns, so without this the
+       * click looks as though it did nothing - the trap the reservoir's card fell into on
+       * 14 Oct, and the reason both share lib/reveal.ts.
+       */
+      await expect(band).toBeInViewport();
       const [bandBox, mapBox] = await Promise.all([
         band.boundingBox(),
         page.locator('[data-console-area="map"]').boundingBox(),

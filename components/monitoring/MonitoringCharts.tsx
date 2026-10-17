@@ -1,5 +1,5 @@
 import { useFormatter, useTranslations } from "next-intl";
-import { GAUGE_LOOKS, gaugeLook, type GaugeLook } from "@/lib/gauge-marks";
+import { gaugeLook, type GaugeLook } from "@/lib/gauge-marks";
 import type { GaugeReading } from "@/lib/map-data";
 import type { Weather } from "@/lib/weather";
 import { DRY_MM } from "@/lib/weather";

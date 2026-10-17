@@ -6,6 +6,7 @@ import {
   MonitoringMark,
 } from "@/components/monitoring/MonitoringStatus";
 import { monitoringStatus, type Monitoring } from "@/lib/monitoring";
+import { reveal } from "@/lib/reveal";
 import { card, hint } from "@/lib/ui";
 
 /**
@@ -54,13 +55,25 @@ export function MonitoringCard(props: MonitoringCardProps) {
         data-monitoring-open={props.open ? "true" : "false"}
         aria-expanded={props.open}
         aria-controls={id}
-        onClick={props.onToggle}
+        onClick={() => {
+          /*
+           * Opening it is not enough: the detail appears under the button, and on a phone that
+           * is below the fold (the owner, 17 Oct - the button "should also bring user to see the
+           * detail section"). Only on the way open; closing it must leave the page where it is.
+           */
+          if (!props.open) reveal(() => document.getElementById(id));
+          props.onToggle();
+        }}
         className="min-h-tap self-start underline"
       >
         {t(props.open ? "hideDetail" : "showDetail")}
       </button>
       {props.open && (
-        <div id={id} className="flex flex-col gap-6 border-t border-jaga-line pt-4">
+        <div
+          id={id}
+          tabIndex={-1}
+          className="flex flex-col gap-6 border-t border-jaga-line pt-4 focus-visible:outline-none"
+        >
           {props.detail}
         </div>
       )}

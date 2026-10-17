@@ -319,7 +319,7 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
             type="button"
             data-monitoring-open={props.monitoringOpen ? "true" : "false"}
             aria-expanded={!!props.monitoringOpen}
-            aria-controls="monitoring-detail-map"
+            aria-controls="monitoring-detail-console"
             onClick={props.onToggleMonitoring}
             className="min-h-tap self-start text-start underline"
           >

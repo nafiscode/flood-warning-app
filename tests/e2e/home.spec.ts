@@ -492,6 +492,8 @@ test.describe("what the monitoring shows now, on the home screen", () => {
     await card.locator("[data-monitoring-open]").click();
     const section = card.locator('[data-monitoring="home"]');
     await expect(section).toBeVisible();
+    // The button brings the reader to the detail, not just into the page (the owner, 17 Oct).
+    await expect(card.locator("[data-monitoring-detail]")).toBeInViewport();
 
     // One river over its bank, in words, with its own source named.
     const rivers = section.locator('[data-monitoring-note="gauges"]');
