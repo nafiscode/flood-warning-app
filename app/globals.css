@@ -197,6 +197,10 @@
     [data-console-tiles] {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+    /* The fifth readout is the monitoring's own (17 Oct 2026): five across on a wide screen. */
+    [data-console-tiles][data-console-count="5"] {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
   }
 
   /*
@@ -290,10 +294,12 @@
       "tabs   tabs   tabs"
       "hazard hazard hazard"
       "tiles  tiles  tiles"
-      "rail   map    side";
+      "rail   map    side"
+      "detail detail detail";
     /* The tabs row is empty until donations are switched on (safety rule 9), and an empty auto
-       row takes no height, so the console is the same shape with or without it. */
-    grid-template-rows: auto auto auto auto minmax(18rem, 1fr);
+       row takes no height, so the console is the same shape with or without it. The detail row
+       is the same: nothing until the fifth readout is opened. */
+    grid-template-rows: auto auto auto auto minmax(18rem, 1fr) auto;
     column-gap: 1rem;
     row-gap: 0.75rem;
     /*
@@ -351,6 +357,22 @@
   }
   [data-console-tiles] {
     grid-area: tiles;
+  }
+  [data-console-area="detail"] {
+    grid-area: detail;
+    /* It is read, not glanced at, so it keeps a comfortable measure rather than running the
+       full width of a 1920 px screen. */
+    max-width: 72rem;
+    padding-block-start: 0.25rem;
+  }
+  /*
+   * Opening the band lets the console grow past the screen and the page scroll to it, rather
+   * than taking its height off the map row - which has only 18rem to give, and is the thing a
+   * reader opened the page for. The closed console keeps its exact height, so nothing about the
+   * console the owner approved on 16 Oct changes until someone asks for the detail.
+   */
+  [data-map-console]:has([data-console-area="detail"]) {
+    height: auto;
   }
   /*
    * A readout asking for an admin's eye (the owner, 16 Oct 2026). A ring that breathes, about

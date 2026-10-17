@@ -290,6 +290,13 @@ test.describe("map", () => {
     await expect(page.locator("[data-not-covered-note]")).toContainText("1784");
     await noSidewaysScroll(page);
 
+    /*
+     * On a phone the hazards that are still to come wait behind one button (the owner, 16 Oct),
+     * so the fold has to be opened before fire can be chosen. On a laptop they are all on show
+     * and the button is not there at all.
+     */
+    const more = page.locator("[data-more-hazards]");
+    if (await more.isVisible()) await more.click();
     await page.locator('[data-hazard="fire"]').click();
     await expect(page.locator('[data-hazard-placeholder="fire"]')).toContainText(
       "ไม่ได้แปลว่าไม่มีความเสี่ยง",
@@ -471,13 +478,20 @@ test.describe("what the monitoring shows now, on the home screen", () => {
     await serve(page, { inService: true, alerts: [] });
     await serveMonitoring(page);
     await page.goto("/");
-    const section = page.locator('[data-monitoring="home"]');
-    await expect(section).toBeVisible();
+    const card = page.locator('[data-monitoring-card="home"]');
+    await expect(card).toBeVisible();
 
     // Under the hero, which stays the one place that says what level is in force.
     const hero = await page.locator("[data-hero]").boundingBox();
-    const box = await section.boundingBox();
+    const box = await card.boundingBox();
     expect(box!.y).toBeGreaterThan(hero!.y);
+
+    // The status in a line; the measurements wait behind a tap.
+    await expect(card.locator("[data-monitoring-status]")).toBeVisible();
+    await expect(card.locator("[data-monitoring-pulse]")).toBeVisible();
+    await card.locator("[data-monitoring-open]").click();
+    const section = card.locator('[data-monitoring="home"]');
+    await expect(section).toBeVisible();
 
     // One river over its bank, in words, with its own source named.
     const rivers = section.locator('[data-monitoring-note="gauges"]');
@@ -500,9 +514,9 @@ test.describe("what the monitoring shows now, on the home screen", () => {
     await serve(page, { inService: true, alerts: [alert("evacuate")] });
     await serveMonitoring(page);
     await page.goto("/");
-    const section = page.locator('[data-monitoring="home"]');
-    await expect(section).toBeVisible();
-    const box = await section.boundingBox();
+    const card = page.locator('[data-monitoring-card="home"]');
+    await expect(card).toBeVisible();
+    const box = await card.boundingBox();
     const checklist = await page.locator("[data-checklist]").boundingBox();
     const sos = await page.locator('a[href="/sos"]').first().boundingBox();
     expect(box!.y).toBeGreaterThan(checklist!.y);
@@ -515,6 +529,7 @@ test.describe("what the monitoring shows now, on the home screen", () => {
     await serve(page, { inService: true, alerts: [] });
     await serveMonitoring(page, { gauges: "fail" });
     await page.goto("/");
+    await page.locator('[data-monitoring-card="home"] [data-monitoring-open]').click();
     const rivers = page.locator('[data-monitoring-note="gauges"]');
     await expect(rivers).toBeVisible();
     await expect(rivers).toHaveAttribute("data-monitoring-say", "unknown");
@@ -528,6 +543,7 @@ test.describe("what the monitoring shows now, on the home screen", () => {
     await serve(page, { inService: true, alerts: [] });
     await serveMonitoring(page, { reports: "fail" });
     await page.goto("/");
+    await page.locator('[data-monitoring-card="home"] [data-monitoring-open]').click();
     const reports = page.locator('[data-monitoring-note="reports"]');
     await expect(reports).toBeVisible();
     await expect(reports).toHaveAttribute("data-monitoring-say", "unknown");
@@ -542,7 +558,10 @@ test.describe("what the monitoring shows now, on the home screen", () => {
     await serve(page, { inService: true, alerts: [] });
     await serveMonitoring(page, { gauges: "fail", reports: "fail" });
     await page.goto("/");
-    const section = page.locator('[data-monitoring="home"]');
+    const card = page.locator('[data-monitoring-card="home"]');
+    await expect(card).toBeVisible();
+    await card.locator("[data-monitoring-open]").click();
+    const section = card.locator('[data-monitoring="home"]');
     await expect(section).toBeVisible();
     await expect(section.locator('[data-monitoring-say="allUnknown"]')).toContainText(
       th.monitoring.allUnknown.slice(0, 30),

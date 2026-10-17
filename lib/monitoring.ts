@@ -336,3 +336,49 @@ export function monitoring(input: MonitoringInput): Monitoring {
     ),
   };
 }
+
+/*
+ * The one line the card shows before anything is opened (the owner, 17 Oct 2026: "just show the
+ * status in text and small animated symbol").
+ *
+ * "inRange" says the **readings** are within their normal range - never that the situation is, or
+ * that anyone is safe. That distinction is the whole reason this is allowed to be a single
+ * reassuring line at all: it is a statement about instruments, with their count and their time
+ * beside it, and the card it sits on says so (the owner chose this reading over a plain "the
+ * situation is normal", 17 Oct). It is deliberately **not** called "normal": that word is an
+ * alert level in this app, and the two must never be confused in the markup or in a test.
+ */
+export type StatusKind = "inRange" | "watching" | "incomplete" | "unknown";
+
+export type MonitoringStatus = {
+  kind: StatusKind;
+  /** The note that earns "watching", already worst-first. Null in every other state. */
+  lead: Note | null;
+  /** How many of the rivers Jaga watches are reporting, for the line beneath. */
+  reporting: number;
+  total: number;
+  /** How many feeds could not be read, when some could. */
+  unknowns: number;
+  newestAt: string | null;
+};
+
+export function monitoringStatus(summary: Monitoring): MonitoringStatus {
+  const gauges = summary.notes.find((n): n is GaugeNote => n.kind === "gauges");
+  const base = {
+    reporting: gauges?.reporting ?? 0,
+    total: gauges?.total ?? 0,
+    unknowns: summary.notes.filter((n) => n.say === "unknown").length,
+    newestAt: summary.newestAt,
+  };
+  if (summary.notes.length === 0 || summary.allUnknown) {
+    return { kind: "unknown", lead: null, ...base };
+  }
+  /*
+   * Something happening is the headline even when another feed also failed: the reader is told
+   * about the failure underneath, but what is measurably going on comes first.
+   */
+  const lead = summary.notes.find((n) => n.say === "active") ?? null;
+  if (lead) return { kind: "watching", lead, ...base };
+  if (summary.anyUnknown) return { kind: "incomplete", lead: null, ...base };
+  return { kind: "inRange", lead: null, ...base };
+}

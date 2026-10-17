@@ -19,6 +19,12 @@ import {
 import type { DamTally } from "@/lib/map-console";
 import type { Gauge } from "@/lib/map-data";
 import { localName } from "@/lib/places";
+import {
+  MonitoringFigures,
+  MonitoringHeadline,
+  MonitoringMark,
+} from "@/components/monitoring/MonitoringStatus";
+import { monitoringStatus, type Monitoring } from "@/lib/monitoring";
 import type { PublicAlert, PublicStatus } from "@/lib/public-status";
 import styles from "./FeatureIcon.module.css";
 
@@ -93,11 +99,20 @@ export type ConsoleTilesProps = {
    * else - what anyone may read is held by the database's own rules (safety rule 5).
    */
   admin?: boolean;
+  /**
+   * The live monitoring, as the fifth readout (the owner, 17 Oct 2026: one more card, the status
+   * in text with a small moving mark, and the detail in a band under the dashboard rather than
+   * in the left rail). Left out, the fifth tile is not drawn.
+   */
+  monitoring?: Monitoring | null;
+  monitoringOpen?: boolean;
+  onToggleMonitoring?: () => void;
 };
 
 export function ConsoleTiles(props: ConsoleTilesProps) {
   const t = useTranslations("map.console");
   const tHome = useTranslations("home");
+  const tMonitoring = useTranslations("monitoring");
   const { status, alerts, fresh, failed, gauges, reports, time, now } = props;
   const scope = props.scope ?? t("scope.all");
   /*
@@ -240,6 +255,7 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
       data-console-tiles="true"
       data-console-readout="true"
       className="hidden console:grid console:grid-cols-2 console:gap-3"
+      data-console-count={props.monitoring ? 5 : 4}
     >
       <li
         className={tile}
@@ -273,6 +289,44 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
         <Label>{t("reports.label")}</Label>
         {reportFigures()}
       </li>
+
+      {/*
+       * The fifth readout: the whole of the live monitoring in one line, and the way into the
+       * band under the dashboard (the owner, 17 Oct). It is the one tile that is a control, so
+       * it is a button and says whether the band is open; the other four stay readouts, where a
+       * mis-click cannot lose anyone their view.
+       */}
+      {props.monitoring && (
+        <li className={tile} data-console-tile="monitoring">
+          <Label>{tMonitoring("title")}</Label>
+          {(() => {
+            const status = monitoringStatus(props.monitoring!);
+            return (
+              <>
+                <p className="flex items-start gap-2 text-h3 font-bold leading-tight text-jaga-ink">
+                  <span className="mt-1">
+                    <MonitoringMark status={status} />
+                  </span>
+                  <MonitoringHeadline status={status} />
+                </p>
+                <Foot>
+                  <MonitoringFigures status={status} time={time} />
+                </Foot>
+              </>
+            );
+          })()}
+          <button
+            type="button"
+            data-monitoring-open={props.monitoringOpen ? "true" : "false"}
+            aria-expanded={!!props.monitoringOpen}
+            aria-controls="monitoring-detail-map"
+            onClick={props.onToggleMonitoring}
+            className="min-h-tap self-start text-start underline"
+          >
+            {tMonitoring(props.monitoringOpen ? "hideDetail" : "showDetail")}
+          </button>
+        </li>
+      )}
     </ul>
   );
 }

@@ -703,19 +703,6 @@
         "none": "No report stands",
         "window": "Standing, up to 72 hours"
       }
-    },
-    "summary": {
-      "title": "Where things stand",
-      "mine": "Your subdistrict",
-      "province": "Subdistricts with an alert in force · {scope}",
-      "noneInForce": "No alert is in force in {scope}. That is not the same as no risk: an alert appears here only once a person issues one.",
-      "statusUnknown": "Jaga could not load the alert status, so it cannot say what is in force.",
-      "notInService": "Jaga is not in service yet, so no level is published for any subdistrict.",
-      "gaugesOver": "{count} river gauges at or over their bank · {scope}",
-      "reports": "{count} standing reports from residents · {scope}",
-      "unknownFigure": "could not be loaded",
-      "noArea": "You have not told Jaga where you are, so this shows the whole area Jaga covers. Choose your subdistrict on the home screen to see your own level first.",
-      "openArea": "See the whole alert for {tambon}"
     }
   },
   "attribution": {
@@ -5021,6 +5008,52 @@
       "dry": "The model has no rain at {place} in this hour",
       "unknown": "No weather reading is kept on this device yet",
       "stale": "the reading is more than three hours old"
+    },
+    "showDetail": "See the detail",
+    "hideDetail": "Hide the detail",
+    "notAnAlert": "These are measurements, not an alert. Alerts come only from Jaga's admins.",
+    "status": {
+      "inRange": "All readings within their normal range",
+      "watching": "Something worth watching",
+      "incomplete": "Some readings could not be loaded",
+      "unknown": "The measurements could not be read",
+      "reporting": "{reporting}/{total} stations reporting",
+      "someMissing": "some could not be loaded",
+      "lead": {
+        "riversOver": "{count} river gauges at or over their bank",
+        "riversNear": "{count} river gauges near their bank",
+        "damReleasing": "The dam is releasing water",
+        "damWatch": "The dam published figures worth watching",
+        "reports": "{count} standing reports from residents",
+        "rain": "Rain falling in the model"
+      }
+    },
+    "detail": {
+      "province": "Subdistricts with an alert in force · {scope}",
+      "noneInForce": "No alert is in force in {scope}. That is not the same as no risk: an alert appears here only once a person issues one.",
+      "statusUnknown": "Jaga could not load the alert status, so it cannot say what is in force.",
+      "notInService": "Jaga is not in service yet, so no level is published for any subdistrict.",
+      "noArea": "You have not told Jaga where you are, so this shows the whole area Jaga covers. Choose your subdistrict on the home screen to see your own level first.",
+      "charts": "Charts",
+      "chartsNote": "Every chart is measured or modelled, with the window it covers and the time it was taken. None of them is a forecast of where water will go."
+    },
+    "charts": {
+      "gauges": {
+        "title": "River gauges · {scope}",
+        "over": "at or over bank",
+        "near": "near bank",
+        "normal": "below bank",
+        "nolevels": "no levels yet",
+        "quiet": "not reporting",
+        "said": "{said}, of {total} stations in all",
+        "none": "no station could be read",
+        "note": "A count of each station's latest state, not a chart over time: the public feed carries only each station's newest reading."
+      },
+      "rain": {
+        "title": "Rain in the model, next {hours} hours · {place}",
+        "said": "Hourly rain for the next {hours} hours, {total} mm in all, at most {top} mm in one hour",
+        "note": "{total} mm in all, in the model - not a measurement at your house."
+      }
     }
   }
 }

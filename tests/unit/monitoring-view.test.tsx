@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MonitoringNow } from "@/components/monitoring/MonitoringNow";
-import { MapSummary } from "@/components/map/MapSummary";
+import { MonitoringCard } from "@/components/monitoring/MonitoringCard";
+import { MonitoringDetail } from "@/components/monitoring/MonitoringDetail";
 import type { AlertLevel } from "@/lib/brand/tokens";
 import type { LevelTally } from "@/lib/map-console";
 import type { Monitoring, Note } from "@/lib/monitoring";
@@ -55,7 +56,10 @@ const summary = (notes: Note[]): Monitoring => ({
   notes,
   anyUnknown: notes.some((n) => n.say === "unknown"),
   allUnknown: notes.length > 0 && notes.every((n) => n.say === "unknown"),
-  newestAt: notes.reduce<string | null>((best, n) => (n.at && (!best || n.at > best) ? n.at : best), null),
+  newestAt: notes.reduce<string | null>(
+    (best, n) => (n.at && (!best || n.at > best) ? n.at : best),
+    null,
+  ),
 });
 
 function section(notes: Note[], locale: "th" | "en" = "th") {
@@ -80,7 +84,9 @@ describe("the monitoring section can never look like a level", () => {
 
   for (const say of ["active", "quiet", "unknown"] as const) {
     it(`wears no alert colour, badge or pill when everything says "${say}"`, () => {
-      const c = section(ALL_KINDS.map((kind) => note({ kind, say, weight: say === "active" ? 2 : 0 })));
+      const c = section(
+        ALL_KINDS.map((kind) => note({ kind, say, weight: say === "active" ? 2 : 0 })),
+      );
       expect(c.querySelector("[data-monitoring]")).not.toBeNull();
       expect(c.innerHTML).not.toMatch(/alert-(normal|watch|warning|evacuate|return|stale)/);
       expect(c.querySelector("[data-level]")).toBeNull();
@@ -138,7 +144,16 @@ describe("the monitoring section never reads as an all-clear", () => {
   });
 
   it("keeps a late reading's figures and adds that it is late, never hiding it", () => {
-    const c = section([note({ kind: "dam", say: "active", weight: 2, attention: "releasing", outflowCms: 300, stale: true })]);
+    const c = section([
+      note({
+        kind: "dam",
+        say: "active",
+        weight: 2,
+        attention: "releasing",
+        outflowCms: 300,
+        stale: true,
+      }),
+    ]);
     const line = c.querySelector('[data-monitoring-note="dam"]')!;
     expect(line.textContent).toContain("300");
     expect(line.textContent).toContain(th.monitoring.dam.stale);
@@ -158,8 +173,8 @@ describe("the words of the monitoring section", () => {
     const thKeys = keys(th.monitoring).sort();
     expect(keys(en.monitoring).sort()).toEqual(thKeys);
     expect(keys(ms.monitoring).sort()).toEqual(thKeys);
-    expect(keys(en.map.summary).sort()).toEqual(keys(th.map.summary).sort());
-    expect(keys(ms.map.summary).sort()).toEqual(keys(th.map.summary).sort());
+    // map.summary is gone: its wording moved under monitoring.detail (17 Oct).
+    expect("summary" in th.map).toBe(false);
   });
 
   /*
@@ -167,103 +182,234 @@ describe("the words of the monitoring section", () => {
    * whole reason this section is allowed on a home screen. A short one has lost its argument.
    */
   it("never shortens the lines that name the speaker or refuse an all-clear", () => {
-    for (const [lang, m] of [["th", th], ["en", en], ["ms", ms]] as const) {
+    for (const [lang, m] of [
+      ["th", th],
+      ["en", en],
+      ["ms", ms],
+    ] as const) {
       expect(m.monitoring.caption.length, lang).toBeGreaterThan(80);
       expect(m.monitoring.allUnknown.length, lang).toBeGreaterThan(60);
       expect(m.monitoring.reports.quiet.length, lang).toBeGreaterThan(60);
-      expect(m.map.summary.noneInForce.length, lang).toBeGreaterThan(50);
+      expect(m.monitoring.detail.noneInForce.length, lang).toBeGreaterThan(50);
       for (const kind of ALL_KINDS) expect(m.monitoring[kind].who.length, lang).toBeGreaterThan(10);
     }
   });
 
   it("never claims anything is fine, safe or clear", () => {
-    const banned = /\ball[- ]clear\b|\bno risk\b|\bis safe\b|\beverything is fine\b/i;
+    const banned = /all[- ]clear|no risk|is safe|everything is fine/i;
+    /*
+     * The same words are allowed, and wanted, inside a denial: "that is not the same as no risk"
+     * is the sentence that stops a quiet reading being taken for safety. So a line that carries
+     * one of these phrases has to be denying it.
+     */
+    const denies = /not|never|bukan|tidak/i;
+    const walk = (node: unknown): string[] =>
+      typeof node === "string" ? [node] : Object.values(node as object).flatMap(walk);
     for (const m of [en, ms]) {
-      for (const text of Object.values(m.monitoring).flatMap((v) =>
-        typeof v === "string" ? [v] : Object.values(v),
-      )) {
-        expect(text).not.toMatch(banned);
+      for (const text of walk(m.monitoring)) {
+        if (banned.test(text)) expect(text, text).toMatch(denies);
       }
     }
   });
 });
 
-describe("where things stand, above the map", () => {
+describe("the card that is the way in", () => {
+  const every = ALL_KINDS.map((kind) => note({ kind }));
+
+  function cardOf(notes: Note[], open = false) {
+    return renderWithIntl(
+      <MonitoringCard
+        summary={summary(notes)}
+        time={() => "13:00"}
+        open={open}
+        onToggle={() => {}}
+        detail={<p data-detail-here="true">detail</p>}
+        place="home"
+      />,
+    ).container;
+  }
+
+  it("says the readings are in their normal range, never that the situation is", () => {
+    const c = cardOf(every);
+    const said = c.querySelector("[data-monitoring-status]")!;
+    expect(said.getAttribute("data-monitoring-status")).toBe("inRange");
+    expect(said.textContent).toBe(th.monitoring.status.inRange);
+    // The owner's choice of 17 Oct: it speaks about instruments, not about safety.
+    expect(said.textContent).not.toContain("สถานการณ์");
+  });
+
+  it("leads with what is happening when something is", () => {
+    const c = cardOf([
+      note({ kind: "gauges", say: "active", weight: 2, over: 2 }),
+      note({ kind: "dam" }),
+    ]);
+    const said = c.querySelector("[data-monitoring-status]")!;
+    expect(said.getAttribute("data-monitoring-status")).toBe("watching");
+    expect(said.textContent).toContain("2");
+  });
+
+  it("says plainly when it could read nothing, and when it could read only some", () => {
+    const none = cardOf(ALL_KINDS.map((kind) => note({ kind, say: "unknown" })));
+    expect(
+      none.querySelector("[data-monitoring-status]")!.getAttribute("data-monitoring-status"),
+    ).toBe("unknown");
+    const some = cardOf([note({ kind: "gauges" }), note({ kind: "dam", say: "unknown" })]);
+    expect(
+      some.querySelector("[data-monitoring-status]")!.getAttribute("data-monitoring-status"),
+    ).toBe("incomplete");
+  });
+
+  /* The mark moves the same way in every state, so it can never read as a green light. */
+  it("wears one moving mark in every state, and never an alert colour or a level icon", () => {
+    for (const say of ["active", "quiet", "unknown"] as const) {
+      const c = cardOf(
+        ALL_KINDS.map((kind) => note({ kind, say, weight: say === "active" ? 2 : 0 })),
+      );
+      expect(c.querySelector("[data-monitoring-pulse]")).not.toBeNull();
+      expect(c.innerHTML).not.toMatch(/alert-(normal|watch|warning|evacuate|return|stale)/);
+      expect(c.querySelector("[data-level]")).toBeNull();
+    }
+  });
+
+  it("says it is not an alert whether it is open or shut", () => {
+    expect(cardOf(every).textContent).toContain(th.monitoring.notAnAlert);
+    expect(cardOf(every, true).textContent).toContain(th.monitoring.notAnAlert);
+  });
+
+  it("keeps the detail shut until it is asked for", () => {
+    expect(cardOf(every).querySelector("[data-detail-here]")).toBeNull();
+    expect(cardOf(every, true).querySelector("[data-detail-here]")).not.toBeNull();
+    expect(
+      cardOf(every).querySelector("[data-monitoring-open]")!.getAttribute("aria-expanded"),
+    ).toBe("false");
+  });
+
+  it("draws nothing at all when it was given no feeds", () => {
+    expect(cardOf([]).querySelector("[data-monitoring-card]")).toBeNull();
+  });
+});
+
+describe("what the opened detail holds", () => {
   const tally = (level: AlertLevel, tambons: number): LevelTally => ({ level, tambons });
   const alert = (level: "watch" | "warning") => exampleAlert(level, [BANA.code]);
 
-  function summaryCard(over: Partial<Parameters<typeof MapSummary>[0]> = {}) {
+  function detailOf(over: Partial<Parameters<typeof MonitoringDetail>[0]> = {}) {
     return renderWithIntl(
-      <MapSummary
-        hero={{ kind: "alert", alert: alert("warning") }}
-        myTambonCode={BANA.code}
-        myTambonName="บานา"
-        levels={[tally("evacuate", 0), tally("warning", 2), tally("watch", 1)]}
-        statusKnown
-        inService
-        gaugesOver={3}
-        reportsTotal={7}
-        provinceWord="ปัตตานี"
-        allWord="ทั้งสี่จังหวัด"
+      <MonitoringDetail
+        summary={summary(ALL_KINDS.map((kind) => note({ kind })))}
+        scopeWords={{ province: "ปัตตานี", myPlace: "บานา" }}
+        damName="เขื่อนบางลาง"
+        damTambon="บานา"
+        rainPlace="บานา"
+        time={() => "13:00"}
+        place="map"
         now={Date.parse("2026-11-20T07:00:00.000Z")}
+        gaugeScope="ใกล้พื้นที่ของคุณ"
+        area={{ hero: { kind: "alert", alert: alert("warning") }, code: BANA.code, name: "บานา" }}
+        province={{
+          levels: [tally("evacuate", 0), tally("warning", 2), tally("watch", 1)],
+          statusKnown: true,
+          inService: true,
+          scope: "ปัตตานี",
+        }}
         {...over}
       />,
     ).container;
   }
 
-  it("leads with the person's own subdistrict, carrying everything a level must say", () => {
-    const c = summaryCard();
-    const area = c.querySelector('[data-map-summary-part="area"]')!;
-    expect(area.querySelector('[data-hero="alert"]')).not.toBeNull();
+  it("leads with the person's own level, carrying everything a level must say", () => {
+    const c = detailOf();
+    const area = c.querySelector('[data-monitoring-part="area"]')!;
     expect(area.querySelector('[data-level="warning"]')).not.toBeNull();
     expect(area.textContent).toContain("บานา");
-    // Issuer, issue time and next update come with AlertHero (safety rule 3).
     expect(area.textContent).toContain(th.home.issuedBy);
     expect(area.textContent).toContain(th.home.nextUpdate);
   });
 
-  it("puts the person's own subdistrict before the province around it", () => {
-    const c = summaryCard();
-    const area = c.querySelector('[data-map-summary-part="area"]')!;
-    const province = c.querySelector('[data-map-summary-part="province"]')!;
-    expect(area.compareDocumentPosition(province) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  it("puts the person's own level before the province and the measurements", () => {
+    const c = detailOf();
+    const order = [...c.querySelectorAll("[data-monitoring-part], [data-monitoring]")].map(
+      (e) => e.getAttribute("data-monitoring-part") ?? "notes",
+    );
+    expect(order).toEqual(["area", "province", "notes"]);
   });
 
-  it("shows no level at all, and no colour, when nobody has said where they are", () => {
-    const c = summaryCard({ hero: null, myTambonCode: null, myTambonName: null });
-    expect(c.querySelector("[data-map-summary-noarea]")?.textContent).toBe(th.map.summary.noArea);
-    expect(c.querySelector('[data-map-summary-part="area"] [data-level]')).toBeNull();
-    expect(c.querySelector('[data-map-summary-part="area"]')!.innerHTML).not.toMatch(/alert-/);
+  it("leaves the level out on the home screen, where the hero is just above it", () => {
+    const c = detailOf({ area: null, province: null, place: "home" });
+    expect(c.querySelector('[data-monitoring-part="area"]')).toBeNull();
+    expect(c.querySelector("[data-monitoring-noarea]")).toBeNull();
+    expect(c.querySelector("[data-monitoring]")).not.toBeNull();
   });
 
-  /* A status nobody could read is not a status of "none" (safety rule 10). */
+  it("tells a visitor on the map that no area is saved, and shows them no level", () => {
+    const c = detailOf({ area: null });
+    expect(c.querySelector("[data-monitoring-noarea]")!.textContent).toBe(
+      th.monitoring.detail.noArea,
+    );
+    // No level of their own. The province's counts are published levels and keep their badges.
+    expect(c.querySelector('[data-monitoring-part="area"]')).toBeNull();
+    expect(c.querySelector('[data-hero="alert"]')).toBeNull();
+  });
+
   it("says the status could not be read, and draws no counts, when it could not", () => {
-    const c = summaryCard({ statusKnown: false });
-    expect(c.querySelector('[data-map-summary-status="unknown"]')).not.toBeNull();
-    expect(c.querySelector('[data-map-summary-status="none"]')).toBeNull();
+    const c = detailOf({
+      province: {
+        levels: [tally("warning", 2)],
+        statusKnown: false,
+        inService: true,
+        scope: "ปัตตานี",
+      },
+    });
+    expect(c.querySelector('[data-monitoring-province="unknown"]')).not.toBeNull();
     expect(c.querySelector("[data-console-level]")).toBeNull();
   });
 
   it("explains that no alert in force is not the same as no risk", () => {
-    const c = summaryCard({ levels: [tally("warning", 0)] });
-    const none = c.querySelector('[data-map-summary-status="none"]')!;
-    expect(none.textContent).toContain(th.map.summary.noneInForce.slice(0, 30));
+    const c = detailOf({
+      province: {
+        levels: [tally("warning", 0)],
+        statusKnown: true,
+        inService: true,
+        scope: "ปัตตานี",
+      },
+    });
+    expect(c.querySelector('[data-monitoring-province="none"]')!.textContent).toContain(
+      th.monitoring.detail.noneInForce.slice(0, 30),
+    );
   });
 
   it("says Jaga is not in service yet rather than that no alert is in force", () => {
-    const c = summaryCard({ inService: false, levels: [tally("warning", 0)] });
-    expect(c.querySelector('[data-map-summary-status="notInService"]')).not.toBeNull();
-    expect(c.querySelector('[data-map-summary-status="none"]')).toBeNull();
+    const c = detailOf({
+      province: {
+        levels: [tally("warning", 0)],
+        statusKnown: true,
+        inService: false,
+        scope: "ปัตตานี",
+      },
+    });
+    expect(c.querySelector('[data-monitoring-province="notInService"]')).not.toBeNull();
+    expect(c.querySelector('[data-monitoring-province="none"]')).toBeNull();
   });
 
-  it("writes a figure it could not read as such, never as nought", () => {
-    const c = summaryCard({ gaugesOver: null, reportsTotal: null });
-    const figures = [...c.querySelectorAll("[data-summary-figure]")];
-    expect(figures).toHaveLength(2);
-    for (const figure of figures) {
-      expect(figure.getAttribute("data-summary-unknown")).toBe("true");
-      expect(figure.textContent).toContain(th.map.summary.unknownFigure);
-      expect(figure.textContent).not.toMatch(/\b0\b/);
-    }
+  /*
+   * The charts are measurements and model output, so they wear the water colour the dam's own
+   * charts wear and never an alert hue, and each one carries a sentence for a screen reader.
+   */
+  it("draws the rivers as a count of states, saying it is not a chart over time", () => {
+    const c = detailOf({
+      gauges: [
+        { lat: 6.9, lon: 101.3, status: "above_warning", observedAt: AT },
+        { lat: 6.8, lon: 101.2, status: "normal", observedAt: AT },
+        { lat: 6.7, lon: 101.1, status: "no_recent_data", observedAt: AT },
+      ],
+    });
+    const chart = c.querySelector("[data-monitoring-chart]")!;
+    expect(chart.querySelector('[role="img"]')!.getAttribute("aria-label")).toContain("3");
+    expect(chart.textContent).toContain(th.monitoring.charts.gauges.note.slice(0, 20));
+    expect(chart.innerHTML).not.toMatch(/alert-(normal|watch|warning|evacuate|return)/);
+  });
+
+  it("draws no charts at all when it was given no figures to draw", () => {
+    expect(detailOf().querySelector("[data-monitoring-charts]")).toBeNull();
   });
 });

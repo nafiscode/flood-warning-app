@@ -3,7 +3,7 @@
 import { useLocale } from "next-intl";
 import { useMyPlaces } from "@/lib/use-public";
 import { useWeather, useWeatherPlace } from "@/lib/use-weather";
-import { weatherGroup, type WeatherPlace } from "@/lib/weather";
+import { weatherGroup, type Weather, type WeatherPlace } from "@/lib/weather";
 import type { Feed, RainReading } from "@/lib/monitoring";
 
 /**
@@ -17,18 +17,23 @@ import type { Feed, RainReading } from "@/lib/monitoring";
  * Before the chip has ever answered there is simply no reading, and the section says so rather
  * than saying it is dry (safety rule 10).
  */
-export function useKeptRain(): Feed<RainReading> & { place: WeatherPlace | null } {
+export function useKeptRain(): Feed<RainReading> & {
+  place: WeatherPlace | null;
+  /** The whole kept reading, for the hour-by-hour rain chart in the opened detail. */
+  weather: Weather | null;
+} {
   const locale = useLocale();
   const me = useMyPlaces();
   const { place } = useWeatherPlace(me, locale);
   const { weather, failed } = useWeather(place, false);
-  if (!place) return { state: "loading", data: null, place: null };
+  if (!place) return { state: "loading", data: null, place: null, weather: null };
   if (weather) {
     return {
       state: "ok",
       data: { group: weatherGroup(weather.code), rainMm: weather.rainMm, at: weather.at },
       place,
+      weather,
     };
   }
-  return { state: failed ? "unavailable" : "loading", data: null, place };
+  return { state: failed ? "unavailable" : "loading", data: null, place, weather: null };
 }

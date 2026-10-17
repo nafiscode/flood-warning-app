@@ -703,19 +703,6 @@
         "none": "Tiada laporan",
         "window": "Masih berkuat kuasa, sehingga 72 jam"
       }
-    },
-    "summary": {
-      "title": "Keadaan semasa",
-      "mine": "Mukim anda",
-      "province": "Mukim dengan amaran berkuat kuasa · {scope}",
-      "noneInForce": "Tiada amaran berkuat kuasa di {scope}. Itu bukan bermakna tiada risiko: amaran muncul di sini hanya setelah seseorang mengeluarkannya.",
-      "statusUnknown": "Jaga tidak dapat memuatkan status amaran, jadi ia tidak dapat menyatakan apa yang berkuat kuasa.",
-      "notInService": "Jaga belum beroperasi, jadi tiada tahap diterbitkan untuk mana-mana mukim.",
-      "gaugesOver": "{count} tolok sungai mencecah atau melepasi tebing · {scope}",
-      "reports": "{count} laporan penduduk masih berkuat kuasa · {scope}",
-      "unknownFigure": "tidak dapat dimuatkan",
-      "noArea": "Anda belum memberitahu Jaga di mana anda berada, jadi ini menunjukkan seluruh kawasan liputan Jaga. Pilih mukim anda di laman utama untuk melihat tahap anda sendiri dahulu.",
-      "openArea": "Lihat amaran penuh untuk {tambon}"
     }
   },
   "attribution": {
@@ -5021,6 +5008,52 @@
       "dry": "Model tidak menunjukkan hujan di {place} pada jam ini",
       "unknown": "Belum ada bacaan cuaca disimpan pada peranti ini",
       "stale": "bacaan ini lebih tiga jam lama"
+    },
+    "showDetail": "Lihat perincian",
+    "hideDetail": "Sembunyikan perincian",
+    "notAnAlert": "Ini ialah ukuran, bukan amaran. Amaran datang hanya daripada pentadbir Jaga.",
+    "status": {
+      "inRange": "Semua bacaan dalam julat normalnya",
+      "watching": "Ada yang perlu diperhatikan",
+      "incomplete": "Sebahagian bacaan tidak dapat dimuatkan",
+      "unknown": "Bacaan pemantauan tidak dapat dibaca",
+      "reporting": "{reporting}/{total} stesen menghantar bacaan",
+      "someMissing": "sebahagian tidak dapat dimuatkan",
+      "lead": {
+        "riversOver": "{count} tolok sungai mencecah atau melepasi tebing",
+        "riversNear": "{count} tolok sungai hampir dengan tebing",
+        "damReleasing": "Empangan sedang melepaskan air",
+        "damWatch": "Empangan menerbitkan angka yang perlu diperhatikan",
+        "reports": "{count} laporan penduduk masih berkuat kuasa",
+        "rain": "Hujan turun dalam model"
+      }
+    },
+    "detail": {
+      "province": "Mukim dengan amaran berkuat kuasa · {scope}",
+      "noneInForce": "Tiada amaran berkuat kuasa di {scope}. Itu bukan bermakna tiada risiko: amaran muncul di sini hanya setelah seseorang mengeluarkannya.",
+      "statusUnknown": "Jaga tidak dapat memuatkan status amaran, jadi ia tidak dapat menyatakan apa yang berkuat kuasa.",
+      "notInService": "Jaga belum beroperasi, jadi tiada tahap diterbitkan untuk mana-mana mukim.",
+      "noArea": "Anda belum memberitahu Jaga di mana anda berada, jadi ini menunjukkan seluruh kawasan liputan Jaga. Pilih mukim anda di laman utama untuk melihat tahap anda sendiri dahulu.",
+      "charts": "Graf",
+      "chartsNote": "Setiap graf ialah ukuran atau keluaran model, dengan tempoh yang dilitupinya dan waktu ia diambil. Tiada satu pun ramalan ke mana air akan pergi."
+    },
+    "charts": {
+      "gauges": {
+        "title": "Tolok sungai · {scope}",
+        "over": "mencecah/melepasi tebing",
+        "near": "hampir tebing",
+        "normal": "di bawah tebing",
+        "nolevels": "belum ada aras",
+        "quiet": "tiada bacaan",
+        "said": "{said}, daripada {total} stesen keseluruhan",
+        "none": "tiada stesen dapat dibaca",
+        "note": "Kiraan keadaan terkini setiap stesen, bukan graf merentas masa: suapan awam hanya membawa bacaan terbaharu setiap stesen."
+      },
+      "rain": {
+        "title": "Hujan dalam model, {hours} jam akan datang · {place}",
+        "said": "Hujan setiap jam untuk {hours} jam akan datang, {total} mm keseluruhan, paling banyak {top} mm dalam sejam",
+        "note": "{total} mm keseluruhan, dalam model - bukan ukuran di rumah anda."
+      }
     }
   }
 }

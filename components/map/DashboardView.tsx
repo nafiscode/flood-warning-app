@@ -29,8 +29,8 @@ import {
 } from "@/lib/area";
 import { ALERT_LEVELS } from "@/lib/brand/tokens";
 import { DamCard, DamLegendKeys, DamLegendRow, DamNotice } from "@/components/map/Dam";
-import { MapSummary } from "@/components/map/MapSummary";
-import { MonitoringNow } from "@/components/monitoring/MonitoringNow";
+import { MonitoringCard } from "@/components/monitoring/MonitoringCard";
+import { MonitoringDetail } from "@/components/monitoring/MonitoringDetail";
 import { monitoring } from "@/lib/monitoring";
 import { useKeptRain } from "@/lib/use-rain";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
@@ -277,6 +277,7 @@ export function DashboardView(props: DashboardViewProps) {
   const t = useTranslations("map");
   const tHome = useTranslations("home");
   const tDam = useTranslations("dam");
+  const tMonitoring = useTranslations("monitoring");
   const tSea = useTranslations("sea");
   const tNear = useTranslations("reportsNear");
   const locale = useLocale();
@@ -462,6 +463,11 @@ export function DashboardView(props: DashboardViewProps) {
    * device already keeps for the header's chip: nothing is asked for here (lib/use-rain).
    */
   const rain = useKeptRain();
+  /*
+   * Whether the monitoring detail is open. One state for both places it can be drawn: the
+   * band under the console, and the card under the legend on a phone and a tablet.
+   */
+  const [monitoringOpen, setMonitoringOpen] = useState(false);
   const hazard = hazards.find((h) => h.code === hazardCode) ?? hazards[0]!;
   // Pre-season the risk view opens first; with any alert in force, the live view (spec 4.2).
   const mode: MapMode = chosenMode ?? (hasActiveAlerts(status) ? "live" : "risk");
@@ -976,13 +982,10 @@ export function DashboardView(props: DashboardViewProps) {
       : pickName(locale, provinceEntry.nameTh, provinceEntry.nameEn);
 
   /*
-   * "Where things stand", above the map at every screen size (the owner, 17 Oct 2026): the
-   * person's own subdistrict first, then the province around it. A phone saw no overall status
-   * on this page at all until it tapped a subdistrict.
-   *
-   * Every figure is counted from the same pure functions the laptop's readout strip uses, so
-   * the card and the strip can never disagree, and a feed that could not be read is passed as
-   * null rather than nought - the card words those differently (safety rule 10).
+   * The live monitoring (the owner, 17 Oct 2026). One status, drawn in two places and never in
+   * the left rail: as the fifth readout across the top of the console, whose band opens under
+   * the dashboard, and as a card under the map legend on a phone and a tablet. Both read the
+   * same `summary` and share one open/shut state, so they can never disagree.
    */
   const myTambon = props.area?.code ?? (props.me?.signedIn ? props.me.home?.code : null) ?? null;
   /** Opens a subdistrict in the map's own panel, named as the panel needs it. */
@@ -997,26 +1000,63 @@ export function DashboardView(props: DashboardViewProps) {
     revealPanel();
   };
   const summaryDam = damsOnMyPath[0]?.dam ?? mainDam(dams) ?? null;
-  const summaryMonitoring = (
-    <MonitoringNow
-      summary={monitoring({
-        now,
-        myCodes: myTambons,
-        myPoint: props.area ? { lat: props.area.lat, lon: props.area.lon } : null,
-        narrowed: chosenProvince !== null,
-        // The map has the whole station list already; no extra request for the card.
-        gauges: { state: data?.gauges ? "ok" : props.dataState, data: data?.gauges ?? null },
-        dam: { state: props.dams ? "ok" : "loading", data: summaryDam },
-        onMyRiver: damsOnMyPath.length > 0,
-        reports: { state: props.reports ? "ok" : "loading", data: props.reports ?? null },
-        rain: { state: rain.state, data: rain.data },
-      })}
+  const monitoringSummary = monitoring({
+    now,
+    myCodes: myTambons,
+    myPoint: props.area ? { lat: props.area.lat, lon: props.area.lon } : null,
+    narrowed: chosenProvince !== null,
+    // The map holds the whole station list already; the card costs no extra request.
+    gauges: { state: data?.gauges ? "ok" : props.dataState, data: data?.gauges ?? null },
+    dam: { state: props.dams ? "ok" : "loading", data: summaryDam },
+    onMyRiver: damsOnMyPath.length > 0,
+    reports: { state: props.reports ? "ok" : "loading", data: props.reports ?? null },
+    rain: { state: rain.state, data: rain.data },
+  });
+  const monitoringDetail = (
+    <MonitoringDetail
+      summary={monitoringSummary}
       scopeWords={{ province: scopeWord, myPlace: rain.place?.name ?? null }}
       damName={summaryDam ? localName(summaryDam.name, locale) : null}
       damTambon={damsOnMyPath[0] ? tambonName(damsOnMyPath[0].hit.code) : null}
       rainPlace={rain.place?.name ?? null}
       time={time}
       place="map"
+      now={now}
+      area={
+        myTambon
+          ? {
+              hero: heroStatusFor(status, myTambon, fresh),
+              code: myTambon,
+              name: tambonName(myTambon),
+            }
+          : null
+      }
+      province={{
+        levels: levelTally(alerts.map(({ alert }) => alert)),
+        statusKnown: !!status && !(failed && !fresh),
+        inService: status?.inService ?? false,
+        scope: scopeWord ?? t("console.scope.all"),
+      }}
+      gauges={data?.gauges ?? null}
+      gaugeScope={props.area ? tMonitoring("scope.nearMe") : tMonitoring("scope.fourProvinces")}
+      weather={rain.weather}
+      dam={summaryDam}
+      damLink={
+        summaryDam ? (
+          <button
+            type="button"
+            data-open-dam-from-monitoring={summaryDam.code}
+            onClick={() => {
+              setSelection({ kind: "dam", code: summaryDam.code });
+              revealPanel();
+            }}
+            className={`${buttonQuiet} w-full justify-between text-start`}
+          >
+            {tDam("legend.open", { dam: localName(summaryDam.name, locale) })}
+            <WaveIcon size={20} aria-hidden="true" />
+          </button>
+        ) : null
+      }
     />
   );
 
@@ -1198,38 +1238,14 @@ export function DashboardView(props: DashboardViewProps) {
                 time={time}
                 locale={locale}
                 admin={isAdminRoleName(props.me?.signedIn ? props.me.role : null)}
+                monitoring={monitoringSummary}
+                monitoringOpen={monitoringOpen}
+                onToggleMonitoring={() => setMonitoringOpen((was) => !was)}
               />
 
               {/* The hazard comes first, then the province, then what the map shows for it (owner,
                   15 Oct). On the console the same four are the left rail. */}
               <div className="contents" data-console-area="rail" data-console-rail="true">
-                {/*
-                 * The overview summary (the owner, 17 Oct), first in the rail.
-                 *
-                 * It sits here rather than in a row of its own because **the page's order of
-                 * blocks is the console's reading order**: below the breakpoint every
-                 * `data-console-area` is `display: contents`, so a phone meets this card
-                 * straight after the province selector and before the map - which is the gap
-                 * the owner named, and which a row under the map could not fill. A full-width
-                 * row of its own would also take its height off the map, and the map row has
-                 * only 18rem to give.
-                 */}
-                <MapSummary
-                  hero={myTambon ? heroStatusFor(status, myTambon, fresh) : null}
-                  myTambonCode={myTambon}
-                  myTambonName={myTambon ? tambonName(myTambon) : null}
-                  levels={levelTally(alerts.map(({ alert }) => alert))}
-                  statusKnown={!!status && !(failed && !fresh)}
-                  inService={status?.inService ?? false}
-                  gaugesOver={data?.gauges ? gaugeTally(data.gauges).over : null}
-                  reportsTotal={props.reports ? reportTally(props.reports).reports : null}
-                  provinceWord={scopeWord}
-                  allWord={t("console.scope.all")}
-                  monitoring={summaryMonitoring}
-                  now={now}
-                  onOpenMyArea={myTambon ? () => openTambon(myTambon) : undefined}
-                />
-
                 {/* The sea's own report, for fishermen, right under the chips while the sea is
                     shown (the owner, 15 Oct: the switches under the map are gone, the chips do
                     that). */}
@@ -1710,48 +1726,6 @@ export function DashboardView(props: DashboardViewProps) {
                       )}
                     </ul>
                   )}
-                  {dams.length > 0 && (
-                    <div className="flex flex-col gap-1" data-dam-legend="true">
-                      <p className="font-medium">{tDam("path.title")}</p>
-                      {/* The marks mean the same on every reservoir, so they are explained once. */}
-                      <ul className="flex flex-col gap-1">
-                        <DamLegendKeys />
-                      </ul>
-                      <p className={hint}>{tDam("path.limits")}</p>
-                      {/*
-                       * The way in that needs no aim at all. The card otherwise opens only by
-                       * tapping the dam itself, and a river is a thin thing to hit: 4 taps in 665
-                       * found it on the live map, and the owner could not find the card at all.
-                       * The legend names the dam anyway, so it is the natural button.
-                       */}
-                      {dams.map((dam) => (
-                        <button
-                          key={dam.code}
-                          type="button"
-                          data-open-dam={dam.code}
-                          onClick={() => {
-                            setSelection({ kind: "dam", code: dam.code });
-                            /*
-                             * The dam, and the places this person saved, in one view. Their own
-                             * pins come along only while they are shown: framing a map around
-                             * something invisible would read as a wrong zoom.
-                             */
-                            const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
-                            if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
-                            // The card opens above the legend, so the page has to go to it.
-                            revealPanel();
-                          }}
-                          className={`${buttonQuiet} w-full justify-between text-start`}
-                        >
-                          <DamLegendRow dam={dam} />
-                          <WaveIcon size={20} aria-hidden="true" />
-                          <span className="sr-only">
-                            {tDam("legend.open", { dam: localName(dam.name, locale) })}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
                   {pending.length > 0 && (
                     <div className="flex flex-col gap-1" data-pending="true">
                       <p className="font-medium">{t("pending.title")}</p>
@@ -1765,6 +1739,67 @@ export function DashboardView(props: DashboardViewProps) {
                     </div>
                   )}
                 </section>
+
+                {/*
+                 * The live monitoring, under the map legend on a phone and a tablet (the owner,
+                 * 17 Oct 2026). On a laptop the same status is the console's fifth readout and
+                 * its detail opens in the band under the dashboard, so this copy is hidden
+                 * there - the pattern the dam's figures on the home screen already use, because
+                 * one element cannot be in two columns of a grid at once.
+                 */}
+                <div className="contents console:hidden" data-monitoring-here="side">
+                  <MonitoringCard
+                    summary={monitoringSummary}
+                    time={time}
+                    open={monitoringOpen}
+                    onToggle={() => setMonitoringOpen((was) => !was)}
+                    detail={monitoringDetail}
+                    place="map"
+                  />
+                </div>
+
+                {dams.length > 0 && (
+                  <section className={card} data-dam-legend="true">
+                    <p className="font-medium">{tDam("path.title")}</p>
+                    {/* The marks mean the same on every reservoir, so they are explained once. */}
+                    <ul className="flex flex-col gap-1">
+                      <DamLegendKeys />
+                    </ul>
+                    <p className={hint}>{tDam("path.limits")}</p>
+                    {/*
+                     * The way in that needs no aim at all. The card otherwise opens only by
+                     * tapping the dam itself, and a river is a thin thing to hit: 4 taps in 665
+                     * found it on the live map, and the owner could not find the card at all.
+                     * The legend names the dam anyway, so it is the natural button.
+                     */}
+                    {dams.map((dam) => (
+                      <button
+                        key={dam.code}
+                        type="button"
+                        data-open-dam={dam.code}
+                        onClick={() => {
+                          setSelection({ kind: "dam", code: dam.code });
+                          /*
+                           * The dam, and the places this person saved, in one view. Their own
+                           * pins come along only while they are shown: framing a map around
+                           * something invisible would read as a wrong zoom.
+                           */
+                          const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
+                          if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+                          // The card opens above the legend, so the page has to go to it.
+                          revealPanel();
+                        }}
+                        className={`${buttonQuiet} w-full justify-between text-start`}
+                      >
+                        <DamLegendRow dam={dam} />
+                        <WaveIcon size={20} aria-hidden="true" />
+                        <span className="sr-only">
+                          {tDam("legend.open", { dam: localName(dam.name, locale) })}
+                        </span>
+                      </button>
+                    ))}
+                  </section>
+                )}
 
                 {mode === "live" && (
                   <section className={card} data-alerts-list="true">
@@ -1796,6 +1831,25 @@ export function DashboardView(props: DashboardViewProps) {
                   </section>
                 )}
               </div>
+
+              {/*
+               * The band under the dashboard (the owner, 17 Oct 2026: the fifth readout "should
+               * open up the lower section under the Dashboard to show the details"). A laptop
+               * only: below the breakpoint the card under the legend holds the same detail, and
+               * this copy is not drawn at all.
+               *
+               * It is the last row of the console's grid and spans every column, so opening it
+               * lets the page grow and scroll rather than taking the height off the map.
+               */}
+              {monitoringOpen && (
+                <div
+                  className="hidden console:block"
+                  data-console-area="detail"
+                  id="monitoring-detail-map"
+                >
+                  <div className={`${card} console:max-w-none`}>{monitoringDetail}</div>
+                </div>
+              )}
             </>
           )}
         </>
