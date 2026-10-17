@@ -31,6 +31,23 @@ export type RevealOptions = {
 
 const NUDGE_EVENTS = ["wheel", "touchstart", "keydown"] as const;
 
+/**
+ * Give the keyboard back to the control that opened something, now that it has closed.
+ *
+ * Closing from inside the panel takes the button that was focused out of the page with it, which
+ * would drop a keyboard reader to the top of the document. The same control is often drawn twice
+ * (the monitoring's way in is both a card and a console readout, one of them hidden by CSS at any
+ * width), so the first one actually on the screen is the one that gets it.
+ */
+export function handBack(selector: string): void {
+  for (const el of document.querySelectorAll<HTMLElement>(selector)) {
+    if (el.offsetParent !== null) {
+      el.focus({ preventScroll: true });
+      return;
+    }
+  }
+}
+
 export function reveal(find: () => HTMLElement | null, options: RevealOptions = {}): void {
   const { mark = true, focus = true } = options;
   const reduce = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;

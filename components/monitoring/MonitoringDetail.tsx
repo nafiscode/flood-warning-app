@@ -10,7 +10,7 @@ import type { LevelTally } from "@/lib/map-console";
 import type { GaugeReading } from "@/lib/map-data";
 import type { Monitoring } from "@/lib/monitoring";
 import type { Weather } from "@/lib/weather";
-import { hint } from "@/lib/ui";
+import { buttonQuiet, hint } from "@/lib/ui";
 
 /**
  * What opens when the monitoring card is tapped (the owner, 17 Oct 2026: on a laptop a section
@@ -59,10 +59,18 @@ export type MonitoringDetailProps = {
   dam?: Dam | null;
   /** A way back to the map's own card for this dam, where there is one. */
   damLink?: ReactNode;
+
+  /**
+   * Shuts the detail again from its own foot, and takes the reader back up to the dashboard (the
+   * owner, 17 Oct 2026). The way in is a long way above once the charts have drawn, so the way
+   * out has to be where the reading ends. Left out and no button is drawn.
+   */
+  onHide?: () => void;
 };
 
 export function MonitoringDetail(props: MonitoringDetailProps) {
   const t = useTranslations("monitoring.detail");
+  const tCard = useTranslations("monitoring");
   const { area, province, gauges, weather, dam } = props;
   const charts =
     (gauges && gauges.length > 0) || weather || dam ? (
@@ -126,6 +134,17 @@ export function MonitoringDetail(props: MonitoringDetailProps) {
       />
 
       {charts}
+
+      {props.onHide && (
+        <button
+          type="button"
+          data-monitoring-hide={props.place}
+          onClick={props.onHide}
+          className={`${buttonQuiet} min-h-tap self-start`}
+        >
+          {tCard("hideDetail")}
+        </button>
+      )}
     </div>
   );
 }

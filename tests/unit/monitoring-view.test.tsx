@@ -1,3 +1,4 @@
+import { fireEvent } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { MonitoringNow } from "@/components/monitoring/MonitoringNow";
 import { MonitoringCard } from "@/components/monitoring/MonitoringCard";
@@ -411,5 +412,24 @@ describe("what the opened detail holds", () => {
 
   it("draws no charts at all when it was given no figures to draw", () => {
     expect(detailOf().querySelector("[data-monitoring-charts]")).toBeNull();
+  });
+
+  /*
+   * The owner, 17 Oct 2026: a way out at the foot of the detail. By the time the charts have
+   * drawn, the button that opened it is a screenful or two above.
+   */
+  it("ends with a way out, which the screen holding it is told about", () => {
+    let shut = 0;
+    const c = detailOf({ onHide: () => (shut += 1) });
+    const out = c.querySelector("[data-monitoring-hide]")!;
+    expect(out.textContent).toBe(th.monitoring.hideDetail);
+    // Last, because it is the end of the reading and not a control at the top of it.
+    expect(c.querySelector("[data-monitoring-detail]")!.lastElementChild).toBe(out);
+    fireEvent.click(out);
+    expect(shut).toBe(1);
+  });
+
+  it("draws no way out where the screen has not offered one", () => {
+    expect(detailOf().querySelector("[data-monitoring-hide]")).toBeNull();
   });
 });

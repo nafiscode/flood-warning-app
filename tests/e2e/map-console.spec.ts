@@ -429,6 +429,15 @@ test.describe("the live monitoring card", () => {
       th.monitoring.gauges.who,
     );
     await expect(detail.locator("[data-monitoring-chart]").first()).toBeVisible();
+
+    /*
+     * And it shuts from its own foot, which puts the reader back at the top of the dashboard
+     * (the owner, 17 Oct). The way in is a long way up by the time the charts have drawn.
+     */
+    await detail.locator("[data-monitoring-hide]").click();
+    await expect(card.locator("[data-monitoring-detail]")).toHaveCount(0);
+    await expect(page.locator("[data-map-console]")).toBeInViewport();
+    await expect(card.locator("[data-monitoring-open]")).toBeFocused();
   });
 
   test("tells a visitor with no area saved, and shows them no level of their own", async ({
@@ -513,6 +522,12 @@ test.describe("the live monitoring card", () => {
         band.locator('[data-monitoring-part="area"] [data-level="warning"]'),
       ).toBeVisible();
       await expect(band.locator("[data-monitoring-chart]").first()).toBeVisible();
+
+      // Shut from the foot of the band: the band goes, and the dashboard is back at the top.
+      await band.locator("[data-monitoring-hide]").click();
+      await expect(page.locator('[data-console-area="detail"]')).toHaveCount(0);
+      await expect(page.locator("[data-console-tiles]")).toBeInViewport();
+      await expect(tile.locator("[data-monitoring-open]")).toBeFocused();
     });
 
     test("agrees with the readout strip beside it", async ({ page }) => {

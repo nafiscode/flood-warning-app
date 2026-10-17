@@ -33,7 +33,7 @@ import { MonitoringCard } from "@/components/monitoring/MonitoringCard";
 import { MonitoringDetail } from "@/components/monitoring/MonitoringDetail";
 import { monitoring } from "@/lib/monitoring";
 import { useKeptRain } from "@/lib/use-rain";
-import { reveal } from "@/lib/reveal";
+import { handBack, reveal } from "@/lib/reveal";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
@@ -949,6 +949,20 @@ export function DashboardView(props: DashboardViewProps) {
     reports: { state: props.reports ? "ok" : "loading", data: props.reports ?? null },
     rain: { state: rain.state, data: rain.data },
   });
+  /*
+   * Shutting it from inside the detail (the owner, 17 Oct 2026: the button in the card "should hide
+   * the detail, and bring the view back to the main Dashboard view up at the top"). The detail is
+   * a screenful or two by the time the charts have drawn, so closing it from down there would
+   * otherwise leave the reader looking at whatever happened to be below the band.
+   */
+  const hideMonitoring = () => {
+    setMonitoringOpen(false);
+    handBack("[data-monitoring-open]");
+    reveal(() => document.querySelector<HTMLElement>("[data-map-console]"), {
+      mark: false,
+      focus: false,
+    });
+  };
   const monitoringDetail = (
     <MonitoringDetail
       summary={monitoringSummary}
@@ -959,6 +973,7 @@ export function DashboardView(props: DashboardViewProps) {
       time={time}
       place="map"
       now={now}
+      onHide={hideMonitoring}
       area={
         myTambon
           ? {

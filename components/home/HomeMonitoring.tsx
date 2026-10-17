@@ -8,6 +8,7 @@ import { monitoring, type Feed, type Point } from "@/lib/monitoring";
 import { useKeptRain } from "@/lib/use-rain";
 import { GAUGES_SUMMARY_URL, type GaugeSummary } from "@/lib/map-data";
 import { useFetched } from "@/lib/use-public";
+import { handBack, reveal } from "@/lib/reveal";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { MonitoringCard } from "@/components/monitoring/MonitoringCard";
 import { MonitoringDetail } from "@/components/monitoring/MonitoringDetail";
@@ -63,6 +64,15 @@ export function HomeMonitoring(props: HomeMonitoringProps) {
   });
 
   const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
+  /* Shut from the foot of the detail, and back up to the card that opened it (the owner, 17 Oct). */
+  const hide = () => {
+    setOpen(false);
+    handBack('[data-monitoring-card="home"] [data-monitoring-open]');
+    reveal(() => document.querySelector<HTMLElement>('[data-monitoring-card="home"]'), {
+      mark: false,
+      focus: false,
+    });
+  };
   const damName = props.dam ? localName(props.dam.name, locale) : null;
 
   return (
@@ -82,6 +92,7 @@ export function HomeMonitoring(props: HomeMonitoringProps) {
           time={time}
           place="home"
           now={props.now}
+          onHide={hide}
           gauges={gauges.data?.gauges ?? null}
           gaugeScope={
             props.myPoint ? tMonitoring("scope.nearMe") : tMonitoring("scope.fourProvinces")

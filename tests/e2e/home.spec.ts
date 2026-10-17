@@ -509,6 +509,12 @@ test.describe("what the monitoring shows now, on the home screen", () => {
         ),
       ),
     ).toBe(false);
+
+    // And it shuts from its own foot, back at the card that opened it (the owner, 17 Oct).
+    await card.locator("[data-monitoring-hide]").click();
+    await expect(card.locator("[data-monitoring-detail]")).toHaveCount(0);
+    await expect(card).toBeInViewport();
+    await expect(card.locator("[data-monitoring-open]")).toBeFocused();
     await noSidewaysScroll(page);
   });
 
