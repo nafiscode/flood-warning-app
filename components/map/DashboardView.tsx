@@ -62,6 +62,7 @@ import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
 import { ConsoleSky, ConsoleWeather } from "./ConsoleSky";
 import { ConsoleTiles } from "./ConsoleTiles";
+import { SatelliteFlyby } from "./SatelliteFlyby";
 import { HazardPlaceholder } from "./HazardPlaceholder";
 import { SatelliteFloodPanel } from "./SatelliteFlood";
 import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
@@ -1248,6 +1249,7 @@ export function DashboardView(props: DashboardViewProps) {
               : t("savedOld")}
           </p>
         )}
+        {consoleOn && <SatelliteFlyby />}
         {/* The weather in words, in the empty half of this line (the owner, 16 Oct). */}
         {consoleOn && <ConsoleWeather />}
       </div>

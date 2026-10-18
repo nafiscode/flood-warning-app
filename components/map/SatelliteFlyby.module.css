@@ -1,0 +1,94 @@
+.track {
+  position: relative;
+  display: none;
+  flex: 1 1 15rem;
+  align-self: stretch;
+  min-width: 7rem;
+  height: 2.75rem;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.earth {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--jaga-teal);
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+  opacity: 0.42;
+}
+
+.satellite {
+  position: absolute;
+  top: 0;
+  left: -3rem;
+  width: 5.5rem;
+  height: 2.75rem;
+  overflow: visible;
+  animation: flyby 18s linear infinite;
+}
+
+.panels rect {
+  fill: var(--jaga-slate);
+  stroke: var(--jaga-teal);
+  stroke-width: 1.2;
+}
+
+.panels path,
+.arm,
+.antenna {
+  fill: none;
+  stroke: var(--jaga-teal);
+  stroke-linecap: round;
+  stroke-width: 1.2;
+}
+
+.body {
+  fill: var(--jaga-teal);
+  stroke: var(--jaga-slate);
+  stroke-width: 1;
+}
+
+.sensor {
+  fill: none;
+  stroke: var(--jaga-slate);
+  stroke-width: 1.4;
+}
+
+.lens {
+  fill: var(--jaga-teal-ink);
+  stroke: var(--jaga-slate);
+  stroke-width: 0.8;
+}
+
+.scan {
+  fill: var(--jaga-teal);
+  opacity: 0.14;
+}
+
+@keyframes flyby {
+  from {
+    left: -3rem;
+  }
+
+  to {
+    left: calc(100% + 3rem);
+  }
+}
+
+@media (min-width: 1024px) and (pointer: fine) {
+  .track {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .satellite {
+    left: 50%;
+    transform: translateX(-50%);
+    animation: none;
+  }
+}
