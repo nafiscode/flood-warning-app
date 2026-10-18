@@ -78,3 +78,63 @@ describe("the Admin link in the header", () => {
     }
   });
 });
+
+/**
+ * 18 Oct: the role was asked for once as the page opened, and a phone drops whatever is in
+ * flight when the app is switched away — so signing in and going to the mail app left an admin
+ * with no Admin link until they closed Jaga and opened it again.
+ */
+describe("when the request for the role is dropped", () => {
+  it("tries again, and the link appears without the app being restarted", async () => {
+    signedIn();
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("dropped"))
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ role: "super_admin" }),
+      } as unknown as Response);
+    vi.stubGlobal("fetch", fetchMock);
+    vi.doMock("@/i18n/navigation", () => ({
+      Link: ({ href, children, ...rest }: Record<string, unknown> & { children?: unknown }) => (
+        <a href={String(href)} {...rest}>
+          {children as never}
+        </a>
+      ),
+      usePathname: () => "/",
+    }));
+    const { AdminLink } = await import("@/components/AdminLink");
+    const { container } = renderWithIntl(<AdminLink />, "th");
+    expect(container.querySelector("[data-admin-link]")).toBe(null);
+    await vi.waitFor(() => expect(container.querySelector("[data-admin-link]")).not.toBe(null), {
+      timeout: 8000,
+    });
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+    vi.unstubAllGlobals();
+  }, 12000);
+
+  it("asks again when the app comes back to the screen, and stops once answered", async () => {
+    signedIn();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ role: "admin" }),
+    } as unknown as Response);
+    vi.stubGlobal("fetch", fetchMock);
+    vi.doMock("@/i18n/navigation", () => ({
+      Link: ({ href, children, ...rest }: Record<string, unknown> & { children?: unknown }) => (
+        <a href={String(href)} {...rest}>
+          {children as never}
+        </a>
+      ),
+      usePathname: () => "/",
+    }));
+    const { AdminLink } = await import("@/components/AdminLink");
+    const { container } = renderWithIntl(<AdminLink />, "th");
+    await vi.waitFor(() => expect(container.querySelector("[data-admin-link]")).not.toBe(null));
+    const asked = fetchMock.mock.calls.length;
+    document.dispatchEvent(new Event("visibilitychange"));
+    window.dispatchEvent(new Event("pageshow"));
+    expect(fetchMock.mock.calls.length).toBe(asked);
+    vi.unstubAllGlobals();
+  });
+});

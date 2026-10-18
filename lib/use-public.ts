@@ -21,6 +21,48 @@ async function getJson<T>(url: string): Promise<T> {
   return (await response.json()) as T;
 }
 
+/** How long to wait before trying a dropped request again. */
+const TRY_AGAIN_MS = [1500, 4000];
+
+/**
+ * The same request, tried up to three times. A phone drops whatever is in flight the moment
+ * Jaga on the home screen is switched away or the screen locks, and these answers are asked for
+ * once, as a page opens: on 18 Oct signing in as an admin and then going to the mail app left
+ * the Admin link missing until the app was started again. `stopped` is the hook being taken
+ * off the page, and ends it at once.
+ */
+async function getJsonTrying<T>(url: string, stopped: () => boolean): Promise<T> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await getJson<T>(url);
+    } catch (failure) {
+      const wait = TRY_AGAIN_MS[attempt];
+      if (wait === undefined || stopped()) throw failure;
+      await new Promise((done) => setTimeout(done, wait));
+      if (stopped()) throw failure;
+    }
+  }
+}
+
+/**
+ * Ask again when the app comes back to the screen and when the connection returns, until an
+ * answer has been had. Nothing is asked a second time once one arrives: these answers change
+ * rarely, and a phone that has one must not spend a request on every glance at the app.
+ */
+function askUntilAnswered(ask: () => void): () => void {
+  const onVisible = () => {
+    if (document.visibilityState === "visible") ask();
+  };
+  document.addEventListener("visibilitychange", onVisible);
+  window.addEventListener("online", ask);
+  window.addEventListener("pageshow", ask);
+  return () => {
+    document.removeEventListener("visibilitychange", onVisible);
+    window.removeEventListener("online", ask);
+    window.removeEventListener("pageshow", ask);
+  };
+}
+
 type StoredStatus = { status: PublicStatus; checkedAt: number };
 
 /**
@@ -103,29 +145,48 @@ export function useMyPlaces(): MyPlaces | null {
       return;
     }
     let cancelled = false;
-    getJson<MyPlaces>("/api/me/places").then(
-      (me) => {
-        if (cancelled) return;
-        writeStored("me", me.signedIn ? withoutPhones(me) : null);
-        setLive(me);
-      },
-      () => {},
-    );
+    let answered = false;
+    let busy = false;
+    const ask = () => {
+      if (cancelled || answered || busy) return;
+      busy = true;
+      getJsonTrying<MyPlaces>("/api/me/places", () => cancelled)
+        .then(
+          (me) => {
+            if (cancelled) return;
+            answered = true;
+            writeStored("me", me.signedIn ? withoutPhones(me) : null);
+            setLive(me);
+          },
+          () => {},
+        )
+        .finally(() => {
+          busy = false;
+        });
+    };
+    ask();
+    const stopAsking = askUntilAnswered(ask);
     return () => {
       cancelled = true;
+      stopAsking();
     };
   }, []);
   return live ?? stored;
 }
 
 /**
- * The signed-in person's role, for the Admin link in the header. Asked once when the app opens
- * and only when this browser holds a session, so visitors never call the server for it; the
+ * The signed-in person's role, for the Admin link in the header. Asked when the app opens and
+ * only when this browser holds a session, so visitors never call the server for it; the
  * answer is kept on the phone, so the link is there at once on the next page and offline. It is
  * forgotten as soon as nobody is signed in.
  *
  * It only decides whether a link is drawn. The admin pages and row-level security decide what an
  * admin can actually do (safety rule 5), so a stale "admin" here opens nothing.
+ *
+ * A dropped request is tried again, and asked for afresh when the app comes back to the screen,
+ * until an answer arrives: on an iPhone, signing in and then switching to the mail app used to
+ * leave an admin with no way into the console until they closed Jaga and opened it again
+ * (owner, 18 Oct).
  */
 export function useMyRole(ask = true): string | null {
   const stored = useStored<string>("role");
@@ -137,16 +198,30 @@ export function useMyRole(ask = true): string | null {
     }
     if (!ask) return;
     let cancelled = false;
-    getJson<{ role: string | null }>("/api/me/role").then(
-      (me) => {
-        if (cancelled) return;
-        writeStored("role", me.role);
-        setLive(me.role);
-      },
-      () => {},
-    );
+    let answered = false;
+    let busy = false;
+    const askNow = () => {
+      if (cancelled || answered || busy) return;
+      busy = true;
+      getJsonTrying<{ role: string | null }>("/api/me/role", () => cancelled)
+        .then(
+          (me) => {
+            if (cancelled) return;
+            answered = true;
+            writeStored("role", me.role);
+            setLive(me.role);
+          },
+          () => {},
+        )
+        .finally(() => {
+          busy = false;
+        });
+    };
+    askNow();
+    const stopAsking = askUntilAnswered(askNow);
     return () => {
       cancelled = true;
+      stopAsking();
     };
   }, [ask]);
   return live ?? stored;
