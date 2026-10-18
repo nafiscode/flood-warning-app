@@ -383,6 +383,22 @@ test.describe("the live map on a laptop", () => {
     // Resting the pointer on one opens it over the map, and the map does not move under it.
     await page.locator('[data-console-tile="gauges"]').hover();
     await expect(more).toBeVisible();
+    /*
+     * Over the map, not behind it (the owner, 18 Oct: "it's behind the map, so the expanded
+     * details can't be read"). The strip and the columns below it all sit at the same height in
+     * the page, so what the browser paints at the foot of an opened card is the test.
+     */
+    const card = page.locator('[data-console-tile="gauges"] [data-tile-card]');
+    const box = (await card.boundingBox())!;
+    const onTop = await page.evaluate(
+      (at: { x: number; y: number }) =>
+        document
+          .elementFromPoint(at.x, at.y)
+          ?.closest("[data-console-tile]")
+          ?.getAttribute("data-console-tile") ?? null,
+      { x: box.x + box.width / 2, y: box.y + box.height - 6 },
+    );
+    expect(onTop).toBe("gauges");
     expect((await strip.boundingBox())!.height).toBe(small);
     expect((await page.locator("[data-map-frame]").boundingBox())!.height).toBe(map);
 

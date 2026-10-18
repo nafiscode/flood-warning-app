@@ -429,6 +429,17 @@
   [data-console-tile] {
     position: relative;
   }
+  /*
+   * The strip itself is lifted while one of its cards is open, not just the card. The strip and
+   * the three columns below it all sit at z-index 1 (above the weather sky), and the map comes
+   * after the strip in the page, so a card opening downwards was painted behind the map however
+   * high its own z-index was: a child cannot climb out of its parent's stacking context. The
+   * owner saw exactly that - "it's behind the map, so the expanded details can't be read".
+   */
+  [data-console-tiles]:hover,
+  [data-console-tiles]:focus-within {
+    z-index: 30;
+  }
   [data-console-tile] [data-tile-card] {
     /* So a row of small cards lines up whatever their figures say. */
     min-height: 5rem;
