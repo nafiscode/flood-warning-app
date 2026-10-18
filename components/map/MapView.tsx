@@ -182,10 +182,17 @@ type Props = {
    */
   sea?: SeaMark[] | null;
   /**
-   * Show where a reservoir is: it lights up three times (the owner, 18 Oct 2026). The `key`
-   * changes each time somebody asks, so asking for the same dam twice lights it twice.
+   * Show where something is: it lights up three times (the owner, 18 Oct 2026) - a reservoir by
+   * its dam's code, a river gauge or a point off the coast by its id. The `key` changes each
+   * time somebody asks, so asking for the same one twice lights it twice.
    */
-  flashDam?: { code: string; key: number } | null;
+  flashDam?: {
+    kind: "reservoir" | "gauge" | "sea";
+    code: string;
+    key: number;
+    /** Where it is, for bringing it into the frame when it is not already in it. */
+    at?: { lon: number; lat: number } | null;
+  } | null;
   /** The person's own places, drawn on top of everything when they ask for them. */
   mine?: MinePlace[];
   showMine?: boolean;
@@ -274,6 +281,9 @@ const DAM_LABELS = "jaga-dam-labels";
 /** The reservoir lit up: its own layers, added over the others while it flashes, then removed. */
 const DAM_FLASH_FILL = "jaga-dam-flash-fill";
 const DAM_FLASH_LINE = "jaga-dam-flash-line";
+/** The ring drawn around a gauge being pointed at: wide enough to clear the station's own mark. */
+const GAUGE_FLASH_RADIUS = 24;
+const GAUGE_FLASH_WIDTH = 5;
 
 type Collection = GeoJSON.FeatureCollection;
 const collection = (features: GeoJSON.Feature[]): Collection => ({
@@ -496,6 +506,9 @@ export function MapView({
    */
   const flashKey = flashDam?.key ?? 0;
   const flashCode = flashDam?.code ?? null;
+  const flashKind = flashDam?.kind ?? "reservoir";
+  const flashLon = flashDam?.at?.lon ?? null;
+  const flashLat = flashDam?.at?.lat ?? null;
   useEffect(() => {
     const m = map.current;
     if (!m || state !== "ready" || !flashCode || flashKey === 0) return;
@@ -506,29 +519,63 @@ export function MapView({
      * per-feature value. Measured, not guessed: the frame's mean brightness was identical with
      * the paint set and without it.
      */
+    const source =
+      flashKind === "gauge" ? GAUGES : flashKind === "sea" ? SEA : DAM_WATER_SOURCE;
     const show = (on: boolean) => {
-      if (!m.getSource(DAM_WATER_SOURCE)) return;
+      if (!m.getSource(source)) return;
       try {
         if (on && !m.getLayer(DAM_FLASH_FILL)) {
           const water = damPaint(darkNow()).water;
-          m.addLayer({
-            id: DAM_FLASH_FILL,
-            type: "fill",
-            source: DAM_WATER_SOURCE,
-            filter: ["==", ["get", "code"], flashCode],
-            paint: { "fill-color": water, "fill-opacity": RESERVOIR_FLASH_OPACITY },
-          });
-          m.addLayer({
-            id: DAM_FLASH_LINE,
-            type: "line",
-            source: DAM_WATER_SOURCE,
-            filter: ["==", ["get", "code"], flashCode],
-            paint: {
-              "line-color": mapHalo(),
-              "line-width": RESERVOIR_FLASH_WIDTH,
-              "line-opacity": 0.9,
-            },
-          });
+          if (flashKind === "gauge" || flashKind === "sea") {
+            const marks = flashKind === "gauge" ? GAUGES : SEA;
+            /*
+             * A ring around the station, or around the point off the coast, under its own
+             * mark so the mark is still read. The gauge's colours say what it is doing
+             * (lib/gauge-marks.ts), the sea's say what the waves are doing (lib/sea-marks.ts),
+             * and this says nothing at all: it only points (safety rule 2).
+             */
+            m.addLayer(
+              {
+                id: DAM_FLASH_FILL,
+                type: "circle",
+                source: marks,
+                filter: ["==", ["get", "id"], flashCode],
+                paint: {
+                  "circle-radius": GAUGE_FLASH_RADIUS,
+                  "circle-color": "transparent",
+                  /*
+                   * The water colour, which is what the dam's own marks and the reservoir use.
+                   * Not the page's ink: on the satellite picture that is slate on dark ground
+                   * and could barely be seen (seen in the browser, 18 Oct). Never an alert
+                   * colour - a station's reading is a measurement (safety rule 2).
+                   */
+                  "circle-stroke-color": water,
+                  "circle-stroke-width": GAUGE_FLASH_WIDTH,
+                  "circle-stroke-opacity": 1,
+                },
+              },
+              m.getLayer(marks) ? marks : undefined,
+            );
+          } else {
+            m.addLayer({
+              id: DAM_FLASH_FILL,
+              type: "fill",
+              source: DAM_WATER_SOURCE,
+              filter: ["==", ["get", "code"], flashCode],
+              paint: { "fill-color": water, "fill-opacity": RESERVOIR_FLASH_OPACITY },
+            });
+            m.addLayer({
+              id: DAM_FLASH_LINE,
+              type: "line",
+              source: DAM_WATER_SOURCE,
+              filter: ["==", ["get", "code"], flashCode],
+              paint: {
+                "line-color": mapHalo(),
+                "line-width": RESERVOIR_FLASH_WIDTH,
+                "line-opacity": 0.9,
+              },
+            });
+          }
         } else if (!on) {
           for (const id of [DAM_FLASH_LINE, DAM_FLASH_FILL]) {
             if (m.getLayer(id)) m.removeLayer(id);
@@ -542,26 +589,54 @@ export function MapView({
        * Written on the frame only once the lighting is actually drawn, so what a test watches is
        * the lighting itself and not merely the intention to light.
        */
-      container.current?.setAttribute("data-reservoir-lit", on ? flashCode : "");
+      container.current?.setAttribute("data-map-lit", on ? flashCode : "");
     };
     const timers: number[] = [];
     const whole = RESERVOIR_FLASH_TIMES * 2 * RESERVOIR_FLASH_MS;
-    if (reducedMotion()) {
-      show(true);
-      timers.push(window.setTimeout(() => show(false), whole));
-    } else {
+    const pulse = () => {
+      if (reducedMotion()) {
+        show(true);
+        timers.push(window.setTimeout(() => show(false), whole));
+        return;
+      }
       for (let i = 0; i < RESERVOIR_FLASH_TIMES; i += 1) {
         timers.push(window.setTimeout(() => show(true), i * 2 * RESERVOIR_FLASH_MS));
         timers.push(
           window.setTimeout(() => show(false), i * 2 * RESERVOIR_FLASH_MS + RESERVOIR_FLASH_MS),
         );
       }
-    }
+    };
+    /*
+     * The data it lights is put on the map by the drawing effect, which may not have run yet -
+     * a reservoir opened the moment the page is usable, or a station whose feed has only just
+     * answered, would otherwise have been pointed at silently and never lit at all (the console
+     * tests caught it, 18 Oct). So: light it now if the map already holds it, and otherwise
+     * wait for the draw that brings it.
+     */
+    let begun = false;
+    const begin = () => {
+      if (begun || !m.getSource(source)) return;
+      begun = true;
+      m.off("idle", begin);
+      /*
+       * A mark lit off the edge of the screen is a mark nobody sees, so one that is not in the
+       * frame is brought into it - the middle of the map, at the zoom the reader chose. One
+       * already on the screen is left exactly where it is: moving the map under somebody who
+       * can see the thing they asked about is a nuisance, not a help.
+       */
+      if (flashLon !== null && flashLat !== null && !m.getBounds().contains([flashLon, flashLat])) {
+        m.easeTo({ center: [flashLon, flashLat], duration: reducedMotion() ? 0 : 700 });
+      }
+      pulse();
+    };
+    begin();
+    if (!begun) m.on("idle", begin);
     return () => {
+      m.off("idle", begin);
       for (const timer of timers) window.clearTimeout(timer);
       show(false);
     };
-  }, [flashCode, flashKey, state]);
+  }, [flashCode, flashKey, flashKind, flashLat, flashLon, state]);
   const select = useRef(onSelect);
   const draw = useRef<() => void>(() => {});
   // The places as the handlers below need them, without rebuilding the map when they change.

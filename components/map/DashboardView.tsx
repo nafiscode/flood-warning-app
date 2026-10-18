@@ -53,7 +53,7 @@ import { boundsAround, darkNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } 
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
-import { levelTally } from "@/lib/map-console";
+import { gaugeOfInterest, levelTally } from "@/lib/map-console";
 import { localName } from "@/lib/places";
 import { isAdminRoleName } from "@/lib/roles";
 import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
@@ -86,6 +86,7 @@ import {
   outlook,
   travelBearing,
   waveRange,
+  type CoastId,
   type SeaData,
 } from "@/lib/sea";
 import { MineGlyph } from "./MineGlyph";
@@ -93,7 +94,15 @@ import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
 import { SignInHint } from "@/components/account/SignInOffer";
 import { MapMethod } from "./MapMethod";
-import { MAIN_DAM, mainDam, reservoirBox, zoneFrame, type MapFocus } from "@/lib/map-focus";
+import {
+  GAUGE_SPAN,
+  MAIN_DAM,
+  mainDam,
+  reservoirBox,
+  RESERVOIR_MARGIN,
+  zoneFrame,
+  type MapFocus,
+} from "@/lib/map-focus";
 import { gaugeLook, trendOf } from "@/lib/gauge-marks";
 
 /** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
@@ -658,8 +667,13 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const revealDamButtons = () =>
     reveal(() => document.querySelector<HTMLElement>("[data-dam-legend]"));
-  /** Which reservoir the map is lighting up, and how many times it has been asked (MapView). */
-  const [flashDam, setFlashDam] = useState<{ code: string; key: number } | null>(null);
+  /** What the map is lighting up - a reservoir or a gauge - and how often it has been asked. */
+  const [flashDam, setFlashDam] = useState<{
+    kind: "reservoir" | "gauge" | "sea";
+    code: string;
+    key: number;
+    at?: { lon: number; lat: number } | null;
+  } | null>(null);
   /*
    * Opening a reservoir from a button, wherever the button is (the owner, 18 Oct): the card with
    * its figures, the map brought to the reservoir itself - closer than the dam's own view, and
@@ -670,9 +684,60 @@ export function DashboardView(props: DashboardViewProps) {
     setSelection({ kind: "dam", code: dam.code });
     const box = reservoirBox(dam);
     if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
-    setFlashDam((was) => ({ code: dam.code, key: (was?.key ?? 0) + 1 }));
+    setFlashDam((was) => ({ kind: "reservoir", code: dam.code, key: (was?.key ?? 0) + 1 }));
     if (where === "damButtons") revealDamButtons();
     else revealPanel();
+  };
+  /*
+   * The rivers' readout opens the station that matters most, the way the reservoir's card opens
+   * (the owner, 18 Oct: "apply for river gauges as well"). Which station that is, is worked out
+   * in lib/map-console.ts and is the same every time for the same readings, so a second press
+   * never lands somewhere else. The stations are switched on if they were off: opening the card
+   * for a mark that is not drawn would point at nothing.
+   */
+  const openGauges = () => {
+    /*
+     * Their own rivers first (the owner, 18 Oct): the places they watch, or the area chosen on
+     * this device for somebody who watches none. Which station that picks is lib/map-console.ts.
+     */
+    const places = [
+      ...mine.map((place) => ({ lat: place.lat, lon: place.lon })),
+      ...(mine.length === 0 && props.area
+        ? [{ lat: props.area.lat, lon: props.area.lon }]
+        : []),
+    ];
+    const gauge = gaugeOfInterest(data?.gauges ?? [], places);
+    if (!gauge) return;
+    setShowGauges(true);
+    setSelection({ kind: "gauge", id: gauge.id });
+    const box = boundsAround([{ lon: gauge.lon, lat: gauge.lat }], {
+      minSpan: GAUGE_SPAN,
+      margin: RESERVOIR_MARGIN,
+    });
+    if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+    setFlashDam((was) => ({
+      kind: "gauge",
+      code: gauge.id,
+      key: (was?.key ?? 0) + 1,
+      at: { lon: gauge.lon, lat: gauge.lat },
+    }));
+    revealPanel();
+  };
+  /*
+   * Choosing a point off the coast (the owner, 18 Oct: clicking these "should highlight the
+   * points of the tide measurement that was clicked"). The map lights that point the way it
+   * lights a reservoir or a station, and brings it into the frame only if it is not already in
+   * it - the reader is reading the card, not asking for the map to be moved.
+   */
+  const openSea = (id: CoastId) => {
+    setSelection({ kind: "sea", id });
+    const point = (props.sea?.points ?? []).find((p) => p.id === id);
+    setFlashDam((was) => ({
+      kind: "sea",
+      code: id,
+      key: (was?.key ?? 0) + 1,
+      at: point ? { lon: point.lon, lat: point.lat } : null,
+    }));
   };
 
   /*
@@ -991,7 +1056,7 @@ export function DashboardView(props: DashboardViewProps) {
         state={props.seaLoad ?? "loading"}
         now={now}
         pointId={isCoastId(selection.id) ? selection.id : null}
-        onPoint={(id) => setSelection({ kind: "sea", id })}
+        onPoint={openSea}
       />
     );
   } else if (selection?.kind === "gauge") {
@@ -1325,6 +1390,11 @@ export function DashboardView(props: DashboardViewProps) {
                 admin={isAdminRoleName(props.me?.signedIn ? props.me.role : null)}
                 monitoring={monitoringSummary}
                 monitoringOpen={monitoringOpen}
+                onOpenDam={(code) => {
+                  const dam = dams.find((d) => d.code === code);
+                  if (dam) openDam(dam);
+                }}
+                onOpenGauges={openGauges}
                 onToggleMonitoring={() => {
                   /*
                    * The band opens under the whole dashboard, which is below the fold on every
@@ -1373,7 +1443,7 @@ export function DashboardView(props: DashboardViewProps) {
                         type="button"
                         data-open-sea="true"
                         onClick={() => {
-                          setSelection({ kind: "sea", id: nearestCoast(props.area) });
+                          openSea(nearestCoast(props.area));
                           revealPanel();
                         }}
                         className={`${buttonQuiet} justify-between self-start text-start`}

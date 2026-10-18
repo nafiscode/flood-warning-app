@@ -505,6 +505,21 @@
     position: static;
     box-shadow: none;
   }
+  /*
+   * The rivers' and the reservoir's readouts open what they are about (the owner, 18 Oct 2026).
+   * The way in covers the whole card, so there is nothing small to aim at; the pin inside it
+   * stays above that, or pinning a card would open it instead.
+   */
+  [data-tile-open] {
+    z-index: 2;
+    border-radius: inherit;
+    cursor: pointer;
+  }
+  [data-tile-card] [data-tile-pin],
+  [data-tile-card] > button:not([data-tile-open]) {
+    position: relative;
+    z-index: 3;
+  }
   /* A control inside a readout (the monitoring's way into its detail) is sized for a pointer
      here, not for a thumb: this whole block is a wide screen with a mouse, and 48 px of button
      in a card meant to be small is 48 px off the map. The phone's own card is untouched. */

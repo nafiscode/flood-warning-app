@@ -477,6 +477,47 @@ test.describe("the live map on a laptop", () => {
   });
 
   /*
+   * The owner, 18 Oct: pressing the rivers' or the reservoir's readout "should bring to detail
+   * the same like Dam button". The other two stay readouts, which is what the whole strip was.
+   */
+  test("the rivers' and the reservoir's readouts open what they are about", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-console-tiles]")).toBeVisible();
+
+    // The rivers: the station that matters most - here the one over its bank - with its card.
+    await page.locator('[data-console-tile="gauges"] [data-tile-open]').click();
+    const panel = page.locator("[data-selected-panel]");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText(th.map.gauge.above_warning);
+    // And the map says which one it means, for a moment.
+    const frame = page.locator("[data-map-frame] [data-map-lit]");
+    await expect(frame).toHaveAttribute("data-map-lit", /.+/, { timeout: 4000 });
+    await expect(frame).toHaveAttribute("data-map-lit", "", { timeout: 8000 });
+
+    // The reservoir: the same card its own button opens.
+    await page.locator('[data-console-tile="dam"] [data-tile-open]').click();
+    await expect(panel).toBeVisible();
+    await expect(frame).toHaveAttribute("data-map-lit", /.+/, { timeout: 4000 });
+
+    // The other two are still readouts: nothing in them to press.
+    for (const tile of ["alerts", "reports"]) {
+      await expect(page.locator(`[data-console-tile="${tile}"] [data-tile-open]`)).toHaveCount(0);
+    }
+  });
+
+  test("pinning a readout that opens does not open it", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-console-tiles]")).toBeVisible();
+    const tile = page.locator('[data-console-tile="dam"]');
+    await tile.hover();
+    await tile.locator("[data-tile-pin]").click();
+    await expect(tile).toHaveAttribute("data-tile-pinned", "true");
+    await expect(page.locator("[data-selected-panel]")).toHaveCount(0);
+  });
+
+  /*
    * The owner, 18 Oct: in the full-screen map the sea's button "does not open anything when
    * clicked... it should open a dialog box with the details... within the map but at the left
    * edge", and a reader in the details should be able to step to the next station.
@@ -492,6 +533,13 @@ test.describe("the live map on a laptop", () => {
     await page.locator("[data-open-sea]:visible").first().click();
     const dialog = page.locator("[data-selected-panel]");
     await expect(dialog).toBeVisible();
+    /*
+     * The map lights the point being read (the owner, 18 Oct: it "should highlight the points of
+     * the tide measurement"). Checked first of all, because the lighting is three pulses and
+     * then over - a check made after a page full of measurements would be racing it.
+     */
+    const lit = page.locator("[data-map-frame] [data-map-lit]");
+    await expect(lit).toHaveAttribute("data-map-lit", "pattani", { timeout: 4000 });
     // Inside the map and beside the left panel, not off in the hidden right rail.
     const panel = (await page.locator('[data-console-area="rail"]').boundingBox())!;
     const box = (await dialog.boundingBox())!;
@@ -499,10 +547,11 @@ test.describe("the live map on a laptop", () => {
     expect(box.x).toBeGreaterThanOrEqual(panel.x + panel.width - 1);
     expect(box.x).toBeLessThan(map.x + map.width / 2);
 
-    // One station at a time, in order along the coast.
+    // One station at a time, in order along the coast, each lit as it is chosen.
     const chosen = page.locator("[data-sea-point][aria-pressed=true]");
     await expect(chosen).toContainText("Pattani");
     await page.locator('[data-sea-step="next"]').click();
+    await expect(lit).toHaveAttribute("data-map-lit", "saiburi", { timeout: 4000 });
     await expect(chosen).toContainText("Sai Buri");
     await page.locator('[data-sea-step="previous"]').click();
     await expect(chosen).toContainText("Pattani");
@@ -530,9 +579,9 @@ test.describe("the live map on a laptop", () => {
     await button.scrollIntoViewIfNeeded();
     await button.click();
     // It lights, and it stops lighting: three pulses and then dark again (lib/dam-map.ts).
-    const frame = page.locator("[data-map-frame] [data-reservoir-lit]");
-    await expect(frame).toHaveAttribute("data-reservoir-lit", /.+/, { timeout: 4000 });
-    await expect(frame).toHaveAttribute("data-reservoir-lit", "", { timeout: 8000 });
+    const frame = page.locator("[data-map-frame] [data-map-lit]");
+    await expect(frame).toHaveAttribute("data-map-lit", /.+/, { timeout: 4000 });
+    await expect(frame).toHaveAttribute("data-map-lit", "", { timeout: 8000 });
   });
 
   test("the frozen chip row stays off: the rail already keeps the switches in view", async ({

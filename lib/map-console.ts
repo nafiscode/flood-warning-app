@@ -3,6 +3,7 @@ import { ALERT_LEVELS, brand, darkBrand, type AlertLevel } from "@/lib/brand/tok
 import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
 import { gaugeLook, type GaugeLook } from "@/lib/gauge-marks";
+import { gaugesNear } from "@/lib/monitoring";
 import type { GaugeReading } from "@/lib/map-data";
 import type { PublicAlert } from "@/lib/public-status";
 
@@ -71,6 +72,52 @@ export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
     ),
   };
 }
+
+/**
+ * Which river gauge the readout's own card should open (the owner, 18 Oct 2026: pressing the
+ * card should bring up the detail, as a reservoir's does; then: "the nearest of the user's
+ * place... if users have multiple watch places, show the riskiest one first").
+ *
+ * So it is the person's own rivers first: the stations within `GAUGES_NEAR_KM` of their area or
+ * of any place they watch - the same distance, and for the same reason, as the live monitoring
+ * uses (lib/monitoring.ts: the gauge feed carries a point and no province, and the provinces'
+ * boxes overlap). Among those, the riskiest; and where two read the same, the nearer one.
+ *
+ * Somebody who has saved nowhere, or whose places have no station within that distance, gets the
+ * riskiest of all of them rather than nothing - the readout is about all four provinces either
+ * way, and it says so.
+ *
+ * The order is total and never random: risk, then distance, then the newest reading, then the
+ * id. The same readings always open the same station, so a second press cannot land elsewhere.
+ */
+export function gaugeOfInterest<T extends GaugeReading & { id: string }>(
+  gauges: readonly T[],
+  /** The person's own area and the places they watch. Empty for a visitor who has saved none. */
+  places: readonly { lat: number; lon: number }[] = [],
+): T | null {
+  const rank = (look: GaugeLook) =>
+    ({ over: 0, near: 1, normal: 2, nolevels: 3, quiet: 4 })[look] ?? 4;
+  const near = places.flatMap((place) => gaugesNear(gauges, place));
+  // Theirs if any of their places has one in reach; everybody's otherwise.
+  const mine = new Set(near.map((g) => g.id));
+  const pool = mine.size > 0 ? gauges.filter((g) => mine.has(g.id)) : gauges;
+  const km = (g: T) =>
+    places.length === 0
+      ? 0
+      : Math.min(...places.map((p) => Math.hypot(g.lat - p.lat, (g.lon - p.lon) * SCALE(p.lat))));
+  return (
+    [...pool].sort(
+      (a, b) =>
+        rank(gaugeLook(a.status)) - rank(gaugeLook(b.status)) ||
+        km(a) - km(b) ||
+        (b.observedAt ?? "").localeCompare(a.observedAt ?? "") ||
+        a.id.localeCompare(b.id),
+    )[0] ?? null
+  );
+}
+
+/** Longitudes shrink towards the poles; at this latitude the small-angle form is exact enough. */
+const SCALE = (lat: number) => Math.cos((lat * Math.PI) / 180);
 
 export type ReportTally = {
   reports: number;

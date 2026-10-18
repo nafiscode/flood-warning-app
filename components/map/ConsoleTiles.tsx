@@ -102,6 +102,8 @@ function Tile({
   pinned,
   onPin,
   pinWords,
+  onOpen,
+  openLabel,
   children,
 }: {
   id: string;
@@ -113,6 +115,13 @@ function Tile({
   pinned: boolean;
   onPin: () => void;
   pinWords: { pin: string; unpin: string };
+  /**
+   * What the card opens, if it opens anything (the owner, 18 Oct 2026: pressing the rivers and
+   * the reservoir "should bring to detail the same like Dam button"). Left out, the card stays
+   * what the rest of the strip is: a readout, where a mis-click costs nothing.
+   */
+  onOpen?: () => void;
+  openLabel?: string;
   /** Controls, which stay with the figure: hidden words cannot be reached by a keyboard. */
   children?: React.ReactNode;
 }) {
@@ -122,7 +131,11 @@ function Tile({
       data-tile-pinned={pinned ? "true" : "false"}
       className="flex min-w-0 flex-col"
     >
-      <div data-tile-card="true" data-console-alarm={alarm} className={`${tile} flex-1`}>
+      <div
+        data-tile-card="true"
+        data-console-alarm={alarm}
+        className={`${tile} relative flex-1`}
+      >
         {/*
          * The heading row holds everything that must not move: a control inside a card that
          * grows when it opens would slide out from under the pointer going for it, and a
@@ -153,6 +166,16 @@ function Tile({
           <div data-tile-more="true" className="flex min-w-0 flex-col gap-1.5">
             {more}
           </div>
+        )}
+        {/*
+         * The whole card is the way in, so there is nothing small to aim at - and it is a real
+         * button, named for a screen reader, laid over the card rather than wrapped around it,
+         * because the pin inside it is a button too and a button cannot hold a button.
+         */}
+        {onOpen && (
+          <button type="button" data-tile-open="true" onClick={onOpen} className="absolute inset-0">
+            <span className="sr-only">{openLabel}</span>
+          </button>
         )}
       </div>
     </li>
@@ -189,6 +212,13 @@ export type ConsoleTilesProps = {
   monitoring?: Monitoring | null;
   monitoringOpen?: boolean;
   onToggleMonitoring?: () => void;
+  /**
+   * Opening what a readout is about (the owner, 18 Oct 2026). Left out, both cards stay
+   * readouts. The strip was deliberately readouts only when it was built on 16 Oct - "nothing
+   * in it moves the map or switches a layer" - and the owner has since asked for these two.
+   */
+  onOpenDam?: (code: string) => void;
+  onOpenGauges?: () => void;
 };
 
 export function ConsoleTiles(props: ConsoleTilesProps) {
@@ -373,6 +403,8 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
         pinned={isPinned("gauges")}
         onPin={() => pin("gauges")}
         pinWords={pinWords}
+        onOpen={gauges && gauges.length > 0 ? props.onOpenGauges : undefined}
+        openLabel={t("gauges.open")}
       />
 
       <Tile
@@ -384,6 +416,8 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
         pinned={isPinned("dam")}
         onPin={() => pin("dam")}
         pinWords={pinWords}
+        onOpen={dam && props.onOpenDam ? () => props.onOpenDam!(dam.dam.code) : undefined}
+        openLabel={dam ? t("dam.open", { dam: localName(dam.dam.name, props.locale) }) : undefined}
       />
 
       <Tile

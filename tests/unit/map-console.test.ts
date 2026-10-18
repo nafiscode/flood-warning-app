@@ -11,7 +11,13 @@ import {
   VEIL_COLOR,
   veilAlpha,
 } from "@/lib/map-console";
-import { alertsAlarm, damAlarm, gaugeAlarm, reportsAlarm } from "@/lib/map-console";
+import {
+  alertsAlarm,
+  damAlarm,
+  gaugeAlarm,
+  gaugeOfInterest,
+  reportsAlarm,
+} from "@/lib/map-console";
 import { contrastRatio } from "@/lib/brand/contrast";
 import { brand, darkBrand } from "@/lib/brand/tokens";
 import { SCENE_LOOKS, SCENES } from "@/lib/weather-scene";
@@ -93,6 +99,70 @@ describe("the laptop console's readout strip", () => {
     // A station with no thresholds still reports; only a silent one does not.
     expect(g.reporting).toBe(4);
     expect(g.newestAt).toBe("2026-11-20T06:30:00.000Z");
+  });
+
+  /*
+   * The owner, 18 Oct 2026: the rivers' readout opens a station, the way the reservoir's opens
+   * its card. Which station must not wander between presses, or the card would answer a
+   * different question each time.
+   */
+  it("opens the station that matters most, and the same one every time", () => {
+    const over = gauge({ id: "over", status: "above_warning" });
+    const near = gauge({ id: "near", status: "above_watch" });
+    const quiet = gauge({ id: "quiet", status: "no_recent_data" });
+    const normal = gauge({ id: "normal", status: "normal" });
+    expect(gaugeOfInterest([quiet, normal, near, over])!.id).toBe("over");
+    expect(gaugeOfInterest([quiet, normal, near])!.id).toBe("near");
+    expect(gaugeOfInterest([quiet, normal])!.id).toBe("normal");
+    expect(gaugeOfInterest([quiet])!.id).toBe("quiet");
+    // The order they arrive in never changes the answer.
+    expect(gaugeOfInterest([over, near, quiet, normal])!.id).toBe("over");
+  });
+
+  /*
+   * The owner, 18 Oct: "the nearest of the user's place... if users have multiple watch places,
+   * show the riskiest one first". So their own rivers are the pool, risk decides inside it, and
+   * distance only breaks a tie between two stations reading the same.
+   */
+  it("opens one of the person's own rivers, the riskiest of them", () => {
+    const home = { lat: 6.87, lon: 101.27 };
+    // Far enough from home that its station is not within reach of home as well (50 km).
+    const watched = { lat: 6.0, lon: 101.28 };
+    const nearHome = gauge({ id: "nearHome", lat: 6.88, lon: 101.28, status: "normal" });
+    const nearWatched = gauge({
+      id: "nearWatched",
+      lat: 6.01,
+      lon: 101.29,
+      status: "above_warning",
+    });
+    const farAway = gauge({ id: "far", lat: 7.6, lon: 100.1, status: "above_warning" });
+    const all = [farAway, nearHome, nearWatched];
+    // Two places, one of them with a station over its bank: that one.
+    expect(gaugeOfInterest(all, [home, watched])!.id).toBe("nearWatched");
+    // With only the quiet place saved, the far one is not dragged in over their own river.
+    expect(gaugeOfInterest(all, [home])!.id).toBe("nearHome");
+    // Reading the same, the nearer of their own wins.
+    const alsoOver = gauge({ id: "alsoOver", lat: 6.2, lon: 101.3, status: "above_warning" });
+    expect(gaugeOfInterest([alsoOver, nearWatched], [watched])!.id).toBe("nearWatched");
+  });
+
+  it("falls back to every river for somebody who has saved nowhere near one", () => {
+    const far = gauge({ id: "far", lat: 7.6, lon: 100.1, status: "above_warning" });
+    const quiet = gauge({ id: "quiet", lat: 7.4, lon: 100.2, status: "no_recent_data" });
+    // Their place is hundreds of kilometres from both: they still get the riskiest.
+    expect(gaugeOfInterest([quiet, far], [{ lat: 6.2, lon: 102.0 }])!.id).toBe("far");
+    expect(gaugeOfInterest([quiet, far], [])!.id).toBe("far");
+  });
+
+  it("takes the newest reading among equals, and the id when even that ties", () => {
+    const old = gauge({ id: "b", status: "normal", observedAt: "2026-11-20T05:00:00.000Z" });
+    const fresh = gauge({ id: "c", status: "normal", observedAt: "2026-11-20T06:00:00.000Z" });
+    expect(gaugeOfInterest([old, fresh])!.id).toBe("c");
+    const same = { status: "normal" as const, observedAt: "2026-11-20T06:00:00.000Z" };
+    expect(gaugeOfInterest([gauge({ id: "z", ...same }), gauge({ id: "a", ...same })])!.id).toBe(
+      "a",
+    );
+    expect(gaugeOfInterest([])).toBeNull();
   });
 
   it("has nothing to say about gauges that have never reported", () => {

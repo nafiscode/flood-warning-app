@@ -684,7 +684,8 @@
         "silent": "{count} with no data",
         "none": "No reading yet",
         "over": "{count} at or over the bank",
-        "near": "{count} near the bank"
+        "near": "{count} near the bank",
+        "open": "See the river gauges on the map"
       },
       "dam": {
         "label": "Dam",
@@ -693,7 +694,8 @@
         "outUnknown": "No release figure published",
         "unknown": "No dam reading yet",
         "noReading": "No reading time",
-        "stale": "not updated"
+        "stale": "not updated",
+        "open": "See {dam}'s figures"
       },
       "reports": {
         "label": "Resident reports",

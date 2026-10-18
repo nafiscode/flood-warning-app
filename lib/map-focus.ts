@@ -97,6 +97,11 @@ export function zoneFrame(dam: Dam): { lon: number; lat: number }[] {
  */
 export const RESERVOIR_SPAN = { lon: 0.09, lat: 0.075 };
 export const RESERVOIR_MARGIN = 0.12;
+/**
+ * And a river gauge, which is one point: closer still, because a station is a place on a river
+ * and the reader is being shown which bend of it (the owner, 18 Oct 2026).
+ */
+export const GAUGE_SPAN = { lon: 0.06, lat: 0.05 };
 
 export function reservoirBox(dam: Dam): [number, number, number, number] | undefined {
   return boundsAround(reservoirFrame(dam), {
