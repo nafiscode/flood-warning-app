@@ -584,6 +584,28 @@ test.describe("the live map on a laptop", () => {
     await expect(frame).toHaveAttribute("data-map-lit", "", { timeout: 8000 });
   });
 
+  /*
+   * The owner, 19 Oct: the head should "feel like they are seeing something live projected from
+   * satellite data". It is decoration, so what is checked is that it says nothing and costs the
+   * map nothing.
+   */
+  test("the downlink strip at the head says nothing and takes no room from the map", async ({
+    page,
+  }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    const strip = page.locator("[data-flyby]");
+    await expect(strip).toBeVisible();
+    await expect(strip).toHaveAttribute("aria-hidden", "true");
+    // Not one character: a figure here would be a figure nobody could source (safety rule 8).
+    expect((await strip.innerText()).trim()).toBe("");
+    // The head stays a single line, so the map keeps the height it had without the strip.
+    const head = (await page.locator('[data-console-area="head"]').boundingBox())!;
+    const box = (await strip.boundingBox())!;
+    expect(head.height).toBeLessThan(60);
+    expect(box.y).toBeLessThan(head.y + 8);
+  });
+
   test("the frozen chip row stays off: the rail already keeps the switches in view", async ({
     page,
   }) => {
@@ -613,6 +635,9 @@ test.describe("the live map on a phone is untouched", () => {
     if ((await sky.count()) > 0) await expect(sky).toBeHidden();
     // The full-screen map is the console's; a phone's map is already as wide as the screen.
     await expect(page.locator("[data-map-full-toggle]")).toBeHidden();
+    // The downlink strip is display:none here, like the sky above it: nothing is painted and
+    // nothing is animated on a phone, whatever the markup carries.
+    await expect(page.locator("[data-flyby]")).toBeHidden();
     const readout = page.locator("[data-console-weather]");
     if ((await readout.count()) > 0) await expect(readout).toBeHidden();
     // The wrappers that make the console vanish entirely here.
