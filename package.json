@@ -24,6 +24,8 @@
     "db:push": "node scripts/db.mjs db push",
     "db:reset": "node scripts/db.mjs db reset",
     "db:migrations": "node scripts/db.mjs migration list",
+    "db:push:live": "node scripts/db.mjs --live db push",
+    "db:migrations:live": "node scripts/db.mjs --live migration list",
     "db:new": "supabase migration new",
     "icons": "node scripts/icons.mjs",
     "og": "node scripts/og.mjs",

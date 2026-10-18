@@ -144,6 +144,7 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - `npm run db:new <name>`: create a new migration in `supabase/migrations/`
 - `npm run db:push` (add `-- --dry-run` to preview): apply new migrations to `jaga-dev`
 - `npm run db:migrations`: which migrations are applied on `jaga-dev`
+- `npm run db:push:live` / `npm run db:migrations:live`: the same against the live project, from `LIVE_DB_URL`. `scripts/db.mjs --live` refuses `db reset`, refuses to run at all if the two addresses are the same, and names the project it is about to touch. There is no live reset, by design.
 - `npm run db:reset`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
 - These use `SUPABASE_DB_URL` from `.env.local` via `scripts/db.mjs` (never printed), so no `supabase login` or `link` is needed.
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
