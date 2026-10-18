@@ -599,7 +599,7 @@
       "toggle": "Show flood-risk areas"
     },
     "basemap": {
-      "title": "Map background",
+      "title": "Basemap",
       "streets": "Standard",
       "terrain": "Terrain",
       "satellite": "Satellite",
@@ -703,6 +703,14 @@
         "none": "No report stands",
         "window": "Standing, up to 72 hours"
       }
+    },
+    "full": {
+      "open": "Full screen",
+      "openLabel": "See the map full screen",
+      "exit": "Back to the console",
+      "home": "Home",
+      "layers": "Layers on the map",
+      "basemap": "Choose the basemap"
     }
   },
   "attribution": {

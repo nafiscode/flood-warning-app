@@ -540,3 +540,30 @@ export function QuestionIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/**
+ * The map on its own, filling the screen, and the way back out of it (the owner, 18 Oct 2026):
+ * four corners opening outwards, or drawn inwards to come back.
+ */
+export function FullScreenIcon({ exit = false, ...rest }: IconProps & { exit?: boolean }) {
+  return (
+    <Icon {...rest}>
+      {exit ? (
+        <path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6" />
+      ) : (
+        <path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6" />
+      )}
+    </Icon>
+  );
+}
+
+/** Sheets stacked one on another: which map is drawn underneath everything else. */
+export function LayersIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3 3 7.5l9 4.5 9-4.5L12 3Z" />
+      <path d="M3 12.5 12 17l9-4.5" />
+      <path d="M3 17.5 12 22l9-4.5" />
+    </Icon>
+  );
+}

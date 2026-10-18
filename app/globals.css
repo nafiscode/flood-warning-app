@@ -425,6 +425,71 @@
     grid-area: side;
   }
   /*
+   * The map on its own, filling the screen (the owner, 18 Oct 2026): "full extent of map without
+   * dashboard informations... only have left panel to select what layers to show".
+   *
+   * It is the same console, laid out again - the map keeps its place in the page and is never
+   * torn out and put back, so MapLibre is not reloaded and nothing drawn on it is lost. What goes
+   * is everything that is not the map or a picker for what is drawn on it.
+   *
+   * The hotline bar is deliberately left above this (safety rule 4: the numbers are one tap away,
+   * always), and the map is held clear of it, so nothing of the map hides behind it either.
+   */
+  [data-map-full] {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    height: auto;
+    min-height: 0;
+    padding: 0.75rem;
+    padding-block-end: calc(0.75rem + var(--jaga-hotlines, 4.5rem));
+    background: var(--jaga-ground);
+    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: none;
+    column-gap: 1rem;
+    row-gap: 0.75rem;
+  }
+  /* Nothing but the map and the pickers: no readouts, no weather bar, no hazard row. */
+  [data-map-full]
+    > *:not([data-console-area="rail"], [data-console-area="map"], [data-console-area="side"]) {
+    display: none;
+  }
+  [data-map-full] [data-console-area="rail"] {
+    grid-column: 1;
+    grid-row: 1;
+    overflow: visible;
+  }
+  [data-map-full] [data-console-area="side"] {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  [data-map-full] [data-console-area="map"] {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  /* In the rail: the way back, and the switches for the map's own layers. */
+  [data-map-full] [data-console-area="rail"] > *:not([data-map-fulltools], [data-map-features]) {
+    display: none;
+  }
+  [data-map-full] [data-map-fulltools] {
+    display: flex;
+  }
+  /* In the side: the satellite's flood and the safe places, which the owner asked to come over to
+     the left; the basemap goes onto the map itself, and the rest is dashboard. */
+  [data-map-full] [data-console-area="side"] > *:not([data-map-layers]) {
+    display: none;
+  }
+  /* Beside the map: only the map. The notices above it belong to the console. */
+  [data-map-full] [data-console-area="map"] > *:not([data-map-frame]) {
+    display: none;
+  }
+  /* The hotline bar stays above the map, and above anything the map draws over itself. */
+  body:has([data-map-full]) footer {
+    z-index: 30;
+  }
+
+  /*
    * Each rail scrolls on its own, so the map never leaves the screen while someone reads a card.
    * `relative` is not decoration: without it, anything inside a card that is positioned - and the
    * cards are full of small marks that are - is laid out against the page instead of the rail, so

@@ -703,6 +703,14 @@
         "none": "Tiada laporan",
         "window": "Masih berkuat kuasa, sehingga 72 jam"
       }
+    },
+    "full": {
+      "open": "Skrin penuh",
+      "openLabel": "Lihat peta skrin penuh",
+      "exit": "Kembali ke konsol",
+      "home": "Laman utama",
+      "layers": "Lapisan pada peta",
+      "basemap": "Pilih peta asas"
     }
   },
   "attribution": {

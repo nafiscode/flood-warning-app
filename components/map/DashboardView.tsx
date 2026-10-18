@@ -18,7 +18,16 @@ import {
   type Basemap,
 } from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
-import { CrossIcon, PhoneIcon, PinIcon, WaveIcon } from "@/components/icons";
+import {
+  BackIcon,
+  CrossIcon,
+  FullScreenIcon,
+  HouseIcon,
+  LayersIcon,
+  PhoneIcon,
+  PinIcon,
+  WaveIcon,
+} from "@/components/icons";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
 import {
   areaName,
@@ -394,6 +403,30 @@ export function DashboardView(props: DashboardViewProps) {
         ? "terrain"
         : "satelliteTerrain";
   const setBasemapChoice = (kind: Basemap) => setBasemapPicked({ kind, night: dark });
+  /** The choice of basemap, written once: the panel shows it, and so does the map's own picker. */
+  const basemapButtons = (
+    <div className="flex flex-wrap gap-2">
+      {BASEMAPS.map((kind) => (
+        <button
+          key={kind}
+          type="button"
+          data-basemap-choice={kind}
+          aria-pressed={basemap === kind}
+          onClick={() => {
+            setBasemapChoice(kind);
+            setBasemapOpen(false);
+          }}
+          className={`min-h-tap rounded-full border-2 px-4 font-bold ${
+            basemap === kind
+              ? "border-jaga-edge bg-jaga-slate text-white"
+              : "border-jaga-line bg-jaga-surface"
+          }`}
+        >
+          {t(`basemap.${kind}`)}
+        </button>
+      ))}
+    </div>
+  );
 
   /*
    * The person's own places on the map (spec 4.9, the owner's request on 8 Oct): their home and
@@ -592,6 +625,47 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const revealPanel = () =>
     reveal(() => document.querySelector<HTMLElement>("[data-selected-panel]"));
+
+  /*
+   * The map on its own, filling the screen (the owner, 18 Oct 2026). Only on the laptop console:
+   * a phone's map is already the width of the screen, and the console is the thing being stepped
+   * out of. What is left is the map, the pickers for what is drawn on it, and the way back.
+   *
+   * The hotline bar is never covered, whatever this does - it stays above the map and keeps its
+   * place at the foot of the screen (safety rule 4: the numbers are always one tap away).
+   */
+  const [full, setFull] = useState(false);
+  const [basemapOpen, setBasemapOpen] = useState(false);
+
+  /*
+   * Stepping in and out of the full-screen map. Three things have to happen, and none of them
+   * can be said in CSS:
+   *
+   * - The map's box changes size, and MapLibre only notices when the window says so.
+   * - The hotline bar is left above the map (safety rule 4), so the map is held clear of it by
+   *   exactly its height, measured rather than guessed - it is two lines in Thai and one in
+   *   English, and taller again if a phone's text is enlarged.
+   * - Escape comes back out, as it does from anything that fills the screen.
+   */
+  useEffect(() => {
+    const measure = () => {
+      const bar = document.querySelector("footer")?.getBoundingClientRect().height ?? 0;
+      document.documentElement.style.setProperty("--jaga-hotlines", `${Math.round(bar)}px`);
+    };
+    measure();
+    const drawn = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 60);
+    if (!full) return () => window.clearTimeout(drawn);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFull(false);
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.clearTimeout(drawn);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", measure);
+    };
+  }, [full]);
   /*
    * A card asked for in the address (?dam=, ?focus=dam, ?focus=sea) is already open when the page
    * arrives, and on the console it opens in the right-hand rail, under the map's own switches -
@@ -1017,6 +1091,7 @@ export function DashboardView(props: DashboardViewProps) {
       className="flex flex-col gap-4"
       data-map-console={consoleOn ? "true" : undefined}
       data-console-page={consoleOn ? "map" : undefined}
+      data-map-full={consoleOn && full ? "true" : undefined}
     >
       {/*
        * The blocks below carry `data-console-area`, and on a laptop the console block in
@@ -1208,6 +1283,26 @@ export function DashboardView(props: DashboardViewProps) {
               {/* The hazard comes first, then the province, then what the map shows for it (owner,
                   15 Oct). On the console the same four are the left rail. */}
               <div className="contents" data-console-area="rail" data-console-rail="true">
+                {/*
+                 * The way out, while the map fills the screen (the owner, 18 Oct): back to the
+                 * console, or out to the home screen. Hidden until then - app/globals.css draws
+                 * it - so nothing changes for a phone or for the console itself.
+                 */}
+                <div data-map-fulltools="true" className="hidden flex-wrap gap-2">
+                  <button
+                    type="button"
+                    data-map-full-exit="true"
+                    onClick={() => setFull(false)}
+                    className={`${buttonSecondary} gap-2`}
+                  >
+                    <BackIcon size={20} />
+                    {t("full.exit")}
+                  </button>
+                  <Link href="/" prefetch={false} className={`${buttonQuiet} gap-2`}>
+                    <HouseIcon size={20} />
+                    {t("full.home")}
+                  </Link>
+                </div>
                 {/* The sea's own report, for fishermen, right under the chips while the sea is
                     shown (the owner, 15 Oct: the switches under the map are gone, the chips do
                     that). */}
@@ -1394,6 +1489,63 @@ export function DashboardView(props: DashboardViewProps) {
                           {t("zoomMine")}
                         </button>
                       )}
+                      {/*
+                       * The map on its own (the owner, 18 Oct). Drawn only on the console - a
+                       * phone's map is already as wide as the screen - and only on the way in:
+                       * once the map fills the screen the way back is in the panel beside it,
+                       * and a second button saying the same thing would only crowd the map.
+                       */}
+                      {!full && (
+                        /*
+                         * The wrapper carries the display, not the button: `mapButton` already
+                         * sets `inline-flex`, and two display utilities of the same weight are
+                         * decided by their order in the stylesheet, not by the order they are
+                         * written - so `hidden` on the button would lose and it would show on a
+                         * phone. The same trap is written up on the weather chip in the header.
+                         */
+                        <span className="hidden console:contents">
+                          <button
+                            type="button"
+                            data-map-full-toggle="open"
+                            onClick={() => setFull(true)}
+                            className={mapButton}
+                          >
+                            <FullScreenIcon />
+                            {t("full.open")}
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {/*
+                   * The basemap, picked on the map itself while it fills the screen (the owner,
+                   * 18 Oct, "similar to google map when switching the basemap"). The panel in the
+                   * rail is the way to it everywhere else, and the buttons are the same ones.
+                   */}
+                  {full && (
+                    <div
+                      data-map-basemap-picker={basemapOpen ? "open" : "shut"}
+                      className="absolute bottom-16 start-2 z-10 hidden flex-col items-start gap-2 console:flex"
+                    >
+                      {basemapOpen && (
+                        <div
+                          className="flex max-w-72 flex-col gap-2 rounded-xl border border-jaga-line bg-jaga-surface p-3 shadow-lg"
+                          data-basemap={basemap}
+                        >
+                          <p className="font-medium">{t("basemap.title")}</p>
+                          {basemapButtons}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        data-basemap-open={basemapOpen}
+                        aria-expanded={basemapOpen}
+                        onClick={() => setBasemapOpen((was) => !was)}
+                        className={mapButton}
+                      >
+                        <LayersIcon />
+                        {t("full.basemap")}
+                      </button>
                     </div>
                   )}
                   {/*
@@ -1468,24 +1620,7 @@ export function DashboardView(props: DashboardViewProps) {
               <div className="contents" data-console-area="side" data-console-rail="true">
                 <fieldset className="flex flex-col gap-1" data-basemap={basemap}>
                   <legend className="font-medium">{t("basemap.title")}</legend>
-                  <div className="flex flex-wrap gap-2">
-                    {BASEMAPS.map((kind) => (
-                      <button
-                        key={kind}
-                        type="button"
-                        data-basemap-choice={kind}
-                        aria-pressed={basemap === kind}
-                        onClick={() => setBasemapChoice(kind)}
-                        className={`min-h-tap rounded-full border-2 px-4 font-bold ${
-                          basemap === kind
-                            ? "border-jaga-edge bg-jaga-slate text-white"
-                            : "border-jaga-line bg-jaga-surface"
-                        }`}
-                      >
-                        {t(`basemap.${kind}`)}
-                      </button>
-                    ))}
-                  </div>
+                  {basemapButtons}
                   {scene && (
                     <p className={hint} data-scene-note="true">
                       {t("scene.note", { times: SCENE_EXAGGERATION })}
@@ -1501,42 +1636,49 @@ export function DashboardView(props: DashboardViewProps) {
                     </p>
                   )}
                 </fieldset>
-                {props.onSatelliteDays && (
-                  <SatelliteFloodPanel
-                    days={props.satelliteDays ?? null}
-                    onDays={props.onSatelliteDays}
-                    flood={props.satellite ?? null}
-                    load={props.satelliteLoad ?? "loading"}
-                    dark={nightMap}
-                  />
-                )}
-                {placesOnOffer && (
-                  <label
-                    data-places-toggle="true"
-                    className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
-                  >
-                    <input
-                      type="checkbox"
-                      className={`${checkBox} mt-0`}
-                      checked={showPlaces}
-                      onChange={(event) => setShowPlaces(event.target.checked)}
+                {/*
+                 * What is drawn on the map: the satellite's flood and the safe places (the owner,
+                 * 18 Oct, so that the full-screen panel can hold them with the other layer
+                 * pickers). `contents` means this wrapper is nothing at all until then.
+                 */}
+                <div className="contents" data-map-layers="true">
+                  {props.onSatelliteDays && (
+                    <SatelliteFloodPanel
+                      days={props.satelliteDays ?? null}
+                      onDays={props.onSatelliteDays}
+                      flood={props.satellite ?? null}
+                      load={props.satelliteLoad ?? "loading"}
+                      dark={nightMap}
                     />
-                    <PlaceMark size={26} />
-                    <span>{t("places.toggle", { count: data ? data.places.length : 0 })}</span>
-                  </label>
-                )}
-                {showPlaces && placesOnOffer && <p className={hint}>{t("places.hint")}</p>}
-                {mine.length > 0 && (
-                  <label className={checkRow} data-mine-toggle="true">
-                    <input
-                      type="checkbox"
-                      className={checkBox}
-                      checked={showMine}
-                      onChange={(event) => setShowMine(event.target.checked)}
-                    />
-                    <span>{t("mine.toggle", { count: mine.length })}</span>
-                  </label>
-                )}
+                  )}
+                  {placesOnOffer && (
+                    <label
+                      data-places-toggle="true"
+                      className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
+                    >
+                      <input
+                        type="checkbox"
+                        className={`${checkBox} mt-0`}
+                        checked={showPlaces}
+                        onChange={(event) => setShowPlaces(event.target.checked)}
+                      />
+                      <PlaceMark size={26} />
+                      <span>{t("places.toggle", { count: data ? data.places.length : 0 })}</span>
+                    </label>
+                  )}
+                  {showPlaces && placesOnOffer && <p className={hint}>{t("places.hint")}</p>}
+                  {mine.length > 0 && (
+                    <label className={checkRow} data-mine-toggle="true">
+                      <input
+                        type="checkbox"
+                        className={checkBox}
+                        checked={showMine}
+                        onChange={(event) => setShowMine(event.target.checked)}
+                      />
+                      <span>{t("mine.toggle", { count: mine.length })}</span>
+                    </label>
+                  )}
+                </div>
                 {/* A visitor learns their family's places could be pinned here (the owner, 15 Oct). */}
                 {!props.me?.signedIn && <SignInHint what="mapPlaces" />}
                 <p className={hint}>{t("tapHint")}</p>

@@ -250,6 +250,54 @@ test.describe("the live map on a laptop", () => {
     await expect(page.locator("[data-console-tile][data-console-alarm]")).toHaveCount(0);
   });
 
+  /** The owner, 18 Oct: the map on its own, with only the layer pickers beside it. */
+  test("opens the map on its own, keeping the layer pickers and the hotlines", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+    const before = (await page.locator("[data-map-frame]").boundingBox())!;
+
+    await page.locator('[data-map-full-toggle="open"]').click();
+    await expect(page.locator("[data-map-full]")).toHaveCount(1);
+
+    // The dashboard goes: no readouts, no weather bar, no legend.
+    await expect(page.locator("[data-console-tiles]")).toBeHidden();
+    await expect(page.locator("[data-console-sky]")).toBeHidden();
+    await expect(page.locator("[data-legend]")).toBeHidden();
+
+    // What is left beside the map is what decides what the map draws - including the two the
+    // owner asked to bring over, the satellite's flood and the safe places.
+    await expect(page.locator('[data-map-features="map"]')).toBeVisible();
+    await expect(page.locator("[data-satellite]")).toBeVisible();
+    await expect(page.locator("[data-map-layers]")).toHaveCount(1);
+    // The basemap is no longer a panel in the rail; it is a button on the map itself.
+    await expect(page.locator("[data-basemap] legend")).toBeHidden();
+    await expect(page.locator("[data-map-basemap-picker]")).toBeVisible();
+    await page.locator("[data-basemap-open]").click();
+    // The same buttons as the panel's, drawn on the map; the panel's own copy stays hidden.
+    await expect(
+      page.locator('[data-map-basemap-picker] [data-basemap-choice="terrain"]'),
+    ).toBeVisible();
+
+    // The map is bigger than it was, and the way out is beside it.
+    const after = (await page.locator("[data-map-frame]").boundingBox())!;
+    expect(after.height).toBeGreaterThan(before.height);
+    await expect(page.locator("[data-map-full-exit]")).toBeVisible();
+
+    /*
+     * Safety rule 4: the hotlines are one tap away, always. The bar keeps its place at the foot
+     * of the screen and the map stops above it, so neither hides the other.
+     */
+    const hotlines = (await page.locator("footer").boundingBox())!;
+    await expect(page.locator("footer")).toBeVisible();
+    expect(after.y + after.height).toBeLessThanOrEqual(hotlines.y + 1);
+
+    // Escape comes back out, as it does from anything that fills the screen.
+    await page.keyboard.press("Escape");
+    await expect(page.locator("[data-map-full]")).toHaveCount(0);
+    await expect(page.locator("[data-console-tiles]")).toBeVisible();
+  });
+
   test("a hazard still to come is a placeholder, never an empty console", async ({ page }) => {
     await serve(page);
     await page.goto("/th/map");
@@ -340,6 +388,8 @@ test.describe("the live map on a phone is untouched", () => {
     await expect(page.locator("[data-console-tiles]")).toBeHidden();
     const sky = page.locator("[data-console-sky]");
     if ((await sky.count()) > 0) await expect(sky).toBeHidden();
+    // The full-screen map is the console's; a phone's map is already as wide as the screen.
+    await expect(page.locator("[data-map-full-toggle]")).toBeHidden();
     const readout = page.locator("[data-console-weather]");
     if ((await readout.count()) > 0) await expect(readout).toBeHidden();
     // The wrappers that make the console vanish entirely here.
