@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { safeNextPath } from "@/lib/auth";
 import { lineSignInConfigured, phoneSignInEnabled } from "@/lib/features";
+import { signInHref } from "@/lib/sign-in-link";
 import {
   buttonPrimary,
   buttonSecondary,
@@ -14,7 +15,7 @@ import {
   label,
   notice,
 } from "@/lib/ui";
-import { sendEmailLink, sendPhoneCode, verifyPhoneCode } from "./actions";
+import { sendEmailLink, sendPhoneCode, verifyEmailCode, verifyPhoneCode } from "./actions";
 
 const ERRORS = ["link", "line", "email", "phone", "sms", "code", "rate", "unavailable"] as const;
 
@@ -43,6 +44,8 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
   const next = safeNextPath(one(query.next)) ?? "";
   const error = ERRORS.find((e) => e === one(query.error));
   const codeStep = one(query.step) === "code" && one(query.phone) !== "";
+  const emailAddress = one(query.email);
+  const emailCodeStep = one(query.step) === "emailCode" && emailAddress !== "";
   const lineHref = `/api/auth/line?${new URLSearchParams({ locale, ...(next ? { next } : {}) })}`;
   const hidden = (
     <>
@@ -131,26 +134,58 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
         </section>
       )}
 
-      <details className={card} open={error === "email" || one(query.sent) === "email"}>
+      <details className={card} open={error === "email" || emailCodeStep}>
         <summary className="min-h-tap cursor-pointer py-2 font-bold">{t("admin.summary")}</summary>
-        <form action={sendEmailLink} className="flex flex-col gap-3">
-          {hidden}
-          <label htmlFor="email" className={label}>
-            {t("admin.label")}
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            className={input}
-          />
-          <button type="submit" className={buttonSecondary}>
-            {t("admin.send")}
-          </button>
-          <p className={hint}>{t("admin.note")}</p>
-        </form>
+        {/* The code, not the link: a link opens the browser, and on an iPhone the browser shares
+            no cookies with Jaga on the home screen (owner, 18 Oct). The link is still in the
+            email, for a computer. */}
+        {emailCodeStep ? (
+          <form action={verifyEmailCode} className="flex flex-col gap-3" data-email-code>
+            {hidden}
+            <input type="hidden" name="email" value={emailAddress} />
+            <label htmlFor="emailCode" className={label}>
+              {t("admin.codeLabel")}
+            </label>
+            <input
+              id="emailCode"
+              name="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]*"
+              required
+              className={input}
+            />
+            <button type="submit" className={buttonPrimary}>
+              {t("admin.verify")}
+            </button>
+            <p className={hint}>{t("admin.codeNote")}</p>
+            <a
+              href={signInHref(locale, next || null)}
+              className={`${hint} inline-flex min-h-tap items-center underline`}
+            >
+              {t("admin.another")}
+            </a>
+          </form>
+        ) : (
+          <form action={sendEmailLink} className="flex flex-col gap-3">
+            {hidden}
+            <label htmlFor="email" className={label}>
+              {t("admin.label")}
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className={input}
+            />
+            <button type="submit" className={buttonSecondary}>
+              {t("admin.send")}
+            </button>
+            <p className={hint}>{t("admin.note")}</p>
+          </form>
+        )}
       </details>
       <BackLink label={tNav("backHome")} />
     </div>

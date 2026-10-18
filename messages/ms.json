@@ -869,11 +869,15 @@
     "admin": {
       "summary": "Untuk pentadbir",
       "label": "E-mel yang dijemput",
-      "send": "Hantar pautan log masuk",
-      "note": "Buka pautan dalam e-mel dengan pelayar ini. Pautan boleh diguna sekali sahaja."
+      "send": "Hantar kod masuk",
+      "note": "E-mel itu ada kod nombor dan satu pautan. Dalam Jaga yang dibuka dari skrin utama, guna kod: pautan sentiasa membuka pelayar.",
+      "codeLabel": "Kod dari e-mel",
+      "verify": "Sahkan kod",
+      "codeNote": "Kod itu boleh diguna dalam satu jam. Taip di sini dan anda masuk dalam Jaga ini. Pautan dalam e-mel pula untuk komputer.",
+      "another": "Guna e-mel lain"
     },
     "sent": {
-      "email": "Jika e-mel ini dijemput, kami sudah hantar pautan log masuk. Sila semak peti e-mel."
+      "email": "Jika alamat ini telah dijemput, kami sudah hantar kod dan pautan masuk. Sila periksa peti masuk."
     },
     "error": {
       "link": "Pautan tidak boleh diguna atau sudah tamat tempoh. Sila minta pautan baru.",

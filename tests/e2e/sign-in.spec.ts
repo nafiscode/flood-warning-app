@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import en from "../../messages/en.json";
 import th from "../../messages/th.json";
 
 test("sign-in page says SOS and alerts need no sign-in, and keeps the hotlines", async ({
@@ -75,4 +76,42 @@ test("a sign-in that failed at Supabase and landed on the home page says so", as
   );
   await expect(page).toHaveURL(/\/sign-in\?error=line/);
   await expect(page.locator('p[role="alert"]')).toHaveText(th.signIn.error.line);
+});
+
+test("asking for an admin code leads to the code box, which is what the home-screen app needs", async ({
+  page,
+}) => {
+  // A fresh address every run: it has no account, so Supabase sends nothing and the answer is
+  // the same as for a real admin, which is the point (the form must not say who is an admin).
+  const address = `e2e-code-${Date.now().toString(36)}@test.invalid`;
+  await page.goto("/en/sign-in");
+  await page.getByText("For admins").click();
+  await page.locator('input[name="email"]').fill(address);
+  await page.getByRole("button", { name: "Send a sign-in code" }).click();
+
+  const form = page.locator("[data-email-code]");
+  await expect(form).toBeVisible();
+  await expect(page.locator('p[role="status"]')).toContainText("sent it a sign-in code");
+  await expect(form.locator('input[name="code"]')).toHaveAttribute("autocomplete", "one-time-code");
+  await expect(form.locator('input[name="email"]')).toHaveValue(address);
+
+  await form.locator('input[name="code"]').fill("000000");
+  await form.getByRole("button", { name: "Confirm the code" }).click();
+  await expect(page.locator('p[role="alert"]')).toHaveText(en.signIn.error.code, {
+    useInnerText: true,
+  });
+  // The address is kept, so a second try does not start again.
+  await expect(page.locator("[data-email-code] input[name='email']")).toHaveValue(address);
+});
+
+test("a code that is too short is refused before Supabase is asked", async ({ page }) => {
+  await page.goto("/en/sign-in?step=emailCode&email=someone%40test.invalid");
+  const form = page.locator("[data-email-code]");
+  await expect(form).toBeVisible();
+  await form.locator('input[name="code"]').fill("12");
+  await form.getByRole("button", { name: "Confirm the code" }).click();
+  await expect(page).toHaveURL(/step=emailCode/);
+  await expect(page.locator('p[role="alert"]')).toHaveText(en.signIn.error.code, {
+    useInnerText: true,
+  });
 });

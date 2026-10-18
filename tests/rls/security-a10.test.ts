@@ -281,6 +281,56 @@ describe("the limit on admin email links", () => {
   });
 });
 
+describe("the limit on tries at an admin's sign-in code", () => {
+  it("only Jaga's server can ask, so nobody can use up an admin's tries directly", async () => {
+    await as(db, "anon");
+    await expectDenied(db, "select email_code_allowed('not-the-token', 'admin@example.org', null)");
+  });
+
+  it("allows 10 tries an hour at one address, then says no", async () => {
+    await asOwner(db);
+    await db.query(
+      "insert into push_gate (token, site_url) values ('a10-test-gate-token-0123456789-abcdefghij', 'https://example.org') on conflict do nothing",
+    );
+    const gate = (await one<{ token: string }>("select token from push_gate limit 1")).token;
+    await as(db, "anon");
+    const answers: boolean[] = [];
+    for (let i = 0; i < 11; i += 1) {
+      answers.push(
+        (
+          await one<{ ok: boolean }>(
+            "select email_code_allowed($1, 'code-limit-test@example.org', null) as ok",
+            [gate],
+          )
+        ).ok,
+      );
+    }
+    expect(answers.slice(0, 10)).toEqual(Array.from({ length: 10 }, () => true));
+    expect(answers[10]).toBe(false);
+  });
+
+  it("counts the tries apart from the links, so a mistyped code never blocks a new link", async () => {
+    await asOwner(db);
+    await db.query(
+      "insert into push_gate (token, site_url) values ('a10-test-gate-token-0123456789-abcdefghij', 'https://example.org') on conflict do nothing",
+    );
+    const gate = (await one<{ token: string }>("select token from push_gate limit 1")).token;
+    await as(db, "anon");
+    const ip = "198.51.100.77";
+    for (let i = 0; i < 10; i += 1) {
+      await one("select email_code_allowed($1, 'apart-test@example.org', $2::inet) as ok", [
+        gate,
+        ip,
+      ]);
+    }
+    const link = await one<{ ok: boolean }>(
+      "select email_link_allowed($1, 'apart-test@example.org', $2::inet) as ok",
+      [gate, ip],
+    );
+    expect(link.ok).toBe(true);
+  });
+});
+
 describe("no client role can empty a table", () => {
   it("anon and signed-in people hold no TRUNCATE anywhere in public", async () => {
     await asOwner(db);

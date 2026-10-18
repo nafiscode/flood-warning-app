@@ -869,11 +869,15 @@
     "admin": {
       "summary": "For admins",
       "label": "Invited email address",
-      "send": "Send a sign-in link",
-      "note": "Open the link from the email in this browser. It works once."
+      "send": "Send a sign-in code",
+      "note": "The email has a numeric code and a link. In Jaga opened from your home screen, use the code: a link always opens the browser instead.",
+      "codeLabel": "Code from the email",
+      "verify": "Confirm the code",
+      "codeNote": "The code is good for an hour. Typing it here signs you in to this Jaga. The link in the email works on a computer.",
+      "another": "Use another email address"
     },
     "sent": {
-      "email": "If this address was invited, we've sent it a sign-in link. Check the inbox."
+      "email": "If this address was invited, we've sent it a sign-in code and a link. Check the inbox."
     },
     "error": {
       "link": "That link doesn't work or has expired. Ask for a new one.",

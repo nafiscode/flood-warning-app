@@ -59,9 +59,11 @@ It lets government and volunteer responders coordinate rescues without duplicati
 | Visitor | No account | None | View map, alerts, safe places, hotlines. Can send SOS; the phone number is optional. |
 | User | Self sign-up | LINE Login or phone OTP (equal options) | Everything a visitor can do, plus home and watched places, household profiles, reports, SOS with status, alert notifications. |
 | Authority | Self-registration, then admin verification | Phone OTP (LINE Login as fallback, see below) | Case board for their coverage area, claim and rescue workflow, contact requesters, hero score. |
-| Admin | Added by a super admin or a deputy, or asks from their account page and is approved | Email magic link or phone OTP | Monitor, issue alerts, verify authorities, escalate and assign SOS, moderate, export. |
+| Admin | Added by a super admin or a deputy, or asks from their account page and is approved | Email code or link, or phone OTP | Monitor, issue alerts, verify authorities, escalate and assign SOS, moderate, export. |
 | Deputy super admin | A super admin sets the flag on an admin's row | As an admin | Everything an admin can do, plus the admin team page: add, change, approve and remove admins. Cannot appoint another deputy. |
-| Super admin | The project's two accounts, set from a laptop with database access | Email magic link | Everything a deputy can do, plus system settings and the invitation record. |
+| Super admin | The project's two accounts, set from a laptop with database access | Email code or link | Everything a deputy can do, plus system settings and the invitation record. |
+
+**The admin sign-in email carries both a code and a link** (owner, 18 Oct 2026). On an iPhone, Jaga added to the home screen keeps its own cookies: a link always opens the browser, which is then signed in while the app is not. So the form asks for the code from the email and makes the session where it is typed, in the app itself. The link is still there for a computer, and still lands on `/api/auth/callback`. Tries at a code are counted apart from the sends (10 an hour per address, 60 per internet address) so a mistyped code can never use up the budget for asking for a new one. A send refused for being too frequent still shows the box for the code: an email sent minutes ago carries one that is good for an hour.
 
 **User profile:**
 - Required: display name.

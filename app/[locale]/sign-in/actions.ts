@@ -55,8 +55,31 @@ async function emailLinkAllowed(
 }
 
 /**
- * Email link for admins. Only addresses the super admin invited have an account, and the reply
- * is the same either way, so the form can't be used to find out who is an admin.
+ * At most 10 tries an hour at one address's code and 60 from one internet address, in a log of
+ * their own (migration a10_email_code_tries) so a mistyped code never uses up the budget for
+ * sending a link. Fails open for the same reason as the sends.
+ */
+async function emailCodeAllowed(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  email: string,
+): Promise<boolean> {
+  const token = gateToken();
+  if (!token) return true;
+  const { data, error } = await supabase.rpc("email_code_allowed", {
+    p_token: token,
+    p_email: email,
+    p_ip: await callerIp(),
+  });
+  return error ? true : data !== false;
+}
+
+/**
+ * Email code and link for admins. Only addresses the super admin invited have an account, and
+ * the reply is the same either way, so the form can't be used to find out who is an admin.
+ *
+ * The code is what the form then asks for: a link opens the phone's browser, which on an iPhone
+ * shares no cookies with Jaga on the home screen, so the admin was left signed in everywhere
+ * but in the app (owner, 2026-10-18). The link is still in the email for a computer.
  */
 export async function sendEmailLink(form: FormData) {
   const email = field(form, "email").toLowerCase();
@@ -65,13 +88,34 @@ export async function sendEmailLink(form: FormData) {
   }
   if (!supabaseConfigured()) back(form, { error: "unavailable" });
   const supabase = await createClient();
-  if (!(await emailLinkAllowed(supabase, email))) back(form, { error: "rate" });
+  if (!(await emailLinkAllowed(supabase, email))) back(form, { step: "emailCode", email, error: "rate" });
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: { shouldCreateUser: false, emailRedirectTo: await callbackUrl(form) },
   });
-  if (error?.status === 429) back(form, { error: "rate" });
-  back(form, { sent: "email" });
+  // Refused for being asked too often: still show the box for the code, because an email sent
+  // a few minutes ago carries one that is good for an hour. An admin in a flood must be able to
+  // use what they already have instead of starting again.
+  if (error?.status === 429) back(form, { step: "emailCode", email, error: "rate" });
+  back(form, { sent: "email", step: "emailCode", email });
+}
+
+/**
+ * The 6-digit code from that email, typed into Jaga itself: the session is made right here, in
+ * whichever Jaga the person is holding, home-screen app or browser alike.
+ */
+export async function verifyEmailCode(form: FormData) {
+  const email = field(form, "email").toLowerCase();
+  const code = field(form, "code").replace(/\s/g, "");
+  const again = (error: string) => back(form, { step: "emailCode", email, error });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) back(form, { error: "email" });
+  if (!/^[0-9]{6,10}$/.test(code)) again("code");
+  if (!supabaseConfigured()) back(form, { error: "unavailable" });
+  const supabase = await createClient();
+  if (!(await emailCodeAllowed(supabase, email))) again("rate");
+  const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+  if (error) again(error.status === 429 ? "rate" : "code");
+  redirect(await finishSignIn(supabase, safeNextPath(field(form, "next"))));
 }
 
 export async function sendPhoneCode(form: FormData) {
