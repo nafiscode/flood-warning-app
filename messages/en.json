@@ -5007,7 +5007,8 @@
       "quiet": "{dam} published {percent}% full and {value} m³/s leaving",
       "unknown": "{dam} has published no figures Jaga can read",
       "stale": "the dam's figures are late",
-      "onMyRiver": "on the river that runs through {tambon}"
+      "onMyRiver": "on the river that runs through {tambon}",
+      "noReading": "No live reading from {dam} or its station at this moment"
     },
     "reports": {
       "who": "Said by residents; Jaga has not checked them",

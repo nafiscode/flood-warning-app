@@ -88,6 +88,13 @@ export type DamNote = Base & {
   stale: boolean;
   /** The person's own area or a watched place is on this dam's river. */
   onMyRiver: boolean;
+  /**
+   * Why there are no figures, when there are none (the owner, 18 Oct 2026): `feed` is the request
+   * itself not answering, and `reading` is the request answering while the station has published
+   * nothing for this moment - two different sentences, because the second one is the station being
+   * quiet and not Jaga being unable to read. Null whenever there are figures.
+   */
+  noFigures: "feed" | "reading" | null;
 };
 
 export type ReportNote = Base & {
@@ -219,6 +226,22 @@ function damSay(tally: DamTally | null, state: LoadState): Said {
   return quietSaid;
 }
 
+/**
+ * Whether the dam's figures are this reader's business at all (the owner, 18 Oct 2026: where
+ * their places are not reached by a release or a rise, "hide the information on these, no need to
+ * say, can't read the dam info").
+ *
+ * Two things are never hidden. **A dam that is doing something**: a release or water over the
+ * spillway is an event, and silence about an event is not something this app does, whatever the
+ * modelled reach of it says. And **a dam whose reach there is nothing to compare with**: a reader
+ * who has saved no place at all is shown the whole four provinces everywhere else, so the dam
+ * stays with them too. Hiding only ever means "this one is not about you", which can only be said
+ * of somebody whose own places are known.
+ */
+function damConcerns(said: Said, onMyRiver: boolean, knowsPlaces: boolean): boolean {
+  return said.say === "active" || onMyRiver || !knowsPlaces;
+}
+
 export function monitoring(input: MonitoringInput): Monitoring {
   const { now, myCodes, myPoint, narrowed } = input;
   const notes: Note[] = [];
@@ -240,23 +263,33 @@ export function monitoring(input: MonitoringInput): Monitoring {
     total: gTally.total,
   });
 
-  // The dam's own figures.
+  // The dam's own figures, where the dam is anything to do with this reader.
   const dTally = damTally(input.dam.data ?? undefined);
-  notes.push({
-    kind: "dam",
-    ...damSay(dTally, input.dam.state),
-    scope: input.onMyRiver ? "myAreas" : "fourProvinces",
-    at: dTally?.observedAt ?? null,
-    ageMin: ageOf(dTally?.observedAt ?? null, now),
-    damCode: dTally?.dam.code ?? null,
-    attention: attention(dTally?.dam.signal ?? null),
-    percentFull: dTally?.percentFull ?? null,
-    outflowCms: dTally?.outflowCms ?? null,
-    spilledCms: dTally?.spilledCms ?? null,
-    pastNormal: dTally ? pastNormalOf(dTally) : false,
-    stale: dTally?.stale ?? false,
-    onMyRiver: input.onMyRiver,
-  });
+  const dSaid = damSay(dTally, input.dam.state);
+  if (damConcerns(dSaid, input.onMyRiver, myCodes.length > 0)) {
+    notes.push({
+      kind: "dam",
+      ...dSaid,
+      scope: input.onMyRiver ? "myAreas" : "fourProvinces",
+      at: dTally?.observedAt ?? null,
+      ageMin: ageOf(dTally?.observedAt ?? null, now),
+      damCode: dTally?.dam.code ?? null,
+      attention: attention(dTally?.dam.signal ?? null),
+      percentFull: dTally?.percentFull ?? null,
+      outflowCms: dTally?.outflowCms ?? null,
+      spilledCms: dTally?.spilledCms ?? null,
+      pastNormal: dTally ? pastNormalOf(dTally) : false,
+      stale: dTally?.stale ?? false,
+      onMyRiver: input.onMyRiver,
+      noFigures:
+        dSaid.say !== "unknown"
+          ? null
+          : input.dam.state === "ok"
+            ? // The feed answered: the station itself has published nothing for this moment.
+              "reading"
+            : "feed",
+    });
+  }
 
   // What residents are reporting. A failed request is never an empty list (the route sees to it).
   const rows = input.reports.data ?? [];

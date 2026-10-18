@@ -88,7 +88,13 @@ export function MonitoringNow(props: MonitoringNowProps) {
 
   const dam = (n: DamNote): ReactNode => {
     const name = damName ?? t("dam.theDam");
-    if (n.say === "unknown") return t("dam.unknown", { dam: name });
+    /*
+     * Two different silences (the owner, 18 Oct 2026). A station that has published nothing for
+     * this moment is the station being quiet, and saying "Jaga cannot read it" would blame the
+     * app for something it is reporting faithfully. Only a feed that did not answer gets that.
+     */
+    if (n.say === "unknown")
+      return t(n.noFigures === "reading" ? "dam.noReading" : "dam.unknown", { dam: name });
     if (n.say === "active") {
       if ((n.spilledCms ?? 0) > 0) return t("dam.spilling", { dam: name, value: n.spilledCms! });
       if (n.attention === "releasing")

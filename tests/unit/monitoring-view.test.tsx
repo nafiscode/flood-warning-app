@@ -160,6 +160,30 @@ describe("the monitoring section never reads as an all-clear", () => {
     expect(line.textContent).toContain(th.monitoring.dam.stale);
   });
 
+  /*
+   * A station that has published nothing for this moment is the station being quiet (the owner,
+   * 18 Oct 2026); only a request that did not answer is Jaga being unable to read.
+   */
+  it("tells a station with nothing to publish apart from a request that failed", () => {
+    const quietStation = section([
+      note({ kind: "gauges" }),
+      note({ kind: "dam", say: "unknown", noFigures: "reading" } as Partial<Note> & {
+        kind: "dam";
+      }),
+    ]);
+    const line = quietStation.querySelector('[data-monitoring-note="dam"]')!;
+    expect(line.textContent).toContain("ยังไม่มีข้อมูลสดจาก");
+    expect(line.textContent).not.toContain("Jaga อ่านได้");
+
+    const noAnswer = section([
+      note({ kind: "gauges" }),
+      note({ kind: "dam", say: "unknown", noFigures: "feed" } as Partial<Note> & { kind: "dam" }),
+    ]);
+    expect(noAnswer.querySelector('[data-monitoring-note="dam"]')!.textContent).toContain(
+      "Jaga อ่านได้",
+    );
+  });
+
   it("says nothing at all when it was given no feeds, rather than that all is quiet", () => {
     expect(section([]).querySelector("[data-monitoring]")).toBeNull();
   });

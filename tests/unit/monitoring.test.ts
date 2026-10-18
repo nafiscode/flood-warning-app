@@ -256,6 +256,46 @@ describe("what the monitoring shows now: the dam", () => {
     expect(noteOf(monitoring(input({ onMyRiver: true })).notes, "dam").scope).toBe("myAreas");
     expect(noteOf(monitoring(input()).notes, "dam").scope).toBe("fourProvinces");
   });
+
+  /*
+   * The owner, 18 Oct 2026: where a reader's own places are not reached by a release or a rise,
+   * the dam is left out altogether rather than reported as unreadable.
+   */
+  it("is left out for a reader whose own places the dam cannot reach", () => {
+    const { notes } = monitoring(input({ myCodes: ["940101"], onMyRiver: false }));
+    expect(notes.some((n) => n.kind === "dam")).toBe(false);
+    // And leaving it out never makes the rest look incomplete.
+    expect(notes.every((n) => n.kind !== "dam")).toBe(true);
+  });
+
+  it("stays for a reader the dam's river runs through", () => {
+    const { notes } = monitoring(input({ myCodes: ["940101"], onMyRiver: true }));
+    expect(noteOf(notes, "dam").say).toBe("quiet");
+  });
+
+  /* Never silent about an event: a release is told to everybody, whatever its modelled reach. */
+  it("stays for everybody while the dam is actually doing something", () => {
+    const releasing = ok(dam({ signal: signal({ grade: "releasing", outflowCms: 300 }) }));
+    const { notes } = monitoring(input({ myCodes: ["940101"], onMyRiver: false, dam: releasing }));
+    expect(noteOf(notes, "dam").say).toBe("active");
+  });
+
+  it("stays for a visitor who has saved no place, who is shown all four provinces anyway", () => {
+    expect(noteOf(monitoring(input({ myCodes: [] })).notes, "dam").say).toBe("quiet");
+  });
+
+  /*
+   * Two silences, told apart (the owner, 18 Oct): the station publishing nothing for this moment
+   * is the station being quiet, not Jaga failing to read it.
+   */
+  it("says whether it was the station or the request that gave nothing", () => {
+    const quietStation = noteOf(monitoring(input({ dam: ok(dam({ signal: null })) })).notes, "dam");
+    expect(quietStation.kind === "dam" && quietStation.noFigures).toBe("reading");
+    const noAnswer = noteOf(monitoring(input({ dam: failed() })).notes, "dam");
+    expect(noAnswer.kind === "dam" && noAnswer.noFigures).toBe("feed");
+    const figures = noteOf(monitoring(input()).notes, "dam");
+    expect(figures.kind === "dam" && figures.noFigures).toBeNull();
+  });
 });
 
 describe("what the monitoring shows now: residents' reports", () => {

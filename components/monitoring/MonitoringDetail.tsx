@@ -71,7 +71,13 @@ export type MonitoringDetailProps = {
 export function MonitoringDetail(props: MonitoringDetailProps) {
   const t = useTranslations("monitoring.detail");
   const tCard = useTranslations("monitoring");
-  const { area, province, gauges, weather, dam } = props;
+  const { area, province, gauges, weather } = props;
+  /*
+   * The reservoir's fortnight is drawn only where the reservoir is one of this reader's concerns,
+   * which is the same question the composer already answered: no note, no chart (the owner,
+   * 18 Oct 2026).
+   */
+  const dam = props.summary.notes.some((n) => n.kind === "dam") ? (props.dam ?? null) : null;
   const charts =
     (gauges && gauges.length > 0) || weather || dam ? (
       <section className="flex flex-col gap-5" data-monitoring-charts="true">

@@ -5007,7 +5007,8 @@
       "quiet": "{dam} menerbitkan {percent}% penuh dan {value} m³/s keluar",
       "unknown": "{dam} belum menerbitkan angka yang boleh dibaca Jaga",
       "stale": "angka empangan lewat",
-      "onMyRiver": "di sungai yang melalui {tambon}"
+      "onMyRiver": "di sungai yang melalui {tambon}",
+      "noReading": "Tiada bacaan langsung daripada {dam} atau stesennya pada masa ini"
     },
     "reports": {
       "who": "Dilaporkan oleh penduduk; Jaga belum menyemaknya",
