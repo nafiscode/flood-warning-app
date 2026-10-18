@@ -302,7 +302,9 @@ test.describe("the dam's quiet notice", () => {
   test("the home screen's card opens the same report on the map", async ({ page }) => {
     await serve(page, { grade: "quiet" });
     await page.goto("/");
-    const card = page.locator("[data-dam-figure-card]");
+    // The card is written twice since 17 Oct - once for a laptop in the left column, once at the
+    // foot for a phone - and one copy is hidden at each width, so this must take the visible one.
+    const card = page.locator("[data-dam-figure-card]:visible");
     await expect(card).toBeVisible();
     await card.locator("a").click();
     await expect(page).toHaveURL(/\/map\?dam=bang_lang/);
