@@ -2501,7 +2501,21 @@
         "alt": "Tolok kadar pelepasan: {state}, pelepasan {cms} m³/s"
       },
       "note": "Gambar rajah bergerak mengikut angka yang diterbitkan oleh empangan. Ia bukan ramalan dan bukan amaran Jaga.",
-      "scale": "Skala penuh ialah {cms} m³/s, pelepasan terbesar dalam rekod; bahagian kelabu ialah julat lepasan turbin"
+      "scale": "Skala penuh ialah {cms} m³/s, pelepasan terbesar dalam rekod; bahagian kelabu ialah julat lepasan turbin",
+      "tag": {
+        "inflow": "Alir masuk",
+        "outflow": "Pelepasan",
+        "spill": "Alur limpah",
+        "normal": "Paras simpanan biasa",
+        "level": "Paras",
+        "ofCapacity": "daripada kapasiti",
+        "noStorage": "Belum ada data isipadu simpanan"
+      },
+      "unit": {
+        "cms": "m³/s",
+        "mcm": "juta m³",
+        "m": "m aras laut purata"
+      }
     },
     "figures": {
       "none": "Belum ada data daripada empangan",
@@ -5014,9 +5028,9 @@
       "awaiting": "Satu bacaan {dam} memenuhi syarat pelepasan; Jaga menunggu bacaan seterusnya sebelum berkata lebih",
       "quiet": "{dam} menerbitkan {percent}% penuh dan {value} m³/s keluar",
       "unknown": "{dam} belum menerbitkan angka yang boleh dibaca Jaga",
+      "noReading": "Tiada bacaan langsung daripada {dam} atau stesennya pada masa ini",
       "stale": "angka empangan lewat",
-      "onMyRiver": "di sungai yang melalui {tambon}",
-      "noReading": "Tiada bacaan langsung daripada {dam} atau stesennya pada masa ini"
+      "onMyRiver": "di sungai yang melalui {tambon}"
     },
     "reports": {
       "who": "Dilaporkan oleh penduduk; Jaga belum menyemaknya",

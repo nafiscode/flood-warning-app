@@ -850,6 +850,17 @@ The map, the figures and the two tiers are built; the notice the operator sends 
   theirs; it never says water is coming. **Songkhla is excluded on the evidence**: the tambons the
   released water runs through are in Yala and Pattani only and the river ends in Pattani Bay, so
   the dam's water does not cross the divide into the Songkhla Lake or U-Taphao basins.
+- **The readings on that drawing** (added 18 Oct 2026, the owner's request): the cross-section is
+  drawn as a real embankment dam - crest road, clay core, intake tower, the gated spillway chute,
+  the powerhouse on the bank and the tailwater below - and carries four readings written on it:
+  how full the reservoir is as a share of its capacity, the stored volume in million m³, the
+  reservoir level in m MSL, and both flows, what is arriving and what is leaving, with the
+  spillway's share named only while a gate is open. The readings are HTML over the drawing rather
+  than text inside it, each on a plate of the box's own background, so they stay legible at any
+  width and in both themes; the box is capped so the figure never fills the dam's full report. The
+  storage comes from the same helper the report's instrument panel uses, including its fallback to
+  the newest figure of the day, so the drawing and the panel can never show different figures for
+  the same hour. A dam that has published no storage is drawn with no water at all and says so.
 - **The quiet tier** (`watchful`, or a release the app has not confirmed yet): a notice on the home
   screen and the map for anyone whose area or watched place is on the river below the dam. No
   alert level, no alert colour, no sound, no notification. It says it is not an alert from Jaga

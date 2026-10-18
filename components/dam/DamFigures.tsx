@@ -2,6 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { CheckIcon, ClockIcon, TriangleIcon, WaveIcon } from "@/components/icons";
+import { DamSectionLabels, DamSectionScene } from "@/components/dam/DamSection";
 import type { Dam, DamLevel } from "@/lib/dam";
 import { damFigure, FIGURE_INK, type DamFigure } from "@/lib/dam-figure";
 import { hint } from "@/lib/ui";
@@ -72,12 +73,23 @@ function Frame({
   viewBox,
   name,
   caption = true,
+  overlay,
+  capWidth = false,
   children,
 }: {
   figure: DamFigure;
   alt: string;
-  viewBox: string;
+  /** Left out by a drawing that owns its own svg, like the cross-section. */
+  viewBox?: string;
   name: DamFigureName;
+  /**
+   * The figures themselves, as HTML over the drawing (the owner, 18 Oct). They are not read
+   * aloud: the box is a single `img` to a screen reader, which the caption and the report's own
+   * panel both say in words.
+   */
+  overlay?: React.ReactNode;
+  /** A drawing with writing on it must not become a billboard in the dam's full report. */
+  capWidth?: boolean;
   /**
    * False where the screen already says the state in words below the drawing - the dam's full
    * report does, three lines running (seen in a browser, 13 Oct). The drawing keeps its own
@@ -91,12 +103,17 @@ function Frame({
       <div
         role="img"
         aria-label={alt}
-        className={`w-full overflow-hidden rounded-xl border border-jaga-line bg-jaga-ground ${FIGURE_INK[figure.level]}`}
+        className={`relative mx-auto w-full overflow-hidden rounded-xl border border-jaga-line bg-jaga-ground ${capWidth ? "max-w-[560px]" : ""} ${FIGURE_INK[figure.level]}`}
         style={{ ["--cycle" as string]: `${figure.cycleSeconds}s` }}
       >
-        <svg viewBox={viewBox} className="h-auto w-full" aria-hidden="true">
-          {children}
-        </svg>
+        {viewBox ? (
+          <svg viewBox={viewBox} className="block h-auto w-full" aria-hidden="true">
+            {children}
+          </svg>
+        ) : (
+          children
+        )}
+        {overlay}
       </div>
       {caption && (
         <figcaption>
@@ -108,90 +125,23 @@ function Frame({
 }
 
 /**
- * 1. **The cross-section.** The dam seen from the side, the way a hydrologist draws one: the
- * reservoir on the left filling towards the line the operator works to, the wall, and the water
- * leaving on the right - through the outlet at the speed it is really leaving, and over the crest
- * when a gate is open. The most literal of the three: cause and effect in one picture.
+ * 1. **The cross-section**, the figure the owner chose on 13 Oct and asked to have the readings
+ * written on to on 18 Oct. The drawing itself is in DamSection.tsx, which explains what each part
+ * of it is; here it is only put in its frame, with its labels over it and its caption under it.
  */
 export function DamSectionFigure({ dam, caption = true }: { dam: Dam; caption?: boolean }) {
   const t = useTranslations("dam");
   const f = damFigure(dam);
-  // The box is 160 x 90: the bed at y = 78, the crest at y = 16, the wall at x = 96.
-  const bed = 78;
-  const crest = 16;
-  const top = (share: number) => bed - share * (bed - crest);
-  const water = top(f.fullness ?? 0);
-  const normal = f.normalMark === null ? null : top(f.normalMark);
-  // The tailwater below the dam rises a little with the release.
-  const tail = bed - 4 - f.flow * 8;
   return (
     <Frame
       figure={f}
       name="section"
-      viewBox="0 0 160 90"
       alt={label(t, f, "section")}
       caption={caption}
+      capWidth
+      overlay={<DamSectionLabels f={f} />}
     >
-      {/* The valley the dam sits in. */}
-      <path
-        d="M0 90 L0 26 L16 26 L30 78 L126 78 L140 18 L160 18 L160 90 Z"
-        className="fill-jaga-line"
-        opacity="0.55"
-      />
-      {/* The reservoir, from the bed up to the storage the dam has published. */}
-      <rect
-        x="16"
-        y={water}
-        width="80"
-        height={Math.max(0, bed - water)}
-        className="fill-current"
-        opacity="0.28"
-      />
-      <g className={f.still ? undefined : styles.ripple}>
-        <rect x="14" y={water - 1.5} width="84" height="3" rx="1.5" className="fill-current" />
-      </g>
-      {normal !== null && (
-        <line
-          x1="16"
-          x2="104"
-          y1={normal}
-          y2={normal}
-          className="stroke-jaga-text-2"
-          strokeWidth="1"
-          strokeDasharray="4 3"
-        />
-      )}
-      {/* The wall, and the crest the water would go over. */}
-      <path
-        d={`M96 ${crest} L108 ${crest} L112 ${bed} L96 ${bed} Z`}
-        className="fill-jaga-edge"
-        opacity="0.85"
-      />
-      {/* Downstream: the tailwater, and the jet leaving the outlet at the foot of the wall. */}
-      <rect
-        x="112"
-        y={tail}
-        width="48"
-        height={bed - tail + 12}
-        className="fill-current"
-        opacity="0.22"
-      />
-      {!f.still && (
-        <g className={styles.jet}>
-          <rect x="106" y={bed - 11} width="18" height="4.5" rx="2.25" className="fill-current" />
-        </g>
-      )}
-      {f.spilling &&
-        [0, 1, 2].map((i) => (
-          <circle
-            key={i}
-            cx={109 + i * 4}
-            cy={crest + 5}
-            r="2.4"
-            className={`fill-current ${styles.spill}`}
-            style={{ animationDelay: `${i * 0.22}s` }}
-          />
-        ))}
+      <DamSectionScene f={f} />
     </Frame>
   );
 }

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { DamDialFigure, DamRiverFigure, DamSectionFigure } from "@/components/dam/DamFigures";
 import { damForFigure, showsDamFigure, type Dam } from "@/lib/dam";
@@ -91,6 +92,102 @@ describe("what the figure moves with", () => {
   it("knows when water is going over the spillway", () => {
     expect(damFigure(withSignal("releasing")).spilling).toBe(true);
     expect(damFigure(withSignal("quiet")).spilling).toBe(false);
+  });
+});
+
+describe("the readings written on the cross-section (the owner, 18 Oct)", () => {
+  const labels = (dam: Dam) =>
+    renderWithIntl(<DamSectionFigure dam={dam} />).container.textContent ?? "";
+
+  it("carries the storage, the share of capacity and the reservoir level", () => {
+    const text = labels(withSignal("quiet"));
+    // 745 of 1,589.8 million m³, at 99.53 m MSL, which is 47%.
+    expect(text).toContain("745");
+    expect(text).toContain(th.dam.figure.unit.mcm);
+    expect(text).toContain("47%");
+    expect(text).toContain(th.dam.figure.tag.ofCapacity);
+    expect(text).toContain("99.53");
+    expect(text).toContain(th.dam.figure.unit.m);
+  });
+
+  it("carries both flows, each named, with the spill only while there is one", () => {
+    const quiet = labels(withSignal("quiet"));
+    expect(quiet).toContain(th.dam.figure.tag.inflow);
+    expect(quiet).toContain(th.dam.figure.tag.outflow);
+    expect(quiet).toContain("103");
+    expect(quiet).not.toContain(th.dam.figure.tag.spill);
+    const releasing = labels(withSignal("releasing"));
+    expect(releasing).toContain(th.dam.figure.tag.spill);
+    expect(releasing).toContain("648");
+    expect(releasing).toContain("788");
+  });
+
+  it("reads the storage the report's own panel reads, down to the day it fell back to", () => {
+    /*
+     * ThaiWater's hourly series for Bang Lang carries its flows hours before its storage, so the
+     * figure would have drawn an empty reservoir beside a panel showing 745 million m³. Both now
+     * come from storageNow(), and the drawing says which day the figure belongs to by not
+     * claiming it is this hour's.
+     */
+    const hourWithoutStorage = { ...exampleDamSignal("quiet")!, storageMcm: null, levelM: null };
+    const dam: Dam = {
+      ...DAM,
+      signal: hourWithoutStorage,
+      days: [
+        {
+          day: "2026-10-17",
+          hours: 24,
+          releasedMeanCms: 46,
+          spilledMeanCms: 0,
+          outflowMeanCms: 46,
+          outflowMcm: 4,
+          spilledMcm: 0,
+          storageEndMcm: 743.5,
+          levelEndM: 99.49,
+        },
+      ],
+    };
+    const f = damFigure(dam);
+    expect(f.storageMcm).toBe(743.5);
+    expect(f.levelM).toBe(99.49);
+    expect(f.storageDay).toBe("2026-10-17");
+    // 743.5 million m³ is written to the nearest million, as everywhere else in the app.
+    expect(labels(dam)).toContain("744");
+  });
+
+  it("a reservoir that publishes one capacity gets no line to work to", () => {
+    // The five RID reservoirs publish the same figure for maximum and for normal high water, so a
+    // dashed line across the top would mark nothing. Bang Lang publishes two, and keeps its line.
+    const oneCapacity: Dam = { ...DAM, storageNormalMcm: DAM.storageMaxMcm };
+    expect(damFigure({ ...oneCapacity, signal: exampleDamSignal("quiet") }).normalMark).toBeNull();
+    expect(damFigure(withSignal("quiet")).normalMark).not.toBeNull();
+  });
+
+  it("writes no reading it has not been given", () => {
+    const none = labels(withSignal("none"));
+    expect(none).toContain(th.dam.figure.tag.noStorage);
+    expect(none).not.toContain("%");
+    expect(none).not.toContain(th.dam.figure.tag.inflow);
+  });
+
+  it("says the units the same way the report's panel says them", () => {
+    // One figure, two screens: a reader must never meet two spellings of m³/s in one app.
+    for (const locale of ["th", "ms", "en"] as const) {
+      const m = JSON.parse(readFileSync(`messages/${locale}.json`, "utf8"));
+      expect(m.dam.figure.unit.cms).toBe(m.dam.readout.unit.cms);
+      expect(m.dam.figure.unit.mcm).toBe(m.dam.readout.unit.mcm);
+      expect(m.dam.figure.unit.m).toBe(m.dam.readout.unit.m);
+    }
+  });
+
+  it("is still one picture to a screen reader, with the words under it", () => {
+    // Everything written on the drawing is inside the box that is a single img, so the labels are
+    // never read out one by one; the caption below carries them in a sentence instead.
+    const box = renderWithIntl(
+      <DamSectionFigure dam={withSignal("quiet")} />,
+    ).container.querySelector("[role=img]")!;
+    expect(box.getAttribute("aria-label")).toContain("103");
+    expect(box.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
   });
 });
 

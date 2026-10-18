@@ -2501,7 +2501,21 @@
         "alt": "A dial of the release: {state}, releasing {cms} m³/s"
       },
       "note": "The drawing moves with the figures the dam publishes. It is not a forecast and not an alert from Jaga.",
-      "scale": "Full scale is {cms} m³/s, the largest release in the record; the grey part is what the turbines alone can pass"
+      "scale": "Full scale is {cms} m³/s, the largest release in the record; the grey part is what the turbines alone can pass",
+      "tag": {
+        "inflow": "Inflow",
+        "outflow": "Outflow",
+        "spill": "Spillway",
+        "normal": "Normal high water",
+        "level": "Level",
+        "ofCapacity": "of capacity",
+        "noStorage": "No storage figures yet"
+      },
+      "unit": {
+        "cms": "m³/s",
+        "mcm": "million m³",
+        "m": "m MSL"
+      }
     },
     "figures": {
       "none": "No figures from the dam yet",
@@ -5014,9 +5028,9 @@
       "awaiting": "One reading from {dam} met a release rule; Jaga is waiting for the next reading before saying more",
       "quiet": "{dam} published {percent}% full and {value} m³/s leaving",
       "unknown": "{dam} has published no figures Jaga can read",
+      "noReading": "No live reading from {dam} or its station at this moment",
       "stale": "the dam's figures are late",
-      "onMyRiver": "on the river that runs through {tambon}",
-      "noReading": "No live reading from {dam} or its station at this moment"
+      "onMyRiver": "on the river that runs through {tambon}"
     },
     "reports": {
       "who": "Said by residents; Jaga has not checked them",
