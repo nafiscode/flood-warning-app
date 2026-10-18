@@ -5097,5 +5097,14 @@
         "note": "{total} mm in all, in the model - not a measurement at your house."
       }
     }
+  },
+  "unitWay": {
+    "title": "Register your team",
+    "who": "Rescue units and volunteer teams",
+    "body": "Register once. After a Jaga admin calls your team's official number, requests in your area come to you.",
+    "register": "Register a unit",
+    "quiet": "A rescue team, civil-defence volunteer or volunteer unit?",
+    "mine": "See your unit's status",
+    "signInFirst": "Sign in with LINE first, and Jaga will take you to the unit registration form."
   }
 }

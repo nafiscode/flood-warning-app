@@ -2,7 +2,7 @@ import { BackLink } from "@/components/BackLink";
 import { LineLink } from "@/components/account/LineLink";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { safeNextPath } from "@/lib/auth";
+import { localePath, safeNextPath } from "@/lib/auth";
 import { lineSignInConfigured, phoneSignInEnabled } from "@/lib/features";
 import { signInHref } from "@/lib/sign-in-link";
 import {
@@ -41,12 +41,17 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
   const query = await searchParams;
   const t = await getTranslations("signIn");
   const tNav = await getTranslations("nav");
+  const tUnit = await getTranslations("unitWay");
   const next = safeNextPath(one(query.next)) ?? "";
   const error = ERRORS.find((e) => e === one(query.error));
   const codeStep = one(query.step) === "code" && one(query.phone) !== "";
   const emailAddress = one(query.email);
   const emailCodeStep = one(query.step) === "emailCode" && emailAddress !== "";
   const lineHref = `/api/auth/line?${new URLSearchParams({ locale, ...(next ? { next } : {}) })}`;
+  // The registration form is behind this page, so a unit is signed in straight into it: a plain
+  // link to the form would only send them back here (18 Oct).
+  const unitNext = localePath(locale, "/authority/register");
+  const unitHref = `/api/auth/line?${new URLSearchParams({ locale, next: unitNext })}`;
   const hidden = (
     <>
       <input type="hidden" name="locale" value={locale} />
@@ -58,6 +63,22 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
     <div className="flex flex-col gap-5">
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={notice}>{t("visitorNote")}</p>
+      {/*
+       * A rescue unit, an อปพร. volunteer or an agency that came here to register (the owner,
+       * 18 Oct: the sign-in page never said the registration form was behind it). Somebody sent
+       * here by the form itself reads this but is not offered a second button: the page's own
+       * LINE button below already carries them back to it.
+       */}
+      <section className={card} data-unit-way="signIn">
+        <h2 className="text-body font-bold">{tUnit("title")}</h2>
+        <p className={hint}>{tUnit("who")}</p>
+        <p className={hint}>{tUnit("signInFirst")}</p>
+        {lineSignInConfigured() && next !== unitNext && (
+          <LineLink href={unitHref} className={buttonSecondary}>
+            {tUnit("register")}
+          </LineLink>
+        )}
+      </section>
       {error && (
         <p role="alert" className={errorNotice}>
           {t(`error.${error}`)}

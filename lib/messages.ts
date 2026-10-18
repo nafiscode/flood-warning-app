@@ -27,6 +27,8 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       "mapFeatures",
       "tambonRisk",
       "signInOffer",
+      // The way in for a rescue unit, beside the resident's own, under the hero (18 Oct).
+      "unitWay",
       // "What the monitoring shows now" under the hero (17 Oct), and the credit it carries for
       // the one line of it that comes from a weather model.
       "monitoring",
@@ -110,6 +112,8 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
       "mapFeatures",
       "mapMethod",
       "signInOffer",
+      // The one line that tells a team reading the map it can register (18 Oct).
+      "unitWay",
       // The Sea and coast section (15 Oct), with the credit Open-Meteo asks for.
       "sea",
       "attribution",

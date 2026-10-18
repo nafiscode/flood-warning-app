@@ -439,3 +439,49 @@ describe("where the live measurements sit on the home screen", () => {
     expect(screen("choose").querySelector("[data-monitoring]")).toBeNull();
   });
 });
+
+/*
+ * The two ways in under the hero (the owner, 18 Oct): a rescue unit's and a resident's. What the
+ * tambon's level is stays the first thing on the screen; this is the second. It goes once a place
+ * of theirs is at Warning or Evacuate, where the screen is for getting out and not for joining.
+ */
+describe("the two ways in on the home screen", () => {
+  const joinJaga = <div data-join-jaga="cards">join</div>;
+  const screen = (scenario: HomeScenario, more = {}) => home(scenario, { joinJaga, ...more });
+  const at = (c: Element, selector: string) => c.querySelector(selector)!;
+
+  it("sits under the hero, before what the neighbours said", () => {
+    const c = screen("normal");
+    const join = at(c, "[data-join-jaga]");
+    expect(follows(at(c, "[data-hero]"), join)).toBe(true);
+    expect(follows(join, at(c, "[data-checklist]"))).toBe(true);
+  });
+
+  it("is left out when a place of theirs is at Warning or Evacuate", () => {
+    expect(screen("warning").querySelector("[data-join-jaga]")).toBeNull();
+    expect(screen("evacuate").querySelector("[data-join-jaga]")).toBeNull();
+  });
+
+  // Watch is a go-bag, not an emergency: the invitation stays.
+  it("stays at Watch", () => {
+    expect(screen("watch").querySelector("[data-join-jaga]")).not.toBeNull();
+  });
+
+  /*
+   * This is the one that matters most. The home route is the same static HTML for everyone, so if
+   * this block were also gated on the screen being awake or on an area being chosen, the people it
+   * exists for - someone opening a link on a slow phone, who has never chosen an area - would
+   * never see it at all.
+   */
+  it("is there before the screen is awake and before anyone has chosen an area", () => {
+    expect(screen("normal", { ready: false }).querySelector("[data-join-jaga]")).not.toBeNull();
+    expect(screen("choose").querySelector("[data-join-jaga]")).not.toBeNull();
+  });
+
+  it("does not come between the hero and the SOS button at Evacuate", () => {
+    const c = screen("evacuate");
+    const sos = at(c, 'a[href="/sos"]');
+    expect(follows(at(c, "[data-hero]"), sos)).toBe(true);
+    expect(follows(sos, at(c, "[data-checklist]"))).toBe(true);
+  });
+});

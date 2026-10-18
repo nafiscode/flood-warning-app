@@ -325,7 +325,7 @@ describe("where the new cards sit on the home screen", () => {
         onRetry={() => {}}
         projectLine={null}
         tambonRisk={(code) => <div data-risk-slot={code} />}
-        signInOffer={<div data-offer-slot="true" />}
+        joinJaga={<div data-offer-slot="true" />}
         {...more}
       />,
     ).container;
@@ -341,7 +341,7 @@ describe("where the new cards sit on the home screen", () => {
     expect(c.querySelector("[data-offer-slot]")).toBeTruthy();
   });
 
-  it("at Evacuate the SOS and the checklist come first, and the invitation to sign in is gone", () => {
+  it("at Evacuate the SOS and the checklist come first, and the invitation to join is gone", () => {
     const c = home("evacuate", { me: { signedIn: false } });
     const slot = c.querySelector("[data-risk-slot]")!;
     expect(follows(c.querySelector("[data-checklist]")!, slot)).toBe(true);
@@ -349,9 +349,14 @@ describe("where the new cards sit on the home screen", () => {
     expect(c.querySelector("[data-offer-slot]")).toBeNull();
   });
 
-  it("someone signed in is not asked to sign in", () => {
+  /*
+   * Someone signed in still meets the block, because since 18 Oct it also carries the way in for a
+   * rescue unit - and a volunteer who signed in as a resident is exactly who needs it. What drops
+   * out for them is the sign-in offer inside it, which decides that for itself.
+   */
+  it("someone signed in still meets the invitation to join", () => {
     const c = home("watch", { me: homeExample("watched").me });
-    expect(c.querySelector("[data-offer-slot]")).toBeNull();
+    expect(c.querySelector("[data-offer-slot]")).toBeTruthy();
   });
 });
 

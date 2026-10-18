@@ -5097,5 +5097,14 @@
         "note": "{total} mm keseluruhan, dalam model - bukan ukuran di rumah anda."
       }
     }
+  },
+  "unitWay": {
+    "title": "Daftar pasukan anda",
+    "who": "Unit penyelamat dan pasukan sukarelawan",
+    "body": "Daftar sekali. Selepas pentadbir Jaga menelefon nombor rasmi pasukan anda, permintaan di kawasan anda akan sampai kepada anda.",
+    "register": "Daftar pasukan",
+    "quiet": "Pasukan penyelamat, APM atau sukarelawan?",
+    "mine": "Lihat status unit anda",
+    "signInFirst": "Masuk dengan LINE dahulu, kemudian Jaga akan membawa anda ke borang pendaftaran pasukan."
   }
 }

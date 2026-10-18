@@ -139,6 +139,42 @@ test.describe("home", () => {
     await noSidewaysScroll(page);
   });
 
+  /*
+   * The two ways in under the hero (the owner, 18 Oct). The register button is the thing this
+   * whole change exists for, so the test says where it is, that a thumb can hit it, and that
+   * tapping it really does reach the way into the form.
+   */
+  test("a rescue unit and a resident both find their way in, under the hero", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await page.goto("/");
+    const card = page.locator('[data-unit-way="card"]');
+    await expect(card).toBeVisible();
+    const register = card.locator('a[data-unit-register="home"]');
+    await expect(register).toBeVisible();
+    expect((await register.boundingBox())!.height).toBeGreaterThanOrEqual(48);
+    // The resident's own way in, beside it, with its LINE button.
+    await expect(page.locator('[data-sign-in-offer="compact"] [data-line-link]')).toBeVisible();
+    // Under the hero, and above the checklist.
+    const hero = (await page.locator("[data-hero]").boundingBox())!;
+    const pair = (await page.locator("[data-join-jaga]").boundingBox())!;
+    expect(pair.y).toBeGreaterThan(hero.y);
+    await noSidewaysScroll(page);
+    await register.click();
+    await expect(page).toHaveURL(/\/sign-in/);
+  });
+
+  test("after a few visits the invitation to register is one quiet line", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await page.addInitScript(() =>
+      window.localStorage.setItem("jaga.unitWay", JSON.stringify({ visits: 9 })),
+    );
+    await page.goto("/");
+    await expect(page.locator('[data-join-jaga="line"]')).toBeVisible();
+    await expect(page.locator('[data-unit-way="card"]')).toHaveCount(0);
+    await expect(page.locator('a[data-unit-register="home"]')).toBeVisible();
+    await noSidewaysScroll(page);
+  });
+
   test("the header has Home, Map and Sign in as words, and nothing scrolls sideways", async ({
     page,
   }) => {

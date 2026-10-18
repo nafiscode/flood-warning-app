@@ -194,6 +194,7 @@ export function useMyRole(ask = true): string | null {
   useEffect(() => {
     if (!hasSession()) {
       if (readStored("role") !== null) writeStored("role", null);
+      if (readStored("unit") !== null) writeStored("unit", null);
       return;
     }
     if (!ask) return;
@@ -203,12 +204,14 @@ export function useMyRole(ask = true): string | null {
     const askNow = () => {
       if (cancelled || answered || busy) return;
       busy = true;
-      getJsonTrying<{ role: string | null }>("/api/me/role", () => cancelled)
+      getJsonTrying<{ role: string | null; hasUnit?: boolean }>("/api/me/role", () => cancelled)
         .then(
           (me) => {
             if (cancelled) return;
             answered = true;
             writeStored("role", me.role);
+            // Kept beside the role, so no page spends a second request on it (see useHasUnit).
+            writeStored("unit", me.hasUnit === true ? true : null);
             setLive(me.role);
           },
           () => {},
@@ -225,6 +228,16 @@ export function useMyRole(ask = true): string | null {
     };
   }, [ask]);
   return live ?? stored;
+}
+
+/**
+ * Whether this person has a unit registered already, for the invitation to register one. The
+ * answer arrives with the role the header asks for on every page (components/AdminLink.tsx), so
+ * nothing here asks for itself. Null until an answer has been had — and null shows the
+ * invitation, which is the safe way round: a team that has not registered must always see it.
+ */
+export function useHasUnit(): boolean | null {
+  return useStored<boolean>("unit");
 }
 
 /** `checkedAt` since A9 (15 Oct 2026); lists kept before then have none. */

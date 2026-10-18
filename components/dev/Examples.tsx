@@ -1,6 +1,7 @@
 "use client";
 
 import { HomeView } from "@/components/home/HomeView";
+import { JoinJaga } from "@/components/home/JoinJaga";
 import { DashboardView } from "@/components/map/DashboardView";
 import { DamCard, DamNotice } from "@/components/map/Dam";
 import { MapView } from "@/components/map/MapView";
@@ -71,6 +72,8 @@ export function HomeExample({ scenario }: { scenario: HomeScenario }) {
       dams={data?.dams ?? null}
       // Made-up reports from residents, so "flood reported near you" can be judged here.
       reports={EXAMPLE_REPORTS_NEAR}
+      // The two ways in under the hero, so they can be judged here in every state (18 Oct).
+      joinJaga={<JoinJaga />}
       myReports={
         <MyReportsView reports={EXAMPLE_MY_REPORTS} busy={null} failed={false} onEnd={() => {}} />
       }

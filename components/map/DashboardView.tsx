@@ -93,6 +93,7 @@ import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
 import { SignInHint } from "@/components/account/SignInOffer";
+import { UnitWayLine } from "@/components/authority/UnitWay";
 import { MapMethod } from "./MapMethod";
 import {
   GAUGE_SPAN,
@@ -1840,6 +1841,8 @@ export function DashboardView(props: DashboardViewProps) {
                 </div>
                 {/* A visitor learns their family's places could be pinned here (the owner, 15 Oct). */}
                 {!props.me?.signedIn && <SignInHint what="mapPlaces" />}
+                {/* And a rescue team reading the map learns it can register (18 Oct). */}
+                <UnitWayLine where="map" />
                 <p className={hint}>{t("tapHint")}</p>
                 {props.dataState === "unavailable" && (
                   <p role="status" className={notice}>

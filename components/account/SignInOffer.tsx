@@ -5,7 +5,7 @@ import { BellIcon, HouseIcon, LifebuoyIcon, PinIcon, WaveIcon } from "@/componen
 import { usePathname } from "@/i18n/navigation";
 import { lineSignInHref, signInHref } from "@/lib/sign-in-link";
 import { useSignedIn } from "@/lib/use-public";
-import { buttonPrimary } from "@/lib/ui";
+import { buttonPrimary, offerCard } from "@/lib/ui";
 import { LineLink } from "./LineLink";
 
 const GAINS = [
@@ -22,27 +22,36 @@ const GAINS = [
  * really adds, each true today; one tap straight into LINE's sign-in and back to this page; and,
  * last, that nothing urgent ever needs an account (safety rule 1). The home screen leaves it out
  * at Warning and Evacuate.
+ *
+ * `compact` is the form that sits under the hero beside the unit card (18 Oct): the same words and
+ * the same LINE button, with the two strongest gains instead of all five, so the two cards stand
+ * the same height. The footnote that nothing urgent needs an account is in both, always.
  */
-export function SignInOffer() {
+export function SignInOffer({
+  compact = false,
+  className = "",
+}: { compact?: boolean; className?: string } = {}) {
   const t = useTranslations("signInOffer");
   const locale = useLocale();
   const pathname = usePathname();
   const signedIn = useSignedIn();
   if (signedIn) return null;
+  const titleId = compact ? "sign-in-offer-compact-title" : "sign-in-offer-title";
+  const gains = compact ? GAINS.slice(0, 2) : GAINS;
   return (
     <section
-      aria-labelledby="sign-in-offer-title"
-      data-sign-in-offer="true"
-      className="flex flex-col gap-3 rounded-xl border-2 border-jaga-teal-ink bg-jaga-surface p-4"
+      aria-labelledby={titleId}
+      data-sign-in-offer={compact ? "compact" : "true"}
+      className={`${offerCard} ${className}`}
     >
       <div className="flex flex-col gap-0.5">
-        <h2 id="sign-in-offer-title" className="text-h3 font-bold text-jaga-ink">
+        <h2 id={titleId} className="text-h3 font-bold text-jaga-ink">
           {t("title")}
         </h2>
         <p className="text-small text-jaga-text-2">{t("sub")}</p>
       </div>
       <ul className="flex flex-col gap-2.5">
-        {GAINS.map(({ key, Icon }) => (
+        {gains.map(({ key, Icon }) => (
           <li key={key} className="flex items-start gap-3" data-gain={key}>
             <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-jaga-ground text-jaga-teal-ink">
               <Icon size={20} />
@@ -56,7 +65,7 @@ export function SignInOffer() {
           </li>
         ))}
       </ul>
-      <LineLink href={lineSignInHref(locale, pathname)} className={buttonPrimary}>
+      <LineLink href={lineSignInHref(locale, pathname)} className={`${buttonPrimary} ${compact ? "mt-auto" : ""}`}>
         {t("line")}
       </LineLink>
       <a

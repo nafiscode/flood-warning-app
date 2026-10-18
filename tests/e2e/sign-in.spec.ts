@@ -17,6 +17,29 @@ test("sign-in page says SOS and alerts need no sign-in, and keeps the hotlines",
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
+/*
+ * The registration form sits behind this page, which never said so (the owner, 18 Oct). A unit
+ * that arrives here is signed in straight into the form; one that arrives *from* the form reads
+ * the explanation but is not offered a second button, because the page's own LINE button below
+ * already carries them back to it.
+ */
+test("a rescue unit is told how to reach the registration form", async ({ page }) => {
+  await page.goto("/sign-in");
+  const block = page.locator('[data-unit-way="signIn"]');
+  await expect(block).toBeVisible();
+  await expect(block).toContainText(th.unitWay.title);
+  await expect(block).toContainText(th.unitWay.signInFirst);
+  await expect(block.locator("[data-line-link]")).toHaveAttribute(
+    "href",
+    /next=%2Fauthority%2Fregister/,
+  );
+
+  await page.goto("/authority/register");
+  await expect(page).toHaveURL(/\/sign-in/);
+  await expect(page.locator('[data-unit-way="signIn"]')).toBeVisible();
+  await expect(page.locator('[data-unit-way="signIn"] [data-line-link]')).toHaveCount(0);
+});
+
 test("phone sign-in is hidden in production until a provider is chosen", async ({ page }) => {
   await page.goto("/sign-in");
   await expect(page.locator('input[name="phone"]')).toHaveCount(0);

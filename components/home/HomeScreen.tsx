@@ -16,7 +16,7 @@ import { RequestsLink } from "@/components/journey/MyRequests";
 import { PushCard } from "@/components/push/PushCard";
 import { MyReports } from "@/components/reports/MyReports";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
-import { SignInOffer } from "@/components/account/SignInOffer";
+import { JoinJaga } from "@/components/home/JoinJaga";
 import { NewToJaga } from "@/components/home/NewToJaga";
 import { HomeMonitoring } from "./HomeMonitoring";
 import { TambonRiskCard } from "./TambonRisk";
@@ -86,7 +86,7 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
           now={now}
         />
       )}
-      signInOffer={<SignInOffer />}
+      joinJaga={<JoinJaga />}
       welcome={<NewToJaga />}
       install={<InstallCard place="home" />}
       share={<ShareApp />}

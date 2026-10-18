@@ -88,8 +88,12 @@ export type HomeViewProps = {
     onMyRiver: boolean;
     damTambon: string | null;
   }) => ReactNode;
-  /** "What you get by signing in": a visitor only, and never at Warning or Evacuate. */
-  signInOffer?: ReactNode;
+  /**
+   * The way in for a rescue unit and the resident's own way in, side by side under the hero (the
+   * owner, 18 Oct: ten people had signed in and no unit had registered, because the home screen
+   * never said a unit could). Never at Warning or Evacuate.
+   */
+  joinJaga?: ReactNode;
   /** "New to Jaga?" into What Jaga can do: the first visits only, never at Warning or Evacuate. */
   welcome?: ReactNode;
 };
@@ -321,6 +325,14 @@ export function HomeView(props: HomeViewProps) {
         )}
 
         {/*
+         * Under the hero and nowhere else (the owner, 18 Oct): what the tambon's level is stays
+         * the first thing on the screen, and how to join Jaga is the second. It is in the static
+         * HTML on purpose - the people it is for arrive from a link, often on a slow phone - and
+         * it goes once a place of theirs is at Warning or Evacuate.
+         */}
+        {!tense && props.joinJaga}
+
+        {/*
          * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays
          * the one place that says what level the tambon is at: this is neighbours speaking, not
          * Jaga, and it says so.
@@ -429,9 +441,6 @@ export function HomeView(props: HomeViewProps) {
             {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
           </Link>
         )}
-
-        {/* What an account gives, where a visitor would otherwise see their watched places. */}
-        {!me?.signedIn && !loading && !choosing && !tense && props.signInOffer}
 
         {/* The map comes straight after the person's own places, and the safe places after it,
             folded under their own button (owner, 12 Oct). Since 15 Oct the way in is the map's five

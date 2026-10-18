@@ -5,6 +5,13 @@ export const buttonPrimary =
 export const buttonSecondary =
   "inline-flex min-h-tap w-full items-center justify-center gap-2 rounded-xl border-2 border-jaga-edge bg-jaga-surface px-5 py-2 text-center font-medium text-jaga-ink active:translate-y-px disabled:opacity-60";
 /**
+ * The shell of an offer card: a teal-edged card for something the page invites a visitor to do,
+ * rather than something it is telling them. Shared by the two cards under the hero (18 Oct) so
+ * that "as equals" is one string and not two that drift apart.
+ */
+export const offerCard =
+  "flex flex-col gap-3 rounded-xl border-2 border-jaga-teal-ink bg-jaga-surface p-4";
+/**
  * A quiet button: a tint of the brand teal, an outline and a label, sized for a thumb but not
  * asking for the attention the primary one does. For an action that sits beside the content
  * rather than at the end of a flow.
