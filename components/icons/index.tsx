@@ -567,3 +567,40 @@ export function LayersIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/**
+ * A drawing pin, for a readout a reader wants kept open (the owner, 18 Oct 2026). Pressed in
+ * when it is pinned, lying at an angle when it is not, so the state is a shape as well as a
+ * colour and a word.
+ */
+export function TackIcon({ on = false, ...rest }: IconProps & { on?: boolean }) {
+  return (
+    <Icon {...rest}>
+      {on ? (
+        <>
+          <path d="M12 17v4" />
+          <path d="M8.5 3h7l-1 5 3 3v2H6.5v-2l3-3-1-5Z" />
+        </>
+      ) : (
+        <>
+          <path d="M15 20.5 12.5 18" />
+          <path d="m19.5 7.5-4.9-4.9-2.5 4.4-4.2 1.3-1.4 1.4 6 6 1.4-1.4 1.3-4.2 4.3-2.6Z" />
+        </>
+      )}
+    </Icon>
+  );
+}
+
+/**
+ * The side panel folded away or brought back (the owner, 18 Oct 2026): a panel at the edge of a
+ * frame, with the arrow pointing the way the panel will go.
+ */
+export function PanelIcon({ open = true, ...rest }: IconProps & { open?: boolean }) {
+  return (
+    <Icon {...rest}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M15 4v16" />
+      {open ? <path d="m8 9 3 3-3 3" /> : <path d="m11 9-3 3 3 3" />}
+    </Icon>
+  );
+}

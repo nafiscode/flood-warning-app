@@ -14,6 +14,7 @@ const POINTS = [
   "places",
   "sea",
   "weather",
+  "names",
 ] as const;
 
 /**

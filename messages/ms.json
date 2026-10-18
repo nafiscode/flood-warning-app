@@ -702,7 +702,11 @@
         "confirmed": "{count} mukim disahkan beberapa orang",
         "none": "Tiada laporan",
         "window": "Masih berkuat kuasa, sehingga 72 jam"
-      }
+      },
+      "pin": "Sematkan kad ini supaya kekal terbuka",
+      "unpin": "Nyahsemat kad ini",
+      "panelHide": "Sembunyikan panel sebelah kanan",
+      "panelShow": "Tunjukkan panel sebelah kanan"
     },
     "full": {
       "open": "Skrin penuh",
@@ -4031,7 +4035,11 @@
       "lead": "Laut, daripada model ombak dan cuaca",
       "text": "Tujuh tempat di luar pantai dari Songkhla hingga Tak Bai, dibaca daripada model ombak dan model cuaca Open-Meteo setiap setengah jam. Ombak 1 m, angin 30 km/j atau ribut petir dikira bergelora; ombak 2 m, angin 40 km/j atau tiupan 60 km/j bermakna bot kecil patut tidak keluar, mengikut kata-kata TMD. Ia tidak pernah berkata laut selamat, dan ketinggian pasang surut tidak ditunjukkan kerana model berbeza kira-kira 0.7 m daripada stesen air."
     },
-    "more": "Keseluruhan kaedahnya, lapisan demi lapisan: bagaimana Jaga berfungsi"
+    "more": "Keseluruhan kaedahnya, lapisan demi lapisan: bagaimana Jaga berfungsi",
+    "names": {
+      "lead": "Nama daerah dan mukim muncul apabila peta dizum",
+      "text": "Dengan keempat-empat wilayah dalam paparan, peta hanya menulis nama wilayah. Zum masuk dan nama daerah muncul; zum lagi sehingga seluas tempat anda sendiri dan nama mukim muncul. Nama itu daripada sempadan pentadbiran Jabatan Ukur Diraja Thai (melalui OCHA), dan tidak menyatakan apa-apa tentang air."
+    }
   },
   "tambonRisk": {
     "eyebrow": "Risiko banjir jangka panjang, bukan amaran hari ini",

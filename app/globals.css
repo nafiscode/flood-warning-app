@@ -415,6 +415,145 @@
       box-shadow: 0 0 0 2px var(--alarm-ring);
     }
   }
+  /*
+   * The readouts small, opening when asked (the owner, 18 Oct 2026: "by default these cards
+   * should only show minimal info... when hover on, it can open larger, and if the user prefers
+   * they can pin it"). The point of all of it is more map.
+   *
+   * Opening covers the map rather than pushing it down (the owner chose): the strip keeps its
+   * height, so the map never resizes under the pointer and nothing being read jumps. A pinned
+   * card is different - it is meant to stay, so it keeps its room in the strip like before.
+   *
+   * Everything here is the console's: the strip is drawn on no other screen.
+   */
+  [data-console-tile] {
+    position: relative;
+  }
+  [data-console-tile] [data-tile-card] {
+    /* So a row of small cards lines up whatever their figures say. */
+    min-height: 5rem;
+  }
+  [data-console-tile] [data-tile-more] {
+    display: none;
+  }
+  /* Small, a heading is one line: it names the card, and the card is about to be opened anyway.
+     Opened or pinned, it is written in full. */
+  [data-console-tile] [data-console-label] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  [data-console-tile]:hover [data-console-label],
+  [data-console-tile]:focus-within [data-console-label],
+  [data-console-tile][data-tile-pinned="true"] [data-console-label] {
+    overflow: visible;
+    white-space: normal;
+  }
+  /* The figure a size down while the card is small, so two lines of it still leave the strip
+     short. It is the same words, and it goes back to its full size the moment the card opens. */
+  [data-console-tile]:not(:hover):not(:focus-within):not([data-tile-pinned="true"])
+    [data-tile-brief]
+    p {
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+  /* Small, a figure is two lines at most; opened, it says all it has. The height is capped as
+     well as clamped: a card whose figure is a paragraph, not a line, must not set the height of
+     the whole strip, and every pixel the strip gives up goes to the map. */
+  [data-console-tile] [data-tile-brief] {
+    max-height: 3.4em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  [data-console-tile]:hover [data-tile-card],
+  [data-console-tile]:focus-within [data-tile-card] {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    z-index: 20;
+    box-shadow: 0 12px 32px rgb(29 59 83 / 0.22);
+  }
+  [data-console-tile]:hover [data-tile-brief],
+  [data-console-tile]:focus-within [data-tile-brief],
+  [data-console-tile][data-tile-pinned="true"] [data-tile-brief] {
+    display: flex;
+    max-height: none;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+  }
+  [data-console-tile]:hover [data-tile-more],
+  [data-console-tile]:focus-within [data-tile-more],
+  [data-console-tile][data-tile-pinned="true"] [data-tile-more] {
+    display: flex;
+  }
+  /* Pinned, the card stays where it is and the strip makes room for it. */
+  [data-console-tile][data-tile-pinned="true"]:hover [data-tile-card],
+  [data-console-tile][data-tile-pinned="true"]:focus-within [data-tile-card] {
+    position: static;
+    box-shadow: none;
+  }
+  /* A control inside a readout (the monitoring's way into its detail) is sized for a pointer
+     here, not for a thumb: this whole block is a wide screen with a mouse, and 48 px of button
+     in a card meant to be small is 48 px off the map. The phone's own card is untouched. */
+  [data-console-tile] [data-tile-card] button {
+    min-height: 2rem;
+  }
+  /* The pin itself is quiet until the card is opened, and plain once it holds one open. */
+  [data-console-tile] [data-tile-pin] {
+    opacity: 0;
+  }
+  [data-console-tile]:hover [data-tile-pin],
+  [data-console-tile]:focus-within [data-tile-pin],
+  [data-console-tile][data-tile-pinned="true"] [data-tile-pin] {
+    opacity: 1;
+  }
+
+  /*
+   * The right panel folded away (the owner, 18 Oct): the map takes the room, a strip the width
+   * of its button is left, and resting the pointer on that strip brings the panel back over the
+   * map for as long as it is wanted. A tap on the map opens it properly again and it stays
+   * (the owner chose), because a tap means the detail was asked for.
+   */
+  [data-map-console][data-side="closed"]:not([data-map-full]) {
+    grid-template-columns: 19rem minmax(0, 1fr) 3rem;
+  }
+  /* Hidden by visibility, not by display: several of these blocks are display:contents
+     wrappers that hold the phone's own arrangement together, and a display of our own here
+     would take that apart. Hidden this way they keep their shape, cannot be tabbed into, and
+     come back exactly as they were. */
+  [data-side="closed"]:not([data-map-full]) [data-console-area="side"] > *:not([data-side-bar]) {
+    visibility: hidden;
+  }
+  /* The peek is armed only once the pointer has left the folded strip (data-side-peek), or
+     folding the panel would leave it standing open under the very button that folded it. There
+     is no keyboard peek on purpose: when it is folded the only thing in it that can be reached
+     is the button that opens it properly. */
+  [data-side="closed"][data-side-peek="on"]:not([data-map-full]) [data-console-area="side"]:hover {
+    position: relative;
+    z-index: 20;
+    width: clamp(26rem, 32vw, 38rem);
+    margin-inline-start: calc(3rem - clamp(26rem, 32vw, 38rem));
+    overflow-y: auto;
+    border-radius: 0.75rem;
+    background: var(--jaga-ground);
+    padding: 0.75rem;
+    box-shadow: 0 12px 32px rgb(29 59 83 / 0.22);
+  }
+  [data-side="closed"][data-side-peek="on"]:not([data-map-full])
+    [data-console-area="side"]:hover
+    > * {
+    visibility: visible;
+  }
+  /* The button the panel folds to, and the one that folds it: never hidden, so the panel can
+     always be brought back from a keyboard as well as a pointer. */
+  [data-side-bar] {
+    display: flex;
+    flex: none;
+    justify-content: flex-end;
+  }
+
   [data-console-area="rail"] {
     grid-area: rail;
   }

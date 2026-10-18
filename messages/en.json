@@ -702,7 +702,11 @@
         "confirmed": "{count} subdistricts confirmed by several",
         "none": "No report stands",
         "window": "Standing, up to 72 hours"
-      }
+      },
+      "pin": "Keep this card open",
+      "unpin": "Let this card close again",
+      "panelHide": "Hide the side panel",
+      "panelShow": "Show the side panel"
     },
     "full": {
       "open": "Full screen",
@@ -4031,7 +4035,11 @@
       "lead": "The sea, from wave and weather models",
       "text": "Seven points off the coast from Songkhla to Tak Bai, read from Open-Meteo's wave and weather models every half hour. Waves from 1 m, wind from 30 km/h or thunderstorms count as rough; waves from 2 m, wind from 40 km/h or gusts from 60 km/h mean small boats should stay in port, in TMD's own words. It never says the sea is safe, and tide heights are not shown because the model differs from the tide gauges by about 0.7 m."
     },
-    "more": "The whole method, layer by layer: how Jaga works"
+    "more": "The whole method, layer by layer: how Jaga works",
+    "names": {
+      "lead": "District and tambon names appear as you zoom in",
+      "text": "With all four provinces in view the map writes only the province names. Zoom in and the districts are named; zoom in further, to about the extent of your own place, and the tambons are. The names come from the Royal Thai Survey Department's administrative boundaries (via OCHA), and say nothing about the water."
+    }
   },
   "tambonRisk": {
     "eyebrow": "Long-term flood risk, not today's alert",

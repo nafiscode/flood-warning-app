@@ -1,7 +1,9 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { PanelIcon } from "@/components/icons";
+import { areaLabels } from "@/lib/area-labels";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { AlertHero } from "@/components/home/AlertHero";
@@ -291,6 +293,14 @@ export function DashboardView(props: DashboardViewProps) {
   const tSea = useTranslations("sea");
   const tNear = useTranslations("reportsNear");
   const locale = useLocale();
+  /*
+   * The names of the districts and tambons for the map itself (the owner, 18 Oct): built from the
+   * area list the page already fetched for the province picker, so a named map costs no request.
+   */
+  const areaNames = useMemo(
+    () => (directory ? areaLabels(directory.tambons, locale) : null),
+    [directory, locale],
+  );
   const format = useFormatter();
   const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
 
@@ -342,8 +352,24 @@ export function DashboardView(props: DashboardViewProps) {
   const setSelection = (next: MapSelection | null) => {
     setTouched(true);
     setPicked(next);
+    // Something was asked about: the answer is in the right panel, so bring it back and leave it.
+    if (next) setSideOpen(true);
   };
   const [showMine, setShowMine] = useState(true);
+  /*
+   * The right panel folded away, so the map has the room (the owner, 18 Oct 2026). Open when the
+   * page opens: what the panel holds is what a tap on the map answers with, and someone who has
+   * not folded it away yet should not have to find it. Resting the pointer on the folded strip
+   * brings it back for a moment (app/globals.css); a tap on the map opens it for good, below.
+   */
+  const [sideOpen, setSideOpen] = useState(true);
+  /*
+   * Whether resting the pointer on the folded strip brings the panel back. It is off from the
+   * moment the panel is folded until the pointer has left it once: the button that folds it is
+   * the strip, so without this, folding the panel left it standing open under the pointer and
+   * looked as though the button had done nothing.
+   */
+  const [sidePeek, setSidePeek] = useState(true);
   /*
    * "My places" as a tour (the owner, 15 Oct): the map visits the person's home and each place
    * they watch in turn, with previous / next and a list to jump to one, and Reset to go back to the
@@ -1092,6 +1118,8 @@ export function DashboardView(props: DashboardViewProps) {
       data-map-console={consoleOn ? "true" : undefined}
       data-console-page={consoleOn ? "map" : undefined}
       data-map-full={consoleOn && full ? "true" : undefined}
+      data-side={consoleOn ? (sideOpen ? "open" : "closed") : undefined}
+      data-side-peek={consoleOn && !sideOpen ? (sidePeek ? "on" : "off") : undefined}
     >
       {/*
        * The blocks below carry `data-console-area`, and on a laptop the console block in
@@ -1596,6 +1624,7 @@ export function DashboardView(props: DashboardViewProps) {
                         ? props.satellite.features
                         : null
                     }
+                    areaNames={areaNames}
                     basemap={basemap}
                     scene={scene}
                     fill
@@ -1617,7 +1646,36 @@ export function DashboardView(props: DashboardViewProps) {
                * shelf cost the map 140 px, and a laptop screen is only about 790 px tall inside
                * the browser - the map is the one thing here that must not be squeezed.
                */}
-              <div className="contents" data-console-area="side" data-console-rail="true">
+              <div
+                className="contents"
+                data-console-area="side"
+                data-console-rail="true"
+                onPointerLeave={() => setSidePeek(true)}
+              >
+                {/*
+                 * Folding the panel away and bringing it back (the owner, 18 Oct). Only on the
+                 * console: a phone has no side panel to fold, and `contents` keeps this out of
+                 * its way entirely.
+                 */}
+                <span className="hidden console:contents">
+                  <div data-side-bar="true">
+                    <button
+                      type="button"
+                      data-side-toggle={sideOpen ? "open" : "closed"}
+                      aria-expanded={sideOpen}
+                      onClick={() => {
+                        setSideOpen((was) => !was);
+                        setSidePeek(false);
+                      }}
+                      className="inline-flex min-h-tap min-w-tap items-center justify-center rounded-lg border border-jaga-line bg-jaga-surface text-jaga-ink"
+                    >
+                      <PanelIcon open={sideOpen} aria-hidden="true" />
+                      <span className="sr-only">
+                        {t(sideOpen ? "console.panelHide" : "console.panelShow")}
+                      </span>
+                    </button>
+                  </div>
+                </span>
                 <fieldset className="flex flex-col gap-1" data-basemap={basemap}>
                   <legend className="font-medium">{t("basemap.title")}</legend>
                   {basemapButtons}

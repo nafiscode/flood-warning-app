@@ -659,6 +659,37 @@ export const PROVINCE_CAPITALS: Record<string, [number, number]> = {
 /** How far past the four-province view the reader zooms before the detail comes back. */
 export const DETAIL_STEP = 0.4;
 
+/*
+ * The names of the areas themselves, as the reader zooms in (the owner, 18 Oct 2026): the four
+ * provinces are named at the overview, the districts once the detail comes back, and the tambons
+ * a few steps further, by the time the map is about the extent of someone's own place. The
+ * basemap cannot do this - OpenFreeMap names towns and villages, not amphoe and tambon - so the
+ * names are Jaga's own (lib/area-labels.ts), drawn from the area list the page already has.
+ */
+export const AREA_LABEL_SOURCE = "jaga-area-labels";
+export const DISTRICT_LABEL_LAYER = "jaga-district-labels";
+export const TAMBON_LABEL_LAYER = "jaga-tambon-labels";
+/** How far past the overview the tambon names wait: about one province filling the map. */
+export const TAMBON_LABEL_STEP = 2.4;
+
+/** The zoom each kind of name starts at, given this map's own four-province zoom. */
+export function labelSteps(overview: number): { district: number; tambon: number } {
+  return {
+    district: detailZoom(overview),
+    tambon: Math.round((overview + TAMBON_LABEL_STEP) * 100) / 100,
+  };
+}
+
+/**
+ * Where our own area names belong in the order: above our fills, so the alert colours and the
+ * risk shading do not cover them, but before the basemap's own names, which is what makes
+ * MapLibre place ours first and drop a village name that collides with a tambon name rather than
+ * the other way about. Undefined when the basemap has no names (yet), which puts them on top.
+ */
+export function beforeBasemapLabels(layers: { id: string; type: string }[]): string | undefined {
+  return layers.find((l) => l.type === "symbol" && !l.id.startsWith("jaga-"))?.id;
+}
+
 /** The zoom from which tambons and the basemap's names are drawn, given the overview's zoom. */
 export function detailZoom(overview: number): number {
   return Math.round((overview + DETAIL_STEP) * 100) / 100;
@@ -701,6 +732,10 @@ export function quietOverview(map: MapLibreMap, ownLabels: readonly string[] = [
   };
   range(TAMBON_LINE_LAYER, detail, 24);
   range(CAPITAL_LAYER, 0, detail);
+  // District names from the same step as the detail, tambon names a few steps further in.
+  const steps = labelSteps(camera.zoom);
+  range(DISTRICT_LABEL_LAYER, steps.district, 24);
+  range(TAMBON_LABEL_LAYER, steps.tambon, 24);
   let originals = originalMinzoom.get(map);
   if (!originals) originalMinzoom.set(map, (originals = new Map()));
   for (const layer of map.getStyle().layers) {

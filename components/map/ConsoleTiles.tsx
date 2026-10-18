@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { TackIcon } from "@/components/icons";
 import { LevelCounts } from "@/components/alerts/LevelCounts";
 import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
@@ -77,6 +79,86 @@ function LiveDot() {
 const tile =
   "flex min-w-0 flex-col gap-1.5 rounded-xl border border-jaga-line bg-jaga-surface px-4 py-3";
 
+/**
+ * One readout, small until it is asked for (the owner, 18 Oct 2026: "by default these cards
+ * should only show minimal info... when hover on, it can open larger, and if the user prefers
+ * they can pin it"). The aim is more map.
+ *
+ * Small, a card carries its heading and its figure - never less, because the figure is the thing
+ * that is glanced at. Resting the pointer on one (or tabbing into it) opens the rest over the
+ * top of the map, which is what the owner chose over pushing the map down: the map never resizes
+ * under the pointer. The pin keeps a card open, and then it does take its room in the strip,
+ * because a pinned card is meant to stay.
+ *
+ * The shape of all this is in app/globals.css with the rest of the console, and it is a laptop
+ * arrangement only: the whole strip is drawn nowhere else.
+ */
+function Tile({
+  id,
+  alarm,
+  label,
+  brief,
+  more,
+  pinned,
+  onPin,
+  pinWords,
+  children,
+}: {
+  id: string;
+  alarm?: string;
+  label: React.ReactNode;
+  brief: React.ReactNode;
+  /** What waits until the card is opened. Left out, the card has nothing more to show. */
+  more?: React.ReactNode;
+  pinned: boolean;
+  onPin: () => void;
+  pinWords: { pin: string; unpin: string };
+  /** Controls, which stay with the figure: hidden words cannot be reached by a keyboard. */
+  children?: React.ReactNode;
+}) {
+  return (
+    <li
+      data-console-tile={id}
+      data-tile-pinned={pinned ? "true" : "false"}
+      className="flex min-w-0 flex-col"
+    >
+      <div data-tile-card="true" data-console-alarm={alarm} className={`${tile} flex-1`}>
+        {/*
+         * The heading row holds everything that must not move: a control inside a card that
+         * grows when it opens would slide out from under the pointer going for it, and a
+         * figure that opens pushes whatever is beneath it down.
+         */}
+        <div className="flex items-start justify-between gap-2">
+          <Label>{label}</Label>
+          <span className="flex shrink-0 items-center gap-2">
+            {children}
+            {more && (
+              <button
+                type="button"
+                data-tile-pin="true"
+                aria-pressed={pinned}
+                onClick={onPin}
+                className="-m-1 shrink-0 rounded p-1 text-jaga-text-2 hover:text-jaga-ink"
+              >
+                <TackIcon size={18} on={pinned} aria-hidden="true" />
+                <span className="sr-only">{pinned ? pinWords.unpin : pinWords.pin}</span>
+              </button>
+            )}
+          </span>
+        </div>
+        <div data-tile-brief="true" className="flex min-w-0 flex-col gap-1.5">
+          {brief}
+        </div>
+        {more && (
+          <div data-tile-more="true" className="flex min-w-0 flex-col gap-1.5">
+            {more}
+          </div>
+        )}
+      </div>
+    </li>
+  );
+}
+
 export type ConsoleTilesProps = {
   status: PublicStatus | null;
   /** The alerts of the hazard and province on show, as the page has already narrowed them. */
@@ -112,6 +194,13 @@ export type ConsoleTilesProps = {
 export function ConsoleTiles(props: ConsoleTilesProps) {
   const t = useTranslations("map.console");
   const tHome = useTranslations("home");
+  /*
+   * Which readouts the reader has pinned open. Kept for as long as the page is open and no
+   * longer (the owner chose, 18 Oct): every visit starts with the small cards and the most map.
+   */
+  const [pinned, setPinned] = useState<Record<string, boolean>>({});
+  const isPinned = (id: string) => pinned[id] === true;
+  const pin = (id: string) => setPinned((was) => ({ ...was, [id]: !was[id] }));
   const tMonitoring = useTranslations("monitoring");
   const { status, alerts, fresh, failed, gauges, reports, time, now } = props;
   const scope = props.scope ?? t("scope.all");
@@ -132,11 +221,16 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
   const alarm = (which: TileAlarm): string | undefined =>
     props.admin && which ? which : undefined;
 
+  /*
+   * Each readout gives what is always shown and what waits until the card is opened. The figure
+   * itself is never held back: a card that is small still answers the question it is there for.
+   */
   const alertFigures = () => {
     if (!status || (failed && !fresh)) {
       return (
         <>
           <Figure>{t("unknown")}</Figure>
+          {/* Why there is no figure stays with the figure, small card or not (safety rule 3). */}
           <p className="text-small text-jaga-text-2">{t("alerts.unknownNote")}</p>
         </>
       );
@@ -149,19 +243,14 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
     return <LevelCounts tally={tally} />;
   };
 
-  const gaugeFigures = () => {
+  const gaugeFigures = (): { brief: React.ReactNode; more: React.ReactNode } => {
     if (!gauges || gauges.length === 0) {
-      return (
-        <>
-          <Figure>{t("gauges.none")}</Figure>
-          <Foot>{t("scope.all")}</Foot>
-        </>
-      );
+      return { brief: <Figure>{t("gauges.none")}</Figure>, more: <Foot>{t("scope.all")}</Foot> };
     }
     const g = gaugeTally(gauges);
     const age = ageMinutes(g.newestAt, now);
-    return (
-      <>
+    return {
+      brief: (
         <Figure>
           {/* Only what is actually happening: "0 over the bank" is noise on a quiet day. */}
           {g.over > 0 && g.near > 0
@@ -172,6 +261,8 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
                 ? t("gauges.near", { count: g.near })
                 : t("gauges.allBelow")}
         </Figure>
+      ),
+      more: (
         <Foot>
           <span className="flex items-start gap-1.5">
             <span className="mt-2 shrink-0">
@@ -190,20 +281,22 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
             </span>
           </span>
         </Foot>
-      </>
-    );
+      ),
+    };
   };
 
-  const damFigures = (d: DamTally | null) => {
-    if (!d) return <Figure>{t("dam.unknown")}</Figure>;
+  const damFigures = (d: DamTally | null): { brief: React.ReactNode; more: React.ReactNode } => {
+    if (!d) return { brief: <Figure>{t("dam.unknown")}</Figure>, more: null };
     const age = ageMinutes(d.observedAt, now);
-    return (
-      <>
+    return {
+      brief: (
         <Figure>
           {d.percentFull !== null
             ? t("dam.full", { percent: Math.round(d.percentFull) })
             : t("dam.unknown")}
         </Figure>
+      ),
+      more: (
         <Foot>
           {[
             d.outflowCms !== null
@@ -219,23 +312,21 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
             .filter(Boolean)
             .join(" · ")}
         </Foot>
-      </>
-    );
+      ),
+    };
   };
 
-  const reportFigures = () => {
+  const reportFigures = (): { brief: React.ReactNode; more: React.ReactNode } => {
     if (!reports || reports.length === 0) {
-      return (
-        <>
-          <Figure>{t("reports.none")}</Figure>
-          <Foot>{t("reports.window")}</Foot>
-        </>
-      );
+      return {
+        brief: <Figure>{t("reports.none")}</Figure>,
+        more: <Foot>{t("reports.window")}</Foot>,
+      };
     }
     const r = reportTally(reports);
-    return (
-      <>
-        <Figure>{t("reports.count", { reports: r.reports, tambons: r.tambons })}</Figure>
+    return {
+      brief: <Figure>{t("reports.count", { reports: r.reports, tambons: r.tambons })}</Figure>,
+      more: (
         <Foot>
           {[
             t("reports.people", { count: r.people }),
@@ -246,9 +337,14 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
             .filter(Boolean)
             .join(" · ")}
         </Foot>
-      </>
-    );
+      ),
+    };
   };
+
+  const gauge = gaugeFigures();
+  const damParts = damFigures(dam);
+  const reportParts = reportFigures();
+  const pinWords = { pin: t("pin"), unpin: t("unpin") };
 
   return (
     <ul
@@ -257,76 +353,94 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
       className="hidden console:grid console:grid-cols-2 console:gap-3"
       data-console-count={props.monitoring ? 5 : 4}
     >
-      <li
-        className={tile}
-        data-console-tile="alerts"
-        data-console-alarm={alarm(alertsAlarm(levels))}
-      >
-        <Label>{t("alerts.label")}</Label>
-        {alertFigures()}
-        <Foot>{t("scope.areas", { scope })}</Foot>
-      </li>
+      <Tile
+        id="alerts"
+        alarm={alarm(alertsAlarm(levels))}
+        label={t("alerts.label")}
+        brief={alertFigures()}
+        more={<Foot>{t("scope.areas", { scope })}</Foot>}
+        pinned={isPinned("alerts")}
+        onPin={() => pin("alerts")}
+        pinWords={pinWords}
+      />
 
-      <li
-        className={tile}
-        data-console-tile="gauges"
-        data-console-alarm={alarm(gaugeFigures0 ? gaugeAlarm(gaugeFigures0) : null)}
-      >
-        <Label>{t("gauges.label")}</Label>
-        {gaugeFigures()}
-      </li>
+      <Tile
+        id="gauges"
+        alarm={alarm(gaugeFigures0 ? gaugeAlarm(gaugeFigures0) : null)}
+        label={t("gauges.label")}
+        brief={gauge.brief}
+        more={gauge.more}
+        pinned={isPinned("gauges")}
+        onPin={() => pin("gauges")}
+        pinWords={pinWords}
+      />
 
-      <li className={tile} data-console-tile="dam" data-console-alarm={alarm(damAlarm(dam))}>
-        <Label>{dam ? localName(dam.dam.name, props.locale) : t("dam.label")}</Label>
-        {damFigures(dam)}
-      </li>
+      <Tile
+        id="dam"
+        alarm={alarm(damAlarm(dam))}
+        label={dam ? localName(dam.dam.name, props.locale) : t("dam.label")}
+        brief={damParts.brief}
+        more={damParts.more}
+        pinned={isPinned("dam")}
+        onPin={() => pin("dam")}
+        pinWords={pinWords}
+      />
 
-      <li
-        className={tile}
-        data-console-tile="reports"
-        data-console-alarm={alarm(reportFigures0 ? reportsAlarm(reportFigures0) : null)}
-      >
-        <Label>{t("reports.label")}</Label>
-        {reportFigures()}
-      </li>
+      <Tile
+        id="reports"
+        alarm={alarm(reportFigures0 ? reportsAlarm(reportFigures0) : null)}
+        label={t("reports.label")}
+        brief={reportParts.brief}
+        more={reportParts.more}
+        pinned={isPinned("reports")}
+        onPin={() => pin("reports")}
+        pinWords={pinWords}
+      />
 
       {/*
        * The fifth readout: the whole of the live monitoring in one line, and the way into the
        * band under the dashboard (the owner, 17 Oct). It is the one tile that is a control, so
-       * it is a button and says whether the band is open; the other four stay readouts, where a
-       * mis-click cannot lose anyone their view.
+       * the way in is a button and says whether the band is open; the other four stay readouts,
+       * where a mis-click cannot lose anyone their view. The button stays with the figure
+       * whether the card is open or not: a hidden word cannot be reached by a keyboard.
        */}
-      {props.monitoring && (
-        <li className={tile} data-console-tile="monitoring">
-          <Label>{tMonitoring("title")}</Label>
-          {(() => {
-            const status = monitoringStatus(props.monitoring!);
-            return (
-              <>
+      {props.monitoring &&
+        (() => {
+          const live = monitoringStatus(props.monitoring!);
+          return (
+            <Tile
+              id="monitoring"
+              label={tMonitoring("title")}
+              brief={
                 <p className="flex items-start gap-2 text-h3 font-bold leading-tight text-jaga-ink">
                   <span className="mt-1">
-                    <MonitoringMark status={status} />
+                    <MonitoringMark status={live} />
                   </span>
-                  <MonitoringHeadline status={status} />
+                  <MonitoringHeadline status={live} />
                 </p>
+              }
+              more={
                 <Foot>
-                  <MonitoringFigures status={status} time={time} />
+                  <MonitoringFigures status={live} time={time} />
                 </Foot>
-              </>
-            );
-          })()}
-          <button
-            type="button"
-            data-monitoring-open={props.monitoringOpen ? "true" : "false"}
-            aria-expanded={!!props.monitoringOpen}
-            aria-controls="monitoring-detail-console"
-            onClick={props.onToggleMonitoring}
-            className="min-h-tap self-start text-start underline"
-          >
-            {tMonitoring(props.monitoringOpen ? "hideDetail" : "showDetail")}
-          </button>
-        </li>
-      )}
+              }
+              pinned={isPinned("monitoring")}
+              onPin={() => pin("monitoring")}
+              pinWords={pinWords}
+            >
+              <button
+                type="button"
+                data-monitoring-open={props.monitoringOpen ? "true" : "false"}
+                aria-expanded={!!props.monitoringOpen}
+                aria-controls="monitoring-detail-console"
+                onClick={props.onToggleMonitoring}
+                className="whitespace-nowrap text-small underline"
+              >
+                {tMonitoring(props.monitoringOpen ? "hideDetail" : "showDetail")}
+              </button>
+            </Tile>
+          );
+        })()}
     </ul>
   );
 }

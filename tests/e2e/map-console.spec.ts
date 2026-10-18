@@ -361,6 +361,74 @@ test.describe("the live map on a laptop", () => {
     await expect(readout).toContainText(th.weather.codes.clear);
   });
 
+  /*
+   * The owner, 18 Oct: the readouts small by default, opening on hover, pinned if the reader
+   * wants one kept - "the idea is to have more visible on Map part".
+   */
+  test("the readouts are small until asked for, and a pinned one stays open", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-console-tiles]")).toBeVisible();
+
+    const strip = page.locator("[data-console-tiles]");
+    const small = (await strip.boundingBox())!.height;
+    const map = (await page.locator("[data-map-frame]").boundingBox())!.height;
+    // Small, every card still answers its own question: the figure is never what is held back.
+    await expect(page.locator('[data-console-tile="gauges"]')).toContainText(
+      th.map.console.gauges.over.replace("{count}", "1"),
+    );
+    const more = page.locator('[data-console-tile="gauges"] [data-tile-more]');
+    await expect(more).toBeHidden();
+
+    // Resting the pointer on one opens it over the map, and the map does not move under it.
+    await page.locator('[data-console-tile="gauges"]').hover();
+    await expect(more).toBeVisible();
+    expect((await strip.boundingBox())!.height).toBe(small);
+    expect((await page.locator("[data-map-frame]").boundingBox())!.height).toBe(map);
+
+    // Pinned, it keeps its room in the strip and stays open with the pointer elsewhere.
+    await page.locator('[data-console-tile="gauges"] [data-tile-pin]').click();
+    await page.mouse.move(700, 800);
+    await expect(more).toBeVisible();
+    expect((await strip.boundingBox())!.height).toBeGreaterThan(small);
+    // Unpinned, it is small again - once the pin itself no longer holds the keyboard, which
+    // keeps a card open on purpose for anyone reading it without a mouse.
+    const pin = page.locator('[data-console-tile="gauges"] [data-tile-pin]');
+    await pin.click();
+    await pin.blur();
+    await page.mouse.move(700, 800);
+    await expect(more).toBeHidden();
+  });
+
+  /** The owner, 18 Oct: the right panel folds away so the map has the room. */
+  test("the side panel folds away, peeks on hover, and comes back on a tap", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+    const wide = (await page.locator("[data-map-frame]").boundingBox())!.width;
+    const basemap = page.locator('[data-console-area="side"] [data-basemap]');
+
+    await page.locator("[data-side-toggle]").click();
+    await expect(page.locator("[data-map-console]")).toHaveAttribute("data-side", "closed");
+    /*
+     * Folded, it is folded at once: the button that folds it is itself the strip, so the panel
+     * must not stand open under the pointer that has just pressed it. The peek waits until the
+     * pointer has left (data-side-peek).
+     */
+    await expect(basemap).toBeHidden();
+    await page.mouse.move(700, 800);
+    expect((await page.locator("[data-map-frame]").boundingBox())!.width).toBeGreaterThan(wide);
+
+    // The pointer on the folded strip brings the panel back over the map for as long as wanted.
+    await page.locator('[data-console-area="side"]').hover();
+    await expect(basemap).toBeVisible();
+
+    // The way back is never hidden, so the panel can always be opened again.
+    await page.locator("[data-side-toggle]").click();
+    await expect(page.locator("[data-map-console]")).toHaveAttribute("data-side", "open");
+    await expect(basemap).toBeVisible();
+  });
+
   test("the frozen chip row stays off: the rail already keeps the switches in view", async ({
     page,
   }) => {

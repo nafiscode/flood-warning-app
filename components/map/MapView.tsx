@@ -55,11 +55,16 @@ import {
   type GaugeLook,
   type Trend,
 } from "@/lib/gauge-marks";
+import { areaLabelFeatures, type AreaLabel } from "@/lib/area-labels";
 import {
+  AREA_LABEL_SOURCE,
   type Basemap,
+  beforeBasemapLabels,
   createServiceAreaMap,
   darkNow,
   CAPITAL_LAYER,
+  DISTRICT_LABEL_LAYER,
+  TAMBON_LABEL_LAYER,
   liftBasemapLabels,
   mapHalo,
   mapInk,
@@ -187,6 +192,11 @@ type Props = {
    * name twice on the map.
    */
   damText?: { spillway: string; outlet: string; locale: string };
+  /**
+   * The names of the districts and tambons, which appear as the reader zooms in (lib/map.ts,
+   * quietOverview). Left out, the map carries only the basemap's own names.
+   */
+  areaNames?: AreaLabel[] | null;
   status: PublicStatus | null;
   data: MapData | null;
   now: number;
@@ -399,6 +409,7 @@ export function MapView({
   fill = false,
   satellite = null,
   sea = null,
+  areaNames = null,
   gaugeWords = { near: "", over: "" },
   peek,
 }: Props) {
@@ -422,6 +433,8 @@ export function MapView({
       ),
     [sea],
   );
+  // The area names as GeoJSON: built once for a language, not on every draw (377 tambons).
+  const areaNameData = useMemo(() => areaLabelFeatures(areaNames ?? []), [areaNames]);
   // One object for as long as the hexagons are the same, so they are sent to the map once.
   const satelliteData = useMemo(
     () => collection((satellite ?? []) as GeoJSON.Feature[]),
@@ -522,6 +535,7 @@ export function MapView({
       ),
       [SATELLITE]: satelliteData,
       [SEA]: seaData,
+      [AREA_LABEL_SOURCE]: areaNameData,
     };
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
     const dark = darkNow();
@@ -682,6 +696,71 @@ export function MapView({
         }
         m.setPaintProperty(CAPITAL_LAYER, "text-color", photoNow() ? "#ffffff" : ink());
         m.setPaintProperty(CAPITAL_LAYER, "text-halo-color", photoNow() ? "#1d3b53" : mapHalo());
+        /*
+         * The districts and then the tambons by name, as the reader zooms in (the owner,
+         * 18 Oct). They belong above our fills, so the alert colours never cover a name, and
+         * before the basemap's own names, which is what makes MapLibre keep a tambon name and
+         * drop the village name that collides with it rather than the other way about
+         * (lib/map.ts, beforeBasemapLabels). Nothing here is a status: they are the names of the
+         * places, in the reader's language, and they say nothing about the water.
+         */
+        const sizeByZoom = (near: number, small: number, far: number, large: number) =>
+          ["interpolate", ["linear"], ["zoom"], near, small, far, large] as unknown as number;
+        if (!m.getLayer(DISTRICT_LABEL_LAYER)) {
+          const under = beforeBasemapLabels(m.getStyle().layers);
+          m.addLayer(
+            {
+              id: DISTRICT_LABEL_LAYER,
+              type: "symbol",
+              source: AREA_LABEL_SOURCE,
+              filter: ["==", ["get", "kind"], "district"],
+              layout: {
+                "text-field": ["get", "label"],
+                "text-font": ["Noto Sans Bold"],
+                "text-size": sizeByZoom(8, 12, 13, 15),
+                "text-letter-spacing": 0.04,
+                "text-max-width": 8,
+                "text-padding": 3,
+              },
+              paint: { "text-halo-width": 1.8 },
+            },
+            under,
+          );
+          m.addLayer(
+            {
+              id: TAMBON_LABEL_LAYER,
+              type: "symbol",
+              source: AREA_LABEL_SOURCE,
+              filter: ["==", ["get", "kind"], "tambon"],
+              layout: {
+                "text-field": ["get", "label"],
+                "text-font": ["Noto Sans Regular"],
+                "text-size": sizeByZoom(10, 11, 14, 13),
+                "text-max-width": 8,
+                "text-padding": 2,
+              },
+              paint: { "text-halo-width": 1.6 },
+            },
+            under,
+          );
+        }
+        /*
+         * The basemap's own names may be lifted above ours after a change of ground; put ours back
+         * under the first of them, so they keep their place in the queue.
+         */
+        const order = m.getStyle().layers.map((l) => l.id);
+        const firstBasemapName = beforeBasemapLabels(m.getStyle().layers);
+        if (
+          firstBasemapName &&
+          order.indexOf(DISTRICT_LABEL_LAYER) > order.indexOf(firstBasemapName)
+        ) {
+          m.moveLayer(DISTRICT_LABEL_LAYER, firstBasemapName);
+          m.moveLayer(TAMBON_LABEL_LAYER, firstBasemapName);
+        }
+        for (const layer of [DISTRICT_LABEL_LAYER, TAMBON_LABEL_LAYER]) {
+          m.setPaintProperty(layer, "text-color", photoNow() ? "#ffffff" : ink());
+          m.setPaintProperty(layer, "text-halo-color", photoNow() ? "#1d3b53" : halo());
+        }
         /*
          * The dam, its reservoir and the path released water takes (spec section 15). Drawn
          * above the alert fill, so the river can be followed across coloured tambons, and below
@@ -1183,6 +1262,7 @@ export function MapView({
     hazardUrl,
     satelliteData,
     seaData,
+    areaNameData,
     nearWord,
     overWord,
   ]);
