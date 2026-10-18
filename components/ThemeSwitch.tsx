@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { MoonIcon, SunIcon } from "@/components/icons";
 import { writeStored } from "@/lib/phone-store";
-import { holdForVisit, OTHER, pickChoice, THEME_KEY, type ThemeMode } from "@/lib/theme";
+import { OTHER, pickChoice, THEME_KEY, type ThemeMode } from "@/lib/theme";
 
 /**
  * The theme switch, beside the bell (the owner's request, 18 Oct). Every visit still arrives in
@@ -14,6 +14,10 @@ import { holdForVisit, OTHER, pickChoice, THEME_KEY, type ThemeMode } from "@/li
  * It shows where it would take them, not where they are: a moon to go dark, a sun to come back.
  * The theme it is switching away from is written out in the label as well, because an icon on
  * its own does not say which of the two is on.
+ *
+ * The choice stands until the sun next changes, so the app still turns dark at sunset and light
+ * at sunrise on its own (the owner's rule, 18 Oct). Nothing here needs to know that: it writes
+ * the moment of the tap, and lib/theme decides how long that is worth.
  */
 /*
  * What the page is actually wearing, read from the page itself and kept in step with it: before
@@ -39,7 +43,6 @@ export function ThemeSwitch({ className = "" }: { className?: string }) {
 
   const switchTo = () => {
     if (!next) return;
-    holdForVisit(next);
     writeStored(THEME_KEY, pickChoice(next, Date.now()));
     // Painted here and not left to DaylightTheme's effect, so the colours change under the
     // finger that pressed it; the attribute is what this button then reads back.

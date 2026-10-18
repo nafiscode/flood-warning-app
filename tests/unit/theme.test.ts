@@ -1,17 +1,17 @@
 /**
  * The app turns dark after sunset and light at sunrise (the owner's note, 9 Oct), and since
- * 18 Oct a switch in the header can overrule that for the rest of the day. What is worth
+ * 18 Oct a switch in the header can overrule that until the sun next changes. What is worth
  * testing: the sun times are right, the copy of the calculation that runs before the first paint
- * agrees with the module, a picked theme lasts exactly as long as it should, and the dark
- * colours are readable.
+ * agrees with the module, a picked theme lasts exactly as long as it should - no longer, so the
+ * app still turns dark at sunset by itself - and the dark colours are readable.
  */
 import { readFileSync } from "node:fs";
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { contrastRatio } from "@/lib/brand/contrast";
 import { darkBrand, darkContrastPairs } from "@/lib/brand/tokens";
 import { isNight, nextChange, SERVICE_CENTRE, sunTimes } from "@/lib/sun";
 import { DAYLIGHT_SCRIPT } from "@/lib/theme-script";
-import { choiceToday, dayStamp, forgetVisit, OTHER, pickChoice, pickedTheme } from "@/lib/theme";
+import { OTHER, pickChoice, pickedTheme, themeFor } from "@/lib/theme";
 
 const PATTANI = { lat: 6.87, lon: 101.25 };
 const bangkok = (ms: number) =>
@@ -120,78 +120,102 @@ describe("the script that runs before the first paint", () => {
 });
 
 describe("a theme picked by hand", () => {
-  const noon = Date.parse("2026-10-18T12:00:00+07:00");
-  const night = Date.parse("2026-10-18T21:00:00+07:00");
-
-  beforeEach(() => forgetVisit());
+  // Pattani on 9 Oct 2026: sunrise 06:03, sunset 18:04 (checked against published times above).
+  const at = (hhmm: string, day = "2026-10-09") => Date.parse(`${day}T${hhmm}:00+07:00`);
+  const picked = (stored: unknown, now: number) =>
+    pickedTheme(stored, now, PATTANI.lat, PATTANI.lon);
+  const shown = (stored: unknown, now: number) => themeFor(stored, now, PATTANI.lat, PATTANI.lon);
 
   it("is the other one, both ways", () => {
     expect(OTHER.light).toBe("dark");
     expect(OTHER.dark).toBe("light");
   });
 
-  it("the day stamp is the phone's own calendar day", () => {
-    const stamp = dayStamp(noon);
-    expect(stamp).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    const d = new Date(noon);
-    expect(stamp).toBe(
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
-    );
+  it("holds while the sun stays where it was", () => {
+    const choice = pickChoice("dark", at("10:00"));
+    expect(picked(choice, at("10:00"))).toBe("dark");
+    expect(picked(choice, at("13:00"))).toBe("dark");
+    // One minute before sunset it is still theirs, against a sun that says light.
+    expect(shown(choice, at("18:03"))).toBe("dark");
   });
 
-  it("holds for the rest of the day it was picked on, and no longer", () => {
-    const choice = pickChoice("light", night);
-    expect(choiceToday(choice, night)).toBe("light");
-    // Later the same evening: still theirs.
-    expect(choiceToday(choice, night + 2 * 3600000 - 1)).toBe("light");
-    // The next day: the sun decides again.
-    expect(choiceToday(choice, night + 36 * 3600000)).toBeNull();
+  it("the sun takes the app back at sunset, whatever was picked", () => {
+    // The owner's rule, 18 Oct: when night starts the app goes dark by itself.
+    const choice = pickChoice("light", at("10:00"));
+    expect(shown(choice, at("17:00"))).toBe("light");
+    expect(picked(choice, at("18:05"))).toBeNull();
+    expect(shown(choice, at("18:05"))).toBe("dark");
+    expect(shown(choice, at("23:00"))).toBe("dark");
+  });
+
+  it("and at sunrise, so a dark night does not follow anyone into the morning", () => {
+    const choice = pickChoice("dark", at("21:00"));
+    // Through the night, midnight included: the next change is the coming sunrise, not 00:00.
+    expect(shown(choice, at("23:59"))).toBe("dark");
+    expect(shown(choice, at("02:00", "2026-10-10"))).toBe("dark");
+    expect(picked(choice, at("06:04", "2026-10-10"))).toBeNull();
+    expect(shown(choice, at("06:04", "2026-10-10"))).toBe("light");
+  });
+
+  it("a choice made at night survives midnight", () => {
+    // What the owner asked for on the first build and still holds: picking light at 23:50 must
+    // not turn the app dark by itself half an hour later while they are reading it.
+    const choice = pickChoice("light", at("23:50"));
+    expect(shown(choice, at("00:20", "2026-10-10"))).toBe("light");
+    expect(shown(choice, at("05:00", "2026-10-10"))).toBe("light");
   });
 
   it("nothing else in storage can set a theme", () => {
-    for (const junk of [null, {}, { mode: "dark" }, { mode: "sepia", day: dayStamp(noon) }, 7, "dark"]) {
-      expect(choiceToday(junk, noon)).toBeNull();
-    }
+    const junk = [
+      null,
+      {},
+      { mode: "dark" },
+      { mode: "sepia", at: at("10:00") },
+      { mode: "dark", at: "soon" },
+      { mode: "dark", at: Number.NaN },
+      // The shape the first build of the switch stored, earlier the same day.
+      { mode: "dark", day: "2026-10-09" },
+      7,
+      "dark",
+    ];
+    for (const one of junk) expect(picked(one, at("10:00"))).toBeNull();
   });
 
-  it("the choice does not run out under a visit that is still open", () => {
-    // Picked at 23:50; the hourly re-check lands after midnight. Someone reading the app must
-    // not watch it change colour by itself (the owner's rule, 18 Oct).
-    // 23:50 where the phone is, whatever zone that is - the day is the phone's own day, so this
-    // test must not name one (the clock on the owner's laptop is not Bangkok's).
-    const evening = new Date(noon);
-    evening.setHours(23, 50, 0, 0);
-    const late = evening.getTime();
-    const choice = pickChoice("light", late);
-    expect(pickedTheme(choice, late)).toBe("light");
-    expect(pickedTheme(choice, late + 30 * 60000)).toBe("light");
-    // A fresh visit the next day has nothing held, so it starts from the sun.
-    forgetVisit();
-    expect(pickedTheme(choice, late + 30 * 60000)).toBeNull();
+  it("a choice from the future is thrown away", () => {
+    // A phone whose clock was moved back would otherwise hold it for as long as it was wrong.
+    expect(picked(pickChoice("dark", at("13:00")), at("10:00"))).toBeNull();
   });
 
   it("the page arrives already in the picked colour, before the first paint", () => {
-    // At noon the sun says light; a chosen dark must be what the script writes, so the app
-    // never flashes the other theme first (the owner's note, 9 Oct).
+    const noon = at("12:00");
     expect(runScript(noon, PATTANI)).toBe("light");
     expect(runScript(noon, PATTANI, pickChoice("dark", noon))).toBe("dark");
-    expect(runScript(night, PATTANI, pickChoice("light", night))).toBe("light");
-    // Yesterday's choice is ignored by the script too, exactly as choiceToday ignores it.
-    expect(runScript(noon, PATTANI, pickChoice("dark", noon - 36 * 3600000))).toBe("light");
+    expect(runScript(at("21:00"), PATTANI, pickChoice("light", at("21:00")))).toBe("light");
+    // And in the sun's colour once the choice has run out.
+    expect(runScript(at("18:05"), PATTANI, pickChoice("light", noon))).toBe("dark");
   });
 
-  it("the script and lib/theme agree about every day of a year", () => {
-    const start = Date.parse("2026-01-01T09:00:00+07:00");
-    for (let day = 0; day < 365; day += 1) {
-      const now = start + day * 86400000;
-      for (const picked of [pickChoice("dark", now), pickChoice("light", now)]) {
-        expect(runScript(now, PATTANI, picked)).toBe(picked.mode);
+  it("the script and lib/theme agree about every hour of a year, picked or not", () => {
+    const start = Date.parse("2026-01-01T00:00:00Z");
+    let checked = 0;
+    for (let hour = 0; hour < 365 * 24; hour += 11) {
+      const now = start + hour * 3600000;
+      for (const place of [PATTANI, SERVICE_CENTRE]) {
+        const area = place === SERVICE_CENTRE ? null : place;
+        // Picked at this moment, three hours ago, and yesterday: holding, holding or expired.
+        for (const made of [now, now - 3 * 3600000, now - 86400000]) {
+          for (const mode of ["dark", "light"] as const) {
+            const choice = pickChoice(mode, made);
+            const want = themeFor(choice, now, place.lat, place.lon);
+            expect(`${new Date(now).toISOString()} ${runScript(now, area, choice)}`).toBe(
+              `${new Date(now).toISOString()} ${want}`,
+            );
+            checked += 1;
+          }
+        }
       }
-      // A stamp from the day before is spent, whichever day of the year it is.
-      const stale = pickChoice("dark", now - 86400000);
-      const fromSun = isNight(now, PATTANI.lat, PATTANI.lon) ? "dark" : "light";
-      expect(runScript(now, PATTANI, stale)).toBe(fromSun);
     }
+    expect(checked).toBeGreaterThan(2000);
   });
 });
 
