@@ -4199,7 +4199,9 @@
     "tmdLink": "TMD's forecasts and warnings",
     "surge": "Coastal flooding from the sea in a storm (storm surge) is not forecast here.",
     "fetched": "Forecast fetched {time}",
-    "peekNote": "From a model, not a warning."
+    "peekNote": "From a model, not a warning.",
+    "previousStation": "Previous station",
+    "nextStation": "Next station"
   },
   "mapRain": {
     "title": "Rain at {place}",

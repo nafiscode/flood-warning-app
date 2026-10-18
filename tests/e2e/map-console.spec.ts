@@ -109,6 +109,37 @@ async function serve(page: Page) {
   );
 }
 
+/**
+ * Three points off the coast, with hours either side of now, so the sea's own card has stations
+ * to step through whatever the real model is doing today.
+ */
+async function serveSea(page: Page) {
+  const hour = 3_600_000;
+  const now = Date.now();
+  const hours = Array.from({ length: 30 }, (_, i) => ({
+    t: now - 6 * hour + i * hour,
+    wave: 0.4,
+    waveFrom: 45,
+    wavePeriod: 6,
+    wind: 12,
+    windFrom: 50,
+    gust: 18,
+    sea: 0.2,
+  }));
+  await page.route("**/api/public/sea", (route) =>
+    route.fulfill({
+      json: {
+        fetchedAt: new Date(now).toISOString(),
+        points: [
+          { id: "pattani", province: "94", lat: 6.98, lon: 101.35, hours },
+          { id: "saiburi", province: "94", lat: 6.78, lon: 101.7, hours },
+          { id: "narathiwat", province: "96", lat: 6.52, lon: 101.92, hours },
+        ],
+      },
+    }),
+  );
+}
+
 /** A clear day over Bana, and the area chosen on this device, so the console has a sky to draw. */
 async function serveWeather(page: Page) {
   await page.addInitScript(
@@ -443,6 +474,65 @@ test.describe("the live map on a laptop", () => {
     await page.locator("[data-side-toggle]").click();
     await expect(page.locator("[data-map-console]")).toHaveAttribute("data-side", "open");
     await expect(basemap).toBeVisible();
+  });
+
+  /*
+   * The owner, 18 Oct: in the full-screen map the sea's button "does not open anything when
+   * clicked... it should open a dialog box with the details... within the map but at the left
+   * edge", and a reader in the details should be able to step to the next station.
+   */
+  test("on its own, the map answers a tap in a dialog beside the pickers", async ({ page }) => {
+    await serve(page);
+    await serveSea(page);
+    await page.goto("/en/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+    await page.locator('[data-map-full-toggle="open"]').click();
+    await expect(page.locator("[data-map-full]")).toBeVisible();
+
+    await page.locator("[data-open-sea]:visible").first().click();
+    const dialog = page.locator("[data-selected-panel]");
+    await expect(dialog).toBeVisible();
+    // Inside the map and beside the left panel, not off in the hidden right rail.
+    const panel = (await page.locator('[data-console-area="rail"]').boundingBox())!;
+    const box = (await dialog.boundingBox())!;
+    const map = (await page.locator("[data-map-frame]").boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(panel.x + panel.width - 1);
+    expect(box.x).toBeLessThan(map.x + map.width / 2);
+
+    // One station at a time, in order along the coast.
+    const chosen = page.locator("[data-sea-point][aria-pressed=true]");
+    await expect(chosen).toContainText("Pattani");
+    await page.locator('[data-sea-step="next"]').click();
+    await expect(chosen).toContainText("Sai Buri");
+    await page.locator('[data-sea-step="previous"]').click();
+    await expect(chosen).toContainText("Pattani");
+
+    // Its own way out, reachable without scrolling to the end of the report, and Escape shuts
+    // the dialog before it leaves the full screen.
+    const close = dialog.locator("button").last();
+    await expect(close).toBeInViewport();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator("[data-map-full]")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("[data-map-full]")).toHaveCount(0);
+  });
+
+  /*
+   * The owner, 18 Oct: a dam's button should bring the map to the reservoir itself, closer than
+   * the dam's own view and with the lake in the middle, and light it three times.
+   */
+  test("a reservoir's button brings the map to the lake and lights it", async ({ page }) => {
+    await serve(page);
+    await page.goto("/en/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+    const button = page.locator("[data-open-dam]:visible").first();
+    await button.scrollIntoViewIfNeeded();
+    await button.click();
+    // It lights, and it stops lighting: three pulses and then dark again (lib/dam-map.ts).
+    const frame = page.locator("[data-map-frame] [data-reservoir-lit]");
+    await expect(frame).toHaveAttribute("data-reservoir-lit", /.+/, { timeout: 4000 });
+    await expect(frame).toHaveAttribute("data-reservoir-lit", "", { timeout: 8000 });
   });
 
   test("the frozen chip row stays off: the rail already keeps the switches in view", async ({

@@ -95,6 +95,16 @@ export function byZoom(stops: [number, number][]): unknown[] {
  * tambon alert levels underneath it, and those are what the map is for.
  */
 export const RESERVOIR_FILL_OPACITY = 0.3;
+/**
+ * The reservoir lit up three times when somebody asks to be shown where it is (the owner,
+ * 18 Oct 2026). Three slow pulses, about one every 1.2 seconds - far below the three flashes a
+ * second that can harm a photosensitive reader - and for anyone who has asked for less motion it
+ * is held lit once instead of blinking, for as long as the three would have taken.
+ */
+export const RESERVOIR_FLASH_TIMES = 3;
+export const RESERVOIR_FLASH_MS = 600;
+export const RESERVOIR_FLASH_OPACITY = 0.72;
+export const RESERVOIR_FLASH_WIDTH = 4;
 export const RESERVOIR_LINE_WIDTH = 1.6;
 
 /**

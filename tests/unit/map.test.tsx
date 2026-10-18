@@ -22,6 +22,7 @@ import {
 import { damFrame, type Dam } from "@/lib/dam";
 import { layersFor } from "@/lib/hazards";
 import { boundsAround, MARGIN, MIN_SPAN, PROVINCE_BOUNDS, provincesBox } from "@/lib/map";
+import { RESERVOIR_SPAN, reservoirBox } from "@/lib/map-focus";
 import { alertFillColor, staleTambons } from "@/lib/map-style";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
@@ -167,29 +168,35 @@ describe("the view that opening the dam asks for", () => {
     expect(boundsAround([{ lon: 0, lat: 0 }])).toBeUndefined();
   });
 
-  it("the button hands the map a box that holds the dam and the person's places", () => {
+  /*
+   * The owner, 18 Oct 2026: the button takes the map to the **reservoir**, in the middle of the
+   * frame and closer than the dam's own view. This supersedes the view of 12 Oct, which held the
+   * dam, its outlets and the person's own places together - that one is a step out from this.
+   */
+  it("the button hands the map the reservoir, in the middle and close", () => {
     const c = dashboard({ dams: [EXAMPLE_DAM], me: EXAMPLE_ME });
     const before = c.querySelector("[data-map]")!.getAttribute("data-bounds");
     fireEvent.click(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)!);
     const after = c.querySelector("[data-map]")!.getAttribute("data-bounds")!;
     expect(after).not.toBe(before);
     const [west, south, east, north] = after.split(",").map(Number);
-    const [damLon, damLat] = EXAMPLE_DAM.point!.coordinates;
-    // The dam is in the box, and so is every place this person has saved. The mock rounds the
-    // box to two decimals, which is about a kilometre, hence the slack on each edge.
-    const slack = 0.01;
-    expect(west!).toBeLessThanOrEqual(damLon! + slack);
-    expect(east!).toBeGreaterThanOrEqual(damLon! - slack);
-    expect(south!).toBeLessThanOrEqual(damLat! + slack);
-    expect(north!).toBeGreaterThanOrEqual(damLat! - slack);
-    const saved = (EXAMPLE_ME.signedIn ? EXAMPLE_ME.places : []).filter((p) => p.area);
-    expect(saved.length).toBeGreaterThan(0);
-    for (const place of saved) {
-      expect(west!).toBeLessThanOrEqual(place.area!.lon + slack);
-      expect(east!).toBeGreaterThanOrEqual(place.area!.lon - slack);
-      expect(south!).toBeLessThanOrEqual(place.area!.lat + slack);
-      expect(north!).toBeGreaterThanOrEqual(place.area!.lat - slack);
+    const asked = reservoirBox(EXAMPLE_DAM)!;
+    // The mock rounds the box to two decimals, about a kilometre, hence the slack.
+    const slack = 0.011;
+    for (const [got, want] of [
+      [west!, asked[0]],
+      [south!, asked[1]],
+      [east!, asked[2]],
+      [north!, asked[3]],
+    ] as const) {
+      expect(Math.abs(got - want)).toBeLessThanOrEqual(slack);
     }
+    // Closer than the view that also had to hold this person's saved places.
+    const saved = (EXAMPLE_ME.signedIn ? EXAMPLE_ME.places : [])
+      .filter((place) => place.area)
+      .map((place) => ({ lon: place.area!.lon, lat: place.area!.lat }));
+    const wide = boundsAround([...damFrame(EXAMPLE_DAM), ...saved])!;
+    expect(east! - west!).toBeLessThan(wide[2] - wide[0]);
   });
 
   /*
@@ -248,16 +255,15 @@ describe("the view that opening the dam asks for", () => {
     expect(boundsAround(asPolygon)![1]).toBeLessThanOrEqual(5.95);
   });
 
-  it("frames the dam alone when the person has saved nothing", () => {
-    const c = dashboard({ dams: [EXAMPLE_DAM] });
-    fireEvent.click(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)!);
-    const [west, south, east, north] = c
-      .querySelector("[data-map]")!
-      .getAttribute("data-bounds")!
-      .split(",")
-      .map(Number);
-    expect(east! - west!).toBeCloseTo(MIN_SPAN.lon, 1);
-    expect(north! - south!).toBeCloseTo(MIN_SPAN.lat, 1);
+  it("asks for the same view whether or not the person has saved anywhere", () => {
+    const alone = dashboard({ dams: [EXAMPLE_DAM] });
+    fireEvent.click(alone.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)!);
+    const box = alone.querySelector("[data-map]")!.getAttribute("data-bounds")!;
+    const [west, south, east, north] = box.split(",").map(Number);
+    // The reservoir's own floor, not the map's wider one.
+    expect(east! - west!).toBeLessThan(MIN_SPAN.lon);
+    expect(north! - south!).toBeLessThan(MIN_SPAN.lat);
+    expect(east! - west!).toBeGreaterThanOrEqual(RESERVOIR_SPAN.lon);
   });
 });
 

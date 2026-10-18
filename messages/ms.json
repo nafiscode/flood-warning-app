@@ -4199,7 +4199,9 @@
     "tmdLink": "Ramalan dan amaran Jabatan Meteorologi Thailand",
     "surge": "Banjir pantai akibat air laut naik semasa ribut (storm surge) tidak diramalkan di sini.",
     "fetched": "Ramalan diambil pada {time}",
-    "peekNote": "Daripada model, bukan amaran."
+    "peekNote": "Daripada model, bukan amaran.",
+    "previousStation": "Stesen sebelumnya",
+    "nextStation": "Stesen seterusnya"
   },
   "mapRain": {
     "title": "Hujan di {place}",

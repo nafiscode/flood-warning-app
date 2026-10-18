@@ -577,6 +577,11 @@ export const MARGIN = 0.06;
 
 export function boundsAround(
   points: readonly { lon: number; lat: number }[],
+  /**
+   * A closer look than the default, for a box that is meant to be filled by one thing: the
+   * reservoir, when somebody asks to be shown where it is (the owner, 18 Oct 2026).
+   */
+  look: { minSpan?: { lon: number; lat: number }; margin?: number } = {},
 ): [number, number, number, number] | undefined {
   const usable = points.filter(
     (p) => Number.isFinite(p.lon) && Number.isFinite(p.lat) && (p.lon !== 0 || p.lat !== 0),
@@ -590,11 +595,13 @@ export function boundsAround(
   const north = Math.max(...lats);
   // Grow around the middle until the box is at least MIN_SPAN across, so one point still gets
   // a neighbourhood around it rather than a rooftop.
-  const growLon = Math.max(0, MIN_SPAN.lon - (east - west)) / 2;
-  const growLat = Math.max(0, MIN_SPAN.lat - (north - south)) / 2;
+  const span = look.minSpan ?? MIN_SPAN;
+  const growLon = Math.max(0, span.lon - (east - west)) / 2;
+  const growLat = Math.max(0, span.lat - (north - south)) / 2;
   const [w, s, e, n] = [west - growLon, south - growLat, east + growLon, north + growLat];
   // A margin, so a pin on the edge of the box is not drawn half under the edge of the screen.
-  const margin = { lon: (e - w) * MARGIN, lat: (n - s) * MARGIN };
+  const air = look.margin ?? MARGIN;
+  const margin = { lon: (e - w) * air, lat: (n - s) * air };
   return [w - margin.lon, s - margin.lat, e + margin.lon, n + margin.lat];
 }
 

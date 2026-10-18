@@ -56,7 +56,15 @@ export function reveal(find: () => HTMLElement | null, options: RevealOptions = 
     const target = find();
     if (!target) return null;
     const rail = target.closest<HTMLElement>("[data-console-rail]");
-    if (rail && window.getComputedStyle(rail).overflowY === "auto") {
+    /*
+     * Only when the rail can actually scroll. It is marked `overflow-y: auto` at every console
+     * width, but while the monitoring's detail band is open the console grows to fit its content
+     * instead (app/globals.css) and the rails stop overflowing - and scrolling a rail with
+     * nothing to scroll moved nothing at all, leaving the reader where they were (seen 18 Oct,
+     * pressing the reservoir's button from inside the band).
+     */
+    const railScrolls = rail ? rail.scrollHeight > rail.clientHeight + 4 : false;
+    if (rail && railScrolls && window.getComputedStyle(rail).overflowY === "auto") {
       const off = target.getBoundingClientRect().top - rail.getBoundingClientRect().top - 12;
       if (Math.abs(off) > 4) {
         rail.scrollTo({ top: Math.max(0, rail.scrollTop + off), behavior });

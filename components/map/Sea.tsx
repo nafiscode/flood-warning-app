@@ -421,6 +421,43 @@ export function SeaSection({
           </div>
           {chosen && (
             <>
+              {/*
+               * One station at a time, in order along the coast (the owner, 18 Oct: "users
+               * should be able to click next to see different station"). The whole list is
+               * above, which is quicker when a reader knows which station they want; these are
+               * for reading through them, which is what somebody looking at the details is
+               * doing. They wrap, so neither end is a dead stop.
+               */}
+              {views.length > 1 && (
+                <nav
+                  className="flex items-center justify-between gap-2"
+                  data-sea-steps="true"
+                  aria-label={t("pick")}
+                >
+                  {([-1, 1] as const).map((step) => {
+                    const at = views.findIndex((v) => v.point.id === chosen.point.id);
+                    const next = views[(at + step + views.length) % views.length]!;
+                    return (
+                      <button
+                        key={step}
+                        type="button"
+                        data-sea-step={step < 0 ? "previous" : "next"}
+                        onClick={() => onPoint(next.point.id)}
+                        className="inline-flex min-h-tap items-center gap-1.5 rounded-xl border-2 border-jaga-line px-3 py-1 text-start font-medium hover:border-jaga-teal-ink active:translate-y-px"
+                      >
+                        {step < 0 && <span aria-hidden="true">‹</span>}
+                        <span className="flex flex-col leading-tight">
+                          <span className="text-small text-jaga-text-2">
+                            {t(step < 0 ? "previousStation" : "nextStation")}
+                          </span>
+                          <span>{t(`points.${next.point.id}`)}</span>
+                        </span>
+                        {step > 0 && <span aria-hidden="true">›</span>}
+                      </button>
+                    );
+                  })}
+                </nav>
+              )}
               <SeaNote
                 view={chosen.view}
                 name={t("offshore", { place: t(`points.${chosen.point.id}`) })}

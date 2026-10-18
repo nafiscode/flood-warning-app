@@ -21,6 +21,10 @@ import {
   emphasis,
   MAIN_WIDTH,
   RESERVOIR_FILL_OPACITY,
+  RESERVOIR_FLASH_MS,
+  RESERVOIR_FLASH_OPACITY,
+  RESERVOIR_FLASH_TIMES,
+  RESERVOIR_FLASH_WIDTH,
   ZONE_HATCH_RATIO,
   zoneHatch,
   zoneHatchName,
@@ -177,6 +181,11 @@ type Props = {
    * empty draws nothing.
    */
   sea?: SeaMark[] | null;
+  /**
+   * Show where a reservoir is: it lights up three times (the owner, 18 Oct 2026). The `key`
+   * changes each time somebody asks, so asking for the same dam twice lights it twice.
+   */
+  flashDam?: { code: string; key: number } | null;
   /** The person's own places, drawn on top of everything when they ask for them. */
   mine?: MinePlace[];
   showMine?: boolean;
@@ -262,6 +271,9 @@ const DAM_CASING = "jaga-dam-casing";
 const DAM_MAIN = "jaga-dam-main";
 const DAM_MARKS = "jaga-dam-marks";
 const DAM_LABELS = "jaga-dam-labels";
+/** The reservoir lit up: its own layers, added over the others while it flashes, then removed. */
+const DAM_FLASH_FILL = "jaga-dam-flash-fill";
+const DAM_FLASH_LINE = "jaga-dam-flash-line";
 
 type Collection = GeoJSON.FeatureCollection;
 const collection = (features: GeoJSON.Feature[]): Collection => ({
@@ -410,6 +422,7 @@ export function MapView({
   satellite = null,
   sea = null,
   areaNames = null,
+  flashDam = null,
   gaugeWords = { near: "", over: "" },
   peek,
 }: Props) {
@@ -471,6 +484,84 @@ export function MapView({
     sceneApplied.current = scene;
     setScene(m, scene);
   }, [scene, state]);
+  /*
+   * "Show me where it is": the reservoir lights up three times when somebody opens a dam from a
+   * button (the owner, 18 Oct 2026). Only the dam that was asked for lights, which is why the
+   * paint matches on the code each feature carries.
+   *
+   * Three pulses about one every 1.2s, far below the three flashes a second that can harm a
+   * photosensitive reader; asked for less motion, it is held lit once for the same length of
+   * time instead (lib/dam-map.ts). Nothing rests on it either way: the card with the figures is
+   * what was opened, and this only says where to look.
+   */
+  const flashKey = flashDam?.key ?? 0;
+  const flashCode = flashDam?.code ?? null;
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready" || !flashCode || flashKey === 0) return;
+    /*
+     * A layer of its own, holding just this reservoir, switched on and off over the top of the
+     * others. The obvious way - lifting the reservoir's own fill-opacity with an expression that
+     * matches the code - is accepted by MapLibre and then draws nothing: fill-opacity takes no
+     * per-feature value. Measured, not guessed: the frame's mean brightness was identical with
+     * the paint set and without it.
+     */
+    const show = (on: boolean) => {
+      if (!m.getSource(DAM_WATER_SOURCE)) return;
+      try {
+        if (on && !m.getLayer(DAM_FLASH_FILL)) {
+          const water = damPaint(darkNow()).water;
+          m.addLayer({
+            id: DAM_FLASH_FILL,
+            type: "fill",
+            source: DAM_WATER_SOURCE,
+            filter: ["==", ["get", "code"], flashCode],
+            paint: { "fill-color": water, "fill-opacity": RESERVOIR_FLASH_OPACITY },
+          });
+          m.addLayer({
+            id: DAM_FLASH_LINE,
+            type: "line",
+            source: DAM_WATER_SOURCE,
+            filter: ["==", ["get", "code"], flashCode],
+            paint: {
+              "line-color": mapHalo(),
+              "line-width": RESERVOIR_FLASH_WIDTH,
+              "line-opacity": 0.9,
+            },
+          });
+        } else if (!on) {
+          for (const id of [DAM_FLASH_LINE, DAM_FLASH_FILL]) {
+            if (m.getLayer(id)) m.removeLayer(id);
+          }
+        }
+      } catch {
+        // The style is being replaced; the reservoir simply does not light this time.
+        return;
+      }
+      /*
+       * Written on the frame only once the lighting is actually drawn, so what a test watches is
+       * the lighting itself and not merely the intention to light.
+       */
+      container.current?.setAttribute("data-reservoir-lit", on ? flashCode : "");
+    };
+    const timers: number[] = [];
+    const whole = RESERVOIR_FLASH_TIMES * 2 * RESERVOIR_FLASH_MS;
+    if (reducedMotion()) {
+      show(true);
+      timers.push(window.setTimeout(() => show(false), whole));
+    } else {
+      for (let i = 0; i < RESERVOIR_FLASH_TIMES; i += 1) {
+        timers.push(window.setTimeout(() => show(true), i * 2 * RESERVOIR_FLASH_MS));
+        timers.push(
+          window.setTimeout(() => show(false), i * 2 * RESERVOIR_FLASH_MS + RESERVOIR_FLASH_MS),
+        );
+      }
+    }
+    return () => {
+      for (const timer of timers) window.clearTimeout(timer);
+      show(false);
+    };
+  }, [flashCode, flashKey, state]);
   const select = useRef(onSelect);
   const draw = useRef<() => void>(() => {});
   // The places as the handlers below need them, without rebuilding the map when they change.

@@ -93,7 +93,7 @@ import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
 import { SignInHint } from "@/components/account/SignInOffer";
 import { MapMethod } from "./MapMethod";
-import { MAIN_DAM, mainDam, zoneFrame, type MapFocus } from "@/lib/map-focus";
+import { MAIN_DAM, mainDam, reservoirBox, zoneFrame, type MapFocus } from "@/lib/map-focus";
 import { gaugeLook, trendOf } from "@/lib/gauge-marks";
 
 /** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
@@ -651,6 +651,29 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const revealPanel = () =>
     reveal(() => document.querySelector<HTMLElement>("[data-selected-panel]"));
+  /*
+   * The buttons that open each reservoir's figures (the owner, 18 Oct 2026): pressing the one in
+   * the live monitoring brings the panel to them, rather than leaving the reader to hunt for the
+   * row they were just reading about.
+   */
+  const revealDamButtons = () =>
+    reveal(() => document.querySelector<HTMLElement>("[data-dam-legend]"));
+  /** Which reservoir the map is lighting up, and how many times it has been asked (MapView). */
+  const [flashDam, setFlashDam] = useState<{ code: string; key: number } | null>(null);
+  /*
+   * Opening a reservoir from a button, wherever the button is (the owner, 18 Oct): the card with
+   * its figures, the map brought to the reservoir itself - closer than the dam's own view, and
+   * with the lake in the middle - and the lake lit three times, so it is clear which water on
+   * the map is being talked about.
+   */
+  const openDam = (dam: Dam, where: "panel" | "damButtons" = "panel") => {
+    setSelection({ kind: "dam", code: dam.code });
+    const box = reservoirBox(dam);
+    if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+    setFlashDam((was) => ({ code: dam.code, key: (was?.key ?? 0) + 1 }));
+    if (where === "damButtons") revealDamButtons();
+    else revealPanel();
+  };
 
   /*
    * The map on its own, filling the screen (the owner, 18 Oct 2026). Only on the laptop console:
@@ -682,7 +705,17 @@ export function DashboardView(props: DashboardViewProps) {
     const drawn = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 60);
     if (!full) return () => window.clearTimeout(drawn);
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setFull(false);
+      if (event.key !== "Escape") return;
+      /*
+       * While the map is on its own, what a tap opened is a dialog over the map (app/globals.css),
+       * so Escape shuts that first and only then leaves the full screen - the order anything
+       * layered is expected to come apart in.
+       */
+      if (selection) {
+        setSelection(null);
+        return;
+      }
+      setFull(false);
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", measure);
@@ -691,7 +724,7 @@ export function DashboardView(props: DashboardViewProps) {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", measure);
     };
-  }, [full]);
+  }, [full, selection]);
   /*
    * A card asked for in the address (?dam=, ?focus=dam, ?focus=sea) is already open when the page
    * arrives, and on the console it opens in the right-hand rail, under the map's own switches -
@@ -1098,10 +1131,7 @@ export function DashboardView(props: DashboardViewProps) {
           <button
             type="button"
             data-open-dam-from-monitoring={summaryDam.code}
-            onClick={() => {
-              setSelection({ kind: "dam", code: summaryDam.code });
-              revealPanel();
-            }}
+            onClick={() => openDam(summaryDam, "damButtons")}
             className={`${buttonQuiet} w-full justify-between text-start`}
           >
             {tDam("legend.open", { dam: localName(summaryDam.name, locale) })}
@@ -1625,6 +1655,7 @@ export function DashboardView(props: DashboardViewProps) {
                         : null
                     }
                     areaNames={areaNames}
+                    flashDam={flashDam}
                     basemap={basemap}
                     scene={scene}
                     fill
@@ -1939,18 +1970,7 @@ export function DashboardView(props: DashboardViewProps) {
                         key={dam.code}
                         type="button"
                         data-open-dam={dam.code}
-                        onClick={() => {
-                          setSelection({ kind: "dam", code: dam.code });
-                          /*
-                           * The dam, and the places this person saved, in one view. Their own
-                           * pins come along only while they are shown: framing a map around
-                           * something invisible would read as a wrong zoom.
-                           */
-                          const box = boundsAround([...damFrame(dam), ...(showMine ? mine : [])]);
-                          if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
-                          // The card opens above the legend, so the page has to go to it.
-                          revealPanel();
-                        }}
+                        onClick={() => openDam(dam)}
                         className={`${buttonQuiet} w-full justify-between text-start`}
                       >
                         <DamLegendRow dam={dam} />

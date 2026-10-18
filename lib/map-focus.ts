@@ -1,4 +1,5 @@
 import type { Dam } from "@/lib/dam";
+import { boundsAround } from "@/lib/map";
 
 /**
  * The six things the Flood Risk Map is for (the owner, 15 Oct: people should find them without
@@ -71,6 +72,61 @@ export function zoneFrame(dam: Dam): { lon: number; lat: number }[] {
   if (!Number.isFinite(west)) {
     for (const reach of dam.reaches) walk(reach.line.coordinates);
   }
+  if (!Number.isFinite(west)) {
+    return dam.point ? [{ lon: dam.point.coordinates[0], lat: dam.point.coordinates[1] }] : [];
+  }
+  return [
+    { lon: west, lat: south },
+    { lon: east, lat: north },
+  ];
+}
+
+/**
+ * Where the map should go when somebody presses a dam's button (the owner, 18 Oct 2026: "zoom in
+ * a little bit more than the default extent to the reservoir shape, also make it in the middle of
+ * the map"). The box is the reservoir itself, so the lake lands in the middle of the frame and
+ * fills more of it than the dam's whole view does.
+ *
+ * It is deliberately **not** the view of 12 Oct, which held the dam, both outlets and the
+ * person's own places together so the distance between them could be read: that view is still
+ * what the card itself is about, and it is one step out from this one. What the owner asked for
+ * here is to be shown where the reservoir **is**.
+ *
+ * The lake alone is rarely the whole story, so the floor keeps a little country around a small
+ * reservoir rather than zooming to its surface.
+ */
+export const RESERVOIR_SPAN = { lon: 0.09, lat: 0.075 };
+export const RESERVOIR_MARGIN = 0.12;
+
+export function reservoirBox(dam: Dam): [number, number, number, number] | undefined {
+  return boundsAround(reservoirFrame(dam), {
+    minSpan: RESERVOIR_SPAN,
+    margin: RESERVOIR_MARGIN,
+  });
+}
+
+/**
+ * The corners of the reservoir, or the dam itself where no lake is mapped. Depth-blind, like
+ * `damFrame` and `zoneFrame`, so a Polygon and a MultiPolygon are read alike.
+ */
+export function reservoirFrame(dam: Dam): { lon: number; lat: number }[] {
+  let west = Infinity;
+  let east = -Infinity;
+  let south = Infinity;
+  let north = -Infinity;
+  const walk = (part: unknown): void => {
+    if (!Array.isArray(part)) return;
+    if (typeof part[0] === "number" && typeof part[1] === "number") {
+      const [lon, lat] = part as [number, number];
+      if (lon < west) west = lon;
+      if (lon > east) east = lon;
+      if (lat < south) south = lat;
+      if (lat > north) north = lat;
+      return;
+    }
+    for (const deeper of part) walk(deeper);
+  };
+  if (dam.reservoir) walk(dam.reservoir.coordinates);
   if (!Number.isFinite(west)) {
     return dam.point ? [{ lon: dam.point.coordinates[0], lat: dam.point.coordinates[1] }] : [];
   }

@@ -627,8 +627,45 @@
   }
   /* In the side: the satellite's flood and the safe places, which the owner asked to come over to
      the left; the basemap goes onto the map itself, and the rest is dashboard. */
-  [data-map-full] [data-console-area="side"] > *:not([data-map-layers]) {
+  [data-map-full]
+    [data-console-area="side"]
+    > *:not([data-map-layers], [data-selected-panel]) {
     display: none;
+  }
+  /*
+   * What a tap answers with, while the map is on its own (the owner, 18 Oct 2026: the sea and
+   * coast button "does not open anything when clicked... it should open a dialog box with the
+   * details... the position should be within the map but at the left edge, near to the left
+   * panel itself").
+   *
+   * The right panel is not drawn here, so the card it would have opened in floats over the map
+   * instead, beside the pickers. It is the same card as on the dashboard - the sea's stations,
+   * a gauge, a reservoir, a tambon - so there is nothing here to drift out of step with it, and
+   * it keeps its own "close".
+   */
+  [data-map-full] [data-selected-panel] {
+    position: fixed;
+    inset-inline-start: calc(0.75rem + 21rem + 1rem);
+    inset-block-start: 1.25rem;
+    z-index: 26;
+    width: min(26rem, 34vw);
+    max-height: calc(100dvh - var(--jaga-hotlines, 4.5rem) - 2.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 0.75rem;
+    background: var(--jaga-ground);
+    padding: 0.5rem;
+    box-shadow: 0 12px 32px rgb(29 59 83 / 0.3);
+  }
+  /* The card is longer than the dialog, so its own "close" is held at the foot where it can
+     always be reached without scrolling to the end of a sea report. Escape shuts it too. */
+  [data-map-full] [data-selected-panel] > button:last-child {
+    position: sticky;
+    bottom: 0;
+    margin-block-start: 0.25rem;
+    border-radius: 0.5rem;
+    background: var(--jaga-ground);
+    padding-inline: 0.5rem;
   }
   /* Beside the map: only the map. The notices above it belong to the console. */
   [data-map-full] [data-console-area="map"] > *:not([data-map-frame]) {
