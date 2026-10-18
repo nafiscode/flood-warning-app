@@ -17,6 +17,7 @@ import { QueueRunner } from "@/components/QueueRunner";
 import { SignInFinisher } from "@/components/SignInFinisher";
 import { NoticeBell } from "@/components/notices/NoticeBell";
 import { ThaiClock } from "@/components/ThaiClock";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 import { UsageBeacon } from "@/components/UsageBeacon";
 import { WeatherChip } from "@/components/weather/WeatherChip";
 import { Link } from "@/i18n/navigation";
@@ -173,6 +174,11 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   */}
                   {/* What Jaga can do, one tap away (owner, 16 Oct): beside the bell from a tablet up. */}
                   <HelpLink className="hidden sm:inline-flex" />
+                  {/*
+                    Day or night by hand (the owner's request, 18 Oct), beside the bell. The sun
+                    still decides what every visit starts as; this is only for changing it.
+                  */}
+                  <ThemeSwitch />
                   <NoticeBell />
                 </div>
 

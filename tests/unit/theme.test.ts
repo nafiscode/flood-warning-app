@@ -1,15 +1,17 @@
 /**
- * The app turns dark after sunset and light at sunrise, with nothing for anyone to switch
- * (the owner's note, 9 Oct). What is worth testing: the sun times are right, the copy of the
- * calculation that runs before the first paint agrees with the module, and the dark colours are
- * readable.
+ * The app turns dark after sunset and light at sunrise (the owner's note, 9 Oct), and since
+ * 18 Oct a switch in the header can overrule that for the rest of the day. What is worth
+ * testing: the sun times are right, the copy of the calculation that runs before the first paint
+ * agrees with the module, a picked theme lasts exactly as long as it should, and the dark
+ * colours are readable.
  */
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { contrastRatio } from "@/lib/brand/contrast";
 import { darkBrand, darkContrastPairs } from "@/lib/brand/tokens";
 import { isNight, nextChange, SERVICE_CENTRE, sunTimes } from "@/lib/sun";
 import { DAYLIGHT_SCRIPT } from "@/lib/theme-script";
+import { choiceToday, dayStamp, forgetVisit, OTHER, pickChoice, pickedTheme } from "@/lib/theme";
 
 const PATTANI = { lat: 6.87, lon: 101.25 };
 const bangkok = (ms: number) =>
@@ -18,6 +20,37 @@ const bangkok = (ms: number) =>
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(ms));
+
+/** Run the inline script with a stubbed page and clock, and report what it set. */
+function runScript(
+  now: number,
+  area: { lat: number; lon: number } | null,
+  picked?: unknown,
+): string {
+  const root = { dataset: {} as Record<string, string> };
+  const stored: Record<string, unknown> = { "jaga.area": area, "jaga.theme": picked ?? null };
+  const fake = {
+    document: { documentElement: root },
+    localStorage: {
+      getItem: (key: string) =>
+        stored[key] == null ? null : JSON.stringify(stored[key]),
+    },
+    Date: class extends Date {
+      constructor(value?: number | string) {
+        super(value === undefined ? now : (value as number));
+      }
+      static now() {
+        return now;
+      }
+    },
+  };
+  new Function("document", "localStorage", "Date", DAYLIGHT_SCRIPT)(
+    fake.document,
+    fake.localStorage,
+    fake.Date,
+  );
+  return root.dataset.theme!;
+}
 
 describe("sunrise and sunset", () => {
   // Published times for Pattani, to the minute or two.
@@ -58,28 +91,6 @@ describe("sunrise and sunset", () => {
 });
 
 describe("the script that runs before the first paint", () => {
-  /** Run the inline script with a stubbed page and clock, and report what it set. */
-  function runScript(now: number, area: { lat: number; lon: number } | null): string {
-    const root = { dataset: {} as Record<string, string> };
-    const fake = {
-      document: { documentElement: root },
-      localStorage: { getItem: () => (area ? JSON.stringify(area) : null) },
-      Date: class extends Date {
-        constructor(value?: number | string) {
-          super(value === undefined ? now : (value as number));
-        }
-        static now() {
-          return now;
-        }
-      },
-    };
-    new Function("document", "localStorage", "Date", DAYLIGHT_SCRIPT)(
-      fake.document,
-      fake.localStorage,
-      fake.Date,
-    );
-    return root.dataset.theme!;
-  }
 
   it("agrees with lib/sun.ts at every hour of a year, for the area and without one", () => {
     const start = Date.parse("2026-01-01T00:00:00Z");
@@ -105,6 +116,82 @@ describe("the script that runs before the first paint", () => {
 
   it("a phone with nothing stored still gets a theme", () => {
     expect(["light", "dark"]).toContain(runScript(Date.now(), null));
+  });
+});
+
+describe("a theme picked by hand", () => {
+  const noon = Date.parse("2026-10-18T12:00:00+07:00");
+  const night = Date.parse("2026-10-18T21:00:00+07:00");
+
+  beforeEach(() => forgetVisit());
+
+  it("is the other one, both ways", () => {
+    expect(OTHER.light).toBe("dark");
+    expect(OTHER.dark).toBe("light");
+  });
+
+  it("the day stamp is the phone's own calendar day", () => {
+    const stamp = dayStamp(noon);
+    expect(stamp).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    const d = new Date(noon);
+    expect(stamp).toBe(
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+    );
+  });
+
+  it("holds for the rest of the day it was picked on, and no longer", () => {
+    const choice = pickChoice("light", night);
+    expect(choiceToday(choice, night)).toBe("light");
+    // Later the same evening: still theirs.
+    expect(choiceToday(choice, night + 2 * 3600000 - 1)).toBe("light");
+    // The next day: the sun decides again.
+    expect(choiceToday(choice, night + 36 * 3600000)).toBeNull();
+  });
+
+  it("nothing else in storage can set a theme", () => {
+    for (const junk of [null, {}, { mode: "dark" }, { mode: "sepia", day: dayStamp(noon) }, 7, "dark"]) {
+      expect(choiceToday(junk, noon)).toBeNull();
+    }
+  });
+
+  it("the choice does not run out under a visit that is still open", () => {
+    // Picked at 23:50; the hourly re-check lands after midnight. Someone reading the app must
+    // not watch it change colour by itself (the owner's rule, 18 Oct).
+    // 23:50 where the phone is, whatever zone that is - the day is the phone's own day, so this
+    // test must not name one (the clock on the owner's laptop is not Bangkok's).
+    const evening = new Date(noon);
+    evening.setHours(23, 50, 0, 0);
+    const late = evening.getTime();
+    const choice = pickChoice("light", late);
+    expect(pickedTheme(choice, late)).toBe("light");
+    expect(pickedTheme(choice, late + 30 * 60000)).toBe("light");
+    // A fresh visit the next day has nothing held, so it starts from the sun.
+    forgetVisit();
+    expect(pickedTheme(choice, late + 30 * 60000)).toBeNull();
+  });
+
+  it("the page arrives already in the picked colour, before the first paint", () => {
+    // At noon the sun says light; a chosen dark must be what the script writes, so the app
+    // never flashes the other theme first (the owner's note, 9 Oct).
+    expect(runScript(noon, PATTANI)).toBe("light");
+    expect(runScript(noon, PATTANI, pickChoice("dark", noon))).toBe("dark");
+    expect(runScript(night, PATTANI, pickChoice("light", night))).toBe("light");
+    // Yesterday's choice is ignored by the script too, exactly as choiceToday ignores it.
+    expect(runScript(noon, PATTANI, pickChoice("dark", noon - 36 * 3600000))).toBe("light");
+  });
+
+  it("the script and lib/theme agree about every day of a year", () => {
+    const start = Date.parse("2026-01-01T09:00:00+07:00");
+    for (let day = 0; day < 365; day += 1) {
+      const now = start + day * 86400000;
+      for (const picked of [pickChoice("dark", now), pickChoice("light", now)]) {
+        expect(runScript(now, PATTANI, picked)).toBe(picked.mode);
+      }
+      // A stamp from the day before is spent, whichever day of the year it is.
+      const stale = pickChoice("dark", now - 86400000);
+      const fromSun = isNight(now, PATTANI.lat, PATTANI.lon) ? "dark" : "light";
+      expect(runScript(now, PATTANI, stale)).toBe(fromSun);
+    }
   });
 });
 
@@ -151,16 +238,22 @@ describe("the dark colours", () => {
     expect(css).toContain("background: var(--jaga-surface)");
   });
 
-  it("nobody can switch the theme by hand: there is no control for it", () => {
-    const files = [
-      "components/DaylightTheme.tsx",
-      "app/[locale]/layout.tsx",
-      "lib/theme-script.ts",
-    ];
-    for (const file of files) {
-      const source = readFileSync(file, "utf8");
-      expect(source).not.toMatch(/onClick|<button/);
+  it("the only control over it is the switch in the header", () => {
+    // The sun decides what a visit starts as: nothing but ThemeSwitch may set a theme, so a
+    // page or a card can never quietly paint itself the other way.
+    for (const file of ["components/DaylightTheme.tsx", "app/[locale]/layout.tsx", "lib/theme-script.ts"]) {
+      expect(readFileSync(file, "utf8")).not.toMatch(/onClick/);
     }
+    const header = readFileSync("app/[locale]/layout.tsx", "utf8");
+    expect(header).toContain("<ThemeSwitch />");
+    const switcher = readFileSync("components/ThemeSwitch.tsx", "utf8");
+    // Beside the bell, and a 48 px target like every other control (CLAUDE.md).
+    expect(header.indexOf("<ThemeSwitch />")).toBeLessThan(header.indexOf("<NoticeBell />"));
+    expect(switcher).toContain("min-h-tap");
+    // Icon plus words: an icon alone does not say which theme is on.
+    expect(switcher).toContain("aria-label");
+    // No eye icons anywhere in the UI (CLAUDE.md); a sun and a moon say it.
+    expect(switcher).not.toMatch(/Eye/);
   });
 
   it("the alert palette is the same by day and by night (docs/brand.md)", () => {

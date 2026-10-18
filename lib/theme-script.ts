@@ -8,12 +8,21 @@
  *
  * It reads the area the person chose from the phone's own storage; nothing is asked of the
  * network, no position is requested, and nothing leaves the phone.
+ *
+ * A theme picked by hand in the header (18 Oct) is read first and wins for the rest of that day,
+ * so the app arrives in the colour they chose and never flashes the sun's one first. The day
+ * test is the one in lib/theme.ts, and the same test runs over both.
  */
 export const DAYLIGHT_SCRIPT = `(function(){try{
+var t0=Date.now(),d0=new Date(t0),p=function(n){return (n<10?"0":"")+n};
+var ds=d0.getFullYear()+"-"+p(d0.getMonth()+1)+"-"+p(d0.getDate());
+try{var pk=JSON.parse(localStorage.getItem("jaga.theme")||"null");
+if(pk&&(pk.mode==="dark"||pk.mode==="light")&&pk.day===ds){
+document.documentElement.dataset.theme=pk.mode;return}}catch(e){}
 var lat=6.8,lon=101.2;
 try{var a=JSON.parse(localStorage.getItem("jaga.area")||"null");
 if(a&&typeof a.lat==="number"&&typeof a.lon==="number"){lat=a.lat;lon=a.lon}}catch(e){}
-var now=Date.now(),R=Math.PI/180,jd=now/86400000+2440587.5,lw=-lon;
+var now=t0,R=Math.PI/180,jd=now/86400000+2440587.5,lw=-lon;
 var n=Math.round(jd-2451545.0009-lw/360),j=2451545.0009+lw/360+n;
 var m=(357.5291+0.98560028*(j-2451545))%360;
 var c=1.9148*Math.sin(m*R)+0.02*Math.sin(2*m*R)+0.0003*Math.sin(3*m*R);

@@ -79,7 +79,14 @@ export function WeatherChip({
           }
         >
           <CloudIcon size={18} className={`${styles.icon} shrink-0`} />
-          <span>{t("chip.label")}</span>
+          {/*
+            The word "weather" is read out but not drawn at phone width (18 Oct): at 360 px in
+            Thai it made this pill 150 px wide, and with the theme switch beside the bell the top
+            row no longer fitted next to the logo - the header grew by a row for exactly the
+            visitor who has not chosen a place yet. The cloud and the arrow still say it is
+            somewhere to go, and the words come back from a tablet up.
+          */}
+          <span className="sr-only sm:not-sr-only">{t("chip.label")}</span>
           <Arrow />
         </span>
       </Link>

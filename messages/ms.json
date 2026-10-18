@@ -729,7 +729,10 @@
     "backHome": "Kembali ke halaman utama",
     "backAccount": "Kembali ke akaun",
     "backBoard": "Kembali ke papan kes",
-    "mapShort": "Peta Risiko"
+    "mapShort": "Peta Risiko",
+    "theme": "Mod warna aplikasi",
+    "themeToDark": "Tukar ke mod malam",
+    "themeToLight": "Tukar ke mod siang"
   },
   "notices": {
     "title": "Pemberitahuan",
