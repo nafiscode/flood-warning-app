@@ -171,6 +171,14 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
     }
     if (orgId) await sql("delete from public.organizations where id = $1", [orgId]);
     if (userId) await service().auth.admin.deleteUser(userId);
+    /*
+     * And anything an interrupted earlier run of this spec left: an organisation belongs to no
+     * account, so deleting accounts never takes it with it and they pile up (17 Oct).
+     */
+    await sql(
+      `delete from public.organizations o where o.name like 'E2E org %'
+         and not exists (select 1 from public.authority_units u where u.org_id = o.id)`,
+    );
   });
 
   async function openSenderScreen(page: Page) {

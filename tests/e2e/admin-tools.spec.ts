@@ -38,6 +38,27 @@ const PLACE = `E2E โรงเรียน ${run}`;
 const service = () =>
   createClient(url!, secret!, { auth: { persistSession: false, autoRefreshToken: false } });
 
+/*
+ * Clear up after an earlier run of this spec that was interrupted or failed before it had the ids
+ * to delete (18 Oct: a failed run left a report sitting in the owner's moderation queue). It
+ * sweeps by this spec's own prefixes only - no other spec writes these - so two spec files running
+ * side by side can never delete each other's fixtures.
+ */
+async function sweepOldRuns() {
+  await sql("delete from public.sos_requests where text like 'e2e sos %'");
+  await sql("delete from public.reports where text like 'e2e report %'");
+  await sql("delete from public.safe_places where name->>'th' like 'E2E โรงเรียน %'");
+  const left = await sql(
+    "select id from auth.users where email like 'e2e-tools-admin-%@test.invalid'",
+  );
+  for (const row of left as { id: string }[]) {
+    await sql("delete from public.handover_notes where author_id = $1", [row.id]);
+    await sql("delete from public.announcements where created_by = $1", [row.id]);
+    await sql("delete from public.audit_log where actor = $1", [row.id]);
+    await service().auth.admin.deleteUser(row.id);
+  }
+}
+
 async function sql(text: string, params: unknown[] = []) {
   const db = new Client({ connectionString: dbUrl });
   await db.connect();
@@ -116,6 +137,7 @@ test.describe("an admin's round of the tools", () => {
     await sql("delete from public.announcements where created_by = $1", [admin]);
     await sql("delete from public.audit_log where actor = $1", [admin]);
     await service().auth.admin.deleteUser(admin);
+    await sweepOldRuns();
   });
 
   test("moderate, update a place, merge, announce, hand over, export, read the log", async ({
@@ -211,6 +233,9 @@ test.describe("an admin's round of the tools", () => {
       "sos_merged",
       "sos_unmerged",
       "announcement_posted",
+      // Posting it pushes it, and reading who to push to is itself a logged access
+      // (safety rule 5). Added by the push work of 13 Oct, hours after this list was written.
+      "push_targets",
       "announcement_cancelled",
       "export",
       "export",
