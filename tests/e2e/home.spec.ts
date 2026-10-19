@@ -406,6 +406,14 @@ test.describe("the install card", () => {
     const card = page.locator("[data-install]");
     await expect(card).toBeVisible();
 
+    // The owner, 19 Oct: nobody noticed it. One line high on the page brings the card into view,
+    // and the card says what installing is good for before it says how.
+    const line = page.locator("[data-install-line]");
+    await expect(line).toBeVisible();
+    await expect(card.locator("[data-install-why] li")).toHaveCount(3);
+    await line.locator("[data-install-show]").click();
+    await expect(card).toBeInViewport();
+
     // What Chrome and Edge hand a page they are willing to install; the person says no here.
     await page.evaluate(() => {
       const offer = new Event("beforeinstallprompt", { cancelable: true });

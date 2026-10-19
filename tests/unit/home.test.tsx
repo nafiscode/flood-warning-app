@@ -140,11 +140,14 @@ describe("the dam's figure on the home screen", () => {
      */
     const card = c.querySelector('[data-home-col="places"] [data-dam-figure-card]')!;
     expect(card).not.toBeNull();
-    // The owner, 15 Oct: after the install card, directly before Share Jaga, the last thing.
+    // The owner, 15 Oct: directly before Share Jaga, the last thing on the page.
     const share = c.querySelector("[data-share-slot]")!;
     expect(card.nextElementSibling).toBe(share);
     expect(share.nextElementSibling).toBeNull();
-    expect(card.previousElementSibling?.hasAttribute("data-install-slot")).toBe(true);
+    // The install card used to sit between them; since 19 Oct it is at the top of this column.
+    const install = c.querySelector("[data-install-slot]")!;
+    expect(install.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(card.previousElementSibling?.hasAttribute("data-install-slot")).toBe(false);
     const links = [...card.querySelectorAll("a")];
     expect(links.length).toBe(1);
     expect(links[0]!.getAttribute("href")).toContain(`dam=${DAM.code}`);

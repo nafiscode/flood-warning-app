@@ -79,13 +79,30 @@
       "computer": "Pasang Jaga pada komputer ini"
     },
     "body": {
-      "phone": "Buka dari ikon seperti aplikasi. Tanpa isyarat pun, nombor kecemasan dan status terakhir yang disimpan masih boleh dibuka.",
-      "computer": "Buka dari ikon pada komputer seperti program, tanpa membuka pelayar dahulu."
+      "phone": "Sekali saja, kurang satu minit. Baik dibuat sebelum musim banjir.",
+      "computer": "Sekali saja, kurang satu minit."
+    },
+    "why": {
+      "phone": {
+        "s1": "Buka terus dari ikon. Tidak perlu taip alamat web atau mencarinya semula ketika kecemasan.",
+        "s2": "Tanpa isyarat pun, nombor kecemasan, status terakhir kawasan anda dan tempat selamat berdekatan yang disimpan masih boleh dibuka.",
+        "s3": "Pemberitahuan boleh sampai ke telefon ini. Pada iPhone dan iPad, Jaga perlu ada di skrin utama dahulu sebelum pemberitahuan boleh dihidupkan."
+      },
+      "computer": {
+        "s1": "Buka terus dari ikon pada komputer ini, tanpa membuka pelayar dahulu.",
+        "s2": "Jika internet terputus, nombor kecemasan dan maklumat terakhir yang disimpan masih boleh dibuka.",
+        "s3": "Pemberitahuan boleh sampai ke komputer ini, walaupun tetingkap Jaga ditutup."
+      }
     },
     "button": {
       "phone": "Tambah ke skrin utama",
       "computer": "Pasang Jaga"
     },
+    "line": {
+      "phone": "Letak Jaga di skrin utama, ia tetap berfungsi tanpa isyarat.",
+      "computer": "Pasang Jaga pada komputer ini, buka terus dari ikon."
+    },
+    "lineShow": "Sebabnya dan caranya",
     "later": "Nanti dulu",
     "how": "Tunjukkan caranya",
     "demo": {

@@ -120,6 +120,22 @@ describe("the install card", () => {
     expect(onLater).toHaveBeenCalled();
   });
 
+  it("says why it is worth doing, with a picture for each reason, in all three languages", () => {
+    for (const device of ["phone", "computer"] as const) {
+      const { c } = view({ device });
+      const reasons = c.querySelectorAll(`[data-install-why="${device}"] li`);
+      expect(reasons).toHaveLength(3);
+      for (const reason of reasons) expect(reason.querySelector("svg")).not.toBeNull();
+      expect(reasons[1]!.textContent).toBe(th.install.why[device].s2);
+      for (const messages of [th, ms, en]) {
+        expect(Object.keys(messages.install.why[device])).toHaveLength(3);
+        // No empty line hiding in a translation.
+        for (const line of Object.values(messages.install.why[device]))
+          expect(line.length).toBeGreaterThan(10);
+      }
+    }
+  });
+
   it("every guide has a text for each of its pictures, in all three languages", () => {
     const guides: InstallGuide[] = [
       "inApp",
@@ -158,23 +174,43 @@ describe("the install card on the home screen", () => {
         onRetry={() => {}}
         projectLine={null}
         install={<div data-install-slot="true" />}
+        installLine={<div data-install-line-slot="true" />}
       />,
     ).container;
   }
 
-  it("is the last thing on the screen, after SOS and everything else", () => {
+  it("is above the map, the safe places and the dam, and below SOS", () => {
     const c = home("normal");
     const slot = c.querySelector("[data-install-slot]")!;
     expect(slot).not.toBeNull();
-    const all = [...c.querySelectorAll("a, button, section")];
-    expect(
-      all.every((el) => el.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING),
-    ).toBe(true);
+    const before = (el: Element) =>
+      !!(slot.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+    // It was the last thing on the page and nobody found it (the owner, 19 Oct).
+    for (const sel of ['[data-map-features="home"]', "[data-safe-places]", "[data-dam-figure-card]"]) {
+      for (const el of c.querySelectorAll(sel)) expect(before(el)).toBe(true);
+    }
+    // Nothing is allowed above the way to ask for help, or above the tambon's own level.
+    expect(before(c.querySelector('a[href$="/sos"]')!)).toBe(false);
+    expect(before(c.querySelector("[data-hero]")!)).toBe(false);
+  });
+
+  it("is pointed at by one line under the hero, which comes before the card itself", () => {
+    const c = home("normal");
+    const line = c.querySelector("[data-install-line-slot]")!;
+    const slot = c.querySelector("[data-install-slot]")!;
+    expect(line).not.toBeNull();
+    // Under the hero, above the card: the card is 56% down a phone's page and the line is not.
+    expect(c.querySelector("[data-hero]")!.compareDocumentPosition(line) &
+      Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(line.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("is not shown while the tambon is at Warning or Evacuate", () => {
-    expect(home("warning").querySelector("[data-install-slot]")).toBeNull();
-    expect(home("evacuate").querySelector("[data-install-slot]")).toBeNull();
+    for (const scenario of ["warning", "evacuate"] as const) {
+      const c = home(scenario);
+      expect(c.querySelector("[data-install-slot]")).toBeNull();
+      expect(c.querySelector("[data-install-line-slot]")).toBeNull();
+    }
   });
 });
 

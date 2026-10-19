@@ -79,13 +79,30 @@
       "computer": "Install Jaga on this computer"
     },
     "body": {
-      "phone": "It opens from its own icon, like an app. Even with no signal, the hotlines and your last saved status still open.",
-      "computer": "It opens from its own icon, like a program, without opening the browser first."
+      "phone": "Once, in under a minute. Worth doing before the flood season.",
+      "computer": "Once, in under a minute."
+    },
+    "why": {
+      "phone": {
+        "s1": "It opens straight from the icon. No typing the address and no searching for it in an emergency.",
+        "s2": "With no signal it still shows the hotlines, your area's last known status and the nearest safe places it saved.",
+        "s3": "Notifications can reach this phone. On an iPhone or iPad, Jaga has to be on the home screen before they can be turned on."
+      },
+      "computer": {
+        "s1": "It opens straight from the icon on this computer, without opening a browser first.",
+        "s2": "If the internet drops it still shows the hotlines and the last information it saved.",
+        "s3": "Notifications can reach this computer, even when the Jaga window is closed."
+      }
     },
     "button": {
       "phone": "Add to home screen",
       "computer": "Install Jaga"
     },
+    "line": {
+      "phone": "Put Jaga on your home screen and it keeps working with no signal.",
+      "computer": "Install Jaga on this computer and open it straight from the icon."
+    },
+    "lineShow": "Why, and how",
     "later": "Not now",
     "how": "Show me how",
     "demo": {

@@ -66,8 +66,13 @@ export type HomeViewProps = {
   myReports?: ReactNode;
   /** "Turn on notifications": drawn while there is something for the person to do about it. */
   push?: ReactNode;
-  /** The "put Jaga on your home screen" card. Near the end, and not at Warning or Evacuate. */
+  /**
+   * The "put Jaga on your home screen" card. First in the places column, and not at Warning or
+   * Evacuate.
+   */
   install?: ReactNode;
+  /** One line pointing at that card, high on the page. Phones and tablets only; see InstallLine. */
+  installLine?: ReactNode;
   /** "Share Jaga". Drawn last, after the dam's card, and not at Warning or Evacuate either. */
   share?: ReactNode;
   /**
@@ -333,6 +338,12 @@ export function HomeView(props: HomeViewProps) {
         {!tense && props.joinJaga}
 
         {/*
+         * And one line saying Jaga can be installed, because on a phone the card itself is 56%
+         * down the page (measured, 19 Oct) - the three columns stack and it is in the last one.
+         */}
+        {!loading && !choosing && !tense && props.installLine}
+
+        {/*
          * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays
          * the one place that says what level the tambon is at: this is neighbours speaking, not
          * Jaga, and it says so.
@@ -429,6 +440,15 @@ export function HomeView(props: HomeViewProps) {
        * becomes a column where there is room for three.
        */}
       <div data-home-col="places" className="flex flex-col gap-5 lg:col-start-2 lg:row-start-2">
+        {/*
+         * "Put Jaga on your home screen" used to be the last thing on the page, and nobody found
+         * it (the owner, 19 Oct). It is the first thing in this column now: on a laptop that is
+         * the top of the third column, and on a phone it comes straight after SOS and reporting,
+         * above the map and the safe places. It is still kept away while a place of theirs is at
+         * Warning or Evacuate, and it still goes for three weeks on "Not now".
+         */}
+        {!loading && !choosing && !tense && props.install}
+
         <WatchedPlaces items={watched} now={now} />
         {me?.signedIn && (
           <Link
@@ -459,8 +479,6 @@ export function HomeView(props: HomeViewProps) {
 
         {/* Notifications are offered at any level: a warning is when they matter most. */}
         {!loading && !choosing && props.push}
-
-        {!loading && !choosing && !tense && props.install}
 
         {/*
          * The same dam, for everyone the notice does not reach: the drawing and what it means,
