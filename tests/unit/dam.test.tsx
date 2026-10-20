@@ -1146,10 +1146,12 @@ describe("the dam on the admins' war room", () => {
         ...row.notice!,
         status: "sent",
         reviewedAt: new Date(EXAMPLE_NOW - 60_000).toISOString(),
-        reviewedByName: "นาฟิส",
+        // A placeholder admin, not a real person: the owner's own name does not belong in
+        // this repository (their decision of 20 Oct 2026), fixture or not.
+        reviewedByName: "สมชาย",
       },
     });
-    expect(container.textContent).toContain("นาฟิส");
+    expect(container.textContent).toContain("สมชาย");
     // Judged, so it no longer asks.
     expect(container.querySelector("button[name='status']")).toBeNull();
   });
