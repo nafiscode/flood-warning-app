@@ -74,6 +74,7 @@ export function HomeExample({ scenario }: { scenario: HomeScenario }) {
       reports={EXAMPLE_REPORTS_NEAR}
       // The two ways in under the hero, so they can be judged here in every state (18 Oct).
       joinJaga={<JoinJaga />}
+      unitCard={<JoinJaga place="act" />}
       myReports={
         <MyReportsView reports={EXAMPLE_MY_REPORTS} busy={null} failed={false} onEnd={() => {}} />
       }

@@ -460,6 +460,17 @@ describe("the two ways in on the home screen", () => {
     expect(follows(join, at(c, "[data-checklist]"))).toBe(true);
   });
 
+  it("puts the laptop copy of the unit card under the person's own requests", () => {
+    const c = screen("normal", {
+      myReports: <a data-requests-link="0">requests</a>,
+      unitCard: <div data-join-jaga-act="card">unit</div>,
+    });
+    expect(follows(at(c, "[data-requests-link]"), at(c, "[data-join-jaga-act]"))).toBe(true);
+    expect(at(c, "[data-join-jaga-act]").closest("[data-home-col=act]")).not.toBeNull();
+    const tense = screen("warning", { unitCard: <div data-join-jaga-act="card">unit</div> });
+    expect(tense.querySelector("[data-join-jaga-act]")).toBeNull();
+  });
+
   it("is left out when a place of theirs is at Warning or Evacuate", () => {
     expect(screen("warning").querySelector("[data-join-jaga]")).toBeNull();
     expect(screen("evacuate").querySelector("[data-join-jaga]")).toBeNull();
