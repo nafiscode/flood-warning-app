@@ -544,6 +544,13 @@
     border-radius: inherit;
     cursor: pointer;
   }
+  /*
+   * The heading row is above that cover, with everything in it: the pin, and the one control a
+   * readout carries - the live monitoring's way into its detail. When only the pin was lifted,
+   * the cover took the press meant for "see the details" and merely pinned the card instead
+   * (the owner, on the laptop, 21 Oct; it had been so since the card-wide toggle went in).
+   */
+  [data-tile-card] [data-tile-head],
   [data-tile-card] [data-tile-pin],
   [data-tile-card] > button:not([data-tile-open]):not([data-tile-toggle]) {
     position: relative;
@@ -762,7 +769,13 @@
  */
 @media (min-width: 1024px) and (max-width: 1279.98px) and (orientation: landscape),
   (min-width: 1280px) and (orientation: landscape) and (pointer: coarse) {
-  [data-map-console] {
+  /*
+   * Never while the map is on its own: full screen lays the same blocks out again by hand
+   * (grid-template-areas: none, with each area placed by column and row), so naming the areas
+   * again here put the map back in a dashboard-sized cell and left the layer switches floating
+   * over the middle of the screen. The owner saw exactly that on an iPad held sideways.
+   */
+  [data-map-console]:not([data-map-full]) {
     grid-template-columns: minmax(0, 1fr) clamp(20rem, 32vw, 26rem);
     grid-template-areas:
       "head   head"
@@ -781,8 +794,8 @@
     height: auto;
     min-height: 0;
   }
-  [data-console-area="map"],
-  [data-console-area="side"] {
+  [data-map-console]:not([data-map-full]) [data-console-area="map"],
+  [data-map-console]:not([data-map-full]) [data-console-area="side"] {
     height: calc(100dvh - var(--console-chrome, 14rem) - 8rem);
     min-height: 20rem;
   }
@@ -791,7 +804,7 @@
    * method and the rest. They are controls, not reading, so three or four to a row is right and
    * the rail no longer scrolls inside itself - the page does.
    */
-  [data-console-area="rail"] {
+  [data-map-console]:not([data-map-full]) [data-console-area="rail"] {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
     align-items: start;
@@ -1059,6 +1072,30 @@
   /* Nothing behind it moves while it is open. */
   html:has([data-map-phone][data-map-full]) {
     overflow: hidden;
+  }
+  /*
+   * What a tap answers with, while the map fills the screen (found on an iPad held upright,
+   * 21 Oct 2026: the pop-up's "see details" looked as though it did nothing). The map is fixed
+   * over the whole window here, so the card - which is laid out in the page underneath it - was
+   * being drawn behind the map: present, visible, and never seen.
+   *
+   * It floats over the map instead, which is the promise the console's own full screen already
+   * keeps. It stops short of the hotline bar rather than covering it (safety rule 4), it scrolls
+   * inside itself because a reservoir's card is thousands of pixels long, and it keeps its own
+   * "close" at its foot.
+   */
+  [data-map-phone][data-map-full] [data-selected-panel] {
+    position: fixed;
+    inset-inline: 0.75rem;
+    inset-block-end: calc(var(--jaga-hotlines, 4.5rem) + 0.75rem);
+    z-index: 26;
+    max-height: min(60dvh, calc(100dvh - var(--jaga-hotlines, 4.5rem) - 5rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 0.75rem;
+    background: var(--jaga-ground);
+    padding: 0.5rem;
+    box-shadow: 0 12px 32px rgb(29 59 83 / 0.3);
   }
   /* The map is what the reader came for, so it is what a "back to the map" lands on. */
   [data-map-phone] [data-map-frame] {

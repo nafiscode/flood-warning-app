@@ -772,7 +772,7 @@ test.describe("the live map on a phone is untouched", () => {
     expect(full.y + full.height).toBeLessThanOrEqual(hotlines.y + 1);
     await expect(dialled).toBeVisible();
     await page.locator('[data-map-full-toggle="close"]').click();
-    await expect(page.locator("[data-map-full-toggle=\"open\"]")).toBeVisible();
+    await expect(page.locator('[data-map-full-toggle="open"]')).toBeVisible();
     // The turning globe is the one piece of the console's head a phone does get, at the end of
     // the title's line and no taller than the title (the owner, 20 Oct: "if for phone can fit").
     const globe = page.locator("[data-orbit-globe]");
@@ -944,6 +944,19 @@ test.describe("the live monitoring card", () => {
       await expect(page.locator('[data-console-area="detail"]')).toHaveCount(0);
       const frame = await page.locator("[data-map-frame]").boundingBox();
       expect(frame!.height).toBeGreaterThan(280);
+
+      /*
+       * The press has to reach the button. The card-wide cover that opens a readout on a touch
+       * screen sits over the whole card, and for a day it took this press and merely pinned the
+       * card instead (the owner, 21 Oct: "it doesn't open or bring me to see the details").
+       */
+      const underPointer = await page.evaluate(() => {
+        const el = document.querySelector("[data-monitoring-open]")!;
+        const r = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return hit === el || el.contains(hit!);
+      });
+      expect(underPointer).toBe(true);
 
       // Opened from the tile, it is a band under the three columns.
       await tile.locator("[data-monitoring-open]").click();

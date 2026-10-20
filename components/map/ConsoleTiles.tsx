@@ -163,7 +163,7 @@ function Tile({
          * grows when it opens would slide out from under the pointer going for it, and a
          * figure that opens pushes whatever is beneath it down.
          */}
-        <div className="flex items-start justify-between gap-2">
+        <div data-tile-head="true" className="flex items-start justify-between gap-2">
           <Label>{label}</Label>
           <span className="flex shrink-0 items-center gap-2">
             {children}

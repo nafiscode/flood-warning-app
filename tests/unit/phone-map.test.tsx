@@ -245,6 +245,24 @@ describe("the phone's arrangement in app/globals.css", () => {
     }
   });
 
+  /*
+   * The owner, on an iPad held upright, 21 Oct: in full screen a tap on a mark showed its
+   * pop-up, and "see details" looked as though it did nothing. The map is fixed over the whole
+   * window there, so the card - laid out in the page beneath it - was drawn behind the map.
+   */
+  it("floats what a tap answers with over the full-screen map, above the hotlines", () => {
+    const block = css.slice(phoneBlockAt(css));
+    const rule = block.slice(
+      block.indexOf("[data-map-phone][data-map-full] [data-selected-panel] {"),
+    );
+    const body = rule.slice(0, rule.indexOf("}"));
+    expect(body).toContain("position: fixed");
+    // Never over the four numbers (safety rule 4).
+    expect(body).toContain("var(--jaga-hotlines");
+    // A reservoir's card is thousands of pixels long, so it scrolls inside itself.
+    expect(body).toContain("overflow-y: auto");
+  });
+
   it("gives the map the room the header and the hotline bar leave, and no more", () => {
     const block = css.slice(phoneBlockAt(css));
     expect(block).toContain("--jaga-header");
@@ -270,7 +288,9 @@ describe("the phone's arrangement in app/globals.css", () => {
 
   it("holds the way out of a long card under the header", () => {
     const block = css.slice(phoneBlockAt(css));
-    const close = block.slice(block.indexOf("[data-map-phone] [data-selected-panel] > button:last-child"));
+    const close = block.slice(
+      block.indexOf("[data-map-phone] [data-selected-panel] > button:last-child"),
+    );
     const rule = close.slice(0, close.indexOf("}"));
     expect(rule).toContain("position: sticky");
     // Under the measured header, not a guessed one, and above the card it scrolls over.

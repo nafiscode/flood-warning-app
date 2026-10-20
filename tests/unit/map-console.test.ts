@@ -289,9 +289,18 @@ describe("the console's arrangement", () => {
     const at = css.lastIndexOf("@media (min-width: 1024px) and (max-width: 1279.98px)");
     expect(at).toBeGreaterThan(0);
     const block = css.slice(at);
-    const areas = block.slice(block.indexOf("grid-template-areas:"));
+    /*
+     * The two columns are written on the console while the map is NOT on its own: full screen
+     * lays the same blocks out by hand, and naming the grid areas again there put the map in a
+     * dashboard-sized cell with the layer switches floating over the middle of the screen (the
+     * owner, on an iPad held sideways, 21 Oct). So the selector is part of the test.
+     */
+    const twoColumns = block.slice(block.indexOf("[data-map-console]:not([data-map-full]) {"));
+    const areas = twoColumns.slice(twoColumns.indexOf("grid-template-areas:"));
     expect(areas.slice(0, areas.indexOf(";"))).toContain('"map    side"');
     expect(areas.slice(0, areas.indexOf(";"))).toContain('"rail   rail"');
+    // The map's and the panel's own height is scoped the same way, for the same reason.
+    expect(block).toContain('[data-map-console]:not([data-map-full]) [data-console-area="map"]');
     // No hover on a touch screen: the pin is the way a readout opens, and it is always there.
     expect(block).toMatch(/\[data-console-tile\] \[data-tile-pin\] \{\s*opacity: 1/);
     /*
@@ -300,7 +309,9 @@ describe("the console's arrangement", () => {
      * the bottom of the page's box and the hotline bar, the links and the season outlook all
      * stopped about a screen early (the owner, on an iPad Air held sideways, 21 Oct).
      */
-    const rail = block.slice(block.indexOf('[data-console-area="rail"] {'));
+    const rail = block.slice(
+      block.indexOf('[data-map-console]:not([data-map-full]) [data-console-area="rail"] {'),
+    );
     expect(rail.slice(0, rail.indexOf("}"))).toContain("overflow: visible");
     expect(block).not.toMatch(/\[data-console-rail\] \{\s*overflow: visible/);
 
@@ -308,6 +319,15 @@ describe("the console's arrangement", () => {
     expect(block).toMatch(
       /\[data-console-tile\] \[data-tile-card\] button \{\s*min-height: 2\.75rem/,
     );
+  });
+
+  it("keeps the readout's own controls above the cover that opens the card", () => {
+    const at = css.indexOf("[data-tile-card] [data-tile-head],");
+    expect(at).toBeGreaterThan(0);
+    expect(css.slice(at, css.indexOf("}", at))).toContain("z-index: 3");
+    // The cover itself is below them.
+    const cover = css.indexOf("[data-tile-toggle] {");
+    expect(css.slice(cover, css.indexOf("}", cover))).toContain("z-index: 2");
   });
 
   it("puts every screen in exactly one band", () => {
