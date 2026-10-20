@@ -614,7 +614,7 @@
       "hint": "Your home is the pin with a house; the places you watch are the dots in brackets. Point at one, or tap it, to see its name and address."
     },
     "places": {
-      "toggle": "Show safe places on the map ({count})",
+      "toggle": "Show safe places ({count})",
       "hint": "Square with a house: a place for people · square with a P: high ground for cars. Tap one for details and directions."
     },
     "risk": {

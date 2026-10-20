@@ -614,7 +614,7 @@
       "hint": "Rumah anda ialah pin bergambar rumah; tempat yang anda pantau ialah titik dalam bingkai. Tuding atau ketik untuk melihat nama dan alamatnya."
     },
     "places": {
-      "toggle": "Tunjukkan tempat selamat pada peta ({count})",
+      "toggle": "Tunjukkan tempat selamat ({count})",
       "hint": "Petak bergambar rumah: tempat untuk orang · petak P: tanah tinggi untuk kereta. Ketik satu untuk butiran dan arah."
     },
     "risk": {
