@@ -19,10 +19,31 @@ export const SATELLITE_DEFAULT: SatelliteWindow = 7;
 /** DOPA codes of the provinces asked for: Songkhla, Pattani, Yala, Narathiwat. */
 export const SATELLITE_PROVINCES = ["90", "94", "95", "96"] as const;
 
-/** Violet by day, a lighter violet on the dark map. Not an alert hue, not a hazard class. */
-export const SATELLITE_COLOR = "#5A1FA8";
-export const SATELLITE_COLOR_NIGHT = "#A78BFF";
-export const SATELLITE_OPACITY = 0.55;
+/**
+ * A bright violet by day, a lighter one on the dark map (the owner, 20 Oct 2026: a colour that
+ * is easy to notice both on the satellite picture with the hills shaded over it and on the night
+ * terrain map). The hue is the one chosen on 13 Oct, and for the same reason - every other
+ * colour on this map already means something - but the shades of that first build were too deep
+ * to find: on the photograph they sank into dark forest and wet fields, and on the night map
+ * into the dark ground itself. These are the same violet, far brighter, with an edge drawn
+ * around every hexagon so a single one still reads at a distance.
+ *
+ * Nothing nearby may be mistaken for it: green, yellow, orange, red and blue are the five alert
+ * levels, grey is the "not updated" marker, the flood-hazard classes are a pink ramp, and teal
+ * and slate are the brand. A test holds this colour a measured distance from all of them, and
+ * light enough to be seen against the background it is drawn on.
+ */
+export const SATELLITE_COLOR = "#9944FF";
+export const SATELLITE_COLOR_NIGHT = "#BB77FF";
+/** The edge around each hexagon: dark against the day's picture, pale against the night map. */
+export const SATELLITE_EDGE = "#3B0A6B";
+export const SATELLITE_EDGE_NIGHT = "#EBD6FF";
+export const SATELLITE_OPACITY = 0.6;
+/** The outline, which is what carries a single hexagon at a distance. */
+export const SATELLITE_LINE_WIDTH = 1.5;
+export function satelliteEdge(dark: boolean): string {
+  return dark ? SATELLITE_EDGE_NIGHT : SATELLITE_EDGE;
+}
 export function satelliteColor(dark: boolean): string {
   return dark ? SATELLITE_COLOR_NIGHT : SATELLITE_COLOR;
 }
@@ -147,6 +168,43 @@ export function toSatelliteFlood(
     truncated: dropped || more,
     features,
   };
+}
+
+/**
+ * The corners of everything a pass saw: [south-west, north-east], for framing the map on it (the
+ * owner, 20 Oct 2026). Empty where there is nothing to frame.
+ *
+ * Depth-blind, like `zoneFrame` and `reservoirFrame` in lib/map-focus.ts, so a Polygon and a
+ * MultiPolygon are read alike - and walked rather than spread into `Math.min`, because twenty
+ * thousand hexagons are well over a hundred thousand points and a spread that long overruns the
+ * call stack.
+ */
+export function satelliteFrame(
+  features: readonly SatelliteCell[] | null | undefined,
+): { lon: number; lat: number }[] {
+  let west = Infinity;
+  let east = -Infinity;
+  let south = Infinity;
+  let north = -Infinity;
+  const walk = (part: unknown): void => {
+    if (!Array.isArray(part)) return;
+    if (typeof part[0] === "number" && typeof part[1] === "number") {
+      const [lon, lat] = part as [number, number];
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+      if (lon < west) west = lon;
+      if (lon > east) east = lon;
+      if (lat < south) south = lat;
+      if (lat > north) north = lat;
+      return;
+    }
+    for (const deeper of part) walk(deeper);
+  };
+  for (const feature of features ?? []) walk(feature.geometry.coordinates);
+  if (!Number.isFinite(west) || !Number.isFinite(south)) return [];
+  return [
+    { lon: west, lat: south },
+    { lon: east, lat: north },
+  ];
 }
 
 /** What the screen says about an answer: nothing asked, waiting, could not be had, empty, or some. */

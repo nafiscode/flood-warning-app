@@ -2,14 +2,17 @@ import { fireEvent, render } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 import { SatelliteFloodPanel } from "@/components/map/SatelliteFlood";
-import { alert } from "@/lib/brand/tokens";
+import { alert, brand } from "@/lib/brand/tokens";
 import { HAZARD_CLASSES } from "@/lib/hazard-layer";
+import { SATELLITE_SPAN, satelliteBox } from "@/lib/map-focus";
 import {
   SATELLITE_COLOR,
   SATELLITE_COLOR_NIGHT,
   SATELLITE_MAX_CELLS,
   isSatelliteWindow,
   passDays,
+  satelliteEdge,
+  satelliteFrame,
   satelliteLayer,
   satelliteState,
   slimCell,
@@ -105,20 +108,78 @@ describe("GISTDA's recent flood, as Jaga passes it on", () => {
     );
   });
 
-  it("is drawn in a violet that is no alert level (blue is the return level) and no hazard class", () => {
+  it("is drawn in a violet that is no alert level, no hazard class and no brand colour", () => {
     const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
     const far = (a: string, b: string) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]!)) > 90;
+    const light = (hex: string) => {
+      const [r, g, b] = rgb(hex);
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    };
     for (const [color, night] of [
       [SATELLITE_COLOR, false],
       [SATELLITE_COLOR_NIGHT, true],
     ] as const) {
+      // Violet: blue over red over green, as it has been since 13 Oct.
       const [r, g, b] = rgb(color);
-      expect(b).toBeGreaterThan(r! + 60);
-      expect(b).toBeGreaterThan(g! + 40);
+      expect(b).toBeGreaterThan(r! + 20);
+      expect(r).toBeGreaterThan(g! + 40);
       for (const level of Object.values(alert)) expect(far(color, level.bg)).toBe(true);
-      // against the hazard shades the same map would be showing
+      // against the hazard shades the same map would be showing (a pink ramp)
       for (const c of HAZARD_CLASSES) expect(far(color, night ? c.night : c.color)).toBe(true);
+      // ...and against the brand, which never shows a status (docs/brand.md)
+      for (const c of [brand["jaga-slate"], brand["jaga-teal"], brand["jaga-teal-light"]]) {
+        expect(far(color, c)).toBe(true);
+      }
+      /*
+       * Bright enough to be found (the owner, 20 Oct 2026). The deep violet of the first build
+       * was lost on the satellite picture by day and on the dark map at night; the night shade
+       * has to be lighter still, because the ground it is drawn on is almost black.
+       */
+      expect(light(color)).toBeGreaterThan(night ? 135 : 95);
+      // The edge runs the other way: dark against the day's picture, pale against the night map.
+      expect(light(satelliteEdge(night))).toBeLessThan(night ? 255 : 60);
+      expect(Math.abs(light(satelliteEdge(night)) - light(color))).toBeGreaterThan(50);
     }
+  });
+
+  it("frames every hexagon, however deeply the shapes are nested", () => {
+    const cells = [
+      slimCell(hexagon("S1D_20261011_1812"))!,
+      {
+        type: "Feature" as const,
+        geometry: {
+          type: "MultiPolygon" as const,
+          coordinates: [[[[100.5, 6.1], [100.6, 6.2], [100.5, 6.1]]]],
+        },
+        properties: { m2: 1 },
+      },
+    ];
+    expect(satelliteFrame(cells)).toEqual([
+      { lon: 100.5, lat: 6.1 },
+      { lon: 101.25123, lat: 6.87123 },
+    ]);
+    expect(satelliteFrame([])).toEqual([]);
+    expect(satelliteFrame(null)).toEqual([]);
+    expect(satelliteBox(null)).toBeUndefined();
+  });
+
+  it("gives one hexagon a neighbourhood rather than a rooftop, and a flood its own size", () => {
+    const one = satelliteBox([slimCell(hexagon("S1D_20261011_1812"))!])!;
+    expect(one[2] - one[0]).toBeGreaterThan(SATELLITE_SPAN.lon);
+    expect(one[3] - one[1]).toBeGreaterThan(SATELLITE_SPAN.lat);
+    // ...and the middle of that box is still the hexagon itself.
+    expect((one[0] + one[2]) / 2).toBeCloseTo(101.25062, 3);
+    const wide = satelliteBox([
+      {
+        type: "Feature" as const,
+        geometry: {
+          type: "Polygon" as const,
+          coordinates: [[[100.2, 6.0], [102.0, 7.8], [100.2, 6.0]]],
+        },
+        properties: { m2: 1 },
+      },
+    ])!;
+    expect(wide[2] - wide[0]).toBeGreaterThan(1.8);
   });
 });
 
@@ -165,6 +226,18 @@ describe("the switch and what it says", () => {
     );
     fireEvent.click(container.querySelector("[data-satellite-toggle] input")!);
     expect(onDays).toHaveBeenLastCalledWith(null);
+  });
+
+  it("closes from under its own detail, and the close button is only there while it is on", () => {
+    const onDays = vi.fn();
+    const { container } = panel({ onDays, load: "ok", flood: some });
+    const close = container.querySelector("[data-satellite-close]")!;
+    // After the detail, which is what the reader has just read.
+    const status = container.querySelector("[data-satellite-status]")!;
+    expect(status.compareDocumentPosition(close) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(close);
+    expect(onDays).toHaveBeenLastCalledWith(null);
+    expect(panel({ days: null, onDays }).container.querySelector("[data-satellite-close]")).toBeNull();
   });
 
   it("with flood: the area, the day of the latest image, when Jaga asked, and that it is no warning", () => {

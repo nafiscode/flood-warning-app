@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { PanelIcon } from "@/components/icons";
 import { areaLabels } from "@/lib/area-labels";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
@@ -49,7 +49,7 @@ import { damFrame, onPath, type Dam } from "@/lib/dam";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { boundsAround, darkNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } from "@/lib/map";
+import { boundsAround, nightNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
@@ -102,6 +102,7 @@ import {
   mainDam,
   reservoirBox,
   RESERVOIR_MARGIN,
+  satelliteBox,
   zoneFrame,
   type MapFocus,
 } from "@/lib/map-focus";
@@ -409,6 +410,10 @@ export function DashboardView(props: DashboardViewProps) {
    * The background follows the time of day (the owner, 15 Oct): Satellite + terrain by day,
    * Terrain at night. A background the person picks stays until day turns to night or back; the
    * picture then changes with it.
+   *
+   * The time of day, and nothing else (the owner, 20 Oct 2026): somebody who picks the dark
+   * theme at noon reads a dark app over their district in daylight, and the map turns to the
+   * night terrain when the sun actually sets. `nightNow` is the sun, not the theme (lib/map.ts).
    */
   const [basemapChoice, setBasemapPicked] = useState<{ kind: Basemap; night: boolean } | null>(
     null,
@@ -427,12 +432,12 @@ export function DashboardView(props: DashboardViewProps) {
     key: number;
   } | null>(null);
   /*
-   * The pins take their light colours once the app has turned dark for the night (the owner,
-   * 10 Oct: their own pin was too dark to see on the night map). `now` moves on every 30 s, so
-   * the colours change over with the theme; on the server it is 0 and the day colours are used,
-   * which is what the first paint in the browser draws too.
+   * The pins take their light colours once the sun is down (the owner, 10 Oct: their own pin was
+   * too dark to see on the night map). `now` moves on every 30 s, so the colours change over
+   * with the background; on the server it is 0 and the day colours are used, which is what the
+   * first paint in the browser draws too.
    */
-  const dark = props.now > 0 && darkNow();
+  const dark = props.now > 0 && nightNow();
   const basemap: Basemap =
     basemapChoice && basemapChoice.night === dark
       ? basemapChoice.kind
@@ -883,6 +888,106 @@ export function DashboardView(props: DashboardViewProps) {
   const tourReset = () => {
     setTourAt(null);
     setSelection(null);
+    setFocus((was) => ({ box: mapBounds ?? SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }));
+  };
+
+  /*
+   * What the satellite saw, switched on and off (the owner, 20 Oct 2026). Asking for it is four
+   * things, not one:
+   *
+   *   - the flood-risk classes come off, because the hexagons are drawn over them and two sets
+   *     of coloured areas on top of each other cannot both be read;
+   *   - the map travels to the hexagons, which may be anywhere in the four provinces - a layer
+   *     switched on off the edge of the screen looks like a layer that did nothing;
+   *   - they blink three times, so it is clear which shapes have just appeared (MapView);
+   *   - and closing it puts both back: the frame the reader was looking at before they asked,
+   *     and the risk classes if they were on.
+   *
+   * None of this changes what the layer says. It is a reading of satellite passes either way,
+   * and the panel's own words carry that (safety rules 8 and 10).
+   */
+  const viewBox = useRef<[number, number, number, number] | null>(null);
+  const satelliteBack = useRef<{
+    box: [number, number, number, number];
+    hazard: boolean;
+  } | null>(null);
+  const [flashSatellite, setFlashSatellite] = useState(0);
+  /** Which answer the map has already been brought to, so it travels once per answer. */
+  const [framedAnswer, setFramedAnswer] = useState<string | null>(null);
+  const restoreFromSatellite = () => {
+    const back = satelliteBack.current;
+    satelliteBack.current = null;
+    setFramedAnswer(null);
+    if (!back) return;
+    setShowHazard(back.hazard);
+    setFocus((was) => ({ box: back.box, key: (was?.key ?? 0) + 1 }));
+  };
+  /*
+   * The switch, the window buttons and the panel's own close button all come through here. The
+   * frame to come back to is the one the map is actually showing - the reader may have panned
+   * since anything last framed it - and only the first switching-on remembers it, so changing
+   * the window from 7 days to 30 does not overwrite where they started.
+   */
+  const onSatelliteDays = (days: SatelliteWindow | null) => {
+    if (days !== null && (props.satelliteDays ?? null) === null) {
+      satelliteBack.current = {
+        box: viewBox.current ?? focus?.box ?? askedBox ?? mapBounds ?? SERVICE_BOUNDS,
+        hazard: showHazard,
+      };
+    }
+    if (days === null) restoreFromSatellite();
+    props.onSatelliteDays?.(days);
+  };
+  /*
+   * The answer arrives from GISTDA a moment after the switch, so the map is brought to it here
+   * rather than in the handler. An answer with nothing in it moves nothing and hides nothing:
+   * there is no flood on the map to look at, and the panel says in words that this is not an
+   * all-clear.
+   */
+  const satelliteAnswer =
+    props.satelliteDays &&
+    props.satelliteLoad === "ok" &&
+    props.satellite?.days === props.satelliteDays
+      ? `${props.satellite.days}|${props.satellite.fetchedAt}`
+      : null;
+  const satelliteCells = props.satellite?.features;
+  if (satelliteAnswer && framedAnswer !== satelliteAnswer) {
+    /*
+     * Done while rendering, not in an effect: this is React's own way of taking in something
+     * that has changed outside (its "adjusting state when a prop changes"), and the map then
+     * travels in the same paint as the hexagons appear in rather than one frame later.
+     */
+    setFramedAnswer(satelliteAnswer);
+    const box = satelliteBox(satelliteCells);
+    if (box) {
+      setShowHazard(false);
+      setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
+      setFlashSatellite((was) => was + 1);
+    }
+  }
+
+  /*
+   * "Back to the start" (the owner, 20 Oct 2026): the view the map opens on, and everything that
+   * is drawn on it as it opens - the risk classes, the stations, the dam and its land, the sea;
+   * the thousands of safe places off; what the satellite saw off; flat, not tilted; and the
+   * background back to whatever the time of day says it should be. Nothing is remembered, so
+   * this is the same map a reader would get by opening the page again.
+   */
+  const resetMap = () => {
+    setShowHazard(true);
+    setShowGauges(true);
+    setShowDam(true);
+    setShowDamZone(true);
+    setShowSea(true);
+    setShowMine(true);
+    setShowPlaces(false);
+    setScene(false);
+    setBasemapPicked(null);
+    setTourAt(null);
+    setSelection(null);
+    satelliteBack.current = null;
+    setFramedAnswer(null);
+    if ((props.satelliteDays ?? null) !== null) props.onSatelliteDays?.(null);
     setFocus((was) => ({ box: mapBounds ?? SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }));
   };
 
@@ -1601,6 +1706,16 @@ export function DashboardView(props: DashboardViewProps) {
                         <ZoomOutIcon />
                         {t("zoomAll")}
                       </button>
+                      <button
+                        type="button"
+                        data-map-reset="true"
+                        title={t("resetLabel")}
+                        onClick={resetMap}
+                        className={mapButton}
+                      >
+                        <ResetIcon />
+                        {t("reset")}
+                      </button>
                       {myBox && (
                         <button
                           type="button"
@@ -1729,6 +1844,10 @@ export function DashboardView(props: DashboardViewProps) {
                     }
                     areaNames={areaNames}
                     flashDam={flashDam}
+                    flashSatellite={flashSatellite}
+                    onView={(box) => {
+                      viewBox.current = box;
+                    }}
                     basemap={basemap}
                     scene={scene}
                     fill
@@ -1807,7 +1926,7 @@ export function DashboardView(props: DashboardViewProps) {
                   {props.onSatelliteDays && (
                     <SatelliteFloodPanel
                       days={props.satelliteDays ?? null}
-                      onDays={props.onSatelliteDays}
+                      onDays={onSatelliteDays}
                       flood={props.satellite ?? null}
                       load={props.satelliteLoad ?? "loading"}
                       dark={nightMap}

@@ -1,5 +1,6 @@
 import type { Dam } from "@/lib/dam";
 import { boundsAround } from "@/lib/map";
+import { satelliteFrame, type SatelliteCell } from "@/lib/satellite-flood";
 
 /**
  * The six things the Flood Risk Map is for (the owner, 15 Oct: people should find them without
@@ -139,4 +140,24 @@ export function reservoirFrame(dam: Dam): { lon: number; lat: number }[] {
     { lon: west, lat: south },
     { lon: east, lat: north },
   ];
+}
+
+/**
+ * Where the map goes when somebody asks what the satellite saw (the owner, 20 Oct 2026): around
+ * everything the passes found, so the hexagons are on the screen rather than somewhere off it.
+ *
+ * The floor is wider than a reservoir's: a single hexagon is about 0.12 km2, and a map zoomed to
+ * one of those is a map of a rooftop. The flood may also be the whole of two provinces, in which
+ * case the frame is simply what it is - the box is never cut down to a closer look.
+ */
+export const SATELLITE_SPAN = { lon: 0.12, lat: 0.1 };
+export const SATELLITE_MARGIN = 0.08;
+
+export function satelliteBox(
+  features: readonly SatelliteCell[] | null | undefined,
+): [number, number, number, number] | undefined {
+  return boundsAround(satelliteFrame(features), {
+    minSpan: SATELLITE_SPAN,
+    margin: SATELLITE_MARGIN,
+  });
 }

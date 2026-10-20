@@ -1,4 +1,5 @@
 import { fireEvent } from "@testing-library/react";
+import { useState } from "react";
 import { withCoast } from "@/lib/sea";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DashboardView, type DashboardViewProps } from "@/components/map/DashboardView";
@@ -21,8 +22,16 @@ import {
 } from "@/lib/dev-examples";
 import { damFrame, type Dam } from "@/lib/dam";
 import { layersFor } from "@/lib/hazards";
-import { boundsAround, MARGIN, MIN_SPAN, PROVINCE_BOUNDS, provincesBox } from "@/lib/map";
+import {
+  boundsAround,
+  MARGIN,
+  MIN_SPAN,
+  PROVINCE_BOUNDS,
+  provincesBox,
+  SERVICE_BOUNDS,
+} from "@/lib/map";
 import { RESERVOIR_SPAN, reservoirBox } from "@/lib/map-focus";
+import type { SatelliteWindow } from "@/lib/satellite-flood";
 import { alertFillColor, staleTambons } from "@/lib/map-style";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
@@ -39,7 +48,13 @@ vi.mock("@/components/map/MapView", () => ({
     basemap = "streets",
     showDam = true,
     showDamZone = true,
+    satellite = null,
+    flashSatellite = 0,
+    onView,
   }: {
+    satellite?: { properties: { m2: number } }[] | null;
+    flashSatellite?: number;
+    onView?: (box: [number, number, number, number]) => void;
     basemap?: string;
     showDam?: boolean;
     showDamZone?: boolean;
@@ -67,7 +82,15 @@ vi.mock("@/components/map/MapView", () => ({
       data-bounds={bounds ? bounds.map((n) => n.toFixed(2)).join(",") : ""}
       data-show-dam={showDam ? "1" : "0"}
       data-show-zone={showDamZone ? "1" : "0"}
+      data-satellite-cells={satellite ? satellite.length : 0}
+      data-flash-satellite={flashSatellite}
     >
+      {/* Stands in for the reader panning the map, which the real one reports on moveend. */}
+      <button
+        type="button"
+        data-panned="true"
+        onClick={() => onView?.([100.1, 6.1, 100.3, 6.3])}
+      />
       {layers.join(",")}
       {/* Stands in for tapping the first pin, which the real map answers with onSelect. */}
       {mine[0] && (
@@ -985,5 +1008,134 @@ describe("the background follows the time of day (owner, 15 Oct)", () => {
     expect(night.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("terrain");
     fireEvent.click(night.querySelector("[data-basemap-choice='streets']")!);
     expect(night.querySelector("[data-map]")?.getAttribute("data-basemap")).toBe("streets");
+  });
+});
+
+/*
+ * Switching on the flood a satellite saw (the owner, 20 Oct 2026). Four things happen together,
+ * and closing it undoes all of them: the risk classes come off, the map travels to the hexagons,
+ * they blink, and the frame the reader had is remembered.
+ *
+ * Driven here the way the page drives it: a holder that keeps the window and hands the answer
+ * back, which is what components/map/Dashboard.tsx does with the fetch.
+ */
+describe("what the satellite saw, switched on and off", () => {
+  const CELLS = [101.78, 101.82].map((lon) => ({
+    type: "Feature" as const,
+    geometry: {
+      type: "Polygon" as const,
+      coordinates: [
+        [
+          [lon, 6.4],
+          [lon + 0.01, 6.4],
+          [lon + 0.01, 6.41],
+          [lon, 6.4],
+        ],
+      ],
+    },
+    properties: { m2: 120_000 },
+  }));
+
+  function Holder({ cells = CELLS }: { cells?: typeof CELLS }) {
+    const [days, setDays] = useState<SatelliteWindow | null>(null);
+    return (
+      <DashboardView
+        status={exampleStatus([])}
+        checkedAt={EXAMPLE_NOW - 60_000}
+        failed={false}
+        hazards={EXAMPLE_HAZARDS}
+        hazardsState="ok"
+        directory={EXAMPLE_DIRECTORY}
+        directoryState="ok"
+        data={EXAMPLE_MAP}
+        dataState="ok"
+        now={EXAMPLE_NOW}
+        transparency={false}
+        satelliteDays={days}
+        onSatelliteDays={setDays}
+        satelliteLoad={days === null ? "loading" : "ok"}
+        satellite={
+          days === null
+            ? null
+            : {
+                days,
+                fetchedAt: "2026-10-20T04:00:00.000Z",
+                cells: cells.length,
+                km2: 0.24,
+                passDays: ["2026-10-18"],
+                truncated: false,
+                features: cells,
+              }
+        }
+      />
+    );
+  }
+
+  const onMap = (c: HTMLElement) => c.querySelector("[data-map]")!;
+  const risk = (c: HTMLElement) =>
+    c.querySelector<HTMLButtonElement>('[data-map-features="map"] [data-map-chip="risk"]')!;
+
+  it("takes the risk classes off, frames the hexagons and blinks them", () => {
+    const c = renderWithIntl(<Holder />).container;
+    const opening = onMap(c).getAttribute("data-bounds");
+    expect(risk(c).getAttribute("aria-pressed")).toBe("true");
+    expect(onMap(c).getAttribute("data-flash-satellite")).toBe("0");
+
+    fireEvent.click(c.querySelector("[data-satellite-toggle] input")!);
+
+    expect(risk(c).getAttribute("aria-pressed")).toBe("false");
+    expect(onMap(c).getAttribute("data-satellite-cells")).toBe("2");
+    expect(onMap(c).getAttribute("data-flash-satellite")).toBe("1");
+    const at = onMap(c).getAttribute("data-bounds")!;
+    expect(at).not.toBe(opening);
+    const [west, , east] = at.split(",").map(Number);
+    expect(west).toBeLessThan(101.78);
+    expect(east).toBeGreaterThan(101.83);
+  });
+
+  it("closing it puts back the frame the reader was looking at, and the risk classes", () => {
+    const c = renderWithIntl(<Holder />).container;
+    // Where they were: a frame of their own, not the one the map opened on.
+    fireEvent.click(c.querySelector("[data-panned]")!);
+    fireEvent.click(c.querySelector("[data-satellite-toggle] input")!);
+    expect(onMap(c).getAttribute("data-bounds")).not.toBe("100.10,6.10,100.30,6.30");
+
+    fireEvent.click(c.querySelector("[data-satellite-close]")!);
+    expect(onMap(c).getAttribute("data-bounds")).toBe("100.10,6.10,100.30,6.30");
+    expect(risk(c).getAttribute("aria-pressed")).toBe("true");
+    expect(onMap(c).getAttribute("data-satellite-cells")).toBe("0");
+    expect(c.querySelector("[data-satellite-close]")).toBeNull();
+  });
+
+  it("an empty answer moves nothing and hides nothing: it is no all-clear", () => {
+    const c = renderWithIntl(<Holder cells={[]} />).container;
+    const opening = onMap(c).getAttribute("data-bounds");
+    fireEvent.click(c.querySelector("[data-satellite-toggle] input")!);
+    expect(onMap(c).getAttribute("data-bounds")).toBe(opening);
+    expect(risk(c).getAttribute("aria-pressed")).toBe("true");
+    expect(onMap(c).getAttribute("data-flash-satellite")).toBe("0");
+    // ...and it says so in words (lib/satellite-flood.ts, satelliteState).
+    expect(c.querySelector("[data-satellite-status]")!.textContent).toContain(
+      th.map.satellite.none.replace("{days}", "7"),
+    );
+  });
+
+  it("the reset button goes back to the first view and the layers it opens with", () => {
+    const c = renderWithIntl(<Holder />).container;
+    // Nothing is asked for at first, so the map is left to its own default (the four provinces).
+    expect(onMap(c).getAttribute("data-bounds")).toBe("");
+    fireEvent.click(c.querySelector('[data-map-features="map"] [data-map-chip="gauges"]')!);
+    fireEvent.click(c.querySelector("[data-satellite-toggle] input")!);
+    expect(onMap(c).textContent).not.toContain("gauges");
+
+    fireEvent.click(c.querySelector("[data-map-reset]")!);
+    // ...and reset asks for that same view by name, this reader having chosen no area.
+    expect(onMap(c).getAttribute("data-bounds")).toBe(
+      SERVICE_BOUNDS.map((n) => n.toFixed(2)).join(","),
+    );
+    expect(onMap(c).textContent).toContain("hazard");
+    expect(onMap(c).textContent).toContain("gauges");
+    expect(onMap(c).getAttribute("data-satellite-cells")).toBe("0");
+    expect(c.querySelector("[data-satellite]")!.getAttribute("data-satellite")).toBe("off");
   });
 });

@@ -9,6 +9,10 @@
  * It reads the area the person chose from the phone's own storage; nothing is asked of the
  * network, no position is requested, and nothing leaves the phone.
  *
+ * It also writes the time of day itself onto the page (`data-daylight`), which the maps go by
+ * instead of the theme (the owner, 20 Oct 2026): the background follows the sun even for
+ * somebody who picked the other theme by hand.
+ *
  * A theme picked by hand in the header (18 Oct) is read as well and wins until the sun next
  * changes, exactly as `pickedTheme` in lib/theme.ts decides it - so the app arrives in the
  * colour they chose, and arrives in the sun's colour again once that moment has passed. The
@@ -41,5 +45,7 @@ var pick=null;
 try{var pk=JSON.parse(localStorage.getItem("jaga.theme")||"null");
 if(pk&&(pk.mode==="dark"||pk.mode==="light")&&typeof pk.at==="number"&&isFinite(pk.at)
 &&pk.at<=t0&&nxt(pk.at)>t0)pick=pk.mode}catch(e){}
-document.documentElement.dataset.theme=pick||(night(t0)?"dark":"light");
+var dark=night(t0);
+document.documentElement.dataset.daylight=dark?"night":"day";
+document.documentElement.dataset.theme=pick||(dark?"dark":"light");
 }catch(e){}})();`;

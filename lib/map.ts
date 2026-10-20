@@ -7,9 +7,25 @@ export const SERVICE_BOUNDS: [number, number, number, number] = [99.95, 5.55, 10
 const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 const BASEMAP_STYLE_DARK = "https://tiles.openfreemap.org/styles/dark";
 
-/** True once the page has turned dark for the night (components/DaylightTheme.tsx). */
-export function darkNow(): boolean {
-  return typeof document !== "undefined" && document.documentElement.dataset.theme === "dark";
+/**
+ * True while the sun is down at the person's own place (lib/sun.ts, written onto the page by
+ * lib/theme-script.ts and kept there by components/DaylightTheme.tsx).
+ *
+ * This is the sun, not the theme. The two were the same thing until 20 Oct 2026, when the owner
+ * asked that the background follow the time of day alone: somebody who picks the dark theme at
+ * noon gets a dark app over the daylight picture of their district, and the map turns to the
+ * night terrain at sunset and back at sunrise whatever they picked. Our own layers' colours
+ * follow this too, because what they have to be legible against is the background.
+ *
+ * `data-theme` is the fallback for a page that has not written the daylight in yet, which is
+ * what every build before this one went by.
+ */
+export function nightNow(): boolean {
+  if (typeof document === "undefined") return false;
+  const daylight = document.documentElement.dataset.daylight;
+  if (daylight === "night") return true;
+  if (daylight === "day") return false;
+  return document.documentElement.dataset.theme === "dark";
 }
 
 /**
@@ -170,7 +186,7 @@ const TERRAIN_CREDIT = "Elevation: Mapzen terrain tiles on AWS (SRTM, GMTED and 
 
 let chosen: Basemap = "streets";
 /** Whether the map itself is dark right now: at night, except on the satellite picture. */
-export const mapIsDark = () => darkNow() && !isPhotoBasemap(chosen);
+export const mapIsDark = () => nightNow() && !isPhotoBasemap(chosen);
 /** Whether the background is a photograph right now (satellite, or satellite with terrain). */
 export const photoNow = () => isPhotoBasemap(chosen);
 

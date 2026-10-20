@@ -1,5 +1,5 @@
 import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
-import { darkNow } from "@/lib/map";
+import { nightNow } from "@/lib/map";
 
 /**
  * The map under the weather grids. It is not the service-area map (lib/map.ts): the weather is
@@ -32,7 +32,7 @@ export async function createWeatherMap(container: HTMLElement, box: Box): Promis
   maplibre.setWorkerUrl(`/vendor/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`);
   const map = new maplibre.Map({
     container,
-    style: startStyle(darkNow()),
+    style: startStyle(nightNow()),
     bounds: [
       [box[0], box[1]],
       [box[2], box[3]],
@@ -62,7 +62,7 @@ export async function createWeatherMap(container: HTMLElement, box: Box): Promis
   map.once("load", () => {
     foldCredits();
     // The street basemap arrives under our own layers, which are already drawn by then.
-    map.setStyle(darkNow() ? BASEMAP_DARK : BASEMAP, {
+    map.setStyle(nightNow() ? BASEMAP_DARK : BASEMAP, {
       transformStyle: (previous, next) => {
         if (!previous) return next;
         const own = previous.layers.filter(

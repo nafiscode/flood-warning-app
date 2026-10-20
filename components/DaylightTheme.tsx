@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import type { Area } from "@/lib/area";
 import { useStored } from "@/lib/phone-store";
-import { nextChange, SERVICE_CENTRE } from "@/lib/sun";
+import { isNight, nextChange, SERVICE_CENTRE } from "@/lib/sun";
 import { themeFor, THEME_KEY } from "@/lib/theme";
 
 /**
@@ -28,6 +28,12 @@ export function DaylightTheme() {
     let timer = 0;
     const apply = () => {
       const now = Date.now();
+      /*
+       * The time of day, and then the theme. The maps read the first (lib/map.ts, nightNow) and
+       * the page's colours the second: a theme picked by hand turns the app dark at noon without
+       * turning the district's daylight picture into a night map (the owner, 20 Oct 2026).
+       */
+      document.documentElement.dataset.daylight = isNight(now, lat, lon) ? "night" : "day";
       document.documentElement.dataset.theme = themeFor(stored, now, lat, lon);
       // Wake up at the next sunrise or sunset, and at least once an hour in case the phone
       // slept through it or its clock was changed. That moment is both when the sun changes the

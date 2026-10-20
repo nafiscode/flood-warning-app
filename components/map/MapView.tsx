@@ -44,7 +44,13 @@ import {
 } from "@/lib/hazard-layer";
 import { SEA_IMAGE_RATIO, SEA_RANK, seaImage, seaImageName, seaPaint } from "@/lib/sea-marks";
 import type { SeaGrade } from "@/lib/sea";
-import { SATELLITE_OPACITY, satelliteColor, type SatelliteCell } from "@/lib/satellite-flood";
+import {
+  SATELLITE_LINE_WIDTH,
+  SATELLITE_OPACITY,
+  satelliteColor,
+  satelliteEdge,
+  type SatelliteCell,
+} from "@/lib/satellite-flood";
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
@@ -65,7 +71,6 @@ import {
   type Basemap,
   beforeBasemapLabels,
   createServiceAreaMap,
-  darkNow,
   CAPITAL_LAYER,
   DISTRICT_LABEL_LAYER,
   TAMBON_LABEL_LAYER,
@@ -73,6 +78,7 @@ import {
   mapHalo,
   mapInk,
   mapIsDark,
+  nightNow,
   photoNow,
   PROVINCE_LINE_LAYER,
   PROVINCE_SOURCE,
@@ -193,6 +199,17 @@ type Props = {
     /** Where it is, for bringing it into the frame when it is not already in it. */
     at?: { lon: number; lat: number } | null;
   } | null;
+  /**
+   * Show what the satellite saw: the hexagons blink three times when somebody switches the layer
+   * on (the owner, 20 Oct 2026). The number changes each time somebody asks; 0 is "never asked".
+   */
+  flashSatellite?: number;
+  /**
+   * Where the map is looking now, told after every move the reader or the app makes. The caller
+   * uses it to come back to a view later (closing the satellite layer returns to the frame the
+   * reader had before it); nothing on this map depends on it.
+   */
+  onView?: (box: [number, number, number, number]) => void;
   /** The person's own places, drawn on top of everything when they ask for them. */
   mine?: MinePlace[];
   showMine?: boolean;
@@ -433,6 +450,8 @@ export function MapView({
   sea = null,
   areaNames = null,
   flashDam = null,
+  flashSatellite = 0,
+  onView,
   gaugeWords = { near: "", over: "" },
   peek,
 }: Props) {
@@ -525,7 +544,7 @@ export function MapView({
       if (!m.getSource(source)) return;
       try {
         if (on && !m.getLayer(DAM_FLASH_FILL)) {
-          const water = damPaint(darkNow()).water;
+          const water = damPaint(nightNow()).water;
           if (flashKind === "gauge" || flashKind === "sea") {
             const marks = flashKind === "gauge" ? GAUGES : SEA;
             /*
@@ -637,6 +656,102 @@ export function MapView({
       show(false);
     };
   }, [flashCode, flashKey, flashKind, flashLat, flashLon, state]);
+  /*
+   * The same "show me where it is" for the flood a satellite saw (the owner, 20 Oct 2026): the
+   * hexagons blink three times once the map has been brought to them, so it is clear which
+   * shapes on the map have just appeared.
+   *
+   * Here it is the layers' own visibility that is switched, not a lit copy of one feature: what
+   * is being pointed at is the whole layer, and there is nothing to tell apart inside it. For
+   * anyone who asked for less motion nothing blinks - the hexagons are simply there, and the map
+   * has already travelled to them.
+   */
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready" || flashSatellite === 0) return;
+    const mark = (on: boolean) =>
+      container.current?.setAttribute("data-satellite-lit", on ? "on" : "");
+    const timers: number[] = [];
+    const whole = RESERVOIR_FLASH_TIMES * 2 * RESERVOIR_FLASH_MS;
+    const show = (on: boolean) => {
+      try {
+        for (const id of [SATELLITE, SATELLITE_LINE]) {
+          if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+        }
+      } catch {
+        // The style is being replaced; the layer simply does not blink this time.
+        return;
+      }
+      mark(on);
+    };
+    let begun = false;
+    const begin = () => {
+      if (begun || !m.getLayer(SATELLITE)) return;
+      begun = true;
+      m.off("idle", begin);
+      if (reducedMotion()) {
+        mark(true);
+        timers.push(window.setTimeout(() => mark(false), whole));
+        return;
+      }
+      for (let i = 0; i < RESERVOIR_FLASH_TIMES; i += 1) {
+        timers.push(window.setTimeout(() => show(false), i * 2 * RESERVOIR_FLASH_MS));
+        timers.push(
+          window.setTimeout(() => show(true), i * 2 * RESERVOIR_FLASH_MS + RESERVOIR_FLASH_MS),
+        );
+      }
+    };
+    begin();
+    // The hexagons arrive with the answer from GISTDA, which may be later than this effect.
+    if (!begun) m.on("idle", begin);
+    return () => {
+      m.off("idle", begin);
+      for (const timer of timers) window.clearTimeout(timer);
+      show(true);
+      mark(false);
+    };
+  }, [flashSatellite, state]);
+  /*
+   * Where the map is looking, told to the caller after each move so it can come back to this
+   * view later. A ref, so a map that is being panned does not render the page on every frame.
+   */
+  const view = useRef(onView);
+  useEffect(() => {
+    view.current = onView;
+  }, [onView]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready") return;
+    const moved = () => {
+      const b = m.getBounds();
+      const box: [number, number, number, number] = [
+        b.getWest(),
+        b.getSouth(),
+        b.getEast(),
+        b.getNorth(),
+      ];
+      /*
+       * Also written onto the frame, so what the map is looking at can be read from outside it -
+       * the e2e checks that closing the satellite layer puts the reader back where they were,
+       * and a frame it cannot see is a frame it has to take on trust.
+       */
+      container.current?.setAttribute(
+        "data-map-view",
+        box.map((n) => n.toFixed(3)).join(","),
+      );
+      view.current?.(box);
+    };
+    m.on("moveend", moved);
+    /*
+     * And once now. The first fit often moves the camera nowhere at all - the map is made with
+     * the same box it is then fitted to - so without this there would be no "where the map is
+     * looking" until the reader moved it themselves, and nothing to come back to.
+     */
+    moved();
+    return () => {
+      m.off("moveend", moved);
+    };
+  }, [state]);
   const select = useRef(onSelect);
   const draw = useRef<() => void>(() => {});
   // The places as the handlers below need them, without rebuilding the map when they change.
@@ -704,7 +819,7 @@ export function MapView({
       [AREA_LABEL_SOURCE]: areaNameData,
     };
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
-    const dark = darkNow();
+    const dark = nightNow();
     const paint = damPaint(dark);
     /*
      * The dam's three marks take the state's colour (the owner, 12 Oct: normal green, attention
@@ -768,8 +883,9 @@ export function MapView({
           );
         }
         /*
-         * Flood seen by satellite: above the flood-prone areas, under the alert levels. Violet, by
-         * day and by night, and never an alert colour (lib/satellite-flood.ts).
+         * Flood seen by satellite: above the flood-prone areas, under the alert levels. Violet,
+         * by day and by night, and never an alert colour; each hexagon is given an edge as well,
+         * dark by day and pale at night, so one on its own still reads (lib/satellite-flood.ts).
          */
         if (!m.getLayer(SATELLITE)) {
           m.addLayer(
@@ -786,13 +902,16 @@ export function MapView({
               id: SATELLITE_LINE,
               type: "line",
               source: SATELLITE,
-              paint: { "line-color": satelliteColor(false), "line-width": 1 },
+              paint: {
+                "line-color": satelliteEdge(false),
+                "line-width": SATELLITE_LINE_WIDTH,
+              },
             },
             above,
           );
         }
         m.setPaintProperty(SATELLITE, "fill-color", satelliteColor(mapIsDark()));
-        m.setPaintProperty(SATELLITE_LINE, "line-color", satelliteColor(mapIsDark()));
+        m.setPaintProperty(SATELLITE_LINE, "line-color", satelliteEdge(mapIsDark()));
         if (!m.getLayer(ALERT_FILL)) {
           m.addLayer({ id: ALERT_FILL, type: "fill", source: TAMBON_SOURCE, paint: {} }, above);
         }

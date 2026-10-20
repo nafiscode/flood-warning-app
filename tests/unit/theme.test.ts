@@ -52,6 +52,28 @@ function runScript(
   return root.dataset.theme!;
 }
 
+/** The same run, but what it wrote about the time of day rather than the theme. */
+function runScriptDaylight(
+  now: number,
+  area: { lat: number; lon: number } | null,
+  picked?: unknown,
+): string {
+  const root = { dataset: {} as Record<string, string> };
+  const stored: Record<string, unknown> = { "jaga.area": area, "jaga.theme": picked ?? null };
+  new Function("document", "localStorage", "Date", DAYLIGHT_SCRIPT)(
+    { documentElement: root },
+    {
+      getItem: (key: string) => (stored[key] == null ? null : JSON.stringify(stored[key])),
+    },
+    class extends Date {
+      static now() {
+        return now;
+      }
+    },
+  );
+  return root.dataset.daylight!;
+}
+
 describe("sunrise and sunset", () => {
   // Published times for Pattani, to the minute or two.
   it.each([
@@ -286,5 +308,43 @@ describe("the dark colours", () => {
     const end = dark.indexOf("}");
     expect(dark.slice(0, end)).not.toContain("--alert-");
     expect(dark.slice(0, end)).not.toContain("--sos");
+  });
+});
+
+/*
+ * The background of the map follows the sun and not the theme (the owner, 20 Oct 2026). The page
+ * carries both: `data-theme` is what colour the app is, `data-daylight` is what time of day it
+ * is where the reader is, and lib/map.ts reads the second.
+ */
+describe("the time of day, written beside the theme", () => {
+  const day = "2026-10-09";
+  const at = (hhmm: string) => Date.parse(`${day}T${hhmm}:00+07:00`);
+
+  it("says day or night from the sun, whatever theme was picked", () => {
+    expect(runScriptDaylight(at("12:00"), PATTANI)).toBe("day");
+    expect(runScriptDaylight(at("22:00"), PATTANI)).toBe("night");
+    // A theme picked by hand changes the theme and nothing about the daylight.
+    const noon = at("12:00");
+    expect(runScript(noon, PATTANI, pickChoice("dark", noon))).toBe("dark");
+    expect(runScriptDaylight(noon, PATTANI, pickChoice("dark", noon))).toBe("day");
+    const night = at("22:00");
+    expect(runScript(night, PATTANI, pickChoice("light", night))).toBe("light");
+    expect(runScriptDaylight(night, PATTANI, pickChoice("light", night))).toBe("night");
+  });
+
+  it("is what the map goes by, with the theme only as a fallback", async () => {
+    const { nightNow } = await import("@/lib/map");
+    const root = document.documentElement;
+    root.dataset.theme = "dark";
+    delete root.dataset.daylight;
+    // No daylight written yet (an older page): the theme is all there is to go on.
+    expect(nightNow()).toBe(true);
+    root.dataset.daylight = "day";
+    expect(nightNow()).toBe(false);
+    root.dataset.theme = "light";
+    root.dataset.daylight = "night";
+    expect(nightNow()).toBe(true);
+    delete root.dataset.daylight;
+    delete root.dataset.theme;
   });
 });

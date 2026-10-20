@@ -140,6 +140,42 @@ async function serveSea(page: Page) {
   );
 }
 
+/**
+ * What GISTDA saw, as Jaga's own route passes it on: two hexagons off in Narathiwat, well away
+ * from the view the map opens on, so a map that does not travel to them is a map that fails.
+ */
+async function servedSatellite(page: Page) {
+  const hexagon = (lon: number, lat: number) => ({
+    type: "Feature",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [lon, lat],
+          [lon + 0.01, lat],
+          [lon + 0.01, lat + 0.01],
+          [lon, lat + 0.01],
+          [lon, lat],
+        ],
+      ],
+    },
+    properties: { m2: 120_000 },
+  });
+  await page.route("**/api/public/satellite-flood**", (route) =>
+    route.fulfill({
+      json: {
+        days: 7,
+        fetchedAt: new Date().toISOString(),
+        cells: 2,
+        km2: 0.24,
+        passDays: ["2026-10-18"],
+        truncated: false,
+        features: [hexagon(101.79, 6.41), hexagon(101.82, 6.44)],
+      },
+    }),
+  );
+}
+
 /** A clear day over Bana, and the area chosen on this device, so the console has a sky to draw. */
 async function serveWeather(page: Page) {
   await page.addInitScript(
@@ -279,6 +315,63 @@ test.describe("the live map on a laptop", () => {
       th.alert.level.warning,
     );
     await expect(page.locator("[data-console-tile][data-console-alarm]")).toHaveCount(0);
+  });
+
+  /*
+   * The owner, 20 Oct 2026: switching on the flood a satellite saw takes the risk classes off,
+   * brings the map to the hexagons and blinks them, and closing it puts all of that back.
+   *
+   * What the map itself does with the frame and the blinking needs WebGL, which this browser
+   * does not give the test; those are held by tests/unit/map.test.tsx, where MapView is a stub
+   * that reports the box and the blink it was asked for. What is checked here is the real page
+   * and the real route: that the switch, the answer and the close button carry the layers with
+   * them.
+   */
+  test("what the satellite saw takes the risk classes off, and closing puts them back", async ({
+    page,
+  }) => {
+    await serve(page);
+    await servedSatellite(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+
+    const risk = page.locator('[data-map-features="map"] [data-map-chip="risk"]');
+    await expect(risk).toHaveAttribute("aria-pressed", "true");
+
+    await page.locator("[data-satellite-toggle] input").check();
+    await expect(page.locator("[data-satellite-status]")).toHaveAttribute(
+      "data-satellite-status",
+      "some",
+    );
+    await expect(risk).toHaveAttribute("aria-pressed", "false");
+
+    // Closing it from under its own detail, which is where the reader has just been reading.
+    await page.locator("[data-satellite-close]").click();
+    await expect(risk).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-satellite-close]")).toHaveCount(0);
+    await expect(page.locator("[data-satellite]")).toHaveAttribute("data-satellite", "off");
+  });
+
+  /** The owner, 20 Oct 2026: one button back to the map as it opens. */
+  test("resets to the layers the map opens with", async ({ page }) => {
+    await serve(page);
+    await servedSatellite(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+
+    const gauges = page.locator('[data-map-features="map"] [data-map-chip="gauges"]');
+    await gauges.click();
+    await expect(gauges).toHaveAttribute("aria-pressed", "false");
+    await page.locator("[data-satellite-toggle] input").check();
+    await expect(page.locator("[data-satellite-status]")).toBeVisible();
+
+    await page.locator("[data-map-reset]").click();
+    await expect(gauges).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator('[data-map-features="map"] [data-map-chip="risk"]')).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.locator("[data-satellite]")).toHaveAttribute("data-satellite", "off");
   });
 
   /** The owner, 18 Oct: the map on its own, with only the layer pickers beside it. */

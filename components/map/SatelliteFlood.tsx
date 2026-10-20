@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import { CrossIcon } from "@/components/icons";
 import {
   SATELLITE_DEFAULT,
   SATELLITE_WINDOWS,
@@ -111,6 +112,21 @@ export function SatelliteFloodPanel({
               {t("note")}
             </p>
           </div>
+          {/*
+           * Closing the layer from under its own detail (the owner, 20 Oct 2026). It is the same
+           * thing the switch above does - the caller puts the map back where it was and brings
+           * the flood-risk classes back with it - but it is here, at the end of what the reader
+           * has just read, rather than back up at the top of the panel.
+           */}
+          <button
+            type="button"
+            data-satellite-close="true"
+            onClick={() => onDays(null)}
+            className="inline-flex min-h-tap items-center justify-center gap-2 self-start rounded-xl border-2 border-jaga-line bg-jaga-surface px-4 font-bold"
+          >
+            <CrossIcon />
+            {t("close")}
+          </button>
         </>
       )}
     </div>
