@@ -10,8 +10,10 @@
   "scripts": {
     "predev": "node scripts/vendor-maplibre.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/vendor-maplibre.mjs",
+    "prebuild": "node scripts/vendor-maplibre.mjs && node scripts/fetch-content.mjs",
     "build": "next build",
+    "content:push": "node scripts/push-content.mjs",
+    "content:fetch": "node scripts/fetch-content.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",

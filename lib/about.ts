@@ -29,6 +29,13 @@ export type CareerStep = {
   icon: AboutIcon;
   /** How many `what.<n>` lines the step has. */
   what: number;
+  /**
+   * The employer's own mark, at `public/about/logos/<logo>.png` (the owner's request, 20 Oct
+   * 2026). The files are not in this repository - they come down with the rest of the page's
+   * content during the build - so a step whose file is absent simply shows its icon, which is
+   * what a fork and a build that could not reach the bucket both get.
+   */
+  logo?: string;
 };
 
 /**
@@ -39,9 +46,9 @@ export type CareerStep = {
  */
 export const CAREER_STEPS: CareerStep[] = [
   { key: "degree", icon: "cap", what: 2 },
-  { key: "ilf", icon: "drop", what: 3 },
-  { key: "airbus", icon: "satellite", what: 4 },
-  { key: "egis", icon: "build", what: 3 },
+  { key: "ilf", icon: "drop", what: 3, logo: "ilf" },
+  { key: "airbus", icon: "satellite", what: 4, logo: "airbus" },
+  { key: "egis", icon: "build", what: 3, logo: "egis" },
 ];
 
 /** What the owner did on Jaga, what was done with help, and what is not theirs at all. */

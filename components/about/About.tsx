@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- small static marks, sized in the markup */
 import { useTranslations } from "next-intl";
 import {
   CheckIcon,
@@ -113,6 +114,7 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
             <StepCard key={step.key} step={step} n={i + 1} />
           ))}
         </ol>
+        <p className="text-small text-jaga-text-2">{t("road.marks")}</p>
       </section>
 
       {/* The honest split. A trust page that only boasts is not one. */}
@@ -270,6 +272,28 @@ function StepCard({ step, n }: { step: CareerStep; n: number }) {
           <h3 className="text-h3 font-bold leading-snug text-jaga-ink">{t(`${base}.title`)}</h3>
           <p className="text-jaga-text">{t(`${base}.where`)}</p>
         </div>
+        {/*
+          The employer's own mark, where there is one. The files are white on transparent, so it
+          sits on a slate chip rather than on the card, which is white in daylight. It is a
+          picture of a name and nothing more: no link, and hidden from a screen reader, because
+          the employer is already written beside it in words.
+        */}
+        {step.logo && (
+          <span
+            data-about-logo={step.logo}
+            className="ms-auto hidden h-10 shrink-0 items-center rounded-xl bg-jaga-slate px-3 sm:flex"
+          >
+            <img
+              src={`/about/logos/${step.logo}.png`}
+              alt=""
+              aria-hidden="true"
+              height={20}
+              className="h-5 w-auto opacity-90"
+              loading="lazy"
+              decoding="async"
+            />
+          </span>
+        )}
       </div>
 
       <ul className="flex flex-col gap-2">

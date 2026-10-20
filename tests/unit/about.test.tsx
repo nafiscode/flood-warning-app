@@ -14,12 +14,11 @@ import {
   SCOPE_POINTS,
   TRUST_POINTS,
 } from "@/lib/about";
-import en from "@/messages/en.json";
-import ms from "@/messages/ms.json";
-import th from "@/messages/th.json";
-import { renderWithIntl } from "./render";
+import { renderWithAbout, ABOUT, HAS_ABOUT } from "./about-content";
 
-const ALL = { th, ms, en } as const;
+const ALL = ABOUT;
+/** One English line by path, for the assertions that quote the page back to itself. */
+const line = (path: string) => read(ABOUT.en, path) as string;
 type Tree = { [key: string]: string | Tree };
 const read = (tree: Tree, path: string) =>
   path
@@ -28,9 +27,9 @@ const read = (tree: Tree, path: string) =>
       (node, key) => (typeof node === "object" ? node[key] : undefined),
       tree,
     );
-const root = (messages: unknown) => (messages as unknown as Tree).about as Tree;
+const root = (messages: unknown) => messages as Tree;
 
-describe("who built Jaga: the lines", () => {
+describe.skipIf(!HAS_ABOUT)("who built Jaga: the lines", () => {
   it("has every line of the page in Thai, Malay and English", () => {
     const keys = [
       "link",
@@ -109,7 +108,7 @@ describe("who built Jaga: the lines", () => {
  * The rules this page must not break. It is the one page in Jaga that is *about* a person, which
  * is exactly why the privacy rules need a test here rather than trust.
  */
-describe("who built Jaga: the rules", () => {
+describe.skipIf(!HAS_ABOUT)("who built Jaga: the rules", () => {
   /**
    * Safety rule 5: personal phone numbers are never public, and the owner's own is no exception -
    * it is on their portfolio, which this page links to, and not in the app. The page says so, so
@@ -170,9 +169,9 @@ describe("who built Jaga: the rules", () => {
       ].join(" ");
       expect(typeof said, locale).toBe("string");
     }
-    const { container } = renderWithIntl(<About />, "en");
+    const { container } = renderWithAbout(<About />, "en");
     expect(container.querySelector('a[href*="github"]'), "a link to the repository").toBeNull();
-    expect(container.textContent).toContain(en.about.trust.points.open.title);
+    expect(container.textContent).toContain(line("trust.points.open.title"));
   });
 
   /** The scholarship is the Bahrain government's (the owner, 20 Oct 2026), not a royal one. */
@@ -184,16 +183,26 @@ describe("who built Jaga: the rules", () => {
   });
 });
 
-describe("who built Jaga: the page", () => {
+describe.skipIf(!HAS_ABOUT)("who built Jaga: the page", () => {
   it("draws every step, with the line saying what it gave Jaga", () => {
-    const { container } = renderWithIntl(<About />, "en");
+    const { container } = renderWithAbout(<About />, "en");
     for (const step of CAREER_STEPS) {
       const card = container.querySelector(`[data-about-step="${step.key}"]`);
       expect(card, step.key).not.toBeNull();
-      expect(card?.textContent).toContain(en.about.road.gaveLabel);
+      expect(card?.textContent).toContain(line("road.gaveLabel"));
     }
     expect(container.querySelectorAll("[data-about-scope]").length).toBe(SCOPE_PARTS.length);
     expect(container.querySelectorAll("[data-about-sector]").length).toBe(SECTORS.length);
+    // Every employer with a mark shows it, and the line saying whose marks they are is there.
+    const withLogos = CAREER_STEPS.filter((s) => s.logo);
+    expect(container.querySelectorAll("[data-about-logo]").length).toBe(withLogos.length);
+    for (const step of withLogos) {
+      const mark = container.querySelector(`[data-about-logo="${step.logo}"] img`);
+      expect(mark?.getAttribute("src"), step.key).toBe(`/about/logos/${step.logo}.png`);
+      // A picture of a name, beside the name: nothing for a screen reader to read twice.
+      expect(mark?.getAttribute("alt"), step.key).toBe("");
+    }
+    expect(container.textContent).toContain(line("road.marks"));
     expect(container.querySelectorAll("[data-about-trust]").length).toBe(TRUST_POINTS.length);
   });
 
@@ -202,17 +211,18 @@ describe("who built Jaga: the page", () => {
    * page was written, reviewed and translated before one was chosen.
    */
   it("draws the portrait, and falls back to initials without one", () => {
-    const { container } = renderWithIntl(<About />, "en");
+    const { container } = renderWithAbout(<About />, "en");
     const slot = container.querySelector("[data-about-portrait]");
     expect(slot?.getAttribute("data-about-portrait")).toBe(PORTRAIT_READY ? "photo" : "initials");
-    const img = container.querySelector("img");
-    expect(img?.getAttribute("alt")).toBe(en.about.portraitAlt);
+    const img = container.querySelector("[data-about-portrait] img");
+    expect(img?.getAttribute("alt")).toBe(line("portraitAlt"));
 
-    const without = renderWithIntl(<About showPortrait={false} />, "en");
+    const without = renderWithAbout(<About showPortrait={false} />, "en");
     expect(without.container.querySelector("[data-about-portrait]")?.textContent).toBe(
-      initialsOf(en.about.name),
+      initialsOf(line("name")),
     );
-    expect(without.container.querySelector("img")).toBeNull();
+    // The employer marks are images too, so this is about the portrait slot alone.
+    expect(without.container.querySelector("[data-about-portrait] img")).toBeNull();
   });
 
   /** `PORTRAIT_READY` must never be true without the file it promises. */
@@ -227,16 +237,14 @@ describe("who built Jaga: the page", () => {
    * industries. So the words live in the markup, not in the animation.
    */
   it("draws the three industries as readable text, not as an animation", () => {
-    const { container } = renderWithIntl(<About />, "en");
+    const { container } = renderWithAbout(<About />, "en");
     const board = container.querySelector("[data-about-journey]");
     expect(board).not.toBeNull();
     for (const sector of SECTORS) {
       const station = container.querySelector(`[data-about-sector="${sector.key}"]`);
       expect(station, sector.key).not.toBeNull();
       const text = station?.textContent ?? "";
-      const lines = (en.about.journey.sectors as Record<string, Record<string, string>>)[
-        sector.key
-      ];
+      const lines = read(ABOUT.en, `journey.sectors.${sector.key}`) as Record<string, string>;
       expect(lines, sector.key).toBeDefined();
       for (const key of ["years", "name", "tag"] as const) {
         expect(text, `${sector.key} ${key}`).toContain(lines?.[key]);

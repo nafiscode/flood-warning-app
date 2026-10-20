@@ -50,3 +50,9 @@ pipeline/.cache/
 
 # MapLibre worker files, copied from node_modules by scripts/vendor-maplibre.mjs
 /public/vendor/
+
+# Pages that are *about somebody*: the founder's career, words and face (the owner, 20 Oct 2026).
+# They live in the private data repo and in the site-content bucket, and the build fetches them
+# (scripts/fetch-content.mjs). Never commit them here: this repository is public.
+/messages/about/
+/public/about/
