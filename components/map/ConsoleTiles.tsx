@@ -57,6 +57,25 @@ function Figure({ children }: { children: React.ReactNode }) {
   return <p className="text-h3 font-bold leading-tight text-jaga-ink">{children}</p>;
 }
 
+/**
+ * The figure with the live pulse beside it, on the folded card (the owner, 20 Oct 2026: "these 2
+ * cards should show the blinking situation light on the default folded card, no need to hover on
+ * to see the blinking light"). It used to wait with the rest of the card until somebody rested a
+ * pointer on it, which is exactly the glance it is there for.
+ *
+ * It pulses only while the readings behind it are current. A dot on a feed that has stopped would
+ * say "live" about figures that are not, and it says nothing about what the figures mean: a
+ * measurement is not a level, and only an admin's alert ever wears one (safety rules 2 and 3).
+ */
+function LiveFigure({ live, children }: { live: boolean; children: React.ReactNode }) {
+  return (
+    <p className="flex items-start gap-1.5 text-h3 font-bold leading-tight text-jaga-ink">
+      {live && <span className="mt-2">{<LiveDot />}</span>}
+      <span className="min-w-0">{children}</span>
+    </p>
+  );
+}
+
 function Foot({ children }: { children: React.ReactNode }) {
   return <p className="mt-auto text-small text-jaga-text-2">{children}</p>;
 }
@@ -70,7 +89,14 @@ const OLD_ENOUGH_MIN = 60;
 /** The slow pulse the feature chips already use, for a figure that changes while someone looks. */
 function LiveDot() {
   return (
-    <svg aria-hidden="true" width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
+    <svg
+      aria-hidden="true"
+      data-live-dot="true"
+      width="8"
+      height="8"
+      viewBox="0 0 8 8"
+      className="shrink-0"
+    >
       <circle cx="4" cy="4" r="4" className={`fill-jaga-teal-ink ${styles.live}`} />
     </svg>
   );
@@ -287,7 +313,7 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
     const age = ageMinutes(g.newestAt, now);
     return {
       brief: (
-        <Figure>
+        <LiveFigure live={g.reporting > 0}>
           {/* Only what is actually happening: "0 over the bank" is noise on a quiet day. */}
           {g.over > 0 && g.near > 0
             ? t("gauges.high", { over: g.over, near: g.near })
@@ -296,14 +322,11 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
               : g.near > 0
                 ? t("gauges.near", { count: g.near })
                 : t("gauges.allBelow")}
-        </Figure>
+        </LiveFigure>
       ),
       more: (
         <Foot>
           <span className="flex items-start gap-1.5">
-            <span className="mt-2 shrink-0">
-              <LiveDot />
-            </span>
             <span>
               {[
                 t("gauges.reporting", { count: g.reporting, total: g.total }),
@@ -326,11 +349,11 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
     const age = ageMinutes(d.observedAt, now);
     return {
       brief: (
-        <Figure>
+        <LiveFigure live={!d.stale && d.observedAt !== null}>
           {d.percentFull !== null
             ? t("dam.full", { percent: Math.round(d.percentFull) })
             : t("dam.unknown")}
-        </Figure>
+        </LiveFigure>
       ),
       more: (
         <Foot>

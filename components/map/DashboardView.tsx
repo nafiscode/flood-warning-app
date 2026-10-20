@@ -783,6 +783,34 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const revealDamButtons = () =>
     reveal(() => document.querySelector<HTMLElement>("[data-dam-legend]"));
+  /*
+   * Where the map was before a readout moved it, so closing the card it opened puts the map back
+   * (the owner, 20 Oct 2026: "like the GISTDA details, when clicked on close button should bring
+   * the map to the default extent"). The same arrangement the satellite layer has: the frame
+   * remembered is the one actually on the screen, and only the first move remembers it, so
+   * stepping through three stations still comes back to where the reader started.
+   */
+  const focusBack = useRef<[number, number, number, number] | null>(null);
+  /** Where the map is looking now, told by MapView after every move the reader or the app makes. */
+  const viewBox = useRef<[number, number, number, number] | null>(null);
+  const rememberView = (box: [number, number, number, number]) => {
+    viewBox.current = box;
+  };
+  const rememberFrame = () => {
+    if (!focusBack.current) {
+      focusBack.current = viewBox.current ?? focus?.box ?? askedBox ?? mapBounds ?? SERVICE_BOUNDS;
+    }
+  };
+  /*
+   * Closing a card that moved the map puts the map back where it was, and closing one that did
+   * not leaves it alone - a reader who tapped a tambon is not sent travelling by a close button.
+   */
+  const closeSelected = () => {
+    setSelection(null);
+    const back = focusBack.current;
+    focusBack.current = null;
+    if (back) setFocus((was) => ({ box: back, key: (was?.key ?? 0) + 1 }));
+  };
   /** What the map is lighting up - reservoirs or gauges - and how often it has been asked. */
   const [flashDam, setFlashDam] = useState<{
     kind: "reservoir" | "gauge" | "sea";
@@ -815,6 +843,7 @@ export function DashboardView(props: DashboardViewProps) {
    * (the owner, 18 Oct for one, 20 Oct for "the extents of the 3 not only one").
    */
   const lightDams = (open: Dam, lit: readonly Dam[], where: "panel" | "damButtons" | "stay") => {
+    rememberFrame();
     setSelection({ kind: "dam", code: open.code });
     const box =
       lit.length === 1
@@ -855,6 +884,7 @@ export function DashboardView(props: DashboardViewProps) {
     lit: readonly { id: string; lon: number; lat: number }[],
     where: "panel" | "stay",
   ) => {
+    rememberFrame();
     setShowGauges(true);
     setSelection({ kind: "gauge", id: open.id });
     const box = boundsAround(
@@ -948,7 +978,12 @@ export function DashboardView(props: DashboardViewProps) {
        * layered is expected to come apart in.
        */
       if (selection) {
+        // The same two steps as the panel's own close button, written out so this effect does
+        // not depend on a function that is new on every render.
         setSelection(null);
+        const back = focusBack.current;
+        focusBack.current = null;
+        if (back) setFocus((was) => ({ box: back, key: (was?.key ?? 0) + 1 }));
         return;
       }
       setFull(false);
@@ -1062,7 +1097,6 @@ export function DashboardView(props: DashboardViewProps) {
    * None of this changes what the layer says. It is a reading of satellite passes either way,
    * and the panel's own words carry that (safety rules 8 and 10).
    */
-  const viewBox = useRef<[number, number, number, number] | null>(null);
   const satelliteBack = useRef<{
     box: [number, number, number, number];
     hazard: boolean;
@@ -1142,6 +1176,7 @@ export function DashboardView(props: DashboardViewProps) {
     setTourAt(null);
     setSelection(null);
     satelliteBack.current = null;
+    focusBack.current = null;
     setFramedAnswer(null);
     if ((props.satelliteDays ?? null) !== null) props.onSatelliteDays?.(null);
     setFocus((was) => ({ box: mapBounds ?? SERVICE_BOUNDS, key: (was?.key ?? 0) + 1 }));
@@ -1225,7 +1260,11 @@ export function DashboardView(props: DashboardViewProps) {
     );
   } else if (selection?.kind === "place") {
     const place = data?.places.find((p) => p.id === selection.id);
-    selected = place ? <SafePlaceCard place={place} userAgent={props.userAgent} /> : null;
+    // The pin is where the owner wanted the ask (20 Oct), so the card behind a pin asks and
+    // the home screen's list does not.
+    selected = place ? (
+      <SafePlaceCard place={place} userAgent={props.userAgent} canCheck />
+    ) : null;
   } else if (selection?.kind === "hazard") {
     const key = hazardKey(selection.value);
     selected = key ? (
@@ -2081,9 +2120,7 @@ export function DashboardView(props: DashboardViewProps) {
                     areaNames={areaNames}
                     flashDam={flashDam}
                     flashSatellite={flashSatellite}
-                    onView={(box) => {
-                      viewBox.current = box;
-                    }}
+                    onView={rememberView}
                     basemap={basemap}
                     scene={scene}
                     fill
@@ -2217,7 +2254,7 @@ export function DashboardView(props: DashboardViewProps) {
                     {selected}
                     <button
                       type="button"
-                      onClick={() => setSelection(null)}
+                      onClick={closeSelected}
                       className="inline-flex min-h-tap items-center gap-1.5 self-start underline"
                     >
                       <CrossIcon size={20} />

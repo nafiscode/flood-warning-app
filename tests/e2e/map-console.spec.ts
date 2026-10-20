@@ -503,6 +503,15 @@ test.describe("the live map on a laptop", () => {
     );
     const more = page.locator('[data-console-tile="gauges"] [data-tile-more]');
     await expect(more).toBeHidden();
+    /*
+     * The live pulse is on the folded card, without resting a pointer on anything (the owner,
+     * 20 Oct): it is the glance the card is there for. The reservoir's card carries it on the
+     * same rule, checked in the unit tests - its figures come from the real feed, and whether
+     * that feed is current today is not something this test may depend on.
+     */
+    await expect(
+      page.locator('[data-console-tile="gauges"] [data-tile-brief] [data-live-dot]'),
+    ).toBeVisible();
 
     // Resting the pointer on one opens it over the map, and the map does not move under it.
     await page.locator('[data-console-tile="gauges"]').hover();

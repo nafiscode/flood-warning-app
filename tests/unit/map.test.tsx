@@ -1248,6 +1248,46 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
     expect(flash(c)).toBe("a");
   });
 
+  /*
+   * The owner, 20 Oct: "like the GISTDA details, when clicked on close button should bring the
+   * map to the default extent". Only a card that moved the map moves it back.
+   */
+  it("closing the card the readout opened puts the map back where it was", () => {
+    const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: NEAR_THREE } });
+    const bounds = () => c.querySelector("[data-map]")!.getAttribute("data-bounds");
+    openGauges(c);
+    const atStations = bounds();
+    expect(atStations).not.toBe("");
+    const close = [...c.querySelectorAll("[data-selected-panel] button")].at(-1)!;
+    fireEvent.click(close);
+    expect(c.querySelector("[data-selected-panel]")).toBeNull();
+    expect(bounds()).toBe(SERVICE_BOUNDS.map((n) => n.toFixed(2)).join(","));
+    expect(bounds()).not.toBe(atStations);
+  });
+
+  /*
+   * The owner, 20 Oct: "these 2 cards should show the blinking situation light on the default
+   * folded card, no need to hover on to see the blinking light". It waited in the part of the
+   * card that only opens on hover, which is the one glance it is there for.
+   */
+  it("pulses on the folded card, and only while the readings are current", () => {
+    const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: NEAR_THREE }, dams: [EXAMPLE_DAM] });
+    for (const tile of ["gauges", "dam"]) {
+      expect(
+        c.querySelector(`[data-console-tile="${tile}"] [data-tile-brief] [data-live-dot]`),
+      ).toBeTruthy();
+    }
+    // A feed that has stopped says so in words and does not pulse: that would claim live figures.
+    const stale: Dam = {
+      ...EXAMPLE_DAM,
+      signal: { ...exampleDamSignal("watch")!, stale: true },
+    };
+    const old = dashboard({ dams: [stale] });
+    expect(
+      old.querySelector('[data-console-tile="dam"] [data-tile-brief] [data-live-dot]'),
+    ).toBeNull();
+  });
+
   it("with no river near its bank, opens the one station it names", () => {
     const c = dashboard({ data: EXAMPLE_MAP });
     openGauges(c);
