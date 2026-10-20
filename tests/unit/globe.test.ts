@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 import {
-  BRONZE,
+  HULL,
   landPoints,
   LINK_DEG,
   linkAngle,
@@ -75,15 +75,28 @@ describe("the small turning Earth at the head of the map", () => {
     expect(Math.hypot(LOOK.x, LOOK.y, LOOK.z)).toBeCloseTo(1);
   });
 
-  it("keeps its bronze foil well away from the Watch and Warning colours", () => {
+  it("keeps its hull well away from every level's colour", () => {
     const tokens = readFileSync("app/globals.css", "utf8");
     const level = (name: string) =>
       tokens.match(new RegExp(`--alert-${name}:\\s*(#[0-9a-f]{6})`, "i"))?.[1] ?? "";
-    for (const foil of BRONZE) {
-      for (const alert of [level("watch"), level("warning")]) {
-        expect(deltaE(foil, alert), `${foil} vs ${alert}`).toBeGreaterThan(20);
+    // Stale is a grey marker, not a level, and a silver craft is not read as one.
+    const levels = ["normal", "watch", "warning", "evacuate", "return"].map(level);
+    expect(levels.every(Boolean)).toBe(true);
+    for (const shade of HULL) {
+      for (const alert of levels) {
+        expect(deltaE(shade, alert), `${shade} vs ${alert}`).toBeGreaterThan(20);
       }
     }
+  });
+
+  it("is trimmed only in Jaga's own slate and teal", () => {
+    const css = readFileSync("components/map/OrbitGlobe.module.css", "utf8");
+    const tokens = readFileSync("app/globals.css", "utf8");
+    const token = (name: string) =>
+      tokens.match(new RegExp(`--jaga-${name}:\\s*(#[0-9a-f]{6})`, "i"))?.[1]?.toLowerCase();
+    expect(css).toContain(`fill: ${token("teal")}`);
+    expect(css).toContain(`stroke: ${token("teal-light")}`);
+    expect(css).toContain(`stroke: ${token("slate")}`);
   });
 
   it("says nothing: no figure or word in the drawing", () => {

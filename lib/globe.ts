@@ -38,11 +38,12 @@ export const LINK_DEG = 40;
 export const STILL_SPIN = 140;
 
 /**
- * The satellite's foil. Bronze, muted and dark, and deliberately not gold: yellow is the Watch
- * level and orange is Warning (docs/brand.md), so nothing decorative may come near either. A unit
- * test holds every stop at least a clear colour difference away from both.
+ * The satellite's hull: silver-white, trimmed in Jaga's own slate and teal (the owner, 20 Oct:
+ * match the theme, after a first version in bronze foil). Never gold or orange: those are the
+ * Watch and Warning levels (docs/brand.md), and a unit test holds every stop well away from the
+ * alert colours.
  */
-export const BRONZE = ["#5a381e", "#a87348", "#7a4c2a"] as const;
+export const HULL = ["#f4f8f9", "#c9d6dc", "#8fa3ae"] as const;
 
 export type GlobeDot = {
   sinLat: number;

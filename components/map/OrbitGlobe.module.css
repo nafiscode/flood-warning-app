@@ -39,7 +39,13 @@
   overflow: visible;
   transform-origin: 72% 70%;
   animation: float 7s ease-in-out infinite;
-  filter: drop-shadow(0 0 2px rgb(4 13 20 / 0.6));
+  /* By day a soft slate shadow lifts the silver off a pale page; after dark see below. */
+  filter: drop-shadow(0 1px 1.5px rgb(29 59 83 / 0.35));
+}
+
+/* After dark a faint teal rim instead: a dark shadow would vanish, and the hull already glows. */
+:global(:root[data-theme="dark"]) .craft {
+  filter: drop-shadow(0 0 2px rgb(127 209 201 / 0.35));
 }
 
 .wing rect {
@@ -61,30 +67,38 @@
   stroke-linecap: round;
 }
 
+/* Silver-white, drawn in the brand's slate and trimmed in its teal (docs/brand.md). */
 .body {
-  stroke: #3d2614;
-  stroke-width: 0.4;
+  stroke: #1d3b53;
+  stroke-width: 0.45;
 }
 
-/* The facets and creases of the foil blanket, which make bronze read as foil and not as a box. */
 .lit {
-  fill: rgb(232 196 150 / 0.32);
+  fill: rgb(255 255 255 / 0.55);
 }
 
 .shade {
-  fill: rgb(40 22 10 / 0.35);
+  fill: rgb(29 59 83 / 0.16);
 }
 
-.crinkle {
+.band {
+  fill: #2f9c95;
+}
+
+.seam {
   fill: none;
-  stroke: rgb(232 196 150 / 0.4);
+  stroke: rgb(29 59 83 / 0.35);
   stroke-width: 0.3;
-  stroke-linecap: round;
 }
 
+/* The dish's rim in the brand's teal: the deep one by day, the light one after dark. */
 .dish {
-  stroke: #3d2614;
-  stroke-width: 0.4;
+  stroke: #2f9c95;
+  stroke-width: 0.5;
+}
+
+:global(:root[data-theme="dark"]) .dish {
+  stroke: #7fd1c9;
 }
 
 .beacon {

@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 
 import {
-  BRONZE,
+  HULL,
   landDots,
   LINK_DEG,
   linkAngle,
@@ -31,8 +31,8 @@ const FEED = { x: (29 / 40) * 0.95, y: 0.02 + (21 / 28) * 0.95 * (28 / 40) };
 const TEAL = "127 209 201"; // --jaga-teal-light; a canvas cannot read a CSS variable
 
 /**
- * The head of the map console: a small Earth turning slowly, with a satellite in bronze foil
- * floating at its shoulder. When Jaga's own part of the world comes round under it, the place
+ * The head of the map console: a small Earth turning slowly, with a satellite in silver and
+ * Jaga's teal floating at its shoulder. When Jaga's own part of the world comes round under it, the place
  * glows and data runs up the beam to the dish (the owner, 20 Oct 2026, after the Airbus
  * MilSatCom picture; it replaces the strip of 19 Oct, which took the whole width of the head).
  *
@@ -46,7 +46,7 @@ export function OrbitGlobe() {
   const root = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const id = useId();
-  const foil = `${id}-foil`;
+  const hull = `${id}-hull`;
 
   useEffect(() => {
     const box = root.current;
@@ -215,10 +215,10 @@ export function OrbitGlobe() {
       <canvas ref={canvas} className={styles.canvas} />
       <svg className={styles.craft} viewBox="0 0 40 28">
         <defs>
-          <linearGradient id={foil} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor={BRONZE[0]} />
-            <stop offset="45%" stopColor={BRONZE[1]} />
-            <stop offset="100%" stopColor={BRONZE[2]} />
+          <linearGradient id={hull} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={HULL[0]} />
+            <stop offset="45%" stopColor={HULL[1]} />
+            <stop offset="100%" stopColor={HULL[2]} />
           </linearGradient>
         </defs>
         <g transform="rotate(-24 20 13)">
@@ -236,18 +236,13 @@ export function OrbitGlobe() {
             width="10"
             height="11"
             rx="0.8"
-            fill={`url(#${foil})`}
+            fill={`url(#${hull})`}
           />
-          {/* Foil is crumpled: a few lit and shaded facets, and the creases between them. */}
-          <path
-            className={styles.lit}
-            d="M15 7.5h5.6l-1.9 4.1-3.7 1.1zM21.6 12.4l3.4-1.5v4.8l-2.5 1.2z"
-          />
-          <path className={styles.shade} d="M18.7 11.6l2.9 0.8 0.9 4.5-4.7 1.6-1.6-3.7z" />
-          <path
-            className={styles.crinkle}
-            d="M18.7 11.6l-3.7 1.1M18.7 11.6l2.9 0.8 3.4-1.5M22.5 16.9l2.5-1.2"
-          />
+          {/* A lit face and a shaded one, the panel seams, and a teal band round the hull. */}
+          <path className={styles.lit} d="M15.8 8.3h4.2v3.4h-4.2z" />
+          <path className={styles.shade} d="M20 13.4h4.2v4.3H20z" />
+          <rect className={styles.band} x="15" y="12" width="10" height="1.4" />
+          <path className={styles.seam} d="M20 7.5v11M15 15.6h10" />
           <circle className={styles.beacon} cx="20" cy="4.4" r="0.9" />
         </g>
         {/* The dish that takes the downlink, turned towards the globe. */}
@@ -255,7 +250,7 @@ export function OrbitGlobe() {
         <path
           className={styles.dish}
           d="M26.2 19.4a3.6 3.6 0 0 0 5.4 3.4z"
-          fill={`url(#${foil})`}
+          fill={`url(#${hull})`}
         />
       </svg>
     </div>
