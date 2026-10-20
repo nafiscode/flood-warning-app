@@ -45,6 +45,7 @@ describe("who built Jaga: the lines", () => {
       "why.p1",
       "why.p2",
       "why.p3",
+      "why.p4",
       "journey.title",
       "journey.lead",
       "journey.note",

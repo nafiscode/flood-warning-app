@@ -63,7 +63,7 @@ export const CREDENTIAL_ITEMS: Record<CredentialGroup, number> = {
   education: 2,
   membership: 1,
   training: 4,
-  languages: 5,
+  languages: 6,
 };
 
 /**

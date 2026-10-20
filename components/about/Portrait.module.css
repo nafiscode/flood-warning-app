@@ -88,21 +88,20 @@
  * The fade above is kept for any future portrait that is not cut out, because a photo with its
  * own background still needs somewhere to dissolve into.
  */
+/*
+ * The foot of the picture fades in the file's own alpha (`.claude/local/cutout.py`), not here.
+ * A CSS mask is positioned against the element, and the first attempt laid the fade over the
+ * transparent space below the subject, where it did nothing: the photograph's straight cut
+ * through his jacket stayed exactly as sharp as before. The picture has the hard edge, so the
+ * picture carries the fade.
+ */
 .cut .photo {
-  /* Only the foot of the picture fades, so the shoulders dissolve into the panel instead of
-     being sliced off by the edge of a frame that is not drawn. */
-  mask-image: linear-gradient(to bottom, #000 76%, transparent 99%);
+  mask-image: none;
   border-radius: 0;
-}
-
-.cut .photo {
   object-fit: contain;
-  object-position: 50% 100%;
-  /* The subject is the whole picture now, so it may fill the slot and overhang it a little. */
-  width: 118%;
-  height: 118%;
-  margin-block-start: -9%;
-  filter: saturate(0.94) contrast(1.03) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+  width: 100%;
+  height: 100%;
+  filter: saturate(0.94) contrast(1.03) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
 }
 
 /*
@@ -119,10 +118,10 @@
   inset: -6%;
   border-radius: 50%;
   background: radial-gradient(
-    circle at 50% 52%,
+    circle at 50% 42%,
     color-mix(in srgb, var(--jaga-teal) 62%, transparent),
-    color-mix(in srgb, var(--jaga-teal-ink) 26%, transparent) 55%,
-    transparent 72%
+    color-mix(in srgb, var(--jaga-teal-ink) 24%, transparent) 52%,
+    transparent 70%
   );
   filter: blur(10px);
 }

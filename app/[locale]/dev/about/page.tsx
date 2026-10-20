@@ -38,10 +38,10 @@ export default async function AboutReviewPage({
           the translation.
         </p>
         <p className={hint}>
-          <b>Needs your own words:</b> the three paragraphs under &ldquo;why I built this&rdquo; are
-          my draft of your reasons, including the claim that you are from this part of the country.
-          Rewrite them in your voice before this goes public. Everything else on the page comes from
-          your career profile.
+          <b>Check the wording:</b> the four paragraphs under &ldquo;why I built this&rdquo; are now
+          written from what you told me &mdash; that you are from the region but were abroad for the
+          last two floods, and that Jaga is for everyone else to use before and during one. Read
+          them and tell me if any of it lands wrong. Everything else comes from your career profile.
         </p>
         <div className="flex flex-col gap-2">
           <p className="font-medium text-jaga-ink">The portrait slot, both ways</p>

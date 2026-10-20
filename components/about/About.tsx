@@ -84,7 +84,7 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
         <h2 id="about-why" className="text-h3 font-bold text-jaga-ink">
           {t("why.title")}
         </h2>
-        {(["p1", "p2", "p3"] as const).map((key) => (
+        {(["p1", "p2", "p3", "p4"] as const).map((key) => (
           <p key={key} className="text-jaga-text">
             {t(`why.${key}`)}
           </p>

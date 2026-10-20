@@ -489,7 +489,14 @@
     "capacity": "Room for about {count} people",
     "needs": "Needs: {text}",
     "savedAt": "No connection. Showing the list saved on this phone at {time}.",
-    "savedOld": "No connection. Showing the list saved on this phone."
+    "savedOld": "No connection. Showing the list saved on this phone.",
+    "checkedNever": "Nobody has checked this place yet",
+    "checkedStale": "Not checked since {time}",
+    "checkedBy": {
+      "admin": "Checked by a Jaga admin at {time}",
+      "team": "Checked by a local team at {time}",
+      "resident": "Reported by someone there at {time}"
+    }
   },
   "map": {
     "title": "Risk & Live Map",
@@ -5145,9 +5152,10 @@
     "portraitAlt": "Nafis Damae",
     "why": {
       "title": "Why I built this",
-      "p1": "I am from this part of the country. Flooding here is not news to me, and neither is the waiting: water rising in the dark, nobody sure whether this is the year it comes into the house, and the warning arriving after the road has already gone.",
-      "p2": "For ten years I have been paid to answer exactly that question for other people's rivers: where the water goes, how fast, how far, and who should be told. Jaga is the same work, turned toward home, and given away.",
-      "p3": "I pay for it, I run it, and nobody pays me for it. That is the whole arrangement."
+      "p1": "I am from this part of the country. I will say plainly that I was not there for the last two big floods: work has kept me abroad, and I live in Riyadh, Saudi Arabia.",
+      "p2": "For ten years I have been paid to answer the water question for other people's regions: where it goes, how fast, how far, and who should be told first. At some point it was obvious that the thing I do for a living elsewhere could be done for home too, so I started.",
+      "p3": "Jaga is not for me. It is for everyone else to use. Before the water comes, so people know and can get ready in time; and while it is happening, so residents and rescue teams are in one place, looking at the same picture, able to reach each other.",
+      "p4": "I pay for it, I run it, and nobody pays me for it. And because I am not there when the water comes, Jaga has to work on its own, without waiting for me."
     },
     "road": {
       "title": "The road that led here",
@@ -5190,7 +5198,7 @@
         "egis": {
           "years": "2024 to present",
           "title": "Digital Enablement Lead / Senior Automation Engineer",
-          "where": "Egis, supporting MATARAT Holding, Riyadh",
+          "where": "Egis, supporting MATARAT Holding, Riyadh, Saudi Arabia",
           "what": {
             "1": "Owns the digital roadmap for portfolio management, CAPEX governance, project controls and asset management across 27 airports.",
             "2": "Architected and built CIMS, an enterprise project-management portal of 13 modules used by five operating companies and the regulator.",
@@ -5283,13 +5291,14 @@
         "title": "Languages",
         "items": {
           "1": "Thai: native",
-          "2": "English: full professional",
-          "3": "Malay: professional",
-          "4": "Turkish: conversational",
-          "5": "Arabic: limited working"
+          "2": "Patani Malay: native",
+          "3": "English: full professional",
+          "4": "Standard Malay: professional",
+          "5": "Turkish: conversational",
+          "6": "Arabic: limited working"
         }
       },
-      "malayNote": "I speak Malay, which is why Jaga is being built in Patani Malay as well as Thai, not run through a machine but reviewed by people who speak it at home."
+      "malayNote": "Patani Malay is a mother tongue of mine, which is why Jaga is being built in it alongside Thai, not run through a machine but reviewed by people who speak it at home."
     },
     "check": {
       "title": "Check me",
@@ -5329,7 +5338,7 @@
           "short": "Defence & space",
           "years": "2021-2024",
           "name": "Defence & space",
-          "tag": "Satellite Earth observation · Intelligence"
+          "tag": "Satellite Earth observation"
         },
         "aviation": {
           "short": "Aviation & airports",
@@ -5341,5 +5350,33 @@
       "note": "Every move demanded a new technical language, a new regulatory world and a new set of people, and each one was answered the same way: learn it fast, earn credibility on the detail, and turn the challenge into delivered systems.",
       "andJaga": "Jaga is the three of them arriving in the same place: the water and the dams from the first, the satellite imagery from the second, and from the third the business of building something people can actually depend on."
     }
+  },
+  "placeChecks": {
+    "title": "Check the safe places",
+    "link": "Check the safe places in your area",
+    "intro": "The safe places in the tambons your team covers, the ones nobody has been to for longest first. When you get there, tap what it is like now. Anyone who opens the app sees who checked it and when.",
+    "loading": "Loading the list…",
+    "unavailable": "Couldn't load the list. Try again.",
+    "none": "No safe places are listed in the tambons your team covers. Ask an admin to add them.",
+    "dueCount": "{count} of {total} are due a check",
+    "allFresh": "All {count} have been checked recently",
+    "never": "Nobody has been yet",
+    "checked": "Last checked {time}",
+    "overdue": "Last checked {time}, {hours} h overdue",
+    "listed": "The app says: {status}",
+    "ask": "What is it like now?",
+    "more": "Say more (optional)",
+    "needsLabel": "What does it need now?",
+    "water": {
+      "label": "Has the water reached the building?",
+      "dry": "Not yet",
+      "around": "Water around the building",
+      "inside": "Water inside the building"
+    },
+    "sending": "Sending…",
+    "sent": "Saved: {status}",
+    "failed": "That didn't send. Try again.",
+    "where": "Open this place in maps",
+    "note": "What you say changes the place's status in the app. It does not issue an alert and it notifies nobody. To correct the name, the capacity or the position, ask an admin."
   }
 }
