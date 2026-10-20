@@ -274,6 +274,12 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
                     watched: ready.preview.reach.watched,
                   })}
                 </p>
+                {/* Most of Jaga's accounts have never chosen a place; they are told anyway. */}
+                {ready.preview.reach.noPlace > 0 && (
+                  <p className={hint} data-reach-noplace={ready.preview.reach.noPlace}>
+                    {t("reach.noPlace", { count: ready.preview.reach.noPlace })}
+                  </p>
+                )}
                 <p className={hint}>
                   {t("reach.channels", {
                     push: ready.preview.reach.push,

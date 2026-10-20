@@ -2868,7 +2868,8 @@
         "channels": "Device notifications: {push} · LINE connected: {line}",
         "notYet": "Phone notifications and LINE reach only the people who turned them on. Everyone else sees the alert when they open the app, on the map and in the bell.",
         "drillTitle": "This drill reaches",
-        "insteadOf": "A real alert for the same area would reach {count} people."
+        "insteadOf": "A real alert for the same area would reach {count} people.",
+        "noPlace": "{count} of them signed in but never chose a place, so they are told about every alert, with the tambon named instead of \"your area\"."
       },
       "quota": "LINE quota this month after sending: {after} of {limit}",
       "quotaOver": "Over this month's LINE quota: {after} of {limit}",

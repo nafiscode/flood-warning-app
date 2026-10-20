@@ -134,7 +134,15 @@ export type AlertPreview = {
   reason: string;
   messages: Record<string, string>;
   tambons: number;
-  reach: { homes: number; watched: number; people: number; push: number; line: number };
+  reach: {
+    homes: number;
+    watched: number;
+    /** Signed in, never chose a place: told about every alert (owner, 21 Oct). */
+    noPlace: number;
+    people: number;
+    push: number;
+    line: number;
+  };
   /** This month's LINE messages, when the quota is being tracked (A7). */
   lineQuota: { used: number; limit: number } | null;
   /** Alerts already in force that share a tambon with this one. */
@@ -163,6 +171,7 @@ export function toPreview(v: unknown): AlertPreview | null {
     reach: {
       homes: n(reach.homes),
       watched: n(reach.watched),
+      noPlace: n(reach.noPlace),
       people: n(reach.people),
       push: n(reach.push),
       line: n(reach.line),

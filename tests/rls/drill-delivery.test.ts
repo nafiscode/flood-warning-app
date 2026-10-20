@@ -246,16 +246,23 @@ describe("one person, one message", () => {
     );
 
     await as(db, { uid: w.admin });
+    // Counted for this one person: the database also holds other accounts, and since 21 Oct
+    // every account without a place of its own is told about every alert too.
+    const ours = async (id: string) => ({
+      push: (
+        await rows<{ endpoint: string }>(db, "select * from push_targets_for_alert($1)", [id])
+      ).filter((t) => t.endpoint === "https://fcm.googleapis.com/one-phone").length,
+      line: (
+        await rows<{ line_user_id: string }>(db, "select * from line_targets_for_alert($1)", [id])
+      ).filter((t) => t.line_user_id === "U-one-person").length,
+    });
+
     const real = await publish([w.yala1], { drill: false, audience: [] });
-    const push = await rows(db, "select * from push_targets_for_alert($1)", [real]);
-    const line = await rows(db, "select * from line_targets_for_alert($1)", [real]);
     // One device, one LINE account: four places are still one person.
-    expect(push).toHaveLength(1);
-    expect(line).toHaveLength(1);
+    expect(await ours(real)).toEqual({ push: 1, line: 1 });
 
     const drill = await publish([w.yala1], { drill: true, audience: ["everyone"] });
-    expect(await rows(db, "select * from push_targets_for_alert($1)", [drill])).toHaveLength(1);
-    expect(await rows(db, "select * from line_targets_for_alert($1)", [drill])).toHaveLength(1);
+    expect(await ours(drill)).toEqual({ push: 1, line: 1 });
   });
 });
 
@@ -286,5 +293,90 @@ describe("everywhere people use Jaga", () => {
     await expectDenied(db, "select t from tambons_with_people() t", []);
     await as(db, "anon");
     await expectDenied(db, "select t from tambons_with_people() t", []);
+  });
+});
+
+describe("somebody who signed in and never chose a place", () => {
+  /*
+   * On jaga-dev 25 of 27 accounts are in this state, almost all of them LINE sign-ins, so this
+   * is most of the audience rather than an edge of it (owner, 21 Oct).
+   */
+  beforeEach(async () => {
+    await asOwner(db);
+    // The fixture's requester has neither a home nor a watched place; give them LINE and a phone.
+    await db.query("update profiles set line_user_id = $1 where user_id = $2", [
+      "U-no-place",
+      w.requester,
+    ]);
+    await db.query(
+      `insert into push_subscriptions (user_id, endpoint, keys, tambons, locale)
+       values ($1, 'https://fcm.googleapis.com/no-place', '{"p256dh":"k","auth":"a"}', '{}', 'th')`,
+      [w.requester],
+    );
+  });
+
+  it("is told about a real alert for an area they never named", async () => {
+    await as(db, { uid: w.admin });
+    const id = await publish([w.yala1], { drill: false, audience: [] });
+    const push = await rows<{ endpoint: string }>(db, "select * from push_targets_for_alert($1)", [
+      id,
+    ]);
+    const line = await rows<{ line_user_id: string; placeless: boolean }>(
+      db,
+      "select * from line_targets_for_alert($1)",
+      [id],
+    );
+    expect(push.map((p) => p.endpoint)).toContain("https://fcm.googleapis.com/no-place");
+    const theirs = line.find((l) => l.line_user_id === "U-no-place");
+    expect(theirs).toBeDefined();
+    // Marked, so the sender gives them the alert's real area and not "your area".
+    expect(theirs!.placeless).toBe(true);
+  });
+
+  it("is told about a drill sent to everyone, and not about one sent to the teams", async () => {
+    await as(db, { uid: w.admin });
+    const everyone = await publish([w.yala1], { drill: true, audience: ["everyone"] });
+    expect(
+      (await rows<{ line_user_id: string }>(db, "select * from line_targets_for_alert($1)", [
+        everyone,
+      ])).map((l) => l.line_user_id),
+    ).toContain("U-no-place");
+
+    const teams = await publish([w.yala1], { drill: true, audience: ["rescue"] });
+    expect(
+      (await rows<{ line_user_id: string }>(db, "select * from line_targets_for_alert($1)", [
+        teams,
+      ])).map((l) => l.line_user_id),
+    ).not.toContain("U-no-place");
+  });
+
+  it("is still told once, and the silent drill still tells nobody", async () => {
+    await as(db, { uid: w.admin });
+    const id = await publish([w.yala1], { drill: false, audience: [] });
+    const mine = (
+      await rows<{ line_user_id: string }>(db, "select * from line_targets_for_alert($1)", [id])
+    ).filter((l) => l.line_user_id === "U-no-place");
+    expect(mine).toHaveLength(1);
+
+    const silent = await publish([w.yala1], { drill: true, audience: [] });
+    expect(await rows(db, "select * from push_targets_for_alert($1)", [silent])).toHaveLength(0);
+    expect(await rows(db, "select * from line_targets_for_alert($1)", [silent])).toHaveLength(0);
+  });
+
+  it("stops being one of them as soon as they choose a place", async () => {
+    await asOwner(db);
+    await db.query(
+      `update profiles set home_point = extensions.st_setsrid(extensions.st_geomfromtext($1), 4326)
+        where user_id = $2`,
+      [w.songkhlaPoint, w.requester],
+    );
+    await as(db, { uid: w.admin });
+    // Their home is in Songkhla now, so a Yala alert is no longer theirs to hear.
+    const id = await publish([w.yala1], { drill: false, audience: [] });
+    expect(
+      (await rows<{ line_user_id: string }>(db, "select * from line_targets_for_alert($1)", [
+        id,
+      ])).map((l) => l.line_user_id),
+    ).not.toContain("U-no-place");
   });
 });

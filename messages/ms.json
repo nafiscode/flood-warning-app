@@ -2868,7 +2868,8 @@
         "channels": "Pemberitahuan pada peranti: {push} orang · LINE disambung: {line} orang",
         "notYet": "Pemberitahuan peranti dan LINE hanya sampai kepada orang yang menghidupkannya. Orang lain melihat amaran apabila membuka aplikasi, pada peta dan dalam loceng.",
         "drillTitle": "Latihan ini sampai kepada",
-        "insteadOf": "Amaran sebenar di kawasan sama sampai kepada {count} orang."
+        "insteadOf": "Amaran sebenar di kawasan sama sampai kepada {count} orang.",
+        "noPlace": "Antaranya {count} orang telah log masuk tetapi belum memilih kawasan, jadi mereka menerima setiap amaran, dengan nama mukim disebut."
       },
       "quota": "Kuota LINE bulan ini selepas dihantar: {after} daripada {limit}",
       "quotaOver": "Melebihi kuota LINE bulan ini: {after} daripada {limit}",

@@ -156,14 +156,24 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
         .eq("alert_id", alertId),
     ]);
 
-    const byLocale = new Map<Locale, string[]>();
-    for (const t of targets as { line_user_id: string; locale: string }[]) {
+    /*
+     * Grouped by language and by whether the reader has a place of their own. Somebody who
+     * signed in and never chose one is told about every alert (the owner, 21 Oct), and for
+     * them the personal wording would be a lie: "your area" is not an area they ever named.
+     * They get the alert's stored words, which name the tambons it is really for.
+     */
+    const byGroup = new Map<string, { locale: Locale; placeless: boolean; ids: string[] }>();
+    for (const t of targets as { line_user_id: string; locale: string; placeless?: boolean }[]) {
       const locale = localeOf(t.locale);
-      byLocale.set(locale, [...(byLocale.get(locale) ?? []), t.line_user_id]);
+      const placeless = t.placeless === true;
+      const key = `${locale}:${placeless}`;
+      const group = byGroup.get(key) ?? { locale, placeless, ids: [] };
+      group.ids.push(t.line_user_id);
+      byGroup.set(key, group);
     }
     let recipients = 0;
     let failed = 0;
-    for (const [locale, ids] of byLocale) {
+    for (const { locale, placeless, ids } of byGroup.values()) {
       const message = alertFlex(
         {
           id: alert.id as string,
@@ -175,9 +185,10 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
            * instructions, and personalising them here would put "move to higher ground" into
            * the body of a drill.
            */
-          template: drill
-            ? null
-            : ((template?.messages as Record<string, string> | undefined) ?? null),
+          template:
+            drill || placeless
+              ? null
+              : ((template?.messages as Record<string, string> | undefined) ?? null),
           tambons: tambons ?? 0,
         },
         locale,
