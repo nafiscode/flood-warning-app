@@ -204,6 +204,12 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the page", () => {
       // A picture of a name, beside the name: nothing for a screen reader to read twice.
       expect(mark?.getAttribute("alt"), step.key).toBe("");
     }
+    // One height for all three (the owner, 21 Oct 2026: they read as different sizes). The marks
+    // are evened out in the files themselves, so nothing here may differ per employer.
+    const heights = new Set(
+      [...container.querySelectorAll("[data-about-logo] img")].map((m) => m.className),
+    );
+    expect(heights.size, "every mark is drawn at the same height").toBe(1);
     expect(container.textContent).toContain(line("road.marks"));
     expect(container.querySelectorAll("[data-about-trust]").length).toBe(TRUST_POINTS.length);
   });

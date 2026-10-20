@@ -301,6 +301,12 @@ function StepCard({ step, n }: { step: CareerStep; n: number }) {
               it sits on a slate chip rather than on the card, which is white in daylight. It is a
               picture of a name and nothing more: no link, and hidden from a screen reader,
               because the employer is already written beside it in words.
+
+              One height for all three, and no per-employer tweak here on purpose: this file is
+              public and must not learn whose marks these are. The three read at the same size
+              because each file is drawn on a common canvas with its own letterforms scaled to a
+              shared cap height - a framed mark, a capital wordmark and a lowercase one do not
+              match at a common *box* height (.claude/local/logos-even.mjs).
             */}
             {step.logo && (
               <span
@@ -311,8 +317,8 @@ function StepCard({ step, n }: { step: CareerStep; n: number }) {
                   src={`/about/logos/${step.logo}.png`}
                   alt=""
                   aria-hidden="true"
-                  height={20}
-                  className="h-4 w-auto opacity-90 sm:h-5"
+                  height={28}
+                  className="h-6 w-auto opacity-90 sm:h-7"
                   loading="lazy"
                   decoding="async"
                 />
