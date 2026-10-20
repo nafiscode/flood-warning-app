@@ -1,0 +1,104 @@
+/*
+ * The small turning Earth at the head of the map (components/map/OrbitGlobe.tsx). One size, --g,
+ * the globe's diameter; everything else in the component is a share of it. The globe is dark in
+ * both themes, the way a screen is, so it reads as a window onto space and not as a status.
+ */
+.orbit {
+  --g: 2rem;
+  position: relative;
+  flex: none;
+  align-self: center;
+  width: calc(var(--g) * 1.75);
+  height: var(--g);
+  /* A picture, not text: it keeps its left and right in a right-to-left script too. */
+  direction: ltr;
+  pointer-events: none;
+  contain: strict;
+}
+
+@media (min-width: 1024px) and (pointer: fine) {
+  .orbit {
+    --g: 2.75rem;
+  }
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The craft floats: a slow rise and a slight roll, never fast enough to read as anything urgent. */
+.craft {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: calc(var(--g) * 0.02);
+  width: calc(var(--g) * 0.95);
+  height: auto;
+  overflow: visible;
+  transform-origin: 72% 70%;
+  animation: float 7s ease-in-out infinite;
+  filter: drop-shadow(0 0 2px rgb(4 13 20 / 0.6));
+}
+
+.wing rect {
+  fill: #13304a;
+  stroke: #7fd1c9;
+  stroke-width: 0.5;
+}
+
+.wing path {
+  fill: none;
+  stroke: rgb(127 209 201 / 0.45);
+  stroke-width: 0.35;
+}
+
+.strut {
+  fill: none;
+  stroke: #9aa9b2;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+}
+
+.body {
+  stroke: #3d2614;
+  stroke-width: 0.4;
+}
+
+/* The facets and creases of the foil blanket, which make bronze read as foil and not as a box. */
+.lit {
+  fill: rgb(232 196 150 / 0.32);
+}
+
+.shade {
+  fill: rgb(40 22 10 / 0.35);
+}
+
+.crinkle {
+  fill: none;
+  stroke: rgb(232 196 150 / 0.4);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+}
+
+.dish {
+  stroke: #3d2614;
+  stroke-width: 0.4;
+}
+
+.beacon {
+  fill: #a9e3dc;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-1.5px) rotate(-2deg);
+  }
+}
+
+/* Less motion asked for: app/globals.css already stops the float; the canvas holds still itself. */

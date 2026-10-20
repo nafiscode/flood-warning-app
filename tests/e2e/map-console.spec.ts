@@ -678,23 +678,26 @@ test.describe("the live map on a laptop", () => {
   });
 
   /*
-   * The owner, 19 Oct: the head should "feel like they are seeing something live projected from
-   * satellite data". It is decoration, so what is checked is that it says nothing and costs the
-   * map nothing.
+   * The owner, 20 Oct: the 19 Oct downlink strip took the whole width of the head, so it is a small
+   * turning Earth with a satellite at its shoulder now. It is decoration, so what is checked is that
+   * it says nothing, stays small, and costs the map nothing.
    */
-  test("the downlink strip at the head says nothing and takes no room from the map", async ({
+  test("the turning globe at the head says nothing and takes no room from the map", async ({
     page,
   }) => {
     await serve(page);
     await page.goto("/th/map");
-    const strip = page.locator("[data-flyby]");
-    await expect(strip).toBeVisible();
-    await expect(strip).toHaveAttribute("aria-hidden", "true");
+    const globe = page.locator("[data-orbit-globe]");
+    await expect(globe).toBeVisible();
+    await expect(globe).toHaveAttribute("aria-hidden", "true");
     // Not one character: a figure here would be a figure nobody could source (safety rule 8).
-    expect((await strip.innerText()).trim()).toBe("");
-    // The head stays a single line, so the map keeps the height it had without the strip.
+    expect((await globe.innerText()).trim()).toBe("");
+    // It turns while it is on screen.
+    await expect(globe).toHaveAttribute("data-spinning", "on");
+    // Small, beside the heading, and the head stays a single line.
     const head = (await page.locator('[data-console-area="head"]').boundingBox())!;
-    const box = (await strip.boundingBox())!;
+    const box = (await globe.boundingBox())!;
+    expect(box.width).toBeLessThan(96);
     expect(head.height).toBeLessThan(60);
     expect(box.y).toBeLessThan(head.y + 8);
   });
@@ -728,9 +731,15 @@ test.describe("the live map on a phone is untouched", () => {
     if ((await sky.count()) > 0) await expect(sky).toBeHidden();
     // The full-screen map is the console's; a phone's map is already as wide as the screen.
     await expect(page.locator("[data-map-full-toggle]")).toBeHidden();
-    // The downlink strip is display:none here, like the sky above it: nothing is painted and
-    // nothing is animated on a phone, whatever the markup carries.
-    await expect(page.locator("[data-flyby]")).toBeHidden();
+    // The turning globe is the one piece of the console's head a phone does get, at the end of
+    // the title's line and no taller than the title (the owner, 20 Oct: "if for phone can fit").
+    const globe = page.locator("[data-orbit-globe]");
+    await expect(globe).toBeVisible();
+    const title = (await page.locator('[data-console-area="head"] h1').boundingBox())!;
+    const row = (await globe.locator("xpath=..").boundingBox())!;
+    const g = (await globe.boundingBox())!;
+    expect(row.height).toBeLessThanOrEqual(title.height + 1);
+    expect(Math.abs(g.y + g.height / 2 - (title.y + title.height / 2))).toBeLessThan(6);
     const readout = page.locator("[data-console-weather]");
     if ((await readout.count()) > 0) await expect(readout).toBeHidden();
     // The wrappers that make the console vanish entirely here.
