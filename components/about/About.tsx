@@ -280,35 +280,44 @@ function StepCard({ step, n }: { step: CareerStep; n: number }) {
         <span className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-jaga-ground text-jaga-teal-ink">
           {ABOUT_ICONS[step.icon](22)}
         </span>
-        <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-small font-medium text-jaga-text-2">
-            {n}. {t(`${base}.years`)}
-          </p>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          {/*
+            The mark rides the eyebrow line, which is three words long, rather than the heading
+            row. Beside the heading it took a third of the width from the title, and at 360 px
+            that broke a long job title into one or two words a line (the owner saw it missing on
+            a phone; it had been hidden below a tablet, which was the wrong fix for the same
+            problem). Here the title and the employer keep the full column at every width.
+          */}
+          <div className="flex items-center gap-3">
+            <p className="text-small font-medium text-jaga-text-2">
+              {n}. {t(`${base}.years`)}
+            </p>
+            {/*
+              The employer's own mark, where there is one. The files are white on transparent, so
+              it sits on a slate chip rather than on the card, which is white in daylight. It is a
+              picture of a name and nothing more: no link, and hidden from a screen reader,
+              because the employer is already written beside it in words.
+            */}
+            {step.logo && (
+              <span
+                data-about-logo={step.logo}
+                className="ms-auto flex h-9 shrink-0 items-center rounded-xl bg-jaga-slate px-2.5 sm:h-10 sm:px-3"
+              >
+                <img
+                  src={`/about/logos/${step.logo}.png`}
+                  alt=""
+                  aria-hidden="true"
+                  height={20}
+                  className="h-4 w-auto opacity-90 sm:h-5"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+            )}
+          </div>
           <h3 className="text-h3 font-bold leading-snug text-jaga-ink">{t(`${base}.title`)}</h3>
           <p className="text-jaga-text">{t(`${base}.where`)}</p>
         </div>
-        {/*
-          The employer's own mark, where there is one. The files are white on transparent, so it
-          sits on a slate chip rather than on the card, which is white in daylight. It is a
-          picture of a name and nothing more: no link, and hidden from a screen reader, because
-          the employer is already written beside it in words.
-        */}
-        {step.logo && (
-          <span
-            data-about-logo={step.logo}
-            className="ms-auto hidden h-10 shrink-0 items-center rounded-xl bg-jaga-slate px-3 sm:flex"
-          >
-            <img
-              src={`/about/logos/${step.logo}.png`}
-              alt=""
-              aria-hidden="true"
-              height={20}
-              className="h-5 w-auto opacity-90"
-              loading="lazy"
-              decoding="async"
-            />
-          </span>
-        )}
       </div>
 
       <ul className="flex flex-col gap-2">
