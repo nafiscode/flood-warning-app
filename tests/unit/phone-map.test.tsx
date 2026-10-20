@@ -195,6 +195,30 @@ describe("back to the map", () => {
   });
 });
 
+describe("the home screen's arrangement on a phone, in app/globals.css", () => {
+  const css = readFileSync("app/globals.css", "utf8");
+  const block = () => {
+    const at = css.indexOf("@media (max-width: 1023.98px) {");
+    return css.slice(at, css.indexOf("\n}", at));
+  };
+
+  it("brings the things to do up between the alert and the long-term risk", () => {
+    const b = block();
+    // The columns stop being boxes, so their blocks can be put in order one by one.
+    expect(b).toMatch(/\[data-console-page="home"\] > \[data-home-col\] \{[^}]*display: contents/);
+    // What to do comes after the alert (which keeps the default order) and before the tail.
+    expect(b).toMatch(/\[data-home-col="act"\] > \* \{\s*order: 1/);
+    expect(b).toMatch(/\[data-home-col="now"\] > \[data-home-tail\] > \* \{\s*order: 2/);
+    expect(b).toMatch(/\[data-home-col="places"\] > \* \{\s*order: 3/);
+  });
+
+  it("is the exact complement of the two columns, so no laptop is touched", () => {
+    // Tailwind's lg: is min-width 1024px; this is everything below it, and nothing else.
+    expect(css).toContain("@media (max-width: 1023.98px) {");
+    expect(block()).not.toContain("pointer:");
+  });
+});
+
 describe("the phone's arrangement in app/globals.css", () => {
   const css = readFileSync("app/globals.css", "utf8");
 

@@ -374,21 +374,36 @@ export function HomeView(props: HomeViewProps) {
           </p>
         )}
 
-        {!tense && riskCard}
+        {/*
+         * The long-term risk and the live measurements are marked as the tail of this column
+         * (the owner, 21 Oct): on a phone and a tablet the things to do - SOS, a flood report,
+         * asking for food and water, and following what you have sent - are brought up above
+         * them, so the screen reads what is happening, then what you can do, then the
+         * background. Nothing moves on a laptop, where the two are side by side already.
+         *
+         * The wrapper is `display: contents`, so it is nothing at all in the page: what it does
+         * is give app/globals.css something to name (the phone block, `data-home-tail`).
+         */}
+        <div className="contents" data-home-tail="true">
+          {!tense && riskCard}
 
-        {/* An ordinary day: the measurements sit under the hero and its reports. */}
-        {!tense && monitoring}
+          {/* An ordinary day: the measurements sit under the hero and its reports. */}
+          {!tense && monitoring}
+        </div>
 
         {evacuate && sos}
         {!choosing && checklist}
 
-        {tense && riskCard}
+        <div className="contents" data-home-tail="true">
+          {tense && riskCard}
 
-        {/*
-         * At Warning or Evacuate the same section waits until after the checklist (and after the
-         * SOS button, which moves up at Evacuate): what to do comes before what the rivers read.
-         */}
-        {tense && monitoring}
+          {/*
+           * At Warning or Evacuate the same section waits until after the checklist (and after
+           * the SOS button, which moves up at Evacuate): what to do comes before what the
+           * rivers read.
+           */}
+          {tense && monitoring}
+        </div>
 
         {/* Laptop only: under the flood-risk summary (the owner, 16 Oct). */}
         <div className="hidden console:contents">{damCards}</div>

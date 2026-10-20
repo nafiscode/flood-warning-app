@@ -716,6 +716,39 @@
 }
 
 /*
+ * The home screen on a phone and a tablet (the owner, 21 Oct 2026: SOS, the flood report, the
+ * request for food and water and "what I have sent" should sit "on top of Long-term flood risk,
+ * not today's alert box", and only below the laptop's two columns).
+ *
+ * The page is written as what is happening (left), what to do (right) and the background
+ * (below), which stacks into one run of blocks here - and that run put every button after the
+ * whole of the first column, so the things to do came after the long-term risk and the live
+ * measurements. What stays first is still the alert: the level of the reader's own tambon is
+ * the first thing on the screen and nothing is allowed above it.
+ *
+ * Done by order, not by writing anything twice: the columns become `display: contents` so that
+ * their blocks are items of the page itself, and three rules put them in the order the reader
+ * wants. The query is the exact complement of Tailwind's `lg:`, where the two columns begin.
+ */
+@media (max-width: 1023.98px) {
+  [data-console-page="home"] > [data-home-col] {
+    display: contents;
+  }
+  /* What to do, straight after the alert and the checklist. */
+  [data-console-page="home"] > [data-home-col="act"] > * {
+    order: 1;
+  }
+  /* Then the long-term risk and the live measurements, which are background, not news. */
+  [data-console-page="home"] > [data-home-col="now"] > [data-home-tail] > * {
+    order: 2;
+  }
+  /* Then the reader's own places, the map, the safe places and the reservoir. */
+  [data-console-page="home"] > [data-home-col="places"] > * {
+    order: 3;
+  }
+}
+
+/*
  * The same page on a phone (the owner, 20 Oct 2026: "phone map C").
  *
  * One of the first testers said Risk & Live Map was hard to see and hard to use on a phone, and

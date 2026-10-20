@@ -231,6 +231,44 @@ test.describe("home", () => {
     await expect(page.locator('main a[href="tel:1669"]')).toBeVisible();
   });
 
+  /*
+   * The owner, 21 Oct, after using the home screen on a phone: the things to do belong "on top
+   * of Long-term flood risk, not today's alert box". What is happening stays first; the buttons
+   * come up out of the second column to sit between it and the background.
+   */
+  test("on a phone the things to do sit between the alert and the long-term risk", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await page.goto("/");
+    const topOf = async (selector: string) => (await page.locator(selector).first().boundingBox())!.y;
+    const hero = await topOf("[data-hero]");
+    const sos = await topOf('main a[href="/sos"]');
+    const report = await topOf('main a[href="/report"]');
+    const supplies = await topOf("[data-supplies-link]");
+    const risk = await topOf("[data-tambon-risk]");
+
+    // Nothing is allowed above the alert: the tambon's own level is still the first thing read.
+    expect(hero).toBeLessThan(sos);
+    // ...then what to do, in the order it is written...
+    expect(sos).toBeLessThan(report);
+    expect(report).toBeLessThan(supplies);
+    // ...and only then the long-term risk and the measurements, which are background.
+    expect(supplies).toBeLessThan(risk);
+  });
+
+  test("at Evacuate the order still puts SOS directly under the hero", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [alert("evacuate")] });
+    await page.goto("/");
+    const topOf = async (selector: string) => (await page.locator(selector).first().boundingBox())!.y;
+    const sos = await topOf('main a[href="/sos"]');
+    expect(await topOf("[data-hero]")).toBeLessThan(sos);
+    // Before the checklist, before the other buttons, and before the long-term risk.
+    expect(sos).toBeLessThan(await topOf("[data-checklist]"));
+    expect(sos).toBeLessThan(await topOf('main a[href="/report"]'));
+    expect(sos).toBeLessThan(await topOf("[data-tambon-risk]"));
+  });
+
   test("before launch a tambon without an alert shows no level", async ({ page }) => {
     await serve(page, { inService: false, alerts: [] });
     await page.goto("/");
