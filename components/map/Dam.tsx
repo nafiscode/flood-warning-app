@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { CheckIcon, ClockIcon, MapIcon, TriangleIcon, WaveIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
@@ -304,12 +305,18 @@ export function DamCard({
   now,
   tambonCode = null,
   tambonName = null,
+  steps = null,
 }: {
   dam: Dam;
   now: number;
   /** The person's own area, when the screen showing the card knows it. */
   tambonCode?: string | null;
   tambonName?: string | null;
+  /**
+   * Previous and next through the other reservoirs (the owner, 20 Oct 2026), drawn under the
+   * name. Only the map passes it: everywhere else the card is about one dam and nothing else.
+   */
+  steps?: ReactNode;
 }) {
   const t = useTranslations("dam");
   const locale = useLocale();
@@ -327,6 +334,7 @@ export function DamCard({
           {t("panel.river", { river: localName(dam.river, locale) })}
         </p>
       </div>
+      {steps}
 
       {/*
        * The drawing of what the dam is doing, above the words (the owner, 13 Oct). Without its

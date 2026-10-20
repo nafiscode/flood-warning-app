@@ -62,7 +62,7 @@ import { boundsAround, nightNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS }
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
-import { gaugeOfInterest, levelTally } from "@/lib/map-console";
+import { damRun, damsLit, gaugeRun, gaugesLit, levelTally } from "@/lib/map-console";
 import { localName } from "@/lib/places";
 import { isAdminRoleName } from "@/lib/roles";
 import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
@@ -104,13 +104,16 @@ import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
 import { SignInHint } from "@/components/account/SignInOffer";
 import { UnitWayLine } from "@/components/authority/UnitWay";
+import { CardSteps } from "./CardSteps";
 import { MapMethod } from "./MapMethod";
 import {
   GAUGE_SPAN,
   MAIN_DAM,
   mainDam,
   reservoirBox,
+  reservoirFrame,
   RESERVOIR_MARGIN,
+  RESERVOIR_SPAN,
   satelliteBox,
   zoneFrame,
   type MapFocus,
@@ -780,61 +783,109 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const revealDamButtons = () =>
     reveal(() => document.querySelector<HTMLElement>("[data-dam-legend]"));
-  /** What the map is lighting up - a reservoir or a gauge - and how often it has been asked. */
+  /** What the map is lighting up - reservoirs or gauges - and how often it has been asked. */
   const [flashDam, setFlashDam] = useState<{
     kind: "reservoir" | "gauge" | "sea";
-    code: string;
+    codes: string[];
     key: number;
     at?: { lon: number; lat: number } | null;
   } | null>(null);
   /*
-   * Opening a reservoir from a button, wherever the button is (the owner, 18 Oct): the card with
-   * its figures, the map brought to the reservoir itself - closer than the dam's own view, and
-   * with the lake in the middle - and the lake lit three times, so it is clear which water on
-   * the map is being talked about.
+   * The order both readouts walk through, and the marks a press on one lights (lib/map-console.ts).
+   *
+   * Their own places first for the rivers: the places they watch, or the area chosen on this
+   * device for somebody who watches none. It only breaks a tie now - since 20 Oct a river at or
+   * near its bank comes first however far away it is, because that is what the readout counts.
    */
-  const openDam = (dam: Dam, where: "panel" | "damButtons" = "panel") => {
-    setSelection({ kind: "dam", code: dam.code });
-    const box = reservoirBox(dam);
+  /*
+   * "My places" as points (the owner, 14 Oct): the person's home and the places they watch, or,
+   * for someone with neither, the area chosen on this device. The map frames these for "my
+   * places", and the rivers' readout reads them to break a tie between two stations.
+   */
+  const myPoints = [
+    ...mine.map((place) => ({ lat: place.lat, lon: place.lon })),
+    ...(mine.length === 0 && props.area ? [{ lat: props.area.lat, lon: props.area.lon }] : []),
+  ];
+  const gaugeOrder = gaugeRun(data?.gauges ?? [], myPoints);
+  const damOrder = damRun(dams, mainDam(dams)?.code ?? null);
+  /*
+   * Opening one or more reservoirs: the card with the first one's figures, the map framed on
+   * every lake being pointed at - closer than the dam's own view, and with the water in the
+   * middle - and those lakes lit three times, so it is clear which water is being talked about
+   * (the owner, 18 Oct for one, 20 Oct for "the extents of the 3 not only one").
+   */
+  const lightDams = (open: Dam, lit: readonly Dam[], where: "panel" | "damButtons" | "stay") => {
+    setSelection({ kind: "dam", code: open.code });
+    const box =
+      lit.length === 1
+        ? reservoirBox(lit[0]!)
+        : boundsAround(
+            lit.flatMap((dam) => reservoirFrame(dam)),
+            { minSpan: RESERVOIR_SPAN, margin: RESERVOIR_MARGIN },
+          );
     if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
-    setFlashDam((was) => ({ kind: "reservoir", code: dam.code, key: (was?.key ?? 0) + 1 }));
+    setFlashDam((was) => ({
+      kind: "reservoir",
+      codes: lit.map((dam) => dam.code),
+      key: (was?.key ?? 0) + 1,
+    }));
     if (where === "damButtons") revealDamButtons();
-    else revealPanel();
+    else if (where === "panel") revealPanel();
+  };
+  /** One reservoir, from its own button in the legend or the live monitoring. */
+  const openDam = (dam: Dam, where: "panel" | "damButtons" = "panel") => lightDams(dam, [dam], where);
+  /*
+   * The dam readout opens what is worth watching, not only the dam it reports (the owner,
+   * 20 Oct): every reservoir spilling or above the level it is normally held at, worst first and
+   * at most three, and where none is, the one the readout names.
+   */
+  const openDams = () => {
+    const lit = damsLit(damOrder);
+    if (lit.length > 0) lightDams(lit[0]!, lit, "panel");
   };
   /*
-   * The rivers' readout opens the station that matters most, the way the reservoir's card opens
-   * (the owner, 18 Oct: "apply for river gauges as well"). Which station that is, is worked out
-   * in lib/map-console.ts and is the same every time for the same readings, so a second press
-   * never lands somewhere else. The stations are switched on if they were off: opening the card
-   * for a mark that is not drawn would point at nothing.
+   * The rivers' readout opens the stations that matter, the way the reservoirs' card opens (the
+   * owner, 18 Oct: "apply for river gauges as well"; 20 Oct: the worst three together). Which
+   * stations those are is worked out in lib/map-console.ts and is the same every time for the
+   * same readings, so a second press never lands somewhere else. The stations are switched on if
+   * they were off: opening the card for a mark that is not drawn would point at nothing.
    */
-  const openGauges = () => {
-    /*
-     * Their own rivers first (the owner, 18 Oct): the places they watch, or the area chosen on
-     * this device for somebody who watches none. Which station that picks is lib/map-console.ts.
-     */
-    const places = [
-      ...mine.map((place) => ({ lat: place.lat, lon: place.lon })),
-      ...(mine.length === 0 && props.area
-        ? [{ lat: props.area.lat, lon: props.area.lon }]
-        : []),
-    ];
-    const gauge = gaugeOfInterest(data?.gauges ?? [], places);
-    if (!gauge) return;
+  const lightGauges = (
+    open: { id: string },
+    lit: readonly { id: string; lon: number; lat: number }[],
+    where: "panel" | "stay",
+  ) => {
     setShowGauges(true);
-    setSelection({ kind: "gauge", id: gauge.id });
-    const box = boundsAround([{ lon: gauge.lon, lat: gauge.lat }], {
-      minSpan: GAUGE_SPAN,
-      margin: RESERVOIR_MARGIN,
-    });
+    setSelection({ kind: "gauge", id: open.id });
+    const box = boundsAround(
+      lit.map((gauge) => ({ lon: gauge.lon, lat: gauge.lat })),
+      { minSpan: GAUGE_SPAN, margin: RESERVOIR_MARGIN },
+    );
     if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
     setFlashDam((was) => ({
       kind: "gauge",
-      code: gauge.id,
+      codes: lit.map((gauge) => gauge.id),
       key: (was?.key ?? 0) + 1,
-      at: { lon: gauge.lon, lat: gauge.lat },
+      at: lit[0] ? { lon: lit[0].lon, lat: lit[0].lat } : null,
     }));
-    revealPanel();
+    if (where === "panel") revealPanel();
+  };
+  const openGauges = () => {
+    const lit = gaugesLit(gaugeOrder);
+    if (lit.length > 0) lightGauges(lit[0]!, lit, "panel");
+  };
+  /*
+   * Previous and next, from inside the card that is already open (the owner, 20 Oct). One at a
+   * time, framed and lit on its own: the reader has left the group they were shown and is now
+   * reading stations one by one. The panel is not scrolled to again - they are looking at it.
+   */
+  const stepGauge = (id: string) => {
+    const gauge = gaugeOrder.find((g) => g.id === id);
+    if (gauge) lightGauges(gauge, [gauge], "stay");
+  };
+  const stepDam = (code: string) => {
+    const dam = damOrder.find((d) => d.code === code);
+    if (dam) lightDams(dam, [dam], "stay");
   };
   /*
    * Choosing a point off the coast (the owner, 18 Oct: clicking these "should highlight the
@@ -847,7 +898,7 @@ export function DashboardView(props: DashboardViewProps) {
     const point = (props.sea?.points ?? []).find((p) => p.id === id);
     setFlashDam((was) => ({
       kind: "sea",
-      code: id,
+      codes: [id],
       key: (was?.key ?? 0) + 1,
       at: point ? { lon: point.lon, lat: point.lat } : null,
     }));
@@ -959,14 +1010,6 @@ export function DashboardView(props: DashboardViewProps) {
     return dam ? <DamPeek dam={dam} time={time} onMore={more} /> : null;
   };
 
-  /*
-   * "My places" (the owner, 14 Oct): the map frames the person's home and the places they watch,
-   * or, for someone with neither, the area chosen on this phone.
-   */
-  const myPoints = [
-    ...mine.map((m) => ({ lon: m.lon, lat: m.lat })),
-    ...(mine.length === 0 && props.area ? [{ lon: props.area.lon, lat: props.area.lat }] : []),
-  ];
   const myBox = myPoints.length > 0 ? boundsAround(myPoints) : null;
 
   /*
@@ -1255,6 +1298,14 @@ export function DashboardView(props: DashboardViewProps) {
         now={now}
         tambonCode={props.area?.code ?? null}
         tambonName={props.area ? tambonName(props.area.code) : null}
+        steps={
+          <CardSteps
+            items={damOrder.map((d) => ({ id: d.code, name: localName(d.name, locale) }))}
+            currentId={dam.code}
+            onPick={stepDam}
+            label={t("steps.dams")}
+          />
+        }
       />
     ) : null;
   } else if (selection?.kind === "rain") {
@@ -1290,6 +1341,15 @@ export function DashboardView(props: DashboardViewProps) {
             {gauge.code && <p className={hint}>{t("gauge.code", { code: gauge.code })}</p>}
           </div>
         </div>
+        {/*
+         * Through the other stations, in the order the readout opened on (the owner, 20 Oct).
+         */}
+        <CardSteps
+          items={gaugeOrder.map((g) => ({ id: g.id, name: localName(g.name, locale) }))}
+          currentId={gauge.id}
+          onPick={stepGauge}
+          label={t("steps.gauges")}
+        />
         <p className="font-medium" data-gauge-state={gauge.status}>
           {t(`gauge.${gauge.status}`)}
         </p>
@@ -1671,10 +1731,8 @@ export function DashboardView(props: DashboardViewProps) {
                 admin={isAdminRoleName(props.me?.signedIn ? props.me.role : null)}
                 monitoring={monitoringSummary}
                 monitoringOpen={monitoringOpen}
-                onOpenDam={(code) => {
-                  const dam = dams.find((d) => d.code === code);
-                  if (dam) openDam(dam);
-                }}
+                onOpenDam={openDams}
+                damLit={damsLit(damOrder).length}
                 onOpenGauges={openGauges}
                 onToggleMonitoring={() => {
                   /*

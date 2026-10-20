@@ -217,8 +217,14 @@ export type ConsoleTilesProps = {
    * readouts. The strip was deliberately readouts only when it was built on 16 Oct - "nothing
    * in it moves the map or switches a layer" - and the owner has since asked for these two.
    */
-  onOpenDam?: (code: string) => void;
+  onOpenDam?: () => void;
   onOpenGauges?: () => void;
+  /**
+   * How many reservoirs a press on the dam card will frame and light (the owner, 20 Oct 2026:
+   * the card opens everything worth watching, not only the dam it reports). Only the words
+   * change here; which reservoirs those are is lib/map-console.ts and the map's own business.
+   */
+  damLit?: number;
 };
 
 export function ConsoleTiles(props: ConsoleTilesProps) {
@@ -416,8 +422,14 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
         pinned={isPinned("dam")}
         onPin={() => pin("dam")}
         pinWords={pinWords}
-        onOpen={dam && props.onOpenDam ? () => props.onOpenDam!(dam.dam.code) : undefined}
-        openLabel={dam ? t("dam.open", { dam: localName(dam.dam.name, props.locale) }) : undefined}
+        onOpen={dam && props.onOpenDam ? props.onOpenDam : undefined}
+        openLabel={
+          dam
+            ? (props.damLit ?? 1) > 1
+              ? t("dam.openMany", { count: props.damLit ?? 1 })
+              : t("dam.open", { dam: localName(dam.dam.name, props.locale) })
+            : undefined
+        }
       />
 
       <Tile

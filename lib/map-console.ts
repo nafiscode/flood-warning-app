@@ -74,46 +74,85 @@ export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
 }
 
 /**
- * Which river gauge the readout's own card should open (the owner, 18 Oct 2026: pressing the
- * card should bring up the detail, as a reservoir's does; then: "the nearest of the user's
- * place... if users have multiple watch places, show the riskiest one first").
+ * The run of river gauges a press on the rivers' readout walks through, and where it starts.
  *
- * So it is the person's own rivers first: the stations within `GAUGES_NEAR_KM` of their area or
- * of any place they watch - the same distance, and for the same reason, as the live monitoring
- * uses (lib/monitoring.ts: the gauge feed carries a point and no province, and the provinces'
- * boxes overlap). Among those, the riskiest; and where two read the same, the nearer one.
+ * Two rules, in this order, and the second was overruled by the first on 20 Oct 2026:
  *
- * Somebody who has saved nowhere, or whose places have no station within that distance, gets the
- * riskiest of all of them rather than nothing - the readout is about all four provinces either
- * way, and it says so.
+ *   * **A river at or near its bank comes first, however far away it is.** The owner: "for the
+ *     case that there are 3 gauges that says 'near the bank', when clicked it should show the
+ *     worst 3 first, regardless they are near or not". The readout is counting all four
+ *     provinces, so what it counts is what it opens.
+ *   * **Otherwise their own rivers**: the stations within `GAUGES_NEAR_KM` of their area or of
+ *     any place they watch - the same distance, and for the same reason, as the live monitoring
+ *     uses (lib/monitoring.ts: the gauge feed carries a point and no province, and the
+ *     provinces' boxes overlap). This was the whole rule until the sentence above (18 Oct).
  *
- * The order is total and never random: risk, then distance, then the newest reading, then the
- * id. The same readings always open the same station, so a second press cannot land elsewhere.
+ * Distance never decides the pool now; it breaks a tie between two stations reading the same,
+ * which is how the riskiest of several of their own places is still the one that opens.
+ *
+ * The order is total and never random: how it reads, then distance, then the newest reading,
+ * then the id. The same readings always give the same run, so a second press cannot land
+ * elsewhere and Next cannot wander.
  */
-export function gaugeOfInterest<T extends GaugeReading & { id: string }>(
+export function gaugeRun<T extends GaugeReading & { id: string }>(
   gauges: readonly T[],
   /** The person's own area and the places they watch. Empty for a visitor who has saved none. */
   places: readonly { lat: number; lon: number }[] = [],
-): T | null {
-  const rank = (look: GaugeLook) =>
-    ({ over: 0, near: 1, normal: 2, nolevels: 3, quiet: 4 })[look] ?? 4;
+): T[] {
   const near = places.flatMap((place) => gaugesNear(gauges, place));
-  // Theirs if any of their places has one in reach; everybody's otherwise.
   const mine = new Set(near.map((g) => g.id));
-  const pool = mine.size > 0 ? gauges.filter((g) => mine.has(g.id)) : gauges;
   const km = (g: T) =>
     places.length === 0
       ? 0
       : Math.min(...places.map((p) => Math.hypot(g.lat - p.lat, (g.lon - p.lon) * SCALE(p.lat))));
-  return (
-    [...pool].sort(
-      (a, b) =>
-        rank(gaugeLook(a.status)) - rank(gaugeLook(b.status)) ||
-        km(a) - km(b) ||
-        (b.observedAt ?? "").localeCompare(a.observedAt ?? "") ||
-        a.id.localeCompare(b.id),
-    )[0] ?? null
+  return [...gauges].sort(
+    (a, b) =>
+      gaugeRank(gaugeLook(a.status), mine.has(a.id)) -
+        gaugeRank(gaugeLook(b.status), mine.has(b.id)) ||
+      km(a) - km(b) ||
+      (b.observedAt ?? "").localeCompare(a.observedAt ?? "") ||
+      a.id.localeCompare(b.id),
   );
+}
+
+/**
+ * Where a station stands in the run. A bank reached or neared is the whole four provinces'
+ * business; below that, their own rivers are read before everybody else's.
+ */
+function gaugeRank(look: GaugeLook, mine: boolean): number {
+  if (look === "over") return 0;
+  if (look === "near") return 1;
+  const quiet = ({ normal: 0, nolevels: 1, quiet: 2 })[look] ?? 2;
+  return (mine ? 2 : 5) + quiet;
+}
+
+/** Which station the rivers' readout opens: the first of the run. */
+export function gaugeOfInterest<T extends GaugeReading & { id: string }>(
+  gauges: readonly T[],
+  places: readonly { lat: number; lon: number }[] = [],
+): T | null {
+  return gaugeRun(gauges, places)[0] ?? null;
+}
+
+/**
+ * How many marks the map frames and lights at once when a readout is pressed (the owner,
+ * 20 Oct 2026: "the map should zoom the extents of the 3 not only one"). Three, because that is
+ * what the readout itself counts; past that the frame would be the four provinces again and the
+ * reader would be shown nothing in particular.
+ */
+export const LIT_MAX = 3;
+
+/**
+ * The stations a press lights: those at or near their bank, worst first, at most three - and
+ * where no river is near its bank, the one station the card opens on, so the press always points
+ * at something.
+ */
+export function gaugesLit<T extends GaugeReading & { id: string }>(run: readonly T[]): T[] {
+  const concern = run.filter((g) => {
+    const look = gaugeLook(g.status);
+    return look === "over" || look === "near";
+  });
+  return (concern.length > 0 ? concern : run.slice(0, 1)).slice(0, LIT_MAX);
 }
 
 /** Longitudes shrink towards the poles; at this latitude the small-angle form is exact enough. */
@@ -177,6 +216,52 @@ export function damTally(dam: Dam | undefined): DamTally | null {
     observedAt: signal?.observedAt ?? null,
     stale: signal?.stale ?? false,
   };
+}
+
+/**
+ * Where a reservoir stands in the run a press on the dam readout walks through: water going over
+ * the spillway first, then a reservoir past the level it is normally held at, then the rest -
+ * the same two facts `damAlarm` asks about, so the card and the pulse can never disagree.
+ */
+function damRank(dam: Dam): number {
+  const tally = damTally(dam);
+  if (!tally) return 3;
+  if ((tally.spilledCms ?? 0) > 0) return 0;
+  const { percentFull, normalMark } = tally;
+  if (percentFull !== null && normalMark !== null && percentFull / 100 > normalMark) return 1;
+  return 2;
+}
+
+/**
+ * The reservoirs a press on the dam readout walks through (the owner, 20 Oct 2026: "same should
+ * work for the dams card"). The ones doing something first, fullest first; below that the dam
+ * the chips and the home screen mean, then the largest. A total order, as the gauges' run is.
+ */
+export function damRun(
+  dams: readonly Dam[],
+  /**
+   * The dam the chips and the home screen mean, when the caller knows it (`mainDam` in
+   * lib/map-focus.ts). Passed in rather than worked out here: that module reaches MapLibre, and
+   * this one is read by pages that are rendered on the server.
+   */
+  mainCode: string | null = null,
+): Dam[] {
+  const main = mainCode;
+  const full = (d: Dam) => d.signal?.percentFull ?? -1;
+  return [...dams].sort(
+    (a, b) =>
+      damRank(a) - damRank(b) ||
+      (a.code === main ? 0 : 1) - (b.code === main ? 0 : 1) ||
+      full(b) - full(a) ||
+      (b.storageMaxMcm ?? 0) - (a.storageMaxMcm ?? 0) ||
+      a.code.localeCompare(b.code),
+  );
+}
+
+/** The reservoirs a press lights: the ones doing something, at most three, else the first. */
+export function damsLit(run: readonly Dam[]): Dam[] {
+  const concern = run.filter((d) => damRank(d) < 2);
+  return (concern.length > 0 ? concern : run.slice(0, 1)).slice(0, LIT_MAX);
 }
 
 /** How old a reading is, in whole minutes; null when there is no reading or no clock yet. */

@@ -188,13 +188,16 @@ type Props = {
    */
   sea?: SeaMark[] | null;
   /**
-   * Show where something is: it lights up three times (the owner, 18 Oct 2026) - a reservoir by
-   * its dam's code, a river gauge or a point off the coast by its id. The `key` changes each
+   * Show where something is: it lights up three times (the owner, 18 Oct 2026) - reservoirs by
+   * their dams' codes, river gauges or a point off the coast by their ids. The `key` changes each
    * time somebody asks, so asking for the same one twice lights it twice.
+   *
+   * Several at once since 20 Oct 2026: a press on a readout lights every river near its bank, or
+   * every reservoir doing something, not only the one whose card opened (lib/map-console.ts).
    */
   flashDam?: {
     kind: "reservoir" | "gauge" | "sea";
-    code: string;
+    codes: string[];
     key: number;
     /** Where it is, for bringing it into the frame when it is not already in it. */
     at?: { lon: number; lat: number } | null;
@@ -524,13 +527,15 @@ export function MapView({
    * what was opened, and this only says where to look.
    */
   const flashKey = flashDam?.key ?? 0;
-  const flashCode = flashDam?.code ?? null;
+  /** A stable string, so the effect does not run again for an array that reads the same. */
+  const flashCodes = (flashDam?.codes ?? []).join(" ");
   const flashKind = flashDam?.kind ?? "reservoir";
   const flashLon = flashDam?.at?.lon ?? null;
   const flashLat = flashDam?.at?.lat ?? null;
   useEffect(() => {
     const m = map.current;
-    if (!m || state !== "ready" || !flashCode || flashKey === 0) return;
+    if (!m || state !== "ready" || !flashCodes || flashKey === 0) return;
+    const codes = flashCodes.split(" ");
     /*
      * A layer of its own, holding just this reservoir, switched on and off over the top of the
      * others. The obvious way - lifting the reservoir's own fill-opacity with an expression that
@@ -558,7 +563,7 @@ export function MapView({
                 id: DAM_FLASH_FILL,
                 type: "circle",
                 source: marks,
-                filter: ["==", ["get", "id"], flashCode],
+                filter: ["in", ["get", "id"], ["literal", codes]],
                 paint: {
                   "circle-radius": GAUGE_FLASH_RADIUS,
                   "circle-color": "transparent",
@@ -580,14 +585,14 @@ export function MapView({
               id: DAM_FLASH_FILL,
               type: "fill",
               source: DAM_WATER_SOURCE,
-              filter: ["==", ["get", "code"], flashCode],
+              filter: ["in", ["get", "code"], ["literal", codes]],
               paint: { "fill-color": water, "fill-opacity": RESERVOIR_FLASH_OPACITY },
             });
             m.addLayer({
               id: DAM_FLASH_LINE,
               type: "line",
               source: DAM_WATER_SOURCE,
-              filter: ["==", ["get", "code"], flashCode],
+              filter: ["in", ["get", "code"], ["literal", codes]],
               paint: {
                 "line-color": mapHalo(),
                 "line-width": RESERVOIR_FLASH_WIDTH,
@@ -608,7 +613,7 @@ export function MapView({
        * Written on the frame only once the lighting is actually drawn, so what a test watches is
        * the lighting itself and not merely the intention to light.
        */
-      container.current?.setAttribute("data-map-lit", on ? flashCode : "");
+      container.current?.setAttribute("data-map-lit", on ? flashCodes : "");
     };
     const timers: number[] = [];
     const whole = RESERVOIR_FLASH_TIMES * 2 * RESERVOIR_FLASH_MS;
@@ -655,7 +660,7 @@ export function MapView({
       for (const timer of timers) window.clearTimeout(timer);
       show(false);
     };
-  }, [flashCode, flashKey, flashKind, flashLat, flashLon, state]);
+  }, [flashCodes, flashKey, flashKind, flashLat, flashLon, state]);
   /*
    * The same "show me where it is" for the flood a satellite saw (the owner, 20 Oct 2026): the
    * hexagons blink three times once the map has been brought to them, so it is clear which

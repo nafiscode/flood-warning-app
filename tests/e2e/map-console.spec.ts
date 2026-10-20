@@ -583,10 +583,18 @@ test.describe("the live map on a laptop", () => {
     const panel = page.locator("[data-selected-panel]");
     await expect(panel).toBeVisible();
     await expect(panel).toContainText(th.map.gauge.above_warning);
-    // And the map says which one it means, for a moment.
+    // And the map says which one it means, for a moment: here the one river at its bank.
     const frame = page.locator("[data-map-frame] [data-map-lit]");
-    await expect(frame).toHaveAttribute("data-map-lit", /.+/, { timeout: 4000 });
+    await expect(frame).toHaveAttribute("data-map-lit", "g-over", { timeout: 4000 });
     await expect(frame).toHaveAttribute("data-map-lit", "", { timeout: 8000 });
+
+    /*
+     * The card walks on to the other stations (the owner, 20 Oct: "I want them to be able to
+     * click next to see different one as well in the detail section").
+     */
+    await panel.locator('[data-card-step="next"]').click();
+    await expect(panel).toContainText(GAUGES[1]!.name.th);
+    await expect(frame).toHaveAttribute("data-map-lit", "g-ok", { timeout: 4000 });
 
     // The reservoir: the same card its own button opens.
     await page.locator('[data-console-tile="dam"] [data-tile-open]').click();

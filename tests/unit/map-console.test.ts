@@ -15,7 +15,12 @@ import {
   alertsAlarm,
   damAlarm,
   gaugeAlarm,
+  damRun,
+  damsLit,
   gaugeOfInterest,
+  gaugeRun,
+  gaugesLit,
+  LIT_MAX,
   reportsAlarm,
 } from "@/lib/map-console";
 import { contrastRatio } from "@/lib/brand/contrast";
@@ -121,8 +126,9 @@ describe("the laptop console's readout strip", () => {
 
   /*
    * The owner, 18 Oct: "the nearest of the user's place... if users have multiple watch places,
-   * show the riskiest one first". So their own rivers are the pool, risk decides inside it, and
-   * distance only breaks a tie between two stations reading the same.
+   * show the riskiest one first", and 20 Oct: a river at or near its bank comes first "regardless
+   * they are near or not". So their own rivers are the pool below the bank, and distance only
+   * breaks a tie between two stations reading the same.
    */
   it("opens one of the person's own rivers, the riskiest of them", () => {
     const home = { lat: 6.87, lon: 101.27 };
@@ -139,8 +145,17 @@ describe("the laptop console's readout strip", () => {
     const all = [farAway, nearHome, nearWatched];
     // Two places, one of them with a station over its bank: that one.
     expect(gaugeOfInterest(all, [home, watched])!.id).toBe("nearWatched");
-    // With only the quiet place saved, the far one is not dragged in over their own river.
-    expect(gaugeOfInterest(all, [home])!.id).toBe("nearHome");
+    /*
+     * With only the quiet place saved, the far station over its bank is still the one that
+     * opens - the readout counts all four provinces, so what it counts is what it opens. This
+     * supersedes the rule of 18 Oct, where their own river came first whatever the others read.
+     */
+    expect(gaugeOfInterest([farAway, nearHome], [home])!.id).toBe("far");
+    // Below the bank, their own river is read before everybody else's, as it always was.
+    const farQuiet = gauge({ id: "farQuiet", lat: 7.6, lon: 100.1, status: "normal" });
+    expect(gaugeOfInterest([farQuiet, nearHome], [home])!.id).toBe("nearHome");
+    // Two over their banks: the nearer of them, which is how "all" reads here.
+    expect(gaugeOfInterest(all, [home])!.id).toBe("nearWatched");
     // Reading the same, the nearer of their own wins.
     const alsoOver = gauge({ id: "alsoOver", lat: 6.2, lon: 101.3, status: "above_warning" });
     expect(gaugeOfInterest([alsoOver, nearWatched], [watched])!.id).toBe("nearWatched");
@@ -374,5 +389,60 @@ describe("the readouts that ask for an admin's eye", () => {
     const seconds = Number(/animation: jaga-console-alarm ([\d.]+)s/.exec(rule)?.[1]);
     expect(seconds).toBeGreaterThanOrEqual(1);
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\[data-console-alarm\]/);
+  });
+});
+
+/*
+ * The owner, 20 Oct 2026: a press on either readout opens the worst of what it counts, and the
+ * card then walks through the rest. Both runs are total orders, so Next cannot wander and a
+ * second press cannot land somewhere else.
+ */
+describe("the run a readout opens, and the marks it lights", () => {
+  /** The least a reservoir needs for the order to be worked out. */
+  const dam = (over: Partial<Dam>): Dam =>
+    ({ code: "d", name: {}, signal: null, reaches: [], ...over }) as unknown as Dam;
+  const over = gauge({ id: "over", lat: 7.5, lon: 100.1, status: "above_warning" });
+  const near1 = gauge({ id: "near1", lat: 6.3, lon: 101.1, status: "above_watch" });
+  const near2 = gauge({ id: "near2", lat: 6.9, lon: 101.6, status: "above_watch" });
+  const near3 = gauge({ id: "near3", lat: 6.1, lon: 101.9, status: "above_watch" });
+  const calm = gauge({ id: "calm", lat: 6.8, lon: 101.2, status: "normal" });
+
+  it("puts every river at or near its bank first, however far away it is", () => {
+    const home = [{ lat: 6.8, lon: 101.2 }];
+    const run = gaugeRun([calm, near1, over], home);
+    expect(run.map((g) => g.id)).toEqual(["over", "near1", "calm"]);
+    // Their own quiet river still comes before a stranger's quiet river.
+    const farCalm = gauge({ id: "farCalm", lat: 7.5, lon: 100.2, status: "normal" });
+    expect(gaugeRun([farCalm, calm], home).map((g) => g.id)).toEqual(["calm", "farCalm"]);
+  });
+
+  it("lights at most three, and never a river that is nowhere near its bank", () => {
+    const lit = gaugesLit(gaugeRun([calm, near1, near2, near3, over]));
+    expect(lit.map((g) => g.id)).toEqual(["over", "near1", "near2"].slice(0, LIT_MAX));
+    expect(lit).toHaveLength(LIT_MAX);
+    expect(lit.some((g) => g.id === "calm")).toBe(false);
+    // With no river near its bank, the one station the card opens on - never nothing.
+    expect(gaugesLit(gaugeRun([calm])).map((g) => g.id)).toEqual(["calm"]);
+    expect(gaugesLit([])).toEqual([]);
+  });
+
+  it("puts a spilling reservoir before a full one, and the main dam before the rest", () => {
+    const quiet = dam({ code: "quiet" });
+    const full = dam({
+      code: "full",
+      signal: { percentFull: 97 } as Dam["signal"],
+      storageMaxMcm: 100,
+      storageNormalMcm: 90,
+    });
+    const spilling = dam({ code: "spilling", signal: { spilledCms: 40 } as Dam["signal"] });
+    const run = damRun([quiet, full, spilling]);
+    expect(run.map((d) => d.code)).toEqual(["spilling", "full", "quiet"]);
+    expect(damsLit(run).map((d) => d.code)).toEqual(["spilling", "full"]);
+    // Nothing doing anything: the dam the chips and the home screen mean, and only that one.
+    const main = dam({ code: "bang_lang" });
+    expect(damsLit(damRun([quiet, main], "bang_lang")).map((d) => d.code)).toEqual([
+      "bang_lang",
+    ]);
+    expect(damsLit([])).toEqual([]);
   });
 });

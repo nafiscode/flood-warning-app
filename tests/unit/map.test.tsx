@@ -51,8 +51,10 @@ vi.mock("@/components/map/MapView", () => ({
     showDamZone = true,
     satellite = null,
     flashSatellite = 0,
+    flashDam = null,
     onView,
   }: {
+    flashDam?: { kind: string; codes: string[] } | null;
     satellite?: { properties: { m2: number } }[] | null;
     flashSatellite?: number;
     onView?: (box: [number, number, number, number]) => void;
@@ -85,6 +87,8 @@ vi.mock("@/components/map/MapView", () => ({
       data-show-zone={showDamZone ? "1" : "0"}
       data-satellite-cells={satellite ? satellite.length : 0}
       data-flash-satellite={flashSatellite}
+      data-flash-kind={flashDam?.kind ?? ""}
+      data-flash-codes={(flashDam?.codes ?? []).join(",")}
     >
       {/* Stands in for the reader panning the map, which the real one reports on moveend. */}
       <button
@@ -1182,5 +1186,89 @@ describe("what the satellite saw, switched on and off", () => {
     expect(onMap(c).textContent).toContain("gauges");
     expect(onMap(c).getAttribute("data-satellite-cells")).toBe("0");
     expect(c.querySelector("[data-satellite]")!.getAttribute("data-satellite")).toBe("off");
+  });
+});
+
+/*
+ * The owner, 20 Oct 2026, of the two readouts that open: "for the case that there are 3 gauges
+ * that says '3 near the bank', when clicked it should show the worst 3 first, regardless they
+ * are near or not, also the map should zoom the extents of the 3 not only one, also make it
+ * blip for 3 times. Same should work for the dams card... I want them to be able to click next
+ * to see different one as well in the detail section."
+ *
+ * So: what the readout counts is what it opens, the frame holds all of them, every one of them
+ * is lit, and the card walks through the rest.
+ */
+describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
+  const riverGauge = (over: Partial<(typeof EXAMPLE_MAP)["gauges"][number]>) => ({
+    ...EXAMPLE_MAP.gauges[0]!,
+    ...over,
+  });
+  // Three at their banks, spread across the four provinces, and one quiet river next door.
+  const NEAR_THREE = [
+    riverGauge({ id: "a", lat: 6.2, lon: 101.1, status: "above_warning" as const }),
+    riverGauge({ id: "b", lat: 7.1, lon: 100.4, status: "above_watch" as const }),
+    riverGauge({ id: "c", lat: 6.6, lon: 101.8, status: "above_watch" as const }),
+    riverGauge({ id: "calm", lat: 6.84, lon: 101.26, status: "normal" as const }),
+  ];
+  const openGauges = (c: Element) =>
+    fireEvent.click(c.querySelector('[data-console-tile="gauges"] [data-tile-open]')!);
+  const flash = (c: Element) => c.querySelector("[data-map]")!.getAttribute("data-flash-codes");
+
+  it("lights every river at or near its bank, worst first, and frames all of them", () => {
+    const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: NEAR_THREE } });
+    openGauges(c);
+    // The worst one opened; the quiet river next door is not among the marks being pointed at.
+    expect(c.querySelector("[data-selected='gauge'] [data-gauge-state]")).toBeTruthy();
+    expect(flash(c)).toBe("a,b,c");
+    expect(c.querySelector("[data-map]")!.getAttribute("data-flash-kind")).toBe("gauge");
+    const [west, south, east, north] = c
+      .querySelector("[data-map]")!
+      .getAttribute("data-bounds")!
+      .split(",")
+      .map(Number);
+    for (const g of NEAR_THREE.slice(0, 3)) {
+      expect(west!).toBeLessThanOrEqual(g.lon);
+      expect(east!).toBeGreaterThanOrEqual(g.lon);
+      expect(south!).toBeLessThanOrEqual(g.lat);
+      expect(north!).toBeGreaterThanOrEqual(g.lat);
+    }
+  });
+
+  it("walks through the other stations from inside the card, one at a time", () => {
+    const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: NEAR_THREE } });
+    openGauges(c);
+    const steps = c.querySelector("[data-selected='gauge'] [data-card-steps]")!;
+    fireEvent.click(steps.querySelector('[data-card-step="next"]')!);
+    // One station now, framed and lit on its own: the group has been left behind.
+    expect(flash(c)).toBe("b");
+    fireEvent.click(
+      c.querySelector("[data-selected='gauge'] [data-card-step='previous']")!,
+    );
+    expect(flash(c)).toBe("a");
+  });
+
+  it("with no river near its bank, opens the one station it names", () => {
+    const c = dashboard({ data: EXAMPLE_MAP });
+    openGauges(c);
+    expect(flash(c)).toBe(EXAMPLE_MAP.gauges[0]!.id);
+  });
+
+  it("lights every reservoir doing something, and walks through the dams as well", () => {
+    const spilling: Dam = {
+      ...EXAMPLE_DAM,
+      code: "other_dam",
+      name: { th: "เขื่อนอื่น", en: "Other dam" },
+      // Spilling, which comes before a reservoir merely above the level it is held at.
+      signal: exampleDamSignal("releasing"),
+    };
+    const c = dashboard({ dams: [EXAMPLE_DAM, spilling] });
+    fireEvent.click(c.querySelector('[data-console-tile="dam"] [data-tile-open]')!);
+    expect(c.querySelector("[data-map]")!.getAttribute("data-flash-kind")).toBe("reservoir");
+    // Both are doing something - this one is spilling, Bang Lang is above its normal high water.
+    expect(flash(c)).toBe("other_dam,bang_lang");
+    const steps = c.querySelector("[data-selected='dam'] [data-card-steps]")!;
+    fireEvent.click(steps.querySelector('[data-card-step="next"]')!);
+    expect(flash(c)).toBe(EXAMPLE_DAM.code);
   });
 });
