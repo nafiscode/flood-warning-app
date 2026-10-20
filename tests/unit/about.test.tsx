@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { About } from "@/components/about/About";
 import {
@@ -7,6 +8,8 @@ import {
   CREDENTIAL_GROUPS,
   CREDENTIAL_ITEMS,
   initialsOf,
+  PORTRAIT,
+  PORTRAIT_READY,
   SCOPE_PARTS,
   SCOPE_POINTS,
   TRUST_POINTS,
@@ -194,19 +197,27 @@ describe("who built Jaga: the page", () => {
   });
 
   /**
-   * The portrait slot has to leave the page complete before a photo exists, because the page is
-   * written and reviewed long before the owner picks one.
+   * The portrait slot has to leave the page complete whether or not a photo exists, because the
+   * page was written, reviewed and translated before one was chosen.
    */
-  it("falls back to initials until a portrait is put in place", () => {
+  it("draws the portrait, and falls back to initials without one", () => {
     const { container } = renderWithIntl(<About />, "en");
     const slot = container.querySelector("[data-about-portrait]");
-    expect(slot?.getAttribute("data-about-portrait")).toBe("initials");
-    expect(slot?.textContent).toBe(initialsOf(en.about.name));
-    expect(container.querySelector("img")).toBeNull();
-
-    const withPhoto = renderWithIntl(<About showPortrait />, "en");
-    const img = withPhoto.container.querySelector("img");
+    expect(slot?.getAttribute("data-about-portrait")).toBe(PORTRAIT_READY ? "photo" : "initials");
+    const img = container.querySelector("img");
     expect(img?.getAttribute("alt")).toBe(en.about.portraitAlt);
+
+    const without = renderWithIntl(<About showPortrait={false} />, "en");
+    expect(without.container.querySelector("[data-about-portrait]")?.textContent).toBe(
+      initialsOf(en.about.name),
+    );
+    expect(without.container.querySelector("img")).toBeNull();
+  });
+
+  /** `PORTRAIT_READY` must never be true without the file it promises. */
+  it("has the portrait file it says it has", () => {
+    if (!PORTRAIT_READY) return;
+    expect(existsSync(`public/about/${PORTRAIT}`), `public/about/${PORTRAIT}`).toBe(true);
   });
 
   /**

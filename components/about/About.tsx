@@ -56,7 +56,7 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
       {/* Who, in one breath: the face, the name in both scripts, the role, and the arrangement. */}
       <section className="flex flex-col gap-5 rounded-3xl bg-jaga-slate px-5 py-7 text-white lg:px-10 lg:py-10">
         <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-          <Portrait show={showPortrait} />
+          <Portrait show={showPortrait} cut />
           <div className="flex min-w-0 flex-col gap-2">
             <h1 className="text-h2 font-bold leading-tight lg:text-h1">{t("title")}</h1>
             <p className="text-h3 font-bold leading-snug">

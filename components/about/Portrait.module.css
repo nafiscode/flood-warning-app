@@ -24,6 +24,7 @@
   flex: none;
   width: 7rem;
   height: 7rem;
+  isolation: isolate;
 }
 
 @media (min-width: 1024px) {
@@ -75,16 +76,55 @@
   pointer-events: none;
 }
 
-/* A real cut-out with transparency: no fade needed, and the glow reads behind the subject. */
-.cut .photo,
-.cut .wash {
-  mask-image: none;
+/*
+ * The cut-out, which is what the page actually draws (the owner sent their photo on 20 Oct and
+ * it was cut out with rembg, `.claude/local/cutout.py`).
+ *
+ * No frame at all. A formal photograph in a rounded box is exactly the corporate headshot the
+ * owner did not want; the same person standing free, lit from behind by the page's own teal, is
+ * the same face read as a portrait rather than a credential. So the border, the mask and the
+ * square all go, the subject stands on the baseline of the slot, and only the glow stays.
+ *
+ * The fade above is kept for any future portrait that is not cut out, because a photo with its
+ * own background still needs somewhere to dissolve into.
+ */
+.cut .photo {
+  /* Only the foot of the picture fades, so the shoulders dissolve into the panel instead of
+     being sliced off by the edge of a frame that is not drawn. */
+  mask-image: linear-gradient(to bottom, #000 76%, transparent 99%);
   border-radius: 0;
 }
 
 .cut .photo {
   object-fit: contain;
   object-position: 50% 100%;
+  /* The subject is the whole picture now, so it may fill the slot and overhang it a little. */
+  width: 118%;
+  height: 118%;
+  margin-block-start: -9%;
+  filter: saturate(0.94) contrast(1.03) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+}
+
+/*
+ * No wash over a cut-out. The wash is a sibling of the photo, so it can only ever be a rectangle:
+ * it cannot be clipped to the subject's alpha, and over slate it drew a teal square behind him.
+ * A cut-out gets its colour from the light behind it and from its own filter instead.
+ */
+.cut .wash {
+  display: none;
+}
+
+/* A soft disc of light behind them, so a cut-out never floats on nothing. */
+.cut::before {
+  inset: -6%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 52%,
+    color-mix(in srgb, var(--jaga-teal) 62%, transparent),
+    color-mix(in srgb, var(--jaga-teal-ink) 26%, transparent) 55%,
+    transparent 72%
+  );
+  filter: blur(10px);
 }
 
 /* The initials, while there is no photo. */

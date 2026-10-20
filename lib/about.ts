@@ -85,11 +85,15 @@ export const ABOUT_LINKS: AboutLink[] = [
 ];
 
 /**
- * The portrait, if the owner puts one at `public/about/<PORTRAIT>`. Until then the page draws the
- * initials in the brand colours, the way the credits cards do for an organisation with no logo -
- * so the page is complete either way and costs nothing extra to download.
+ * The portrait at `public/about/<PORTRAIT>`: the owner cut out of their own photo, standing in
+ * the page's own light rather than in the office they were photographed in.
+ *
+ * It is a WebP because it carries real transparency, and at 25 KB it costs a quarter of what the
+ * same cut-out does as a PNG. Until a portrait exists the page draws the initials in the brand
+ * colours, the way the credits cards do for an organisation with no logo, so the page is complete
+ * either way and the slot never changes size (components/about/Portrait.module.css).
  */
-export const PORTRAIT = "nafis.jpg";
+export const PORTRAIT = "nafis.webp";
 
 /**
  * Whether that file is actually in place. The page is written, reviewed and translated long
@@ -98,7 +102,7 @@ export const PORTRAIT = "nafis.jpg";
  * that draws the portrait follows. Nothing else moves, because the slot is the same size either
  * way (components/about/Portrait.module.css).
  */
-export const PORTRAIT_READY = false;
+export const PORTRAIT_READY = true;
 
 /** The initials the page falls back to, from the Latin name in `about.name`. */
 export function initialsOf(name: string): string {
