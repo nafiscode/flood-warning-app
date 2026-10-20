@@ -6,6 +6,12 @@ type Props = {
   scene: Scene;
   /** The clock, so the moon is drawn in the shape it has tonight. */
   now: number;
+  /**
+   * Keep the clouds to the end of the line, where nothing is written: the laptop console's
+   * weather bar has its title and hazard buttons at the start and open sky at the end (the
+   * owner, 20 Oct). Without it the clouds cross the whole card, as on /weather.
+   */
+  cloudLane?: "end";
 };
 
 /**
@@ -17,7 +23,7 @@ type Props = {
  * positions are fixed here rather than random, so the same weather always looks the same and a
  * test can see it.
  */
-export function WeatherScene({ scene, now }: Props) {
+export function WeatherScene({ scene, now, cloudLane }: Props) {
   const look = SCENE_LOOKS[scene];
   const moon = look.moon ? moonAt(now) : null;
   const lit = moon ? moonPath(moon.lit, moon.waxing) : null;
@@ -26,7 +32,7 @@ export function WeatherScene({ scene, now }: Props) {
     <div
       aria-hidden="true"
       data-weather-scene={scene}
-      className={styles.scene}
+      className={cloudLane === "end" ? `${styles.scene} ${styles.laneEnd}` : styles.scene}
       style={
         {
           "--sky-top": look.sky[0],
@@ -54,19 +60,33 @@ export function WeatherScene({ scene, now }: Props) {
       )}
 
       {look.clouds
-        ? CLOUDS.slice(0, look.clouds).map(([top, scale, duration, delay], i) => (
-            <span
-              key={i}
-              className={`${styles.cloud} ${look.ink === "light" ? styles.cloudDark : ""}`}
-              style={{
-                top: `${top}%`,
-                left: 0,
-                transform: `scale(${scale})`,
-                animationDuration: `${duration}s`,
-                animationDelay: `-${delay}s`,
-              }}
-            />
-          ))
+        ? CLOUDS.slice(0, look.clouds).map(([top, scale, duration, delay], i) => {
+            const lane = cloudLane === "end" ? LANE[i] : undefined;
+            return (
+              <span
+                key={i}
+                className={`${styles.cloud} ${look.ink === "light" ? styles.cloudDark : ""}`}
+                style={
+                  lane
+                    ? ({
+                        top: `${lane[0]}%`,
+                        left: 0,
+                        scale: String(lane[1]),
+                        "--rest": `${lane[2]}cqw`,
+                        animationDuration: `${duration}s`,
+                        animationDelay: `-${delay}s`,
+                      } as React.CSSProperties)
+                    : {
+                        top: `${top}%`,
+                        left: 0,
+                        transform: `scale(${scale})`,
+                        animationDuration: `${duration}s`,
+                        animationDelay: `-${delay}s`,
+                      }
+                }
+              />
+            );
+          })
         : null}
 
       {look.mist &&
@@ -151,6 +171,17 @@ const CLOUDS: [number, number, number, number][] = [
   [8, 1, 52, 0],
   [34, 0.72, 68, 24],
   [58, 1.2, 84, 48],
+];
+
+/**
+ * The same clouds kept to the end of a wide bar: top %, scale, and where each rests (as a share of
+ * the bar's width) for anyone who asked for less motion. Low enough to pass under the words at
+ * the top of the end, which the temperature takes.
+ */
+const LANE: [number, number, number][] = [
+  [36, 0.9, 70],
+  [54, 0.7, 86],
+  [72, 1.05, 78],
 ];
 
 const MIST: [number, number, number][] = [

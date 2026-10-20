@@ -104,7 +104,8 @@ export function ConsoleSky() {
         } as React.CSSProperties
       }
     >
-      <WeatherScene scene={sky.scene} now={sky.now} />
+      {/* The clouds keep to the open end of the bar, not behind the title (the owner, 20 Oct). */}
+      <WeatherScene scene={sky.scene} now={sky.now} cloudLane="end" />
       <div data-console-veil="true" />
     </div>
   );

@@ -194,6 +194,35 @@ describe("the scene as it is drawn", () => {
     expect(box.style.getPropertyValue("--sky-bottom")).toBe(SCENE_LOOKS.clearDay.sky[1]);
   });
 
+  /*
+   * The laptop console's bar has its title and buttons at the start and open sky at the end, so
+   * its clouds keep to the end (the owner, 20 Oct); the card on /weather keeps them crossing.
+   */
+  it("keeps the console's clouds to the open end of the bar, and leaves the card's alone", () => {
+    const at = Date.UTC(2026, 9, 17, 15, 0);
+    const clouds = (box: Element) =>
+      [...box.querySelectorAll("span")].filter(
+        (s) => (s as HTMLElement).style.top !== "",
+      ) as HTMLElement[];
+
+    const bar = renderWithIntl(<WeatherScene scene="overcast" now={at} cloudLane="end" />).container
+      .firstElementChild!;
+    const lane = clouds(bar);
+    expect(lane).toHaveLength(SCENE_LOOKS.overcast.clouds!);
+    for (const cloud of lane) {
+      // Where each rests for anyone who asked for less motion: in the end half of the bar.
+      expect(Number.parseFloat(cloud.style.getPropertyValue("--rest"))).toBeGreaterThanOrEqual(60);
+      // Low enough to pass under the temperature written at the top of the end.
+      expect(Number.parseFloat(cloud.style.top)).toBeGreaterThanOrEqual(30);
+      // The size is its own property, so the drift's transform cannot cancel it.
+      expect(cloud.style.transform).toBe("");
+    }
+
+    const card = clouds(scene("overcast").firstElementChild!);
+    expect(card).toHaveLength(SCENE_LOOKS.overcast.clouds!);
+    for (const cloud of card) expect(cloud.style.getPropertyValue("--rest")).toBe("");
+  });
+
   it("shows a sun by day, and the moon with stars at night", () => {
     expect(scene("clearDay").querySelectorAll("svg")).toHaveLength(0);
     const night = scene("clearNight");

@@ -89,6 +89,26 @@
   bottom: 12px;
 }
 
+/*
+ * The cloud lane (cloudLane="end"): the clouds come in over the end edge and thin away before
+ * they reach the middle, so they drift through the open half of a wide bar and not behind its
+ * title. The bar is the container, so cqw is a share of its width at any laptop size. They rest,
+ * for anyone who asked for less motion, at --rest along the bar.
+ */
+.laneEnd {
+  container-type: inline-size;
+}
+
+.laneEnd .cloud {
+  transform: translate3d(var(--rest, 75cqw), 0, 0);
+  animation-name: drift-end;
+}
+
+.laneEnd .cloud:dir(rtl) {
+  transform: translate3d(calc(100cqw - var(--rest, 75cqw) - 100%), 0, 0);
+  animation-name: drift-end-rtl;
+}
+
 /* On a dark sky the same shapes, dimmer, or they glare. */
 .cloudDark {
   background: rgba(224, 234, 241, 0.42);
@@ -197,6 +217,36 @@
   }
   to {
     transform: translate3d(-130%, 0, 0);
+  }
+}
+
+@keyframes drift-end {
+  from {
+    transform: translate3d(100cqw, 0, 0);
+    opacity: 0;
+  }
+  12%,
+  76% {
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(calc(52cqw - 100%), 0, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes drift-end-rtl {
+  from {
+    transform: translate3d(-100%, 0, 0);
+    opacity: 0;
+  }
+  12%,
+  76% {
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(48cqw, 0, 0);
+    opacity: 0;
   }
 }
 
