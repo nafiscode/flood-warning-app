@@ -257,6 +257,24 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the page", () => {
     }
   });
 
+  /**
+   * Approved on 20 Oct and promoted to /about. Two things carry it: the third tab beside the
+   * science and the system, and the quiet line at the foot of every other page. Both appear only
+   * where the content does, because the content is not in this repository.
+   */
+  it("carries the third tab, and marks itself as the page in view", () => {
+    const { container } = renderWithAbout(<About />, "en");
+    const tabs = [...container.querySelectorAll("[data-how-tab]")].map((el) => ({
+      key: el.getAttribute("data-how-tab"),
+      href: el.getAttribute("href"),
+      current: el.getAttribute("aria-current"),
+    }));
+    expect(tabs.map((t) => t.key)).toEqual(["science", "system", "about"]);
+    expect(tabs.find((t) => t.key === "about")?.href).toContain("/about");
+    expect(tabs.find((t) => t.key === "about")?.current).toBe("page");
+    expect(tabs.filter((t) => t.current === "page")).toHaveLength(1);
+  });
+
   it("makes the initials from the Latin name", () => {
     expect(initialsOf("Nafis Damae")).toBe("ND");
     expect(initialsOf("  one   two three ")).toBe("OT");

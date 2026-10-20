@@ -96,7 +96,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const t = await getTranslations("app");
   const tNav = await getTranslations("nav");
   // Only client components need messages in the browser; send just their namespaces (slow 3G).
-  const clientMessages = layoutMessages(await getMessages());
+  const allMessages = await getMessages();
+  const clientMessages = layoutMessages(allMessages);
+  /*
+   * Whether "Who built Jaga" has anything behind it. Its words are not in this repository and
+   * arrive with the build (scripts/fetch-content.mjs), so the quiet line at the foot of every
+   * page is drawn only where the page it points at exists.
+   */
+  const hasAbout = Boolean((allMessages as { about?: unknown }).about);
 
   return (
     // scroll-pt-28: an anchor such as #main scrolls to just below the frozen header.
@@ -231,7 +238,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             >
               {children}
               {/* What Jaga can do (A17), at the end of every page but the ones for asking help. */}
-              <FeaturesLink />
+              <FeaturesLink hasAbout={hasAbout} />
             </main>
             <footer className="sticky bottom-0 z-10">
               <HotlineBar />

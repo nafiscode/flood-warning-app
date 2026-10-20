@@ -4488,9 +4488,10 @@
   "howItWorks": {
     "link": "How Jaga works",
     "nav": {
-      "label": "These two pages",
+      "label": "These pages",
       "science": "The science",
-      "system": "The system"
+      "system": "The system",
+      "about": "Who built Jaga"
     },
     "science": {
       "title": "How Jaga works: the science",
@@ -5176,7 +5177,7 @@
     "note": "What you say changes the place's status in the app. It does not issue an alert and it notifies nobody. To correct the name, the capacity or the position, ask an admin.",
     "askResident": "Is this still right?",
     "residentsSaid": "{count} people here said {what}",
-    "residentNote": "What you say appears as its own line under the status and reaches the team covering this tambon. It does not change the status itself, and it does not issue an alert.",
+    "residentNote": "What you say appears as its own line under the status and reaches the team covering this area. Where no team covers it yet, the status changes to what you said, marked as reported by someone there. Either way it never issues an alert.",
     "signInToCheck": "Sign in first, so the team knows a real person was there.",
     "signIn": "Sign in",
     "noteLabel": "Anything else to say?",

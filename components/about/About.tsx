@@ -8,6 +8,7 @@ import {
   QuestionIcon,
   ShieldIcon,
 } from "@/components/icons";
+import { HowNav } from "@/components/how/HowNav";
 import { Link } from "@/i18n/navigation";
 import {
   CREDENTIAL_GROUPS,
@@ -61,6 +62,9 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
   const links = (t.raw("check.at") ?? []) as AboutLink[];
   return (
     <div className="flex flex-col gap-8" data-about>
+      {/* The same three tabs as the science and the system pages: this is the third of them. */}
+      <HowNav current="about" />
+
       {/* Who, in one breath: the face, the name in both scripts, the role, and the arrangement. */}
       <section className="flex flex-col gap-5 rounded-3xl bg-jaga-slate px-5 py-7 text-white lg:px-10 lg:py-10">
         <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
@@ -202,7 +206,9 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
                 href={link.href}
                 target="_blank"
                 rel={`noopener noreferrer external${link.me ? " me" : ""}`}
-                data-about-link={link.key}
+                /* Not `data-about-link`: that belongs to the quiet line at the foot of every
+                   page, and two different things under one name make a test lie. */
+                data-about-check={link.key}
                 className="flex h-full min-h-tap flex-col gap-1 rounded-2xl border border-jaga-line bg-jaga-ground p-4 hover:border-jaga-teal-ink"
               >
                 <span className="font-bold text-jaga-ink underline">

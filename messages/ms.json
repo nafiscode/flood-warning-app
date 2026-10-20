@@ -4488,9 +4488,10 @@
   "howItWorks": {
     "link": "Bagaimana Jaga berfungsi",
     "nav": {
-      "label": "Dua halaman ini",
+      "label": "Halaman-halaman ini",
       "science": "Sains di sebaliknya",
-      "system": "Sistem"
+      "system": "Sistem",
+      "about": "Siapa yang membina Jaga"
     },
     "science": {
       "title": "Bagaimana Jaga berfungsi: sains di sebaliknya",
@@ -5176,7 +5177,7 @@
     "note": "Apa yang anda beritahu akan menukar status tempat itu dalam app. Ia tidak mengeluarkan amaran dan tidak memberitahu sesiapa. Untuk membetulkan nama, muatan atau kedudukan, minta pentadbir.",
     "askResident": "Masih begini?",
     "residentsSaid": "{count} orang di sini kata {what}",
-    "residentNote": "Apa yang anda beritahu akan muncul sebagai baris sendiri di bawah status dan sampai kepada pasukan yang menjaga mukim ini. Ia tidak menukar status itu sendiri, dan ia tidak mengeluarkan amaran.",
+    "residentNote": "Apa yang anda beritahu akan muncul sebagai baris sendiri di bawah status dan sampai kepada pasukan yang menjaga kawasan ini. Jika belum ada pasukan menjaga kawasan ini, status akan bertukar kepada apa yang anda beritahu, ditanda sebagai dilaporkan oleh orang di sana. Dalam kedua-dua keadaan ia tidak mengeluarkan amaran.",
     "signInToCheck": "Masuk dahulu, supaya pasukan tahu ada orang betul yang pergi ke sana.",
     "signIn": "Masuk",
     "noteLabel": "Ada apa-apa lagi?",

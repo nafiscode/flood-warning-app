@@ -214,8 +214,11 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     alert: { level: (all.alert as Messages).level! },
     // The "What Jaga can do" line at the end of each page (A17): one word.
     capabilities: { link: (all.capabilities as Messages).link! },
-    // And "How Jaga works" beside it (A18): one more word.
-    howItWorks: { link: (all.howItWorks as Messages).link! },
+    // And "How Jaga works" beside it (A18), and "Who built Jaga" after that: two more words.
+    howItWorks: {
+      link: (all.howItWorks as Messages).link!,
+      nav: { about: ((all.howItWorks as Messages).nav as Messages).about! },
+    },
   };
 }
 
