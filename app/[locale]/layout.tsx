@@ -205,14 +205,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     <span className="sm:hidden">{tNav("mapShort")}</span>
                     <span className="max-sm:hidden">{tNav("map")}</span>
                   </Link>
-                  {/* "Sign in" for a visitor, "Account" once signed in (the owner, 15 Oct). */}
-                  <AccountLink />
                   {/*
-                    "About" beside Account (the owner, 20 Oct): it opens "Who built Jaga", which
+                    "About" after the map and before Account (the owner, 21 Oct): it opens "Who built Jaga", which
                     is also the way to the other two pages a reader may want - the nav at its head
                     leads to the science and the system, and the block at its foot to all three.
                   */}
                   <AboutLink has={hasAbout} />
+                  {/* "Sign in" for a visitor, "Account" once signed in (the owner, 15 Oct). */}
+                  <AccountLink />
                   {/* Only an admin ever sees this one, and only in their own browser. */}
                   <AdminLink />
                 </div>

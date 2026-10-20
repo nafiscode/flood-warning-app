@@ -59,6 +59,19 @@ test("About in the header opens the page, costs no header height, and is not on 
   await page.goto("/map");
   const about = page.locator("header [data-about-nav]:visible");
   await expect(about).toHaveCount(1);
+  // The order the owner asked for on 21 Oct: home, the map, about, then the account.
+  const order = await page.evaluate(() => {
+    const row = document.querySelector("header [data-about-nav]")!.parentElement!;
+    return [...row.querySelectorAll("a")]
+      .filter((a) => (a as HTMLElement).offsetParent)
+      .map((a) => a.getAttribute("href") ?? "");
+  });
+  expect(order.map((h) => h.replace(/^\/[a-z]{2}(?=\/)/, "") || "/")).toEqual([
+    "/",
+    "/map",
+    "/about",
+    "/sign-in",
+  ]);
   const lines = await about.evaluate((el) => el.getBoundingClientRect().height);
   const withAbout = await page.locator("header").boundingBox();
   await page.addStyleTag({ content: "[data-about-nav]{display:none!important}" });
