@@ -604,3 +604,47 @@ export function PanelIcon({ open = true, ...rest }: IconProps & { open?: boolean
     </Icon>
   );
 }
+
+/**
+ * A degree: a mortarboard over the line of a book. On "Who built Jaga" it marks the step where
+ * the engineering came from, not a school badge - so it is the cap alone, with no tassel detail
+ * that would turn to mush at 22 px on a cheap phone.
+ */
+export function CapIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M2 8.5 12 4l10 4.5-10 4.5L2 8.5Z" />
+      <path d="M6 10.7V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.3" />
+    </Icon>
+  );
+}
+
+/**
+ * An Earth-observation satellite: a body with two panels and a dish looking down. It marks the
+ * THEOS-2 step, and it is the one icon on the page that says what the flood map is made of.
+ */
+export function SatelliteIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="9.5" y="6" width="5" height="7" rx="1" />
+      <path d="M9.5 7.5h-5v4h5M14.5 7.5h5v4h-5" />
+      <path d="M12 13v3" />
+      <path d="M8.5 20a3.5 3.5 0 0 1 7 0Z" />
+    </Icon>
+  );
+}
+
+/**
+ * Something built and handed over: blocks stacked into a working whole. It marks the step where
+ * the owner's job became shipping systems other people depend on, which is the part of Jaga that
+ * is neither hydrology nor maps.
+ */
+export function BlocksIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
+      <rect x="8" y="3" width="8" height="8" rx="1.5" />
+    </Icon>
+  );
+}

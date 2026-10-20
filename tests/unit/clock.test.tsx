@@ -26,7 +26,14 @@ describe("Thailand's time in the header (owner, 13 Oct)", () => {
     const named = /thailand time|bangkok|เวลาไทย|เวลาประเทศไทย|กรุงเทพ|waktu thai/i;
     for (const messages of [th, ms, en]) {
       const found: string[] = [];
+      /*
+       * "Who built Jaga" is the one page where a city is a fact about a person rather than a
+       * label on a clock: two of the founder's jobs were in Bangkok, and saying so is most of
+       * what makes a Thai reader trust the page. It carries no clock and no time label, so the
+       * blunt city-name scan is lifted there and nowhere else.
+       */
       const walk = (node: unknown, path: string) => {
+        if (path === ".about") return;
         if (typeof node === "string") {
           if (named.test(node)) found.push(path);
         } else if (node && typeof node === "object") {

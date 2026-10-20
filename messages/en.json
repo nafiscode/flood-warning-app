@@ -635,7 +635,8 @@
       "latest": "Latest image taken on {day} · Jaga asked at {asked}",
       "asked": "Jaga asked at {asked}",
       "truncated": "There is more than this map can show; only part is drawn.",
-      "note": "Source: GISTDA. Each hexagon is about 0.12 km². It marks where a satellite saw water on the day of the image, not how deep, and not what is flooded now. This is not a warning."
+      "note": "Source: GISTDA. Each hexagon is about 0.12 km². It marks where a satellite saw water on the day of the image, not how deep, and not what is flooded now. This is not a warning.",
+      "close": "Close the satellite flood layer"
     },
     "outlook": {
       "title": "Rainy-season outlook (Nov–Jan)",
@@ -660,6 +661,8 @@
       "source": "From 45 seasons of rain (CHIRPS, ERA5-Land), the ENSO index and NOAA's seasonal forecasts."
     },
     "zoomMine": "My places",
+    "reset": "Reset map",
+    "resetLabel": "Back to the map's first view and the layers it opens with",
     "peek": {
       "more": "See all details"
     },
@@ -5123,5 +5126,198 @@
     "quiet": "A rescue team, civil-defence volunteer or volunteer unit?",
     "mine": "See your unit's status",
     "signInFirst": "Sign in with LINE first, and Jaga will take you to the unit registration form."
+  },
+  "about": {
+    "link": "Who built Jaga",
+    "title": "Who built Jaga",
+    "name": "Nafis Damae",
+    "nameThai": "นาฟิส ดาแม",
+    "role": "Civil engineer · GIS, remote sensing and hydrology · Founder and developer of Jaga",
+    "lead": "Jaga was built by one person. I think you should know who, and be able to check what I say about myself.",
+    "audience": "This page is for two readers: anyone who found this app and wants to know whether it can be trusted, and anyone who knows me but has never seen my work.",
+    "stats": {
+      "years": "10+ years in engineering",
+      "flood": "Flood and dam-break studies",
+      "reservoirs": "30 reservoirs modelled",
+      "forecast": "20-year flood-risk forecasts",
+      "theos": "THEOS-2 national programme"
+    },
+    "portraitAlt": "Nafis Damae",
+    "why": {
+      "title": "Why I built this",
+      "p1": "I am from this part of the country. Flooding here is not news to me, and neither is the waiting: water rising in the dark, nobody sure whether this is the year it comes into the house, and the warning arriving after the road has already gone.",
+      "p2": "For ten years I have been paid to answer exactly that question for other people's rivers: where the water goes, how fast, how far, and who should be told. Jaga is the same work, turned toward home, and given away.",
+      "p3": "I pay for it, I run it, and nobody pays me for it. That is the whole arrangement."
+    },
+    "road": {
+      "title": "The road that led here",
+      "lead": "Nothing in Jaga is new to me. Every part of it is something I have already built, for a company, a government agency or a national programme. Here is which part came from where.",
+      "gaveLabel": "What this gave Jaga",
+      "steps": {
+        "degree": {
+          "years": "Civil engineering",
+          "title": "B.Sc. Civil Engineering",
+          "where": "University of Bahrain · royal scholarship · ABET-accredited college",
+          "what": {
+            "1": "Hydraulics, hydrology and structures: how water moves, and what it does to the things people build in its way.",
+            "2": "Started out in civil engineering in Bahrain before moving into geospatial work."
+          },
+          "gave": "The flood map and the dam-release zone are engineering, not guesswork. When Jaga says a rise below Bang Lang dam reaches a certain piece of land, that comes from the same hydraulics I was taught to use on real structures."
+        },
+        "ilf": {
+          "years": "2016-2021",
+          "title": "GIS / CAD Engineer",
+          "where": "ILF Consulting Engineers (Asia), Bangkok",
+          "what": {
+            "1": "Flood-risk analysis for hydropower projects, including dam-break scenarios: what reaches which land, and when.",
+            "2": "Hydropower potential studies, photogrammetry, and remote-sensing environmental monitoring.",
+            "3": "Built regional GIS databases covering Southeast Asia, and the cartography that went with them."
+          },
+          "gave": "Jaga's flood-hazard classes and its Bang Lang dam-release zone are the same analysis I did for five years on consulting projects. The same elevation models, the same travel times, the same question of which land floods first."
+        },
+        "airbus": {
+          "years": "2021-2024",
+          "title": "Team Leader, Actionable Intelligence Policy Project (promoted from Geospatial Solutions Architect)",
+          "where": "Airbus Defence and Space, for GISTDA under the THEOS-2 national programme, Bangkok",
+          "what": {
+            "1": "Designed satellite Earth-observation applications for Thailand, including national GIS models carrying 20-year land-use and flood-risk forecasts.",
+            "2": "Engineered automated hydrological modelling across 30 interconnected reservoirs.",
+            "3": "Delivered real-time dashboards used by national decision-makers.",
+            "4": "Led a multidisciplinary GIS and hydrology team through quality assurance, training and handover to the agency."
+          },
+          "gave": "This is Jaga's science pipeline and its admin console. Radar flood extents, the elevation model, river-gauge thresholds, the dam, the rain. I spent three years building that kind of system for a national space agency before building a small one for four provinces."
+        },
+        "egis": {
+          "years": "2024 to present",
+          "title": "Digital Enablement Lead / Senior Automation Engineer",
+          "where": "Egis, supporting MATARAT Holding, Riyadh",
+          "what": {
+            "1": "Owns the digital roadmap for portfolio management, CAPEX governance, project controls and asset management across 27 airports.",
+            "2": "Architected and built CIMS, an enterprise project-management portal of 13 modules used by five operating companies and the regulator.",
+            "3": "Delivered it on the client's existing systems, with no new platform, no new vendor and no per-user licences, as a 71-item tracked programme with a live client-facing dashboard."
+          },
+          "gave": "This is why Jaga is a finished service and not a demo. Building something people depend on, inside a budget, and handing it over so it keeps running without me, is my day job. Jaga runs on about the cost of a phone bill for the same reason CIMS needed no new licences."
+        }
+      }
+    },
+    "scope": {
+      "title": "What I did on Jaga, and what I did not",
+      "lead": "A page like this is worth nothing if it only boasts. So here is the honest split.",
+      "mine": {
+        "title": "Mine",
+        "points": {
+          "1": "The hydrology and GIS methods behind every layer, and every number they produce.",
+          "2": "The alert levels and the river thresholds, and the decision that a person must publish each alert.",
+          "3": "The design of every screen, in Thai first.",
+          "4": "Every judgement call, and every mistake."
+        }
+      },
+      "assisted": {
+        "title": "Built with help",
+        "points": {
+          "1": "The code was written with an AI coding assistant, with me reviewing and deciding every change.",
+          "2": "That is how one person ships a working service in a season instead of a year. I am not hiding it.",
+          "3": "The code is public, so you do not have to take my word about its quality. You can read it."
+        }
+      },
+      "theirs": {
+        "title": "Not mine at all",
+        "points": {
+          "1": "The data. Satellite radar, the elevation model, rainfall records, river telemetry, roads and buildings: all of it is other people's open data, given away.",
+          "2": "Without any one of them there would be no flood map for these provinces. Every one is named and thanked on the credits page.",
+          "3": "The alerts. Jaga's alerts are written and published by people, from reviewed templates. The app computes signals; it does not decide."
+        }
+      },
+      "credits": "See the data, and who it belongs to"
+    },
+    "trust": {
+      "title": "What you can trust, and what you should not",
+      "points": {
+        "nonprofit": {
+          "title": "Jaga is not a government service",
+          "text": "It is a non-profit app, run independently. In an emergency the official numbers come first: 1784 for disaster prevention, 1669 for medical emergencies, 191 for police, 199 for fire. They are one tap away on every screen, even offline."
+        },
+        "humans": {
+          "title": "People publish the alerts",
+          "text": "Not an algorithm. The one exception is a river alarm an admin has armed in advance: if a gauge stays over its threshold and no admin answers within the grace time, Jaga publishes the reviewed draft itself and records plainly that nobody reviewed it."
+        },
+        "open": {
+          "title": "The code is public",
+          "text": "Anyone can read how this works, find a fault in it, or check that it does what this page says."
+        },
+        "nomoney": {
+          "title": "No money changes hands here",
+          "text": "Jaga does not collect money or goods for flood-affected people. It points to the official relief channels instead. There are no ads, and your data is never sold or passed beyond the rescue teams covering your own tambon."
+        },
+        "limits": {
+          "title": "What it cannot do",
+          "text": "No forecast is certain, and Jaga never pretends otherwise: it shows ranges, timestamps and sources. It is an extra channel beside the official warnings, not a replacement for them, and a phone with no signal cannot warn anybody."
+        }
+      }
+    },
+    "credentials": {
+      "title": "On the record",
+      "education": {
+        "title": "Education",
+        "items": {
+          "1": "B.Sc. Civil Engineering, University of Bahrain",
+          "2": "Royal scholarship recipient, ABET-accredited college of engineering"
+        }
+      },
+      "membership": {
+        "title": "Professional membership",
+        "items": {
+          "1": "Saudi Council of Engineers, registered member since 2024"
+        }
+      },
+      "training": {
+        "title": "Certifications and training",
+        "items": {
+          "1": "IATA: Airport Development & Infrastructure Design",
+          "2": "IATA: Airport Route Development & Commercial Management",
+          "3": "ArcPy & Python for ArcGIS",
+          "4": "InfraWorks-ArcGIS AEC Collaboration"
+        }
+      },
+      "languages": {
+        "title": "Languages",
+        "items": {
+          "1": "Thai: native",
+          "2": "English: full professional",
+          "3": "Malay: professional",
+          "4": "Turkish: conversational",
+          "5": "Arabic: limited working"
+        }
+      },
+      "malayNote": "I speak Malay, which is why Jaga is being built in Patani Malay as well as Thai, not run through a machine but reviewed by people who speak it at home."
+    },
+    "check": {
+      "title": "Check me",
+      "lead": "Everything on this page can be verified. Please do.",
+      "links": {
+        "portfolio": {
+          "title": "My career profile",
+          "text": "The full professional record, with dates and employers."
+        },
+        "linkedin": {
+          "title": "LinkedIn",
+          "text": "Where my work history can be cross-checked."
+        },
+        "code": {
+          "title": "Jaga's source code",
+          "text": "The whole app, open to read. Faults and corrections are welcome."
+        }
+      },
+      "emailTitle": "Write to Jaga",
+      "emailText": "Questions about the methods, a fault to report, or an agency wanting to work together.",
+      "noPhone": "No personal phone number appears on this page, or anywhere public in Jaga. That rule covers everybody's number in this app, mine included."
+    },
+    "closing": {
+      "title": "Now look at the work, not the person",
+      "text": "The page about me is the least important one here. These are the ones that matter.",
+      "how": "How Jaga works",
+      "features": "What Jaga can do",
+      "map": "The map"
+    }
   }
 }
