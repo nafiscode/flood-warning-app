@@ -10,7 +10,7 @@
  *    something the owner was already paid to do somewhere else.
  *
  * So the page is a career *line*, not a CV: each step carries one highlighted sentence naming the
- * part of Jaga that came out of it (`CAREER_STEPS[].gave`). It also says plainly what the owner
+ * part of Jaga that came out of it (each step's `gave` line). It also says plainly what the owner
  * did not do - the data is other people's, the alerts are published by people, the code was
  * written with an assistant under review - because a trust page that only boasts is not one.
  *
@@ -39,17 +39,10 @@ export type CareerStep = {
 };
 
 /**
- * The four steps, oldest first, because the point of the page is the direction of travel: civil
- * engineering, then flood and dam work, then a national Earth-observation programme, then
- * building and shipping enterprise systems. Jaga needs all four, and it is the last one that
- * explains why this is a working service and not a prototype.
+ * The steps themselves are not here. Their keys are employers' names, and the owner decided on
+ * 20 Oct 2026 that no part of this page belongs in a public repository, so the order arrives with
+ * the copy as `road.order` and this file keeps only the shape of one.
  */
-export const CAREER_STEPS: CareerStep[] = [
-  { key: "degree", icon: "cap", what: 2 },
-  { key: "ilf", icon: "drop", what: 3, logo: "ilf" },
-  { key: "airbus", icon: "satellite", what: 4, logo: "airbus" },
-  { key: "egis", icon: "build", what: 3, logo: "egis" },
-];
 
 /** What the owner did on Jaga, what was done with help, and what is not theirs at all. */
 export const SCOPE_PARTS = ["mine", "assisted", "theirs"] as const;
@@ -86,10 +79,10 @@ export const CREDENTIAL_ITEMS: Record<CredentialGroup, number> = {
  */
 export type AboutLink = { key: string; href: string; me?: boolean };
 
-export const ABOUT_LINKS: AboutLink[] = [
-  { key: "portfolio", href: "https://nafis-portfolio.pages.dev/", me: true },
-  { key: "linkedin", href: "https://www.linkedin.com/in/nafis-damae", me: true },
-];
+/**
+ * The addresses are not here either: they are the owner's own pages. They arrive with the copy as
+ * `check.at`, in the same shape.
+ */
 
 /**
  * The portrait at `public/about/<PORTRAIT>`: the owner cut out of their own photo, standing in
@@ -100,7 +93,8 @@ export const ABOUT_LINKS: AboutLink[] = [
  * colours, the way the credits cards do for an organisation with no logo, so the page is complete
  * either way and the slot never changes size (components/about/Portrait.module.css).
  */
-export const PORTRAIT = "nafis.webp";
+/** The portrait's file name arrives with the copy as `portrait`; this is the fallback. */
+export const PORTRAIT = "portrait.webp";
 
 /**
  * Whether that file is actually in place. The page is written, reviewed and translated long

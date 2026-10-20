@@ -67,7 +67,8 @@ for (const file of files) {
       authorization: `Bearer ${KEY}`,
       "content-type": type,
       "x-upsert": "true",
-      "cache-control": "max-age=300",
+      // Short: a build must not be served yesterday's words because a CDN still holds them.
+      "cache-control": "max-age=60",
     },
     body,
   });

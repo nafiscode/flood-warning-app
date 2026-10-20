@@ -10,14 +10,13 @@ import {
 } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import {
-  ABOUT_LINKS,
-  CAREER_STEPS,
   CREDENTIAL_GROUPS,
   CREDENTIAL_ITEMS,
   PORTRAIT_READY,
   SCOPE_POINTS,
   SCOPE_PARTS,
   TRUST_POINTS,
+  type AboutLink,
   type CareerStep,
   type CredentialGroup,
   type ScopePart,
@@ -52,6 +51,14 @@ const STATS = ["years", "flood", "reservoirs", "forecast", "theos"] as const;
 export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolean }) {
   const t = useTranslations("about");
   const contact = process.env.CONTACT_EMAIL?.trim();
+  /*
+   * The career steps and the addresses to check come with the copy, not from this repository:
+   * their keys are employers' names and the owner's own pages (the owner, 20 Oct 2026). Where the
+   * content is absent - a fork, or a build that could not reach the bucket - these are empty and
+   * the page simply has no career to show.
+   */
+  const steps = (t.raw("road.order") ?? []) as CareerStep[];
+  const links = (t.raw("check.at") ?? []) as AboutLink[];
   return (
     <div className="flex flex-col gap-8" data-about>
       {/* Who, in one breath: the face, the name in both scripts, the role, and the arrangement. */}
@@ -110,7 +117,7 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
         </h2>
         <p className="text-jaga-text">{t("road.lead")}</p>
         <ol className="flex flex-col gap-4">
-          {CAREER_STEPS.map((step, i) => (
+          {steps.map((step, i) => (
             <StepCard key={step.key} step={step} n={i + 1} />
           ))}
         </ol>
@@ -189,7 +196,7 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
         </h2>
         <p className="text-jaga-text">{t("check.lead")}</p>
         <ul className="grid gap-3 sm:grid-cols-2">
-          {ABOUT_LINKS.map((link) => (
+          {links.map((link) => (
             <li key={link.key}>
               <a
                 href={link.href}

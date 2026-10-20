@@ -2,14 +2,13 @@ import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { About } from "@/components/about/About";
 import {
-  ABOUT_LINKS,
-  CAREER_STEPS,
   SECTORS,
   CREDENTIAL_GROUPS,
   CREDENTIAL_ITEMS,
   initialsOf,
-  PORTRAIT,
   PORTRAIT_READY,
+  type AboutLink,
+  type CareerStep,
   SCOPE_PARTS,
   SCOPE_POINTS,
   TRUST_POINTS,
@@ -19,6 +18,13 @@ import { renderWithAbout, ABOUT, HAS_ABOUT } from "./about-content";
 const ALL = ABOUT;
 /** One English line by path, for the assertions that quote the page back to itself. */
 const line = (path: string) => read(ABOUT.en, path) as string;
+
+/**
+ * The career steps and the addresses live with the copy, not in this repository (the owner,
+ * 20 Oct 2026), so the tests read them from exactly where the page does.
+ */
+const STEPS = ((ABOUT.en.road as { order?: CareerStep[] })?.order ?? []) as CareerStep[];
+const LINKS = ((ABOUT.en.check as { at?: AboutLink[] })?.at ?? []) as AboutLink[];
 type Tree = { [key: string]: string | Tree };
 const read = (tree: Tree, path: string) =>
   path
@@ -75,7 +81,7 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the lines", () => {
       "closing.features",
       "closing.map",
       ...["years", "flood", "reservoirs", "forecast", "theos"].map((k) => `stats.${k}`),
-      ...CAREER_STEPS.flatMap((step) => [
+      ...STEPS.flatMap((step) => [
         ...["years", "title", "where", "gave"].map((k) => `road.steps.${step.key}.${k}`),
         ...Array.from({ length: step.what }, (_, i) => `road.steps.${step.key}.what.${i + 1}`),
       ]),
@@ -91,10 +97,7 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the lines", () => {
           (_, i) => `credentials.${group}.items.${i + 1}`,
         ),
       ]),
-      ...ABOUT_LINKS.flatMap((link) => [
-        `check.links.${link.key}.title`,
-        `check.links.${link.key}.text`,
-      ]),
+      ...LINKS.flatMap((link) => [`check.links.${link.key}.title`, `check.links.${link.key}.text`]),
     ];
     for (const [locale, messages] of Object.entries(ALL)) {
       for (const key of keys) {
@@ -150,8 +153,8 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the rules", () => {
 
   /** Every address a reader is sent to is somewhere they can actually check the claims. */
   it("sends the reader to the owner's own pages, over https", () => {
-    for (const link of ABOUT_LINKS) expect(link.href).toMatch(/^https:\/\//);
-    expect(ABOUT_LINKS.filter((l) => l.me).length).toBe(2);
+    for (const link of LINKS) expect(link.href).toMatch(/^https:\/\//);
+    expect(LINKS.filter((l) => l.me).length).toBe(2);
   });
 
   /**
@@ -160,7 +163,7 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the rules", () => {
    * goes, so this holds both halves of that at once.
    */
   it("says the code is public but offers nobody a link to it", () => {
-    for (const link of ABOUT_LINKS) expect(link.href).not.toMatch(/github/i);
+    for (const link of LINKS) expect(link.href).not.toMatch(/github/i);
     for (const [locale, messages] of Object.entries(ALL)) {
       expect(/github/i.test(JSON.stringify(root(messages))), `${locale} names GitHub`).toBe(false);
       const said = [
@@ -186,7 +189,7 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the rules", () => {
 describe.skipIf(!HAS_ABOUT)("who built Jaga: the page", () => {
   it("draws every step, with the line saying what it gave Jaga", () => {
     const { container } = renderWithAbout(<About />, "en");
-    for (const step of CAREER_STEPS) {
+    for (const step of STEPS) {
       const card = container.querySelector(`[data-about-step="${step.key}"]`);
       expect(card, step.key).not.toBeNull();
       expect(card?.textContent).toContain(line("road.gaveLabel"));
@@ -194,7 +197,7 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the page", () => {
     expect(container.querySelectorAll("[data-about-scope]").length).toBe(SCOPE_PARTS.length);
     expect(container.querySelectorAll("[data-about-sector]").length).toBe(SECTORS.length);
     // Every employer with a mark shows it, and the line saying whose marks they are is there.
-    const withLogos = CAREER_STEPS.filter((s) => s.logo);
+    const withLogos = STEPS.filter((s) => s.logo);
     expect(container.querySelectorAll("[data-about-logo]").length).toBe(withLogos.length);
     for (const step of withLogos) {
       const mark = container.querySelector(`[data-about-logo="${step.logo}"] img`);
@@ -228,7 +231,8 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the page", () => {
   /** `PORTRAIT_READY` must never be true without the file it promises. */
   it("has the portrait file it says it has", () => {
     if (!PORTRAIT_READY) return;
-    expect(existsSync(`public/about/${PORTRAIT}`), `public/about/${PORTRAIT}`).toBe(true);
+    const file = (ABOUT.en.portrait as string) ?? "portrait.webp";
+    expect(existsSync(`public/about/${file}`), `public/about/${file}`).toBe(true);
   });
 
   /**

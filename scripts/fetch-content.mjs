@@ -19,7 +19,7 @@
  * out of the way (see app/[locale]/about), and every other page is unaffected. Pass
  * JAGA_REQUIRE_CONTENT=1 to make a missing fetch fatal, which the owner's own deploys do.
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { envValue } from "./env-local.mjs";
 
@@ -27,16 +27,29 @@ const BASE = (envValue("NEXT_PUBLIC_SUPABASE_URL") ?? "").replace(/\/+$/, "");
 const BUCKET = "site-content";
 const REQUIRED = envValue("JAGA_REQUIRE_CONTENT") === "1";
 
-/** What to fetch, and where it lands. Paths are relative to the repo root. */
+/**
+ * What to fetch, and where it lands. Paths are relative to the repo root.
+ *
+ * The employers' marks are **not** listed here by name, because their names are part of the
+ * content and not of this repository: the manifest in the content itself says which ones there
+ * are, and this reads that once the copy is down.
+ */
 const FILES = [
   ...["th", "ms", "en"].map((l) => [`about/${l}.json`, `messages/about/${l}.json`]),
-  ["about/nafis.webp", "public/about/nafis.webp"],
-  ...["airbus", "egis", "ilf"].map((n) => [`about/logos/${n}.png`, `public/about/logos/${n}.png`]),
+  ["about/portrait.webp", "public/about/portrait.webp"],
 ];
 
+/**
+ * `stamp` makes each build's request its own, and `no-store` stops anything on this side holding
+ * a copy. Without both, a build can be handed the content from before the last edit: the objects
+ * are served through a CDN, and a cached answer here is a page that quietly says something out
+ * of date. Builds are rare, so missing the cache costs nothing worth keeping.
+ */
+const stamp = Date.now().toString(36);
+
 async function fetchOne(key, dest) {
-  const url = `${BASE}/storage/v1/object/public/${BUCKET}/${key}`;
-  const res = await fetch(url);
+  const url = `${BASE}/storage/v1/object/public/${BUCKET}/${key}?v=${stamp}`;
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   const body = Buffer.from(await res.arrayBuffer());
   await mkdir(dirname(dest), { recursive: true });
@@ -65,5 +78,18 @@ if (!BASE) {
     if (REQUIRED) throw new Error(`content is required but ${why}`);
     console.log(`content: ${why}`);
   }
-  console.log(`content: ${got} of ${FILES.length} files in place`);
+  // The marks, named by the content rather than by this file.
+  let marks = 0;
+  try {
+    const order = JSON.parse(await readFile("messages/about/en.json", "utf8")).road.order ?? [];
+    for (const step of order) {
+      if (!step.logo) continue;
+      const key = `about/logos/${step.logo}.png`;
+      await fetchOne(key, `public/about/logos/${step.logo}.png`);
+      marks += 1;
+    }
+  } catch {
+    // No copy, or no marks in it: the cards show their icons instead.
+  }
+  console.log(`content: ${got} of ${FILES.length} files, and ${marks} marks, in place`);
 }
