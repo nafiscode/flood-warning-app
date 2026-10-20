@@ -147,8 +147,7 @@ test.describe("home", () => {
   test("a rescue unit and a resident both find their way in, under the hero", async ({ page }) => {
     await serve(page, { inService: true, alerts: [] });
     await page.goto("/");
-    // Drawn once per width (the laptop copy sits in the action column), so the visible one.
-    const card = page.locator('[data-unit-way="card"]:visible');
+    const card = page.locator('[data-unit-way="card"]');
     await expect(card).toBeVisible();
     const register = card.locator('a[data-unit-register="home"]');
     await expect(register).toBeVisible();
@@ -172,7 +171,7 @@ test.describe("home", () => {
     await page.goto("/");
     await expect(page.locator('[data-join-jaga="line"]')).toBeVisible();
     await expect(page.locator('[data-unit-way="card"]')).toHaveCount(0);
-    await expect(page.locator('a[data-unit-register="home"]:visible')).toBeVisible();
+    await expect(page.locator('a[data-unit-register="home"]')).toBeVisible();
     await noSidewaysScroll(page);
   });
 

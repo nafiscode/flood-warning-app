@@ -87,7 +87,6 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
         />
       )}
       joinJaga={<JoinJaga />}
-      unitCard={<JoinJaga place="act" />}
       welcome={<NewToJaga />}
       install={<InstallCard place="home" />}
       installLine={<InstallLine />}
