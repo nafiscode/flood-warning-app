@@ -99,6 +99,8 @@ export type HomeViewProps = {
    * never said a unit could). Never at Warning or Evacuate.
    */
   joinJaga?: ReactNode;
+  /** The unit's half of joinJaga, drawn under "Follow my requests" on the laptop console only. */
+  unitCard?: ReactNode;
   /** "New to Jaga?" into What Jaga can do: the first visits only, never at Warning or Evacuate. */
   welcome?: ReactNode;
 };
@@ -424,6 +426,9 @@ export function HomeView(props: HomeViewProps) {
         </Link>
 
         {props.myReports}
+
+        {/* Laptop only: the unit's way in, under "Follow my requests" (the owner, 20 Oct). */}
+        {!tense && props.unitCard}
 
         {props.projectLine && (
           <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>

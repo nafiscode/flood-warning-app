@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { ShieldIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
@@ -30,14 +31,16 @@ export function unitWayFull(state: UnitWayState | null, hasUnit: boolean | null)
  */
 export function UnitCard() {
   const t = useTranslations("unitWay");
+  // The home screen draws this card twice, one copy per width, so the id must be per copy.
+  const titleId = useId();
   return (
-    <section aria-labelledby="unit-way-title" data-unit-way="card" className={`${offerCard} flex-1`}>
+    <section aria-labelledby={titleId} data-unit-way="card" className={`${offerCard} flex-1`}>
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-jaga-teal-ink/15 text-jaga-teal-ink">
           <ShieldIcon size={22} />
         </span>
         <div className="flex flex-col gap-0.5">
-          <h2 id="unit-way-title" className="text-h3 font-bold text-jaga-ink">
+          <h2 id={titleId} className="text-h3 font-bold text-jaga-ink">
             {t("title")}
           </h2>
           <p className="text-small text-jaga-text-2">{t("who")}</p>

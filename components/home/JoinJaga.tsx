@@ -26,8 +26,14 @@ import { useHasUnit } from "@/lib/use-public";
  * button on one line - measured, not guessed: at 26rem the register label wrapped and the button
  * grew to 74 px. And they sit at the top of the row rather than stretching to match, because
  * matching made the unit card as tall as the sign-in card and pushed its button 70% down the page.
+ *
+ * On the laptop console the unit's half moves to the action column, under "Follow my requests"
+ * (the owner, 20 Oct): the home screen draws this block twice, `place="hero"` with the unit's half
+ * hidden on the console and `place="act"` with only that half, shown only on the console - the
+ * same one-copy-per-width pattern as the dam cards. The visit is still counted once (the session
+ * key), and the card's heading id is per copy.
  */
-export function JoinJaga() {
+export function JoinJaga({ place = "hero" }: { place?: "hero" | "act" }) {
   const state = useStored<UnitWayState>(UNIT_WAY_KEY);
   const hasUnit = useHasUnit();
 
@@ -46,16 +52,27 @@ export function JoinJaga() {
   }, []);
 
   const full = unitWayFull(state, hasUnit);
+  if (place === "act") {
+    return (
+      <div data-join-jaga-act={full ? "card" : "line"} className="hidden console:block">
+        {full ? <UnitCard /> : <UnitWayLine where="home" />}
+      </div>
+    );
+  }
   return (
     <div data-join-jaga={full ? "cards" : "line"} className="@container">
       {full ? (
         <div className="flex flex-col gap-4 @[34rem]:flex-row @[34rem]:items-start">
-          <UnitCard />
+          <div className="contents console:hidden">
+            <UnitCard />
+          </div>
           {/* Nothing for someone signed in, and then the unit card has the row to itself. */}
           <SignInOffer compact className="flex-1" />
         </div>
       ) : (
-        <UnitWayLine where="home" />
+        <div className="console:hidden">
+          <UnitWayLine where="home" />
+        </div>
       )}
     </div>
   );

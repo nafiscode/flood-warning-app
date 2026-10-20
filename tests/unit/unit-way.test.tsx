@@ -97,6 +97,26 @@ describe("the two ways in, side by side under the hero", () => {
     expect(c.querySelector('[data-unit-way="line-home"]')).not.toBeNull();
   });
 
+  /*
+   * Laptop only, the unit card sits under "Follow my requests" (the owner, 20 Oct): the hero copy
+   * hides its unit half on the console, the action-column copy is only that half and only there.
+   */
+  it("hands the unit card to the action column on the laptop console", () => {
+    const hero = renderWithIntl(<JoinJaga />).container;
+    const heroCard = hero.querySelector('[data-unit-way="card"]')!;
+    expect(heroCard.parentElement!.className).toContain("console:hidden");
+    const act = renderWithIntl(<JoinJaga place="act" />).container;
+    const wrap = act.querySelector("[data-join-jaga-act]")!;
+    expect(wrap.getAttribute("data-join-jaga-act")).toBe("card");
+    expect(wrap.className).toContain("hidden console:block");
+    expect(wrap.querySelector('[data-unit-way="card"]')).not.toBeNull();
+    expect(wrap.querySelector("[data-sign-in-offer]")).toBeNull();
+    // Two copies on one page must not share a heading id.
+    expect(heroCard.getAttribute("aria-labelledby")).not.toBe(
+      wrap.querySelector("section")!.getAttribute("aria-labelledby"),
+    );
+  });
+
   it("counts one visit a browser session, not one a render", () => {
     renderWithIntl(<JoinJaga />);
     expect(stored()).toEqual({ visits: 1 });
