@@ -1,5 +1,5 @@
-import { previewAlert, readAreas, zoneMap } from "@/lib/admin-alerts";
-import { areaChoice, chosenTambons, isUuid } from "@/lib/alert-console";
+import { peopleTambons, previewAlert, readAreas, zoneMap } from "@/lib/admin-alerts";
+import { areaChoice, chosenTambons, drillAudience, isUuid } from "@/lib/alert-console";
 import { getSessionProfile, isAdminRole } from "@/lib/auth";
 import { inService } from "@/lib/features";
 import { supabaseConfigured } from "@/lib/supabase/env";
@@ -29,15 +29,22 @@ export async function POST(request: Request) {
   const list = (name: string) => (Array.isArray(input[name]) ? (input[name] as unknown[]) : []);
 
   try {
+    const choice = areaChoice(list);
     const areas = await readAreas();
     const tambons = chosenTambons(
       areas.tambons.map((t) => t.code),
-      areaChoice(list),
+      choice,
       zoneMap(areas),
+      choice.people ? await peopleTambons() : [],
     );
     if (tambons.length === 0) return answer({ error: "area" }, 400);
     const note = typeof input.note === "string" ? input.note.trim().slice(0, 400) : "";
-    const preview = await previewAlert(input.template, tambons, note);
+    const preview = await previewAlert(
+      input.template,
+      tambons,
+      note,
+      drillAudience(list("drillAudience")),
+    );
     if (!preview) return answer({ error: "unavailable" }, 502);
     return answer({ preview, launched: inService() });
   } catch {

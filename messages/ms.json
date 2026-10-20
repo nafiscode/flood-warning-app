@@ -204,7 +204,12 @@
         }
       }
     },
-    "yourArea": "kawasan anda"
+    "yourArea": "kawasan anda",
+    "drill": {
+      "tag": "Latihan",
+      "note": "Ini latihan oleh pentadbir, bukan kejadian sebenar, dan anda tidak perlu buat apa-apa.",
+      "why": "Pentadbir sedang menguji sama ada amaran sampai kepada semua orang."
+    }
   },
   "sos": {
     "label": "SOS",
@@ -2809,7 +2814,9 @@
         "mapCount": "{count} mukim dipilih",
         "mapLocked": "Mukim ini dipilih melalui seluruh daerah atau wilayah. Batalkan dalam senarai.",
         "mapFailed": "Peta tidak dapat dimuatkan. Gunakan senarai di bawah.",
-        "unavailable": "Senarai kawasan tidak dapat dimuatkan. Cuba lagi."
+        "unavailable": "Senarai kawasan tidak dapat dimuatkan. Cuba lagi.",
+        "people": "Semua kawasan yang ada pengguna",
+        "peopleHint": "Setiap mukim yang dijadikan rumah atau tempat diawasi oleh seseorang."
       },
       "note": {
         "label": "Butiran tambahan (pilihan)",
@@ -2859,7 +2866,9 @@
         "people": "{count} orang mempunyai rumah atau tempat yang dipantau di kawasan ini",
         "detail": "Rumah {homes} · tempat dipantau {watched}",
         "channels": "Pemberitahuan pada peranti: {push} orang · LINE disambung: {line} orang",
-        "notYet": "Pemberitahuan peranti dan LINE hanya sampai kepada orang yang menghidupkannya. Orang lain melihat amaran apabila membuka aplikasi, pada peta dan dalam loceng."
+        "notYet": "Pemberitahuan peranti dan LINE hanya sampai kepada orang yang menghidupkannya. Orang lain melihat amaran apabila membuka aplikasi, pada peta dan dalam loceng.",
+        "drillTitle": "Latihan ini sampai kepada",
+        "insteadOf": "Amaran sebenar di kawasan sama sampai kepada {count} orang."
       },
       "quota": "Kuota LINE bulan ini selepas dihantar: {after} daripada {limit}",
       "quotaOver": "Melebihi kuota LINE bulan ini: {after} daripada {limit}",
@@ -2875,11 +2884,28 @@
       },
       "mode": {
         "legend": "Latihan atau amaran sebenar",
-        "drill": "Latihan",
-        "drillHint": "Orang awam tidak nampak; tiada bunyi.",
+        "drill": "Latihan, tidak dihantar",
+        "drillHint": "Orang ramai tidak nampak, tiada bunyi amaran.",
         "real": "Amaran sebenar",
-        "realHint": "Dipaparkan pada peta, halaman utama dan loceng semua orang di kawasan itu, dan dihantar melalui pemberitahuan peranti dan LINE, walaupun perkhidmatan belum dibuka."
-      }
+        "realHint": "Ditunjukkan di peta, skrin utama dan loceng semua orang di kawasan itu, dan dihantar melalui pemberitahuan dan LINE.",
+        "drillSent": "Latihan, dan dihantar",
+        "drillSentHint": "Dihantar betul-betul melalui pemberitahuan dan LINE, dengan bunyi yang sama, tetapi mesejnya menyatakan dengan jelas bahawa ia latihan."
+      },
+      "audience": {
+        "legend": "Hantar latihan ini kepada siapa",
+        "hint": "Boleh pilih lebih daripada satu.",
+        "admins": "Pentadbir",
+        "adminsHint": "Semua pentadbir Jaga.",
+        "rescue": "Pasukan penyelamat",
+        "rescueHint": "Unit yang disahkan dan membuat kerja menyelamat di kawasan yang dipilih.",
+        "units": "Semua unit",
+        "unitsHint": "Setiap unit pihak berkuasa yang disahkan bagi kawasan yang dipilih.",
+        "everyone": "Semua orang di kawasan itu",
+        "everyoneHint": "Semua yang menjadikan kawasan itu rumah atau tempat diawasi. Satu mesej seorang.",
+        "none": "Pilih sekurang-kurangnya satu, jika tidak tiada sesiapa menerima latihan ini."
+      },
+      "drillSent": "Latihan ini akan dihantar betul-betul. Mesejnya menyatakan ia latihan, tiada bahaya, dan tiada apa yang perlu dibuat.",
+      "publishDrillSent": "Hantar latihan"
     },
     "auto": {
       "title": "Penggera automatik",

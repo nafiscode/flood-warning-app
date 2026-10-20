@@ -45,6 +45,8 @@ export type NoticeItem = Base &
         source: string | null;
         /** The alert this item is about, for the link to the full alert. */
         alertId: string;
+        /** A drill the admins sent: the card says so instead of reading as a warning (A10). */
+        drill?: boolean;
         /**
          * Set when none of the person's own places is in the alert: an admin who chose to hear
          * every alert, everywhere. How many tambons it covers, said instead of "your area".
@@ -176,6 +178,8 @@ export type NoticeRow = {
   endedAt: string | null;
   source: string | null;
   tambons: string[];
+  /** A drill the admins sent on purpose (A10): shown, and shown as a drill. */
+  drill?: boolean;
 };
 
 function isoOrNull(value: unknown): string | null {
@@ -209,6 +213,7 @@ export function toNoticeRow(row: Record<string, unknown>): NoticeRow | null {
     id: row.id,
     hazard: typeof row.hazard_type === "string" ? row.hazard_type : null,
     level: kind === "alert" ? level : null,
+    drill: row.drill === true,
     reason: typeof row.reason === "string" ? row.reason : "",
     messages,
     issuedAt,
@@ -345,6 +350,7 @@ export function buildNotices(input: {
         nextUpdateAt: row.nextUpdateAt,
         source: row.source,
         alertId: row.id,
+        ...(row.drill ? { drill: true } : {}),
         // None of the person's places is in it: an admin hearing every alert, everywhere.
         ...(places.length === 0 && row.tambons.length > 0 ? { elsewhere: row.tambons.length } : {}),
       });

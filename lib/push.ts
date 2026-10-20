@@ -170,6 +170,8 @@ export type PushAlert = {
   level: string;
   /** The reviewed template's words per language; Thai is always there. */
   messages: Record<string, string>;
+  /** A drill that is being sent (A10). Its words are the drill's, not the template's. */
+  drill?: boolean;
 };
 
 /**
@@ -182,14 +184,22 @@ export function alertPayload(
   levelName: (level: PushLevel, locale: string) => string,
   /** "your area" in that language: said where the alert's own text lists all its tambons. */
   yourArea = "",
+  /** "Drill" in that language, said before the level when the alert is one. */
+  drillTag = "",
 ): PushPayload | null {
   const level = ALERT_LEVELS_PUSHED.find((l) => l === alert.level);
   if (!level) return null;
   const body = alertWords(alert.messages, locale, yourArea);
   if (!body) return null;
+  /*
+   * A drill says so first, in the one line a phone shows before anybody opens anything: the
+   * level still follows it, because the point of the drill is that the real one would look and
+   * sound exactly like this.
+   */
+  const head = alert.drill ? `${drillTag} · ${levelName(level, locale)}` : levelName(level, locale);
   return {
     kind: "alert",
-    title: `Jaga · ${levelName(level, locale)}`,
+    title: `Jaga · ${head}`,
     body: clip(body),
     url: locale === "th" ? "/" : `/${locale}`,
     tag: `alert-${alert.id}`,

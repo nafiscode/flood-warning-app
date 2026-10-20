@@ -29,6 +29,12 @@ export type PublicAlert = {
    * alert (spec section 15).
    */
   release: DamRelease | null;
+  /**
+   * A drill the admins are sending on purpose (A10, the owner on 20 Oct). It keeps its level
+   * badge, because the whole point is that it looks like the real thing - and every screen that
+   * shows it must say, in words, that it is a drill and that nothing is being asked.
+   */
+  drill?: boolean;
 };
 
 export type DamRelease = {
@@ -147,6 +153,7 @@ export function toPublicAlert(row: Record<string, unknown>): PublicAlert | null 
     source: typeof row.source === "string" && row.source !== "" ? row.source : null,
     tambons: row.tambons.map(String),
     auto: isAutoAlarm(row.details),
+    drill: row.drill === true,
     release: toRelease(row.details),
   };
 }

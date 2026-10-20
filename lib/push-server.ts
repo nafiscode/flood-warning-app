@@ -35,6 +35,13 @@ const YOUR_AREA: Record<string, string> = {
   en: en.alert.yourArea,
 };
 const yourArea = (locale: string) => YOUR_AREA[locale] ?? YOUR_AREA.th!;
+/** "Drill": said before the level, so a sent drill cannot be read as the real thing. */
+const DRILL_TAG: Record<string, string> = {
+  th: th.alert.drill.tag,
+  ms: ms.alert.drill.tag,
+  en: en.alert.drill.tag,
+};
+const drillTag = (locale: string) => DRILL_TAG[locale] ?? DRILL_TAG.th!;
 
 export type PushOutcome = { sent: number; failed: number; gone: number } | { skipped: string };
 
@@ -65,10 +72,14 @@ export async function pushAlert(supabase: SupabaseClient, alertId: string): Prom
     if (!configured()) return { skipped: "no_keys" };
     const { data: alert } = await supabase
       .from("alerts")
-      .select("id, level, messages, is_drill")
+      .select("id, level, messages, is_drill, drill_audience")
       .eq("id", alertId)
       .maybeSingle();
-    if (!alert || alert.is_drill) return { skipped: "drill_or_gone" };
+    // A drill is pushed only when an audience was ticked for it; the database narrows the
+    // addresses to that audience, and refuses the silent drill all over again.
+    const audience = (alert?.drill_audience ?? []) as string[];
+    const drill = alert?.is_drill === true;
+    if (!alert || (drill && audience.length === 0)) return { skipped: "drill_or_gone" };
     const { data: targets, error } = await supabase.rpc("push_targets_for_alert", {
       p_alert: alertId,
     });
@@ -80,7 +91,13 @@ export async function pushAlert(supabase: SupabaseClient, alertId: string): Prom
     const queue = [...(targets as Target[])];
     const worker = async () => {
       for (let t = queue.pop(); t; t = queue.pop()) {
-        const payload = alertPayload(alert as PushAlert, t.locale, levelName, yourArea(t.locale));
+        const payload = alertPayload(
+          { ...(alert as PushAlert), drill },
+          t.locale,
+          levelName,
+          yourArea(t.locale),
+          drillTag(t.locale),
+        );
         if (!payload) continue;
         try {
           await webpush.sendNotification(

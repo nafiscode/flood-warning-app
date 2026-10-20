@@ -381,7 +381,7 @@ Built 14 Oct 2026 (`/authority/field-rescue`, `/admin/field-rescues`). For peopl
 - The alert goes out by web push and LINE, and the map updates within 1 minute.
 - Admins can supersede, extend or cancel it. Full history is kept.
 
-**Built (13 Oct 2026):** `/admin/alerts`. The words come only from `alert_templates` (the publish function takes a template id, never text); the admin's note follows the template's reason, untranslated. The next update is chosen as a wait in hours. Until the launch switch is on the admin chooses at the review step between a **drill**, hidden from the public by row-level security, and a real alert; it starts on drill. Push and LINE delivery, and with them real recipient and quota figures, arrive with A7.
+**Built (13 Oct 2026):** `/admin/alerts`. The words come only from `alert_templates` (the publish function takes a template id, never text); the admin's note follows the template's reason, untranslated. The next update is chosen as a wait in hours. Until the launch switch is on the admin chooses at the review step between a **drill**, hidden from the public by row-level security, and a real alert; it starts on drill. **Since 21 Oct 2026 there is a third choice: a drill that is sent.** The admin ticks who receives it - the admins, the verified rescue teams, every verified unit, everyone in the chosen area, one or several - and it goes down the real road, with the real sound, so the system can be shown to work before the season. Its words are not the template's: the database replaces them with a reviewed drill message saying that it is a drill, that there is no hazard, that nothing need be done, and what the real one would have said. The level badge stays (safety rule 3) but the level's "what to do" line is not shown. A sent drill is readable only by its audience; a drill of any kind still never moves `tambon_level`, never suppresses the automated alarm and is never counted in the usage figures. The area chooser gains **"everywhere people use Jaga"** - every tambon that is somebody's home or watched place, worked out on the server. Push and LINE delivery, and with them real recipient and quota figures, arrive with A7.
 
 ### 6.3 Signal dashboard (advisory only)
 For each warning zone:
@@ -504,7 +504,8 @@ Admins decide. The system never auto-publishes, with one exception (owner, 14 Oc
   - `expected_onset_window`, `expected_return_window`
   - `superseded_by`, `cancelled_at`
   - `signals_snapshot` (jsonb)
-  - `is_drill` (default false; a drill is readable by admins only), `template_id`
+  - `is_drill` (default false; a silent drill is readable by admins only), `template_id`
+  - `drill_audience text[]` (empty on a real alert and on a silent drill; otherwise any of `admins`, `rescue`, `units`, `everyone`, and the drill is readable by and sent to exactly those)
 - `alert_templates`: `code`, `hazard_type`, `level`, `label`, `reason` and `messages` per language (`{area}` is filled with the tambons named), `active`. Admins read; only the super admin writes.
 - `alert_tambons`: links alerts to tambons.
 - `alert_deliveries`: `alert_id`, `channel`, `recipients`, `line_messages_used`, `status`, `sent_at`.
@@ -583,6 +584,8 @@ These tables are created in phase A11 only, not with the initial schema.
 | Authority org name and official phone | read only if `public_contact_opt_in` | same | read | read |
 | Any personal phone number | never | own | as above, logged | as above, logged |
 | Coverage / responsibility map | none | none | read | read |
+| Which tambons Jaga's users are in (`tambons_with_people()`, 21 Oct) | none | none | none | read, admin only - it is the area tick for a drill, and it says where people are |
+| A drill that is sent | only one sent to everyone | only one sent to everyone | only one sent to their own kind of unit, within coverage | read, all |
 | Audit log | none | none | none | read |
 | App usage counts (install code, chosen tambon, rough city, device; 14 Oct) | none | none | none | counts only, via `admin_usage()`; never one phone's row |
 | Ratings and feedback (section 17) | send; read the approved comments and the published figures | send; read and delete own, published or not; read the approved comments | same as a user | read all, triage, approve or refuse for the public page; the contact given for a reply is shown on a logged tap |

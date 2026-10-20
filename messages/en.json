@@ -204,7 +204,12 @@
         }
       }
     },
-    "yourArea": "your area"
+    "yourArea": "your area",
+    "drill": {
+      "tag": "Drill",
+      "note": "This is a drill run by the admins, not a real event, and you do not need to do anything.",
+      "why": "The admins are testing whether alerts reach everyone."
+    }
   },
   "sos": {
     "label": "SOS",
@@ -2809,7 +2814,9 @@
         "mapCount": "{count} tambons chosen",
         "mapLocked": "This tambon is ticked through its whole district or province. Untick that in the list.",
         "mapFailed": "The map could not be loaded. Use the list below.",
-        "unavailable": "The list of areas could not be loaded. Try again."
+        "unavailable": "The list of areas could not be loaded. Try again.",
+        "people": "Everywhere people use Jaga",
+        "peopleHint": "Every tambon that is somebody's home or watched place. Right for a drill: nobody is drilled in an empty tambon."
       },
       "note": {
         "label": "More detail (optional)",
@@ -2859,7 +2866,9 @@
         "people": "{count, plural, one {# person has} other {# people have}} a home or a watched place in this area",
         "detail": "Homes {homes} · watched places {watched}",
         "channels": "Device notifications: {push} · LINE connected: {line}",
-        "notYet": "Phone notifications and LINE reach only the people who turned them on. Everyone else sees the alert when they open the app, on the map and in the bell."
+        "notYet": "Phone notifications and LINE reach only the people who turned them on. Everyone else sees the alert when they open the app, on the map and in the bell.",
+        "drillTitle": "This drill reaches",
+        "insteadOf": "A real alert for the same area would reach {count} people."
       },
       "quota": "LINE quota this month after sending: {after} of {limit}",
       "quotaOver": "Over this month's LINE quota: {after} of {limit}",
@@ -2875,11 +2884,28 @@
       },
       "mode": {
         "legend": "Drill or real alert",
-        "drill": "Drill",
-        "drillHint": "The public does not see it; nothing rings.",
+        "drill": "Drill, sent to nobody",
+        "drillHint": "The public cannot see it and no notification leaves. For testing in the console.",
         "real": "Real alert",
-        "realHint": "Shown on the map, the home screen and the bell of everyone in the area, and sent by phone notification and LINE, even though the service is not switched on yet."
-      }
+        "realHint": "On the map, the home screen and the bell of everyone in the area, with push and LINE, even before the service is switched on.",
+        "drillSent": "Drill, and sent",
+        "drillSentHint": "Really sent, by push and LINE, with the sound of a real alert - but the words say plainly that it is a drill and ask nothing of anyone."
+      },
+      "audience": {
+        "legend": "Who this drill goes to",
+        "hint": "More than one may be ticked. Admins and units are told wherever they are; everyone in the area goes down the same road as a real alert.",
+        "admins": "Admins",
+        "adminsHint": "Every Jaga admin.",
+        "rescue": "Rescue teams",
+        "rescueHint": "Verified units that carry out rescues and cover the chosen area.",
+        "units": "All verified units",
+        "unitsHint": "Every verified authority unit covering the chosen area, not only the rescue ones.",
+        "everyone": "Everyone in the area",
+        "everyoneHint": "Everyone whose home or watched place is in the chosen area. One message each, however many places they watch.",
+        "none": "Tick at least one, or nobody receives this drill."
+      },
+      "drillSent": "This drill will really be sent. It arrives with the sound of a real alert, and its words say it is a drill, that there is no hazard, and that nothing need be done.",
+      "publishDrillSent": "Send the drill"
     },
     "auto": {
       "title": "Automatic alarms",

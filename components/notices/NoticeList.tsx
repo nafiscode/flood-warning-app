@@ -2,6 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
+import { DrillMark } from "@/components/alerts/DrillMark";
 import { ClockIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { alertWords } from "@/lib/alert-words";
@@ -76,7 +77,8 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         <p className="font-medium">{where}</p>
       )}
       {/* The line above says which of the person's places; the words say "your area", not the
-          alert's whole list of tambons. */}
+          alert's whole list of tambons. A drill says what it is before it says anything else. */}
+      {item.kind === "alert" && item.drill && <DrillMark />}
       {item.kind === "alert" && <p>{alertWords(item.messages, locale, t("yourArea"))}</p>}
       {item.kind === "alertEnded" && <p>{t("ended")}</p>}
       {item.kind === "announcement" && (

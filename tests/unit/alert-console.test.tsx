@@ -56,6 +56,7 @@ describe("the area an alert names", () => {
       districts: [],
       tambons: ["900101"],
       zones: [],
+      people: false,
     });
   });
 });
@@ -212,7 +213,9 @@ describe("the review step", () => {
     const { container } = renderWithIntl(form(), "en");
     fireEvent.click(container.querySelector("[data-review]")!);
     await waitFor(() => expect(container.querySelector("[data-publish]")).not.toBeNull());
-    const real = container.querySelector<HTMLInputElement>("input[name='mode'][value='real']")!;
+    const real = container.querySelector<HTMLInputElement>(
+      "input[name='modeChoice'][value='real']",
+    )!;
     expect(real.checked).toBe(false);
     expect(container.querySelector("[data-publish]")!.textContent).toBe("Save as a drill");
     fireEvent.click(real);
@@ -226,7 +229,7 @@ describe("the review step", () => {
     const live = renderWithIntl(form(), "en");
     fireEvent.click(live.container.querySelector("[data-review]")!);
     await waitFor(() => expect(live.container.querySelector("[data-publish]")).not.toBeNull());
-    expect(live.container.querySelector("input[type='radio'][name='mode']")).toBeNull();
+    expect(live.container.querySelector("input[type='radio'][name='modeChoice']")).toBeNull();
     expect(
       live.container.querySelector<HTMLInputElement>("input[type='hidden'][name='mode']")!.value,
     ).toBe("real");

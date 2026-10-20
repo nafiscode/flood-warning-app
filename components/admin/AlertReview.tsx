@@ -4,7 +4,14 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { DualTime } from "@/components/admin/DualTime";
-import { lineQuotaAfter, toPreview, updateHours, type AlertPreview } from "@/lib/alert-console";
+import {
+  DRILL_AUDIENCES,
+  lineQuotaAfter,
+  toPreview,
+  updateHours,
+  type AlertPreview,
+  type DrillAudience,
+} from "@/lib/alert-console";
 import { buttonPrimary, buttonSecondary, checkBox, checkRow, errorNotice, hint } from "@/lib/ui";
 
 type State =
@@ -24,13 +31,20 @@ const LOCALES = ["th", "ms", "en"] as const;
  *
  * It sits inside the form and reads the form's own fields, so the form stays plain HTML.
  */
+type Mode = "drill" | "drillSent" | "real";
+
 export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
   const t = useTranslations("alertConsole.review");
   const root = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State>({ kind: "idle" });
-  // Before launch the admin chooses, each time, between a drill nobody else sees and a real
-  // alert (the owner, 13 Oct). It starts on drill, so a real one is never sent by default.
-  const [chosen, setChosen] = useState<"drill" | "real">("drill");
+  /*
+   * Before launch the admin chooses, each time, between a drill nobody else sees and a real
+   * alert (the owner, 13 Oct), and since 20 Oct between those and a drill that is sent: the
+   * same road, the same sound, with words that say it is a drill. It starts on the silent
+   * drill, so neither a real alert nor a drill anybody receives is ever the default.
+   */
+  const [chosen, setChosen] = useState<Mode>("drill");
+  const [audience, setAudience] = useState<DrillAudience[]>([]);
 
   useEffect(() => {
     const form = root.current?.closest("form");
@@ -48,7 +62,7 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
     };
   }, []);
 
-  async function review() {
+  async function review(aud: DrillAudience[] = audience) {
     const form = root.current?.closest("form");
     if (!form) return;
     const data = new FormData(form);
@@ -65,7 +79,10 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
           district: data.getAll("district"),
           tambon: data.getAll("tambon"),
           zone: data.getAll("zone"),
+          people: data.getAll("people"),
           note: data.get("note"),
+          // So the words on the screen are the words that will be sent, drill or not.
+          drillAudience: aud,
         }),
       });
       const body = (await response.json()) as {
@@ -92,8 +109,33 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
 
   const ready = state.kind === "ready" ? state : null;
   // Replacing an alert keeps its kind: a drill never takes a real alert off the map.
-  const mode = fixedMode ?? (ready?.launched ? "real" : chosen);
+  const mode: Mode = fixedMode ?? (ready?.launched ? "real" : chosen);
   const canChoose = !!ready && !fixedMode && !ready.launched;
+  const sent = mode === "drillSent";
+  const drill = mode !== "real";
+
+  /*
+   * Changing who a drill goes to changes the words and the count, so the review is asked for
+   * again rather than left standing: nothing may be published that was not on the screen.
+   */
+  function choose(next: Mode) {
+    const wasSent = chosen === "drillSent";
+    const nowSent = next === "drillSent";
+    setChosen(next);
+    const aud = nowSent ? (audience.length > 0 ? audience : ["admins" as const]) : [];
+    setAudience(aud);
+    // Only a change between sent and not sent changes the words; drill and real share them,
+    // so switching between those two leaves the review standing, as it always has.
+    if (wasSent !== nowSent && state.kind === "ready") void review(aud);
+  }
+
+  function toggle(who: DrillAudience) {
+    const aud = audience.includes(who)
+      ? audience.filter((a) => a !== who)
+      : DRILL_AUDIENCES.filter((a) => a === who || audience.includes(a));
+    setAudience(aud);
+    if (state.kind === "ready") void review(aud);
+  }
   const quota = ready ? lineQuotaAfter(ready.preview) : null;
 
   return (
@@ -101,7 +143,7 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
       {!ready && (
         <button
           type="button"
-          onClick={review}
+          onClick={() => void review()}
           disabled={state.kind === "loading"}
           className={buttonSecondary}
           data-review="true"
@@ -124,14 +166,14 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
           {canChoose ? (
             <fieldset className="flex flex-col rounded-xl border-2 border-jaga-edge px-3 py-1">
               <legend className="px-1 font-bold">{t("mode.legend")}</legend>
-              {(["drill", "real"] as const).map((m) => (
+              {(["drill", "drillSent", "real"] as const).map((m) => (
                 <label key={m} className={checkRow}>
                   <input
                     type="radio"
-                    name="mode"
+                    name="modeChoice"
                     value={m}
                     checked={chosen === m}
-                    onChange={() => setChosen(m)}
+                    onChange={() => choose(m)}
                     className={checkBox}
                   />
                   <span>
@@ -141,11 +183,44 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
                 </label>
               ))}
             </fieldset>
-          ) : (
-            <input type="hidden" name="mode" value={mode} />
+          ) : null}
+          {/* What the server reads. "A drill that is sent" is still a drill to everything else. */}
+          <input type="hidden" name="mode" value={drill ? "drill" : "real"} />
+          {sent &&
+            audience.map((who) => (
+              <input key={who} type="hidden" name="drillAudience" value={who} />
+            ))}
+
+          {canChoose && sent && (
+            <fieldset
+              className="flex flex-col rounded-xl border-2 border-jaga-edge px-3 py-1"
+              data-drill-audience={audience.join(" ")}
+            >
+              <legend className="px-1 font-bold">{t("audience.legend")}</legend>
+              <p className={hint}>{t("audience.hint")}</p>
+              {DRILL_AUDIENCES.map((who) => (
+                <label key={who} className={checkRow}>
+                  <input
+                    type="checkbox"
+                    checked={audience.includes(who)}
+                    onChange={() => toggle(who)}
+                    className={checkBox}
+                  />
+                  <span>
+                    <span className="font-bold">{t(`audience.${who}`)}</span>
+                    <span className={`block ${hint}`}>{t(`audience.${who}Hint`)}</span>
+                  </span>
+                </label>
+              ))}
+              {audience.length === 0 && (
+                <p role="alert" className={errorNotice}>
+                  {t("audience.none")}
+                </p>
+              )}
+            </fieldset>
           )}
-          <p className={errorNotice} data-drill={mode === "drill"}>
-            {mode === "drill" ? t("drill") : t("real")}
+          <p className={errorNotice} data-drill={drill} data-drill-sent={sent}>
+            {mode === "real" ? t("real") : sent ? t("drillSent") : t("drill")}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <AlertBadge level={ready.preview.level} />
@@ -173,20 +248,40 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
           ))}
 
           <div className="flex flex-col gap-1 rounded-xl bg-jaga-ground p-3">
-            <p className="font-bold">{t("reach.title")}</p>
-            <p>{t("reach.people", { count: ready.preview.reach.people })}</p>
-            <p className={hint}>
-              {t("reach.detail", {
-                homes: ready.preview.reach.homes,
-                watched: ready.preview.reach.watched,
-              })}
-            </p>
-            <p className={hint}>
-              {t("reach.channels", {
-                push: ready.preview.reach.push,
-                line: ready.preview.reach.line,
-              })}
-            </p>
+            <p className="font-bold">{sent ? t("reach.drillTitle") : t("reach.title")}</p>
+            {sent && ready.preview.drillReach ? (
+              <>
+                {/* Who is actually about to be told, which is not the area's head count. */}
+                <p data-drill-reach={ready.preview.drillReach.people}>
+                  {t("reach.people", { count: ready.preview.drillReach.people })}
+                </p>
+                <p className={hint}>
+                  {t("reach.channels", {
+                    push: ready.preview.drillReach.push,
+                    line: ready.preview.drillReach.line,
+                  })}
+                </p>
+                <p className={hint}>
+                  {t("reach.insteadOf", { count: ready.preview.reach.people })}
+                </p>
+              </>
+            ) : (
+              <>
+                <p>{t("reach.people", { count: ready.preview.reach.people })}</p>
+                <p className={hint}>
+                  {t("reach.detail", {
+                    homes: ready.preview.reach.homes,
+                    watched: ready.preview.reach.watched,
+                  })}
+                </p>
+                <p className={hint}>
+                  {t("reach.channels", {
+                    push: ready.preview.reach.push,
+                    line: ready.preview.reach.line,
+                  })}
+                </p>
+              </>
+            )}
             {quota && (
               <p className={quota.over ? "font-bold" : hint}>
                 {t(quota.over ? "quotaOver" : "quota", { after: quota.after, limit: quota.limit })}
@@ -214,8 +309,13 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
             </label>
           )}
 
-          <button type="submit" className={buttonPrimary} data-publish="true">
-            {mode === "drill" ? t("publishDrill") : t("publish")}
+          <button
+            type="submit"
+            className={buttonPrimary}
+            disabled={sent && audience.length === 0}
+            data-publish="true"
+          >
+            {mode === "real" ? t("publish") : sent ? t("publishDrillSent") : t("publishDrill")}
           </button>
           <button
             type="button"

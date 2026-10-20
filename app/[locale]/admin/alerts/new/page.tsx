@@ -154,6 +154,20 @@ export default async function NewAlert({
             mapFailed: t("form.area.mapFailed"),
           }}
         />
+        {/*
+          Everywhere somebody is listening. Worked out on the server when the form is sent, so
+          the browser is never handed a map of where Jaga's users live; it is mostly for a
+          drill, where an empty tambon is a wasted one, but it is an area like any other.
+        */}
+        <div className="flex flex-col border-t border-jaga-line pt-2">
+          <label className={checkRow}>
+            <input type="checkbox" name="people" value="yes" className={checkBox} />
+            <span>
+              <span className="font-bold">{t("form.area.people")}</span>
+              <span className={`block ${hint}`}>{t("form.area.peopleHint")}</span>
+            </span>
+          </label>
+        </div>
         {areas.zones.length > 0 && (
           <div className="flex flex-col border-t border-jaga-line pt-2">
             <p className="font-bold">{t("form.area.zones")}</p>

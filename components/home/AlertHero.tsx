@@ -1,6 +1,7 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
+import { DrillMark } from "@/components/alerts/DrillMark";
 import { AlertStatus } from "@/components/alerts/AlertStatus";
 import { ClockIcon } from "@/components/icons";
 import type { AlertLevel } from "@/lib/brand/tokens";
@@ -58,7 +59,16 @@ export function AlertDetails({ alert, areaName }: { alert: PublicAlert; areaName
   const text = alertWords(alert.messages, locale, areaName || tAlert("yourArea"));
   return (
     <>
-      <p className="text-h3 font-bold">{tAlert(`summary.${alert.level}`)}</p>
+      {/*
+        First, before anything else: a drill says so. The level's own "what to do" line is an
+        instruction ("move to higher ground now"), so a drill does not get one at all - its
+        badge still shows the level, and its words say what the real one would have asked.
+      */}
+      {alert.drill ? (
+        <DrillMark why />
+      ) : (
+        <p className="text-h3 font-bold">{tAlert(`summary.${alert.level}`)}</p>
+      )}
       {text !== "" && <p lang={alert.messages[locale] ? locale : "th"}>{text}</p>}
       {(alert.onset || alert.returnWindow) && (
         <div className="flex flex-col gap-2 rounded-xl bg-jaga-ground p-3" data-estimate="true">

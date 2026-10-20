@@ -91,13 +91,28 @@ export async function previewAlert(
   template: string,
   tambons: string[],
   note: string,
+  /** Ticked audiences: with any of them the preview returns the drill's words, not the template's. */
+  drillAudience: readonly string[] = [],
 ): Promise<AlertPreview | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_alert_preview", {
     p_template: template,
     p_tambons: tambons,
     p_note: note || null,
+    p_drill_audience: drillAudience,
   });
   if (error) throw new Error(error.message);
   return toPreview(data);
+}
+
+/**
+ * The tambons that are somebody's home or watched place, for the "everywhere people use Jaga"
+ * tick in the area chooser. Admin only, and worked out in the database: the browser is never
+ * handed a map of where Jaga's users live.
+ */
+export async function peopleTambons(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("tambons_with_people");
+  if (error) throw new Error(error.message);
+  return (Array.isArray(data) ? data : []).map(String).filter((c) => /^[0-9]{6}$/.test(c));
 }

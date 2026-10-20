@@ -37,6 +37,9 @@ const localeOf = (value: string): Locale => (value === "ms" || value === "en" ? 
 const wordsOf = (locale: Locale): LineWords => ALL[locale].line;
 const levelOf = (locale: Locale, level: string) =>
   (ALL[locale].alert.level as Record<string, string>)[level] ?? level;
+/** "Drill · Warning": a sent drill says what it is before it says the level. */
+const headOf = (locale: Locale, level: string, drill: boolean) =>
+  drill ? `${ALL[locale].alert.drill.tag} · ${levelOf(locale, level)}` : levelOf(locale, level);
 
 const accessToken = () => (process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN ?? "").trim();
 const channelSecret = () => (process.env.LINE_MESSAGING_CHANNEL_SECRET ?? "").trim();
@@ -124,10 +127,13 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
     if (!accessToken()) return { skipped: "no_token" };
     const { data: alert } = await supabase
       .from("alerts")
-      .select("id, level, messages, next_update_at, is_drill, template_id")
+      .select("id, level, messages, next_update_at, is_drill, template_id, drill_audience")
       .eq("id", alertId)
       .maybeSingle();
-    if (!alert || alert.is_drill) return { skipped: "drill_or_gone" };
+    // Only a drill with an audience goes out; the database narrows the ids to that audience.
+    const drill = alert?.is_drill === true;
+    const audience = (alert?.drill_audience ?? []) as string[];
+    if (!alert || (drill && audience.length === 0)) return { skipped: "drill_or_gone" };
     const { data: targets, error } = await supabase.rpc("line_targets_for_alert", {
       p_alert: alertId,
     });
@@ -164,11 +170,18 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
           level: alert.level as string,
           messages: alert.messages as Record<string, string>,
           nextUpdateAt: alert.next_update_at as string | null,
-          template: (template?.messages as Record<string, string> | undefined) ?? null,
+          /*
+           * A sent drill keeps its own stored words. The reviewed template is the real thing's
+           * instructions, and personalising them here would put "move to higher ground" into
+           * the body of a drill.
+           */
+          template: drill
+            ? null
+            : ((template?.messages as Record<string, string> | undefined) ?? null),
           tambons: tambons ?? 0,
         },
         locale,
-        levelOf(locale, alert.level as string),
+        headOf(locale, alert.level as string, drill),
         wordsOf(locale),
         siteUrl(),
       );

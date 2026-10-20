@@ -2,8 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { after } from "next/server";
-import { readAreas, zoneMap } from "@/lib/admin-alerts";
-import { areaChoice, chosenTambons, isUuid, updateHours, windowOf } from "@/lib/alert-console";
+import { peopleTambons, readAreas, zoneMap } from "@/lib/admin-alerts";
+import {
+  areaChoice,
+  chosenTambons,
+  drillAudience,
+  isUuid,
+  updateHours,
+  windowOf,
+} from "@/lib/alert-console";
 import { localePath } from "@/lib/auth";
 import { inService } from "@/lib/features";
 import { lineAlert } from "@/lib/line-server";
@@ -21,6 +28,10 @@ const HOUR = 3_600_000;
  * Until the service is switched on at launch an alert is a drill, which the public cannot see,
  * unless the admin chose "real alert" at the review step (the owner, 13 Oct: real alerts may be
  * tested before launch). Drill is the default, so a real one is always a deliberate choice.
+ *
+ * A drill may also be sent (the owner, 20 Oct): the admin ticks who is to receive it, and the
+ * database swaps the template's instructions for the drill message before anything leaves. The
+ * ticks mean nothing on a real alert, and are dropped here as well as refused there.
  */
 export async function publishAlert(locale: string, form: FormData) {
   const supersedes = isUuid(form.get("supersedes")) ? String(form.get("supersedes")) : null;
@@ -35,10 +46,12 @@ export async function publishAlert(locale: string, form: FormData) {
   if (!onset.ok || !returning.ok) redirect(`${back}window`);
 
   const areas = await readAreas();
+  const choice = areaChoice((name) => form.getAll(name));
   const tambons = chosenTambons(
     areas.tambons.map((t) => t.code),
-    areaChoice((name) => form.getAll(name)),
+    choice,
     zoneMap(areas),
+    choice.people ? await peopleTambons() : [],
   );
   if (tambons.length === 0) redirect(`${back}area`);
 
@@ -47,6 +60,9 @@ export async function publishAlert(locale: string, form: FormData) {
   // alert it replaces; the database refuses a mismatch.
   const mode = form.get("mode");
   const drill = supersedes ? mode === "drill" : inService() ? false : mode !== "real";
+  // Only a drill has an audience, and only a sent one has a non-empty list.
+  const audience = drill ? drillAudience(form.getAll("drillAudience")) : [];
+  const sent = audience.length > 0;
 
   const supabase = await createClient();
   const { data: published, error } = await supabase.rpc("admin_publish_alert", {
@@ -61,6 +77,7 @@ export async function publishAlert(locale: string, form: FormData) {
     p_supersedes: supersedes,
     p_drill: drill,
     p_confirm_evacuate: form.get("confirmEvacuate") === "yes",
+    p_drill_audience: audience,
   });
   if (error) {
     const why =
@@ -75,10 +92,12 @@ export async function publishAlert(locale: string, form: FormData) {
   }
   /*
    * The phones following these tambons are told (A7). After the answer has gone back to the
-   * admin, so a slow push service never holds up the publishing; a drill is not pushed, and the
-   * alert stands in the app, on the map and in the bell whether or not a notification leaves.
+   * admin, so a slow push service never holds up the publishing; a silent drill is not pushed,
+   * and the alert stands in the app, on the map and in the bell whether or not a notification
+   * leaves. A sent drill goes down exactly this road - that is what it is for - and the
+   * database narrows the addresses to the audience that was ticked.
    */
-  if (!drill && typeof published === "string") {
+  if ((!drill || sent) && typeof published === "string") {
     after(async () => {
       // Two roads, neither waiting for the other: web push, and LINE for those who use it.
       await Promise.all([pushAlert(supabase, published), lineAlert(supabase, published)]);

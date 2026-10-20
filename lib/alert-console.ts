@@ -115,6 +115,19 @@ export function toTemplate(r: Row): AlertTemplate | null {
   };
 }
 
+/**
+ * Who a drill is sent to (A10, the owner on 20 Oct). An empty list is the drill there has
+ * always been: published, kept, and shown to nobody. The admin may tick several; they add up.
+ */
+export const DRILL_AUDIENCES = ["admins", "rescue", "units", "everyone"] as const;
+export type DrillAudience = (typeof DRILL_AUDIENCES)[number];
+
+/** The ticked audiences, in the order above, with anything unknown dropped. */
+export function drillAudience(values: unknown[]): DrillAudience[] {
+  const ticked = new Set(values.map(String));
+  return DRILL_AUDIENCES.filter((a) => ticked.has(a));
+}
+
 /** What the review step shows before anything is sent. */
 export type AlertPreview = {
   level: AlertLevel;
@@ -126,6 +139,12 @@ export type AlertPreview = {
   lineQuota: { used: number; limit: number } | null;
   /** Alerts already in force that share a tambon with this one. */
   overlaps: { id: string; level: AlertLevel; drill: boolean; shared: number }[];
+  /**
+   * Who a sent drill would reach, which is not the alert's reach unless the audience is
+   * everyone: the admins and the covering teams are told wherever they live. Null when no
+   * audience is ticked, so there is nothing to send.
+   */
+  drillReach: { people: number; push: number; line: number } | null;
 };
 
 export function toPreview(v: unknown): AlertPreview | null {
@@ -157,6 +176,13 @@ export function toPreview(v: unknown): AlertPreview | null {
         drill: o.drill === true,
         shared: n(o.shared),
       })),
+    drillReach: r.drillReach
+      ? {
+          people: n((r.drillReach as Row).people),
+          push: n((r.drillReach as Row).push),
+          line: n((r.drillReach as Row).line),
+        }
+      : null,
   };
 }
 
@@ -165,10 +191,13 @@ export function toPreview(v: unknown): AlertPreview | null {
  * tracked yet; "over" is a warning for the admin, never a reason to hold an alert back.
  */
 export function lineQuotaAfter(
-  preview: Pick<AlertPreview, "reach" | "lineQuota">,
+  preview: Pick<AlertPreview, "reach" | "lineQuota" | "drillReach">,
 ): { after: number; limit: number; over: boolean } | null {
   if (!preview.lineQuota || preview.lineQuota.limit <= 0) return null;
-  const after = preview.lineQuota.used + preview.reach.line;
+  // A drill spends the quota too, and a drill to the teams spends much less than the alert
+  // would: the admin should see the number that is about to be spent, not the other one.
+  const sending = preview.drillReach?.line ?? preview.reach.line;
+  const after = preview.lineQuota.used + sending;
   return { after, limit: preview.lineQuota.limit, over: after > preview.lineQuota.limit };
 }
 
@@ -178,6 +207,12 @@ export type AreaChoice = {
   districts: string[];
   tambons: string[];
   zones: string[];
+  /**
+   * "Everywhere people use Jaga": every tambon that is somebody's home or watched place. The
+   * browser is never given that list - the form sends a tick and the server works out the
+   * codes - so this is a boolean here and codes by the time chosenTambons sees it.
+   */
+  people?: boolean;
 };
 
 /**
@@ -189,11 +224,14 @@ export function chosenTambons(
   all: readonly string[],
   choice: AreaChoice,
   zoneTambons: Readonly<Record<string, readonly string[]>> = {},
+  /** The codes the "everywhere people use Jaga" tick comes to, read from the database. */
+  peopleTambons: readonly string[] = [],
 ): string[] {
   const provinces = new Set(choice.provinces);
   const districts = new Set(choice.districts);
   const single = new Set(choice.tambons);
   for (const zone of choice.zones) for (const code of zoneTambons[zone] ?? []) single.add(code);
+  if (choice.people) for (const code of peopleTambons) single.add(code);
   return all
     .filter(
       (code) =>
@@ -209,6 +247,7 @@ export function areaChoice(values: (name: string) => unknown[]): AreaChoice {
     districts: list("district"),
     tambons: list("tambon"),
     zones: list("zone"),
+    people: values("people").some((v) => String(v) === "yes"),
   };
 }
 
