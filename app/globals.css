@@ -796,8 +796,14 @@
     grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
     align-items: start;
     gap: 0.75rem 1rem;
-  }
-  [data-console-rail] {
+    /*
+     * The left rail alone stops scrolling inside itself - it is a full-width row now and the
+     * page scrolls to it. Never the answer panel beside the map: that one keeps its own height
+     * and its own scrollbar, and when it did not, the legend inside it (1,035 px of key and
+     * reservoir path) hung out of the bottom of the page's box, so the hotline bar and the
+     * links below it stopped where the box thought the page ended - about a screen too early.
+     * The owner saw exactly that on an iPad Air held sideways.
+     */
     overflow: visible;
   }
   /*

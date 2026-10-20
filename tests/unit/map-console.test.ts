@@ -23,12 +23,7 @@ import {
   LIT_MAX,
   reportsAlarm,
 } from "@/lib/map-console";
-import {
-  bandFor,
-  CONSOLE_QUERY,
-  LAPTOP_QUERY,
-  TABLET_QUERY,
-} from "@/lib/console-view";
+import { bandFor, CONSOLE_QUERY, LAPTOP_QUERY, TABLET_QUERY } from "@/lib/console-view";
 import { contrastRatio } from "@/lib/brand/contrast";
 import { brand, darkBrand } from "@/lib/brand/tokens";
 import { SCENE_LOOKS, SCENES } from "@/lib/weather-scene";
@@ -299,8 +294,20 @@ describe("the console's arrangement", () => {
     expect(areas.slice(0, areas.indexOf(";"))).toContain('"rail   rail"');
     // No hover on a touch screen: the pin is the way a readout opens, and it is always there.
     expect(block).toMatch(/\[data-console-tile\] \[data-tile-pin\] \{\s*opacity: 1/);
+    /*
+     * Only the left rail stops scrolling inside itself. The answer panel beside the map keeps
+     * its own height and its own scrollbar: when it did not, the legend inside it hung out of
+     * the bottom of the page's box and the hotline bar, the links and the season outlook all
+     * stopped about a screen early (the owner, on an iPad Air held sideways, 21 Oct).
+     */
+    const rail = block.slice(block.indexOf('[data-console-area="rail"] {'));
+    expect(rail.slice(0, rail.indexOf("}"))).toContain("overflow: visible");
+    expect(block).not.toMatch(/\[data-console-rail\] \{\s*overflow: visible/);
+
     // Thumb-sized controls, where the laptop's are sized for a pointer.
-    expect(block).toMatch(/\[data-console-tile\] \[data-tile-card\] button \{\s*min-height: 2\.75rem/);
+    expect(block).toMatch(
+      /\[data-console-tile\] \[data-tile-card\] button \{\s*min-height: 2\.75rem/,
+    );
   });
 
   it("puts every screen in exactly one band", () => {
@@ -502,9 +509,7 @@ describe("the run a readout opens, and the marks it lights", () => {
     expect(damsLit(run).map((d) => d.code)).toEqual(["spilling", "full"]);
     // Nothing doing anything: the dam the chips and the home screen mean, and only that one.
     const main = dam({ code: "bang_lang" });
-    expect(damsLit(damRun([quiet, main], "bang_lang")).map((d) => d.code)).toEqual([
-      "bang_lang",
-    ]);
+    expect(damsLit(damRun([quiet, main], "bang_lang")).map((d) => d.code)).toEqual(["bang_lang"]);
     expect(damsLit([])).toEqual([]);
   });
 });
