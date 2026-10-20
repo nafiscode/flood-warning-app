@@ -2011,28 +2011,36 @@ export function DashboardView(props: DashboardViewProps) {
                         </button>
                       )}
                       {/*
-                       * The map on its own (the owner, 18 Oct). Drawn only on the console - a
-                       * phone's map is already as wide as the screen - and only on the way in:
-                       * once the map fills the screen the way back is in the panel beside it,
-                       * and a second button saying the same thing would only crowd the map.
+                       * The map on its own (the owner, 18 Oct for the console; 20 Oct for the
+                       * phone, where it is now the way to a map that takes one finger - in the
+                       * page the map leaves one-finger drags to the page, so that scrolling
+                       * past it works, and this is where you go to move it freely).
+                       *
+                       * On the way in only: once the map fills the screen the way back is the
+                       * button below, and on the console the panel beside it.
                        */}
                       {!full && (
-                        /*
-                         * The wrapper carries the display, not the button: `mapButton` already
-                         * sets `inline-flex`, and two display utilities of the same weight are
-                         * decided by their order in the stylesheet, not by the order they are
-                         * written - so `hidden` on the button would lose and it would show on a
-                         * phone. The same trap is written up on the weather chip in the header.
-                         */
-                        <span className="hidden console:contents">
+                        <button
+                          type="button"
+                          data-map-full-toggle="open"
+                          onClick={() => setFull(true)}
+                          className={mapButton}
+                        >
+                          <FullScreenIcon />
+                          <span className="sr-only sm:not-sr-only">{t("full.open")}</span>
+                        </button>
+                      )}
+                      {/* The way back out, drawn on the map itself where there is no panel. */}
+                      {full && (
+                        <span className="contents console:hidden">
                           <button
                             type="button"
-                            data-map-full-toggle="open"
-                            onClick={() => setFull(true)}
+                            data-map-full-toggle="close"
+                            onClick={() => setFull(false)}
                             className={mapButton}
                           >
-                            <FullScreenIcon />
-                            {t("full.open")}
+                            <BackIcon size={20} />
+                            {t("phone.fullExit")}
                           </button>
                         </span>
                       )}
@@ -2105,6 +2113,16 @@ export function DashboardView(props: DashboardViewProps) {
                     boundsKey={focus?.key ?? (askedBox ? 1 : 0)}
                     onSelect={setSelection}
                     text={{ loading: t("loading"), failed: t("failed") }}
+                    /*
+                     * Inside a page that scrolls, one finger scrolls and two move the map (the
+                     * owner, 20 Oct). Not while the map fills the screen, where it is the page.
+                     */
+                    cooperative={phoneMap && !full}
+                    gestureText={{
+                      twoFingers: t("phone.twoFingers"),
+                      zoomCtrl: t("phone.zoomCtrl"),
+                      zoomCmd: t("phone.zoomCmd"),
+                    }}
                     gaugeWords={{ near: t("gauge.nearShort"), over: t("gauge.overShort") }}
                     peek={renderPeek}
                     mine={mine}

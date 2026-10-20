@@ -71,6 +71,7 @@ import {
   type Basemap,
   beforeBasemapLabels,
   createServiceAreaMap,
+  type GestureText,
   CAPITAL_LAYER,
   DISTRICT_LABEL_LAYER,
   TAMBON_LABEL_LAYER,
@@ -228,6 +229,13 @@ type Props = {
    * name twice on the map.
    */
   damText?: { spillway: string; outlet: string; locale: string };
+  /**
+   * The map is inside a page that scrolls, so one finger scrolls the page and two move the map
+   * (the owner, 20 Oct). False where the map has the screen to itself.
+   */
+  cooperative?: boolean;
+  /** What to say when a gesture is held back; read once, when the map is made. */
+  gestureText?: GestureText;
   /**
    * The names of the districts and tambons, which appear as the reader zooms in (lib/map.ts,
    * quietOverview). Left out, the map carries only the basemap's own names.
@@ -445,6 +453,8 @@ export function MapView({
   showMine = false,
   dams = [],
   damText = { spillway: "", outlet: "", locale: "th" },
+  cooperative = false,
+  gestureText,
   hazardUrl = null,
   basemap = "streets",
   scene = false,
@@ -502,6 +512,19 @@ export function MapView({
   // ground under our layers without making the map again (lib/map.ts, setBasemap).
   const basemapAtStart = useRef(basemap);
   const applied = useRef(basemap);
+  // MapLibre reads the words for a held-back gesture once, when the map is made.
+  const gestureAtStart = useRef(gestureText);
+  /*
+   * One finger scrolls the page and two move the map, wherever the map sits inside a page that
+   * scrolls (the owner, 20 Oct). Switched rather than set once: the same map becomes the
+   * console's and the full-screen one, and both of those want every gesture.
+   */
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready") return;
+    if (cooperative) m.cooperativeGestures.enable();
+    else m.cooperativeGestures.disable();
+  }, [cooperative, state]);
   useEffect(() => {
     const m = map.current;
     if (!m || state !== "ready" || applied.current === basemap) return;
@@ -1563,7 +1586,7 @@ export function MapView({
     applied.current = basemapAtStart.current;
     // A new map starts flat; the scene effect raises it again if 3D is chosen.
     sceneApplied.current = false;
-    createServiceAreaMap(container.current, basemapAtStart.current)
+    createServiceAreaMap(container.current, basemapAtStart.current, gestureAtStart.current)
       .then((created) => {
         if (cancelled) {
           created.remove();

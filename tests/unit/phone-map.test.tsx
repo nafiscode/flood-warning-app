@@ -1,6 +1,16 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+/*
+ * The map itself is stood in for: what matters here is which gestures it is handed, and the
+ * real one neither draws nor measures anything in jsdom.
+ */
+vi.mock("@/components/map/MapView", () => ({
+  MapView: ({ cooperative = false }: { cooperative?: boolean }) => (
+    <div data-map="true" data-cooperative={cooperative ? "yes" : "no"} />
+  ),
+}));
 import { BackToMap } from "@/components/map/BackToMap";
 import { DashboardView, type DashboardViewProps } from "@/components/map/DashboardView";
 import th from "@/messages/th.json";
@@ -127,6 +137,38 @@ describe("what explains the map is folded under it, never cut", () => {
   });
 });
 
+describe("one finger scrolls the page, two move the map", () => {
+  /*
+   * The owner, 20 Oct: scrolling past the map on a phone "just move the map instead of
+   * scrolling pass it". MapLibre's cooperative gestures hand `touch-action: pan-x pan-y` back
+   * to the browser, so the page scrolls under a one finger - and full screen, one tap away,
+   * gives the map every gesture again, because a map you cannot push with one finger is not a
+   * map you can read.
+   */
+  it("the map in the page gives one finger to the page; full screen takes it back", () => {
+    const c = dashboard();
+    const map = () => c.querySelector("[data-map]")?.getAttribute("data-cooperative");
+    const root = c.querySelector("[data-map-phone]") as HTMLElement;
+    expect(map()).toBe("yes");
+
+    fireEvent.click(c.querySelector('[data-map-full-toggle="open"]')!);
+    expect(root.dataset.mapFull).toBe("true");
+    expect(map()).toBe("no");
+
+    fireEvent.click(c.querySelector('[data-map-full-toggle="close"]')!);
+    expect(root.dataset.mapFull).toBeUndefined();
+    expect(map()).toBe("yes");
+  });
+
+  it("says what to do instead, in the reader's own words, and names the way out", () => {
+    // Never MapLibre's own English: the three strings are ours, in all three languages.
+    expect(th.map.phone.twoFingers).toContain("สองนิ้ว");
+    expect(th.map.phone.twoFingers).toContain(th.map.full.open);
+    expect(th.map.phone.zoomCtrl).toContain("Ctrl");
+    expect(th.map.phone.fullExit.length).toBeGreaterThan(0);
+  });
+});
+
 describe("back to the map", () => {
   it("is drawn only once the map has left the top of the screen", async () => {
     const frame = document.createElement("div");
@@ -195,6 +237,14 @@ describe("the phone's arrangement in app/globals.css", () => {
     // Under the measured header, not a guessed one, and above the card it scrolls over.
     expect(rule).toContain("var(--jaga-header");
     expect(rule).toContain("order: -1");
+  });
+
+  it("keeps the full-screen map clear of the hotlines (safety rule 4)", () => {
+    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const full = block.slice(block.indexOf("[data-map-phone][data-map-full] [data-map-frame]"));
+    expect(full.slice(0, full.indexOf("}"))).toContain("var(--jaga-hotlines");
+    // ...and the map is sized against the window, not a wrapper that has no height of its own.
+    expect(block).toMatch(/\[data-map-phone\]\[data-map-full\] \[data-map\] \{[^}]*100dvh/);
   });
 
   it("orders the blocks through the wrappers, which are display: contents", () => {

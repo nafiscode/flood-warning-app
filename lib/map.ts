@@ -524,9 +524,17 @@ async function registerPmtiles(maplibre: typeof import("maplibre-gl")): Promise<
   }
 }
 
+/**
+ * What the map says when it holds a gesture back, in the reader's own language. MapLibre reads
+ * these once, when the map is made, so they are given even on screens where the handler will
+ * never be switched on.
+ */
+export type GestureText = { twoFingers: string; zoomCtrl: string; zoomCmd: string };
+
 export async function createServiceAreaMap(
   container: HTMLElement,
   basemap: Basemap = "streets",
+  gestures?: GestureText,
 ): Promise<MapLibreMap> {
   chosen = basemap;
   scene = false;
@@ -546,7 +554,24 @@ export async function createServiceAreaMap(
     dragRotate: false,
     pitchWithRotate: false,
     attributionControl: { compact: true },
+    /*
+     * One finger scrolls the page, two fingers move the map (the owner, 20 Oct: scrolling past
+     * the map on a phone "just move the map instead of scrolling pass it"). The handler is
+     * created here and switched on only where the map sits inside a scrolling page - MapView
+     * does that - because what it really does is hand the browser back `touch-action: pan-x
+     * pan-y`, and a map that fills the screen wants every gesture for itself.
+     */
+    cooperativeGestures: true,
+    locale: gestures
+      ? {
+          "CooperativeGesturesHandler.MobileHelpText": gestures.twoFingers,
+          "CooperativeGesturesHandler.WindowsHelpText": gestures.zoomCtrl,
+          "CooperativeGesturesHandler.MacHelpText": gestures.zoomCmd,
+        }
+      : undefined,
   });
+  // Off until something asks for it: the console's map and the full-screen map take one finger.
+  map.cooperativeGestures.disable();
   map.touchZoomRotate.disableRotation();
   // Flat in 2D: a two-finger drag would otherwise tilt it (setScene turns this on in 3D).
   map.touchPitch.disable();

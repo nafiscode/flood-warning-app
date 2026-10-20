@@ -849,6 +849,32 @@
     padding-inline: 0.75rem;
     box-shadow: 0 2px 8px rgb(29 59 83 / 0.14);
   }
+  /*
+   * The map with the screen to itself, on a phone (the owner, 20 Oct). In the page the map
+   * leaves one-finger drags to the browser so that scrolling past it works, which is the right
+   * trade while it is one block among many - but a map you cannot push with one finger is not a
+   * map you can read, so this is one tap away from it, and here it takes every gesture back
+   * (components/map/MapView, the cooperative-gestures effect).
+   *
+   * It stops short of the hotline bar rather than covering it: the four numbers are reachable
+   * from every screen in Jaga, and a map is not a reason to make an exception (safety rule 4).
+   */
+  [data-map-phone][data-map-full] [data-map-frame] {
+    position: fixed;
+    inset: 0 0 var(--jaga-hotlines, 4.5rem) 0;
+    z-index: 25;
+  }
+  /* The window less the hotline bar, said outright: `height: 100%` would be measured against
+     MapView's own wrapper, which has no height of its own, and the map came out 2 px tall. */
+  [data-map-phone][data-map-full] [data-map] {
+    height: calc(100dvh - var(--jaga-hotlines, 4.5rem));
+    border-radius: 0;
+    border-inline: 0;
+  }
+  /* Nothing behind it moves while it is open. */
+  html:has([data-map-phone][data-map-full]) {
+    overflow: hidden;
+  }
   /* The map is what the reader came for, so it is what a "back to the map" lands on. */
   [data-map-phone] [data-map-frame] {
     scroll-margin-top: 1rem;

@@ -746,8 +746,23 @@ test.describe("the live map on a phone is untouched", () => {
     await expect(page.locator("[data-console-tiles]")).toBeHidden();
     const sky = page.locator("[data-console-sky]");
     if ((await sky.count()) > 0) await expect(sky).toBeHidden();
-    // The full-screen map is the console's; a phone's map is already as wide as the screen.
-    await expect(page.locator("[data-map-full-toggle]")).toBeHidden();
+    /*
+     * The full-screen map was the console's until 20 Oct, when the owner asked for scrolling
+     * past the map to work: in the page the map now leaves one-finger drags to the browser, so
+     * a phone needs somewhere the map takes them back. It is a drawing here, with its words
+     * read out, and it leads to a map that stops short of the hotlines.
+     */
+    const toFull = page.locator('[data-map-full-toggle="open"]');
+    await expect(toFull).toBeVisible();
+    await toFull.click();
+    const full = (await page.locator("[data-map]").boundingBox())!;
+    const dialled = page.locator('a[href="tel:1784"]');
+    const hotlines = (await dialled.boundingBox())!;
+    expect(full.height).toBeGreaterThan(400);
+    expect(full.y + full.height).toBeLessThanOrEqual(hotlines.y + 1);
+    await expect(dialled).toBeVisible();
+    await page.locator('[data-map-full-toggle="close"]').click();
+    await expect(page.locator("[data-map-full-toggle=\"open\"]")).toBeVisible();
     // The turning globe is the one piece of the console's head a phone does get, at the end of
     // the title's line and no taller than the title (the owner, 20 Oct: "if for phone can fit").
     const globe = page.locator("[data-orbit-globe]");
