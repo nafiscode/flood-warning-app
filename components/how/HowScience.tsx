@@ -3,6 +3,7 @@ import { ForwardIcon, MapIcon, QuestionIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { creditById, SCIENCE_PARTS, type SciencePart } from "@/lib/how-it-works";
 import { buttonPrimary, buttonSecondary } from "@/lib/ui";
+import { ShareThisPage } from "@/components/ShareThisPage";
 import { Credits } from "./Credits";
 import { FIGURES, WorkflowFigure } from "./Figures";
 import { HowNav } from "./HowNav";
@@ -202,6 +203,9 @@ export function HowScience() {
           <ForwardIcon size={20} className="rtl:-scale-x-100" />
         </Link>
       </section>
+
+      {/* Pass it on: this page, or Jaga. */}
+      <ShareThisPage path="/how-it-works" title={t("title")} text={t("lead")} />
     </div>
   );
 }

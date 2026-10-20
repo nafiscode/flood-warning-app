@@ -36,6 +36,7 @@ import {
 } from "@/lib/capabilities";
 import { buttonPrimary, buttonQuiet, buttonSecondary } from "@/lib/ui";
 import { AdminOnly } from "./AdminOnly";
+import { ShareThisPage } from "@/components/ShareThisPage";
 import { Hub } from "./Hub";
 import { RolePicker } from "./RolePicker";
 import { Scene } from "./Scene";
@@ -199,6 +200,9 @@ export function Capabilities() {
           </Link>
         </div>
       </section>
+
+      {/* Pass it on: this page, or Jaga. */}
+      <ShareThisPage path="/features" title={t("title")} text={t("lead")} />
     </div>
   );
 }

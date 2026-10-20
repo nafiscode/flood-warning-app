@@ -750,7 +750,11 @@
       "barLabel": "Pilihan peta",
       "placeLabel": "Pilih jenis bencana dan wilayah",
       "layers": "Lapisan {count}",
-      "back": "Kembali ke peta"
+      "back": "Kembali ke peta",
+      "twoFingers": "Guna dua jari untuk menggerakkan peta, atau buka skrin penuh",
+      "zoomCtrl": "Guna Ctrl + skrol untuk zum peta",
+      "zoomCmd": "Guna ⌘ + skrol untuk zum peta",
+      "fullExit": "Keluar skrin penuh"
     },
     "steps": {
       "previous": "Sebelumnya",
@@ -5191,5 +5195,10 @@
       "motorbike_only": "Motosikal sahaja",
       "impassable": "Tidak boleh dilalui"
     }
+  },
+  "share": {
+    "heading": "Kongsikan",
+    "body": "Kongsikan halaman ini kepada orang yang patut membacanya, atau kongsikan Jaga kepada orang yang patut menggunakannya",
+    "thisPage": "Kongsi halaman ini"
   }
 }

@@ -750,7 +750,11 @@
       "barLabel": "Map choices",
       "placeLabel": "Choose the hazard and the province",
       "layers": "Layers {count}",
-      "back": "Back to the map"
+      "back": "Back to the map",
+      "twoFingers": "Use two fingers to move the map, or open it full screen",
+      "zoomCtrl": "Use Ctrl + scroll to zoom the map",
+      "zoomCmd": "Use ⌘ + scroll to zoom the map",
+      "fullExit": "Leave full screen"
     },
     "steps": {
       "previous": "Previous",
@@ -5191,5 +5195,10 @@
       "motorbike_only": "Motorbike only",
       "impassable": "Not passable"
     }
+  },
+  "share": {
+    "heading": "Pass it on",
+    "body": "Share this page with someone who should read it, or share Jaga with someone who should use it",
+    "thisPage": "Share this page"
   }
 }

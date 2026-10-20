@@ -9,6 +9,7 @@ import {
   ShieldIcon,
 } from "@/components/icons";
 import { HowNav } from "@/components/how/HowNav";
+import { ShareThisPage } from "@/components/ShareThisPage";
 import { Link } from "@/i18n/navigation";
 import {
   CREDENTIAL_GROUPS,
@@ -257,6 +258,9 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
           </Link>
         </div>
       </section>
+
+      {/* Pass it on: this page, or Jaga. The page first - it is what the reader came to show. */}
+      <ShareThisPage path="/about" title={t("title")} text={t("audience")} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { CheckIcon, ForwardIcon, MapIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { SYSTEM_PARTS, type SystemPart } from "@/lib/how-it-works";
 import { buttonSecondary } from "@/lib/ui";
+import { ShareThisPage } from "@/components/ShareThisPage";
 import { ArchitectureFigure, FIGURES } from "./Figures";
 import { HowNav } from "./HowNav";
 import { HOW_ICONS } from "./icons";
@@ -93,6 +94,9 @@ export function HowSystem() {
           </Link>
         </div>
       </section>
+
+      {/* Pass it on: this page, or Jaga. */}
+      <ShareThisPage path="/how-it-works/system" title={t("title")} text={t("lead")} />
     </div>
   );
 }
