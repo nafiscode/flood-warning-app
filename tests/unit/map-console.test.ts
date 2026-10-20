@@ -23,6 +23,12 @@ import {
   LIT_MAX,
   reportsAlarm,
 } from "@/lib/map-console";
+import {
+  bandFor,
+  CONSOLE_QUERY,
+  LAPTOP_QUERY,
+  TABLET_QUERY,
+} from "@/lib/console-view";
 import { contrastRatio } from "@/lib/brand/contrast";
 import { brand, darkBrand } from "@/lib/brand/tokens";
 import { SCENE_LOOKS, SCENES } from "@/lib/weather-scene";
@@ -258,13 +264,69 @@ describe("the laptop console's readout strip", () => {
 describe("the console's arrangement", () => {
   const css = readFileSync("app/globals.css", "utf8");
 
-  it("is behind one breakpoint: a wide screen with a mouse, so no tablet is touched", () => {
-    expect(css).toContain(
-      "@custom-variant console (@media (min-width: 1024px) and (pointer: fine))",
-    );
-    // The plain-CSS half of the console must ask exactly the same question.
-    const queries = css.match(/@media \(min-width: 1024px\) and \(pointer: fine\)/g) ?? [];
-    expect(queries.length).toBe(2);
+  /*
+   * Three bands since 21 Oct 2026, exclusive and between them every screen (lib/console-view.ts
+   * holds the same three). The floor moved from 1024 to 1280 because a tablet with a keyboard
+   * reports a fine pointer, passed the old test, and was handed a 216-369 px map.
+   */
+  it("asks the same three questions for Tailwind and in plain CSS", () => {
+    /*
+     * The variant has to be written as a block of three `@media` rules with `@slot` in each:
+     * a comma-separated list inside `@custom-variant console (...)` takes the first clause and
+     * leaves the rest dangling in the selector, and the stylesheet then fails to parse (seen in
+     * the dev server, 21 Oct).
+     */
+    const variant = css.slice(css.indexOf("@custom-variant console {"));
+    const block = variant.slice(0, variant.indexOf("\n}"));
+    for (const query of CONSOLE_QUERY.split(", ")) {
+      expect(block).toContain(`@media ${query} {`);
+      // And the plain-CSS half of the console asks exactly the same thing.
+      expect(css.slice(css.indexOf(block) + block.length)).toContain(query);
+    }
+    expect(block.split("@slot").length - 1).toBe(3);
+    // A laptop needs a pointer that can hover; a tablet held sideways does not.
+    expect(CONSOLE_QUERY).toContain(LAPTOP_QUERY);
+    expect(CONSOLE_QUERY).toContain(TABLET_QUERY);
+  });
+
+  it("has a tablet block that takes the three columns down to two", () => {
+    // The block the tablet band is written in, which is the last thing to mention that band.
+    const at = css.lastIndexOf("@media (min-width: 1024px) and (max-width: 1279.98px)");
+    expect(at).toBeGreaterThan(0);
+    const block = css.slice(at);
+    const areas = block.slice(block.indexOf("grid-template-areas:"));
+    expect(areas.slice(0, areas.indexOf(";"))).toContain('"map    side"');
+    expect(areas.slice(0, areas.indexOf(";"))).toContain('"rail   rail"');
+    // No hover on a touch screen: the pin is the way a readout opens, and it is always there.
+    expect(block).toMatch(/\[data-console-tile\] \[data-tile-pin\] \{\s*opacity: 1/);
+    // Thumb-sized controls, where the laptop's are sized for a pointer.
+    expect(block).toMatch(/\[data-console-tile\] \[data-tile-card\] button \{\s*min-height: 2\.75rem/);
+  });
+
+  it("puts every screen in exactly one band", () => {
+    const band = (width: number, height: number, pointer: "fine" | "coarse") =>
+      bandFor({ width, height, pointer });
+    // The six tablet sizes measured on the live site on 21 Oct.
+    expect(band(744, 1133, "coarse")).toBe("phone");
+    expect(band(1133, 744, "coarse")).toBe("tablet");
+    expect(band(820, 1180, "coarse")).toBe("phone");
+    expect(band(1180, 820, "coarse")).toBe("tablet");
+    // Upright, even an iPad Pro: 1024 px cannot hold two columns and a map worth looking at.
+    expect(band(1024, 1366, "coarse")).toBe("phone");
+    expect(band(1366, 1024, "coarse")).toBe("tablet");
+    /*
+     * A tablet with a keyboard: at 1,366 px the three columns measured well (a 525 px map) and
+     * the pointer can hover, so it gets the laptop console. Upright it is the phone's, and
+     * between 1,024 and 1,280 it is the tablet's - which is the case the floor was raised for.
+     */
+    expect(band(1366, 1024, "fine")).toBe("laptop");
+    expect(band(1024, 1366, "fine")).toBe("phone");
+    expect(band(1180, 820, "fine")).toBe("tablet");
+    // Phones, and a laptop.
+    expect(band(360, 640, "coarse")).toBe("phone");
+    expect(band(1440, 900, "fine")).toBe("laptop");
+    // A laptop window pulled in narrower gets the tablet arrangement, not the phone's.
+    expect(band(1100, 800, "fine")).toBe("tablet");
   });
 
   it("reads left rail, then the map, then the right rail - the page's own order of blocks", () => {

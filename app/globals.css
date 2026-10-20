@@ -120,11 +120,38 @@
  * landscape is 1180 px wide and must keep the phone layout, so the pointer decides. The console
  * is this variant plus the one plain-CSS block below it, and nothing else in the app.
  */
-@custom-variant console (@media (min-width: 1024px) and (pointer: fine));
+/* Three queries, written as a block: a comma-separated list inside `@custom-variant (...)` is
+   not the same thing - Tailwind takes the first clause and leaves the rest dangling in the
+   selector, which fails to parse. */
+@custom-variant console {
+  @media (min-width: 1280px) and (pointer: fine) {
+    @slot;
+  }
+  @media (min-width: 1024px) and (max-width: 1279.98px) and (orientation: landscape) {
+    @slot;
+  }
+  @media (min-width: 1280px) and (orientation: landscape) and (pointer: coarse) {
+    @slot;
+  }
+}
 
 /* The same query in plain CSS, for the few console rules Tailwind cannot say cheaply. Keep the
-   two in step; they are side by side so they stay that way. */
-@media (min-width: 1024px) and (pointer: fine) {
+   two in step; they are side by side so they stay that way.
+ *
+ * Three bands, exclusive and between them every screen (lib/console-view.ts holds the same
+ * three and a `bandFor` that a test reads):
+ *
+ *   laptop  >= 1280 px with a pointer that can hover - the three columns below.
+ *   tablet  >= 1024 px held sideways and not a laptop - this block, then the tablet block after
+ *           it, which takes the arrangement down to two columns (the owner, 21 Oct 2026).
+ *   phone   everything else, including every tablet held upright.
+ *
+ * The floor was 1024 px until 21 Oct. A tablet with a keyboard reports a fine pointer, passed
+ * that test, and was handed a 216-369 px map; measured, not guessed (.claude/local/q-tablet.mjs).
+ */
+@media (min-width: 1280px) and (pointer: fine),
+  (min-width: 1024px) and (max-width: 1279.98px) and (orientation: landscape),
+  (min-width: 1280px) and (orientation: landscape) and (pointer: coarse) {
   /*
    * Behind the console: the moving sky of the weather widget, showing the weather where the
    * person is (the owner, 16 Oct - it replaces a hairline grid that read as graph paper).
@@ -192,8 +219,9 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
-  /* Four readouts in a row once there is room for four; two on a 1024 px screen. */
-  @media (min-width: 1280px) {
+  /* Four readouts in a row, five when the monitoring's own is there. From 1024 px, not 1280:
+     the tablet band starts there, and wrapped to three rows the strip was 285 px of the map. */
+  @media (min-width: 1024px) {
     [data-console-tiles] {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
@@ -510,13 +538,14 @@
    * The way in covers the whole card, so there is nothing small to aim at; the pin inside it
    * stays above that, or pinning a card would open it instead.
    */
-  [data-tile-open] {
+  [data-tile-open],
+  [data-tile-toggle] {
     z-index: 2;
     border-radius: inherit;
     cursor: pointer;
   }
   [data-tile-card] [data-tile-pin],
-  [data-tile-card] > button:not([data-tile-open]) {
+  [data-tile-card] > button:not([data-tile-open]):not([data-tile-toggle]) {
     position: relative;
     z-index: 3;
   }
@@ -642,9 +671,7 @@
   }
   /* In the side: the satellite's flood and the safe places, which the owner asked to come over to
      the left; the basemap goes onto the map itself, and the rest is dashboard. */
-  [data-map-full]
-    [data-console-area="side"]
-    > *:not([data-map-layers], [data-selected-panel]) {
+  [data-map-full] [data-console-area="side"] > *:not([data-map-layers], [data-selected-panel]) {
     display: none;
   }
   /*
@@ -716,6 +743,119 @@
 }
 
 /*
+ * The same console on a tablet held sideways (the owner, 21 Oct 2026, having chosen option B
+ * after seeing the measurements: "Go with B").
+ *
+ * Everything above applies here too - this block only takes the arrangement from three columns
+ * to two, because the arithmetic does not fit: the left rail is 304 px, the answer panel 416,
+ * and the gaps 40, so 760 px are gone before the map gets anything. At 1,180 px that left the
+ * map 369 px wide. Measured on the live site at six tablet sizes (.claude/local/q-tablet.mjs).
+ *
+ * So: the readouts across the top, the map and the answer panel side by side, and the controls
+ * the left rail holds in a full-width row underneath, where they wrap into columns instead of
+ * standing in a ladder. Nothing is removed and nothing is written twice - the same blocks, in
+ * two columns instead of three.
+ *
+ * And because a finger cannot hover, the readouts here are opened by a tap and stay open until
+ * they are tapped again: the pin is the normal way on a tablet, not the exception, so it is
+ * always visible and sized for a thumb.
+ */
+@media (min-width: 1024px) and (max-width: 1279.98px) and (orientation: landscape),
+  (min-width: 1280px) and (orientation: landscape) and (pointer: coarse) {
+  [data-map-console] {
+    grid-template-columns: minmax(0, 1fr) clamp(20rem, 32vw, 26rem);
+    grid-template-areas:
+      "head   head"
+      "tabs   tabs"
+      "hazard hazard"
+      "tiles  tiles"
+      "map    side"
+      "rail   rail"
+      "detail detail";
+    grid-template-rows: auto auto auto auto auto auto auto;
+    /*
+     * The console is no longer exactly one screen tall: the controls sit under the map and the
+     * page scrolls to them. The map keeps a screen's worth of height of its own, so what the
+     * page opens on is still the map and the panel beside it.
+     */
+    height: auto;
+    min-height: 0;
+  }
+  [data-console-area="map"],
+  [data-console-area="side"] {
+    height: calc(100dvh - var(--console-chrome, 14rem) - 8rem);
+    min-height: 20rem;
+  }
+  /*
+   * The left rail's blocks, full width and wrapping: the hazard, the province, the layers, the
+   * method and the rest. They are controls, not reading, so three or four to a row is right and
+   * the rail no longer scrolls inside itself - the page does.
+   */
+  [data-console-area="rail"] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    align-items: start;
+    gap: 0.75rem 1rem;
+  }
+  [data-console-rail] {
+    overflow: visible;
+  }
+  /*
+   * No hover here. A tap on a touch screen leaves `:hover` stuck on the card it touched, which
+   * would hold one readout open over its neighbours until something else was touched, so the
+   * opening is driven by the pin alone (data-tile-pinned) and the hovered card is put back.
+   */
+  [data-console-tile]:hover [data-tile-card],
+  [data-console-tile]:focus-within [data-tile-card] {
+    position: static;
+    box-shadow: none;
+  }
+  [data-console-tile]:hover:not([data-tile-pinned="true"]) [data-tile-brief],
+  [data-console-tile]:focus-within:not([data-tile-pinned="true"]) [data-tile-brief] {
+    display: -webkit-box;
+    max-height: 3.4em;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+  }
+  [data-console-tile]:hover:not([data-tile-pinned="true"]) [data-tile-more],
+  [data-console-tile]:focus-within:not([data-tile-pinned="true"]) [data-tile-more] {
+    display: none;
+  }
+  /* The pin is how a card is opened here, so it is always there and sized for a thumb. */
+  [data-console-tile] [data-tile-pin] {
+    opacity: 1;
+  }
+  [data-console-tile] [data-tile-card] button {
+    min-height: 2.75rem;
+  }
+  /* Folded, the panel leaves the same strip - two columns here, not three. */
+  [data-map-console][data-side="closed"]:not([data-map-full]) {
+    grid-template-columns: minmax(0, 1fr) 3rem;
+  }
+  /*
+   * The folded panel cannot be peeked at with a finger, so the strip does not pretend to: a
+   * stuck :hover from a tap would otherwise slide the whole panel over the map and leave it
+   * there. Its button is the only way back, and it is never hidden.
+   */
+  [data-side="closed"][data-side-peek="on"]:not([data-map-full]) [data-console-area="side"]:hover {
+    position: static;
+    z-index: auto;
+    width: auto;
+    margin-inline-start: 0;
+    overflow-y: visible;
+    border-radius: 0;
+    background: none;
+    padding: 0;
+    box-shadow: none;
+  }
+  [data-side="closed"][data-side-peek="on"]:not([data-map-full])
+    [data-console-area="side"]:hover
+    > *:not([data-side-bar]) {
+    visibility: hidden;
+  }
+}
+
+/*
  * The home screen on a phone and a tablet (the owner, 21 Oct 2026: SOS, the flood report, the
  * request for food and water and "what I have sent" should sit "on top of Long-term flood risk,
  * not today's alert box", and only below the laptop's two columns).
@@ -770,7 +910,15 @@
  * another is "how this map was made": it is written with the layer switches, and shown with the
  * other folded explainers below the map.
  */
-@media (max-width: 1023.98px), (pointer: coarse) {
+/*
+ * The phone band: everything that is neither a laptop nor a tablet held sideways. The exact
+ * complement of the console's query above - a tablet held upright is here on purpose, measured
+ * (21 Oct 2026): 744-1024 px cannot hold two columns and a map worth looking at, and what this
+ * arrangement gives such a screen is a 976x984 map.
+ */
+@media (max-width: 1023.98px),
+  (orientation: portrait) and (max-width: 1279.98px),
+  (orientation: portrait) and (pointer: coarse) {
   /*
    * Everything not named below is an explainer or a readout, and belongs under the map.
    *
@@ -848,9 +996,7 @@
    * container and redraws itself, so nothing here has to tell it.
    */
   [data-map-phone] {
-    --phone-free: calc(
-      100dvh - var(--jaga-header, 9.75rem) - var(--jaga-hotlines, 4.5rem) - 1rem
-    );
+    --phone-free: calc(100dvh - var(--jaga-header, 9.75rem) - var(--jaga-hotlines, 4.5rem) - 1rem);
   }
   [data-map-phone] [data-map] {
     height: min(72dvh, var(--phone-free));

@@ -13,6 +13,7 @@ vi.mock("@/components/map/MapView", () => ({
 }));
 import { BackToMap } from "@/components/map/BackToMap";
 import { DashboardView, type DashboardViewProps } from "@/components/map/DashboardView";
+import { CONSOLE_QUERY, PHONE_QUERY } from "@/lib/console-view";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
 import {
@@ -195,6 +196,12 @@ describe("back to the map", () => {
   });
 });
 
+/** Where the phone band's block starts: the last mention of its query is the block itself. */
+function phoneBlockAt(css: string): number {
+  const at = css.lastIndexOf(`@media ${PHONE_QUERY.slice(0, PHONE_QUERY.indexOf(","))}`);
+  return at;
+}
+
 describe("the home screen's arrangement on a phone, in app/globals.css", () => {
   const css = readFileSync("app/globals.css", "utf8");
   const block = () => {
@@ -223,15 +230,23 @@ describe("the phone's arrangement in app/globals.css", () => {
   const css = readFileSync("app/globals.css", "utf8");
 
   it("asks the exact complement of the console's own question, and only once", () => {
-    const phone = css.match(/@media \(max-width: 1023\.98px\), \(pointer: coarse\)/g) ?? [];
-    expect(phone.length).toBe(1);
-    // ...and the console's half is untouched: the variant and its plain-CSS twin.
-    const console_ = css.match(/@media \(min-width: 1024px\) and \(pointer: fine\)/g) ?? [];
-    expect(console_.length).toBe(2);
+    /*
+     * Three bands since 21 Oct 2026 (lib/console-view.ts): the laptop, a tablet held sideways,
+     * and this one - everything else, a tablet held upright included. The query is written
+     * across two lines in the stylesheet, so it is matched a clause at a time.
+     */
+    for (const clause of PHONE_QUERY.split(", ")) {
+      expect(css.slice(phoneBlockAt(css), phoneBlockAt(css) + 400)).toContain(clause);
+    }
+    expect(phoneBlockAt(css)).toBeGreaterThan(0);
+    // ...and the console's half is untouched: the variant's three queries and its plain twin.
+    for (const query of CONSOLE_QUERY.split(", ")) {
+      expect(css.split(query).length - 1).toBeGreaterThanOrEqual(2);
+    }
   });
 
   it("gives the map the room the header and the hotline bar leave, and no more", () => {
-    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const block = css.slice(phoneBlockAt(css));
     expect(block).toContain("--jaga-header");
     expect(block).toContain("--jaga-hotlines");
     // Nothing is ever drawn over the four numbers (safety rule 4).
@@ -239,7 +254,7 @@ describe("the phone's arrangement in app/globals.css", () => {
   });
 
   it("never boxes what a tap answers with, and lets the map shrink for it", () => {
-    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const block = css.slice(phoneBlockAt(css));
     const panel = block.slice(block.indexOf("[data-map-phone] [data-selected-panel] {"));
     const rule = panel.slice(0, panel.indexOf("}"));
     /*
@@ -254,7 +269,7 @@ describe("the phone's arrangement in app/globals.css", () => {
   });
 
   it("holds the way out of a long card under the header", () => {
-    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const block = css.slice(phoneBlockAt(css));
     const close = block.slice(block.indexOf("[data-map-phone] [data-selected-panel] > button:last-child"));
     const rule = close.slice(0, close.indexOf("}"));
     expect(rule).toContain("position: sticky");
@@ -264,7 +279,7 @@ describe("the phone's arrangement in app/globals.css", () => {
   });
 
   it("keeps the full-screen map clear of the hotlines (safety rule 4)", () => {
-    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const block = css.slice(phoneBlockAt(css));
     const full = block.slice(block.indexOf("[data-map-phone][data-map-full] [data-map-frame]"));
     expect(full.slice(0, full.indexOf("}"))).toContain("var(--jaga-hotlines");
     // ...and the map is sized against the window, not a wrapper that has no height of its own.
@@ -272,7 +287,7 @@ describe("the phone's arrangement in app/globals.css", () => {
   });
 
   it("orders the blocks through the wrappers, which are display: contents", () => {
-    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const block = css.slice(phoneBlockAt(css));
     // A child combinator would walk past every block the page writes inside an area wrapper.
     expect(block).toContain("[data-map-phone] > [data-console-area] > *");
     expect(block).toContain("[data-map-phone] [data-map-frame]");

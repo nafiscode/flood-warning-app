@@ -610,9 +610,19 @@ test.describe("the live map on a laptop", () => {
     await expect(panel).toBeVisible();
     await expect(frame).toHaveAttribute("data-map-lit", /.+/, { timeout: 4000 });
 
-    // The other two are still readouts: nothing in them to press.
+    /*
+     * The other two open nothing on the map - they are readouts. Since the tablet console
+     * (21 Oct) a press on them opens the card itself and keeps it open, because a finger
+     * cannot rest on a card; that is the pin, under a bigger target.
+     */
     for (const tile of ["alerts", "reports"]) {
-      await expect(page.locator(`[data-console-tile="${tile}"] [data-tile-open]`)).toHaveCount(0);
+      const card = page.locator(`[data-console-tile="${tile}"]`);
+      await expect(card.locator("[data-tile-open]")).toHaveCount(0);
+      await card.locator("[data-tile-toggle]").click();
+      await expect(card).toHaveAttribute("data-tile-pinned", "true");
+      await expect(card.locator("[data-tile-more]")).toBeVisible();
+      await card.locator("[data-tile-toggle]").click();
+      await expect(card).toHaveAttribute("data-tile-pinned", "false");
     }
   });
 

@@ -157,11 +157,7 @@ function Tile({
       data-tile-pinned={pinned ? "true" : "false"}
       className="flex min-w-0 flex-col"
     >
-      <div
-        data-tile-card="true"
-        data-console-alarm={alarm}
-        className={`${tile} relative flex-1`}
-      >
+      <div data-tile-card="true" data-console-alarm={alarm} className={`${tile} relative flex-1`}>
         {/*
          * The heading row holds everything that must not move: a control inside a card that
          * grows when it opens would slide out from under the pointer going for it, and a
@@ -198,10 +194,28 @@ function Tile({
          * button, named for a screen reader, laid over the card rather than wrapped around it,
          * because the pin inside it is a button too and a button cannot hold a button.
          */}
-        {onOpen && (
+        {onOpen ? (
           <button type="button" data-tile-open="true" onClick={onOpen} className="absolute inset-0">
             <span className="sr-only">{openLabel}</span>
           </button>
+        ) : (
+          more && (
+            /*
+             * A card with nothing of its own to open is opened by a tap on it, and stays open
+             * until it is tapped again (the owner, 21 Oct 2026, choosing the tablet console).
+             * A finger cannot rest on a card, so hover cannot be the only way in; on a laptop
+             * this is simply the pin again, under a bigger target.
+             */
+            <button
+              type="button"
+              data-tile-toggle="true"
+              aria-pressed={pinned}
+              onClick={onPin}
+              className="absolute inset-0"
+            >
+              <span className="sr-only">{pinned ? pinWords.unpin : pinWords.pin}</span>
+            </button>
+          )
         )}
       </div>
     </li>
