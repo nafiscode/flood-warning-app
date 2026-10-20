@@ -788,16 +788,20 @@
   [data-map-phone] [data-map-frame] {
     order: 3;
   }
+  /*
+   * What a tap answers with (the owner, 20 Oct, after using the new map: "the detail space is
+   * too small... it should shrink the map smaller so it gives more space to the details").
+   *
+   * It was given a window of its own and told to scroll inside it, which was wrong twice over.
+   * The reservoir's card is **3,961 px** of figures, drawing and history and the sea's is 2,483;
+   * a 169 px window on either of those is a letterbox, and the window was 169 px rather than the
+   * 45% it was asked for because the map underneath it kept a 320 px floor from `min-h-80` and
+   * simply refused to shrink. So: the floor goes, the map gives up more while a card is open,
+   * and the card is no longer boxed at all - it takes the height it needs and the page scrolls,
+   * which is how every other long thing in Jaga is read.
+   */
   [data-map-phone] [data-selected-panel] {
     order: 3;
-    max-height: calc(var(--phone-free) * 0.45);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    border-radius: 0.75rem;
-    border: 1px solid var(--color-jaga-line);
-    background: var(--color-jaga-surface);
-    padding: 0.75rem;
-    box-shadow: 0 8px 24px rgb(29 59 83 / 0.18);
   }
   /*
    * The map gets exactly the room the screen has left. Both the things that take it are
@@ -817,9 +821,33 @@
   }
   [data-map-phone] [data-map] {
     height: min(72dvh, var(--phone-free));
+    /* The 320 px floor the map carries everywhere else would stop every rule below it. */
+    min-height: 0;
   }
+  /*
+   * While a card is open the map keeps a strip - enough to see the reservoir, gauge or tambon
+   * the card is about, lit where the map put it - and the rest of the screen is the card.
+   */
   [data-map-phone]:has([data-selected-panel]) [data-map] {
-    height: max(12rem, calc(var(--phone-free) * 0.55));
+    height: max(8rem, calc(var(--phone-free) * 0.4));
+  }
+  /*
+   * On a card this long the way out cannot be at the end of it, so it is held under the header
+   * for as long as the card is on the screen. The header's own height is measured, as it is for
+   * the map.
+   */
+  [data-map-phone] [data-selected-panel] > button:last-child {
+    order: -1;
+    position: sticky;
+    top: calc(var(--jaga-header, 9.75rem) + 0.25rem);
+    z-index: 1;
+    /* At the end of the line, where it covers the ends of words rather than their beginnings. */
+    align-self: flex-end;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-jaga-line);
+    background: var(--color-jaga-surface);
+    padding-inline: 0.75rem;
+    box-shadow: 0 2px 8px rgb(29 59 83 / 0.14);
   }
   /* The map is what the reader came for, so it is what a "back to the map" lands on. */
   [data-map-phone] [data-map-frame] {

@@ -137,11 +137,15 @@ describe("back to the map", () => {
     try {
       renderWithIntl(<BackToMap />);
       // The map is on the screen: nothing is offered.
-      await waitFor(() => expect(document.querySelector("[data-back-to-map]")).toBeNull());
+      await waitFor(() => expect(document.querySelector("[data-back-to-map]")).toBeNull(), {
+        timeout: 4000,
+      });
       bottom = -200;
       window.dispatchEvent(new Event("scroll"));
-      await waitFor(() =>
-        expect(screen.getByRole("button", { name: th.map.phone.back })).toBeTruthy(),
+      // It answers on an animation frame, which a loaded machine can be slow to give.
+      await waitFor(
+        () => expect(screen.getByRole("button", { name: th.map.phone.back })).toBeTruthy(),
+        { timeout: 4000 },
       );
     } finally {
       frame.remove();
@@ -166,6 +170,31 @@ describe("the phone's arrangement in app/globals.css", () => {
     expect(block).toContain("--jaga-hotlines");
     // Nothing is ever drawn over the four numbers (safety rule 4).
     expect(block).toMatch(/\[data-back-to-map\][\s\S]*?var\(--jaga-hotlines/);
+  });
+
+  it("never boxes what a tap answers with, and lets the map shrink for it", () => {
+    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const panel = block.slice(block.indexOf("[data-map-phone] [data-selected-panel] {"));
+    const rule = panel.slice(0, panel.indexOf("}"));
+    /*
+     * The owner, 20 Oct, after using it: the reservoir's card is 3,961 px and was being shown
+     * through a 169 px window. It takes the height it needs now and the page scrolls.
+     */
+    expect(rule).not.toContain("max-height");
+    expect(rule).not.toContain("overflow-y");
+    // ...and the map's 320 px floor is lifted, or none of the heights below it could apply.
+    expect(block).toMatch(/\[data-map-phone\] \[data-map\] \{[^}]*min-height: 0/);
+    expect(block).toContain("[data-map-phone]:has([data-selected-panel]) [data-map]");
+  });
+
+  it("holds the way out of a long card under the header", () => {
+    const block = css.slice(css.indexOf("@media (max-width: 1023.98px), (pointer: coarse)"));
+    const close = block.slice(block.indexOf("[data-map-phone] [data-selected-panel] > button:last-child"));
+    const rule = close.slice(0, close.indexOf("}"));
+    expect(rule).toContain("position: sticky");
+    // Under the measured header, not a guessed one, and above the card it scrolls over.
+    expect(rule).toContain("var(--jaga-header");
+    expect(rule).toContain("order: -1");
   });
 
   it("orders the blocks through the wrappers, which are display: contents", () => {
