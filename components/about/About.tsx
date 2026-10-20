@@ -13,6 +13,7 @@ import {
   CAREER_STEPS,
   CREDENTIAL_GROUPS,
   CREDENTIAL_ITEMS,
+  PORTRAIT_READY,
   SCOPE_POINTS,
   SCOPE_PARTS,
   TRUST_POINTS,
@@ -44,9 +45,10 @@ const STATS = ["years", "flood", "reservoirs", "forecast", "theos"] as const;
  * environment at render time (never written into a file), and no personal phone number appears
  * anywhere on it - safety rule 5 covers the owner's own number too, and the page says so.
  *
- * @param showPortrait true once a compressed portrait exists at `public/about/<PORTRAIT>`.
+ * @param showPortrait overrides `PORTRAIT_READY`, which is the real switch; the review page
+ *   uses it to show the slot both ways before a photo is chosen.
  */
-export function About({ showPortrait = false }: { showPortrait?: boolean }) {
+export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolean }) {
   const t = useTranslations("about");
   const contact = process.env.CONTACT_EMAIL?.trim();
   return (

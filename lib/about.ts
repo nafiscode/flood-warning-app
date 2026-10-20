@@ -91,6 +91,15 @@ export const ABOUT_LINKS: AboutLink[] = [
  */
 export const PORTRAIT = "nafis.jpg";
 
+/**
+ * Whether that file is actually in place. The page is written, reviewed and translated long
+ * before a photo is chosen, so this is the single switch between the initials and the portrait:
+ * put the file there with `.claude/local/q-portrait.mjs`, turn this to true, and every screen
+ * that draws the portrait follows. Nothing else moves, because the slot is the same size either
+ * way (components/about/Portrait.module.css).
+ */
+export const PORTRAIT_READY = false;
+
 /** The initials the page falls back to, from the Latin name in `about.name`. */
 export function initialsOf(name: string): string {
   return name
