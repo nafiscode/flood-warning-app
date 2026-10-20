@@ -648,3 +648,15 @@ export function BlocksIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/**
+ * An aircraft seen from above, for the aviation step of the founder's journey across industries.
+ * Nose up, so the shape reads at 22 px without a runway or a tail fin to muddle it.
+ */
+export function PlaneIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 2.5c1 0 1.8 1.1 1.8 2.6v3.4l6.7 3.9v2.3l-6.7-2v3.7l2.3 1.7v1.7L12 19.4l-4.1 1.4v-1.7l2.3-1.7v-3.7l-6.7 2v-2.3l6.7-3.9V5.1c0-1.5.8-2.6 1.8-2.6Z" />
+    </Icon>
+  );
+}

@@ -20,7 +20,7 @@
  * `CONTACT_EMAIL` rather than written into a file.
  */
 
-export type AboutIcon = "cap" | "drop" | "satellite" | "build";
+export type AboutIcon = "cap" | "drop" | "satellite" | "build" | "plane";
 
 /** A step on the way to Jaga. The years are text, so a draft can say "to present". */
 export type CareerStep = {
@@ -70,6 +70,10 @@ export const CREDENTIAL_ITEMS: Record<CredentialGroup, number> = {
  * Where a reader can go and check. Addresses only - never a phone number, and never the project
  * address, which the page reads from the environment at render time.
  *
+ * There is deliberately **no link to the source code** (the owner, 20 Oct 2026). Two places in the
+ * page's own words already say the code is public and can be read; a button pointing every visitor
+ * at a repository is a different thing, and this page is not here to recruit readers for it.
+ *
  * `rel="me"` is deliberate on the two that are the owner's own pages: it is the one standing
  * claim this page makes that a reader can verify from the other end.
  */
@@ -78,7 +82,6 @@ export type AboutLink = { key: string; href: string; me?: boolean };
 export const ABOUT_LINKS: AboutLink[] = [
   { key: "portfolio", href: "https://nafis-portfolio.pages.dev/", me: true },
   { key: "linkedin", href: "https://www.linkedin.com/in/nafis-damae", me: true },
-  { key: "code", href: "https://github.com/nafiscode/flood-warning-app" },
 ];
 
 /**
@@ -97,3 +100,19 @@ export function initialsOf(name: string): string {
     .map((word) => word[0]?.toUpperCase() ?? "")
     .join("");
 }
+
+/**
+ * The journey across industries, taken from the owner's own portfolio: water infrastructure and
+ * energy, then defence and space, then aviation and airports. Three industries in a decade.
+ *
+ * It sits above the career cards because it is the shape of the whole thing in one line, and
+ * because it is the page's answer to "how is any of this one career": each move was onto
+ * unfamiliar ground, and Jaga is the three of them arriving in the same place.
+ */
+export type Sector = { key: string; icon: AboutIcon };
+
+export const SECTORS: Sector[] = [
+  { key: "water", icon: "drop" },
+  { key: "space", icon: "satellite" },
+  { key: "aviation", icon: "plane" },
+];

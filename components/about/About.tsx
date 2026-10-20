@@ -22,6 +22,7 @@ import {
 } from "@/lib/about";
 import { buttonSecondary } from "@/lib/ui";
 import { ABOUT_ICONS } from "./icons";
+import { Journey } from "./Journey";
 import { Portrait } from "./Portrait";
 
 /** The headline numbers from the owner's own career record, not from Jaga's analysis. */
@@ -87,6 +88,13 @@ export function About({ showPortrait = false }: { showPortrait?: boolean }) {
           </p>
         ))}
       </section>
+
+      {/*
+        The whole shape in one picture before the record of it: three industries in a decade,
+        from the owner's own portfolio. The cards below then say what each move produced, so the
+        argument is met twice - once as a picture, once as a record.
+      */}
+      <Journey />
 
       {/*
         The career as a line, oldest first, because the direction of travel is the point. Every
@@ -176,7 +184,7 @@ export function About({ showPortrait = false }: { showPortrait?: boolean }) {
           {t("check.title")}
         </h2>
         <p className="text-jaga-text">{t("check.lead")}</p>
-        <ul className="grid gap-3 sm:grid-cols-3">
+        <ul className="grid gap-3 sm:grid-cols-2">
           {ABOUT_LINKS.map((link) => (
             <li key={link.key}>
               <a

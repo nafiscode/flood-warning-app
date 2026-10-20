@@ -3,6 +3,7 @@ import { About } from "@/components/about/About";
 import {
   ABOUT_LINKS,
   CAREER_STEPS,
+  SECTORS,
   CREDENTIAL_GROUPS,
   CREDENTIAL_ITEMS,
   initialsOf,
@@ -41,6 +42,16 @@ describe("who built Jaga: the lines", () => {
       "why.p1",
       "why.p2",
       "why.p3",
+      "journey.title",
+      "journey.lead",
+      "journey.note",
+      "journey.andJaga",
+      ...SECTORS.flatMap((sector) => [
+        `journey.sectors.${sector.key}.short`,
+        `journey.sectors.${sector.key}.years`,
+        `journey.sectors.${sector.key}.name`,
+        `journey.sectors.${sector.key}.tag`,
+      ]),
       "road.title",
       "road.lead",
       "road.gaveLabel",
@@ -135,9 +146,37 @@ describe("who built Jaga: the rules", () => {
   });
 
   /** Every address a reader is sent to is somewhere they can actually check the claims. */
-  it("sends the reader to the owner's own pages and to the code, over https", () => {
+  it("sends the reader to the owner's own pages, over https", () => {
     for (const link of ABOUT_LINKS) expect(link.href).toMatch(/^https:\/\//);
     expect(ABOUT_LINKS.filter((l) => l.me).length).toBe(2);
+  });
+
+  /**
+   * The owner, 20 Oct 2026: the page's own words already say the code is public, and that is
+   * enough - no button pointing every visitor at the repository. The wording stays and the link
+   * goes, so this holds both halves of that at once.
+   */
+  it("says the code is public but offers nobody a link to it", () => {
+    for (const link of ABOUT_LINKS) expect(link.href).not.toMatch(/github/i);
+    for (const [locale, messages] of Object.entries(ALL)) {
+      expect(/github/i.test(JSON.stringify(root(messages))), `${locale} names GitHub`).toBe(false);
+      const said = [
+        read(root(messages), "scope.assisted.points.3"),
+        read(root(messages), "trust.points.open.text"),
+      ].join(" ");
+      expect(typeof said, locale).toBe("string");
+    }
+    const { container } = renderWithIntl(<About />, "en");
+    expect(container.querySelector('a[href*="github"]'), "a link to the repository").toBeNull();
+    expect(container.textContent).toContain(en.about.trust.points.open.title);
+  });
+
+  /** The scholarship is the Bahrain government's (the owner, 20 Oct 2026), not a royal one. */
+  it("names the scholarship correctly, in every language", () => {
+    for (const [locale, messages] of Object.entries(ALL)) {
+      const page = JSON.stringify(root(messages));
+      expect(/royal|พระราชทาน/i.test(page), `${locale} still says royal`).toBe(false);
+    }
   });
 });
 
@@ -150,6 +189,7 @@ describe("who built Jaga: the page", () => {
       expect(card?.textContent).toContain(en.about.road.gaveLabel);
     }
     expect(container.querySelectorAll("[data-about-scope]").length).toBe(SCOPE_PARTS.length);
+    expect(container.querySelectorAll("[data-about-sector]").length).toBe(SECTORS.length);
     expect(container.querySelectorAll("[data-about-trust]").length).toBe(TRUST_POINTS.length);
   });
 
@@ -167,6 +207,30 @@ describe("who built Jaga: the page", () => {
     const withPhoto = renderWithIntl(<About showPortrait />, "en");
     const img = withPhoto.container.querySelector("img");
     expect(img?.getAttribute("alt")).toBe(en.about.portraitAlt);
+  });
+
+  /**
+   * The journey across industries is decoration that carries content: a reader who has asked for
+   * less motion, or whose browser never runs the keyframes, must still read three whole
+   * industries. So the words live in the markup, not in the animation.
+   */
+  it("draws the three industries as readable text, not as an animation", () => {
+    const { container } = renderWithIntl(<About />, "en");
+    const board = container.querySelector("[data-about-journey]");
+    expect(board).not.toBeNull();
+    for (const sector of SECTORS) {
+      const station = container.querySelector(`[data-about-sector="${sector.key}"]`);
+      expect(station, sector.key).not.toBeNull();
+      const text = station?.textContent ?? "";
+      const lines = (en.about.journey.sectors as Record<string, Record<string, string>>)[
+        sector.key
+      ];
+      expect(lines, sector.key).toBeDefined();
+      for (const key of ["years", "name", "tag"] as const) {
+        expect(text, `${sector.key} ${key}`).toContain(lines?.[key]);
+      }
+      expect(station?.querySelector("svg"), `${sector.key} icon`).not.toBeNull();
+    }
   });
 
   it("makes the initials from the Latin name", () => {

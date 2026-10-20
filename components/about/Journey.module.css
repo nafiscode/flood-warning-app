@@ -1,0 +1,309 @@
+/*
+ * "Journey across industries" on "Who built Jaga" (the owner, 20 Oct 2026: the industry shift
+ * from their portfolio, animated, "a bit more futuristic", an icon per industry).
+ *
+ * It is a signal travelling a track: three stations wake in turn as a pulse reaches each one,
+ * then the whole line holds lit before it runs again. Nothing here is a measurement, so nothing
+ * is drawn in an alert colour (safety rule 2, docs/brand.md): the only colour is brand teal on
+ * brand slate, which is the console look the rest of the admin screens already use.
+ *
+ * The resting state of every element is the *finished* picture - all three stations lit, the
+ * whole track covered - and the keyframes only take that away and bring it back. globals.css
+ * turns every animation off under prefers-reduced-motion, so a reader who has asked for less
+ * motion simply sees the last frame, complete, with no JavaScript involved either way.
+ *
+ * It is CSS only and `contain: content`, because this page is read on cheap phones over 3G.
+ */
+
+.board {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  padding: 1.5rem 1.25rem;
+  background:
+    radial-gradient(
+      circle at 12% 0%,
+      color-mix(in srgb, var(--jaga-teal) 26%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 92% 100%,
+      color-mix(in srgb, var(--jaga-teal-ink) 30%, transparent),
+      transparent 52%
+    ),
+    var(--jaga-slate);
+  contain: content;
+}
+
+/* A faint instrument grid behind everything, fading out before it reaches the words. */
+.board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 2.25rem 2.25rem;
+  mask-image: radial-gradient(ellipse at 50% 40%, #000 20%, transparent 78%);
+  pointer-events: none;
+}
+
+.head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-small, 0.875rem);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.arrow {
+  color: var(--jaga-teal-light, #7fd1c9);
+}
+
+/*
+ * The track. One column on a phone, three across from a tablet up: the same markup both ways,
+ * with each station drawing its own incoming leg, so there is no separate connector to keep in
+ * step with the stations.
+ */
+.track {
+  position: relative;
+  display: grid;
+  gap: 2.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .track {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+/*
+ * The words never move and never fade. Only the badge and the leg of track arriving at it take
+ * the light, so a reader who meets this mid-cycle reads three complete industries rather than a
+ * career that looks half erased.
+ */
+.station {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  color: #fff;
+}
+
+/* The leg of track arriving at this station, with the pulse that travels it. */
+.leg {
+  position: absolute;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+
+/* The first station is where the signal starts: nothing arrives at it. */
+.station:first-child .leg {
+  display: none;
+}
+
+/* On a phone the legs run down the column, between one station and the next. */
+.leg {
+  inset-block-start: -1.85rem;
+  inset-inline-start: calc(50% - 1px);
+  width: 2px;
+  height: 1.5rem;
+}
+
+/*
+ * From a tablet up a station is a third of the board wide, so a leg that only spanned the grid
+ * gap read as a stub floating between two cards. It runs badge to badge instead: back half a
+ * column to the previous centre, forward to this one, less the badge radius at each end.
+ */
+@media (min-width: 640px) {
+  .leg {
+    inset-block-start: 1.6rem;
+    inset-inline-start: calc(-50% + 2.1rem);
+    width: calc(100% - 4.2rem);
+    height: 2px;
+  }
+}
+
+/* The covered part of the leg: it grows as the signal passes, and rests covered. */
+.leg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--jaga-teal-light, #7fd1c9);
+  transform-origin: top center;
+  animation: jaga-run-down 14s ease-out infinite backwards;
+}
+
+@media (min-width: 640px) {
+  .leg::after {
+    transform-origin: left center;
+    animation-name: jaga-run-across;
+  }
+}
+
+.station:nth-child(2) .leg::after {
+  animation-delay: 1.2s;
+}
+
+.station:nth-child(3) .leg::after {
+  animation-delay: 3.4s;
+}
+
+@keyframes jaga-run-down {
+  0% {
+    transform: scaleY(0);
+  }
+  9%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes jaga-run-across {
+  0% {
+    transform: scaleX(0);
+  }
+  9%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* The station badge: the icon, a ring, and a sweep that goes round once as it wakes. */
+.badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1.125rem;
+  color: var(--jaga-teal-light, #7fd1c9);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 0 1.25rem -0.25rem color-mix(in srgb, var(--jaga-teal) 70%, transparent);
+  /* backwards: during its delay the badge shows the keyframe it starts from, not its resting
+     state, so badges 2 and 3 do not flash lit before the signal reaches them. */
+  animation: jaga-light 14s ease-out infinite backwards;
+}
+
+.station:nth-child(2) .badge {
+  animation-delay: 2.2s;
+}
+
+.station:nth-child(3) .badge {
+  animation-delay: 4.4s;
+}
+
+/* Unlit for a moment, then lit for the rest of the cycle: the resting state is lit. */
+@keyframes jaga-light {
+  0%,
+  4% {
+    color: rgba(255, 255, 255, 0.45);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+      0 0 0 0 transparent;
+  }
+  11%,
+  100% {
+    color: var(--jaga-teal-light, #7fd1c9);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+      0 0 1.25rem -0.25rem color-mix(in srgb, var(--jaga-teal) 70%, transparent);
+  }
+}
+
+.badge > svg {
+  position: relative;
+  z-index: 1;
+}
+
+/* A thin arc running round the badge, once, as the signal lands on it. */
+.badge::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--jaga-teal-light, #7fd1c9) 70deg,
+    transparent 150deg
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  animation: jaga-sweep 14s ease-out infinite backwards;
+}
+
+.station:nth-child(2) .badge::before {
+  animation-delay: 2.2s;
+}
+
+.station:nth-child(3) .badge::before {
+  animation-delay: 4.4s;
+}
+
+@keyframes jaga-sweep {
+  0%,
+  3% {
+    opacity: 0;
+    transform: rotate(0deg);
+  }
+  7% {
+    opacity: 1;
+  }
+  18%,
+  100% {
+    opacity: 0;
+    transform: rotate(360deg);
+  }
+}
+
+.years {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--jaga-teal-light, #7fd1c9);
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.tag {
+  font-size: var(--text-small, 0.875rem);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.foot {
+  position: relative;
+  margin: 1.5rem 0 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.foot b {
+  color: #fff;
+}

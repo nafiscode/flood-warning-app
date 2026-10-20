@@ -1,0 +1,103 @@
+/*
+ * The founder's portrait on "Who built Jaga" (the owner, 20 Oct 2026: use this photo, take the
+ * background out if needed, "I want it to look relax not too professional look but still cool").
+ *
+ * The photo is a formal one - suit, tie, office wall - so the work here is to stop it reading as
+ * a corporate headshot without pretending it is a different picture.
+ *
+ * Three things do that, and none of them needs the subject cut out by hand:
+ *  - the frame is a soft squircle, not a hard rectangle or a passport circle;
+ *  - a radial mask fades the photo's own edges into the slate panel, so the office wall and the
+ *    door frame dissolve instead of being cropped to a hard line (a bad cut-out around hair is
+ *    far more noticeable than no cut-out at all);
+ *  - a brand-teal wash and a glow behind it put the picture in Jaga's own light rather than the
+ *    meeting room's.
+ *
+ * `.cut` is for later: if a properly cut-out PNG with real transparency is ever put in place,
+ * it turns the fade off and lets the glow sit behind the subject directly.
+ */
+
+.slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 7rem;
+  height: 7rem;
+}
+
+@media (min-width: 1024px) {
+  .slot {
+    width: 9.5rem;
+    height: 9.5rem;
+  }
+}
+
+/* The light the portrait sits in: a soft teal glow, behind the picture. */
+.slot::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  border-radius: 42%;
+  background: radial-gradient(
+    circle at 50% 45%,
+    color-mix(in srgb, var(--jaga-teal) 55%, transparent),
+    transparent 68%
+  );
+  filter: blur(6px);
+}
+
+.photo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  border-radius: 38% 38% 34% 34% / 36% 36% 40% 40%;
+  /* The picture's own edges dissolve into the panel instead of being cut to a hard line. */
+  mask-image: radial-gradient(ellipse 72% 78% at 50% 44%, #000 56%, transparent 100%);
+  filter: saturate(0.88) contrast(1.04);
+}
+
+/* A thin teal wash over the photo, so it belongs to this page and not to a meeting room. */
+.wash {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--jaga-teal) 28%, transparent),
+    transparent 55%,
+    color-mix(in srgb, var(--jaga-slate) 38%, transparent)
+  );
+  mask-image: radial-gradient(ellipse 72% 78% at 50% 44%, #000 56%, transparent 100%);
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+/* A real cut-out with transparency: no fade needed, and the glow reads behind the subject. */
+.cut .photo,
+.cut .wash {
+  mask-image: none;
+  border-radius: 0;
+}
+
+.cut .photo {
+  object-fit: contain;
+  object-position: 50% 100%;
+}
+
+/* The initials, while there is no photo. */
+.initials {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1;
+}

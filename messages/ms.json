@@ -5157,7 +5157,7 @@
         "degree": {
           "years": "Civil engineering",
           "title": "B.Sc. Civil Engineering",
-          "where": "University of Bahrain · royal scholarship · ABET-accredited college",
+          "where": "University of Bahrain · Bahrain government scholarship · ABET-accredited college",
           "what": {
             "1": "Hydraulics, hydrology and structures: how water moves, and what it does to the things people build in its way.",
             "2": "Started out in civil engineering in Bahrain before moving into geospatial work."
@@ -5261,7 +5261,7 @@
         "title": "Education",
         "items": {
           "1": "B.Sc. Civil Engineering, University of Bahrain",
-          "2": "Royal scholarship recipient, ABET-accredited college of engineering"
+          "2": "Bahrain government scholarship recipient, ABET-accredited college of engineering"
         }
       },
       "membership": {
@@ -5302,10 +5302,6 @@
         "linkedin": {
           "title": "LinkedIn",
           "text": "Where my work history can be cross-checked."
-        },
-        "code": {
-          "title": "Jaga's source code",
-          "text": "The whole app, open to read. Faults and corrections are welcome."
         }
       },
       "emailTitle": "Write to Jaga",
@@ -5318,6 +5314,32 @@
       "how": "How Jaga works",
       "features": "What Jaga can do",
       "map": "The map"
+    },
+    "journey": {
+      "title": "Journey across industries",
+      "lead": "Three industries in a decade. Each move was a deliberate step onto unfamiliar ground.",
+      "sectors": {
+        "water": {
+          "short": "Water & energy",
+          "years": "2016-2021",
+          "name": "Water infrastructure & energy",
+          "tag": "Hydropower · Flood risk"
+        },
+        "space": {
+          "short": "Defence & space",
+          "years": "2021-2024",
+          "name": "Defence & space",
+          "tag": "Satellite Earth observation · Intelligence"
+        },
+        "aviation": {
+          "short": "Aviation & airports",
+          "years": "2024 to present",
+          "name": "Aviation & airports",
+          "tag": "27 airports · Aviation PMO"
+        }
+      },
+      "note": "Every move demanded a new technical language, a new regulatory world and a new set of people, and each one was answered the same way: learn it fast, earn credibility on the detail, and turn the challenge into delivered systems.",
+      "andJaga": "Jaga is the three of them arriving in the same place: the water and the dams from the first, the satellite imagery from the second, and from the third the business of building something people can actually depend on."
     }
   }
 }
