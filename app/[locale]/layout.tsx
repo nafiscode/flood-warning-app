@@ -4,10 +4,10 @@ import { IBM_Plex_Sans_Thai } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { AboutLink } from "@/components/AboutLink";
 import { AccountLink } from "@/components/AccountLink";
 import { AdminLink } from "@/components/AdminLink";
 import { Logo } from "@/components/brand/Logo";
-import { HelpLink } from "@/components/HelpLink";
 import { HotlineBar } from "@/components/HotlineBar";
 import { DaylightTheme } from "@/components/DaylightTheme";
 import { FeaturesLink } from "@/components/FeaturesLink";
@@ -179,8 +179,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     other app puts it (the owner's note, 12 Oct) - and at the *inline* end, so it
                     follows the writing direction if Jawi is ever chosen.
                   */}
-                  {/* What Jaga can do, one tap away (owner, 16 Oct): beside the bell from a tablet up. */}
-                  <HelpLink className="hidden sm:inline-flex" />
                   {/*
                     Day or night by hand (the owner's request, 18 Oct), beside the bell. The sun
                     still decides what every visit starts as; this is only for changing it.
@@ -209,10 +207,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   </Link>
                   {/* "Sign in" for a visitor, "Account" once signed in (the owner, 15 Oct). */}
                   <AccountLink />
+                  {/*
+                    "About" beside Account (the owner, 20 Oct): it opens "Who built Jaga", which
+                    is also the way to the other two pages a reader may want - the nav at its head
+                    leads to the science and the system, and the block at its foot to all three.
+                  */}
+                  <AboutLink has={hasAbout} />
                   {/* Only an admin ever sees this one, and only in their own browser. */}
                   <AdminLink />
-                  {/* On a phone the "?" ends this row: the top row has no room for it. */}
-                  <HelpLink className="ms-auto inline-flex sm:hidden" />
                 </div>
                 {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
                 <div className="flex w-full items-center justify-between gap-x-1 sm:order-4">

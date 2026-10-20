@@ -786,7 +786,8 @@
     "mapShort": "Peta Risiko",
     "theme": "Mod warna aplikasi",
     "themeToDark": "Tukar ke mod malam",
-    "themeToLight": "Tukar ke mod siang"
+    "themeToLight": "Tukar ke mod siang",
+    "about": "Tentang"
   },
   "notices": {
     "title": "Pemberitahuan",

@@ -77,8 +77,10 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
             <p className="text-small text-white/85">{t("role")}</p>
           </div>
         </div>
-        <p className="text-body text-white/90">{t("lead")}</p>
-        <p className="text-small text-white/80">{t("audience")}</p>
+        {/* The owner took out the line that used to sit here (20 Oct): the page says who built
+            Jaga and invites checking further down; saying so twice in the first breath was one
+            time too many. */}
+        <p className="text-body text-white/90">{t("audience")}</p>
         <ul className="flex flex-wrap gap-2" data-about-stats>
           {STATS.map((key) => (
             <li

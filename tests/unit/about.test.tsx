@@ -43,7 +43,6 @@ describe.skipIf(!HAS_ABOUT)("who built Jaga: the lines", () => {
       "name",
       "nameThai",
       "role",
-      "lead",
       "audience",
       "portraitAlt",
       "why.title",

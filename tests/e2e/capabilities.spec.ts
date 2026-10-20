@@ -45,22 +45,47 @@ test("the end of a page links to it, and the SOS page does not", async ({ page }
   await expect(page.locator("[data-features-link]")).toHaveCount(0);
 });
 
-test("the ? in the header opens it, costs the header no height, and is not on SOS", async ({
+/*
+ * The "?" that used to sit in the header is gone: "About" took its place on 20 Oct, because a
+ * fourth word in that row costs 29 px in Thai at 360 px and wraps all four labels. What Jaga can
+ * do is one tap further now - from the About page, and from the quiet line at the foot of every
+ * page, which is what the tests above cover. What this one holds is that the swap paid for
+ * itself: the header is no taller for having a word there, and the word still keeps off SOS.
+ */
+test("About in the header opens the page, costs no header height, and is not on SOS", async ({
   page,
 }) => {
   // Thai, no place chosen: the weather pill says "weather" in words, the tightest header there is.
   await page.goto("/map");
-  const help = page.locator("header [data-help-link]:visible");
-  await expect(help).toHaveCount(1);
-  const withHelp = await page.locator("header").boundingBox();
-  await page.addStyleTag({ content: "[data-help-link]{display:none!important}" });
+  const about = page.locator("header [data-about-nav]:visible");
+  await expect(about).toHaveCount(1);
+  const lines = await about.evaluate((el) => el.getBoundingClientRect().height);
+  const withAbout = await page.locator("header").boundingBox();
+  await page.addStyleTag({ content: "[data-about-nav]{display:none!important}" });
   const without = await page.locator("header").boundingBox();
-  expect(withHelp!.height).toBe(without!.height);
+  expect(withAbout!.height).toBe(without!.height);
+  // And it is one line: a wrapped label is the first sign the row has run out of room.
+  expect(lines).toBeLessThan(56);
   await page.goto("/en/map");
-  await page.locator("header [data-help-link]:visible").click();
-  await expect(page).toHaveURL(/\/en\/features$/);
+  await page.locator("header [data-about-nav]:visible").click();
+  await expect(page).toHaveURL(/\/en\/about$/);
   await page.goto("/en/sos");
-  await expect(page.locator("header [data-help-link]")).toHaveCount(0);
+  await expect(page.locator("header [data-about-nav]")).toHaveCount(0);
+});
+
+test("the About page is the way on to the other two", async ({ page }) => {
+  await page.goto("/en/about");
+  // The nav at its head: the science and the system.
+  await expect(page.locator('[data-how-tab="science"]')).toHaveAttribute(
+    "href",
+    "/en/how-it-works",
+  );
+  await expect(page.locator('[data-how-tab="system"]')).toHaveAttribute(
+    "href",
+    "/en/how-it-works/system",
+  );
+  // And the block at its foot leads to What Jaga can do.
+  await expect(page.locator('[data-about] a[href="/en/features"]')).toHaveCount(1);
 });
 
 test("the bell's panel ends with the way to it", async ({ page }) => {

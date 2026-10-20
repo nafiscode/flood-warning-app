@@ -37,6 +37,9 @@ const REQUIRED = envValue("JAGA_REQUIRE_CONTENT") === "1";
 const FILES = [
   ...["th", "ms", "en"].map((l) => [`about/${l}.json`, `messages/about/${l}.json`]),
   ["about/portrait.webp", "public/about/portrait.webp"],
+  // The card a chat app shows for /about, so a shared link says who built Jaga rather than
+  // showing the app's own picture (the owner, 20 Oct 2026).
+  ["about/share.jpg", "public/about/share.jpg"],
 ];
 
 /**

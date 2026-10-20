@@ -786,7 +786,8 @@
     "mapShort": "Risk & Live Map",
     "theme": "The app's colours",
     "themeToDark": "Switch to night colours",
-    "themeToLight": "Switch to day colours"
+    "themeToLight": "Switch to day colours",
+    "about": "About"
   },
   "notices": {
     "title": "Notifications",

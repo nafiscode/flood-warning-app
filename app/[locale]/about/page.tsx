@@ -2,6 +2,17 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { About } from "@/components/about/About";
+import { OG_LOCALE, siteUrl } from "@/lib/site";
+
+/**
+ * The card a chat app shows for this page. The layout gives every page Jaga's own picture, which
+ * is right for every page but this one: a link to "Who built Jaga" that shows the app's logo
+ * tells the reader nothing about what they are being sent (the owner, 20 Oct 2026). So this page
+ * carries its own, drawn from the same content the page is (`.claude/local/og-about.mjs`).
+ *
+ * It is fetched into `public/about/` with the rest of that content and is not in this repository.
+ */
+const SHARE = { url: "/about/share.jpg", width: 1200, height: 630 } as const;
 
 /**
  * Whether this page has anything to show. Its content is not in this repository (the owner,
@@ -20,7 +31,26 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!(await hasContent(locale))) return {};
   const t = await getTranslations({ locale, namespace: "about" });
-  return { title: t("title"), description: t("lead") };
+  const title = t("title");
+  const description = t("audience");
+  const url = new URL(locale === "th" ? "/about" : `/${locale}/about`, siteUrl()).toString();
+  const images = [{ ...SHARE, alt: `${title} – ${t("name")}` }];
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    // Spelled out rather than inherited: the layout's card is the app's, and this page is not.
+    openGraph: {
+      type: "profile",
+      siteName: "Jaga",
+      title,
+      description,
+      url,
+      locale: OG_LOCALE[locale] ?? "th_TH",
+      images,
+    },
+    twitter: { card: "summary_large_image", title, description, images: [SHARE.url] },
+  };
 }
 
 /**
