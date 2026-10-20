@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { ForwardIcon } from "@/components/icons";
 import { DamStateChip } from "@/components/map/Dam";
-import { NavigateChooser } from "@/components/places/SafePlaceCard";
+import { LastChecked, NavigateChooser } from "@/components/places/SafePlaceCard";
 import { type Dam } from "@/lib/dam";
 import { gaugeLook, trendOf } from "@/lib/gauge-marks";
 import type { Gauge } from "@/lib/map-data";
@@ -132,6 +132,9 @@ export function PlacePeek({
         {t(`type.${place.type}`)} · {t(place.verified ? "verified" : "unverified")}
       </p>
       <p className="font-medium">{t(`status.${place.status}`)}</p>
+      {/* How old that status is. The pop-up is how most people look at a shelter, so it may not
+          be the one place that shows a reading with no time on it. */}
+      <LastChecked place={place} />
       <NavigateChooser id={place.id} lat={place.lat} lon={place.lon} userAgent={userAgent} />
       <MoreButton onMore={onMore} />
     </div>

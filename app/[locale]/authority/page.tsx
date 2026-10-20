@@ -48,6 +48,7 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
   }
   const board = await readAuthorityBoard(session.userId);
   const tField = await getTranslations("fieldRescue");
+  const tChecks = await getTranslations("placeChecks");
   return (
     <div className="flex flex-col gap-5">
       {/* For people the team found by itself, who never sent an SOS (the owner, 13-14 Oct). */}
@@ -57,6 +58,10 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
         data-field-rescue-link="true"
       >
         {tField("link")}
+      </Link>
+      {/* The round of the safe places this team covers (owner, 20 Oct). */}
+      <Link href="/authority/places" className={buttonSecondary} data-place-checks-link="true">
+        {tChecks("link")}
       </Link>
       <NextIntlClientProvider messages={authorityMessages(await getMessages())}>
         <Console initial={board} />

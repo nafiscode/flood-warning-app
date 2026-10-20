@@ -94,6 +94,13 @@ const place = (id: string, th: string, en: string, more: Partial<SafePlace>): Sa
   capacity: 300,
   needs: null,
   updatedAt: ago(200),
+  // A team was there 40 minutes ago and the check holds for another five hours. The examples
+  // below also show the other two states a card has to draw: gone stale, and never checked.
+  // Like the alert examples further down, these are set against EXAMPLE_NOW while the card
+  // reads the real clock, so the scene drifts once that date passes.
+  checkedAt: ago(40),
+  checkedSource: "team",
+  checkDueAt: ahead(320),
   ...more,
 });
 
@@ -110,6 +117,11 @@ export const EXAMPLE_PLACES: NearbyPlaces = {
       flooded2025: true,
       capacity: 120,
       needs: "น้ำดื่ม ผ้าห่ม",
+      // Checked by an admin yesterday, and the window has run out: the card keeps "full" and
+      // says it has not been checked since.
+      checkedAt: ago(1500),
+      checkedSource: "admin",
+      checkDueAt: ago(1140),
     }),
     place("p3", "ศูนย์พักพิงตัวอย่าง", "Example Shelter", {
       type: "shelter",
@@ -122,6 +134,10 @@ export const EXAMPLE_PLACES: NearbyPlaces = {
       flooded2024: null,
       flooded2025: null,
       capacity: null,
+      // Nobody has ever been. Said plainly, because it is not the same as "fine".
+      checkedAt: null,
+      checkedSource: null,
+      checkDueAt: null,
     }),
   ],
   parking: [

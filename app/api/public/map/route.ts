@@ -27,7 +27,9 @@ export async function GET() {
       const { data, error } = await supabase
         .from("safe_places")
         .select(
-          "id, name, type, status, verification_status, point, freeboard_m, flooded_2024, flooded_2025, capacity, needs, updated_at",
+          // check_due_at is a computed field (migration ..a10_place_check_due): when the last
+          // check goes stale, from the level in force where the place is.
+          "id, name, type, status, verification_status, point, freeboard_m, flooded_2024, flooded_2025, capacity, needs, updated_at, checked_at, checked_source, check_due_at",
         )
         .neq("status", "closed")
         .contains("suitable_for", ["flood"])

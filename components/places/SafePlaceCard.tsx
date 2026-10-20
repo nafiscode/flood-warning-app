@@ -1,6 +1,8 @@
-import { useLocale, useTranslations } from "next-intl";
-import { PinIcon } from "@/components/icons";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { ClockIcon, PinIcon } from "@/components/icons";
+import { freshness } from "@/lib/place-checks";
 import { localName, navigateChoices, roughTravel, type SafePlace } from "@/lib/places";
+import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonSecondary, hint } from "@/lib/ui";
 
 type Props = {
@@ -39,6 +41,7 @@ export function SafePlaceCard({ place, userAgent = "" }: Props) {
         {t(`type.${place.type}`)} · {t(place.verified ? "verified" : "unverified")}
       </p>
       <p className="font-medium">{t(`status.${place.status}`)}</p>
+      <LastChecked place={place} />
       {d !== null && travel && (
         <p>
           {d < 1000
@@ -59,6 +62,43 @@ export function SafePlaceCard({ place, userAgent = "" }: Props) {
       </ul>
       <NavigateChooser id={place.id} lat={place.lat} lon={place.lon} userAgent={userAgent} />
     </article>
+  );
+}
+
+/**
+ * When somebody was last at the place and said what it was like, and who that was. Never a
+ * verdict: a time and a speaker, because "verified" on this card would read as "safe to go".
+ *
+ * Past its window the line turns into a grey "not checked since 14:20" marker and the status
+ * above it is left exactly as it was - stale is a marker, never a downgrade (safety rule 3).
+ */
+export function LastChecked({ place }: { place: SafePlace }) {
+  const t = useTranslations("places");
+  const format = useFormatter();
+  const checked = freshness({
+    checkedAt: place.checkedAt,
+    source: place.checkedSource,
+    dueAt: place.checkDueAt,
+  });
+  if (checked.state === "never") {
+    return (
+      <p className={hint} data-checked="never">
+        {t("checkedNever")}
+      </p>
+    );
+  }
+  const time = format.dateTime(new Date(checked.at), BANGKOK_DATE_TIME);
+  return (
+    <p
+      className={`flex items-center gap-1.5 ${hint}`}
+      data-checked={checked.state}
+      data-checked-source={checked.source}
+    >
+      <ClockIcon size={18} aria-hidden="true" />
+      {checked.state === "stale"
+        ? t("checkedStale", { time })
+        : t(`checkedBy.${checked.source}`, { time })}
+    </p>
   );
 }
 

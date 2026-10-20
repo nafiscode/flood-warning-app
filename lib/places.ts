@@ -1,3 +1,5 @@
+import { CHECK_SOURCES, type CheckSource } from "@/lib/place-checks";
+
 export const SAFE_PLACE_TYPES = [
   "shelter",
   "school",
@@ -27,6 +29,11 @@ export type SafePlace = {
   capacity: number | null;
   needs: string | null;
   updatedAt: string | null;
+  /** When somebody was last at the place and said what it was like (lib/place-checks.ts). */
+  checkedAt: string | null;
+  checkedSource: CheckSource | null;
+  /** When that check goes stale, from the level in force where the place is. */
+  checkDueAt: string | null;
 };
 
 export type NearbyPlaces = { people: SafePlace[]; parking: SafePlace[] };
@@ -34,6 +41,7 @@ export type NearbyPlaces = { people: SafePlace[]; parking: SafePlace[] };
 export function toSafePlace(row: Record<string, unknown>): SafePlace {
   const number = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
   const flag = (v: unknown) => (typeof v === "boolean" ? v : null);
+  const text = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);
   return {
     id: String(row.id),
     name: (row.name ?? {}) as Record<string, string>,
@@ -49,6 +57,9 @@ export function toSafePlace(row: Record<string, unknown>): SafePlace {
     capacity: number(row.capacity),
     needs: typeof row.needs === "string" && row.needs !== "" ? row.needs : null,
     updatedAt: typeof row.updated_at === "string" ? row.updated_at : null,
+    checkedAt: text(row.checked_at),
+    checkedSource: CHECK_SOURCES.find((s) => s === row.checked_source) ?? null,
+    checkDueAt: text(row.check_due_at),
   };
 }
 

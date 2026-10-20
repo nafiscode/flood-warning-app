@@ -157,6 +157,14 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
   - verification status
   - live status (open / full / closed) and capacity
   - facilities and current needs
+  - **when it was last checked, and by what kind of person** (see "Place checks" below)
+- **Place checks (decision 20 Oct 2026).** Two different facts were being flattened into the one word "verified", and they are kept apart. Whether the **record** is true - it exists, the capacity is about right, the ground floor went under in 2024 - is `verification_status`: structural, good for a season, written by an admin. Whether the place is **good right now** - open, full, water inside, road passable - is a *check*, and it perishes in hours.
+  - A check is never a verdict. The card shows a fact with a time and a speaker ("a local team checked this at 14:20"), never the bare word "verified", which on a resident's screen reads as *safe to go*.
+  - Checks are kept in an append-only table (`place_checks`) and are never updated: three teams saying "full" through one afternoon is itself the record, and it is the audit trail. A safe place carries only the latest check's time and standing.
+  - **How long a check stays good tightens with the level in force at the place's tambon:** 7 days at `normal`, 24 h at `watch`, 6 h at `warning`, 2 h at `evacuate`. Past the window the card keeps its status and gains a grey "not checked since [time]" marker - stale is a marker, never a downgrade and never hidden, exactly as safety rule 3 treats an alert.
+  - **The crowd never flips the badge, in either direction.** The card carries the latest official line (an admin, or a verified unit covering that tambon) and, separately and attributed, what residents have said - never merged, never the word verified. A false "closed" turns people away from a dry shelter and a false "open" sends somebody into a flooded one, so neither applies itself. Residents' checks instead show as their own line, in the page's own ink with no alert colour, and raise a flag for admins and teams.
+  - A check never computes or publishes an alert and never notifies a resident (safety rule 2). The point it was sent from and its author are personal data, read under RLS like a report (rule 5); the public answer says when and by what kind of person, never who. Unlike an SOS, a check may be rate-limited and refused: refusing one costs nobody their life.
+  - **Built 20 Oct 2026 (the thin slice):** the "last checked / not checked since" line on every card, and the teams' round list at `/authority/places` - the safe places in the tambons a verified unit covers, longest unchecked first, two taps to answer. Off-season it is the pre-season sweep: a unit walks the shelters in its tambon once before November and confirms what the app says. **After launch:** a resident's own check (signed in - LINE or phone OTP - not anonymously, the owner's choice of 20 Oct), the attributed residents' line on the card, the flag-and-correction queue on `/admin/safe-places`, and a printable QR for the shelter door that opens that place's check screen with the place already chosen.
 - **Navigation:** a "Navigate" button opens the device's maps app with the coordinates. Free, no routing API.
 - **Car parking:** high-ground parking spots are listed separately with the same fields.
 
@@ -390,7 +398,7 @@ Admins decide. The system never auto-publishes, with one exception (owner, 14 Oc
 
 ### 6.5 Other admin tools
 - **Moderation:** approve or hide report photos for public view.
-- **Safe places:** create, edit and verify them; update status (open / full / closed) and needs.
+- **Safe places:** create, edit and verify them; update status (open / full / closed) and needs. Since 20 Oct 2026 a verified unit covering the place can also say what it is like now, and an admin can check any place; see 4.3, "Place checks".
 - **Exports:** CSV/GeoJSON of reports, SOS (with an anonymized option) and alerts.
 - **Audit log viewer.**
 - **Handover notes:** a short shift log for volunteers across time zones.
@@ -562,6 +570,7 @@ These tables are created in phase A11 only, not with the initial schema.
 |---|---|---|---|---|
 | Alerts, safe places, hazard layer, gauges | read | read | read | read/write |
 | Report counts (hex) and moderated photos | read | read | read | read |
+| Place checks on a safe place (4.3) | the latest one's time and standing on the card, never who | same | read the checks on the places the unit covers; write one for a place it covers | read all; write one for any place (every check logged) |
 | Exact report location and reporter | none | own | read | read |
 | SOS exact location, details, phone | none | own | read (phone reveal logged) | read (logged) |
 | SOS suspected-spam flag | none | none | read | read/write (bulk dismiss, logged) |
