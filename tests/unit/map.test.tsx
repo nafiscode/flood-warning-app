@@ -21,6 +21,7 @@ import {
   exampleStatus,
 } from "@/lib/dev-examples";
 import { damFrame, type Dam } from "@/lib/dam";
+import { CONSOLE_QUERY } from "@/lib/console-view";
 import { layersFor } from "@/lib/hazards";
 import {
   boundsAround,
@@ -325,7 +326,18 @@ describe("the dam's card can be opened without hitting a two-pixel mark", () => 
      * opened it off the top of the screen and nothing seemed to happen (the owner, 14 Oct). The
      * page goes to it, the panel is given the keyboard, and it rings for a moment so the eye
      * lands on it.
+     *
+     * This is the laptop's answer, so the laptop is what the width says here: on a phone the
+     * card is under a map that has made room for it, and the test below holds that case.
      */
+    const was = window.matchMedia;
+    window.matchMedia = ((q: string) =>
+      ({
+        matches: q === CONSOLE_QUERY,
+        media: q,
+        addEventListener() {},
+        removeEventListener() {},
+      }) as unknown as MediaQueryList) as typeof window.matchMedia;
     const asked: { top?: number }[] = [];
     const had = Object.getOwnPropertyDescriptor(window, "scrollTo");
     Object.defineProperty(window, "scrollTo", {
@@ -347,6 +359,39 @@ describe("the dam's card can be opened without hitting a two-pixel mark", () => 
       // ...and it stops ringing by itself.
       vi.advanceTimersByTime(2_500);
       expect(panel.dataset.justOpened).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+      window.matchMedia = was;
+      if (had) Object.defineProperty(window, "scrollTo", had);
+    }
+  });
+
+  it("on a phone the same press brings back the map, not the card under it", () => {
+    /*
+     * The owner's option C (20 Oct): the map is at the top of the page and gives up height for
+     * what a tap answers with, so both are on the screen together. Bringing the *card* to the
+     * top - what a laptop wants - would push the map off the screen to show a card that is
+     * already on it. So the map is what is brought back, without a ring on it, and the card
+     * still takes the keyboard so a screen reader is moved to the answer.
+     */
+    const asked: { top?: number }[] = [];
+    const had = Object.getOwnPropertyDescriptor(window, "scrollTo");
+    Object.defineProperty(window, "scrollTo", {
+      configurable: true,
+      value: (to: { top?: number }) => asked.push(to),
+    });
+    vi.useFakeTimers();
+    try {
+      const c = dashboard({ dams: [EXAMPLE_DAM] });
+      fireEvent.click(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)!);
+      const panel = c.querySelector("[data-selected-panel]") as HTMLElement;
+      const frame = c.querySelector("[data-map-frame]") as HTMLElement;
+      vi.advanceTimersByTime(100);
+      expect(asked).toHaveLength(1);
+      expect(asked[0]!.top).toBeGreaterThanOrEqual(0);
+      expect(panel.dataset.justOpened).toBeUndefined();
+      expect(frame.dataset.justOpened).toBeUndefined();
+      expect(document.activeElement).toBe(panel);
     } finally {
       vi.useRealTimers();
       if (had) Object.defineProperty(window, "scrollTo", had);

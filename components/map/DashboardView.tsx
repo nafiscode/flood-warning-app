@@ -1,7 +1,14 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { PanelIcon } from "@/components/icons";
 import { areaLabels } from "@/lib/area-labels";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
@@ -30,7 +37,9 @@ import {
   PinIcon,
   WaveIcon,
 } from "@/components/icons";
+import { BackToMap } from "@/components/map/BackToMap";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
+import { useConsoleView } from "@/lib/console-view";
 import {
   areaName,
   pickName,
@@ -62,7 +71,7 @@ import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
 import { ConsoleSky, ConsoleWeather } from "./ConsoleSky";
 import { ConsoleTiles } from "./ConsoleTiles";
-import { SatelliteFlyby } from "./SatelliteFlyby";
+import { OrbitGlobe } from "./OrbitGlobe";
 import { HazardPlaceholder } from "./HazardPlaceholder";
 import { SatelliteFloodPanel } from "./SatelliteFlood";
 import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
@@ -245,6 +254,66 @@ function ChevronIcon({ next }: { next: boolean }) {
   );
 }
 
+/** The mark on a pill that opens a chooser under it: pointing down shut, up while it is open. */
+function ChevronDown({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className={`size-5 transition-transform motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M5 8l5 5 5-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * A block that explains the map: a plain card on the console, where there is room for it beside
+ * the map, and a folded one on a phone, where the same two blocks stood 1,708 px tall under it
+ * (the owner, 20 Oct, option C). Folded, never cut: everything inside is one tap away, which is
+ * what safety rule 3 asks of anything a colour means.
+ */
+function Fold({
+  fold,
+  title,
+  heading = false,
+  mark,
+  children,
+}: {
+  fold: boolean;
+  title: ReactNode;
+  /** The map's key is a section of the page and keeps its heading; the dam's is a caption. */
+  heading?: boolean;
+  mark: Record<string, string>;
+  children: ReactNode;
+}) {
+  const words = heading ? "text-body font-bold" : "font-medium";
+  const Title = heading ? "h2" : "p";
+  if (!fold) {
+    return (
+      <section className={card} {...mark}>
+        <Title className={words}>{title}</Title>
+        {children}
+      </section>
+    );
+  }
+  return (
+    <details className={card} {...mark}>
+      <summary className="flex min-h-tap cursor-pointer items-center">
+        <Title className={words}>{title}</Title>
+      </summary>
+      {children}
+    </details>
+  );
+}
+
 /** A round arrow: "back to how it was". */
 function ResetIcon() {
   return (
@@ -316,8 +385,22 @@ export function DashboardView(props: DashboardViewProps) {
   const format = useFormatter();
   const time = (iso: string) => format.dateTime(new Date(iso), BANGKOK_DATE_TIME);
 
+  /*
+   * A laptop console, or a phone? The CSS decides what the page looks like; this is for the few
+   * things CSS alone cannot do - which panels start folded, and whether a card has to be
+   * scrolled to. False until the page has hydrated, so the server's markup is the phone's.
+   */
+  const onConsole = useConsoleView();
+
   const [tab, setTab] = useState<"map" | "transparency">("map");
   const [hazardCode, setHazardCode] = useState("flood");
+  /*
+   * The phone's way through the controls (the owner, 20 Oct, option C): the hazard and the
+   * province, and the layer switches, each wait behind a pill above the map instead of standing
+   * between the reader and it. One at a time, and nothing is remembered: a chooser is something
+   * you open, use and leave.
+   */
+  const [phonePanel, setPhonePanel] = useState<"place" | "layers" | null>(null);
   // Phones and tablets show only the chosen hazard until this is opened (the owner, 16 Oct).
   const [moreHazards, setMoreHazards] = useState(false);
   // Someone who came to see reports wants the current situation, not the long-term risk.
@@ -665,8 +748,31 @@ export function DashboardView(props: DashboardViewProps) {
    * lives in lib/reveal.ts, because the live monitoring's detail needs exactly the same thing
    * (the owner, 17 Oct) and two copies of it would drift apart.
    */
-  const revealPanel = () =>
+  const revealPanel = () => {
+    /*
+     * On a phone the card opens under the map, which gives up height for it, so the thing to
+     * bring back is the map and not the card: putting the card's own top under the header -
+     * what every other caller of reveal wants - would push the 215 px of map above it clean off
+     * the screen, to show a card that was already on it. The card still takes the keyboard, so
+     * a screen reader is moved to the answer either way.
+     */
+    if (!onConsole) {
+      reveal(() => document.querySelector<HTMLElement>("[data-map-frame]"), {
+        mark: false,
+        focus: false,
+      });
+      // After the card has been drawn: this runs from the press that asks for it.
+      window.setTimeout(
+        () =>
+          document
+            .querySelector<HTMLElement>("[data-selected-panel]")
+            ?.focus({ preventScroll: true }),
+        0,
+      );
+      return;
+    }
     reveal(() => document.querySelector<HTMLElement>("[data-selected-panel]"));
+  };
   /*
    * The buttons that open each reservoir's figures (the owner, 18 Oct 2026): pressing the one in
    * the live monitoring brings the panel to them, rather than leaving the reader to hunt for the
@@ -772,6 +878,13 @@ export function DashboardView(props: DashboardViewProps) {
     const measure = () => {
       const bar = document.querySelector("footer")?.getBoundingClientRect().height ?? 0;
       document.documentElement.style.setProperty("--jaga-hotlines", `${Math.round(bar)}px`);
+      /*
+       * And the header, for the same reason and in the same breath (20 Oct): on a phone the
+       * map is given exactly the room those two leave, and both are taller in Thai than in
+       * English - 156 px and 93 px of a 640 px screen on the smallest phone we design for.
+       */
+      const top = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      document.documentElement.style.setProperty("--jaga-header", `${Math.round(top)}px`);
     };
     measure();
     const drawn = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 60);
@@ -1221,6 +1334,17 @@ export function DashboardView(props: DashboardViewProps) {
    * dressed up as a console with nothing in it (safety rule 10).
    */
   const consoleOn = tab === "map" && hazard.status === "active";
+  /*
+   * The same page below that breakpoint (the owner, 20 Oct: "phone map C"). A tester found the
+   * map hard to see and hard to use, and the measurements agreed: 7.3 screens of page, the map
+   * 384 px of it and not reached until 1.8 screens down, because the laptop console of 16 Oct
+   * has nowhere to go on a phone but one block on top of another. So on a phone the map goes
+   * first, the choosers wait behind two pills above it, and everything that explains the map
+   * folds shut under it. Nothing is taken away; app/globals.css does the arranging.
+   */
+  const phoneMap = consoleOn && !onConsole;
+  /** How many of the six layers are drawn, for the phone's layers pill. */
+  const layersOn = Object.values(featuresOn).filter(Boolean).length;
 
   /*
    * How far the alert and report figures reach, in words: the province the page is narrowed to,
@@ -1319,6 +1443,8 @@ export function DashboardView(props: DashboardViewProps) {
       className="flex flex-col gap-4"
       data-map-console={consoleOn ? "true" : undefined}
       data-console-page={consoleOn ? "map" : undefined}
+      data-map-phone={consoleOn ? "true" : undefined}
+      data-phone-panel={phonePanel ?? undefined}
       data-map-full={consoleOn && full ? "true" : undefined}
       data-side={consoleOn ? (sideOpen ? "open" : "closed") : undefined}
       data-side-peek={consoleOn && !sideOpen ? (sidePeek ? "on" : "off") : undefined}
@@ -1337,7 +1463,15 @@ export function DashboardView(props: DashboardViewProps) {
       {consoleOn && <ConsoleSky />}
 
       <div className="contents" data-console-area="head">
-        <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
+        {/*
+         * The title and the small turning Earth (components/map/OrbitGlobe) share one line: on a
+         * phone or tablet the globe sits at its end, and on the console the wrapper steps aside so
+         * both are items of the head row.
+         */}
+        <div className="flex items-center justify-between gap-3 console:contents">
+          <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
+          {consoleOn && <OrbitGlobe />}
+        </div>
         {/* Who the console is for and what it may show: public, aggregated answers, the same
             ones the phone gets, and never an exact point (safety rule 6). */}
         <p className="hidden text-small text-jaga-text-2 console:block" data-console-note="true">
@@ -1354,7 +1488,6 @@ export function DashboardView(props: DashboardViewProps) {
               : t("savedOld")}
           </p>
         )}
-        {consoleOn && <SatelliteFlyby />}
         {/* The weather in words, in the empty half of this line (the owner, 16 Oct). */}
         {consoleOn && <ConsoleWeather />}
       </div>
@@ -1386,6 +1519,46 @@ export function DashboardView(props: DashboardViewProps) {
         <div role="tabpanel" data-transparency-slot="true" />
       ) : (
         <>
+          {/*
+           * The phone's two pills (the owner, 20 Oct, option C). They stand between the title
+           * and the map and say what the map is showing; pressing one opens its chooser just
+           * below, above the map, and pressing it again puts it away. `console:hidden` keeps
+           * them off the laptop entirely, where the same controls are the left rail.
+           *
+           * They are written here, before the choosers they open, so a screen reader meets the
+           * page in the order the eye does.
+           */}
+          <div
+            className="flex flex-wrap gap-2 console:hidden"
+            data-phone-bar="true"
+            role="group"
+            aria-label={t("phone.barLabel")}
+          >
+            <button
+              type="button"
+              data-phone-pill="place"
+              aria-expanded={phonePanel === "place"}
+              onClick={() => setPhonePanel((was) => (was === "place" ? null : "place"))}
+              className={`${chipQuiet} ${phonePanel === "place" ? chipOn : chipOff} gap-1`}
+            >
+              <span className="sr-only">{t("phone.placeLabel")}</span>
+              <span aria-hidden="true">
+                {localName(hazard.name, locale)} · {scopeWord ?? t("province.all")}
+              </span>
+              <ChevronDown open={phonePanel === "place"} />
+            </button>
+            <button
+              type="button"
+              data-phone-pill="layers"
+              aria-expanded={phonePanel === "layers"}
+              onClick={() => setPhonePanel((was) => (was === "layers" ? null : "layers"))}
+              className={`${chipQuiet} ${phonePanel === "layers" ? chipOn : chipOff} gap-1`}
+            >
+              {t("phone.layers", { count: layersOn })}
+              <ChevronDown open={phonePanel === "layers"} />
+            </button>
+          </div>
+
           <div className="flex flex-col gap-1" data-console-area="hazard">
             <p className="font-medium" id="hazard-label">
               {t("hazard.label")}
@@ -1563,8 +1736,7 @@ export function DashboardView(props: DashboardViewProps) {
                     ) : undefined
                   }
                 />
-                <MapMethod />
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2" data-mode-row="true">
                   <p className="font-medium" id="mode-label">
                     {t("mode.label")}
                   </p>
@@ -1586,6 +1758,7 @@ export function DashboardView(props: DashboardViewProps) {
                     ))}
                   </div>
                 </div>
+                <MapMethod />
               </div>
 
               {/*
@@ -1704,7 +1877,12 @@ export function DashboardView(props: DashboardViewProps) {
                         className={mapButton}
                       >
                         <ZoomOutIcon />
-                        {t("zoomAll")}
+                        {/*
+                         * The words are read out but not drawn on a phone (20 Oct): three
+                         * labelled buttons wrapped onto two lines and took 180 px off a 375 px
+                         * map - half of what the reader came for, covered by its own controls.
+                         */}
+                        <span className="sr-only sm:not-sr-only">{t("zoomAll")}</span>
                       </button>
                       <button
                         type="button"
@@ -1714,7 +1892,7 @@ export function DashboardView(props: DashboardViewProps) {
                         className={mapButton}
                       >
                         <ResetIcon />
-                        {t("reset")}
+                        <span className="sr-only sm:not-sr-only">{t("reset")}</span>
                       </button>
                       {myBox && (
                         <button
@@ -1732,7 +1910,7 @@ export function DashboardView(props: DashboardViewProps) {
                           className={mapButton}
                         >
                           <HomePinIcon />
-                          {t("zoomMine")}
+                          <span className="sr-only sm:not-sr-only">{t("zoomMine")}</span>
                         </button>
                       )}
                       {/*
@@ -1990,8 +2168,15 @@ export function DashboardView(props: DashboardViewProps) {
                   </div>
                 )}
 
-                <section className={card} data-legend={mode}>
-                  <h2 className="text-body font-bold">{t("layers.title")}</h2>
+                {/*
+                 * The key to the map, and under it the reservoir's, folded on a phone and open
+                 * on the console (the owner, 20 Oct, option C). Between them they were 1,708 px
+                 * of the 2,142 px that stood below the map; folded they are two lines. They are
+                 * never further than one tap from the map, which is what safety rule 3 asks of
+                 * anything a colour means: the alert levels keep their icons and their words
+                 * inside, and the map's own badges say the level wherever they are drawn.
+                 */}
+                <Fold fold={phoneMap} heading title={t("layers.title")} mark={{ "data-legend": mode }}>
                   {layers.includes("alerts") && (
                     <div className="flex flex-col gap-2">
                       <p className="font-medium">{t("layers.alerts")}</p>
@@ -2125,7 +2310,7 @@ export function DashboardView(props: DashboardViewProps) {
                       </ul>
                     </div>
                   )}
-                </section>
+                </Fold>
 
                 {/*
                  * The live monitoring, under the map legend on a phone and a tablet (the owner,
@@ -2146,8 +2331,11 @@ export function DashboardView(props: DashboardViewProps) {
                 </div>
 
                 {dams.length > 0 && (
-                  <section className={card} data-dam-legend="true">
-                    <p className="font-medium">{tDam("path.title")}</p>
+                  <Fold
+                    fold={phoneMap}
+                    title={tDam("path.title")}
+                    mark={{ "data-dam-legend": "true" }}
+                  >
                     {/* The marks mean the same on every reservoir, so they are explained once. */}
                     <ul className="flex flex-col gap-1">
                       <DamLegendKeys />
@@ -2174,7 +2362,7 @@ export function DashboardView(props: DashboardViewProps) {
                         </span>
                       </button>
                     ))}
-                  </section>
+                  </Fold>
                 )}
 
                 {mode === "live" && (
@@ -2207,6 +2395,9 @@ export function DashboardView(props: DashboardViewProps) {
                   </section>
                 )}
               </div>
+
+              {/* Back to the map, while the map is off the top of a phone's screen. */}
+              {phoneMap && <BackToMap />}
 
               {/*
                * The band under the dashboard (the owner, 17 Oct 2026: the fifth readout "should

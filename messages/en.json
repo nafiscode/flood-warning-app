@@ -744,6 +744,12 @@
       "home": "Home",
       "layers": "Layers on the map",
       "basemap": "Choose the basemap"
+    },
+    "phone": {
+      "barLabel": "Map choices",
+      "placeLabel": "Choose the hazard and the province",
+      "layers": "Layers {count}",
+      "back": "Back to the map"
     }
   },
   "attribution": {

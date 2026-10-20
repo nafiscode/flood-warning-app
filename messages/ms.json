@@ -744,6 +744,12 @@
       "home": "Laman utama",
       "layers": "Lapisan pada peta",
       "basemap": "Pilih peta asas"
+    },
+    "phone": {
+      "barLabel": "Pilihan peta",
+      "placeLabel": "Pilih jenis bencana dan wilayah",
+      "layers": "Lapisan {count}",
+      "back": "Kembali ke peta"
     }
   },
   "attribution": {

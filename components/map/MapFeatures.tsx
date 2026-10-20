@@ -118,11 +118,23 @@ function useFloating(ref: RefObject<HTMLElement | null>) {
       frame = 0;
       const el = ref.current;
       if (!el) return;
+      /*
+       * Nothing to bring back while the chips are not drawn at all. Since 20 Oct the phone
+       * keeps them in a panel behind the "layers" pill above the map (app/globals.css, the
+       * phone block), and a hidden element measures as a box of no size at the very top of the
+       * page - which reads as "scrolled past" and would pin a row of six chips under the
+       * header from the first paint, over the map's own buttons.
+       */
+      const box = el.getBoundingClientRect();
+      if (box.width === 0 && box.height === 0) {
+        setState((s) => (s.float ? { float: false, top: s.top } : s));
+        return;
+      }
       const top = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
       const map = document.querySelector("[data-map-frame]")?.getBoundingClientRect().bottom;
       const drawn = document.querySelector("[data-map-chips-float]")?.getBoundingClientRect();
       if (drawn?.height) height = drawn.height;
-      const float = chipsFloat(el.getBoundingClientRect().bottom, top, map ?? null, height);
+      const float = chipsFloat(box.bottom, top, map ?? null, height);
       setState((s) => (s.float === float && s.top === top ? s : { float, top }));
     };
     const later = () => {

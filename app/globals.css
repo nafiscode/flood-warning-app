@@ -715,6 +715,132 @@
   }
 }
 
+/*
+ * The same page on a phone (the owner, 20 Oct 2026: "phone map C").
+ *
+ * One of the first testers said Risk & Live Map was hard to see and hard to use on a phone, and
+ * measuring it at 360x640 agreed: 7.3 screens of page, of which the map was 384 px and did not
+ * begin until 1,146 px down, with 912 px of choosers above it and 2,142 px of explaining below.
+ * The cause was not any one block but the shape: the console of 16 Oct has rails either side of
+ * its map, and on a phone those rails have nowhere to go but one block on top of another.
+ *
+ * So below the console's own breakpoint - this is its exact complement, and the two must be
+ * kept in step - the same blocks are put in a different order, and nothing is taken away:
+ *
+ *   * the map comes first, straight under the two pills, at about three quarters of the window;
+ *   * the choosers wait behind those pills, and open above the map, one at a time;
+ *   * what a tap answers with sits directly under the map, which gives up height for it;
+ *   * everything that explains the map is folded, under it.
+ *
+ * It is all done with `order` on blocks the page already writes, so the DOM is untouched and a
+ * screen reader meets the page in the order it is written. The one block that moves past
+ * another is "how this map was made": it is written with the layer switches, and shown with the
+ * other folded explainers below the map.
+ */
+@media (max-width: 1023.98px), (pointer: coarse) {
+  /*
+   * Everything not named below is an explainer or a readout, and belongs under the map.
+   *
+   * Three levels of it, because `order` works on the boxes and `>` works on the markup: the
+   * page's area wrappers are `display: contents`, so their children are flex items of the
+   * dashboard while still being written inside them. A child combinator would walk straight
+   * past every one of them (and did, the first time this was written).
+   */
+  [data-map-phone] > *,
+  [data-map-phone] > [data-console-area] > *,
+  [data-map-phone] > [data-console-area] > [data-map-layers] > *,
+  [data-map-phone] > [data-console-area] > [data-monitoring-here] > * {
+    order: 4;
+  }
+  [data-map-phone] h1,
+  [data-map-phone] [data-map-saved] {
+    order: 0;
+  }
+  [data-map-phone] [data-phone-bar] {
+    order: 1;
+  }
+  /* The two choosers, each shown only while its own pill is pressed. */
+  [data-map-phone] [data-console-area="hazard"],
+  [data-map-phone] [data-map-features],
+  [data-map-phone] [data-mode-row] {
+    order: 2;
+  }
+  /*
+   * An open chooser is capped so that the map is never pushed right off the screen while it is
+   * being used: the layer switches alone are 421 px, which is more than the whole of the room
+   * the screen has left. Toggling a layer and seeing the map answer is the point of them.
+   */
+  [data-map-phone][data-phone-panel] [data-console-area="hazard"],
+  [data-map-phone][data-phone-panel] [data-map-features] {
+    max-height: calc(var(--phone-free) * 0.6);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  [data-map-phone]:not([data-phone-panel="place"]) [data-console-area="hazard"],
+  [data-map-phone]:not([data-phone-panel="layers"]) [data-map-features],
+  [data-map-phone]:not([data-phone-panel="layers"]) [data-mode-row] {
+    display: none;
+  }
+  /* The map, the notices about the reader's own river above it, and the card a tap opens. */
+  [data-map-phone] [data-dam-notice],
+  [data-map-phone] [data-reports-near],
+  [data-map-phone] [data-reports-none],
+  [data-map-phone] [data-map-frame] {
+    order: 3;
+  }
+  [data-map-phone] [data-selected-panel] {
+    order: 3;
+    max-height: calc(var(--phone-free) * 0.45);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-jaga-line);
+    background: var(--color-jaga-surface);
+    padding: 0.75rem;
+    box-shadow: 0 8px 24px rgb(29 59 83 / 0.18);
+  }
+  /*
+   * The map gets exactly the room the screen has left. Both the things that take it are
+   * measured rather than guessed (components/map/DashboardView, the same effect that measures
+   * them for the full-screen map): the frozen header is 156 px in Thai on a 360x640 phone, and
+   * the hotline bar is sticky at the foot and another 93 px - which leaves 391 px, and is why
+   * a taller map than this would only put the map's own 2D/3D buttons behind the hotlines.
+   *
+   * It gives up height while a tap's answer is open under it, so the two are on the screen
+   * together instead of the card being somewhere the reader is not; MapLibre watches its own
+   * container and redraws itself, so nothing here has to tell it.
+   */
+  [data-map-phone] {
+    --phone-free: calc(
+      100dvh - var(--jaga-header, 9.75rem) - var(--jaga-hotlines, 4.5rem) - 1rem
+    );
+  }
+  [data-map-phone] [data-map] {
+    height: min(72dvh, var(--phone-free));
+  }
+  [data-map-phone]:has([data-selected-panel]) [data-map] {
+    height: max(12rem, calc(var(--phone-free) * 0.55));
+  }
+  /* The map is what the reader came for, so it is what a "back to the map" lands on. */
+  [data-map-phone] [data-map-frame] {
+    scroll-margin-top: 1rem;
+  }
+  /*
+   * Back to the map, once it has scrolled off the top (components/map/BackToMap). It sits at the
+   * end of the line so it is under the thumb, and never over the hotlines: it is drawn only
+   * while the map is off the screen, and the hotline bar is at the foot of the page, which is
+   * further down than any page with the map above it can be scrolled to while it is shown.
+   */
+  [data-back-to-map] {
+    position: fixed;
+    /* Above the hotline bar, which is sticky at the foot of every screen: the four numbers are
+       always one tap away (safety rule 4), so nothing is ever drawn over them. */
+    inset-block-end: calc(var(--jaga-hotlines, 4.5rem) + 0.75rem);
+    inset-inline-end: 1rem;
+    z-index: 18;
+  }
+}
+
 /* A9 (decision 15 Oct 2026): Thai body text is never below 18 px (CLAUDE.md), so in Thai the
    small style is the body size; hierarchy is kept by colour and weight. Malay and English keep
    16 px. The page's language is on <html>, so this follows the language switch. */
