@@ -5,10 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { DualTime } from "@/components/admin/DualTime";
 import {
+  ALERT_CHANNELS,
   DRILL_AUDIENCES,
   lineQuotaAfter,
   toPreview,
   updateHours,
+  type AlertChannel,
   type AlertPreview,
   type DrillAudience,
 } from "@/lib/alert-console";
@@ -45,6 +47,12 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
    */
   const [chosen, setChosen] = useState<Mode>("drill");
   const [audience, setAudience] = useState<DrillAudience[]>([]);
+  /*
+   * Which roads it travels (the owner, 21 Oct). Both to begin with, for a drill as much as for
+   * a real alert: a drill that leaves LINE out is not a test of LINE. Unticking LINE is how an
+   * admin keeps a drill from spending the month's quota.
+   */
+  const [channels, setChannels] = useState<AlertChannel[]>([...ALERT_CHANNELS]);
 
   useEffect(() => {
     const form = root.current?.closest("form");
@@ -136,7 +144,7 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
     setAudience(aud);
     if (state.kind === "ready") void review(aud);
   }
-  const quota = ready ? lineQuotaAfter(ready.preview) : null;
+  const quota = ready ? lineQuotaAfter(ready.preview, channels) : null;
 
   return (
     <div ref={root} className="flex flex-col gap-4" data-alert-review={state.kind}>
@@ -219,6 +227,43 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
               )}
             </fieldset>
           )}
+          {/*
+            The roads. Shown whenever something would actually be sent; a silent drill travels
+            none of them whatever is ticked, so the ticks would be noise there.
+          */}
+          {(sent || mode === "real") && (
+            <fieldset
+              className="flex flex-col rounded-xl border-2 border-jaga-edge px-3 py-1"
+              data-channels={channels.join(" ")}
+            >
+              <legend className="px-1 font-bold">{t("channels.legend")}</legend>
+              {ALERT_CHANNELS.map((c) => (
+                <label key={c} className={checkRow}>
+                  <input
+                    type="checkbox"
+                    name="channels"
+                    value={c}
+                    checked={channels.includes(c)}
+                    onChange={() =>
+                      setChannels(
+                        channels.includes(c)
+                          ? channels.filter((x) => x !== c)
+                          : ALERT_CHANNELS.filter((x) => x === c || channels.includes(x)),
+                      )
+                    }
+                    className={checkBox}
+                  />
+                  <span>
+                    <span className="font-bold">{t(`channels.${c}`)}</span>
+                    <span className={`block ${hint}`}>{t(`channels.${c}Hint`)}</span>
+                  </span>
+                </label>
+              ))}
+              {channels.length === 0 && (
+                <p className={hint}>{t("channels.none")}</p>
+              )}
+            </fieldset>
+          )}
           <p className={errorNotice} data-drill={drill} data-drill-sent={sent}>
             {mode === "real" ? t("real") : sent ? t("drillSent") : t("drill")}
           </p>
@@ -257,8 +302,8 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
                 </p>
                 <p className={hint}>
                   {t("reach.channels", {
-                    push: ready.preview.drillReach.push,
-                    line: ready.preview.drillReach.line,
+                    push: channels.includes("push") ? ready.preview.drillReach.push : 0,
+                    line: channels.includes("line") ? ready.preview.drillReach.line : 0,
                   })}
                 </p>
                 <p className={hint}>
@@ -282,8 +327,8 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
                 )}
                 <p className={hint}>
                   {t("reach.channels", {
-                    push: ready.preview.reach.push,
-                    line: ready.preview.reach.line,
+                    push: channels.includes("push") ? ready.preview.reach.push : 0,
+                    line: channels.includes("line") ? ready.preview.reach.line : 0,
                   })}
                 </p>
               </>

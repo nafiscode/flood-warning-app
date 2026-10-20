@@ -128,6 +128,20 @@ export function drillAudience(values: unknown[]): DrillAudience[] {
   return DRILL_AUDIENCES.filter((a) => ticked.has(a));
 }
 
+/**
+ * The roads an alert may travel (A10, the owner on 21 Oct). Push costs nothing; LINE is metered
+ * against a monthly quota, so an admin may leave it out - above all for a drill, which would
+ * otherwise spend the quota on a message nobody needed.
+ */
+export const ALERT_CHANNELS = ["push", "line"] as const;
+export type AlertChannel = (typeof ALERT_CHANNELS)[number];
+
+/** The ticked roads, in the order above, with anything unknown dropped. */
+export function alertChannels(values: unknown[]): AlertChannel[] {
+  const ticked = new Set(values.map(String));
+  return ALERT_CHANNELS.filter((c) => ticked.has(c));
+}
+
 /** What the review step shows before anything is sent. */
 export type AlertPreview = {
   level: AlertLevel;
@@ -201,7 +215,10 @@ export function toPreview(v: unknown): AlertPreview | null {
  */
 export function lineQuotaAfter(
   preview: Pick<AlertPreview, "reach" | "lineQuota" | "drillReach">,
+  /** Which roads are ticked: with LINE left out, nothing is spent and there is nothing to say. */
+  channels: readonly AlertChannel[] = ALERT_CHANNELS,
 ): { after: number; limit: number; over: boolean } | null {
+  if (!channels.includes("line")) return null;
   if (!preview.lineQuota || preview.lineQuota.limit <= 0) return null;
   // A drill spends the quota too, and a drill to the teams spends much less than the alert
   // would: the admin should see the number that is about to be spent, not the other one.

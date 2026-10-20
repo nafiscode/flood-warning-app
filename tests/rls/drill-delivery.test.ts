@@ -25,17 +25,24 @@ const soon = (hours: number) => new Date(Date.now() + hours * 3_600_000).toISOSt
 
 async function publish(
   tambons: string[],
-  extra: { drill?: boolean; audience?: string[]; template?: string } = {},
+  extra: {
+    drill?: boolean;
+    audience?: string[];
+    template?: string;
+    channels?: string[];
+  } = {},
 ): Promise<string> {
   const r = await rows<{ id: string }>(
     db,
-    `select admin_publish_alert($1, $2, $3, null, null, null, null, null, null, $4, false, $5) as id`,
+    `select admin_publish_alert($1, $2, $3, null, null, null, null, null, null, $4, false, $5, $6)
+            as id`,
     [
       extra.template ?? tpl.flood_warning,
       tambons,
       soon(3),
       extra.drill ?? true,
       extra.audience ?? [],
+      extra.channels ?? ["push", "line"],
     ],
   );
   return r[0]!.id;
@@ -363,6 +370,25 @@ describe("somebody who signed in and never chose a place", () => {
     expect(await rows(db, "select * from line_targets_for_alert($1)", [silent])).toHaveLength(0);
   });
 
+  it("is not one of them if they saved a place and muted it", async () => {
+    await asOwner(db);
+    // A muted watched place is a choice to be left alone, not an absence of one: the LINE
+    // suite caught this the day after the rule went in.
+    await db.query(
+      `insert into saved_places (user_id, label, tambon, notify, point)
+       values ($1, 'quiet', $2, false,
+               extensions.st_setsrid(extensions.st_geomfromtext($3), 4326))`,
+      [w.requester, w.songkhla, w.songkhlaPoint],
+    );
+    await as(db, { uid: w.admin });
+    const id = await publish([w.yala1], { drill: false, audience: [] });
+    expect(
+      (await rows<{ line_user_id: string }>(db, "select * from line_targets_for_alert($1)", [
+        id,
+      ])).map((l) => l.line_user_id),
+    ).not.toContain("U-no-place");
+  });
+
   it("stops being one of them as soon as they choose a place", async () => {
     await asOwner(db);
     await db.query(
@@ -378,5 +404,82 @@ describe("somebody who signed in and never chose a place", () => {
         id,
       ])).map((l) => l.line_user_id),
     ).not.toContain("U-no-place");
+  });
+});
+
+describe("the roads an alert travels", () => {
+  /*
+   * LINE is metered and push is not, so an admin may send a drill down one road and not the
+   * other (the owner, 21 Oct: "so for drill i don't need to lose Line quota"). The choice is
+   * kept on the alert, not only acted on by the server, so nothing that asks later can spend
+   * the quota that was declined.
+   */
+  beforeEach(async () => {
+    await asOwner(db);
+    await db.query("update profiles set line_user_id = $1 where user_id = $2", [
+      "U-roads",
+      w.requester,
+    ]);
+    await db.query(
+      `insert into push_subscriptions (user_id, endpoint, keys, tambons, locale)
+       values ($1, 'https://fcm.googleapis.com/roads', '{"p256dh":"k","auth":"a"}', '{}', 'th')`,
+      [w.requester],
+    );
+  });
+
+  it("spends no LINE quota on a drill sent by push alone", async () => {
+    await as(db, { uid: w.admin });
+    const id = await publish([w.yala1], {
+      drill: true,
+      audience: ["everyone"],
+      channels: ["push"],
+    });
+    expect(await rows(db, "select * from line_targets_for_alert($1)", [id])).toHaveLength(0);
+    expect(
+      (await rows<{ endpoint: string }>(db, "select * from push_targets_for_alert($1)", [id])).map(
+        (t) => t.endpoint,
+      ),
+    ).toContain("https://fcm.googleapis.com/roads");
+  });
+
+  it("holds the other way round too", async () => {
+    await as(db, { uid: w.admin });
+    const id = await publish([w.yala1], { drill: false, channels: ["line"] });
+    expect(await rows(db, "select * from push_targets_for_alert($1)", [id])).toHaveLength(0);
+    expect(
+      (await rows<{ line_user_id: string }>(db, "select * from line_targets_for_alert($1)", [
+        id,
+      ])).map((t) => t.line_user_id),
+    ).toContain("U-roads");
+  });
+
+  it("sends nothing at all when no road is ticked, and still publishes the alert", async () => {
+    await as(db, { uid: w.admin });
+    const id = await publish([w.yala1], { drill: false, channels: [] });
+    expect(await rows(db, "select * from push_targets_for_alert($1)", [id])).toHaveLength(0);
+    expect(await rows(db, "select * from line_targets_for_alert($1)", [id])).toHaveLength(0);
+    // It is still a real alert: in force, and the public can read it.
+    await as(db, "anon");
+    expect(await inPublicStatus(id)).toBe(1);
+  });
+
+  it("defaults to both, and refuses a road that is not one", async () => {
+    await as(db, { uid: w.admin });
+    const id = await publish([w.yala1], { drill: false });
+    await asOwner(db);
+    const [a] = await rows<{ channels: string[] }>(
+      db,
+      "select channels from alerts where id = $1",
+      [id],
+    );
+    expect(a!.channels.sort()).toEqual(["line", "push"]);
+
+    await as(db, { uid: w.admin });
+    await expectDenied(
+      db,
+      `select admin_publish_alert($1, $2, $3, null, null, null, null, null, null, false, false,
+                                  '{}', $4)`,
+      [tpl.flood_warning, [w.yala1], soon(3), ["carrier_pigeon"]],
+    );
   });
 });

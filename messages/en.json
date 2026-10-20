@@ -2906,7 +2906,15 @@
         "none": "Tick at least one, or nobody receives this drill."
       },
       "drillSent": "This drill will really be sent. It arrives with the sound of a real alert, and its words say it is a drill, that there is no hazard, and that nothing need be done.",
-      "publishDrillSent": "Send the drill"
+      "publishDrillSent": "Send the drill",
+      "channels": {
+        "legend": "Which roads it travels",
+        "push": "Phone notifications",
+        "pushHint": "Free, and reaches every phone that turned notifications on.",
+        "line": "LINE",
+        "lineHint": "Counts against this month's LINE quota. Leave it out so a drill does not spend it.",
+        "none": "No road ticked. The alert still stands in the app, on the map and in the bell, but no notification leaves."
+      }
     },
     "auto": {
       "title": "Automatic alarms",

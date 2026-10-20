@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { alertPayload, type PushAlert } from "@/lib/push";
 import {
+  alertChannels,
+  ALERT_CHANNELS,
   areaChoice,
   chosenTambons,
   drillAudience,
@@ -116,6 +118,42 @@ describe("the notification a sent drill makes", () => {
     for (const messages of [th, ms, en]) {
       expect(messages.alert.drill.note).toBeTruthy();
       expect(messages.alert.drill.why).toBeTruthy();
+    }
+  });
+});
+
+describe("the roads an alert travels", () => {
+  const BASE = {
+    level: "warning",
+    reason: "r",
+    messages: { th: "ข้อความ" },
+    tambons: 2,
+    reach: { homes: 10, watched: 4, people: 12, push: 9, line: 5 },
+    lineQuota: { used: 100, limit: 500 },
+    overlaps: [],
+  };
+
+  it("keeps only the two roads, in their own order", () => {
+    expect(alertChannels(["line", "push"])).toEqual(["push", "line"]);
+    expect(alertChannels(["sms", "push"])).toEqual(["push"]);
+    expect(alertChannels([])).toEqual([]);
+  });
+
+  it("says nothing about the quota when LINE is left out", () => {
+    const preview = toPreview(BASE)!;
+    expect(lineQuotaAfter(preview, ALERT_CHANNELS)!.after).toBe(105);
+    expect(lineQuotaAfter(preview, ["push"])).toBeNull();
+    expect(lineQuotaAfter(preview, [])).toBeNull();
+  });
+
+  it("has a word for both roads in all three languages", () => {
+    for (const messages of [th, ms, en]) {
+      const channels = messages.alertConsole.review.channels as Record<string, string>;
+      for (const road of ALERT_CHANNELS) {
+        expect(channels[road]).toBeTruthy();
+        expect(channels[`${road}Hint`]).toBeTruthy();
+      }
+      expect(channels.none).toBeTruthy();
     }
   });
 });

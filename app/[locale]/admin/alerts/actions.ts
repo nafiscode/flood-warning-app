@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { peopleTambons, readAreas, zoneMap } from "@/lib/admin-alerts";
 import {
+  alertChannels,
   areaChoice,
   chosenTambons,
   drillAudience,
@@ -63,6 +64,12 @@ export async function publishAlert(locale: string, form: FormData) {
   // Only a drill has an audience, and only a sent one has a non-empty list.
   const audience = drill ? drillAudience(form.getAll("drillAudience")) : [];
   const sent = audience.length > 0;
+  /*
+   * The roads it may travel. LINE is the metered one, so an admin may leave it out - the owner
+   * asked for this so a drill need not spend the month's quota. The database keeps the choice
+   * and refuses the road that was not ticked, so this is a form field and not a secret.
+   */
+  const channels = alertChannels(form.getAll("channels"));
 
   const supabase = await createClient();
   const { data: published, error } = await supabase.rpc("admin_publish_alert", {
@@ -78,6 +85,7 @@ export async function publishAlert(locale: string, form: FormData) {
     p_drill: drill,
     p_confirm_evacuate: form.get("confirmEvacuate") === "yes",
     p_drill_audience: audience,
+    p_channels: channels,
   });
   if (error) {
     const why =
@@ -99,8 +107,11 @@ export async function publishAlert(locale: string, form: FormData) {
    */
   if ((!drill || sent) && typeof published === "string") {
     after(async () => {
-      // Two roads, neither waiting for the other: web push, and LINE for those who use it.
-      await Promise.all([pushAlert(supabase, published), lineAlert(supabase, published)]);
+      // Two roads, neither waiting for the other, and only the ones that were ticked.
+      await Promise.all([
+        channels.includes("push") ? pushAlert(supabase, published) : null,
+        channels.includes("line") ? lineAlert(supabase, published) : null,
+      ]);
     });
   }
   redirect(`${localePath(locale, "/admin/alerts")}?done=published`);

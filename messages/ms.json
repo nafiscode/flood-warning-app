@@ -2906,7 +2906,15 @@
         "none": "Pilih sekurang-kurangnya satu, jika tidak tiada sesiapa menerima latihan ini."
       },
       "drillSent": "Latihan ini akan dihantar betul-betul. Mesejnya menyatakan ia latihan, tiada bahaya, dan tiada apa yang perlu dibuat.",
-      "publishDrillSent": "Hantar latihan"
+      "publishDrillSent": "Hantar latihan",
+      "channels": {
+        "legend": "Hantar melalui saluran mana",
+        "push": "Pemberitahuan telefon",
+        "pushHint": "Percuma; sampai kepada telefon yang menghidupkan pemberitahuan.",
+        "line": "LINE",
+        "lineHint": "Dikira dalam kuota mesej LINE bulan ini. Boleh ditinggalkan supaya latihan tidak membelanjakannya.",
+        "none": "Tiada saluran dipilih. Amaran tetap ada dalam aplikasi, di peta dan di loceng, tetapi tiada pemberitahuan dihantar."
+      }
     },
     "auto": {
       "title": "Penggera automatik",
