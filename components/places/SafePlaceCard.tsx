@@ -1,5 +1,6 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ClockIcon, PinIcon } from "@/components/icons";
+import { CheckThisPlace, ResidentsSaidLine } from "@/components/places/PlaceCheck";
 import { freshness } from "@/lib/place-checks";
 import { localName, navigateChoices, roughTravel, type SafePlace } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
@@ -42,6 +43,7 @@ export function SafePlaceCard({ place, userAgent = "" }: Props) {
       </p>
       <p className="font-medium">{t(`status.${place.status}`)}</p>
       <LastChecked place={place} />
+      <ResidentsSaidLine said={place.residentsSaid} />
       {d !== null && travel && (
         <p>
           {d < 1000
@@ -61,6 +63,9 @@ export function SafePlaceCard({ place, userAgent = "" }: Props) {
         {place.needs && <li>{t("needs", { text: place.needs })}</li>}
       </ul>
       <NavigateChooser id={place.id} lat={place.lat} lon={place.lon} userAgent={userAgent} />
+      {/* Anybody standing here can say what it is really like (the owner, 20 Oct). It can never
+          move the status above: see components/places/PlaceCheck.tsx. */}
+      <CheckThisPlace placeId={place.id} status={place.status} />
     </article>
   );
 }

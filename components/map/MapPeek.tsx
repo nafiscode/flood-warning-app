@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { ForwardIcon } from "@/components/icons";
 import { DamStateChip } from "@/components/map/Dam";
+import { CheckThisPlace, ResidentsSaidLine } from "@/components/places/PlaceCheck";
 import { LastChecked, NavigateChooser } from "@/components/places/SafePlaceCard";
 import { type Dam } from "@/lib/dam";
 import { gaugeLook, trendOf } from "@/lib/gauge-marks";
@@ -135,7 +136,12 @@ export function PlacePeek({
       {/* How old that status is. The pop-up is how most people look at a shelter, so it may not
           be the one place that shows a reading with no time on it. */}
       <LastChecked place={place} />
+      <ResidentsSaidLine said={place.residentsSaid} />
       <NavigateChooser id={place.id} lat={place.lat} lon={place.lon} userAgent={userAgent} />
+      {/* The owner, 20 Oct: the pin is where people already look, so it is where somebody
+          standing at the place can say what it is really like. Brief: the pop-up has no room
+          for the water and the road, and the three answers are the part that matters. */}
+      <CheckThisPlace placeId={place.id} status={place.status} brief />
       <MoreButton onMore={onMore} />
     </div>
   );

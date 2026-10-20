@@ -29,6 +29,10 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       "signInOffer",
       // The way in for a rescue unit, beside the resident's own, under the hero (18 Oct).
       "unitWay",
+      // Saying what a safe place is like now, from its card (20 Oct), and the line of what
+      // residents have said. It carries its own copy of the three words about the road rather
+      // than pulling the whole "report" namespace onto the home screen.
+      "placeChecks",
       // "What the monitoring shows now" under the hero (17 Oct), and the credit it carries for
       // the one line of it that comes from a weather model.
       "monitoring",
@@ -114,6 +118,8 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
       "signInOffer",
       // The one line that tells a team reading the map it can register (18 Oct).
       "unitWay",
+      // Saying what a safe place is like now, from its own pin (20 Oct).
+      "placeChecks",
       // The Sea and coast section (15 Oct), with the credit Open-Meteo asks for.
       "sea",
       "attribution",

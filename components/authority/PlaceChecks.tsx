@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ClockIcon, PinIcon } from "@/components/icons";
+import { ResidentsSaidLine, phonePosition } from "@/components/places/PlaceCheck";
 import {
   CHECKS_URL,
   CHECK_STATES,
@@ -82,7 +83,6 @@ type RowProps = {
 function PlaceRow({ place, now, sentState, onSent }: RowProps) {
   const t = useTranslations("placeChecks");
   const tPlaces = useTranslations("places");
-  const tReport = useTranslations("report");
   const format = useFormatter();
   const locale = useLocale();
   const [water, setWater] = useState<PlaceWater | null>(null);
@@ -104,7 +104,7 @@ function PlaceRow({ place, now, sentState, onSent }: RowProps) {
     setFailed(false);
     // Where the person is, if the phone will say quickly. A check is worth having without it,
     // so nothing waits on the position for more than a moment.
-    const point = await position();
+    const point = await phonePosition();
     try {
       const response = await fetch(CHECKS_URL, {
         method: "POST",
@@ -150,6 +150,11 @@ function PlaceRow({ place, now, sentState, onSent }: RowProps) {
             {tPlaces(`type.${place.type}`)} ·{" "}
             {locale === "en" ? place.tambonEn : place.tambonTh || place.tambonEn}
           </span>
+          {place.residentsSaid?.disputed && (
+            <span className={`block font-medium`} data-round-disputed="true">
+              {t("disputed")}
+            </span>
+          )}
           <span className={`mt-1 flex items-center gap-1.5 ${hint}`} data-round-age="true">
             <ClockIcon size={18} aria-hidden="true" />
             {checked.state === "never"
@@ -165,6 +170,9 @@ function PlaceRow({ place, now, sentState, onSent }: RowProps) {
           </span>
         </summary>
         <div className="flex flex-col gap-3 border-t border-jaga-line p-4">
+          {/* What residents have said about it. A place two or more of them dispute is first in
+              the round (migration ..a10_resident_place_checks), so this is the top of the list. */}
+          <ResidentsSaidLine said={place.residentsSaid} />
           <p className={hint}>
             {t("listed", { status: tPlaces(`status.${place.status}`) })}
             {place.capacity !== null && ` · ${tPlaces("capacity", { count: place.capacity })}`}
@@ -186,11 +194,11 @@ function PlaceRow({ place, now, sentState, onSent }: RowProps) {
                 name={`water-${place.id}`}
               />
               <Choice
-                legend={tReport("roadAccess")}
+                legend={t("roadLabel")}
                 options={PLACE_ROADS}
                 chosen={road}
                 onChoose={setRoad}
-                word={(r) => tReport(`roads.${r}`)}
+                word={(r) => t(`roads.${r}`)}
                 name={`road-${place.id}`}
               />
               <label className="flex flex-col gap-1">
@@ -267,16 +275,4 @@ function Choice<T extends string>({
       ))}
     </fieldset>
   );
-}
-
-/** The phone's position if it answers inside 5 s, else nothing. A check never waits on it. */
-function position(): Promise<{ lat: number; lon: number } | null> {
-  if (typeof navigator === "undefined" || !navigator.geolocation) return Promise.resolve(null);
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-      () => resolve(null),
-      { timeout: 5000, maximumAge: 60_000 },
-    );
-  });
 }

@@ -101,6 +101,7 @@ const place = (id: string, th: string, en: string, more: Partial<SafePlace>): Sa
   checkedAt: ago(40),
   checkedSource: "team",
   checkDueAt: ahead(320),
+  residentsSaid: null,
   ...more,
 });
 
@@ -122,6 +123,14 @@ export const EXAMPLE_PLACES: NearbyPlaces = {
       checkedAt: ago(1500),
       checkedSource: "admin",
       checkDueAt: ago(1140),
+      // Three people standing there say it is closed while the card still says full: shown as
+      // its own line, and never as the status. This is the case the feature exists for.
+      residentsSaid: {
+        counts: { closed: 3 },
+        people: 3,
+        latest: ago(25),
+        disputed: true,
+      },
     }),
     place("p3", "ศูนย์พักพิงตัวอย่าง", "Example Shelter", {
       type: "shelter",

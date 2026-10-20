@@ -284,3 +284,150 @@ describe("what a check is worth to a reader", () => {
     expect(seen.map((r) => r.place_id)).toEqual([mine]);
   });
 });
+
+const RESIDENT_SQL = `select place_check_resident(p_place => $1, p_open => $2::safe_place_status,
+     p_water => $3::place_water, p_road => $4::road_access, p_note => $5,
+     p_lat => $6, p_lon => $7)`;
+const residentArgs = (placeId: string, open = "closed", extra: Record<string, unknown> = {}) => [
+  placeId,
+  open,
+  extra.water ?? null,
+  extra.road ?? null,
+  extra.note ?? null,
+  extra.lat ?? null,
+  extra.lon ?? null,
+];
+const saySomething = (placeId: string, open = "closed", extra: Record<string, unknown> = {}) =>
+  one<{ place_check_resident: string }>(RESIDENT_SQL, residentArgs(placeId, open, extra));
+
+/**
+ * A resident's own check, sent from the place's pin on the map (the owner, 20 Oct). The rule
+ * these tests exist for: it can tell everybody and it can reach the covering team, but it can
+ * never move the status on the card.
+ */
+describe("place_check_resident", () => {
+  it("lets a signed-in resident say what a place is like", async () => {
+    const id = await place(w.yala1);
+    await as(db, { uid: w.otherUser });
+    await saySomething(id, "closed");
+    await asOwner(db);
+    const row = await one<{ source: string; open_state: string; author_id: string }>(
+      "select source, open_state, author_id from place_checks where place_id = $1",
+      [id],
+    );
+    expect(row.source).toBe("resident");
+    expect(row.open_state).toBe("closed");
+    expect(row.author_id).toBe(w.otherUser);
+  });
+
+  it("NEVER moves the status on the place, however many people say otherwise", async () => {
+    // The whole point. A false "closed" turns people away from a dry shelter and a false "open"
+    // sends somebody into a flooded one, so only an admin or a covering team writes this.
+    const id = await place(w.yala1);
+    await asOwner(db);
+    await db.query("update safe_places set status = 'open' where id = $1", [id]);
+    for (const uid of [w.otherUser, w.requester]) {
+      await as(db, { uid });
+      await saySomething(id, "closed");
+    }
+    await asOwner(db);
+    const row = await one<{ status: string; checked_at: string | null; checked_source: string | null }>(
+      "select status, checked_at, checked_source from safe_places where id = $1",
+      [id],
+    );
+    expect(row.status).toBe("open");
+    expect(row.checked_at).toBeNull();
+    expect(row.checked_source).toBeNull();
+  });
+
+  it("refuses a visitor who is not signed in", async () => {
+    const id = await place(w.yala1);
+    await as(db, "anon");
+    expect(await expectDenied(db, RESIDENT_SQL, residentArgs(id))).toBe("42501");
+  });
+
+  it("refuses a second check on the same place straight away", async () => {
+    const id = await place(w.yala1);
+    await as(db, { uid: w.otherUser });
+    await saySomething(id, "closed");
+    expect(await expectDenied(db, RESIDENT_SQL, residentArgs(id, "open"))).toBe("P0003");
+  });
+
+  it("refuses 'unknown', which is not a check", async () => {
+    const id = await place(w.yala1);
+    await as(db, { uid: w.otherUser });
+    expect(await expectDenied(db, RESIDENT_SQL, residentArgs(id, "unknown"))).toBe("23514");
+  });
+});
+
+describe("what residents said, as the public sees it", () => {
+  it("counts people and not rows, and says nothing about who they are", async () => {
+    const id = await place(w.yala1);
+    for (const uid of [w.otherUser, w.requester]) {
+      await as(db, { uid });
+      await saySomething(id, "full");
+    }
+    await asOwner(db);
+    const said = await one<{ said: Record<string, unknown> }>(
+      "select residents_said(sp) as said from safe_places sp where sp.id = $1",
+      [id],
+    );
+    expect(said.said.people).toBe(2);
+    expect((said.said.counts as Record<string, number>).full).toBe(2);
+    const json = JSON.stringify(said.said);
+    expect(json).not.toContain(w.otherUser);
+    expect(json).not.toContain(w.requester);
+  });
+
+  it("calls it disputed only when two people disagree with the card, never one", async () => {
+    const id = await place(w.yala1);
+    await asOwner(db);
+    await db.query("update safe_places set status = 'open' where id = $1", [id]);
+    const disputed = async () =>
+      (
+        await one<{ d: boolean }>(
+          "select (residents_said(sp) ->> 'disputed')::boolean as d from safe_places sp where sp.id = $1",
+          [id],
+        )
+      ).d;
+    await as(db, { uid: w.otherUser });
+    await saySomething(id, "closed");
+    await asOwner(db);
+    expect(await disputed()).toBe(false);
+    await as(db, { uid: w.requester });
+    await saySomething(id, "closed");
+    await asOwner(db);
+    expect(await disputed()).toBe(true);
+  });
+
+  it("reaches the covering team's round list, at the top of it", async () => {
+    const quiet = await place(w.yala1, "Nobody has been");
+    const disputed = await place(w.yala1, "Residents disagree");
+    await asOwner(db);
+    await db.query("update safe_places set status = 'open' where id = $1", [disputed]);
+    for (const uid of [w.otherUser, w.requester]) {
+      await as(db, { uid });
+      await saySomething(disputed, "closed");
+    }
+    await as(db, { uid: w.yalaRescue.user });
+    const list = await rows<{ place_id: string; residents_said: Record<string, unknown> | null }>(
+      db,
+      "select place_id, residents_said from authority_places()",
+    );
+    // Above even a place nobody has ever been to: two people disagreeing is the thing a team
+    // can act on today.
+    expect(list[0]!.place_id).toBe(disputed);
+    expect(list[0]!.residents_said?.people).toBe(2);
+    expect(list.map((r) => r.place_id)).toContain(quiet);
+  });
+
+  it("is nothing at all when nobody has said anything", async () => {
+    const id = await place(w.yala1);
+    await asOwner(db);
+    const said = await one<{ said: unknown }>(
+      "select residents_said(sp) as said from safe_places sp where sp.id = $1",
+      [id],
+    );
+    expect(said.said).toBeNull();
+  });
+});

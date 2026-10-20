@@ -101,6 +101,7 @@ const roundPlace = (over: Partial<RoundPlace> = {}): RoundPlace => ({
   dueAt: new Date(Date.parse(AT) + 6 * 60 * 60 * 1000).toISOString(),
   level: "warning",
   mine: false,
+  residentsSaid: null,
   ...over,
 });
 

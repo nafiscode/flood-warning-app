@@ -1,4 +1,9 @@
-import { CHECK_SOURCES, type CheckSource } from "@/lib/place-checks";
+import {
+  CHECK_SOURCES,
+  toResidentsSaid,
+  type CheckSource,
+  type ResidentsSaid,
+} from "@/lib/place-checks";
 
 export const SAFE_PLACE_TYPES = [
   "shelter",
@@ -34,6 +39,8 @@ export type SafePlace = {
   checkedSource: CheckSource | null;
   /** When that check goes stale, from the level in force where the place is. */
   checkDueAt: string | null;
+  /** What residents have said lately: counts of people only. Never the card's status. */
+  residentsSaid: ResidentsSaid | null;
 };
 
 export type NearbyPlaces = { people: SafePlace[]; parking: SafePlace[] };
@@ -60,6 +67,7 @@ export function toSafePlace(row: Record<string, unknown>): SafePlace {
     checkedAt: text(row.checked_at),
     checkedSource: CHECK_SOURCES.find((s) => s === row.checked_source) ?? null,
     checkDueAt: text(row.check_due_at),
+    residentsSaid: toResidentsSaid(row.residents_said),
   };
 }
 

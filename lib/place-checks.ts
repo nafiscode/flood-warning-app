@@ -101,6 +101,8 @@ export type RoundPlace = {
   level: string;
   /** Was the last check this team's own? The list is a round shared with other teams. */
   mine: boolean;
+  /** What residents have said lately. A disputed place is first in the round list. */
+  residentsSaid: ResidentsSaid | null;
 };
 
 type Row = Record<string, unknown>;
@@ -127,6 +129,7 @@ export function toRoundPlace(r: Row): RoundPlace | null {
     dueAt: text(r.check_due_at),
     level: String(r.level ?? "normal"),
     mine: r.mine === true,
+    residentsSaid: toResidentsSaid(r.residents_said),
   };
 }
 
@@ -153,14 +156,62 @@ export function overdueHours(p: RoundPlace, now: Date = new Date()): number | nu
 }
 
 /**
- * The words the round list needs in the browser. The two about the road are the flood report's
- * own (spec 4.5): the same three answers, so they are asked in the same words.
+ * The words the round list needs in the browser. The three about the road are the flood report's
+ * own (spec 4.5) - the same three answers, so they are asked in the same words - but copied into
+ * this namespace rather than pulling all 47 report keys onto a screen that needs four of them. A
+ * test pins them equal to their source.
  */
 export function placeChecksMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
-  const all = messages as Record<string, Record<string, AbstractIntlMessages>>;
+  const all = messages as Record<string, AbstractIntlMessages>;
+  return { placeChecks: all.placeChecks!, places: all.places! };
+}
+
+/**
+ * What residents have said about a place lately: counts of people, never who they are. Null when
+ * nobody has said anything inside the window (12 h, or the place's own shorter window under a
+ * warning or an evacuate).
+ *
+ * This never becomes the badge. A false "closed" turns people away from a dry shelter and a
+ * false "open" sends somebody into a flooded one, so what residents say is drawn as its own
+ * attributed line and the status above it is only ever moved by an admin or by a team covering
+ * the place (migration ..a10_resident_place_checks).
+ */
+export type ResidentsSaid = {
+  /** How many different people said each thing. One person repeating themselves counts once. */
+  counts: Partial<Record<SafePlaceStatus, number>>;
+  people: number;
+  latest: string | null;
+  /** Two or more people disagreeing with what the card says. One person is never a dispute. */
+  disputed: boolean;
+};
+
+export function toResidentsSaid(value: unknown): ResidentsSaid | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const counts: Partial<Record<SafePlaceStatus, number>> = {};
+  const from = (raw.counts ?? {}) as Record<string, unknown>;
+  for (const state of ["open", "full", "closed", "unknown"] as const) {
+    const n = Number(from[state]);
+    if (Number.isFinite(n) && n > 0) counts[state] = Math.trunc(n);
+  }
+  const people = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  if (people === 0) return null;
   return {
-    placeChecks: all.placeChecks as AbstractIntlMessages,
-    places: all.places as AbstractIntlMessages,
-    report: { roadAccess: all.report!.roadAccess!, roads: all.report!.roads! },
+    counts,
+    people,
+    latest: typeof raw.latest === "string" ? raw.latest : null,
+    disputed: raw.disputed === true,
   };
 }
+
+/** The one thing most people said, for the single line a card has room for. */
+export function loudest(said: ResidentsSaid): { state: SafePlaceStatus; people: number } {
+  const entries = Object.entries(said.counts) as [SafePlaceStatus, number][];
+  // Sorted so the answer cannot depend on the order the database happened to return.
+  entries.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const [state, people] = entries[0]!;
+  return { state, people };
+}
+
+/** Where a resident sends their own check. The team's round list has its own address. */
+export const RESIDENT_CHECK_URL = "/api/places/check";
