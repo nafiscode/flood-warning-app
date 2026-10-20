@@ -10,6 +10,13 @@ type Props = {
   place: SafePlace;
   /** The phone's user agent, to open the right maps app; empty on the server. */
   userAgent?: string;
+  /**
+   * Draw "Is this still right?" on this card. The owner, 20 Oct: the pin only. So the map's
+   * expanded card (reached by tapping a pin, then More) asks, and the home screen's top-three
+   * list does not - three folded buttons on a screen already reported as too long on a phone.
+   * What residents have said is shown on every card either way: that is a reading, not an ask.
+   */
+  canCheck?: boolean;
 };
 
 /**
@@ -17,7 +24,7 @@ type Props = {
  * both say so (safety rule 8). "Navigate" offers the maps apps and hands the one chosen the
  * coordinates: free, no routing service.
  */
-export function SafePlaceCard({ place, userAgent = "" }: Props) {
+export function SafePlaceCard({ place, userAgent = "", canCheck = false }: Props) {
   const t = useTranslations("places");
   const locale = useLocale();
   const d = place.distanceM;
@@ -63,9 +70,10 @@ export function SafePlaceCard({ place, userAgent = "" }: Props) {
         {place.needs && <li>{t("needs", { text: place.needs })}</li>}
       </ul>
       <NavigateChooser id={place.id} lat={place.lat} lon={place.lon} userAgent={userAgent} />
-      {/* Anybody standing here can say what it is really like (the owner, 20 Oct). It can never
-          move the status above: see components/places/PlaceCheck.tsx. */}
-      <CheckThisPlace placeId={place.id} status={place.status} />
+      {/* Anybody standing here can say what it is really like (the owner, 20 Oct). Where there
+          is no team covering the tambon it writes the status itself; everywhere else it can only
+          tell people and reach the team. See components/places/PlaceCheck.tsx. */}
+      {canCheck && <CheckThisPlace placeId={place.id} status={place.status} />}
     </article>
   );
 }

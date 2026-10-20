@@ -320,7 +320,7 @@ describe("place_check_resident", () => {
     expect(row.author_id).toBe(w.otherUser);
   });
 
-  it("NEVER moves the status on the place, however many people say otherwise", async () => {
+  it("never moves the status where a team covers the area, however many people say so", async () => {
     // The whole point. A false "closed" turns people away from a dry shelter and a false "open"
     // sends somebody into a flooded one, so only an admin or a covering team writes this.
     const id = await place(w.yala1);
@@ -429,5 +429,124 @@ describe("what residents said, as the public sees it", () => {
       [id],
     );
     expect(said.said).toBeNull();
+  });
+});
+
+/**
+ * Where nobody covers the tambon, the person standing there writes the status (the owner,
+ * 20 Oct: "if no team then should directly update, no check"). This supersedes the rule above
+ * for unteamed tambons only. w.yala2 has no coverage in the fixtures; w.yala1 has yalaRescue.
+ */
+describe("a tambon with no team", () => {
+  it("has no covering team, where yala1 does", async () => {
+    // Read as the owner, as place_check_resident does. A resident may not ask this question at
+    // all: coverage is readable only by teams and admins (spec 9), so the function keeps the
+    // caller's own view and execute is revoked from clients - the next test is that revoke.
+    await asOwner(db);
+    const seen = await one<{ a: boolean; b: boolean }>(
+      "select has_covering_team($1) as a, has_covering_team($2) as b",
+      [w.yala1, w.yala2],
+    );
+    expect(seen.a).toBe(true);
+    expect(seen.b).toBe(false);
+  });
+
+  it("will not tell a signed-in person, or a visitor, which tambons have nobody", async () => {
+    // Otherwise this is a map of where no team is watching, which section 9 keeps to teams and
+    // admins. The visitor half is here because the first revoke missed the default PUBLIC grant
+    // that `create function` makes, so the question was answerable by anybody at all.
+    await as(db, { uid: w.otherUser });
+    expect(await expectDenied(db, "select has_covering_team($1)", [w.yala1])).toBe("42501");
+    await as(db, "anon");
+    expect(await expectDenied(db, "select has_covering_team($1)", [w.yala1])).toBe("42501");
+  });
+
+  it("lets a resident's check write the status, marked as a resident's", async () => {
+    const id = await place(w.yala2, "Unteamed shelter");
+    await asOwner(db);
+    await db.query("update safe_places set status = 'open' where id = $1", [id]);
+    await as(db, { uid: w.otherUser });
+    await saySomething(id, "full");
+    await asOwner(db);
+    const row = await one<{
+      status: string;
+      checked_source: string;
+      checked_by_unit: string | null;
+      checked_at: string | null;
+    }>(
+      "select status, checked_source, checked_by_unit, checked_at from safe_places where id = $1",
+      [id],
+    );
+    expect(row.status).toBe("full");
+    // Never dressed up as a team's or Jaga's word: the card says who said it.
+    expect(row.checked_source).toBe("resident");
+    expect(row.checked_by_unit).toBeNull();
+    expect(row.checked_at).not.toBeNull();
+  });
+
+  it("writes that it set the status, so there is a trail", async () => {
+    const id = await place(w.yala2);
+    await as(db, { uid: w.otherUser });
+    await saySomething(id, "closed");
+    await asOwner(db);
+    const seen = await rows<{ action: string }>(
+      db,
+      "select action from audit_log where entity = 'safe_places' and entity_id = $1 order by action",
+      [id],
+    );
+    expect(seen.map((r) => r.action)).toContain("place_status_by_resident");
+    expect(seen.map((r) => r.action)).toContain("place_checked");
+  });
+
+  it("stops writing the status as soon as a team covers the tambon", async () => {
+    const id = await place(w.yala2);
+    await asOwner(db);
+    await db.query("update safe_places set status = 'open' where id = $1", [id]);
+    await db.query(
+      `insert into authority_coverage (unit_id, tambon, selected_level, selected_code)
+       values ($1, $2, 'tambon', $2)`,
+      [w.yalaRescue.id, w.yala2],
+    );
+    await as(db, { uid: w.otherUser });
+    await saySomething(id, "closed");
+    await asOwner(db);
+    const row = await one<{ status: string; checked_source: string | null }>(
+      "select status, checked_source from safe_places where id = $1",
+      [id],
+    );
+    expect(row.status).toBe("open");
+    expect(row.checked_source).toBeNull();
+  });
+
+  it("KEEPS a place a resident closed in the top three, and still drops one an admin closed", async () => {
+    // Without this, one person could take the only shelter in an unteamed tambon off the list
+    // with nobody to put it back. The card says "closed, reported by someone there"; the reader
+    // decides. A team's or an admin's "closed" still removes it, as before.
+    const byResident = await place(w.yala2, "Closed by a resident");
+    const byAdmin = await place(w.yala2, "Closed by an admin");
+    await as(db, { uid: w.otherUser });
+    await saySomething(byResident, "closed");
+    await as(db, { uid: w.admin });
+    await one(
+      `select place_check_send(p_place => $1, p_open => 'closed'::safe_place_status,
+         p_water => null, p_road => null, p_needs => null, p_lat => null, p_lon => null)`,
+      [byAdmin],
+    );
+    const at = await one<{ lat: number; lon: number }>(
+      `select extensions.st_y(extensions.st_pointonsurface(geom)) as lat,
+              extensions.st_x(extensions.st_pointonsurface(geom)) as lon
+         from tambons where code = $1`,
+      [w.yala2],
+    );
+    await as(db, "anon");
+    const near = await rows<{ id: string; status: string }>(
+      db,
+      "select id, status from safe_places_near($1, $2, 20)",
+      [at.lat, at.lon],
+    );
+    const ids = near.map((r) => r.id);
+    expect(ids).toContain(byResident);
+    expect(ids).not.toContain(byAdmin);
+    expect(near.find((r) => r.id === byResident)!.status).toBe("closed");
   });
 });

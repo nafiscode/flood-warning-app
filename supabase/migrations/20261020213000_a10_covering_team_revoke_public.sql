@@ -1,0 +1,11 @@
+-- A10: the revoke a moment ago did not bite, because of the default grant.
+--
+-- `create function` grants execute to PUBLIC unless told otherwise, and `authenticated` inherits
+-- that, so revoking from `authenticated` alone changed nothing - the test that this question
+-- cannot be asked still passed the question. Worse, the PUBLIC grant made it callable by an
+-- anonymous visitor as well.
+--
+-- Revoked from public, anon and authenticated, which is the shape every other helper of this
+-- kind in this schema uses (log_access, setting_int). Its only caller is place_check_resident,
+-- which is security definer and runs as the owner.
+revoke execute on function public.has_covering_team(text) from public, anon, authenticated;

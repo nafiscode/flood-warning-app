@@ -1,0 +1,12 @@
+-- A10: `has_covering_team` is not something a signed-in person may ask.
+--
+-- Found by its own test. The function reads `authority_coverage`, which RLS shows only to the
+-- unit itself, to verified teams and to admins (spec 9), so called by a resident it answered
+-- "no team" for every tambon in the country - useless, and misleading to anybody who read it.
+--
+-- The tempting fix, making it security definer, would have been worse: it would have turned it
+-- into an oracle for exactly the thing section 9 protects, letting any signed-in person map
+-- which tambons have nobody covering them. So instead it keeps the caller's own view and is
+-- taken away from clients altogether. Its only caller is `place_check_resident`, which is
+-- security definer and therefore sees the coverage rows it needs.
+revoke execute on function public.has_covering_team(text) from authenticated;

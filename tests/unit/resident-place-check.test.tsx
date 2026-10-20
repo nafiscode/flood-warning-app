@@ -26,6 +26,9 @@ afterEach(() => {
 const base = EXAMPLE_PLACES.people[0]!;
 const card = (over: Partial<SafePlace>, locale: "th" | "en" = "th") =>
   renderWithIntl(<SafePlaceCard place={{ ...base, ...over }} />, locale).container;
+/** The card as the map draws it behind a pin, which is the one place that asks. */
+const asking = (over: Partial<SafePlace> = {}, locale: "th" | "en" = "en") =>
+  renderWithIntl(<SafePlaceCard place={{ ...base, ...over }} canCheck />, locale).container;
 
 describe("counting what residents said", () => {
   it("counts people, drops anything that is not a count, and is nothing when nobody spoke", () => {
@@ -94,10 +97,17 @@ describe("the card the resident reads", () => {
     expect(text.indexOf("Full")).toBeLessThan(text.indexOf("people here said"));
   });
 
+  it("does not ask on the home screen list, only behind a pin", () => {
+    // The owner, 20 Oct: "pin only". Three folded buttons on a screen already reported as too
+    // long on a phone. What residents said is still shown here: a reading, not an ask.
+    expect(card({}, "en").querySelector("[data-place-check]")).toBeNull();
+    expect(asking().querySelector("[data-place-check]")).not.toBeNull();
+  });
+
   it("offers a visitor the way in instead of a form", () => {
     // Signed in only, the owner's choice of 20 Oct: a check is not a cry for help, so the reason
     // an SOS has no door does not apply. useSignedIn() is false in a test browser.
-    const c = card({}, "en");
+    const c = asking();
     const offer = c.querySelector('[data-place-check="sign-in"]')!;
     expect(offer).not.toBeNull();
     expect(offer.textContent).toContain("Sign in");
@@ -148,9 +158,13 @@ describe("asking from the pin", () => {
     expect(brief.querySelectorAll("[data-place-check-send]").length).toBe(3);
   });
 
-  it("says plainly that it will not change the status by itself", async () => {
+  it("states the rule without naming who covers the area", async () => {
+    // Since the owner's answer of 20 Oct a check writes the status itself where no team covers
+    // the tambon. The screen may not say which case this place is in: coverage is readable only
+    // by teams and admins (spec 9), so the words give the rule and the card shows the result.
     const c = await ask(true);
-    expect(c.textContent).toContain("does not change the status itself");
-    expect(c.textContent).toContain("does not issue an alert");
+    expect(c.textContent).toContain("reaches the team covering this area");
+    expect(c.textContent).toContain("Where no team covers it yet");
+    expect(c.textContent).toContain("never issues an alert");
   });
 });
