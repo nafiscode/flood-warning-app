@@ -3280,6 +3280,28 @@
         "appsAndroid": "Apl",
         "done": "Jaga tetap sampai pada waktu malam"
       }
+    },
+    "sound": {
+      "button": "Pastikan pemberitahuan Jaga boleh didengar",
+      "intro": "Jaga tidak boleh menukar bunyi pemberitahuan telefon anda, dan tiada aplikasi web yang boleh. Bunyi yang dimainkan ketika pemberitahuan tiba ialah tetapan telefon anda sendiri. Tetapkan sekali sahaja, supaya anda mendengarnya pada waktu yang penting.",
+      "androidApp": {
+        "s1": "Buka “Tetapan” telefon, kemudian “Apl”.",
+        "s2": "Pilih Jaga dalam senarai, kemudian ketik “Pemberitahuan”.",
+        "s3": "Biarkan pemberitahuan dihidupkan dan tetapkan kepentingannya pada tahap tertinggi, supaya ia berbunyi dan bukan masuk senyap.",
+        "s4": "Ketik “Bunyi” dan pilih bunyi yang kuat dan anda cam, bukan bunyi yang sama dengan apl lain."
+      },
+      "androidWeb": {
+        "s1": "Anda membuka Jaga dalam pelayar, jadi pemberitahuannya berkongsi satu bunyi dengan semua laman lain.",
+        "s2": "Buka “Tetapan” → “Apl” → pelayar yang anda guna → “Pemberitahuan”, dan tetapkan bunyi serta kepentingannya.",
+        "s3": "Untuk memberi Jaga bunyinya sendiri, tambah Jaga ke skrin utama: telefon akan mengenalinya sebagai sebuah apl."
+      },
+      "ios": {
+        "s1": "iPhone memainkan bunyi pemberitahuan biasa dan ia tidak boleh ditukar. Tiga perkara yang menyenyapkannya:",
+        "s2": "Suis senyap di tepi telefon, dan kelantangan dering. Pada musim banjir, biarkan bunyi dihidupkan pada waktu malam.",
+        "s3": "Mod “Fokus” dan “Tidur”: tambah Jaga sebagai pengecualian, mengikut langkah di atas."
+      },
+      "cannot": "Bunyi amaran Jaga sendiri hanya dimainkan ketika aplikasi dibuka, kerana aplikasi web membuat bunyinya di dalam halaman yang terbuka. Ketika Jaga ditutup, telefon memainkan bunyi pemberitahuannya sendiri — dan mengetik pemberitahuan itu membuka Jaga, yang terus berbunyi.",
+      "repeat": "Pemberitahuan “berpindah” mengetuk dua kali lagi dalam masa 20 saat, dan “amaran” sekali lagi. Ia berhenti sebaik sahaja anda menolaknya atau membuka Jaga."
     }
   },
   "journey": {

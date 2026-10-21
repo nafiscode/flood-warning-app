@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alertPayload, type PushAlert } from "@/lib/push";
+import { alertPayload, knocksFor, type PushAlert } from "@/lib/push";
 import {
   alertChannels,
   ALERT_CHANNELS,
@@ -172,5 +172,36 @@ describe("the roads an alert travels", () => {
       }
       expect(channels.none).toBeTruthy();
     }
+  });
+});
+
+describe("how many times a closed phone is knocked on", () => {
+  const alert = (level: string) => ({ kind: "alert" as const, level }) as never;
+
+  it("knocks again only for the two levels that ask something of people", () => {
+    // Twice more for an evacuation, once more for a warning, within half a minute.
+    expect(knocksFor(alert("evacuate"))).toEqual([8_000, 20_000]);
+    expect(knocksFor(alert("warning"))).toEqual([12_000]);
+    // A watch and a safe-to-return arrive once: a notification that nags at 2am is how people
+    // come to turn Jaga off before the season has started.
+    expect(knocksFor(alert("watch"))).toBeNull();
+    expect(knocksFor(alert("return"))).toBeNull();
+  });
+
+  it("leaves a request for help alone: it has its own alarm in the app", () => {
+    expect(knocksFor({ kind: "offer" } as never)).toBeNull();
+  });
+
+  it("knocks for a drill exactly as the real alert of its level would", () => {
+    // The drill carries the level, so it is already covered - and that is the whole point of
+    // sending one. Pinned here so a later "quieter drill" cannot be slipped in.
+    const payload = alertPayload(
+      { id: "a1", level: "evacuate", messages: { th: "ซ้อม" }, drill: true },
+      "th",
+      (l) => `[${l}]`,
+      "",
+      "ซ้อมระบบ",
+    )!;
+    expect(knocksFor(payload)).toEqual([8_000, 20_000]);
   });
 });

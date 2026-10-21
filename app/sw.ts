@@ -26,7 +26,7 @@ import {
   SIGN_OUT_MESSAGE,
   WARM_MESSAGE,
 } from "@/lib/offline-warm";
-import { readPayload, type AnyPayload } from "@/lib/push";
+import { knocksFor, readPayload, type AnyPayload } from "@/lib/push";
 import { SOUNDS, soundForAlertLevel } from "@/lib/sounds";
 import { flush, SYNC_TAG } from "@/lib/queue";
 
@@ -272,6 +272,32 @@ self.addEventListener("sync", (event) => {
  * nothing loses the browser's permission to be sent. One alert is one notification: a
  * replacement with the same tag takes the old one's place and still makes itself heard.
  */
+const wait = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
+/**
+ * Knock again, while there is still reason to. It stops at the first of:
+ *  - the notification is gone from the phone, which means the person has dealt with it;
+ *  - Jaga is open in front of them, where the app is already ringing its own sound;
+ *  - the browser has stopped giving this worker time, which it may do at any point.
+ */
+async function knockAgain(
+  title: string,
+  options: NotificationOptions,
+  tag: string,
+  at: number[],
+): Promise<void> {
+  let waited = 0;
+  for (const when of at) {
+    await wait(when - waited);
+    waited = when;
+    const showing = await self.registration.getNotifications({ tag });
+    if (showing.length === 0) return;
+    const windows = await self.clients.matchAll({ type: "window" });
+    if (windows.some((w) => w.visibilityState === "visible")) return;
+    await self.registration.showNotification(title, options);
+  }
+}
+
 /**
  * What the phone does with Jaga closed.
  *
@@ -313,18 +339,23 @@ self.addEventListener("push", (event) => {
   // as soon as Jaga is opened and the bell has counted.
   const badge = (self.navigator as Navigator & { setAppBadge?: () => Promise<void> }).setAppBadge;
   if (badge) event.waitUntil(badge.call(self.navigator).catch(() => {}));
+  const options: NotificationOptions = {
+    body: payload.body,
+    tag: payload.tag,
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    data: { url: payload.url },
+    // An evacuation stays on the screen until the person has dealt with it.
+    requireInteraction: payload.kind === "alert" ? payload.level === "evacuate" : payload.sticky,
+    // Both are real and widely honoured; the TypeScript lib does not know them yet.
+    ...({ vibrate: vibrationFor(payload), renotify: true } as object),
+  };
+  const knocks = knocksFor(payload);
   event.waitUntil(
-    self.registration.showNotification(payload.title, {
-      body: payload.body,
-      tag: payload.tag,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      data: { url: payload.url },
-      // An evacuation stays on the screen until the person has dealt with it.
-      requireInteraction: payload.kind === "alert" ? payload.level === "evacuate" : payload.sticky,
-      // Both are real and widely honoured; the TypeScript lib does not know them yet.
-      ...({ vibrate: vibrationFor(payload), renotify: true } as object),
-    }),
+    self.registration
+      .showNotification(payload.title, options)
+      .then(() => (knocks ? knockAgain(payload.title, options, payload.tag, knocks) : undefined))
+      .catch(() => {}),
   );
 });
 

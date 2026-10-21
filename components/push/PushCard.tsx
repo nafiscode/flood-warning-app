@@ -4,12 +4,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { BellIcon, CrossIcon } from "@/components/icons";
 import { QuietGuideView, useQuietGuide } from "@/components/push/QuietGuide";
+import { SoundGuideView, useSoundGuide } from "@/components/push/SoundGuide";
 import type { Area } from "@/lib/area";
 import type { MyPlaces } from "@/lib/me";
 import { myTambons } from "@/lib/notices";
 import { useStored } from "@/lib/phone-store";
 import type { PushState } from "@/lib/push";
-import type { QuietGuide } from "@/lib/quiet";
+import type { QuietGuide, SoundGuide } from "@/lib/quiet";
 import { buttonPrimary, buttonSecondary, card, errorNotice, hint } from "@/lib/ui";
 import { currentSubscription, usePush } from "@/lib/use-push";
 
@@ -34,6 +35,12 @@ type ViewProps = {
   justOn?: boolean;
   /** Which phone's settings the Do Not Disturb guide describes; none on a computer. */
   quiet?: QuietGuide | null;
+  /**
+   * And which settings hold the sound it makes. A separate guide, because they are separate
+   * problems: Do Not Disturb decides whether the notification arrives at all, the sound decides
+   * whether the person hears it when it does. The owner met the second one on 21 Oct.
+   */
+  sound?: SoundGuide | null;
 };
 
 /**
@@ -116,6 +123,7 @@ export function PushCardView(props: ViewProps) {
       {props.quiet && hasArea && (state === "ask" || state === "on") && (
         <QuietGuideView key={String(justOn)} guide={props.quiet} startOpen={justOn} />
       )}
+      {props.sound && hasArea && state === "on" && <SoundGuideView guide={props.sound} />}
     </section>
   );
 }
@@ -183,6 +191,7 @@ export function PushCard({ place }: { place: "home" | "account" | "team" }) {
   const tambons = myTambons(area, me);
   const push = usePush(tambons, locale);
   const quiet = useQuietGuide();
+  const sound = useSoundGuide();
   const [justOn, setJustOn] = useState(false);
   return (
     <PushCardView
@@ -195,6 +204,7 @@ export function PushCard({ place }: { place: "home" | "account" | "team" }) {
       onDisable={() => void push.disable()}
       justOn={justOn}
       quiet={quiet}
+      sound={sound}
     />
   );
 }

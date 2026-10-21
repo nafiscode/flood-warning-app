@@ -11,6 +11,36 @@ import { alertWords } from "@/lib/alert-words";
 export const ALERT_LEVELS_PUSHED = ["watch", "warning", "evacuate", "return"] as const;
 export type PushLevel = (typeof ALERT_LEVELS_PUSHED)[number];
 
+/**
+ * How many times an alert knocks on a closed phone, and when (the owner, 21 Oct: "can we make
+ * it ring even before app openning?").
+ *
+ * Jaga cannot ring a closed phone - a sound is made by an open page, and the web gives no way
+ * to put one on a notification - so the next best thing is to knock more than once. Showing the
+ * notification again with the same tag makes the phone sound and shake again, so an alert in a
+ * pocket at night is a few knocks over half a minute instead of one blip that is finished
+ * before the person has the phone in their hand.
+ *
+ * Only the two levels that ask something of people do it (the owner's choice of 21 Oct). A
+ * watch and a safe-to-return knock once, because a notification that nags at 2am is how people
+ * come to turn Jaga off before the season has started - and an alert nobody is subscribed to is
+ * worth less than one they hear once. A drill knocks exactly as the real alert of its level
+ * would, which is the point of sending one.
+ *
+ * Milliseconds from the first notification, not from each other. The worker stops early if the
+ * person has dealt with the notification or has Jaga open in front of them.
+ */
+export const KNOCKS: Partial<Record<PushLevel, number[]>> = {
+  evacuate: [8_000, 20_000],
+  warning: [12_000],
+};
+
+/** What this notification should do after it has been shown once. */
+export function knocksFor(payload: AnyPayload): number[] | null {
+  if (payload.kind !== "alert") return null;
+  return KNOCKS[payload.level] ?? null;
+}
+
 /** What travels in one push message. Kept small: a push service drops anything over about 4 kB. */
 export type PushPayload = {
   kind: "alert";

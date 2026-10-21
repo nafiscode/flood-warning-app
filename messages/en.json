@@ -3280,6 +3280,28 @@
         "appsAndroid": "Apps",
         "done": "Jaga gets through at night"
       }
+    },
+    "sound": {
+      "button": "Make sure you can hear Jaga's notifications",
+      "intro": "Jaga cannot change the sound your phone makes, and no web app can. The sound you hear when a notification arrives is your phone's own setting. Do it once, so you hear it when it matters.",
+      "androidApp": {
+        "s1": "Open the phone's “Settings”, then “Apps”.",
+        "s2": "Choose Jaga in the list, then tap “Notifications”.",
+        "s3": "Leave notifications on and set their importance to the highest level, so they sound rather than slide in quietly.",
+        "s4": "Tap “Sound” and choose one that is loud and that you will recognise — not the same one as everything else."
+      },
+      "androidWeb": {
+        "s1": "You are opening Jaga in a browser, so its notifications share one sound with every other site.",
+        "s2": "Open “Settings” → “Apps” → the browser you use → “Notifications”, and set the sound and importance there.",
+        "s3": "To give Jaga a sound of its own, add Jaga to the home screen: the phone then knows it as an app."
+      },
+      "ios": {
+        "s1": "An iPhone plays the standard notification sound and that cannot be changed. Three things silence it:",
+        "s2": "The silent switch on the side, and the ringer volume. In flood season, keep the sound on at night.",
+        "s3": "“Focus” and “Sleep”: add Jaga as an exception, using the steps above."
+      },
+      "cannot": "Jaga's own alert sound plays only while the app is open, because a web app makes its sound inside the open page. With Jaga closed the phone plays its own notification sound — and tapping that notification opens Jaga, which rings straight away.",
+      "repeat": "An “evacuate” notification knocks twice more within 20 seconds, and a “warning” once more. It stops the moment you dismiss it or open Jaga."
     }
   },
   "journey": {
