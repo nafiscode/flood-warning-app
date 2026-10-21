@@ -26,7 +26,8 @@ import {
   SIGN_OUT_MESSAGE,
   WARM_MESSAGE,
 } from "@/lib/offline-warm";
-import { readPayload } from "@/lib/push";
+import { readPayload, type AnyPayload } from "@/lib/push";
+import { SOUNDS, soundForAlertLevel } from "@/lib/sounds";
 import { flush, SYNC_TAG } from "@/lib/queue";
 
 declare global {
@@ -271,6 +272,24 @@ self.addEventListener("sync", (event) => {
  * nothing loses the browser's permission to be sent. One alert is one notification: a
  * replacement with the same tag takes the old one's place and still makes itself heard.
  */
+/**
+ * What the phone does with Jaga closed.
+ *
+ * The alert sound cannot follow the notification. A sound is made by a page with the Web Audio
+ * API, and with Jaga closed there is no page; a service worker has no audio of its own, and the
+ * web gives no way to name a sound file for a notification. So the phone plays whatever sound it
+ * plays for Jaga, which is the person's own setting, and the one thing Jaga may still choose is
+ * how it shakes. It shakes with the pattern that belongs to the level - the same one the sound
+ * carries in an open app (lib/sounds.ts) - so an evacuation does not feel like a watch.
+ *
+ * Android honours this. iOS ignores it, and there the phone's own notification sound and the
+ * words on the screen are the whole of it (the owner, 21 Oct: the laptop rang, the phone did not).
+ */
+function vibrationFor(payload: AnyPayload): number[] {
+  const name = payload.kind === "alert" ? soundForAlertLevel(payload.level) : "notice";
+  return name ? SOUNDS[name].vibrate : SOUNDS.notice.vibrate;
+}
+
 self.addEventListener("push", (event) => {
   let raw: unknown = null;
   try {
@@ -303,12 +322,20 @@ self.addEventListener("push", (event) => {
       data: { url: payload.url },
       // An evacuation stays on the screen until the person has dealt with it.
       requireInteraction: payload.kind === "alert" ? payload.level === "evacuate" : payload.sticky,
-      ...({ renotify: true } as object),
+      // Both are real and widely honoured; the TypeScript lib does not know them yet.
+      ...({ vibrate: vibrationFor(payload), renotify: true } as object),
     }),
   );
 });
 
-/** A tap on the notification opens Jaga on the home screen, in the window it already has. */
+/**
+ * A tap on the notification opens Jaga on the home screen, in the window it already has.
+ *
+ * The tap is also the person's gesture, and a gesture is what a browser waits for before it will
+ * let a page make a sound. So the window is told it was opened this way and tries to ring there
+ * and then, instead of waiting for the person to touch the screen a second time. A browser that
+ * does not count the tap refuses, nothing happens, and the first touch rings it as before.
+ */
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = new URL(
@@ -321,10 +348,14 @@ self.addEventListener("notificationclick", (event) => {
       for (const client of windows) {
         if ("focus" in client) {
           await client.navigate(url).catch(() => null);
-          return client.focus();
+          const focused = await client.focus();
+          focused.postMessage({ type: "jaga-opened" });
+          return focused;
         }
       }
-      return self.clients.openWindow(url);
+      const opened = await self.clients.openWindow(url);
+      opened?.postMessage({ type: "jaga-opened" });
+      return opened;
     })(),
   );
 });

@@ -19,8 +19,11 @@ const VOLUME = 0.8;
  * Two limits no web page can remove, so the screen never relies on the sound alone:
  *  - a browser plays nothing until the person has tapped the page once, so the first tap arms the
  *    sound and an alert that arrived before it rings at that tap;
- *  - with Jaga closed nothing here runs at all. That is what web push is for (A7), and a push
- *    plays the phone's own notification sound.
+ *  - with Jaga closed nothing here runs at all, so Jaga's own sound cannot be the one a closed
+ *    phone makes. That is what web push is for (A7): the phone plays the sound it plays for
+ *    Jaga, which is the person's own setting and not something any web page can choose or make
+ *    louder. What the push does carry is the level's vibration (app/sw.ts), and the tap that
+ *    opens the notification arms this hook, so Jaga's own sound follows a moment later.
  *
  * Each alert rings once on a phone. `quiet` is the SOS screens: nothing competes with a request.
  */
@@ -84,9 +87,22 @@ export function useAlertRing(
     const timers: number[] = [];
     const knock = () => window.dispatchEvent(new Event("online"));
     const onPush = (event: MessageEvent) => {
-      if ((event.data as { type?: string } | null)?.type !== "jaga-push") return;
+      const type = (event.data as { type?: string } | null)?.type;
+      if (type !== "jaga-push" && type !== "jaga-opened") return;
       knock();
       timers.push(window.setTimeout(knock, 20_000), window.setTimeout(knock, 70_000));
+      /*
+       * Jaga was opened by a tap on the notification (the owner, 21 Oct: the phone showed the
+       * drill and said nothing). That tap is the person's gesture, so the sound may be armed
+       * here rather than waiting for them to touch the screen again - and the knock above is
+       * already fetching the alert that brought them, which rings as soon as it arrives.
+       * A browser that does not count the tap simply refuses, and the next touch does it.
+       */
+      if (type === "jaga-opened" && !isArmed()) {
+        arm().then((ok) => {
+          if (ok) ringNow.current();
+        });
+      }
     };
     navigator.serviceWorker?.addEventListener("message", onPush);
     ringNow.current = ring;
