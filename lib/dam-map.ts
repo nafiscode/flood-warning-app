@@ -185,3 +185,88 @@ export function zoneHatch(color: string): ImageData | null {
   }
   return c.getImageData(0, 0, side, side);
 }
+
+/**
+ * Rain over a reservoir (the owner, 21 Oct): the same clouds the person's own places get now
+ * stand over each dam's lake, because heavy rain over the lake and the hills around it is what
+ * raises the water behind the wall. The cloud only says what is falling; what the lake is doing
+ * is the dam's own figures (safety rules 2 and 8).
+ */
+export const DAM_RAIN_PREFIX = "dam:";
+
+/** The dam a reservoir cloud belongs to, or null when the id is not a reservoir's. */
+export function damRainCode(id: string): string | null {
+  return id.startsWith(DAM_RAIN_PREFIX) ? id.slice(DAM_RAIN_PREFIX.length) : null;
+}
+
+/**
+ * Where the cloud goes: the middle of the lake's box, not its centre of area. The box is cheap
+ * and steady, and a cloud is a sign held over a stretch of water - a few hundred metres either
+ * way says nothing different. PostGIS hands over a Polygon or a MultiPolygon (lib/dam.ts), and
+ * of a MultiPolygon the widest part is taken, which is the lake rather than a side arm.
+ */
+export function reservoirCentre(
+  reservoir: {
+    type: "Polygon" | "MultiPolygon";
+    coordinates: number[][][] | number[][][][];
+  } | null,
+): { lat: number; lon: number } | null {
+  if (!reservoir) return null;
+  const rings: number[][][] =
+    reservoir.type === "Polygon"
+      ? [(reservoir.coordinates as number[][][])[0] ?? []]
+      : (reservoir.coordinates as number[][][][]).map((part) => part[0] ?? []);
+  let best: { lat: number; lon: number; span: number } | null = null;
+  for (const ring of rings) {
+    let west = Infinity;
+    let east = -Infinity;
+    let south = Infinity;
+    let north = -Infinity;
+    for (const point of ring) {
+      const lon = point[0];
+      const lat = point[1];
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
+      west = Math.min(west, lon as number);
+      east = Math.max(east, lon as number);
+      south = Math.min(south, lat as number);
+      north = Math.max(north, lat as number);
+    }
+    if (!Number.isFinite(west) || !Number.isFinite(south)) continue;
+    const span = (east - west) * (north - south);
+    if (best === null || span > best.span) {
+      best = { lat: (south + north) / 2, lon: (west + east) / 2, span };
+    }
+  }
+  return best ? { lat: best.lat, lon: best.lon } : null;
+}
+
+/**
+ * One rain place per dam, over its lake; a dam with no reservoir mapped yet falls back to the
+ * dam's own point, and one with neither contributes nothing.
+ */
+export function damRainPlaces(
+  dams: {
+    code: string;
+    point: { type: "Point"; coordinates: [number, number] } | null;
+    reservoir: {
+      type: "Polygon" | "MultiPolygon";
+      coordinates: number[][][] | number[][][][];
+    } | null;
+  }[],
+): { id: string; lat: number; lon: number; home: boolean; reservoir: boolean }[] {
+  const places: { id: string; lat: number; lon: number; home: boolean; reservoir: boolean }[] = [];
+  for (const dam of dams) {
+    const at =
+      reservoirCentre(dam.reservoir) ??
+      (dam.point ? { lat: dam.point.coordinates[1], lon: dam.point.coordinates[0] } : null);
+    if (!at) continue;
+    places.push({
+      id: `${DAM_RAIN_PREFIX}${dam.code}`,
+      lat: at.lat,
+      lon: at.lon,
+      home: false,
+      reservoir: true,
+    });
+  }
+  return places;
+}

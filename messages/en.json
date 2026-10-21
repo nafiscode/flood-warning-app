@@ -4312,7 +4312,10 @@
   "mapRain": {
     "title": "Rain at {place}",
     "now": "Now: {what}",
+    "overReservoir": "Rain over {place}'s reservoir",
     "peekNote": "From a weather model, not a warning.",
+    "reservoirNote": "Rain here runs into the reservoir.",
+    "reservoirFills": "Rain over the reservoir and the land around it runs in and fills it in the hours that follow. What the lake is actually doing is in the dam's own figures.",
     "loading": "Loading the forecast…",
     "failed": "The forecast could not be loaded right now.",
     "eases": "In the forecast the rain eases around {time}.",

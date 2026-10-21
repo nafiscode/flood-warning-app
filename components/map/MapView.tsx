@@ -17,6 +17,7 @@ import {
   CASING_EXTRA,
   damMarks,
   damPaint,
+  damRainPlaces,
   markColor,
   emphasis,
   MAIN_WIDTH,
@@ -34,7 +35,7 @@ import {
 } from "@/lib/dam-map";
 import { mineLabel, minePlaceFeature } from "@/lib/mine-label";
 import { PlaceRain } from "./PlaceRain";
-import { cloudLift, type RainCloud, type RainKind } from "@/lib/place-rain";
+import { cloudLift, type RainCloud, type RainKind, type RainPlace } from "@/lib/place-rain";
 import { HOME_TIP_DY, MINE_IMAGE_RATIO, mineImage, mineImageName } from "@/lib/mine-marks";
 import {
   HAZARD_OPACITY,
@@ -1788,7 +1789,7 @@ export function MapView({
               target: { kind: "rain", id: cloud.id, rain: cloud.kind },
               own: null,
               // The cloud sits above the pin: the pop-up opens above the cloud.
-              offset: cloudLift(cloud.home) + 34,
+              offset: cloudLift(cloud) + 34,
             },
             how === "tap",
           );
@@ -1883,6 +1884,16 @@ export function MapView({
     };
   }, []);
 
+  /*
+   * Where a rain cloud may stand: the person's own places while their pins are shown, and every
+   * reservoir, always. The dams come second, so a person with ten watched places never loses one
+   * of their own clouds to a reservoir (MAX_POINTS in lib/place-rain.ts).
+   */
+  const rainWhere = useMemo<RainPlace[]>(
+    () => [...(showMine ? mine : []), ...damRainPlaces(dams)],
+    [showMine, mine, dams],
+  );
+
   const [west, south, east, north] = bounds ?? SERVICE_BOUNDS;
   useEffect(() => {
     if (state !== "ready") return;
@@ -1915,11 +1926,15 @@ export function MapView({
   return (
     <div className={`relative${fill ? " console:h-full" : ""}`}>
       {peekAt && peek && createPortal(peek(peekAt.target), peekAt.node)}
-      {/* Rain falling now over the person's own places (owner, 15 Oct), with the pins. */}
+      {/*
+        Rain falling now over the person's own places (owner, 15 Oct), with the pins, and over
+        every dam's reservoir (owner, 21 Oct), which is drawn whether the pins are or not: the
+        rain over the lake is what raises it.
+      */}
       {loaded && (
         <PlaceRain
           map={loaded}
-          places={showMine ? mine : []}
+          places={rainWhere}
           onCloud={peek ? (cloud, how) => peekCloud.current(cloud, how) : undefined}
         />
       )}
@@ -1927,7 +1942,15 @@ export function MapView({
         ref={container}
         data-map="true"
         data-map-ready={state === "ready"}
-        className={`h-[60vh] min-h-80 w-full overflow-hidden rounded-xl border border-jaga-line${
+        /*
+         * `relative` is what keeps the HTML markers inside the map. MapLibre sets it on the
+         * container itself, but React owns this element's class attribute and writes it again on
+         * the next render, so the library's class is lost - and `overflow-hidden` on a *static*
+         * box does not clip an absolutely positioned child, whose containing block is then the
+         * wrapper outside it. Without this, a cloud over a reservoir off the edge of the frame
+         * (every Songkhla dam while the map is on Pattani) was painted over the rest of the page.
+         */
+        className={`relative h-[60vh] min-h-80 w-full overflow-hidden rounded-xl border border-jaga-line${
           fill ? " console:h-full console:min-h-0" : ""
         }`}
       />

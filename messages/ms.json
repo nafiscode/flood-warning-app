@@ -4312,7 +4312,10 @@
   "mapRain": {
     "title": "Hujan di {place}",
     "now": "Sekarang: {what}",
+    "overReservoir": "Hujan di atas takungan {place}",
     "peekNote": "Daripada model cuaca, bukan amaran.",
+    "reservoirNote": "Hujan di sini mengalir masuk ke takungan.",
+    "reservoirFills": "Hujan di atas takungan dan kawasan sekelilingnya mengalir masuk dan mengisinya dalam beberapa jam berikutnya. Keadaan sebenar paras air ada pada angka empangan itu sendiri.",
     "loading": "Memuatkan ramalan…",
     "failed": "Ramalan tidak dapat dimuatkan sekarang.",
     "eases": "Menurut ramalan, hujan mungkin reda sekitar {time}.",

@@ -8,6 +8,11 @@ import { roundCoord, weatherGroup, type WeatherGroup } from "@/lib/weather";
  *
  * Only rain is drawn. Clear, cloudy or foggy weather leaves the pin as it is: a cloud on every
  * pin all day would teach people to stop looking at it.
+ *
+ * Since 21 Oct the same clouds also stand over each dam's reservoir (the owner's request): heavy
+ * rain over the lake is what raises it, so the map shows the rain where the water collects, not
+ * only where people live. The clouds say what is falling, never what the lake will do - the
+ * dam's own figures say that (safety rules 2 and 8).
  */
 
 /** The kinds of cloud, lightest first. One per rain group of the weather widget. */
@@ -150,14 +155,28 @@ export const CLOUD_LOOKS: Record<RainKind, CloudLook> = {
   },
 };
 
-/** A place on the map that may have rain over it. */
-export type RainPlace = { id: string; lat: number; lon: number; home: boolean };
+/**
+ * A place on the map that may have rain over it: one of the person's own places, or a dam's
+ * reservoir (`reservoir`), where rain over the lake and the hills around it is what fills the
+ * lake in the hours that follow.
+ */
+export type RainPlace = {
+  id: string;
+  lat: number;
+  lon: number;
+  home: boolean;
+  reservoir?: boolean;
+};
 
 /** What the weather route says about one point. */
 export type PointWeather = { lat: number; lon: number; code: number | null; isDay: boolean };
 
-/** At most this many points in one request: a home and ten watched places, plus spare. */
-export const MAX_POINTS = 12;
+/**
+ * At most this many points in one request: a home and ten watched places, the six reservoirs,
+ * plus spare. The person's own places are asked for first, so a long list never costs them
+ * their own clouds.
+ */
+export const MAX_POINTS = 20;
 
 /** The points to ask about, rounded to about a kilometre and without repeats. */
 export function rainPoints(places: RainPlace[]): { lat: number; lon: number }[] {
@@ -238,6 +257,8 @@ export type RainCloud = {
   lat: number;
   lon: number;
   home: boolean;
+  /** A dam's reservoir rather than a place of the person's own. */
+  reservoir: boolean;
   kind: RainKind;
   isDay: boolean;
 };
@@ -255,6 +276,7 @@ export function rainClouds(places: RainPlace[], weather: PointWeather[]): RainCl
       lat: place.lat,
       lon: place.lon,
       home: place.home,
+      reservoir: place.reservoir === true,
       kind,
       isDay: w.isDay,
     });
@@ -267,9 +289,13 @@ export function rainClouds(places: RainPlace[], weather: PointWeather[]): RainCl
  * top of the pin rather than over it: the home pin stands about 46 px tall (its tip on the home,
  * lib/mine-marks.ts), a watched place is a dot in brackets about 16 px from its centre; the
  * drops fade out just before the bottom of the cloud's box, so it sits a little lower than that.
+ *
+ * A reservoir has no pin: the cloud sits on the lake itself, so the rain is seen falling into
+ * the water it fills.
  */
-export function cloudLift(home: boolean): number {
-  return home ? 32 : 10;
+export function cloudLift(spot: { home: boolean; reservoir?: boolean }): number {
+  if (spot.reservoir === true) return 0;
+  return spot.home ? 32 : 10;
 }
 
 /**

@@ -49,24 +49,35 @@ export function rainAhead(
 
 /**
  * The pop-up on a rain cloud (the owner, 15 Oct): whose place, and what is falling there now,
- * with the button down to the rain's own section under the map.
+ * with the button down to the rain's own section under the map. Over a reservoir (21 Oct) the
+ * heading names the lake and a line says why the rain there matters - it is what raises the
+ * water. What the lake is doing is still the dam's own figures, never this (safety rule 8).
  */
 export function RainPeek({
   name,
   kind,
+  reservoir = false,
   onMore,
 }: {
   name: string;
   kind: RainKind;
+  reservoir?: boolean;
   onMore: () => void;
 }) {
   const t = useTranslations("mapRain");
   const tCodes = useTranslations("weather.codes");
   return (
-    <div className="flex flex-col gap-1 text-jaga-text" data-peek="rain" data-peek-rain={kind}>
-      <b>{name}</b>
+    <div
+      className="flex flex-col gap-1 text-jaga-text"
+      data-peek="rain"
+      data-peek-rain={kind}
+      data-peek-reservoir={reservoir ? "true" : undefined}
+    >
+      <b>{reservoir ? t("overReservoir", { place: name }) : name}</b>
       <p className="font-medium">{t("now", { what: tCodes(RAIN_GROUP[kind]) })}</p>
-      <p className="text-small text-jaga-text-2">{t("peekNote")}</p>
+      <p className="text-small text-jaga-text-2">
+        {reservoir ? t("reservoirNote") : t("peekNote")}
+      </p>
       <MoreButton onMore={onMore} />
     </div>
   );
@@ -83,12 +94,15 @@ export function RainSection({
   lat,
   lon,
   kind,
+  reservoir = false,
   now,
 }: {
   name: string;
   lat: number;
   lon: number;
   kind: RainKind;
+  /** Over a dam's lake rather than one of the person's own places (the owner, 21 Oct). */
+  reservoir?: boolean;
   now: number;
 }) {
   const t = useTranslations("mapRain");
@@ -102,10 +116,11 @@ export function RainSection({
     <section
       className="flex flex-col gap-3 rounded-2xl border border-jaga-line bg-jaga-surface p-5"
       data-rain-section={kind}
+      data-rain-reservoir={reservoir ? "true" : undefined}
       aria-labelledby="rain-title"
     >
       <h2 id="rain-title" className="text-h3 font-bold text-jaga-ink">
-        {t("title", { place: name })}
+        {reservoir ? t("overReservoir", { place: name }) : t("title", { place: name })}
       </h2>
       <p className="font-medium" data-rain-now="true">
         {t("now", { what: tCodes(nowGroup ?? RAIN_GROUP[kind]) })}
@@ -141,6 +156,11 @@ export function RainSection({
           </div>
           <p className="text-small text-jaga-text-2">{t("modelTime", { time: time(data.at) })}</p>
         </>
+      )}
+      {reservoir && (
+        <p className="text-small text-jaga-text-2" data-rain-fills="true">
+          {t("reservoirFills")}
+        </p>
       )}
       <p className="rounded-lg bg-jaga-ground p-3 text-small">{t("note")}</p>
       <OpenMeteoAttribution />

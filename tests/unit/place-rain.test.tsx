@@ -94,9 +94,11 @@ describe("rain over the person's own places (owner, 15 Oct)", () => {
         { lat: 6.54, lon: 101.28, code: 82, isDay: false },
       ],
     );
-    expect(clouds).toEqual([{ ...mum, kind: "showersHeavy", isDay: false }]);
+    expect(clouds).toEqual([{ ...mum, reservoir: false, kind: "showersHeavy", isDay: false }]);
     expect(rainClouds([home], [])).toEqual([]);
-    expect(cloudLift(true)).toBeGreaterThan(cloudLift(false));
+    expect(cloudLift({ home: true })).toBeGreaterThan(cloudLift({ home: false }));
+    // A reservoir has no pin to clear: the cloud sits on the water.
+    expect(cloudLift({ home: false, reservoir: true })).toBe(0);
   });
 
   it("spreads the drops across the cloud the same way every time", () => {
@@ -115,6 +117,7 @@ describe("rain over the person's own places (owner, 15 Oct)", () => {
 describe("the cloud on the map", () => {
   const cloud = (kind: RainCloud["kind"], isDay = true): RainCloud => ({
     ...mum,
+    reservoir: false,
     kind,
     isDay,
   });

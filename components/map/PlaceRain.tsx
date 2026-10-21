@@ -202,7 +202,7 @@ export function PlaceRain({
         return new Marker({
           element,
           anchor: "bottom",
-          offset: [0, -cloudLift(cloud.home)],
+          offset: [0, -cloudLift(cloud)],
           // Upright whatever the map's tilt, like a sign held over the place.
           pitchAlignment: "viewport",
           rotationAlignment: "viewport",

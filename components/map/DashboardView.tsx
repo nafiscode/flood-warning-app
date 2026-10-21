@@ -55,6 +55,7 @@ import { monitoring } from "@/lib/monitoring";
 import { useKeptRain } from "@/lib/use-rain";
 import { handBack, reveal } from "@/lib/reveal";
 import { damFrame, onPath, type Dam } from "@/lib/dam";
+import { damRainCode, reservoirCentre } from "@/lib/dam-map";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
@@ -1019,6 +1020,29 @@ export function DashboardView(props: DashboardViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * What a rain cloud stands over: one of the person's own places, or a dam's reservoir, whose
+   * cloud carries the dam's code in its id (lib/dam-map.ts). The name is the one already shown
+   * on the map, so the pop-up and the card say the same word as the label underneath.
+   */
+  const rainSpot = (
+    id: string,
+  ): { name: string; lat: number; lon: number; reservoir: boolean } | null => {
+    const code = damRainCode(id);
+    if (code !== null) {
+      const dam = dams.find((d) => d.code === code);
+      const at = dam ? reservoirCentre(dam.reservoir) : null;
+      const point =
+        at ??
+        (dam?.point ? { lat: dam.point.coordinates[1], lon: dam.point.coordinates[0] } : null);
+      return dam && point
+        ? { name: localName(dam.name, locale), lat: point.lat, lon: point.lon, reservoir: true }
+        : null;
+    }
+    const place = mine.find((m) => m.id === id);
+    return place ? { name: place.label, lat: place.lat, lon: place.lon, reservoir: false } : null;
+  };
+
   const peekMore = (target: PeekTarget) => {
     setSelection(target);
     revealPanel();
@@ -1038,8 +1062,10 @@ export function DashboardView(props: DashboardViewProps) {
       return point ? <SeaPeek point={point} now={now} onMore={more} /> : null;
     }
     if (target.kind === "rain") {
-      const place = mine.find((m) => m.id === target.id);
-      return place ? <RainPeek name={place.label} kind={target.rain} onMore={more} /> : null;
+      const spot = rainSpot(target.id);
+      return spot ? (
+        <RainPeek name={spot.name} kind={target.rain} reservoir={spot.reservoir} onMore={more} />
+      ) : null;
     }
     const dam = dams.find((d) => d.code === target.code);
     return dam ? <DamPeek dam={dam} time={time} onMore={more} /> : null;
@@ -1262,9 +1288,7 @@ export function DashboardView(props: DashboardViewProps) {
     const place = data?.places.find((p) => p.id === selection.id);
     // The pin is where the owner wanted the ask (20 Oct), so the card behind a pin asks and
     // the home screen's list does not.
-    selected = place ? (
-      <SafePlaceCard place={place} userAgent={props.userAgent} canCheck />
-    ) : null;
+    selected = place ? <SafePlaceCard place={place} userAgent={props.userAgent} canCheck /> : null;
   } else if (selection?.kind === "hazard") {
     const key = hazardKey(selection.value);
     selected = key ? (
@@ -1348,14 +1372,19 @@ export function DashboardView(props: DashboardViewProps) {
       />
     ) : null;
   } else if (selection?.kind === "rain") {
-    // The rain over one of the person's own places, opened from its cloud's pop-up (15 Oct).
-    const place = mine.find((m) => m.id === selection.id);
-    selected = place ? (
+    /*
+     * The rain over one of the person's own places, opened from its cloud's pop-up (15 Oct), or
+     * over a dam's reservoir (21 Oct), where the same forecast answers a different question:
+     * what is falling into the lake.
+     */
+    const spot = rainSpot(selection.id);
+    selected = spot ? (
       <RainSection
-        name={place.label}
-        lat={place.lat}
-        lon={place.lon}
+        name={spot.name}
+        lat={spot.lat}
+        lon={spot.lon}
         kind={selection.rain}
+        reservoir={spot.reservoir}
         now={now}
       />
     ) : null;
@@ -2289,7 +2318,12 @@ export function DashboardView(props: DashboardViewProps) {
                  * anything a colour means: the alert levels keep their icons and their words
                  * inside, and the map's own badges say the level wherever they are drawn.
                  */}
-                <Fold fold={phoneMap} heading title={t("layers.title")} mark={{ "data-legend": mode }}>
+                <Fold
+                  fold={phoneMap}
+                  heading
+                  title={t("layers.title")}
+                  mark={{ "data-legend": mode }}
+                >
                   {layers.includes("alerts") && (
                     <div className="flex flex-col gap-2">
                       <p className="font-medium">{t("layers.alerts")}</p>

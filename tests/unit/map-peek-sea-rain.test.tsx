@@ -59,6 +59,16 @@ describe("the rain cloud's pop-up", () => {
     expect(more).toHaveBeenCalledOnce();
   });
 
+  it("over a reservoir, names the lake and says the rain runs into it", () => {
+    const c = renderWithIntl(
+      <RainPeek name="เขื่อนบางลาง" kind="heavy" reservoir onMore={vi.fn()} />,
+    ).container;
+    expect(c.querySelector("[data-peek-reservoir]")).not.toBeNull();
+    expect(c.textContent).toContain("เขื่อนบางลาง");
+    expect(c.textContent).toContain(th.mapRain.reservoirNote);
+    expect(c.textContent).not.toContain(th.mapRain.peekNote);
+  });
+
   it("has a word for every kind of cloud", () => {
     for (const kind of RAIN_KINDS) expect(th.weather.codes[RAIN_GROUP[kind]]).toBeTruthy();
   });
