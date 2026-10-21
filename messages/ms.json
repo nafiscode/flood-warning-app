@@ -3,7 +3,7 @@
     "name": "Jaga",
     "nameThai": "จากา",
     "tagline": "Jaga satu sama lain",
-    "pwaName": "Jaga – Amaran dan minta bantuan",
+    "pwaName": "Jaga – Amaran banjir dan minta bantuan",
     "description": "Amaran banjir dan minta bantuan untuk Patani, Yala, Narathiwat dan Songkhla",
     "skipToContent": "Langkau ke kandungan"
   },
@@ -5263,5 +5263,50 @@
     "heading": "Kongsikan",
     "body": "Kongsikan halaman ini kepada orang yang patut membacanya, atau kongsikan Jaga kepada orang yang patut menggunakannya",
     "thisPage": "Kongsi halaman ini"
+  },
+  "province": {
+    "title": "Keadaan banjir di {place}",
+    "lead": "Tahap amaran bagi setiap mukim, stesen paras air dan tempat selamat di {place}, daripada Jaga, aplikasi amaran banjir bukan untung yang bebas digunakan.",
+    "asOf": "Data pada {time}",
+    "unavailable": "Jaga tidak dapat membaca datanya sekarang. Ini bukan bermakna tiada risiko. Jika anda perlukan bantuan, hubungi 1784 atau 1669.",
+    "levels": {
+      "title": "Tahap amaran bagi setiap mukim",
+      "none": "Tiada amaran berkuat kuasa di {place} sekarang.",
+      "normalNote": "Mukim yang tidak disenaraikan ialah mukim yang belum ada amaran. Ia bukan pengesahan bahawa tempat itu selamat.",
+      "notInService": "Jaga belum memulakan perkhidmatan amaran di kawasan ini. Ikuti JPBM dan hubungi 1784 atau 1669 jika anda perlukan bantuan.",
+      "tambons": "{count} daripada {total} mukim"
+    },
+    "gauges": {
+      "title": "Stesen paras air di {place}",
+      "lead": "Ini bacaan yang diukur, bukan amaran.",
+      "none": "Jaga belum ada stesen paras air di {place}.",
+      "unavailable": "Bacaan stesen paras air tidak dapat dibaca sekarang."
+    },
+    "places": {
+      "title": "Tempat selamat di {place}",
+      "total": "{count} tempat pada peta Jaga",
+      "unchecked": "Belum ada pasukan yang memeriksanya. Hubungi dahulu sebelum pergi.",
+      "checked": "{count} telah diperiksa oleh pasukan",
+      "link": "Lihat tempat selamat pada peta"
+    },
+    "act": {
+      "title": "Apa yang boleh anda buat sekarang",
+      "sos": "Minta bantuan",
+      "report": "Lapor banjir yang anda lihat",
+      "map": "Buka peta keadaan",
+      "home": "Lihat status mukim anda"
+    },
+    "place": {
+      "province": "{name}",
+      "district": "{name}, {province}"
+    },
+    "tambons": {
+      "title": "Mukim di {place}",
+      "lead": "Ketik nama mukim untuk melihat statusnya pada peta.",
+      "count": "{count} mukim"
+    },
+    "inProvince": "Daerah lain di {province} yang mempunyai halaman sendiri",
+    "others": "Wilayah lain yang dijaga Jaga",
+    "coverage": "Jaga menjaga empat wilayah: Patani, Yala, Narathiwat dan Songkhla. Jika anda di wilayah lain, hubungi 1784 atau 1669."
   }
 }

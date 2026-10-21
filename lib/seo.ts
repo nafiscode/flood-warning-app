@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
+import { PLACE_PATHS } from "@/lib/flood-places";
 
 /**
  * How Jaga is found by search (A10). Everything here is for crawlers only: nothing in this file
@@ -21,6 +22,9 @@ import { routing } from "@/i18n/routing";
  */
 export const INDEXED_PATHS = [
   "/",
+  // A page per covered province and per district people search by name: the pages a local flood
+  // search can actually land on (A10, lib/flood-places.ts).
+  ...PLACE_PATHS,
   "/sos",
   "/supplies",
   "/report",

@@ -10,8 +10,9 @@ import { alternates, INDEXED_PATHS, localeHref, PRIVATE_PAGE } from "@/lib/seo";
  * sitemap over. These tests hold the two to each other.
  */
 
-const rule = robots().rules;
-const only = Array.isArray(rule) ? rule[0] : rule;
+const rules = robots().rules;
+const only = Array.isArray(rules) ? rules[0] : rules;
+if (!only) throw new Error("robots.txt has no rules");
 const disallow = [only.disallow ?? []].flat();
 const allow = [only.allow ?? []].flat();
 

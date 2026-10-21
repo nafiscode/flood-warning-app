@@ -3,7 +3,7 @@
     "name": "Jaga",
     "nameThai": "จากา",
     "tagline": "Watch over each other",
-    "pwaName": "Jaga – Flood alerts and help",
+    "pwaName": "Jaga – Flood warning and help requests",
     "description": "Flood alerts and emergency help for Pattani, Yala, Narathiwat and Songkhla",
     "skipToContent": "Skip to content"
   },
@@ -5263,5 +5263,50 @@
     "heading": "Pass it on",
     "body": "Share this page with someone who should read it, or share Jaga with someone who should use it",
     "thisPage": "Share this page"
+  },
+  "province": {
+    "title": "Flood situation in {place}",
+    "lead": "Alert level by tambon, river gauges and safe places in {place}, from Jaga - a non-profit flood warning app, free to use.",
+    "asOf": "Data as of {time}",
+    "unavailable": "Jaga cannot read its data right now. That does not mean there is no risk. If you need help, call 1784 or 1669.",
+    "levels": {
+      "title": "Alert level by tambon",
+      "none": "No alert is in force in {place} right now.",
+      "normalNote": "A tambon that is not listed is one with no alert issued. That is not a confirmation that it is safe.",
+      "notInService": "Jaga has not started its warning service in this area yet. Follow the DDPM, and call 1784 or 1669 if you need help.",
+      "tambons": "{count} of {total} tambons"
+    },
+    "gauges": {
+      "title": "River gauges in {place}",
+      "lead": "These are measured readings, not an alert.",
+      "none": "Jaga has no river gauge in {place} yet.",
+      "unavailable": "The river gauge readings cannot be read right now."
+    },
+    "places": {
+      "title": "Safe places in {place}",
+      "total": "{count} on Jaga's map",
+      "unchecked": "No team has checked them yet. Call ahead before you travel.",
+      "checked": "{count} checked by a team",
+      "link": "See safe places on the map"
+    },
+    "act": {
+      "title": "What you can do now",
+      "sos": "Ask for help",
+      "report": "Report flooding you can see",
+      "map": "Open the situation map",
+      "home": "See your tambon's status"
+    },
+    "place": {
+      "province": "{name}",
+      "district": "{name}, {province}"
+    },
+    "tambons": {
+      "title": "Tambons in {place}",
+      "lead": "Tap a tambon's name to see its status on the map.",
+      "count": "{count} tambons"
+    },
+    "inProvince": "Other districts in {province} with a page of their own",
+    "others": "The other provinces Jaga covers",
+    "coverage": "Jaga covers four provinces: Pattani, Yala, Narathiwat and Songkhla. If you are in another province, call 1784 or 1669."
   }
 }
