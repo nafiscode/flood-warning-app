@@ -10,6 +10,7 @@ import {
   lineQuotaAfter,
   toPreview,
 } from "@/lib/alert-console";
+import { layoutMessages } from "@/lib/messages";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
@@ -108,6 +109,22 @@ describe("the notification a sent drill makes", () => {
 
   it("leaves a real alert's notification exactly as it was", () => {
     expect(alertPayload(alert, "th", levelName, "", "ซ้อมระบบ")!.title).toBe("Jaga · [warning]");
+  });
+
+  /*
+   * Only the text a page needs goes to the browser (slow 3G), and the bell is drawn by the
+   * layout. Its subset carried the five level names but not the drill mark, so the owner was
+   * shown ALERT.DRILL.TAG where the Thai word should have been (21 Oct). The keys existing in
+   * the file is not enough: what matters is that they reach the island that draws the mark.
+   */
+  it("sends the drill mark to the bell, in all three languages", () => {
+    for (const messages of [th, ms, en]) {
+      const drill = (layoutMessages(messages as never) as Record<string, Record<string, Record<string, string>>>)
+        .alert!.drill!;
+      expect(drill.tag).toBeTruthy();
+      expect(drill.note).toBeTruthy();
+      expect(drill.why).toBeTruthy();
+    }
   });
 
   it("has the drill word in all three languages", () => {

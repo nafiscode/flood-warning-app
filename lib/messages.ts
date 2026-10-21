@@ -199,8 +199,8 @@ export function usageMessages(messages: AbstractIntlMessages): AbstractIntlMessa
 /**
  * The layout, on every page: the language switcher's text, the few lines the weather chip in the
  * header needs, and the bell's list. The weather page's own text is not sent with it, so a page
- * that nobody opens the weather from stays as small as it was. Of the alert namespace only the
- * five level names travel: the bell shows a level badge, not a checklist.
+ * that nobody opens the weather from stays as small as it was. Of the alert namespace two groups
+ * travel: the five level names for the badge, and the drill mark the bell draws beside it.
  */
 export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   const all = messages as Messages;
@@ -211,7 +211,9 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     nav: all.nav!,
     weather: { chip: weather.chip, codes: weather.codes },
     notices: all.notices!,
-    alert: { level: (all.alert as Messages).level! },
+    // The level names for the badge, and the drill mark's three lines: the bell is where a sent
+    // drill is read, and without them next-intl prints the key path (the owner saw it, 21 Oct).
+    alert: { level: (all.alert as Messages).level!, drill: (all.alert as Messages).drill! },
     // The "What Jaga can do" line at the end of each page (A17): one word.
     capabilities: { link: (all.capabilities as Messages).link! },
     // And "How Jaga works" beside it (A18), and "Who built Jaga" after that: two more words.
