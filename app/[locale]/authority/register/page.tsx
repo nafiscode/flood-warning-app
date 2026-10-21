@@ -17,6 +17,7 @@ import {
   notice,
 } from "@/lib/ui";
 import { registerAuthority } from "./actions";
+import { alternates } from "@/lib/seo";
 
 const ERRORS = [
   "required",
@@ -39,7 +40,7 @@ export async function generateMetadata({
 }: PageProps<"/[locale]/authority/register">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "authorityRegister" });
-  return { title: t("title") };
+  return { title: t("title"), alternates: alternates(locale, "/authority/register") };
 }
 
 /**

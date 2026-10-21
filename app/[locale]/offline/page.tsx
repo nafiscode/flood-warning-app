@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { OfflineRetry } from "@/components/OfflineRetry";
+import { PRIVATE_PAGE } from "@/lib/seo";
+
+/** The page the service worker shows instead of one it could not load: never a search result. */
+export const metadata: Metadata = PRIVATE_PAGE;
 
 /** Precached by the service worker; shown when a page can't load. The hotline bar stays below. */
 export default async function Offline({ params }: PageProps<"/[locale]/offline">) {

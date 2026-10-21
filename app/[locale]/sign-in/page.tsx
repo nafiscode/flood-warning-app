@@ -16,6 +16,7 @@ import {
   notice,
 } from "@/lib/ui";
 import { sendEmailLink, sendPhoneCode, verifyEmailCode, verifyPhoneCode } from "./actions";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
 const ERRORS = ["link", "line", "email", "phone", "sms", "code", "rate", "unavailable"] as const;
 
@@ -24,7 +25,7 @@ export async function generateMetadata({
 }: PageProps<"/[locale]/sign-in">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "signIn" });
-  return { title: t("title") };
+  return { title: t("title"), ...PRIVATE_PAGE };
 }
 
 function one(value: string | string[] | undefined): string {

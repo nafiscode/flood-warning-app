@@ -9,13 +9,14 @@ import { getSessionProfile, localePath } from "@/lib/auth";
 import { readMyUnits } from "@/lib/authority-board";
 import { placeChecksMessages } from "@/lib/place-checks";
 import { buttonSecondary, card } from "@/lib/ui";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/authority/places">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "placeChecks" });
-  return { title: t("title") };
+  return { title: t("title"), ...PRIVATE_PAGE };
 }
 
 export const dynamic = "force-dynamic";

@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Capabilities } from "@/components/capabilities/Capabilities";
+import { alternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/features">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "capabilities" });
-  return { title: t("title"), description: t("lead") };
+  return { title: t("title"), description: t("lead"), alternates: alternates(locale, "/features") };
 }
 
 /**

@@ -8,6 +8,7 @@ import { getSessionProfile, localePath } from "@/lib/auth";
 import { sosSendingEnabled } from "@/lib/features";
 import { reportMessages } from "@/lib/messages";
 import { buttonPrimary, buttonSecondary, notice } from "@/lib/ui";
+import { alternates } from "@/lib/seo";
 
 /**
  * Rendered per request, not at build time. The launch switch and the "not in service yet" page it
@@ -22,7 +23,7 @@ export async function generateMetadata({
 }: PageProps<"/[locale]/report">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "report" });
-  return { title: t("title") };
+  return { title: t("title"), alternates: alternates(locale, "/report") };
 }
 
 /**

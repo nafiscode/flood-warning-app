@@ -3,13 +3,14 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { WeatherScreen } from "@/components/weather/WeatherScreen";
 import { weatherMessages } from "@/lib/messages";
+import { alternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/weather">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "weather" });
-  return { title: t("title"), description: t("notAnAlert") };
+  return { title: t("title"), description: t("notAnAlert"), alternates: alternates(locale, "/weather") };
 }
 
 /**

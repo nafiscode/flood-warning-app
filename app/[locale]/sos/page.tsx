@@ -8,6 +8,7 @@ import { sosSendingEnabled } from "@/lib/features";
 import { projectLine } from "@/lib/hotlines";
 import { sosMessages } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
+import { alternates } from "@/lib/seo";
 
 /**
  * Rendered per request, not at build time. The launch switch and the "not in service yet" page it
@@ -20,7 +21,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/[locale]/sos">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "sos" });
-  return { title: t("label") };
+  return { title: t("label"), alternates: alternates(locale, "/sos") };
 }
 
 type Place = { id: string; label: string; lat: number; lon: number };

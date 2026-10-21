@@ -3,13 +3,14 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { CaseStatus } from "@/components/sos/CaseStatus";
 import { sosMessages } from "@/lib/messages";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/sos/[id]">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "sos" });
-  return { title: t("status.title") };
+  return { title: t("status.title"), ...PRIVATE_PAGE };
 }
 
 /**

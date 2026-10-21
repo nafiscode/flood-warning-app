@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { About } from "@/components/about/About";
+import { alternates } from "@/lib/seo";
 import { OG_LOCALE, siteUrl } from "@/lib/site";
 
 /**
@@ -38,7 +39,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: alternates(locale, "/about"),
     // Spelled out rather than inherited: the layout's card is the app's, and this page is not.
     openGraph: {
       type: "profile",

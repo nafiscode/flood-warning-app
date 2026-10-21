@@ -4,13 +4,14 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { BackLink } from "@/components/BackLink";
 import { MyRequests } from "@/components/journey/MyRequests";
 import { journeyMessages } from "@/lib/journey-messages";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/requests">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "journey" });
-  return { title: t("page.title") };
+  return { title: t("page.title"), ...PRIVATE_PAGE };
 }
 
 /**

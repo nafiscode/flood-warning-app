@@ -6,6 +6,7 @@ import { SendSupplies } from "@/components/sos/SendSupplies";
 import { getPathname } from "@/i18n/navigation";
 import { sosSendingEnabled } from "@/lib/features";
 import { sosMessages } from "@/lib/messages";
+import { alternates } from "@/lib/seo";
 
 // Rendered per request for the same reason as /sos: the launch switch is read here.
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export async function generateMetadata({
 }: PageProps<"/[locale]/supplies">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "sos" });
-  return { title: t("supplies.label") };
+  return { title: t("supplies.label"), alternates: alternates(locale, "/supplies") };
 }
 
 /**

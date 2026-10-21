@@ -6,11 +6,12 @@ import { Dashboard } from "@/components/map/Dashboard";
 import { SeasonOutlook } from "@/components/map/SeasonOutlook";
 import { donationsEnabled } from "@/lib/features";
 import { mapMessages } from "@/lib/messages";
+import { alternates } from "@/lib/seo";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/map">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "map" });
-  return { title: t("title") };
+  return { title: t("title"), alternates: alternates(locale, "/map") };
 }
 
 /**

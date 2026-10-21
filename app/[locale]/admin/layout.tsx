@@ -1,10 +1,19 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminBack, AdminMenu } from "@/components/admin/AdminMenu";
 import { menuGroups, readAdminCounts } from "@/lib/admin-counts";
 import { canManageAdmins } from "@/lib/admin-team";
 import { getSessionProfile, isAdminRole, localePath } from "@/lib/auth";
+import { PRIVATE_PAGE } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
+
+/**
+ * Every page under /admin, in one place: a crawler that reaches one of them by a link from
+ * anywhere must not keep it. robots.txt asks it not to fetch these; this is the half that still
+ * holds when it arrived another way.
+ */
+export const metadata: Metadata = PRIVATE_PAGE;
 
 /**
  * Admin console shell. Visitors go to sign-in; signed-in people who aren't admins get "not

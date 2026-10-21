@@ -9,13 +9,14 @@ import { readAuthorityBoard, readMyUnits } from "@/lib/authority-board";
 import { getSessionProfile, localePath } from "@/lib/auth";
 import { authorityMessages } from "@/lib/messages";
 import { buttonSecondary, card } from "@/lib/ui";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/authority">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "authority" });
-  return { title: t("title") };
+  return { title: t("title"), ...PRIVATE_PAGE };
 }
 
 /**
