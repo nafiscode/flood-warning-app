@@ -19,6 +19,11 @@ import { PLACE_PATHS } from "@/lib/flood-places";
  * "my requests" hold or lead to somebody's data (safety rules 5 and 6); a case page at
  * `/sos/<id>` *is* somebody's emergency and must never reach a search result; `/sign-in` and
  * `/offline` say nothing to a reader who arrives from a search.
+ *
+ * Nothing in this list may need a session. `/authority/register` was in it until 22 Oct, when
+ * every address in the live sitemap was fetched and those three answered 307 to /sign-in - three
+ * dead entries out of 78, which is how a search engine learns to distrust a sitemap. A page a
+ * crawler cannot reach does not belong here however public it looks from the route name.
  */
 export const INDEXED_PATHS = [
   "/",
@@ -34,7 +39,6 @@ export const INDEXED_PATHS = [
   "/how-it-works",
   "/how-it-works/system",
   "/about",
-  "/authority/register",
 ] as const;
 
 /**

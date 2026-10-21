@@ -48,15 +48,28 @@ describe("robots.txt", () => {
     }
   });
 
-  it("lets a rescue team's sign-up page through the closed path above it", () => {
-    for (const locale of routing.locales) {
-      const at = (path: string) => (locale === routing.defaultLocale ? path : `/${locale}${path}`);
-      expect(allow).toContain(at("/authority/register"));
+  it("names the sitemap, so a crawler that reads only this file still finds every page", () => {
+    expect(robots().sitemap).toMatch(/\/sitemap\.xml$/);
+  });
+});
+
+describe("nothing offered for crawling needs a session", () => {
+  /*
+   * `/authority/register` was offered until 22 Oct, on the belief that it is the public page a
+   * rescue team signs up on. Fetching every address in the live sitemap proved otherwise: it
+   * answered 307 to /sign-in in all three languages. Three dead entries out of 78 is how a search
+   * engine learns to distrust a sitemap, so the rule is now held here rather than remembered.
+   */
+  it("offers no page under a path a signed-out visitor is redirected away from", () => {
+    for (const path of INDEXED_PATHS) {
+      for (const gated of ["/admin", "/authority", "/account", "/requests"]) {
+        expect(path.startsWith(gated), `${path} needs a session and cannot be crawled`).toBe(false);
+      }
     }
   });
 
-  it("names the sitemap, so a crawler that reads only this file still finds every page", () => {
-    expect(robots().sitemap).toMatch(/\/sitemap\.xml$/);
+  it("still names the home page, which is where a team is told it can register", () => {
+    expect(INDEXED_PATHS).toContain("/");
   });
 });
 

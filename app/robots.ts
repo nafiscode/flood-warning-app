@@ -25,8 +25,15 @@ const CLOSED = [
   "/sos/",
 ];
 
-/** The one page under a closed path that should be findable: how a rescue team signs itself up. */
-const OPEN = ["/authority/register"];
+/*
+ * There is no exception any more. `/authority/register` was allowed back through here on the
+ * belief that it is the public page a rescue team signs up on. It is not: it asks for a session
+ * and redirects to /sign-in (proved against the live site, 22 Oct - it answered 307 in all three
+ * languages). A crawler following it would only ever reach the sign-in page.
+ *
+ * The findable page for a team is the home screen, which has said since 18 Oct that a unit can
+ * register and links here. That page is indexed; this one has nothing to show a crawler.
+ */
 
 function perLocale(paths: string[]): string[] {
   return paths.flatMap((path) =>
@@ -40,8 +47,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        // Longest match wins, so the register page survives the closed `/authority` above it.
-        allow: ["/", ...perLocale(OPEN)],
+        allow: ["/"],
         disallow: ["/api/", ...perLocale(CLOSED)],
       },
     ],
