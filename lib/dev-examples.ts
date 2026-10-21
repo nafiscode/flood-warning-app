@@ -792,8 +792,9 @@ export type MonitoringExample = "active" | "quiet" | "unknown";
 
 /** A few stations around Bana, so the counting and the distance filter have something to chew. */
 export const EXAMPLE_GAUGE_READINGS: GaugeReading[] = [
-  { lat: BANA.lat + 0.05, lon: BANA.lon + 0.04, status: "above_warning", observedAt: ago(45) },
-  { lat: BANA.lat - 0.08, lon: BANA.lon + 0.11, status: "above_watch", observedAt: ago(50) },
+  { lat: BANA.lat + 0.05, lon: BANA.lon + 0.04, status: "above_evacuate", observedAt: ago(45) },
+  { lat: BANA.lat - 0.08, lon: BANA.lon + 0.11, status: "above_warning", observedAt: ago(50) },
+  { lat: BANA.lat - 0.03, lon: BANA.lon + 0.07, status: "above_watch", observedAt: ago(35) },
   { lat: BANA.lat + 0.12, lon: BANA.lon - 0.06, status: "normal", observedAt: ago(40) },
   { lat: BANA.lat - 0.15, lon: BANA.lon - 0.12, status: "normal", observedAt: ago(55) },
   { lat: BANA.lat + 0.2, lon: BANA.lon + 0.2, status: "no_recent_data", observedAt: ago(600) },

@@ -6,10 +6,13 @@ import { DAM_WATER, DAM_WATER_DARK } from "@/lib/dam-map";
  * animation, cool and clear on the flood-risk layer").
  *
  * Each gauge is a small round glass with water in it. How full it is says where the river stands
- * against the station's own levels; the water moves; a gauge near its bank sends out a slow ripple
- * and one over its bank a quick double ripple; a chevron above or below says the river rose or
- * fell in the last three hours. A gauge silent for six hours is an empty, dashed glass: nothing is
- * shown as if it were current (safety rule 3's habit).
+ * against the station's own three levels (A10, 21 Oct 2026: the public map now reads the levels in
+ * `gauge_levels`, the same ones the admins' signals read, and those give three bands above normal
+ * rather than two): above its normal level the glass is over half full, near its bank it is nearly
+ * full and sends out a slow ripple, and at or over its bank it brims and sends a quick double
+ * ripple. A chevron above or below says the river rose or fell in the last three hours. A gauge
+ * silent for six hours is an empty, dashed glass: nothing is shown as if it were current (safety
+ * rule 3's habit).
  *
  * The colour is the map's water colour, the same as the dam's river, by day and by night, and
  * never an alert colour: a gauge reading is a measurement, not a level a person issued (safety
@@ -17,18 +20,23 @@ import { DAM_WATER, DAM_WATER_DARK } from "@/lib/dam-map";
  * over its bank, and in the card a tap opens - so nothing rests on the picture alone.
  */
 
-export type GaugeLook = "over" | "near" | "normal" | "nolevels" | "quiet";
+export type GaugeLook = "over" | "near" | "high" | "normal" | "nolevels" | "quiet";
 export type Trend = "up" | "down" | "flat";
 
-export const GAUGE_LOOKS: GaugeLook[] = ["over", "near", "normal", "nolevels", "quiet"];
+export const GAUGE_LOOKS: GaugeLook[] = ["over", "near", "high", "normal", "nolevels", "quiet"];
 export const TRENDS: Trend[] = ["up", "down", "flat"];
 
 export function gaugeLook(status: Gauge["status"]): GaugeLook {
   switch (status) {
-    case "above_warning":
+    // The gauge's Evacuate level, which is its bank on every gauge that has one.
+    case "above_evacuate":
       return "over";
-    case "above_watch":
+    // Its Warning level: below the bank, and close to it.
+    case "above_warning":
       return "near";
+    // Its Watch level: higher than the river normally runs, a long way below the bank yet.
+    case "above_watch":
+      return "high";
     case "normal":
       return "normal";
     case "no_levels":
@@ -52,15 +60,20 @@ export function trendOf(rise: number | null, look: GaugeLook): Trend {
 export const GAUGE_FILL: Record<GaugeLook, number> = {
   over: 1,
   near: 0.72,
+  high: 0.55,
   normal: 0.38,
   nolevels: 0.5,
   quiet: 0,
 };
 
-/** One ripple's life in ms; 0 = no ripple. Two ripples, half a life apart, over the bank. */
+/**
+ * One ripple's life in ms; 0 = no ripple. Two ripples, half a life apart, over the bank. Only the
+ * two bank bands ripple: a river merely above its normal level is told by the glass and the words.
+ */
 export const GAUGE_RIPPLE_MS: Record<GaugeLook, number> = {
   over: 1500,
   near: 2800,
+  high: 0,
   normal: 0,
   nolevels: 0,
   quiet: 0,

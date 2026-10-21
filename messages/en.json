@@ -579,9 +579,10 @@
       "roof": "up to the roof"
     },
     "gauge": {
-      "normal": "Below its bank",
-      "above_watch": "Close to its bank",
-      "above_warning": "At or over its bank",
+      "normal": "At its normal level",
+      "above_watch": "Above its normal level",
+      "above_warning": "Close to its bank",
+      "above_evacuate": "At or over its bank",
       "no_levels": "No reference levels for this station yet",
       "no_recent_data": "No data in the last 6 hours",
       "level": "Water level {value} m MSL",
@@ -5165,7 +5166,8 @@
         "title": "River gauges · {scope}",
         "over": "at or over bank",
         "near": "near bank",
-        "normal": "below bank",
+        "high": "above normal",
+        "normal": "normal level",
         "nolevels": "no levels yet",
         "quiet": "not reporting",
         "said": "{said}, of {total} stations in all",

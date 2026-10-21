@@ -961,8 +961,12 @@ describe("the map opens where the person already is", () => {
 describe("river gauges on the public map (A8 item 4)", () => {
   it("names the look, the trend and the words beside a gauge near or over its bank", async () => {
     const { gaugeLook, trendOf, gaugeLabels } = await import("@/lib/gauge-marks");
-    expect(gaugeLook("above_warning")).toBe("over");
-    expect(gaugeLook("above_watch")).toBe("near");
+    // The gauge's own three levels (A10): Evacuate is its bank, Warning is close to it, and Watch
+    // is only above the level the river normally runs at.
+    expect(gaugeLook("above_evacuate")).toBe("over");
+    expect(gaugeLook("above_warning")).toBe("near");
+    expect(gaugeLook("above_watch")).toBe("high");
+    expect(gaugeLook("normal")).toBe("normal");
     expect(gaugeLook("no_recent_data")).toBe("quiet");
     expect(trendOf(0.3, "normal")).toBe("up");
     expect(trendOf(-0.3, "near")).toBe("down");
@@ -970,9 +974,19 @@ describe("river gauges on the public map (A8 item 4)", () => {
     // A silent gauge has no trend to show, whatever its last two readings did.
     expect(trendOf(0.5, "quiet")).toBe("flat");
     const words = { near: "near bank", over: "over bank" };
-    expect(gaugeLabels({ value: 16.62, status: "above_warning" }, words)).toEqual({
+    expect(gaugeLabels({ value: 16.62, status: "above_evacuate" }, words)).toEqual({
       short: "over bank",
       long: "16.62 m · over bank",
+    });
+    expect(gaugeLabels({ value: 15.4, status: "above_warning" }, words)).toEqual({
+      short: "near bank",
+      long: "15.40 m · near bank",
+    });
+    // Above its normal level is a long way below the bank: the glass and the card say it, the map
+    // does not shout it.
+    expect(gaugeLabels({ value: 9.2, status: "above_watch" }, words)).toEqual({
+      short: "",
+      long: "9.20 m",
     });
     expect(gaugeLabels({ value: 3.1, status: "normal" }, words)).toEqual({
       short: "",
@@ -1206,9 +1220,9 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
   });
   // Three at their banks, spread across the four provinces, and one quiet river next door.
   const NEAR_THREE = [
-    riverGauge({ id: "a", lat: 6.2, lon: 101.1, status: "above_warning" as const }),
-    riverGauge({ id: "b", lat: 7.1, lon: 100.4, status: "above_watch" as const }),
-    riverGauge({ id: "c", lat: 6.6, lon: 101.8, status: "above_watch" as const }),
+    riverGauge({ id: "a", lat: 6.2, lon: 101.1, status: "above_evacuate" as const }),
+    riverGauge({ id: "b", lat: 7.1, lon: 100.4, status: "above_warning" as const }),
+    riverGauge({ id: "c", lat: 6.6, lon: 101.8, status: "above_warning" as const }),
     riverGauge({ id: "calm", lat: 6.84, lon: 101.26, status: "normal" as const }),
   ];
   const openGauges = (c: Element) =>

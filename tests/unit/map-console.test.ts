@@ -92,7 +92,9 @@ describe("the laptop console's readout strip", () => {
 
   it("sorts the gauges by what they read and keeps the newest reading", () => {
     const g = gaugeTally([
+      gauge({ status: "above_evacuate" }),
       gauge({ status: "above_warning" }),
+      // Above its normal level, a long way below its bank: counted as reporting, not as a bank.
       gauge({ status: "above_watch" }),
       gauge({ status: "normal", observedAt: "2026-11-20T06:30:00.000Z" }),
       gauge({ status: "no_levels" }),
@@ -101,9 +103,9 @@ describe("the laptop console's readout strip", () => {
     expect(g.over).toBe(1);
     expect(g.near).toBe(1);
     expect(g.silent).toBe(1);
-    expect(g.total).toBe(5);
+    expect(g.total).toBe(6);
     // A station with no thresholds still reports; only a silent one does not.
-    expect(g.reporting).toBe(4);
+    expect(g.reporting).toBe(5);
     expect(g.newestAt).toBe("2026-11-20T06:30:00.000Z");
   });
 
@@ -113,12 +115,14 @@ describe("the laptop console's readout strip", () => {
    * different question each time.
    */
   it("opens the station that matters most, and the same one every time", () => {
-    const over = gauge({ id: "over", status: "above_warning" });
-    const near = gauge({ id: "near", status: "above_watch" });
+    const over = gauge({ id: "over", status: "above_evacuate" });
+    const near = gauge({ id: "near", status: "above_warning" });
+    const high = gauge({ id: "high", status: "above_watch" });
     const quiet = gauge({ id: "quiet", status: "no_recent_data" });
     const normal = gauge({ id: "normal", status: "normal" });
-    expect(gaugeOfInterest([quiet, normal, near, over])!.id).toBe("over");
-    expect(gaugeOfInterest([quiet, normal, near])!.id).toBe("near");
+    expect(gaugeOfInterest([quiet, normal, high, near, over])!.id).toBe("over");
+    expect(gaugeOfInterest([quiet, normal, high, near])!.id).toBe("near");
+    expect(gaugeOfInterest([quiet, normal, high])!.id).toBe("high");
     expect(gaugeOfInterest([quiet, normal])!.id).toBe("normal");
     expect(gaugeOfInterest([quiet])!.id).toBe("quiet");
     // The order they arrive in never changes the answer.
@@ -140,9 +144,9 @@ describe("the laptop console's readout strip", () => {
       id: "nearWatched",
       lat: 6.01,
       lon: 101.29,
-      status: "above_warning",
+      status: "above_evacuate",
     });
-    const farAway = gauge({ id: "far", lat: 7.6, lon: 100.1, status: "above_warning" });
+    const farAway = gauge({ id: "far", lat: 7.6, lon: 100.1, status: "above_evacuate" });
     const all = [farAway, nearHome, nearWatched];
     // Two places, one of them with a station over its bank: that one.
     expect(gaugeOfInterest(all, [home, watched])!.id).toBe("nearWatched");
@@ -158,12 +162,12 @@ describe("the laptop console's readout strip", () => {
     // Two over their banks: the nearer of them, which is how "all" reads here.
     expect(gaugeOfInterest(all, [home])!.id).toBe("nearWatched");
     // Reading the same, the nearer of their own wins.
-    const alsoOver = gauge({ id: "alsoOver", lat: 6.2, lon: 101.3, status: "above_warning" });
+    const alsoOver = gauge({ id: "alsoOver", lat: 6.2, lon: 101.3, status: "above_evacuate" });
     expect(gaugeOfInterest([alsoOver, nearWatched], [watched])!.id).toBe("nearWatched");
   });
 
   it("falls back to every river for somebody who has saved nowhere near one", () => {
-    const far = gauge({ id: "far", lat: 7.6, lon: 100.1, status: "above_warning" });
+    const far = gauge({ id: "far", lat: 7.6, lon: 100.1, status: "above_evacuate" });
     const quiet = gauge({ id: "quiet", lat: 7.4, lon: 100.2, status: "no_recent_data" });
     // Their place is hundreds of kilometres from both: they still get the riskiest.
     expect(gaugeOfInterest([quiet, far], [{ lat: 6.2, lon: 102.0 }])!.id).toBe("far");
@@ -490,10 +494,10 @@ describe("the run a readout opens, and the marks it lights", () => {
   /** The least a reservoir needs for the order to be worked out. */
   const dam = (over: Partial<Dam>): Dam =>
     ({ code: "d", name: {}, signal: null, reaches: [], ...over }) as unknown as Dam;
-  const over = gauge({ id: "over", lat: 7.5, lon: 100.1, status: "above_warning" });
-  const near1 = gauge({ id: "near1", lat: 6.3, lon: 101.1, status: "above_watch" });
-  const near2 = gauge({ id: "near2", lat: 6.9, lon: 101.6, status: "above_watch" });
-  const near3 = gauge({ id: "near3", lat: 6.1, lon: 101.9, status: "above_watch" });
+  const over = gauge({ id: "over", lat: 7.5, lon: 100.1, status: "above_evacuate" });
+  const near1 = gauge({ id: "near1", lat: 6.3, lon: 101.1, status: "above_warning" });
+  const near2 = gauge({ id: "near2", lat: 6.9, lon: 101.6, status: "above_warning" });
+  const near3 = gauge({ id: "near3", lat: 6.1, lon: 101.9, status: "above_warning" });
   const calm = gauge({ id: "calm", lat: 6.8, lon: 101.2, status: "normal" });
 
   it("puts every river at or near its bank first, however far away it is", () => {

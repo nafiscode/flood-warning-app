@@ -130,7 +130,7 @@ describe("what the monitoring shows now: the rivers", () => {
 
   it("puts a river at or over its bank at the top weight", () => {
     const note = noteOf(
-      monitoring(input({ gauges: ok([gauge({ status: "above_warning" }), gauge()]) })).notes,
+      monitoring(input({ gauges: ok([gauge({ status: "above_evacuate" }), gauge()]) })).notes,
       "gauges",
     );
     expect(note.say).toBe("active");
@@ -140,11 +140,25 @@ describe("what the monitoring shows now: the rivers", () => {
 
   it("puts a river only near its bank below one over it", () => {
     const note = noteOf(
-      monitoring(input({ gauges: ok([gauge({ status: "above_watch" })]) })).notes,
+      monitoring(input({ gauges: ok([gauge({ status: "above_warning" })]) })).notes,
       "gauges",
     );
     expect(note.say).toBe("active");
     expect(note.weight).toBe(1);
+  });
+
+  /*
+   * A river above its normal level is not an event (A10, 21 Oct 2026): the card says what is
+   * happening, and the Watch band is a long way below the bank on every gauge that has levels.
+   * The station is still counted and still reporting - it is only not called active.
+   */
+  it("does not call a river above its normal level an event", () => {
+    const note = noteOf(
+      monitoring(input({ gauges: ok([gauge({ status: "above_watch" })]) })).notes,
+      "gauges",
+    );
+    expect(note.say).toBe("quiet");
+    expect(note.kind === "gauges" && note.reporting).toBe(1);
   });
 
   it("is quiet, with its figures and its time, when gauges report and all read below their bank", () => {
@@ -185,7 +199,7 @@ describe("which rivers are the person's own", () => {
   });
 
   it("counts only the person's own rivers once they have an area", () => {
-    const gauges = ok([gauge({ status: "above_warning", lat: 7.6, lon: 100.2 }), gauge()]);
+    const gauges = ok([gauge({ status: "above_evacuate", lat: 7.6, lon: 100.2 }), gauge()]);
     // The one over its bank is far away: near this person every river is below its bank.
     const note = noteOf(monitoring(input({ myPoint: here, gauges })).notes, "gauges");
     expect(note.say).toBe("quiet");
@@ -394,7 +408,7 @@ describe("how the notes are read together", () => {
   it("puts what is happening first, then what could not be read, then what is quiet", () => {
     const summary = monitoring(
       input({
-        gauges: ok([gauge({ status: "above_watch" })]),
+        gauges: ok([gauge({ status: "above_warning" })]),
         dam: failed(),
         reports: ok([]),
         rain: ok({ group: "rain", rainMm: 2, at: "2026-11-20T06:45:00.000Z" }),
@@ -406,7 +420,7 @@ describe("how the notes are read together", () => {
   it("puts a river over its bank above one merely near it", () => {
     const summary = monitoring(
       input({
-        gauges: ok([gauge({ status: "above_warning" })]),
+        gauges: ok([gauge({ status: "above_evacuate" })]),
         dam: ok(dam({ signal: signal({ awaiting: ["watch_unconfirmed"] }) })),
       }),
     );

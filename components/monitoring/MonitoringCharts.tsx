@@ -62,7 +62,7 @@ function Figure({
 export function GaugeSpread({ gauges, scope }: { gauges: readonly GaugeReading[]; scope: string }) {
   const t = useTranslations("monitoring.charts");
   // Worst first, left to right, and the silent ones last: they are counted, never drawn as low.
-  const order: GaugeLook[] = ["over", "near", "normal", "nolevels", "quiet"];
+  const order: GaugeLook[] = ["over", "near", "high", "normal", "nolevels", "quiet"];
   const counts = order.map((look) => ({
     look,
     count: gauges.filter((g) => gaugeLook(g.status) === look).length,

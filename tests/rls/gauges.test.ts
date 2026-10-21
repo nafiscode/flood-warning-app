@@ -60,6 +60,70 @@ describe("the gauges", () => {
     expect(await status()).toBe("above_warning");
   });
 
+  /*
+   * A10, 21 Oct 2026: the public map grades on the gauge's own levels in `gauge_levels` - the same
+   * ones the admins' signals read - and only falls back to the `stations` columns for a gauge that
+   * has no row there (the test above). Before this the two disagreed on 39 of the 46 gauges that
+   * have both, and an admin's own levels never reached the public map at all.
+   */
+  it("grades a visitor's gauge on the gauge's own levels, Evacuate included", async () => {
+    await asOwner(db);
+    // Its own levels sit well below the `stations` columns (watch 9.5, warning 10).
+    await db.query(
+      "insert into public.gauge_levels (station_id, watch_m, warning_m, evacuate_m) values ($1, 6, 7, 8)",
+      [station],
+    );
+    const reads = async (value: number) => {
+      await asOwner(db);
+      await db.query("delete from public.observations where station_id = $1", [station]);
+      await db.query(
+        "insert into public.observations (station_id, ts, variable, value) values ($1, now() - interval '10 minutes', 'water_level_msl', $2)",
+        [station, value],
+      );
+      await as(db, "anon");
+      return status();
+    };
+    expect(await reads(5.9)).toBe("normal");
+    expect(await reads(6.2)).toBe("above_watch");
+    expect(await reads(7.4)).toBe("above_warning");
+    // At or over its Evacuate level - its bank - the map says so in its own word, never a lower
+    // one: a level is never shown lower than it is (safety rule 3).
+    expect(await reads(8)).toBe("above_evacuate");
+    expect(await reads(9.9)).toBe("above_evacuate");
+  });
+
+  it("says nothing of a gauge with no levels in either place", async () => {
+    await asOwner(db);
+    await db.query("update public.stations set watch_m = null, warning_m = null where id = $1", [
+      station,
+    ]);
+    await db.query(
+      "insert into public.observations (station_id, ts, variable, value) values ($1, now(), 'water_level_msl', 4)",
+      [station],
+    );
+    await as(db, "anon");
+    expect(await status()).toBe("no_levels");
+  });
+
+  /*
+   * `station_status()` is `security definer` because it reads `gauge_levels`, which only admins may
+   * select. Nothing from that table leaves the function: the levels become one word, and the bank
+   * level was public before this.
+   */
+  it("still does not let a visitor read the levels themselves", async () => {
+    await asOwner(db);
+    await db.query(
+      "insert into public.gauge_levels (station_id, watch_m, warning_m, evacuate_m) values ($1, 6, 7, 8)",
+      [station],
+    );
+    // A visitor may not select from the table at all; a signed-in non-admin is let in and shown
+    // nothing by the policy. Neither of them can read a level, which is the point.
+    await as(db, "anon");
+    await expectDenied(db, "select 1 from public.gauge_levels");
+    await as(db, { uid: w.requester });
+    expect(await rows(db, "select 1 from public.gauge_levels")).toHaveLength(0);
+  });
+
   it("a gauge whose newest reading is older than six hours says so, whatever it read", async () => {
     await asOwner(db);
     await db.query(

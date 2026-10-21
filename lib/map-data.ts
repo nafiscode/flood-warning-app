@@ -14,6 +14,7 @@ export const GAUGE_STATUSES = [
   "normal",
   "above_watch",
   "above_warning",
+  "above_evacuate",
   "no_levels",
   "no_recent_data",
 ] as const;
@@ -27,8 +28,10 @@ export type Gauge = {
   value: number | null;
   observedAt: string | null;
   /**
-   * `above_watch` = near its bank (a zone's key gauge: at its Warning level; any other gauge: within
-   * half a metre of its bank); `above_warning` = at or over its bank.
+   * Where the river stands against this gauge's own Watch, Warning and Evacuate levels - the levels
+   * in `gauge_levels` that the admins' signals read too (A10, 21 Oct 2026). `above_watch` = higher
+   * than the river normally runs; `above_warning` = close to its bank; `above_evacuate` = at or over
+   * its bank (Evacuate is the bank level on every gauge that has one).
    */
   status: (typeof GAUGE_STATUSES)[number];
   code?: string;

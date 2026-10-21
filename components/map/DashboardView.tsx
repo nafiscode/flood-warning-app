@@ -2367,8 +2367,9 @@ export function DashboardView(props: DashboardViewProps) {
                             <ul className="flex flex-col gap-1">
                               {(
                                 [
-                                  ["over", "above_warning"],
-                                  ["near", "above_watch"],
+                                  ["over", "above_evacuate"],
+                                  ["near", "above_warning"],
+                                  ["high", "above_watch"],
                                   ["normal", "normal"],
                                   ["quiet", "no_recent_data"],
                                 ] as const

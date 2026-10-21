@@ -423,7 +423,7 @@ describe("what the opened detail holds", () => {
   it("draws the rivers as a count of states, saying it is not a chart over time", () => {
     const c = detailOf({
       gauges: [
-        { lat: 6.9, lon: 101.3, status: "above_warning", observedAt: AT },
+        { lat: 6.9, lon: 101.3, status: "above_evacuate", observedAt: AT },
         { lat: 6.8, lon: 101.2, status: "normal", observedAt: AT },
         { lat: 6.7, lon: 101.1, status: "no_recent_data", observedAt: AT },
       ],

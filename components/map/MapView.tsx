@@ -382,8 +382,9 @@ function damCollections(
 
 /** Which gauge is drawn on top where two overlap: the one nearest its bank. */
 const GAUGE_RANK: Record<GaugeLook, number> = {
-  over: 4,
-  near: 3,
+  over: 5,
+  near: 4,
+  high: 3,
   normal: 2,
   nolevels: 1,
   quiet: 0,

@@ -512,7 +512,7 @@ test.describe("what the monitoring shows now, on the home screen", () => {
             json: {
               generatedAt: new Date().toISOString(),
               gauges: [
-                { lat: 6.9, lon: 101.3, status: "above_warning", observedAt: minutes(-25) },
+                { lat: 6.9, lon: 101.3, status: "above_evacuate", observedAt: minutes(-25) },
                 { lat: 6.85, lon: 101.25, status: "normal", observedAt: minutes(-25) },
               ],
             },

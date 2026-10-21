@@ -55,7 +55,7 @@ const GAUGES = [
     lon: 101.2,
     value: 9.1,
     observedAt: minutes(-20),
-    status: "above_warning",
+    status: "above_evacuate",
     bank: 8.8,
   },
   {
@@ -591,7 +591,7 @@ test.describe("the live map on a laptop", () => {
     await page.locator('[data-console-tile="gauges"] [data-tile-open]').click();
     const panel = page.locator("[data-selected-panel]");
     await expect(panel).toBeVisible();
-    await expect(panel).toContainText(th.map.gauge.above_warning);
+    await expect(panel).toContainText(th.map.gauge.above_evacuate);
     // And the map says which one it means, for a moment: here the one river at its bank.
     const frame = page.locator("[data-map-frame] [data-map-lit]");
     await expect(frame).toHaveAttribute("data-map-lit", "g-over", { timeout: 4000 });

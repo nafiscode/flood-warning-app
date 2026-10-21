@@ -122,8 +122,8 @@ export function gaugeRun<T extends GaugeReading & { id: string }>(
 function gaugeRank(look: GaugeLook, mine: boolean): number {
   if (look === "over") return 0;
   if (look === "near") return 1;
-  const quiet = ({ normal: 0, nolevels: 1, quiet: 2 })[look] ?? 2;
-  return (mine ? 2 : 5) + quiet;
+  const rest = ({ high: 0, normal: 1, nolevels: 2, quiet: 3 })[look] ?? 3;
+  return (mine ? 2 : 6) + rest;
 }
 
 /** Which station the rivers' readout opens: the first of the run. */

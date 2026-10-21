@@ -579,9 +579,10 @@
       "roof": "sampai bumbung"
     },
     "gauge": {
-      "normal": "Di bawah paras tebing",
-      "above_watch": "Hampir paras tebing",
-      "above_warning": "Pada atau melebihi paras tebing",
+      "normal": "Pada paras biasa",
+      "above_watch": "Lebih tinggi daripada paras biasa",
+      "above_warning": "Hampir mencapai paras tebing",
+      "above_evacuate": "Pada atau melebihi paras tebing",
       "no_levels": "Stesen ini belum ada paras rujukan",
       "no_recent_data": "Tiada data dalam 6 jam yang lalu",
       "level": "Paras air {value} m MSL",
@@ -5165,7 +5166,8 @@
         "title": "Tolok sungai · {scope}",
         "over": "mencecah/melepasi tebing",
         "near": "hampir tebing",
-        "normal": "di bawah tebing",
+        "high": "lebih tinggi daripada biasa",
+        "normal": "paras biasa",
         "nolevels": "belum ada aras",
         "quiet": "tiada bacaan",
         "said": "{said}, daripada {total} stesen keseluruhan",
