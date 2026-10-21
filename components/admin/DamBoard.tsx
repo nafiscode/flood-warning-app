@@ -113,8 +113,17 @@ export function DamBoard({ dams, now, review }: Props) {
 
             <Figures dam={dam} now={now} />
 
+            {/*
+             * Where released water would go - or, for a reservoir nobody has mapped a channel
+             * below, that nothing can be said about it. Saying "the zone covers 0 tambons and 0
+             * more" reads as a zone that happens to cover nobody, which is a different claim and
+             * not the true one (the owner found it on Khlong Chamrai, 21 Oct). The public card
+             * has made this distinction since it was built; the war room had not.
+             */}
             <p className={hint}>
-              {t("dam.tambons", { main: dam.tambonsMain, tributary: dam.tambonsTributary })}
+              {dam.tambonsMain + dam.tambonsTributary === 0
+                ? t("dam.noPath")
+                : t("dam.tambons", { main: dam.tambonsMain, tributary: dam.tambonsTributary })}
             </p>
 
             {open && dam.notice && (

@@ -2054,7 +2054,8 @@
         "open": ""
       },
       "feedFailed": "Gagal membaca data empangan; cubaan terakhir pada {time}. Angka mungkin bukan yang terbaharu.",
-      "send": "Hantar notis pelepasan"
+      "send": "Hantar notis pelepasan",
+      "noPath": "Tiada saluran di bawah empangan ini dalam data peta, jadi Jaga tidak dapat menunjukkan ke mana air yang dilepaskan pergi. Angka empangan itu sendiri tetap sah."
     },
     "unconfirmed": {
       "title": "Penyelamatan yang menunggu pengesahan",

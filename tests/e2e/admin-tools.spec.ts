@@ -97,6 +97,10 @@ test.describe("an admin's round of the tools", () => {
   let twin = "";
 
   test.beforeAll(async () => {
+    // First, not only at the end: a run that was interrupted leaves its SOS and its report in
+    // the owner's war room until the next run finishes, and twice now they have found them
+    // there (19 and 21 Oct). Sweeping here means the debris lives only until the next run starts.
+    await sweepOldRuns();
     const { data, error } = await service().auth.admin.createUser({ email, email_confirm: true });
     if (error || !data.user) throw new Error(`could not create the admin: ${error?.message}`);
     admin = data.user.id;

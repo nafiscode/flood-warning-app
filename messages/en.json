@@ -2054,7 +2054,8 @@
         "open": ""
       },
       "feedFailed": "The dam's figures could not be read; last tried at {time}. What is shown may not be the newest.",
-      "send": "Send the release notice"
+      "send": "Send the release notice",
+      "noPath": "No channel below this reservoir is in the map data, so Jaga cannot say where released water would go. The reservoir’s own figures still stand."
     },
     "unconfirmed": {
       "title": "Rescues waiting for confirmation",
