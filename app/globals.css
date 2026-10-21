@@ -794,10 +794,18 @@
     height: auto;
     min-height: 0;
   }
+  /*
+   * They are told what the screen actually leaves them, rather than a figure from when the
+   * chrome above was taller: the header (107), the sticky hotline bar (70), the page's own
+   * padding and the three rows above the map - measured at 1,180x820, where it comes to 29rem
+   * and leaves 356 px. Both end where the hotline bar begins, so the screen a tablet opens on
+   * holds the whole of the map and the whole of the panel. That figure is the HIG pass at the
+   * foot of this block; before it the chrome was 100 px taller and the map began below the fold.
+   */
   [data-map-console]:not([data-map-full]) [data-console-area="map"],
   [data-map-console]:not([data-map-full]) [data-console-area="side"] {
-    height: calc(100dvh - var(--console-chrome, 14rem) - 8rem);
-    min-height: 20rem;
+    height: calc(100dvh - 29rem);
+    min-height: 18rem;
   }
   /*
    * The left rail's blocks, full width and wrapping: the hazard, the province, the layers, the
@@ -871,6 +879,196 @@
     [data-console-area="side"]:hover
     > *:not([data-side-bar]) {
     visibility: hidden;
+  }
+
+  /*
+   * The same tablet, read against Apple's Human Interface Guidelines (the owner, 21 Oct 2026:
+   * research Apple's guidance and apply it to the map on a tablet).
+   *
+   * Measured first, on the live site at 1,180x820 with a finger (.claude/local/q-hig.mjs), and
+   * every figure below is from that run. What the guidelines asked for, and what was wrong:
+   *
+   *   * "People see primary content without scrolling" (Apple's design tips), and iPadOS: "take
+   *     advantage of the large display to elevate the content people care about". The map began
+   *     496 px down an 820 px window - header 107, weather bar 247, readouts 126 - so a tablet
+   *     opened on the chrome and had to scroll to reach the thing it came for. It now begins
+   *     397 px down and ends at the hotline bar, so the whole of it and the whole of the answer
+   *     panel are on the screen the page opens on - and nothing was removed to get there: the
+   *     head holds one line, the hazards that are not live stand behind the disclosure a phone
+   *     already has, and a readout is as tall as what it says rather than as tall as a laptop's
+   *     card. The three rows above the map went from 354 px to 254.
+   *   * "Position onscreen controls where they are easy to reach, but not in the way" (iPadOS).
+   *     The four map tools floated over the map's own top edge, on the part of it that was
+   *     visible. The frame now keeps a strip for them above the canvas.
+   *   * A hit target of at least 44x44 pt. Eleven controls were under it: the readout pins 26x44,
+   *     MapLibre's zoom buttons 29x29, the attribution toggle 24x24, the layer tick boxes 24x24.
+   *   * "Use progressive disclosure", and nothing truncated. A readout's heading is one line with
+   *     an ellipsis until the card is hovered - and a finger cannot hover, so on a tablet the
+   *     fourth and fifth headings read "รายงานจากประช..." and "ผล..." with no way to see the rest.
+   *   * The scroll edge effect, so a pane does not look cut. The answer panel beside the map ended
+   *     mid-word at its fold with nothing to say it went on.
+   *
+   * The guidance is Apple's; the measurements and the choices are ours. Nothing here changes what
+   * the page can do (HIG: "keep functionality the same as size classes change") - only how much of
+   * it is on the first screen.
+   */
+  /*
+   * 1. The map on the first screen.
+   */
+  /* The head holds one line: the title and the globe, then what the map may show, then the
+     weather. The note is the one thing that can give - it wraps inside its own share of the
+     line rather than taking a line of the page. */
+  [data-map-console]:not([data-map-full]) [data-console-area="head"] {
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-note] {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-area="head"] > h1 {
+    flex: 0 0 auto;
+  }
+  /*
+   * Only flood is live, so the other four hazards stand behind the one button that names them -
+   * which is what a phone has had since 16 Oct, and what Apple calls progressive disclosure.
+   * Shortening that row is what lets the province chooser sit on it instead of under it, and
+   * that is a whole 56 px line off the top of the page. Open the button and they are all there.
+   */
+  [data-map-console]:not([data-map-full]) [data-hazard-extra] {
+    display: none;
+  }
+  [data-map-console]:not([data-map-full]) [data-hazard-more] {
+    display: revert;
+  }
+  /* ...and with the row short, the province comes up onto it. At 1,180 px the standing note
+     about the provinces Jaga does not cover is the last 450 px that will not fit beside them,
+     so here it takes a narrow share of the line and wraps inside it rather than taking a line
+     of its own: every word of it is still there (safety rule 10), on two lines instead of one. */
+  [data-map-console]:not([data-map-full]) [data-console-province] {
+    margin-block-start: 0;
+    flex: 1 1 20rem;
+    min-width: 0;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-province] [data-not-covered-note] {
+    flex: 1 1 10rem;
+  }
+  /*
+   * A readout is as tall as what it says. On a laptop every card carries a floor of 5rem so a
+   * row of them lines up under a pointer that is about to open one; on a tablet that floor was
+   * 126 px of map, for four cards saying one short line each.
+   */
+  [data-map-console]:not([data-map-full]) [data-console-tile] [data-tile-card] {
+    min-height: 0;
+    padding-block: 0.5rem;
+  }
+  /*
+   * Five readouts across 1,121 px is 208 px each, so with the heading no longer cut (point 4
+   * below) a long one ran to four lines and set the height of the whole strip at 190 px - worse
+   * than the 126 it started at. A heading is a size down here and two lines at most, which is
+   * what a glance needs; the card is opened by a tap for the rest.
+   */
+  [data-map-console]:not([data-map-full]) [data-console-tile] [data-console-label] {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /*
+   * The fifth readout, the live monitoring, carries the one control in any heading row - and it
+   * is the only way into its detail, so it cannot give way to the heading beside it. Five equal
+   * columns left that heading 80 px and it read "ผล ตร..." with no way to see the rest. So the
+   * strip stops being five equal columns here: the one readout with a control in its head gets
+   * the width a heading and a control need side by side, and the other four share the rest.
+   */
+  [data-map-console]:not([data-map-full]) [data-console-tiles][data-console-count="5"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) 1.45fr;
+  }
+
+  /*
+   * 2. The tools come off the map.
+   *
+   * They stay where they are - the frame keeps a strip above the canvas for them, and because
+   * an absolutely positioned child is placed against the padding box, `top-2` now lands in that
+   * strip rather than on the map. The canvas is `h-full` of the frame's content box, so it gives
+   * the strip its height by itself and the map below it is whole.
+   */
+  [data-map-console]:not([data-map-full]) [data-map-frame] {
+    padding-block-start: 3.5rem;
+  }
+  /* With a strip of its own the row has no zoom buttons to keep clear of. */
+  [data-map-console]:not([data-map-full]) [data-map-tools] {
+    padding-inline-end: 0;
+  }
+
+  /*
+   * 3. Nothing a finger cannot hit: 44x44 pt, Apple's minimum.
+   */
+  /* The pin is how a readout is opened here (21 Oct), and it was 26 px wide. */
+  [data-console-tile] [data-tile-pin] {
+    display: grid;
+    place-items: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    margin: -0.5rem;
+  }
+  /*
+   * MapLibre's own zoom buttons are 29 px square by default, and the attribution toggle 24 px.
+   * Their icons are background images, so a button made bigger than its icon tiles it unless it
+   * is told not to - which is what four info icons in the corner of the map turned out to be.
+   */
+  [data-map] .maplibregl-ctrl button,
+  [data-map] .maplibregl-ctrl-attrib-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  [data-map] .maplibregl-ctrl button .maplibregl-ctrl-icon {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 1.5rem 1.5rem;
+  }
+  /* A tick box, and the line it sits on, sized for a thumb rather than for a pointer. Every one
+     in the console, not only the ones in the layer list: the satellite layer keeps its own. */
+  [data-map-console] input[type="checkbox"] {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  [data-map-console] label:has(> input[type="checkbox"]) {
+    min-height: 2.75rem;
+  }
+
+  /*
+   * 4. A heading is never cut. There is no hover on a tablet, so the laptop's "one line until
+   *    you point at it" left two of the five readouts reading "ผล..." for good.
+   */
+  [data-console-tile] [data-console-label] {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  /*
+   * 5. The answer panel says it goes on. It scrolls inside itself (which it must - see the note
+   *    above), so its last line was cut mid-word at the fold with nothing to show for it. A
+   *    scroll edge: the foot of the panel fades out while there is more below it.
+   */
+  [data-map-console]:not([data-map-full]) [data-console-area="side"] {
+    --side-fade: 2rem;
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--side-fade)), transparent 100%);
+  }
+  /*
+   * ...and the panel keeps the depth of that fade as room at its foot, so what fades is empty
+   * space once it is scrolled to the end and real content only while there is more below. No
+   * scroll listener, and nothing that depends on scroll-driven animation being supported.
+   */
+  [data-map-console]:not([data-map-full]) [data-console-area="side"] > *:last-child {
+    margin-block-end: var(--side-fade);
   }
 }
 

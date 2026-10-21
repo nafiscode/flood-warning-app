@@ -1,14 +1,7 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { PanelIcon } from "@/components/icons";
 import { areaLabels } from "@/lib/area-labels";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
@@ -863,7 +856,8 @@ export function DashboardView(props: DashboardViewProps) {
     else if (where === "panel") revealPanel();
   };
   /** One reservoir, from its own button in the legend or the live monitoring. */
-  const openDam = (dam: Dam, where: "panel" | "damButtons" = "panel") => lightDams(dam, [dam], where);
+  const openDam = (dam: Dam, where: "panel" | "damButtons" = "panel") =>
+    lightDams(dam, [dam], where);
   /*
    * The dam readout opens what is worth watching, not only the dam it reports (the owner,
    * 20 Oct): every reservoir spilling or above the level it is normally held at, worst first and
@@ -1695,6 +1689,13 @@ export function DashboardView(props: DashboardViewProps) {
               {hazards.map((h) => (
                 <li
                   key={h.code}
+                  /*
+                   * `max-lg:hidden` is the phone band's half of this; the attribute is the
+                   * tablet's, because the tablet band starts at the same 1,024 px that `lg:`
+                   * does and so cannot be told apart from a laptop by a breakpoint alone
+                   * (app/globals.css, the tablet block).
+                   */
+                  data-hazard-extra={h.code === hazard.code || moreHazards ? undefined : "true"}
                   className={h.code === hazard.code || moreHazards ? undefined : "max-lg:hidden"}
                 >
                   <button
@@ -1721,7 +1722,7 @@ export function DashboardView(props: DashboardViewProps) {
                * to show them all.
                */}
               {others.length > 0 && (
-                <li className="lg:hidden">
+                <li data-hazard-more="true" className="lg:hidden">
                   <button
                     type="button"
                     aria-expanded={moreHazards}
@@ -1993,7 +1994,10 @@ export function DashboardView(props: DashboardViewProps) {
                       </button>
                     </div>
                   ) : (
-                    <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12">
+                    <div
+                      data-map-tools="true"
+                      className="absolute start-2 top-2 z-10 flex flex-wrap gap-2 pe-12"
+                    >
                       <button
                         type="button"
                         data-zoom-all="true"
