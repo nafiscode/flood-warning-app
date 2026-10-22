@@ -759,8 +759,12 @@
         "spilling": "{count} over the spillway",
         "aboveNormal": "{count} past the normal level",
         "allNormal": "All reservoirs within their normal level",
-        "counted": "of {count} reservoirs",
-        "situation": "See how the reservoirs stand"
+        "counted": "{count}/{total} reporting",
+        "situation": "See how the reservoirs stand",
+        "spillingOne": "Water over the spillway",
+        "aboveNormalOne": "Past its normal level",
+        "others": "and {count} more to watch",
+        "openAll": "See every reservoir"
       },
       "reports": {
         "label": "Resident reports",

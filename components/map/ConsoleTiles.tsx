@@ -18,7 +18,7 @@ import {
   reportTally,
   type TileAlarm,
 } from "@/lib/map-console";
-import type { DamsTally } from "@/lib/map-console";
+import type { DamContext, DamsTally } from "@/lib/map-console";
 import type { Gauge } from "@/lib/map-data";
 import { localName } from "@/lib/places";
 import {
@@ -258,6 +258,12 @@ export type ConsoleTilesProps = {
    * in it moves the map or switches a layer" - and the owner has since asked for these two.
    */
   onOpenDam?: () => void;
+  /**
+   * Which reservoirs are the person's own (on their river), and where they are looking from. The
+   * card names a reservoir only when one of theirs is doing something (the owner, 23 Oct 2026),
+   * and the order a press opens them in is DashboardView's, from the same context.
+   */
+  damContext?: DamContext;
   onOpenGauges?: () => void;
   /**
    * How many reservoirs a press on the dam card will frame and light (the owner, 20 Oct 2026:
@@ -282,12 +288,12 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
   const scope = props.scope ?? t("scope.all");
   /*
    * Every reservoir, not one of them (the owner, 23 Oct 2026: the readout "should check and say
-   * the overall situation of the all reservoir cards"). The card is titled by the one at the head
-   * of the run - the worst, or the largest when all four are normal - and says underneath how
-   * many of them are worth a look, exactly as the rivers' readout counts every station.
+   * the overall situation of the all reservoir cards"), and none of them named unless it is the
+   * person's own and doing something: "remove Bang Lang dam on the card, just say the situation
+   * now". The rivers' readout does the same - it names no station, it counts them.
    */
-  const damsNow = damsTally(props.dams);
-  const dam = damsNow.lead;
+  const damsNow = damsTally(props.dams, props.damContext);
+  const dam = damsNow.mine;
 
   /*
    * Which cards ask for a look. Worked out for everyone and used only for an admin, so the rule
@@ -361,43 +367,60 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
   };
 
   const damFigures = (all: DamsTally): { brief: React.ReactNode; more: React.ReactNode } => {
-    const d = all.lead;
-    if (!d) return { brief: <Figure>{t("dam.unknown")}</Figure>, more: null };
-    const age = ageMinutes(d.observedAt, now);
+    // No reading from any of them: never "all normal" about reservoirs nobody has heard from.
+    if (all.total === 0 || all.reporting === 0) {
+      return { brief: <Figure>{t("dam.unknown")}</Figure>, more: null };
+    }
+    const mine = all.mine;
+    const age = ageMinutes(mine?.observedAt ?? all.newestAt, now);
+    // Nobody current: the sentence stays, with the same grey "not updated" the single card had.
+    const stale = mine ? mine.stale : !all.live;
+    const newest = mine?.observedAt ?? all.newestAt;
     return {
-      brief: (
+      brief: mine ? (
         <>
-          {/* The dot pulses while any reservoir is still sending, not only the one named above. */}
+          {/* Theirs, and doing something: its figure, and in a few words what it is doing. */}
           <LiveFigure live={all.live}>
-            {d.percentFull !== null
-              ? t("dam.full", { percent: Math.round(d.percentFull) })
+            {mine.percentFull !== null
+              ? t("dam.full", { percent: Math.round(mine.percentFull) })
               : t("dam.unknown")}
           </LiveFigure>
-          {/*
-           * How the four of them stand, on the folded card: only what is actually happening,
-           * the same way the rivers' readout leaves out "0 over the bank" on a quiet day.
-           */}
           <p className="text-small text-jaga-text-2">
-            {all.watch > 0
-              ? [
-                  all.spilling > 0 ? t("dam.spilling", { count: all.spilling }) : null,
-                  all.aboveNormal > 0 ? t("dam.aboveNormal", { count: all.aboveNormal }) : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")
-              : t("dam.allNormal")}
+            {[
+              (mine.spilledCms ?? 0) > 0 ? t("dam.spillingOne") : t("dam.aboveNormalOne"),
+              all.others > 0 ? t("dam.others", { count: all.others }) : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         </>
+      ) : (
+        /*
+         * Nothing of theirs is doing anything: how the reservoirs stand, as a sentence, in the
+         * same weight as the rivers' "near the bank" - and no reservoir's name or figure.
+         */
+        <LiveFigure live={all.live}>
+          {all.watch > 0
+            ? [
+                all.spilling > 0 ? t("dam.spilling", { count: all.spilling }) : null,
+                all.aboveNormal > 0 ? t("dam.aboveNormal", { count: all.aboveNormal }) : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")
+            : t("dam.allNormal")}
+        </LiveFigure>
       ),
       more: (
         <Foot>
           {[
-            d.outflowCms !== null
-              ? t("dam.out", { value: Math.round(d.outflowCms) })
-              : t("dam.outUnknown"),
-            all.total > 1 ? t("dam.counted", { count: all.total }) : null,
-            d.observedAt ? t("newest", { time: time(d.observedAt) }) : t("dam.noReading"),
-            d.stale
+            mine
+              ? mine.outflowCms !== null
+                ? t("dam.out", { value: Math.round(mine.outflowCms) })
+                : t("dam.outUnknown")
+              : null,
+            t("dam.counted", { count: all.reporting, total: all.total }),
+            newest ? t("newest", { time: time(newest) }) : t("dam.noReading"),
+            stale
               ? t("dam.stale")
               : age !== null && age >= OLD_ENOUGH_MIN
                 ? t("age", { minutes: age })
@@ -480,13 +503,15 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
         pinned={isPinned("dam")}
         onPin={() => pin("dam")}
         pinWords={pinWords}
-        onOpen={dam && props.onOpenDam ? props.onOpenDam : undefined}
+        onOpen={props.dams.length > 0 && props.onOpenDam ? props.onOpenDam : undefined}
         openLabel={
           dam
             ? (props.damLit ?? 1) > 1
               ? t("dam.openMany", { count: props.damLit ?? 1 })
               : t("dam.open", { dam: localName(dam.dam.name, props.locale) })
-            : undefined
+            : damsNow.watch > 0
+              ? t("dam.openMany", { count: props.damLit ?? damsNow.watch })
+              : t("dam.openAll")
         }
       />
 

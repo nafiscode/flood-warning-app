@@ -19,6 +19,7 @@ import {
   damsAlarm,
   damsLit,
   damsTally,
+  type DamContext,
   gaugeOfInterest,
   gaugeRun,
   gaugesLit,
@@ -338,18 +339,22 @@ describe("the console's arrangement", () => {
     const rest = css.slice(at);
     // Its own block and no more: the tablet's is written straight after it.
     const block = rest.slice(0, rest.indexOf("\n@media", 1));
-    // Three columns now: the pickers, the map, the readouts.
-    const columns = block.slice(block.indexOf("grid-template-columns:"));
-    expect(columns.slice(0, columns.indexOf(";"))).toBe(
-      "grid-template-columns: minmax(0, 21rem) minmax(0, 1fr) minmax(0, 20rem)",
-    );
     const tiles = block.slice(block.indexOf("[data-map-full] [data-console-tiles] {"));
     const rule = tiles.slice(0, tiles.indexOf("}"));
-    expect(rule).toContain("grid-column: 3");
-    expect(rule).toContain("grid-row: 1 / span 2");
+    /*
+     * They float over the map rather than taking a column from it (the owner, 23 Oct: "the 5
+     * cards in the full screen on the right, should float on the map itself"), so the map keeps
+     * the width it had before they arrived.
+     */
+    expect(rule).toContain("position: fixed");
+    expect(rule).toContain("inset-inline-end: 1.25rem");
+    expect(block).not.toContain("minmax(0, 20rem)");
     // One card above the next, and the column scrolls rather than the map moving.
     expect(rule).toContain("grid-template-columns: minmax(0, 1fr)");
     expect(rule).toContain("overflow-y: auto");
+    // The map's own buttons come out from under them.
+    expect(block).toContain(".maplibregl-ctrl-top-right");
+    expect(block).toContain(".maplibregl-ctrl-bottom-right");
     /*
      * It comes after the block that hides everything but the map and the pickers, because that
      * list is shared with the tablet - where a third column would leave the map about 350 px.
@@ -358,6 +363,40 @@ describe("the console's arrangement", () => {
     expect(block).not.toContain("@media (min-width: 1024px)");
     // And the console block it follows still ends where it did: the tablet reads it too.
     expect(css.slice(0, at)).toContain("[data-places-toggle] {");
+  });
+
+  /*
+   * The owner, 23 Oct 2026: "the card background is having transparency but not losing the text
+   * reading ability". The share is the thing being tested, not the look: a card floating over a
+   * basemap can have anything behind it, so the arithmetic is done against the two extremes.
+   */
+  it("keeps the floating cards readable over the blackest and whitest basemap", () => {
+    const share =
+      Number(/color-mix\(in srgb, var\(--jaga-surface\) (\d+)%, transparent\)/.exec(css)?.[1]) /
+      100;
+    expect(share).toBeGreaterThan(0);
+
+    const over = (surface: string, under: string): string => {
+      const parts = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+      const [s, u] = [parts(surface), parts(under)];
+      return `#${s
+        .map((v, i) => Math.round(v * share + u[i]! * (1 - share)))
+        .map((v) => v.toString(16).padStart(2, "0"))
+        .join("")}`;
+    };
+    for (const palette of [brand, darkBrand]) {
+      // A basemap can be a night satellite photograph or a bare salt flat, so both ends.
+      for (const under of ["#000000", "#FFFFFF"]) {
+        const bg = over(palette["jaga-surface"], under);
+        for (const ink of [palette["jaga-ink"], palette["jaga-text-2"]]) {
+          expect(contrastRatio(ink, bg)).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    }
+    // And where a browser cannot blur, the card is solid rather than thinner than it should be.
+    expect(css).toMatch(
+      /@supports not \(backdrop-filter[\s\S]{0,200}background: var\(--jaga-surface\)/,
+    );
   });
 
   it("keeps the readout's own controls above the cover that opens the card", () => {
@@ -588,36 +627,114 @@ describe("the run a readout opens, and the marks it lights", () => {
     expect(damsLit(damRun([small, big, mid])).map((d) => d.code)).toEqual(["big"]);
   });
 
+  /*
+   * The owner, 23 Oct 2026: "at the reservoir card why still says Bang Lang dam when I select my
+   * area in Hat Yai ... remove Bang lang dam on the card, just say the situation now, but if any
+   * dam that relevant to the area selected then should have a warning blinking with the name of
+   * that dam".
+   */
+  const spilling = dam({
+    code: "spilling",
+    signal: { spilledCms: 40, observedAt: "2026-10-23T01:00:00Z", stale: false } as Dam["signal"],
+  });
+  const mineOnly = (...codes: string[]): DamContext => ({ onPath: new Set(codes), places: [] });
+
   it("counts every reservoir for the dam readout, and blinks when any of them is doing something", () => {
     const quiet = dam({ code: "quiet", storageMaxMcm: 1420 });
-    const spilling = dam({ code: "spilling", signal: { spilledCms: 40 } as Dam["signal"] });
     const calm = damsTally([quiet]);
-    expect(calm).toMatchObject({ spilling: 0, aboveNormal: 0, watch: 0, total: 1, live: false });
-    expect(calm.lead?.dam.code).toBe("quiet");
+    expect(calm).toMatchObject({ spilling: 0, aboveNormal: 0, watch: 0, total: 1 });
     expect(damsAlarm(calm)).toBeNull();
 
     const busy = damsTally([quiet, spilling, past("full", 0.1)]);
     expect(busy).toMatchObject({ spilling: 1, aboveNormal: 1, watch: 2, total: 3 });
-    // Titled by the worst, never by the biggest, while anything is happening.
-    expect(busy.lead?.dam.code).toBe("spilling");
     expect(damsAlarm(busy)).toBe("attention");
+  });
 
-    /*
-     * The dot beside the figure is about that figure: the reservoir the card names. A dot fed by
-     * some other reservoir's clock would say "live" about a number that is a day old.
-     */
+  it("names a reservoir only when it is on the person's river and doing something", () => {
+    const quiet = dam({ code: "quiet", storageMaxMcm: 1420 });
+    // Nobody's river: the card counts and names none, however bad one of them is.
+    const stranger = damsTally([quiet, spilling]);
+    expect(stranger.watch).toBe(1);
+    expect(stranger.mine).toBeNull();
+    // Theirs, and normal: nothing to name either - "if it's normal, no need to state any dam".
+    expect(damsTally([quiet, spilling], mineOnly("quiet")).mine).toBeNull();
+    // Theirs, and spilling: named, and the rest are counted beside it.
+    const named = damsTally([quiet, spilling, past("full", 0.1)], mineOnly("spilling"));
+    expect(named.mine?.dam.code).toBe("spilling");
+    expect(named.others).toBe(1);
+    // Two of theirs doing something: the worse one is the name on the card.
+    const both = damsTally([past("a", 0.02), past("b", 0.12)], mineOnly("a", "b"));
+    expect(both.mine?.dam.code).toBe("b");
+  });
+
+  it("opens theirs first when something is wrong, and the nearest first when nothing is", () => {
+    // Something wrong, on their river: that one first, even though another is worse elsewhere.
+    const trickle = dam({ code: "trickle", signal: { spilledCms: 2 } as Dam["signal"] });
+    expect(damRun([spilling, trickle], mineOnly("trickle")).map((d) => d.code)).toEqual([
+      "trickle",
+      "spilling",
+    ]);
+    // And with nobody's river involved, the worst is first as before.
+    expect(damRun([trickle, spilling]).map((d) => d.code)).toEqual(["spilling", "trickle"]);
+
+    // Everything normal: the list is by relevance - on their river, then nearest...
+    const at = (code: string, lat: number, lon: number, size: number) =>
+      dam({
+        code,
+        storageMaxMcm: size,
+        point: { type: "Point", coordinates: [lon, lat] } as unknown as Dam["point"],
+      });
+    const bangLang = at("bang_lang", 6.0, 101.3, 1420);
+    const rajjaprabha = at("rajjaprabha", 8.9, 98.8, 5000);
+    const near = at("near", 7.1, 100.5, 50);
+    const hatYai = [{ lat: 7.0, lon: 100.47 }];
+    expect(
+      damRun([rajjaprabha, bangLang, near], { onPath: new Set(), places: hatYai }).map(
+        (d) => d.code,
+      ),
+    ).toEqual(["near", "bang_lang", "rajjaprabha"]);
+    expect(
+      damRun([rajjaprabha, bangLang, near], { onPath: new Set(["bang_lang"]), places: hatYai }).map(
+        (d) => d.code,
+      ),
+    ).toEqual(["bang_lang", "near", "rajjaprabha"]);
+    // ...and with no place chosen, the largest capacity first.
+    expect(damRun([bangLang, near, rajjaprabha]).map((d) => d.code)).toEqual([
+      "rajjaprabha",
+      "bang_lang",
+      "near",
+    ]);
+  });
+
+  it("never says a reservoir is normal when none of them has reported", () => {
+    const none = damsTally([dam({ code: "a" }), dam({ code: "b" })]);
+    expect(none.reporting).toBe(0);
+    expect(none.watch).toBe(0);
+  });
+
+  it("ties the dot to the reservoir the card names, or to any that is reporting", () => {
     const sending = dam({
       code: "sending",
       storageMaxMcm: 2000,
-      signal: { percentFull: 40, observedAt: "2026-10-23T01:00:00Z", stale: false } as Dam["signal"],
+      signal: {
+        percentFull: 40,
+        observedAt: "2026-10-23T01:00:00Z",
+        stale: false,
+      } as Dam["signal"],
     });
-    expect(damsTally([quiet, sending]).live).toBe(true);
     const stopped = dam({
       code: "stopped",
       storageMaxMcm: 3000,
       signal: { percentFull: 40, observedAt: "2026-10-01T01:00:00Z", stale: true } as Dam["signal"],
     });
-    // The biggest leads here, and its feed has stopped - whatever the others are sending.
-    expect(damsTally([stopped, sending]).live).toBe(false);
+    // About all of them, nobody's named: one reporting is enough.
+    expect(damsTally([stopped, sending]).live).toBe(true);
+    expect(damsTally([stopped]).live).toBe(false);
+    // Named: that reservoir's own clock, whatever the others are sending.
+    const staleSpill = dam({
+      code: "staleSpill",
+      signal: { spilledCms: 9, observedAt: "2026-10-01T01:00:00Z", stale: true } as Dam["signal"],
+    });
+    expect(damsTally([staleSpill, sending], mineOnly("staleSpill")).live).toBe(false);
   });
 });

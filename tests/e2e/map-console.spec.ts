@@ -453,8 +453,22 @@ test.describe("the live map on a laptop", () => {
     await expect(cards).toHaveCount(5);
     const boxes = [];
     for (let i = 0; i < 5; i += 1) boxes.push((await cards.nth(i).boundingBox())!);
+    /*
+     * They float ON the map, at its right-hand edge (the owner, 23 Oct: "should float on the map
+     * itself"), so the map keeps all the width it had and the cards sit inside it.
+     */
     const mapBox = (await page.locator("[data-map-frame]").boundingBox())!;
-    for (const box of boxes) expect(box.x).toBeGreaterThanOrEqual(mapBox.x + mapBox.width - 1);
+    for (const box of boxes) {
+      expect(box.x).toBeGreaterThan(mapBox.x + mapBox.width / 2);
+      expect(box.x + box.width).toBeLessThanOrEqual(mapBox.x + mapBox.width + 1);
+    }
+    // Translucent, and yet not thin: the card keeps most of its surface so its words stay readable.
+    const alpha = await cards.first().evaluate((el) => {
+      const m = /\/\s*([\d.]+)\)/.exec(getComputedStyle(el).backgroundColor);
+      return m ? Number(m[1]) : 1;
+    });
+    expect(alpha).toBeLessThan(1);
+    expect(alpha).toBeGreaterThanOrEqual(0.85);
     // One above the next, all in the same column: a ladder, not a row.
     expect(new Set(boxes.map((b) => Math.round(b.x))).size).toBe(1);
     const tops = boxes.map((b) => Math.round(b.y));

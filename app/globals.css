@@ -797,33 +797,67 @@
  * the Full screen map, also bring the 5 cards that show live monitoring to be on Right side of
  * the map, align vertically").
  *
- * A laptop only, and deliberately: the two columns above already take 21rem from the left, and a
- * tablet held sideways is 1,024-1,180 px wide, so a third column of readouts would leave the map
- * about 350 px - less than it had before full screen was pressed. The same arithmetic that made
- * the tablet two columns rather than three on 21 Oct.
+ * They **float over the map** rather than taking a column from it (the owner, 23 Oct: "the 5
+ * cards in the full screen on the right, should float on the map itself and the card background
+ * is having transparency but not losing the text reading ability"), so the map keeps the whole
+ * width it had before they arrived.
+ *
+ * A laptop only, and deliberately: a tablet held sideways is 1,024-1,180 px wide, and 20rem of
+ * card floating over it would cover a third of the map. The same arithmetic that made the tablet
+ * two columns rather than three on 21 Oct.
  *
  * The rule below re-shows what the full-screen block hides ("nothing but the map and the
  * pickers"): same specificity, later in the file, so this is the one that counts. It is written
  * as an exception here rather than as another name in that block's list, because that list is
  * shared with the tablet.
  *
- * And here the cards are simply open. There is a column's height to spend and no reason to make
+ * And here the cards are simply open. There is a screen's height to spend and no reason to make
  * somebody hover over a map to read a figure; the hover trick exists on the dashboard only to
  * keep the strip short, and it is the map that is short of room there, not this column.
  */
 @media (min-width: 1280px) and (pointer: fine) {
-  [data-map-full] {
-    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr) minmax(0, 20rem);
-  }
   [data-map-full] [data-console-tiles] {
     display: grid;
-    grid-column: 3;
-    grid-row: 1 / span 2;
+    position: fixed;
+    inset-block-start: 1.25rem;
+    inset-inline-end: 1.25rem;
+    z-index: 27;
+    width: 20rem;
+    max-height: calc(100dvh - var(--jaga-hotlines, 4.5rem) - 2.5rem);
     grid-template-columns: minmax(0, 1fr);
     align-content: start;
     gap: 0.75rem;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+  /*
+   * Glass, and the share is worked out rather than chosen by eye: at 88% of the surface the
+   * weakest text on a card - the secondary grey - still reads at 5.1:1 over the blackest and the
+   * whitest a basemap can be, in both themes, where 4.5 is the floor (CLAUDE.md, accessibility).
+   * A test holds both themes to it, so the day the palette moves this moves with it.
+   *
+   * The blur is a nicety on top, never the thing that makes it readable: where a browser cannot
+   * do it the card goes back to the solid surface rather than being left thinner than it should
+   * be, because a readout over a satellite photograph is the one place this must not fail.
+   */
+  [data-map-full] [data-console-tile] [data-tile-card] {
+    background: color-mix(in srgb, var(--jaga-surface) 88%, transparent);
+    backdrop-filter: blur(10px) saturate(1.15);
+    box-shadow: 0 8px 24px rgb(29 59 83 / 0.28);
+  }
+  @supports not (backdrop-filter: blur(2px)) {
+    [data-map-full] [data-console-tile] [data-tile-card] {
+      background: var(--jaga-surface);
+    }
+  }
+  /*
+   * The map's own buttons come out from under the cards: the zoom at the top right and the
+   * attribution at the bottom right both sit in the corner the cards now float in.
+   */
+  [data-map-full] [data-map] .maplibregl-ctrl-top-right,
+  [data-map-full] [data-map] .maplibregl-ctrl-bottom-right {
+    right: calc(20rem + 2.5rem);
+    inset-inline-end: calc(20rem + 2.5rem);
   }
   /* Open, every one of them: the figure, what it is counted from, and the time it was read. */
   [data-map-full] [data-console-tile] [data-tile-brief] {

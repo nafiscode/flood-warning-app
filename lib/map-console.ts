@@ -248,32 +248,68 @@ function damSeverity(dam: Dam): number {
 }
 
 /**
- * The reservoirs a press on the dam readout walks through (the owner, 20 Oct 2026: "same should
- * work for the dams card"; 23 Oct 2026, setting the order inside each half).
+ * What makes a reservoir "relevant" to the person looking (the owner, 23 Oct 2026: "at the
+ * reservoir card why still says Bang Lang dam when I select my area in Hat Yai ... it seems it's
+ * for every place"). Two things, and only these:
  *
- *   * **Anything doing something comes first, worst first**: over the spillway before past the
- *     normal level, and within each, the most water or the furthest past it. "If they clicked
- *     the card when there is an abnormal situation for few reservoirs, it should open up the
- *     worst case, and less case next, sort by the criticality."
- *   * **With every reservoir normal, the biggest first**: "for the normal situation for all, it
- *     should bring the largest capacity first, sort by that". The dam the chips and the home
- *     screen mean is no longer put in front by name - it is the largest of the four anyway, and
- *     a quiet day should open the reservoir that holds the most water, whichever that is.
+ *   * **On their river**: the reservoir's release path reaches their own area or a place they
+ *     watch - the same test the quiet dam notice uses (`onPath` in lib/dam.ts), passed in as a set
+ *     of codes because that module and this one are read by pages rendered on the server.
+ *   * **Near them**: for the order only, never for the warning. A reservoir that is not on their
+ *     river is not a warning for them however close it is.
+ */
+export type DamContext = {
+  /** Codes of the reservoirs whose release path reaches the person's area or a watched place. */
+  onPath: ReadonlySet<string>;
+  /** Their own area and the places they watch; empty when they have chosen nothing. */
+  places: readonly { lat: number; lon: number }[];
+};
+
+export const NO_DAM_CONTEXT: DamContext = { onPath: new Set(), places: [] };
+
+/** Km to the nearest of the person's places, or null when they have none or the dam has no point. */
+function damKm(dam: Dam, places: DamContext["places"]): number | null {
+  if (places.length === 0 || !dam.point) return null;
+  const [lon, lat] = dam.point.coordinates;
+  return Math.min(
+    ...places.map((p) => Math.hypot(lat - p.lat, (lon - p.lon) * SCALE((lat + p.lat) / 2)) * 111),
+  );
+}
+
+/**
+ * The reservoirs a press on the dam readout walks through (the owner, 20 Oct 2026: "same should
+ * work for the dams card"; 23 Oct 2026, setting the order inside each half and what "relevant"
+ * means).
+ *
+ *   * **Anything doing something comes first, worst first**: and among those, the one on their
+ *     river before any other. "If any dam that relevant to the area selected then ... once
+ *     clicked should bring the info of the most critical one, and able to click next for
+ *     different dam." Over the spillway before past the normal level, and within each, the most
+ *     water or the furthest past it.
+ *   * **With every reservoir normal, the list is ordered by relevance**: the one on their river
+ *     first, then the nearest to their area, and "otherwise just sort by largest capacity if no
+ *     location selected".
  *
  * A total order, as the gauges' run is, so Next cannot wander and a second press cannot land
  * somewhere else.
  */
-export function damRun(dams: readonly Dam[]): Dam[] {
+export function damRun(dams: readonly Dam[], context: DamContext = NO_DAM_CONTEXT): Dam[] {
   const size = (d: Dam) => d.storageMaxMcm ?? 0;
   const full = (d: Dam) => d.signal?.percentFull ?? -1;
-  return [...dams].sort(
-    (a, b) =>
-      damRank(a) - damRank(b) ||
-      (damRank(a) < 2 ? damSeverity(b) - damSeverity(a) : 0) ||
+  const mine = (d: Dam) => (context.onPath.has(d.code) ? 0 : 1);
+  const km = (d: Dam) => damKm(d, context.places) ?? Infinity;
+  return [...dams].sort((a, b) => {
+    const doing = damRank(a) < 2;
+    return (
+      (damRank(a) < 2 ? 0 : 1) - (damRank(b) < 2 ? 0 : 1) ||
+      mine(a) - mine(b) ||
+      (doing ? damRank(a) - damRank(b) || damSeverity(b) - damSeverity(a) : 0) ||
+      (doing ? 0 : km(a) - km(b)) ||
       size(b) - size(a) ||
       full(b) - full(a) ||
-      a.code.localeCompare(b.code),
-  );
+      a.code.localeCompare(b.code)
+    );
+  });
 }
 
 /** The reservoirs a press lights: the ones doing something, at most three, else the first. */
@@ -290,12 +326,23 @@ export type DamsTally = {
   /** The two together: how many reservoirs are worth a look. */
   watch: number;
   total: number;
-  /** The one the readout is titled by: the worst, or the largest when all of them are normal. */
-  lead: DamTally | null;
+  /** How many have a reading at all. Zero means the card cannot say the situation is normal. */
+  reporting: number;
   /**
-   * The figure the card shows - the lead's - is a current reading. It is the lead's own feed and
-   * not the six together on purpose: the dot sits beside that one figure, and a dot fed by some
-   * other reservoir's clock would say "live" about a number that is a day old (safety rule 8).
+   * The reservoir the card may name: the most critical one **on the person's river** that is
+   * doing something. Null otherwise - and then the card names none, because "Bang Lang" on every
+   * visitor's card, whatever their area, is what the owner objected to.
+   */
+  mine: DamTally | null;
+  /** How many other reservoirs are doing something, besides the one named. */
+  others: number;
+  /** The newest reading of any reservoir, ISO, for the card's foot. */
+  newestAt: string | null;
+  /**
+   * A current reading stands behind the card's figure. With a reservoir named it is that
+   * reservoir's own feed - a dot fed by another reservoir's clock would say "live" about a number
+   * that is a day old (safety rule 8). Without one, any reservoir reporting is enough: the card
+   * is then about all of them.
    */
   live: boolean;
 };
@@ -306,19 +353,28 @@ export type DamsTally = {
  * answer to `gaugeTally`, and like that one it only counts: nothing here decides a level, and
  * the count is a measurement, so the card never wears an alert colour (safety rule 2).
  */
-export function damsTally(dams: readonly Dam[]): DamsTally {
-  const run = damRun(dams);
+export function damsTally(dams: readonly Dam[], context: DamContext = NO_DAM_CONTEXT): DamsTally {
+  const run = damRun(dams, context);
   const ranks = run.map(damRank);
   const spilling = ranks.filter((r) => r === 0).length;
   const aboveNormal = ranks.filter((r) => r === 1).length;
-  const lead = damTally(run[0]);
+  const named = run.find((d) => context.onPath.has(d.code) && damRank(d) < 2);
+  const mine = named ? damTally(named) : null;
+  const tallies = run.map((d) => damTally(d)!).filter((t) => t.dam.signal);
+  const current = (t: DamTally) => !t.stale && t.observedAt !== null;
   return {
     spilling,
     aboveNormal,
     watch: spilling + aboveNormal,
     total: run.length,
-    lead,
-    live: lead !== null && !lead.stale && lead.observedAt !== null,
+    reporting: tallies.length,
+    mine,
+    others: spilling + aboveNormal - (mine ? 1 : 0),
+    newestAt: tallies.reduce<string | null>(
+      (best, t) => (t.observedAt && (!best || t.observedAt > best) ? t.observedAt : best),
+      null,
+    ),
+    live: mine ? current(mine) : tallies.some(current),
   };
 }
 

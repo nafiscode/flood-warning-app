@@ -759,8 +759,12 @@
         "spilling": "{count} melimpah melalui alur limpah",
         "aboveNormal": "{count} melepasi paras takungan biasa",
         "allNormal": "Semua empangan dalam paras biasa",
-        "counted": "daripada {count} empangan",
-        "situation": "Lihat keadaan semua empangan"
+        "counted": "{count}/{total} menghantar data",
+        "situation": "Lihat keadaan semua empangan",
+        "spillingOne": "Air melimpah melalui alur limpah",
+        "aboveNormalOne": "Melepasi paras takungan biasa",
+        "others": "dan {count} lagi perlu dipantau",
+        "openAll": "Lihat semua empangan"
       },
       "reports": {
         "label": "Laporan penduduk",

@@ -57,7 +57,14 @@ import { boundsAround, nightNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS }
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
-import { damRun, damsLit, gaugeRun, gaugesLit, levelTally } from "@/lib/map-console";
+import {
+  damRun,
+  damsLit,
+  gaugeRun,
+  gaugesLit,
+  levelTally,
+  type DamContext,
+} from "@/lib/map-console";
 import { localName } from "@/lib/places";
 import { isAdminRoleName } from "@/lib/roles";
 import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
@@ -830,7 +837,18 @@ export function DashboardView(props: DashboardViewProps) {
     ...(mine.length === 0 && props.area ? [{ lat: props.area.lat, lon: props.area.lon }] : []),
   ];
   const gaugeOrder = gaugeRun(data?.gauges ?? [], myPoints);
-  const damOrder = damRun(dams);
+  /*
+   * Which reservoirs are theirs: the ones whose release path reaches their own area or a place
+   * they watch (the same test the quiet dam notice uses). The reservoirs' readout names one only
+   * when it is theirs and doing something, and opens theirs first (the owner, 23 Oct 2026); and,
+   * with nothing wrong, lists them nearest first, or the largest first for someone who has
+   * chosen no place.
+   */
+  const damContext: DamContext = {
+    onPath: new Set(damsOnMyPath.map((x) => x.dam.code)),
+    places: myPoints,
+  };
+  const damOrder = damRun(dams, damContext);
   /*
    * Opening one or more reservoirs: the card with the first one's figures, the map framed on
    * every lake being pointed at - closer than the dam's own view, and with the water in the
@@ -1825,6 +1843,7 @@ export function DashboardView(props: DashboardViewProps) {
                 monitoring={monitoringSummary}
                 monitoringOpen={monitoringOpen}
                 onOpenDam={openDams}
+                damContext={damContext}
                 damLit={damsLit(damOrder).length}
                 onOpenGauges={openGauges}
                 onToggleMonitoring={() => {
@@ -2598,9 +2617,12 @@ export function DashboardView(props: DashboardViewProps) {
                      * The way in that needs no aim at all. The card otherwise opens only by
                      * tapping the dam itself, and a river is a thin thing to hit: 4 taps in 665
                      * found it on the live map, and the owner could not find the card at all.
-                     * The legend names the dam anyway, so it is the natural button.
+                     * The legend names the dam anyway, so it is the natural button. It is the list the
+                     * readout opens (the owner, 23 Oct 2026: "open up the all dam list, sort by the
+                     * most relevant dam to the user selected area, otherwise ... largest capacity"),
+                     * so it is in the readout's own order.
                      */}
-                    {dams.map((dam) => (
+                    {damOrder.map((dam) => (
                       <button
                         key={dam.code}
                         type="button"

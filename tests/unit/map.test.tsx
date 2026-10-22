@@ -91,11 +91,7 @@ vi.mock("@/components/map/MapView", () => ({
       data-flash-codes={(flashDam?.codes ?? []).join(",")}
     >
       {/* Stands in for the reader panning the map, which the real one reports on moveend. */}
-      <button
-        type="button"
-        data-panned="true"
-        onClick={() => onView?.([100.1, 6.1, 100.3, 6.3])}
-      />
+      <button type="button" data-panned="true" onClick={() => onView?.([100.1, 6.1, 100.3, 6.3])} />
       {layers.join(",")}
       {/* Stands in for tapping the first pin, which the real map answers with onSelect. */}
       {mine[0] && (
@@ -1256,9 +1252,7 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
     fireEvent.click(steps.querySelector('[data-card-step="next"]')!);
     // One station now, framed and lit on its own: the group has been left behind.
     expect(flash(c)).toBe("b");
-    fireEvent.click(
-      c.querySelector("[data-selected='gauge'] [data-card-step='previous']")!,
-    );
+    fireEvent.click(c.querySelector("[data-selected='gauge'] [data-card-step='previous']")!);
     expect(flash(c)).toBe("a");
   });
 
@@ -1313,7 +1307,7 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
    * gauges?" - because it counted one reservoir where the rivers' readout counts every station,
    * so a reservoir spilling two provinces away asked nobody to look.
    */
-  it("says how the reservoirs stand altogether, and asks for a look at any of them", () => {
+  it("says how the reservoirs stand altogether, naming one only when it is theirs", () => {
     const spilling: Dam = {
       ...EXAMPLE_DAM,
       code: "other_dam",
@@ -1321,6 +1315,8 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
       storageMaxMcm: 100,
       storageNormalMcm: 90,
       signal: exampleDamSignal("releasing"),
+      // Its water reaches Bana, which is the area chosen below.
+      tambons: [{ code: BANA.code, via: "main", kmFromDam: 12 }],
     };
     const quiet: Dam = {
       ...EXAMPLE_DAM,
@@ -1329,24 +1325,41 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
       signal: { ...exampleDamSignal("watch")!, percentFull: 40 },
     };
     const admin = { signedIn: true as const, home: null, places: [], role: "admin" };
-    const c = dashboard({ dams: [quiet, spilling], me: admin });
-    const card = c.querySelector('[data-console-tile="dam"] [data-tile-card]')!;
-    // Titled by the worst, not by the largest, while anything is happening...
-    expect(card.textContent).toContain("เขื่อนอื่น");
-    // ...and it counts the other three: one over the spillway, Bang Lang's twin below normal.
+
+    // A visitor with no area: the situation, and not one reservoir's name (the owner, 23 Oct:
+    // "remove Bang Lang dam on the card, just say the situation now").
+    const visitor = dashboard({ dams: [quiet, spilling], me: admin });
+    const card = visitor.querySelector('[data-console-tile="dam"] [data-tile-card]')!;
+    const head = card.querySelector("[data-console-label]")!.textContent;
+    expect(head).toBe("เขื่อน");
+    expect(card.textContent).not.toContain("เขื่อนอื่น");
+    expect(card.textContent).not.toContain("เขื่อนสงบ");
     expect(card.querySelector("[data-tile-brief]")!.textContent).toContain(
       "ระบายผ่านทางน้ำล้น 1 แห่ง",
     );
     // The ring asks an admin to look, in the plain colour a measurement wears (safety rule 2).
     expect(card.getAttribute("data-console-alarm")).toBe("attention");
 
-    // Every reservoir normal: the card says so, and nothing blinks.
-    const calm = dashboard({ dams: [quiet], me: admin });
+    // Somebody whose river it is: now it is named, with what it is doing.
+    const local = dashboard({ dams: [quiet, spilling], area: BANA, me: admin });
+    const mine = local.querySelector('[data-console-tile="dam"] [data-tile-card]')!;
+    expect(mine.querySelector("[data-console-label]")!.textContent).toBe("เขื่อนอื่น");
+    expect(mine.querySelector("[data-tile-brief]")!.textContent).toContain(
+      "กำลังระบายผ่านทางน้ำล้น",
+    );
+    expect(mine.getAttribute("data-console-alarm")).toBe("attention");
+
+    // Every reservoir normal: the card says so and names nobody, and nothing blinks.
+    const calm = dashboard({ dams: [quiet], area: BANA, me: admin });
     const calmCard = calm.querySelector('[data-console-tile="dam"] [data-tile-card]')!;
-    expect(calmCard.querySelector("[data-tile-brief]")!.textContent).toContain(
+    expect(calmCard.querySelector("[data-console-label]")!.textContent).toBe("เขื่อน");
+    expect(calmCard.querySelector("[data-tile-brief]")!.textContent).toBe(
       "ทุกเขื่อนอยู่ในเกณฑ์ปกติ",
     );
     expect(calmCard.getAttribute("data-console-alarm")).toBeNull();
+    // ...and a press then opens the whole list, in its order, from the first.
+    fireEvent.click(calm.querySelector('[data-console-tile="dam"] [data-tile-open]')!);
+    expect(calm.querySelector("[data-selected='dam']")).not.toBeNull();
   });
 
   /*
