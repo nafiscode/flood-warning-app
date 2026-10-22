@@ -669,20 +669,23 @@
     grid-column: 2;
     grid-row: 1 / span 2;
   }
-  /* In the rail: the way back, the switches for the map's own layers, and what the satellite saw
-     - which joined them in the rail on 22 Oct and has to be named here too, because this is a
-     list of what is kept and not a list of what goes. */
+  /* In the rail: the way back, the switches for the map's own layers, what the satellite saw and
+     the reader's own pins - the last two joined them in the rail on 22 and 23 Oct and have to be
+     named here too, because this is a list of what is kept and not a list of what goes. Forget
+     one and it simply vanishes while the map fills the screen; that is exactly what happened to
+     the satellite's own panel on 22 Oct, and an end-to-end test caught it, not a unit test. */
   [data-map-full]
     [data-console-area="rail"]
-    > *:not([data-map-fulltools], [data-map-features], [data-satellite]) {
+    > *:not([data-map-fulltools], [data-map-features], [data-satellite], [data-mine-toggle]) {
     display: none;
   }
   [data-map-full] [data-map-fulltools] {
     display: flex;
   }
-  /* In the side: the safe places and the reader's own pins, which the owner asked to come over to
-     the left; the basemap goes onto the map itself, and the rest is dashboard. (What the
-     satellite saw used to be here as well; it is in the rail above since 22 Oct.) */
+  /* In the side: what is left of the layer switches - the safe-places legend, and on a phone the
+     safe-places switch itself. The basemap goes onto the map itself, and the rest is dashboard.
+     (What the satellite saw was here too until 22 Oct, and the reader's own pins until 23 Oct;
+     both are in the rail above now.) */
   [data-map-full] [data-console-area="side"] > *:not([data-map-layers], [data-selected-panel]) {
     display: none;
   }

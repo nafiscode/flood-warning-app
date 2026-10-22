@@ -1863,29 +1863,24 @@ export function DashboardView(props: DashboardViewProps) {
                   </Link>
                 </div>
                 {/*
-                 * What the satellite saw, with the other switches for what is drawn on the map
-                 * (the owner, 22 Oct 2026: bring it to the left). It was in the right-hand panel,
-                 * a column away from the six chips that do the same kind of thing.
+                 * The reader's own pins, first in the rail (the owner, 23 Oct 2026: "bring the
+                 * Show my places on the map to the left side as well, make it at the top in the
+                 * left panel"). It was in the right-hand panel with the safe places.
                  *
-                 * It goes **above** the chips, not below them, and that was measured: the chips
-                 * are 477 px of a rail that is 324 px tall on a 900 px laptop screen, so put
-                 * after them this switch sat at y=960 - off the bottom of the window, in a rail
-                 * the reader would have to scroll to find it in. It was the first thing in the
-                 * right-hand panel before, and it is the first thing in this one now.
-                 *
-                 * On a phone nothing moves: the phone band gives every explainer below the map
-                 * `order: 4`, and this was one of `[data-map-layers]`'s children before and is a
-                 * child of the rail now - both catch that same rule, so it sits exactly where it
-                 * sat, below the map and not folded behind the layers pill.
+                 * First after the way out, not before it: that block is `display: none` until the
+                 * map fills the screen, so this is the first thing on the page either way, and in
+                 * full screen the way back still comes before the switches.
                  */}
-                {props.onSatelliteDays && (
-                  <SatelliteFloodPanel
-                    days={props.satelliteDays ?? null}
-                    onDays={onSatelliteDays}
-                    flood={props.satellite ?? null}
-                    load={props.satelliteLoad ?? "loading"}
-                    dark={nightMap}
-                  />
+                {mine.length > 0 && (
+                  <label className={checkRow} data-mine-toggle="true">
+                    <input
+                      type="checkbox"
+                      className={checkBox}
+                      checked={showMine}
+                      onChange={(event) => setShowMine(event.target.checked)}
+                    />
+                    <span>{t("mine.toggle", { count: mine.length })}</span>
+                  </label>
                 )}
                 {/* The sea's own report, for fishermen, right under the chips while the sea is
                     shown (the owner, 15 Oct: the switches under the map are gone, the chips do
@@ -1911,6 +1906,30 @@ export function DashboardView(props: DashboardViewProps) {
                     ) : undefined
                   }
                 />
+                {/*
+                 * What the satellite saw, under the safe places (the owner, 23 Oct 2026: "Move
+                 * the Show flood seen by satellite (GISTDA) to be under Safe places"). Safe
+                 * places is the last of the chips above, so under it means under the list.
+                 *
+                 * It was above the chips from 22 Oct, for a reason that still holds and that the
+                 * owner has now decided against: on a laptop the rail is a column 324 px tall
+                 * holding more than twice that, so below the chips this switch is off the bottom
+                 * of the window until the rail is scrolled. On a tablet, where the rail is a
+                 * full-width row of columns, it is beside them and in plain sight either way.
+                 *
+                 * On a phone nothing moves: the phone band gives every explainer below the map
+                 * `order: 4`, and a child of the rail catches that rule wherever in the rail it
+                 * is written - so it sits where it always sat, below the map.
+                 */}
+                {props.onSatelliteDays && (
+                  <SatelliteFloodPanel
+                    days={props.satelliteDays ?? null}
+                    onDays={onSatelliteDays}
+                    flood={props.satellite ?? null}
+                    load={props.satelliteLoad ?? "loading"}
+                    dark={nightMap}
+                  />
+                )}
                 <div className="flex flex-wrap items-center gap-2" data-mode-row="true">
                   <p className="font-medium" id="mode-label">
                     {t("mode.label")}
@@ -2321,17 +2340,6 @@ export function DashboardView(props: DashboardViewProps) {
                     <p className={hint} data-places-hint="true">
                       {t("places.hint")}
                     </p>
-                  )}
-                  {mine.length > 0 && (
-                    <label className={checkRow} data-mine-toggle="true">
-                      <input
-                        type="checkbox"
-                        className={checkBox}
-                        checked={showMine}
-                        onChange={(event) => setShowMine(event.target.checked)}
-                      />
-                      <span>{t("mine.toggle", { count: mine.length })}</span>
-                    </label>
                   )}
                 </div>
                 {/* A visitor learns their family's places could be pinned here (the owner, 15 Oct). */}
