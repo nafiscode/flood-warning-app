@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openPhoneMenu } from "./phone-menu";
 
 const HOTLINES = ["1784", "1669", "191", "199"];
 
@@ -33,10 +34,10 @@ test("the four hotlines are one tap away, with tap targets of at least 48 px", a
 
 test("language links switch URL and language", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Bahasa Melayu" }).click();
+  await (await openPhoneMenu(page)).getByRole("link", { name: "Bahasa Melayu" }).click();
   await expect(page).toHaveURL(/\/ms$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "ms");
-  await page.getByRole("link", { name: "ภาษาไทย" }).click();
+  await (await openPhoneMenu(page)).getByRole("link", { name: "ภาษาไทย" }).click();
   await expect(page).toHaveURL(/\/$/);
 });
 

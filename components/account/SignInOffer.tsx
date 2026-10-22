@@ -116,7 +116,10 @@ export function SignInHint({ what }: { what: "places" | "report" | "mapPlaces" }
       <LockIcon />
       <span>
         {t(`hint.${what}`)}{" "}
-        <a href={signInHref(locale, pathname)} className="font-bold text-jaga-ink underline">
+        <a
+          href={signInHref(locale, pathname)}
+          className="relative font-bold text-jaga-ink underline after:absolute after:inset-x-0 after:-inset-y-3 after:content-['']"
+        >
           {t("hintLink")}
         </a>
       </span>

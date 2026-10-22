@@ -14,6 +14,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { Client } from "pg";
 import en from "../../messages/en.json";
 import th from "../../messages/th.json";
+import { openPhoneMenu } from "./phone-menu";
 
 function envValue(key: string): string | undefined {
   if (process.env[key]) return process.env[key];
@@ -146,7 +147,7 @@ test.describe("the board", () => {
       await page.goto(path);
       await expect(page.locator("[data-admin-link]")).toHaveCount(1);
     }
-    await page.locator("[data-admin-link]").click();
+    await (await openPhoneMenu(page)).locator("[data-admin-link]").click();
     await expect(page).toHaveURL(/\/admin$/);
     await expect(page.locator("main h1")).toHaveText(th.admin.title);
   });

@@ -4,6 +4,7 @@
  * can open it on one role, and it never pushes the page sideways.
  */
 import { expect, test } from "@playwright/test";
+import { openPhoneMenu } from "./phone-menu";
 import en from "../../messages/en.json";
 
 test.use({ serviceWorkers: "block", viewport: { width: 360, height: 640 } });
@@ -52,38 +53,27 @@ test("the end of a page links to it, and the SOS page does not", async ({ page }
  * page, which is what the tests above cover. What this one holds is that the swap paid for
  * itself: the header is no taller for having a word there, and the word still keeps off SOS.
  */
-test("About in the header opens the page, costs no header height, and is not on SOS", async ({
+test("About, in the phone's menu, opens the page, costs no header height, and is not on SOS", async ({
   page,
 }) => {
   // Thai, no place chosen: the weather pill says "weather" in words, the tightest header there is.
   await page.goto("/map");
-  const about = page.locator("header [data-about-nav]:visible");
+  const heightBefore = (await page.locator("header").boundingBox())!.height;
+  const menu = await openPhoneMenu(page);
+  const about = menu.locator("[data-about-nav]");
   await expect(about).toHaveCount(1);
-  // The order the owner asked for on 21 Oct: home, the map, about, then the account.
-  const order = await page.evaluate(() => {
-    const row = document.querySelector("header [data-about-nav]")!.parentElement!;
-    return [...row.querySelectorAll("a")]
-      .filter((a) => (a as HTMLElement).offsetParent)
-      .map((a) => a.getAttribute("href") ?? "");
-  });
-  expect(order.map((h) => h.replace(/^\/[a-z]{2}(?=\/)/, "") || "/")).toEqual([
-    "/",
-    "/map",
-    "/about",
-    "/sign-in",
-  ]);
-  const lines = await about.evaluate((el) => el.getBoundingClientRect().height);
-  const withAbout = await page.locator("header").boundingBox();
-  await page.addStyleTag({ content: "[data-about-nav]{display:none!important}" });
-  const without = await page.locator("header").boundingBox();
-  expect(withAbout!.height).toBe(without!.height);
+  // The menu drops from the header and does not push the page: the header is one row either way.
+  expect((await page.locator("header").boundingBox())!.height).toBe(heightBefore);
   // And it is one line: a wrapped label is the first sign the row has run out of room.
-  expect(lines).toBeLessThan(56);
+  expect(await about.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(56);
   await page.goto("/en/map");
-  await page.locator("header [data-about-nav]:visible").click();
+  await (await openPhoneMenu(page)).locator("[data-about-nav]").click();
   await expect(page).toHaveURL(/\/en\/about$/);
   await page.goto("/en/sos");
-  await expect(page.locator("header [data-about-nav]")).toHaveCount(0);
+  await expect(page.locator("[data-about-nav]")).toHaveCount(0);
+  await expect(page.locator("[data-phone-menu-button]")).toHaveCount(1);
+  await openPhoneMenu(page);
+  await expect(page.locator("[data-phone-menu] [data-about-nav]")).toHaveCount(0);
 });
 
 test("the About page is the way on to the other two", async ({ page }) => {

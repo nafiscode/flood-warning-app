@@ -447,7 +447,11 @@
     "ddpm": "Bencana (DDPM)",
     "medical": "Kecemasan perubatan",
     "police": "Polis",
-    "fire": "Bomba"
+    "fire": "Bomba",
+    "ddpmShort": "Bencana",
+    "medicalShort": "Perubatan",
+    "policeShort": "Polis",
+    "fireShort": "Bomba"
   },
   "places": {
     "title": "Tempat selamat berhampiran anda",
@@ -797,7 +801,11 @@
     "theme": "Mod warna aplikasi",
     "themeToDark": "Tukar ke mod malam",
     "themeToLight": "Tukar ke mod siang",
-    "about": "Tentang"
+    "about": "Tentang",
+    "tabs": "Menu utama",
+    "sos": "SOS",
+    "menu": "Menu",
+    "menuClose": "Tutup menu"
   },
   "notices": {
     "title": "Pemberitahuan",

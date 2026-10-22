@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openPhoneMenu } from "./phone-menu";
 
 /**
  * The switch beside the bell (the owner's request, 18 Oct): every visit still starts in the
@@ -47,7 +48,8 @@ test("a visit starts with the sun, by day and by night", async ({ page }) => {
 test("the switch changes the theme, and says which way it goes", async ({ page }) => {
   await page.clock.install({ time: DAY });
   await page.goto("/");
-  const button = page.locator("[data-theme-switch]");
+  // On a phone it is in the header's menu, with its words beside the icon.
+  const button = (await openPhoneMenu(page)).locator("[data-theme-switch]");
   // It offers the night while the app is light, and the day once it is dark.
   await expect(button).toHaveAttribute("data-theme-switch", "light");
   await expect(button).toHaveAttribute("aria-label", /กลางคืน/);
@@ -64,7 +66,7 @@ test("the switch changes the theme, and says which way it goes", async ({ page }
 
 test("the tap target is 48 px, like every other control", async ({ page }) => {
   await page.goto("/");
-  const box = await page.locator("[data-theme-switch]").boundingBox();
+  const box = await (await openPhoneMenu(page)).locator("[data-theme-switch]").boundingBox();
   expect(box?.height ?? 0).toBeGreaterThanOrEqual(48);
 });
 
@@ -74,7 +76,7 @@ test("the choice is still there on the way back in, and the app arrives in it", 
   await watchThemes(page);
   await page.clock.install({ time: DAY });
   await page.goto("/");
-  await page.locator("[data-theme-switch]").click();
+  await (await openPhoneMenu(page)).locator("[data-theme-switch]").click();
   await theme(page).toHaveAttribute("data-theme", "dark");
 
   // Later the same afternoon, before the sun has moved on: dark from the very first moment, so
@@ -99,7 +101,7 @@ test("the sun takes the app back at sunset and sunrise, in a tab left open", asy
   await page.clock.install({ time: DAY });
   await page.goto("/");
   await theme(page).toHaveAttribute("data-theme", "light");
-  await page.locator("[data-theme-switch]").click();
+  await (await openPhoneMenu(page)).locator("[data-theme-switch]").click();
   await theme(page).toHaveAttribute("data-theme", "dark");
 
   // 17:00: still their dark, against a sun that says light.
@@ -118,7 +120,7 @@ test("a choice made at night survives midnight, and ends at the coming sunrise",
   await page.clock.install({ time: NIGHT });
   await page.goto("/");
   await theme(page).toHaveAttribute("data-theme", "dark");
-  await page.locator("[data-theme-switch]").click();
+  await (await openPhoneMenu(page)).locator("[data-theme-switch]").click();
   await theme(page).toHaveAttribute("data-theme", "light");
 
   // 02:00: midnight is not a boundary, the coming sunrise is.

@@ -291,10 +291,12 @@ describe("the dark colours", () => {
       expect(readFileSync(file, "utf8")).not.toMatch(/onClick/);
     }
     const header = readFileSync("app/[locale]/layout.tsx", "utf8");
-    expect(header).toContain("<ThemeSwitch />");
+    // On a phone the header drops it and the menu carries it, with words (PhoneMenu).
+    expect(header).toContain('<ThemeSwitch className="max-sm:hidden" />');
+    expect(readFileSync("components/PhoneMenu.tsx", "utf8")).toContain("<ThemeSwitch withLabel />");
     const switcher = readFileSync("components/ThemeSwitch.tsx", "utf8");
     // Beside the bell, and a 48 px target like every other control (CLAUDE.md).
-    expect(header.indexOf("<ThemeSwitch />")).toBeLessThan(header.indexOf("<NoticeBell />"));
+    expect(header.indexOf("<ThemeSwitch ")).toBeLessThan(header.indexOf("<NoticeBell />"));
     expect(switcher).toContain("min-h-tap");
     // Icon plus words: an icon alone does not say which theme is on.
     expect(switcher).toContain("aria-label");

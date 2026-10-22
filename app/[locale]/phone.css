@@ -1,0 +1,28 @@
+/*
+ * What a phone needs and a tablet or a laptop does not (Apple's HIG for iPhone, 23 Oct 2026):
+ * every control a finger must hit is at least 44 pt, and the map's own are no exception. The
+ * wider screens have their own rules in globals.css (the console block); these are only for
+ * the width where the header is one row and the tabs are at the foot (Tailwind's `sm`, 640 px).
+ */
+@media (max-width: 639.98px) {
+  /* The two pills above the map: 36 px tall by default, 48 to be hit. */
+  [data-phone-pill] {
+    min-height: 3rem;
+  }
+  /*
+   * MapLibre's zoom buttons are 29 px and its attribution toggle 24 px. Their icons are
+   * background images, so a bigger button tiles its icon unless it is told not to.
+   */
+  [data-map] .maplibregl-ctrl button,
+  [data-map] .maplibregl-ctrl-attrib-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  [data-map] .maplibregl-ctrl button .maplibregl-ctrl-icon {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 1.5rem 1.5rem;
+  }
+}

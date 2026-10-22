@@ -311,10 +311,11 @@ test.describe("weather", () => {
     const bar = (await header.boundingBox())!;
     // The same row as the logo, and in the far half of the bar (the owner, 13 Oct).
     expect(Math.abs(pill.y - logo.y)).toBeLessThan(12);
-    expect(pill.x).toBeGreaterThan(bar.width / 2);
-    // Home, Map and Account are on the row below it, the languages below those.
-    const home = (await header.getByRole("link", { name: th.nav.home }).boundingBox())!;
-    expect(home.y).toBeGreaterThan(pill.y + 30);
+    // The menu button now holds the end of the row, so "the far half" is the pill's far edge.
+    expect(pill.x).toBeGreaterThan(logo.x + logo.width);
+    expect(pill.x + pill.width).toBeGreaterThan(bar.width / 2);
+    // The header is the one row: Home, Map and Account are tabs at the foot, the languages in the menu.
+    expect(bar.height).toBeLessThan(72);
     await noSidewaysScroll(page);
   });
 

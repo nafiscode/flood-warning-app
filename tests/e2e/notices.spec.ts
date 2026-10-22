@@ -168,10 +168,13 @@ test.describe("the bell", () => {
     await page.goto("/");
     const header = page.locator("header");
     const box = (await bell(page).boundingBox())!;
-    const account = (await header.locator("[data-account-link]").boundingBox())!;
-    // Last of the row (the owner's note, 12 Oct). The end, not literally the right: in a
-    // right-to-left script the whole bar turns round and the bell goes with it.
-    expect(box.x).toBeGreaterThan(account.x);
+    const weather = (await header.locator('[data-weather-slot="row"]').boundingBox())!;
+    // At the end of the row, after the weather and before the menu button (the owner's note, 12
+    // Oct). The end, not literally the right: in a right-to-left script the whole bar turns round
+    // and the bell goes with it.
+    expect(box.x).toBeGreaterThan(weather.x);
+    const menuButton = (await header.locator("[data-phone-menu-button]").boundingBox())!;
+    expect(box.x).toBeLessThan(menuButton.x);
     const bar = (await header.boundingBox())!;
     expect(box.x + box.width).toBeLessThanOrEqual(bar.x + bar.width);
     // And the badge must not hang off the screen.

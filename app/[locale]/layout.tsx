@@ -9,6 +9,8 @@ import { AccountLink } from "@/components/AccountLink";
 import { AdminLink } from "@/components/AdminLink";
 import { Logo } from "@/components/brand/Logo";
 import { HotlineBar } from "@/components/HotlineBar";
+import { PhoneMenu } from "@/components/PhoneMenu";
+import { PhoneTabs } from "@/components/PhoneTabs";
 import { DaylightTheme } from "@/components/DaylightTheme";
 import { FeaturesLink } from "@/components/FeaturesLink";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -25,6 +27,7 @@ import { routing } from "@/i18n/routing";
 import { DAYLIGHT_SCRIPT } from "@/lib/theme-script";
 import { layoutMessages } from "@/lib/messages";
 import "../globals.css";
+import "./phone.css";
 import { OG_LOCALE, SHARE_IMAGE, sharePath, siteUrl } from "@/lib/site";
 
 // Self-hosted at build time by next/font: no request to Google from users' phones.
@@ -188,11 +191,13 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     Day or night by hand (the owner's request, 18 Oct), beside the bell. The sun
                     still decides what every visit starts as; this is only for changing it.
                   */}
-                  <ThemeSwitch />
+                  <ThemeSwitch className="max-sm:hidden" />
                   <NoticeBell />
+                  {/* A phone's menu: the languages, the colours and the pages to read. */}
+                  <PhoneMenu hasAbout={hasAbout} />
                 </div>
 
-                <div className="flex w-full items-center sm:order-2 sm:ms-auto sm:w-auto">
+                <div className="flex w-full items-center max-sm:hidden sm:order-2 sm:ms-auto sm:w-auto">
                   {/* Home as a word, not only the logo: people don't tap a logo to go back. */}
                   <Link
                     href="/"
@@ -222,7 +227,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   <AdminLink />
                 </div>
                 {/* Languages on their own row: three names don't fit beside the logo at 360 px. */}
-                <div className="flex w-full items-center justify-between gap-x-1 sm:order-4">
+                <div className="flex w-full items-center justify-between gap-x-1 max-sm:hidden sm:order-4">
                   <LanguageSwitcher />
                   {/*
                     The time, on a phone: in the room left beside the three language names.
@@ -250,6 +255,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             {/* Its own colour runs down under the home indicator, so the bar meets the screen's edge. */}
             <footer className="sticky bottom-0 z-10 bg-jaga-surface pb-[env(safe-area-inset-bottom)]">
               <HotlineBar />
+              {/* A phone's tab bar, under the thumb and under the hotlines (HIG). */}
+              <PhoneTabs />
             </footer>
             <QueueRunner />
             {/* Keeps home, SOS and the map ready for a visit with no signal (A9). */}

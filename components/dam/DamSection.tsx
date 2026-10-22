@@ -88,9 +88,9 @@ function Tag({
 function Reading({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
     <p className={`${PLATE} leading-tight whitespace-nowrap`}>
-      <span className="block text-[11px] text-jaga-text-2">{label}</span>
-      <span className="text-[15px] font-bold tabular-nums">{value}</span>{" "}
-      <span className="text-[11px] text-jaga-text-2">{unit}</span>
+      <span className="block text-[13px] text-jaga-text-2">{label}</span>
+      <span className="text-[16px] font-bold tabular-nums">{value}</span>{" "}
+      <span className="text-[13px] text-jaga-text-2">{unit}</span>
     </p>
   );
 }
@@ -418,14 +418,14 @@ export function DamSectionLabels({ f }: { f: DamFigure }) {
       )}
       {f.spilling && f.spilledCms !== null && (
         <Tag x={313} y={44} align="end">
-          <p className="rounded-full bg-jaga-ground/85 px-1.5 text-[11px] leading-tight font-medium whitespace-nowrap">
+          <p className="rounded-full bg-jaga-ground/85 px-1.5 text-[13px] leading-tight font-medium whitespace-nowrap">
             {t("figure.tag.spill")} {cms(f.spilledCms)}
           </p>
         </Tag>
       )}
       {normal !== null && (
         <Tag x={7} y={normal - 14}>
-          <p className={`${PLATE} text-[11px] leading-tight whitespace-nowrap text-jaga-text-2`}>
+          <p className={`${PLATE} text-[13px] leading-tight whitespace-nowrap text-jaga-text-2`}>
             {t("figure.tag.normal")}
           </p>
         </Tag>
@@ -434,25 +434,25 @@ export function DamSectionLabels({ f }: { f: DamFigure }) {
         <Tag x={9} y={readingTop}>
           <p className={`${PLATE} leading-none`}>
             <span className="text-[26px] font-bold tabular-nums">{n(f.percentFull ?? 0)}%</span>{" "}
-            <span className="text-[11px] text-jaga-text-2">{t("figure.tag.ofCapacity")}</span>
+            <span className="text-[13px] text-jaga-text-2">{t("figure.tag.ofCapacity")}</span>
           </p>
           {f.storageMcm !== null && (
-            <p className={`${PLATE} mt-0.5 text-[12px] leading-snug tabular-nums`}>
+            <p className={`${PLATE} mt-0.5 text-[13px] leading-snug tabular-nums`}>
               {n(f.storageMcm, f.storageMcm < 10 ? 1 : 0)}{" "}
-              <span className="text-[11px] text-jaga-text-2">{t("figure.unit.mcm")}</span>
+              <span className="text-[13px] text-jaga-text-2">{t("figure.unit.mcm")}</span>
             </p>
           )}
           {f.levelM !== null && (
-            <p className={`${PLATE} text-[12px] leading-snug tabular-nums`}>
+            <p className={`${PLATE} text-[13px] leading-snug tabular-nums`}>
               {t("figure.tag.level")} {n(f.levelM, 2)}{" "}
-              <span className="text-[11px] text-jaga-text-2">{t("figure.unit.m")}</span>
+              <span className="text-[13px] text-jaga-text-2">{t("figure.unit.m")}</span>
             </p>
           )}
         </Tag>
       )}
       {f.fullness === null && (
         <Tag x={9} y={100}>
-          <p className={`${PLATE} text-[12px] leading-snug text-jaga-text-2`}>
+          <p className={`${PLATE} text-[13px] leading-snug text-jaga-text-2`}>
             {t("figure.tag.noStorage")}
           </p>
         </Tag>

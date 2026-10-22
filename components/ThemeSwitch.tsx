@@ -34,7 +34,14 @@ function watchTheme(onChange: () => void): () => void {
 const showing = (): ThemeMode =>
   document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 
-export function ThemeSwitch({ className = "" }: { className?: string }) {
+export function ThemeSwitch({
+  className = "",
+  withLabel = false,
+}: {
+  className?: string;
+  /** In the phone's menu it is a row with words, not a bare icon. */
+  withLabel?: boolean;
+}) {
   const t = useTranslations("nav");
   // Null while the page is still the server's HTML: nothing is drawn until it can be read, so
   // the icon never shows the wrong way round and then swaps. The space it takes is held open.
@@ -59,9 +66,14 @@ export function ThemeSwitch({ className = "" }: { className?: string }) {
       data-theme-switch={mode ?? ""}
       // Drawn like the bell and the "?": 36 px wide, the hit area stretched back out to 48 px,
       // because at 360 px a wider button pushes the header onto another row.
-      className={`relative inline-flex min-h-tap w-9 items-center justify-center rounded text-white after:absolute after:-inset-x-1 after:inset-y-0 after:content-[''] lg:w-12 ${className}`}
+      className={
+        withLabel
+          ? `inline-flex min-h-tap w-full items-center gap-3 rounded px-2 text-small font-medium text-white ${className}`
+          : `relative inline-flex min-h-tap w-9 items-center justify-center rounded text-white after:absolute after:-inset-x-1 after:inset-y-0 after:content-[''] lg:w-12 ${className}`
+      }
     >
       {next === "light" ? <SunIcon size={24} /> : <MoonIcon size={24} />}
+      {withLabel && next ? <span>{t(next === "dark" ? "themeToDark" : "themeToLight")}</span> : null}
     </button>
   );
 }

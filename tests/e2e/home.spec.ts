@@ -5,6 +5,7 @@
  */
 import { expect, type Page, test } from "@playwright/test";
 import th from "../../messages/th.json";
+import { openPhoneMenu } from "./phone-menu";
 
 const BANA = {
   code: "940104",
@@ -176,23 +177,49 @@ test.describe("home", () => {
     await noSidewaysScroll(page);
   });
 
-  test("the header has Home, Map and Sign in as words, and nothing scrolls sideways", async ({
+  test("a phone has one header row and the tabs at the foot, and nothing scrolls sideways", async ({
     page,
   }) => {
     await serve(page, { inService: true, alerts: [] });
     await page.goto("/map");
-    const header = page.locator("header");
-    // Home as a link of its own: a logo is not what people tap to go back.
-    await expect(header.locator('a[href="/"]', { hasText: th.nav.home })).toBeVisible();
-    // A phone gets the short name: the full one wrapped every link onto two lines (16 Oct).
-    await expect(header.getByRole("link", { name: th.nav.mapShort })).toBeVisible();
-    const homeLink = (await header.locator('a[href="/"]', { hasText: th.nav.home }).boundingBox())!;
-    expect(homeLink.height).toBeLessThan(56);
-    // A visitor is invited to sign in where a signed-in person sees Account (15 Oct, 012ec5a).
-    await expect(header.locator('[data-account-link="sign-in"]')).toHaveText(th.nav.signIn);
-    const home = (await header.locator('a[href="/"]', { hasText: th.nav.home }).boundingBox())!;
-    expect(home.height).toBeGreaterThanOrEqual(44);
+    // Apple's HIG for iPhone (23 Oct): the header is one row, the places are tabs under the thumb.
+    expect((await page.locator("header").boundingBox())!.height).toBeLessThan(72);
+    const tabs = page.locator("footer [data-phone-tab]");
+    await expect(tabs).toHaveCount(4);
+    for (const tab of await tabs.all()) {
+      const box = (await tab.boundingBox())!;
+      expect(box.height).toBeGreaterThanOrEqual(48);
+    }
+    // Home as a tab of its own: a logo is not what people tap to go back. The map is the one here.
+    await expect(page.locator('footer [data-phone-tab="home"]')).toContainText(th.nav.home);
+    await expect(page.locator('footer [data-phone-tab="map"]')).toHaveAttribute("aria-current", "page");
+    // A visitor is invited to sign in where a signed-in person sees Account (15 Oct, 012ec5a): in
+    // the menu now, with the account itself a tab.
+    const menu = await openPhoneMenu(page);
+    await expect(menu.locator('[data-account-link="sign-in"]')).toHaveText(th.nav.signIn);
     await noSidewaysScroll(page);
+  });
+
+  test("SOS is one tap from every page but the SOS screens, and leaves the hotlines in view", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await page.goto("/map");
+    await expect(page.locator('footer [data-phone-tab="sos"]')).toHaveAttribute("href", "/sos");
+    await expect(page.locator("footer a[href='tel:1784']")).toBeInViewport();
+    await page.goto("/sos");
+    await expect(page.locator("footer [data-phone-tabs]")).toHaveCount(0);
+    await expect(page.locator("footer a[href='tel:1784']")).toBeInViewport();
+  });
+
+  test("the menu does not cover the hotlines or the tabs", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await page.goto("/");
+    const menu = await openPhoneMenu(page);
+    const menuBox = (await menu.boundingBox())!;
+    const footer = (await page.locator("footer").boundingBox())!;
+    expect(menuBox.y + menuBox.height).toBeLessThanOrEqual(footer.y + 1);
+    await expect(page.locator("footer a[href='tel:1784']")).toBeInViewport();
   });
 
   test("the header stays put while the page scrolls, and so does the hotline bar", async ({
@@ -207,7 +234,7 @@ test.describe("home", () => {
     const after = (await header.boundingBox())!;
     // Still at the top of the screen, not scrolled away with the page.
     expect(after.y).toBeCloseTo(before.y, 0);
-    await expect(header.getByRole("link", { name: th.nav.home })).toBeInViewport();
+    await expect(page.locator('footer [data-phone-tab="home"]')).toBeInViewport();
     await expect(page.locator("footer a[href='tel:1784']")).toBeInViewport();
   });
 
@@ -241,7 +268,16 @@ test.describe("home", () => {
   }) => {
     await serve(page, { inService: true, alerts: [] });
     await page.goto("/");
-    const topOf = async (selector: string) => (await page.locator(selector).first().boundingBox())!.y;
+    // Polls until the element has a box: it has none while the page is still handing over to the
+    // browser, and this test is about the order of things, not how fast they appear.
+    const topOf = async (selector: string) => {
+      const target = page.locator(selector).first();
+      let y: number | undefined;
+      await expect
+        .poll(async () => (y = (await target.boundingBox())?.y), { timeout: 10_000 })
+        .toBeDefined();
+      return y!;
+    };
     const hero = await topOf("[data-hero]");
     const sos = await topOf('main a[href="/sos"]');
     const report = await topOf('main a[href="/report"]');
@@ -260,7 +296,16 @@ test.describe("home", () => {
   test("at Evacuate the order still puts SOS directly under the hero", async ({ page }) => {
     await serve(page, { inService: true, alerts: [alert("evacuate")] });
     await page.goto("/");
-    const topOf = async (selector: string) => (await page.locator(selector).first().boundingBox())!.y;
+    // Polls until the element has a box: it has none while the page is still handing over to the
+    // browser, and this test is about the order of things, not how fast they appear.
+    const topOf = async (selector: string) => {
+      const target = page.locator(selector).first();
+      let y: number | undefined;
+      await expect
+        .poll(async () => (y = (await target.boundingBox())?.y), { timeout: 10_000 })
+        .toBeDefined();
+      return y!;
+    };
     const sos = await topOf('main a[href="/sos"]');
     expect(await topOf("[data-hero]")).toBeLessThan(sos);
     // Before the checklist, before the other buttons, and before the long-term risk.

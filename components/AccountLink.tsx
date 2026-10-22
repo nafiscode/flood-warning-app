@@ -18,12 +18,14 @@ const plain =
  * Drawn in the browser for the same reason as the Admin link: the header is on every page, and
  * reading the session on the server would make every public page dynamic.
  */
-export function AccountLink() {
+export function AccountLink({ menu = false }: { menu?: boolean }) {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
   const signedIn = useSignedIn();
 
+  // In the phone's menu only the invitation is wanted: the account itself is a tab down below.
+  if (menu && (signedIn || QUIET.test(pathname) || pathname === "/sign-in")) return null;
   if (signedIn || QUIET.test(pathname) || pathname === "/sign-in") {
     return (
       <Link href="/account" prefetch={false} className={plain} data-account-link="account">
@@ -36,7 +38,7 @@ export function AccountLink() {
     <a
       href={signInHref(locale, pathname)}
       data-account-link="sign-in"
-      className="ms-1 inline-flex min-h-tap items-center py-1.5"
+      className={`inline-flex min-h-tap items-center py-1.5 ${menu ? "ms-2" : "ms-1"}`}
     >
       <span className="inline-flex items-center rounded-full bg-jaga-teal-light px-3 py-1 text-small font-bold text-jaga-slate shadow-sm">
         {t("signIn")}

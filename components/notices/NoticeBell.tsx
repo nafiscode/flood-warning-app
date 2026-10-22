@@ -137,7 +137,7 @@ export function NoticeBell({ className = "" }: { className?: string }) {
           data-notice-panel="open"
           // On a phone it stands between the frozen header and the hotline bar, which is never
           // covered: the four numbers stay one tap away (safety rule 4).
-          className="fixed inset-x-2 bottom-28 top-28 z-30 overflow-y-auto rounded-xl border border-jaga-line bg-jaga-surface text-jaga-text shadow-lg lg:absolute lg:inset-x-auto lg:bottom-auto lg:end-0 lg:top-12 lg:max-h-[70vh] lg:w-[26rem]"
+          className="fixed inset-x-2 bottom-[8.5rem] top-[4.5rem] z-30 sm:bottom-28 sm:top-28 overflow-y-auto rounded-xl border border-jaga-line bg-jaga-surface text-jaga-text shadow-lg lg:absolute lg:inset-x-auto lg:bottom-auto lg:end-0 lg:top-12 lg:max-h-[70vh] lg:w-[26rem]"
         >
           <div className="sticky top-0 flex items-center justify-between gap-2 border-b border-jaga-line bg-jaga-surface px-4 py-3">
             <div>

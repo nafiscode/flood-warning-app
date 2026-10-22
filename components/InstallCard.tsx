@@ -237,7 +237,8 @@ export function InstallLine() {
           type="button"
           onClick={() => reveal(() => document.querySelector<HTMLElement>("[data-install]"))}
           data-install-show="true"
-          className="font-bold text-jaga-ink underline"
+          // The words are one line of a sentence; the touch area is not (HIG: 44 pt at least).
+          className="relative font-bold text-jaga-ink underline after:absolute after:inset-x-0 after:-inset-y-3 after:content-['']"
         >
           {t("lineShow")}
         </button>

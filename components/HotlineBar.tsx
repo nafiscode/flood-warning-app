@@ -19,13 +19,17 @@ export function HotlineBar() {
             <a
               href={`tel:${number}`}
               aria-label={t("call", { number, name: t(key) })}
-              className="flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-jaga-text active:bg-jaga-ground"
+              className="flex min-h-14 flex-col items-center justify-center px-1 py-1 text-center leading-tight sm:min-h-16 sm:gap-0.5 sm:py-2 text-jaga-text active:bg-jaga-ground"
             >
-              <span className="flex items-center gap-1 text-body font-bold">
+              <span className="flex items-center gap-1 text-body font-bold max-sm:leading-tight">
                 <PhoneIcon size={18} />
                 {number}
               </span>
-              <span className="text-small leading-tight text-jaga-text-2">{t(key)}</span>
+              <span className="text-small leading-tight text-jaga-text-2">
+                {/* One short word on a phone, so the bar is two lines tall and not three. */}
+                <span className="sm:hidden">{t(`${key}Short`)}</span>
+                <span className="max-sm:hidden">{t(key)}</span>
+              </span>
             </a>
           </li>
         ))}

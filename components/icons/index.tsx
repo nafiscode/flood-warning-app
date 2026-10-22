@@ -660,3 +660,22 @@ export function PlaneIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** The account tab on a phone: a head over shoulders. */
+export function PersonIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4.5 20c.6-3.8 3.7-6 7.5-6s6.9 2.2 7.5 6" />
+    </Icon>
+  );
+}
+
+/** The menu button on a phone: three bars. */
+export function MenuIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Icon>
+  );
+}

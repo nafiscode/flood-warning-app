@@ -447,7 +447,11 @@
     "ddpm": "Disasters (DDPM)",
     "medical": "Medical emergency",
     "police": "Police",
-    "fire": "Fire"
+    "fire": "Fire",
+    "ddpmShort": "Disasters",
+    "medicalShort": "Medical",
+    "policeShort": "Police",
+    "fireShort": "Fire"
   },
   "places": {
     "title": "Safe places near you",
@@ -797,7 +801,11 @@
     "theme": "The app's colours",
     "themeToDark": "Switch to night colours",
     "themeToLight": "Switch to day colours",
-    "about": "About"
+    "about": "About",
+    "tabs": "Main menu",
+    "sos": "SOS",
+    "menu": "Menu",
+    "menuClose": "Close menu"
   },
   "notices": {
     "title": "Notifications",

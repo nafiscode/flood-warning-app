@@ -211,6 +211,6 @@ test.describe("reporting flooding", () => {
     await page.goto("/report");
     await expect(page.locator('[data-report-state="signIn"]')).toBeVisible();
     await expect(page.getByText(th.report.signInBody)).toBeVisible();
-    await expect(page.locator('a[href="/sos"]')).toBeVisible();
+    await expect(page.locator('main a[href="/sos"]')).toBeVisible();
   });
 });
