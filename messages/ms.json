@@ -567,7 +567,7 @@
       "count": "{count} laporan dalam 72 jam yang lalu",
       "deepest": "Air paling dalam yang dilaporkan: {depth}",
       "latest": "Laporan terakhir kira-kira {time}",
-      "note": "Ditunjukkan sebagai bilangan laporan dalam kawasan kira-kira 1 km². Lokasi dan nama pelapor tidak ditunjukkan."
+      "note": "Ditunjukkan sebagai bilangan laporan dalam kawasan kira-kira 1 km², apabila sekurang-kurangnya 2 orang telah melapor di situ. Lokasi dan nama pelapor tidak ditunjukkan."
     },
     "depth": {
       "dry": "kering",
@@ -2370,7 +2370,7 @@
     "send": "Hantar laporan",
     "sending": "Menghantar…",
     "sentTitle": "Laporan dihantar. Terima kasih.",
-    "sentBody": "Laporan anda muncul di peta sebagai bilangan laporan setiap kawasan. Gambar muncul selepas disemak.",
+    "sentBody": "Laporan anda dikira di peta sebagai sebahagian kawasan apabila sekurang-kurangnya seorang lagi melapor berdekatan. Gambar muncul selepas disemak.",
     "queuedTitle": "Belum dapat dihantar, masih mencuba",
     "queuedBody": "Tiada sambungan internet. Laporan anda disimpan dan akan dihantar apabila ada sambungan.",
     "needLocation": "Laporan perlukan lokasi.",

@@ -567,7 +567,7 @@
       "count": "{count} reports in the last 72 hours",
       "deepest": "Deepest water reported: {depth}",
       "latest": "Latest report at about {time}",
-      "note": "Shown as the number of reports in an area of about 1 km². Reporters' locations and names are not shown."
+      "note": "Shown as the number of reports in an area of about 1 km², once at least 2 people have reported there. Reporters' locations and names are not shown."
     },
     "depth": {
       "dry": "dry",
@@ -2370,7 +2370,7 @@
     "send": "Send report",
     "sending": "Sending…",
     "sentTitle": "Report sent. Thank you.",
-    "sentBody": "Your report appears on the map as a count per area. Photos appear after moderation.",
+    "sentBody": "Your report counts on the map as part of an area once at least one other person has reported nearby. Photos appear after moderation.",
     "queuedTitle": "Not sent yet, still trying",
     "queuedBody": "There is no connection. Your report is kept and goes out when there is signal.",
     "needLocation": "A report needs a location.",

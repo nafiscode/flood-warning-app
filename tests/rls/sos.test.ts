@@ -514,6 +514,13 @@ describe("flood reports", () => {
          p_lon => extensions.st_x(extensions.st_geomfromtext($1, 4326)), p_depth_ref => 'waist')`,
       [w.yalaPoint],
     );
+    // A hexagon needs a second person's report in it (20261022205112_a10_hex_two_reporters).
+    await asOwner(db);
+    await db.query(
+      `insert into reports (reporter_id, point, depth_ref)
+       values ($1, extensions.st_geomfromtext($2, 4326), 'knee')`,
+      [w.requester, w.yalaPoint],
+    );
     await as(db, "anon");
     expect(await rows(db, "select * from report_hex_bins(72)")).toHaveLength(1);
     await asOwner(db);

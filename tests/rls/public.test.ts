@@ -98,24 +98,31 @@ describe("report_hex_bins: counts per hexagon only (safety rule 6)", () => {
     await asOwner(db);
     // The development database may hold somebody's real reports: only the fixture's count here.
     await db.query("delete from reports where reporter_id is distinct from $1", [w.otherUser]);
-    const add = (status: string, age: string, depth: string) =>
+    const add = (status: string, age: string, depth: string, who: string = w.otherUser) =>
       db.query(
         `insert into reports (reporter_id, point, depth_ref, moderation_status, created_at)
          values ($1, extensions.st_geomfromtext($2, 4326), $3::depth_ref, $4::moderation_status,
                  now() - $5::interval)`,
-        [w.otherUser, w.yalaPoint, depth, status, age],
+        [who, w.yalaPoint, depth, status, age],
       );
     await add("approved", "2 hours", "waist");
     await add("hidden", "1 hour", "roof");
     await add("pending", "1 hour", "ankle");
     await add("approved", "5 days", "roof");
 
+    // One person alone, however many reports, shows no hexagon: in the countryside it would
+    // nearly point at their house (22 Oct, 20261022205112_a10_hex_two_reporters).
+    await as(db, "anon");
+    expect(await rows(db, "select * from report_hex_bins()")).toEqual([]);
+
+    await asOwner(db);
+    await add("pending", "3 hours", "knee", w.requester);
     await as(db, "anon");
     const bins = await rows<Record<string, unknown>>(db, "select * from report_hex_bins()");
     expect(bins).toHaveLength(1);
     const bin = bins[0]!;
     expect(Object.keys(bin).sort()).toEqual(["deepest", "hex", "latest", "reports"]);
-    expect(bin.reports).toBe(3);
+    expect(bin.reports).toBe(3 + 1);
     expect(bin.deepest).toBe("waist");
     expect((bin.latest as Date).getUTCMinutes()).toBe(0);
     const hex = bin.hex as { type: string; coordinates: number[][][] };
@@ -128,6 +135,7 @@ describe("report_hex_bins: counts per hexagon only (safety rule 6)", () => {
     expect(text).not.toContain(p.lon.slice(0, 9));
     expect(text).not.toContain(p.lat.slice(0, 8));
     expect(text).not.toContain(w.otherUser);
+    expect(text).not.toContain(w.requester);
 
     // About one square kilometre, so a single report is not pinned to a house.
     await asOwner(db);
