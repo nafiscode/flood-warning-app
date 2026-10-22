@@ -352,6 +352,60 @@ test.describe("the live map on a laptop", () => {
     await expect(page.locator("[data-satellite]")).toHaveAttribute("data-satellite", "off");
   });
 
+  /*
+   * The owner, 23 Oct 2026, on an iPad: in full screen, opening the satellite's panel "shows the
+   * description but I can't scroll down to see the rest".
+   *
+   * The rail had `overflow: visible` from the day full screen was built, when it held only the
+   * way out and the six chips. The satellite's panel moved into it on 22 Oct and opens to about
+   * 300 px more, and because the full-screen console is `position: fixed` there is no page
+   * behind it to scroll either - so the end of the panel could not be reached at all.
+   *
+   * The assertion is the reader's own question: can I get to the bottom of what I opened. It is
+   * put to the rail rather than to a pixel height, so it holds whatever the panel grows into.
+   */
+  test("in full screen the layer rail scrolls, so the end of a panel can be reached", async ({
+    page,
+  }) => {
+    await serve(page);
+    await servedSatellite(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+
+    await page.locator('[data-map-full-toggle="open"]').click();
+    await expect(page.locator("[data-map-full]")).toHaveCount(1);
+
+    // Switched on from inside full screen, which is where the owner was.
+    await page.locator("[data-satellite-toggle] input").check();
+    await expect(page.locator("[data-satellite-status]")).toHaveAttribute(
+      "data-satellite-status",
+      "some",
+    );
+
+    const rail = page.locator('[data-console-area="rail"]');
+    const close = page.locator("[data-satellite-close]");
+    await expect(close).toHaveCount(1);
+
+    // The panel is longer than the rail - that is the whole situation - and the rail must say so.
+    const scroll = await rail.evaluate((el) => ({
+      overflowY: getComputedStyle(el).overflowY,
+      over: el.scrollHeight > el.clientHeight + 2,
+    }));
+    expect(scroll.overflowY).toBe("auto");
+    expect(scroll.over).toBe(true);
+
+    // And scrolling it brings the end of the panel into the rail, and onto the screen.
+    await rail.evaluate((el) => {
+      el.scrollTop = el.scrollHeight;
+    });
+    const reached = await close.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const box = el.closest('[data-console-area="rail"]')!.getBoundingClientRect();
+      return r.top >= box.top - 1 && r.bottom <= box.bottom + 1 && r.bottom <= window.innerHeight;
+    });
+    expect(reached).toBe(true);
+  });
+
   /** The owner, 20 Oct 2026: one button back to the map as it opens. */
   test("resets to the layers the map opens with", async ({ page }) => {
     await serve(page);
