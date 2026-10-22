@@ -11,6 +11,7 @@ import {
   installSnoozed,
   type InstallGuide,
 } from "@/lib/install";
+import { mapMessages } from "@/lib/messages";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
@@ -280,6 +281,16 @@ describe("the moving guide", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  /*
+   * The card is on the map's panel too since 23 Oct, where the owner wants installing Jaga
+   * promoted. Without the words travelling with it, that page throws at runtime while the types
+   * stay green.
+   */
+  it("travels to the map, where the panel now carries it", () => {
+    expect(mapMessages(th)).toHaveProperty("install");
+    expect((mapMessages(th) as { map: { join: unknown } }).map.join).toBeTruthy();
   });
 
   it("where the browser installs by itself, the guide is still one tap away", () => {

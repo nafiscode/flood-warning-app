@@ -29,6 +29,8 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       "signInOffer",
       // The way in for a rescue unit, beside the resident's own, under the hero (18 Oct).
       "unitWay",
+      // A laptop's first screen and its setup card (23 Oct).
+      "homeFlow",
       // Saying what a safe place is like now, from its card (20 Oct), and the line of what
       // residents have said. It carries its own copy of the three words about the road rather
       // than pulling the whole "report" namespace onto the home screen.
@@ -127,6 +129,9 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
       "mapRain",
       // "What the monitoring shows now", inside the summary above the map (17 Oct).
       "monitoring",
+      // The three ways in, in the rail: sign in, put Jaga on this device, register a team
+      // (the owner, 23 Oct). "install" carries the steps for every kind of device.
+      "install",
     ]),
     // The weather widget's words for what is falling, so the map says it the same way.
     weather: { codes: (all.weather as Messages).codes! },
@@ -214,6 +219,8 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     // The level names for the badge, and the drill mark's three lines: the bell is where a sent
     // drill is read, and without them next-intl prints the key path (the owner saw it, 21 Oct).
     alert: { level: (all.alert as Messages).level!, drill: (all.alert as Messages).drill! },
+    // The laptop header's "For rescue teams" (23 Oct): one phrase of the home flow's words.
+    homeFlow: { navTeams: (all.homeFlow as Messages).navTeams! },
     // The "What Jaga can do" line at the end of each page (A17): one word.
     capabilities: { link: (all.capabilities as Messages).link! },
     // And "How Jaga works" beside it (A18), and "Who built Jaga" after that: two more words.

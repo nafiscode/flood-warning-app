@@ -1308,6 +1308,119 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
     expect(flash(c)).toBe(EXAMPLE_MAP.gauges[0]!.id);
   });
 
+  /*
+   * The owner, 23 Oct 2026: "why Dam Card, on the map, doesn't have pulse like the river
+   * gauges?" - because it counted one reservoir where the rivers' readout counts every station,
+   * so a reservoir spilling two provinces away asked nobody to look.
+   */
+  it("says how the reservoirs stand altogether, and asks for a look at any of them", () => {
+    const spilling: Dam = {
+      ...EXAMPLE_DAM,
+      code: "other_dam",
+      name: { th: "เขื่อนอื่น", en: "Other dam" },
+      storageMaxMcm: 100,
+      storageNormalMcm: 90,
+      signal: exampleDamSignal("releasing"),
+    };
+    const quiet: Dam = {
+      ...EXAMPLE_DAM,
+      code: "quiet_dam",
+      name: { th: "เขื่อนสงบ", en: "Quiet dam" },
+      signal: { ...exampleDamSignal("watch")!, percentFull: 40 },
+    };
+    const admin = { signedIn: true as const, home: null, places: [], role: "admin" };
+    const c = dashboard({ dams: [quiet, spilling], me: admin });
+    const card = c.querySelector('[data-console-tile="dam"] [data-tile-card]')!;
+    // Titled by the worst, not by the largest, while anything is happening...
+    expect(card.textContent).toContain("เขื่อนอื่น");
+    // ...and it counts the other three: one over the spillway, Bang Lang's twin below normal.
+    expect(card.querySelector("[data-tile-brief]")!.textContent).toContain(
+      "ระบายผ่านทางน้ำล้น 1 แห่ง",
+    );
+    // The ring asks an admin to look, in the plain colour a measurement wears (safety rule 2).
+    expect(card.getAttribute("data-console-alarm")).toBe("attention");
+
+    // Every reservoir normal: the card says so, and nothing blinks.
+    const calm = dashboard({ dams: [quiet], me: admin });
+    const calmCard = calm.querySelector('[data-console-tile="dam"] [data-tile-card]')!;
+    expect(calmCard.querySelector("[data-tile-brief]")!.textContent).toContain(
+      "ทุกเขื่อนอยู่ในเกณฑ์ปกติ",
+    );
+    expect(calmCard.getAttribute("data-console-alarm")).toBeNull();
+  });
+
+  /*
+   * The owner, 23 Oct 2026: "make that part a bit easy to see, since we want to promote people to
+   * log in and Install Jaga on their device to get alerts. And Register their team for getting
+   * the SOS help request". It was two dashed grey footnotes in the panel.
+   */
+  it("asks for the three things in a card, and each row goes", () => {
+    const c = dashboard();
+    const card = c.querySelector("[data-map-join]")!;
+    expect(card).not.toBeNull();
+    // Sign in, which brings them back to this page.
+    const signIn = card.querySelector("a[data-map-join-in]")!;
+    expect(signIn.getAttribute("href")).toContain("/sign-in");
+    // Register a team, at the form itself.
+    expect(card.querySelector('[data-unit-register="map"]')!.getAttribute("href")).toBe(
+      "/authority/register",
+    );
+    // And installing Jaga, which points at the card that carries the steps for this device.
+    expect(card.querySelector("[data-map-join-install]")).not.toBeNull();
+    expect(c.querySelector("[data-install]")).not.toBeNull();
+    // Nothing here is a door: the hotlines and SOS are reached without any of it.
+    expect(card.textContent).not.toContain("SOS");
+  });
+
+  /*
+   * The owner, 23 Oct 2026: "in the full screen map on the laptop add on the left button to see
+   * Reservoir Situation just on top of 'see the sea and coast, for fishermen'". Full screen puts
+   * the readout strip away, so without this button the reservoirs' figures cannot be reached
+   * there at all.
+   */
+  it("offers the reservoirs from the console's rail, above the fishermen's button", () => {
+    const was = window.matchMedia;
+    window.matchMedia = ((q: string) =>
+      ({
+        matches: q === CONSOLE_QUERY,
+        media: q,
+        addEventListener() {},
+        removeEventListener() {},
+      }) as unknown as MediaQueryList) as typeof window.matchMedia;
+    try {
+      const second: Dam = {
+        ...EXAMPLE_DAM,
+        code: "small_dam",
+        name: { th: "เขื่อนเล็ก", en: "Small dam" },
+        storageMaxMcm: 100,
+        storageNormalMcm: 90,
+        signal: { ...exampleDamSignal("watch")!, percentFull: 40 },
+      };
+      const c = dashboard({ dams: [second, EXAMPLE_DAM] });
+      const rail = c.querySelector('[data-map-features="map"]')!;
+      const ways = [...rail.querySelectorAll("button[data-open-dams], button[data-open-sea]")];
+      // The reservoirs first, the sea under them, in the order the owner asked for.
+      expect(ways.map((b) => b.getAttribute("data-open-dams") ?? "sea")).toEqual(["true", "sea"]);
+      fireEvent.click(ways[0]!);
+      /*
+       * It opens what the readout opens - here Bang Lang, which is above the level it is
+       * normally held at - and the card walks through the rest from there.
+       */
+      expect(c.querySelector("[data-selected='dam']")).not.toBeNull();
+      expect(flash(c)).toBe(EXAMPLE_DAM.code);
+      expect(c.querySelector("[data-selected='dam'] [data-card-steps]")).not.toBeNull();
+    } finally {
+      window.matchMedia = was;
+    }
+  });
+
+  // On a phone the rail is the column below the map, where the legend already names every one.
+  it("leaves the rail button off a phone, where the legend names every reservoir", () => {
+    const c = dashboard({ dams: [EXAMPLE_DAM] });
+    expect(c.querySelector("button[data-open-dams]")).toBeNull();
+    expect(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)).not.toBeNull();
+  });
+
   it("lights every reservoir doing something, and walks through the dams as well", () => {
     const spilling: Dam = {
       ...EXAMPLE_DAM,

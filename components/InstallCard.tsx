@@ -202,10 +202,11 @@ export function InstallCardView({
 
 /**
  * Whether there is anything to offer this device at all: not already installed, not done, and
- * not inside a "Not now". The card and the line above it ask the same question, so it is asked
- * in one place - if they could disagree, the line would point at a card that is not there.
+ * not inside a "Not now". The card, the line above it and the map's own card all ask the same
+ * question, so it is asked in one place - if they could disagree, a row would point at a card
+ * that is not there.
  */
-function useInstallWanted(place: "home" | "account"): boolean {
+export function useInstallWanted(place: "home" | "account"): boolean {
   const ready = useOnPhone();
   const installed = useStandalone();
   const done = useStored<boolean>("install.done");

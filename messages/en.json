@@ -733,7 +733,12 @@
         "noReading": "No reading time",
         "stale": "not updated",
         "open": "See {dam}'s figures",
-        "openMany": "See the {count} reservoirs to watch on the map"
+        "openMany": "See the {count} reservoirs to watch on the map",
+        "spilling": "{count} over the spillway",
+        "aboveNormal": "{count} past the normal level",
+        "allNormal": "All reservoirs within their normal level",
+        "counted": "of {count} reservoirs",
+        "situation": "See how the reservoirs stand"
       },
       "reports": {
         "label": "Resident reports",
@@ -771,6 +776,10 @@
       "next": "Next",
       "gauges": "Choose another river gauge",
       "dams": "Choose another reservoir"
+    },
+    "join": {
+      "title": "Set it up once, and Jaga can do more for you",
+      "sub": "Free, and under a minute"
     }
   },
   "attribution": {

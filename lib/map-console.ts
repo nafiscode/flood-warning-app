@@ -122,7 +122,7 @@ export function gaugeRun<T extends GaugeReading & { id: string }>(
 function gaugeRank(look: GaugeLook, mine: boolean): number {
   if (look === "over") return 0;
   if (look === "near") return 1;
-  const rest = ({ high: 0, normal: 1, nolevels: 2, quiet: 3 })[look] ?? 3;
+  const rest = { high: 0, normal: 1, nolevels: 2, quiet: 3 }[look] ?? 3;
   return (mine ? 2 : 6) + rest;
 }
 
@@ -233,27 +233,45 @@ function damRank(dam: Dam): number {
 }
 
 /**
- * The reservoirs a press on the dam readout walks through (the owner, 20 Oct 2026: "same should
- * work for the dams card"). The ones doing something first, fullest first; below that the dam
- * the chips and the home screen mean, then the largest. A total order, as the gauges' run is.
+ * How far gone a reservoir is within its rank: how much water is going over the spillway, or how
+ * far past the level it is normally held at. Only ever compared between two reservoirs of the
+ * same rank, where the question is the same for both; it says nothing across ranks.
  */
-export function damRun(
-  dams: readonly Dam[],
-  /**
-   * The dam the chips and the home screen mean, when the caller knows it (`mainDam` in
-   * lib/map-focus.ts). Passed in rather than worked out here: that module reaches MapLibre, and
-   * this one is read by pages that are rendered on the server.
-   */
-  mainCode: string | null = null,
-): Dam[] {
-  const main = mainCode;
+function damSeverity(dam: Dam): number {
+  const tally = damTally(dam);
+  if (!tally) return 0;
+  const spilled = tally.spilledCms ?? 0;
+  if (spilled > 0) return spilled;
+  const { percentFull, normalMark } = tally;
+  if (percentFull !== null && normalMark !== null) return percentFull / 100 - normalMark;
+  return 0;
+}
+
+/**
+ * The reservoirs a press on the dam readout walks through (the owner, 20 Oct 2026: "same should
+ * work for the dams card"; 23 Oct 2026, setting the order inside each half).
+ *
+ *   * **Anything doing something comes first, worst first**: over the spillway before past the
+ *     normal level, and within each, the most water or the furthest past it. "If they clicked
+ *     the card when there is an abnormal situation for few reservoirs, it should open up the
+ *     worst case, and less case next, sort by the criticality."
+ *   * **With every reservoir normal, the biggest first**: "for the normal situation for all, it
+ *     should bring the largest capacity first, sort by that". The dam the chips and the home
+ *     screen mean is no longer put in front by name - it is the largest of the four anyway, and
+ *     a quiet day should open the reservoir that holds the most water, whichever that is.
+ *
+ * A total order, as the gauges' run is, so Next cannot wander and a second press cannot land
+ * somewhere else.
+ */
+export function damRun(dams: readonly Dam[]): Dam[] {
+  const size = (d: Dam) => d.storageMaxMcm ?? 0;
   const full = (d: Dam) => d.signal?.percentFull ?? -1;
   return [...dams].sort(
     (a, b) =>
       damRank(a) - damRank(b) ||
-      (a.code === main ? 0 : 1) - (b.code === main ? 0 : 1) ||
+      (damRank(a) < 2 ? damSeverity(b) - damSeverity(a) : 0) ||
+      size(b) - size(a) ||
       full(b) - full(a) ||
-      (b.storageMaxMcm ?? 0) - (a.storageMaxMcm ?? 0) ||
       a.code.localeCompare(b.code),
   );
 }
@@ -262,6 +280,46 @@ export function damRun(
 export function damsLit(run: readonly Dam[]): Dam[] {
   const concern = run.filter((d) => damRank(d) < 2);
   return (concern.length > 0 ? concern : run.slice(0, 1)).slice(0, LIT_MAX);
+}
+
+export type DamsTally = {
+  /** Reservoirs sending water over the spillway. */
+  spilling: number;
+  /** Reservoirs past the level they are normally held at. */
+  aboveNormal: number;
+  /** The two together: how many reservoirs are worth a look. */
+  watch: number;
+  total: number;
+  /** The one the readout is titled by: the worst, or the largest when all of them are normal. */
+  lead: DamTally | null;
+  /**
+   * The figure the card shows - the lead's - is a current reading. It is the lead's own feed and
+   * not the six together on purpose: the dot sits beside that one figure, and a dot fed by some
+   * other reservoir's clock would say "live" about a number that is a day old (safety rule 8).
+   */
+  live: boolean;
+};
+
+/**
+ * Every reservoir at once, not only the nearest (the owner, 23 Oct 2026: the readout "should
+ * check and say the overall situation of the all reservoir cards"). It is the dam readout's
+ * answer to `gaugeTally`, and like that one it only counts: nothing here decides a level, and
+ * the count is a measurement, so the card never wears an alert colour (safety rule 2).
+ */
+export function damsTally(dams: readonly Dam[]): DamsTally {
+  const run = damRun(dams);
+  const ranks = run.map(damRank);
+  const spilling = ranks.filter((r) => r === 0).length;
+  const aboveNormal = ranks.filter((r) => r === 1).length;
+  const lead = damTally(run[0]);
+  return {
+    spilling,
+    aboveNormal,
+    watch: spilling + aboveNormal,
+    total: run.length,
+    lead,
+    live: lead !== null && !lead.stale && lead.observedAt !== null,
+  };
 }
 
 /** How old a reading is, in whole minutes; null when there is no reading or no clock yet. */
@@ -354,6 +412,17 @@ export function damAlarm(tally: DamTally | null): TileAlarm {
     return "attention";
   }
   return null;
+}
+
+/**
+ * Any reservoir going over its spillway or sitting past the level it is normally held at - all
+ * four of them, not just the one the card is titled by (the owner, 23 Oct 2026: "why Dam Card
+ * doesn't have pulse like the river gauges?"). The rivers' readout has always counted every
+ * station; this one counted one reservoir, so a dam spilling two provinces away asked nobody to
+ * look. Plain attention, never an alert colour, exactly as the rivers blink (safety rule 2).
+ */
+export function damsAlarm(tally: Pick<DamsTally, "watch">): TileAlarm {
+  return tally.watch > 0 ? "attention" : null;
 }
 
 /** A tambon where several different residents report the same thing. */

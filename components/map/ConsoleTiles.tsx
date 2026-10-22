@@ -9,8 +9,8 @@ import type { TambonReports } from "@/lib/flood-reports";
 import {
   ageMinutes,
   alertsAlarm,
-  damAlarm,
-  damTally,
+  damsAlarm,
+  damsTally,
   gaugeAlarm,
   gaugeTally,
   levelTally,
@@ -18,7 +18,7 @@ import {
   reportTally,
   type TileAlarm,
 } from "@/lib/map-console";
-import type { DamTally } from "@/lib/map-console";
+import type { DamsTally } from "@/lib/map-console";
 import type { Gauge } from "@/lib/map-data";
 import { localName } from "@/lib/places";
 import {
@@ -281,11 +281,13 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
   const { status, alerts, fresh, failed, gauges, reports, time, now } = props;
   const scope = props.scope ?? t("scope.all");
   /*
-   * The dam the strip reports on: the one with a reading, else the first. The chips and the home
-   * screen mean the largest dam with a mapped path; here a reading is what matters, because a
-   * tile with nothing in it tells a reader nothing.
+   * Every reservoir, not one of them (the owner, 23 Oct 2026: the readout "should check and say
+   * the overall situation of the all reservoir cards"). The card is titled by the one at the head
+   * of the run - the worst, or the largest when all four are normal - and says underneath how
+   * many of them are worth a look, exactly as the rivers' readout counts every station.
    */
-  const dam = damTally(props.dams.find((d) => d.signal) ?? props.dams[0]);
+  const damsNow = damsTally(props.dams);
+  const dam = damsNow.lead;
 
   /*
    * Which cards ask for a look. Worked out for everyone and used only for an admin, so the rule
@@ -358,16 +360,34 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
     };
   };
 
-  const damFigures = (d: DamTally | null): { brief: React.ReactNode; more: React.ReactNode } => {
+  const damFigures = (all: DamsTally): { brief: React.ReactNode; more: React.ReactNode } => {
+    const d = all.lead;
     if (!d) return { brief: <Figure>{t("dam.unknown")}</Figure>, more: null };
     const age = ageMinutes(d.observedAt, now);
     return {
       brief: (
-        <LiveFigure live={!d.stale && d.observedAt !== null}>
-          {d.percentFull !== null
-            ? t("dam.full", { percent: Math.round(d.percentFull) })
-            : t("dam.unknown")}
-        </LiveFigure>
+        <>
+          {/* The dot pulses while any reservoir is still sending, not only the one named above. */}
+          <LiveFigure live={all.live}>
+            {d.percentFull !== null
+              ? t("dam.full", { percent: Math.round(d.percentFull) })
+              : t("dam.unknown")}
+          </LiveFigure>
+          {/*
+           * How the four of them stand, on the folded card: only what is actually happening,
+           * the same way the rivers' readout leaves out "0 over the bank" on a quiet day.
+           */}
+          <p className="text-small text-jaga-text-2">
+            {all.watch > 0
+              ? [
+                  all.spilling > 0 ? t("dam.spilling", { count: all.spilling }) : null,
+                  all.aboveNormal > 0 ? t("dam.aboveNormal", { count: all.aboveNormal }) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : t("dam.allNormal")}
+          </p>
+        </>
       ),
       more: (
         <Foot>
@@ -375,6 +395,7 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
             d.outflowCms !== null
               ? t("dam.out", { value: Math.round(d.outflowCms) })
               : t("dam.outUnknown"),
+            all.total > 1 ? t("dam.counted", { count: all.total }) : null,
             d.observedAt ? t("newest", { time: time(d.observedAt) }) : t("dam.noReading"),
             d.stale
               ? t("dam.stale")
@@ -415,7 +436,7 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
   };
 
   const gauge = gaugeFigures();
-  const damParts = damFigures(dam);
+  const damParts = damFigures(damsNow);
   const reportParts = reportFigures();
   const pinWords = { pin: t("pin"), unpin: t("unpin") };
 
@@ -452,7 +473,7 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
 
       <Tile
         id="dam"
-        alarm={alarm(damAlarm(dam))}
+        alarm={alarm(damsAlarm(damsNow))}
         label={dam ? localName(dam.dam.name, props.locale) : t("dam.label")}
         brief={damParts.brief}
         more={damParts.more}

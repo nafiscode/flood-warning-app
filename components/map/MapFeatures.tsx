@@ -288,7 +288,7 @@ export function MapFeatureChips({
                 </li>
               ))}
             </ul>
-            {after && <div className="flex max-sm:hidden">{after}</div>}
+            {after && <div className="flex flex-col gap-2 max-sm:hidden">{after}</div>}
           </div>
         </div>
       )}

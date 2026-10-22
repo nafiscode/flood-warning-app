@@ -793,6 +793,68 @@
 }
 
 /*
+ * The five readouts beside the map while it fills the screen (the owner, 23 Oct 2026: "when open
+ * the Full screen map, also bring the 5 cards that show live monitoring to be on Right side of
+ * the map, align vertically").
+ *
+ * A laptop only, and deliberately: the two columns above already take 21rem from the left, and a
+ * tablet held sideways is 1,024-1,180 px wide, so a third column of readouts would leave the map
+ * about 350 px - less than it had before full screen was pressed. The same arithmetic that made
+ * the tablet two columns rather than three on 21 Oct.
+ *
+ * The rule below re-shows what the full-screen block hides ("nothing but the map and the
+ * pickers"): same specificity, later in the file, so this is the one that counts. It is written
+ * as an exception here rather than as another name in that block's list, because that list is
+ * shared with the tablet.
+ *
+ * And here the cards are simply open. There is a column's height to spend and no reason to make
+ * somebody hover over a map to read a figure; the hover trick exists on the dashboard only to
+ * keep the strip short, and it is the map that is short of room there, not this column.
+ */
+@media (min-width: 1280px) and (pointer: fine) {
+  [data-map-full] {
+    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr) minmax(0, 20rem);
+  }
+  [data-map-full] [data-console-tiles] {
+    display: grid;
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 0.75rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* Open, every one of them: the figure, what it is counted from, and the time it was read. */
+  [data-map-full] [data-console-tile] [data-tile-brief] {
+    display: flex;
+    max-height: none;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+  }
+  [data-map-full] [data-console-tile] [data-tile-more] {
+    display: flex;
+  }
+  [data-map-full] [data-console-tile] [data-console-label] {
+    overflow: visible;
+    white-space: normal;
+  }
+  /*
+   * So nothing moves under the pointer: an open card has nothing left to open, and lifting it
+   * out of the flow here would only slide it over the card beneath it.
+   */
+  [data-map-full] [data-console-tile]:hover [data-tile-card],
+  [data-map-full] [data-console-tile]:focus-within [data-tile-card] {
+    position: static;
+    box-shadow: none;
+  }
+  /* The card a press opens still floats over the map, and must stay above the readouts. */
+  [data-map-full] [data-selected-panel] {
+    z-index: 31;
+  }
+}
+
+/*
  * The same console on a tablet held sideways (the owner, 21 Oct 2026, having chosen option B
  * after seeing the measurements: "Go with B").
  *

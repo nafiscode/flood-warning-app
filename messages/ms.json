@@ -733,7 +733,12 @@
         "noReading": "Tiada masa bacaan",
         "stale": "belum dikemas kini",
         "open": "Lihat maklumat {dam}",
-        "openMany": "Lihat {count} empangan yang perlu dipantau pada peta"
+        "openMany": "Lihat {count} empangan yang perlu dipantau pada peta",
+        "spilling": "{count} melimpah melalui alur limpah",
+        "aboveNormal": "{count} melepasi paras takungan biasa",
+        "allNormal": "Semua empangan dalam paras biasa",
+        "counted": "daripada {count} empangan",
+        "situation": "Lihat keadaan semua empangan"
       },
       "reports": {
         "label": "Laporan penduduk",
@@ -771,6 +776,10 @@
       "next": "Seterusnya",
       "gauges": "Pilih stesen paras air lain",
       "dams": "Pilih empangan lain"
+    },
+    "join": {
+      "title": "Tetapkan sekali, Jaga boleh bantu anda lebih",
+      "sub": "Percuma, kurang seminit"
     }
   },
   "attribution": {

@@ -23,6 +23,7 @@ import { HOUSE } from "@/lib/place-icons";
 import {
   BackIcon,
   CrossIcon,
+  DropIcon,
   FullScreenIcon,
   HouseIcon,
   LayersIcon,
@@ -96,8 +97,8 @@ import {
 import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
-import { SignInHint } from "@/components/account/SignInOffer";
-import { UnitWayLine } from "@/components/authority/UnitWay";
+import { InstallCard } from "@/components/InstallCard";
+import { MapJoin } from "@/components/map/MapJoin";
 import { CardSteps } from "./CardSteps";
 import { MapMethod } from "./MapMethod";
 import {
@@ -829,7 +830,7 @@ export function DashboardView(props: DashboardViewProps) {
     ...(mine.length === 0 && props.area ? [{ lat: props.area.lat, lon: props.area.lon }] : []),
   ];
   const gaugeOrder = gaugeRun(data?.gauges ?? [], myPoints);
-  const damOrder = damRun(dams, mainDam(dams)?.code ?? null);
+  const damOrder = damRun(dams);
   /*
    * Opening one or more reservoirs: the card with the first one's figures, the map framed on
    * every lake being pointed at - closer than the dam's own view, and with the water in the
@@ -1831,8 +1832,14 @@ export function DashboardView(props: DashboardViewProps) {
                    * The band opens under the whole dashboard, which is below the fold on every
                    * screen, so opening it without going to it looks as though nothing happened -
                    * the same trap the reservoir's own card fell into on 14 Oct.
+                   *
+                   * The readouts stand beside the map in full screen since 23 Oct, and the band
+                   * is not drawn there at all: so this leaves full screen on the way, rather
+                   * than being a button that does nothing (which is how the owner found this
+                   * same card on 21 Oct).
                    */
                   if (!monitoringOpen) {
+                    setFull(false);
                     reveal(() => document.getElementById("monitoring-detail-console"));
                   }
                   setMonitoringOpen((was) => !was);
@@ -1889,20 +1896,51 @@ export function DashboardView(props: DashboardViewProps) {
                   on={featuresOn}
                   onToggle={toggleFeature}
                   after={
-                    showSea ? (
-                      <button
-                        type="button"
-                        data-open-sea="true"
-                        onClick={() => {
-                          openSea(nearestCoast(props.area));
-                          revealPanel();
-                        }}
-                        className={`${buttonQuiet} justify-between self-start text-start`}
-                      >
-                        <SeaGradeIcon grade="calm" size={24} />
-                        {tSea("open")}
-                        <span aria-hidden="true">→</span>
-                      </button>
+                    (onConsole && dams.length > 0) || showSea ? (
+                      <>
+                        {/*
+                         * How the reservoirs stand, in the rail (the owner, 23 Oct 2026: "in the
+                         * full screen map on the laptop add on the left button to see Reservoir
+                         * Situation just on top of 'see the sea and coast, for fishermen'"). Full
+                         * screen hides the readout strip, so this is the only way into the
+                         * reservoirs' figures there; it opens what the readout opens - the worst
+                         * reservoir, or the largest when all of them are normal - and the card's
+                         * own Next and Back walk through the others.
+                         *
+                         * The console's bands only: on a phone the rail is the column below the
+                         * map, where the dam legend already names every reservoir with a button.
+                         */}
+                        {onConsole && dams.length > 0 && (
+                          <button
+                            type="button"
+                            data-open-dams="true"
+                            onClick={() => {
+                              openDams();
+                              revealPanel();
+                            }}
+                            className={`${buttonQuiet} justify-between self-start text-start`}
+                          >
+                            <DropIcon size={24} />
+                            {t("console.dam.situation")}
+                            <span aria-hidden="true">→</span>
+                          </button>
+                        )}
+                        {showSea ? (
+                          <button
+                            type="button"
+                            data-open-sea="true"
+                            onClick={() => {
+                              openSea(nearestCoast(props.area));
+                              revealPanel();
+                            }}
+                            className={`${buttonQuiet} justify-between self-start text-start`}
+                          >
+                            <SeaGradeIcon grade="calm" size={24} />
+                            {tSea("open")}
+                            <span aria-hidden="true">→</span>
+                          </button>
+                        ) : null}
+                      </>
                     ) : undefined
                   }
                 />
@@ -2342,10 +2380,15 @@ export function DashboardView(props: DashboardViewProps) {
                     </p>
                   )}
                 </div>
-                {/* A visitor learns their family's places could be pinned here (the owner, 15 Oct). */}
-                {!props.me?.signedIn && <SignInHint what="mapPlaces" />}
-                {/* And a rescue team reading the map learns it can register (18 Oct). */}
-                <UnitWayLine where="map" />
+                {/*
+                 * The three things the map asks for, in a card that can be seen (the owner,
+                 * 23 Oct 2026). They were two dashed grey footnotes here: pin your places, and
+                 * teams can register. The install card below carries the steps for each kind of
+                 * device, and the row in the card above only points at it, so nothing is said
+                 * twice.
+                 */}
+                <MapJoin />
+                <InstallCard place="home" />
                 <p className={hint}>{t("tapHint")}</p>
                 {props.dataState === "unavailable" && (
                   <p role="status" className={notice}>

@@ -16,7 +16,9 @@ import {
   damAlarm,
   gaugeAlarm,
   damRun,
+  damsAlarm,
   damsLit,
+  damsTally,
   gaugeOfInterest,
   gaugeRun,
   gaugesLit,
@@ -325,6 +327,39 @@ describe("the console's arrangement", () => {
     );
   });
 
+  /*
+   * The owner, 23 Oct 2026: "when open the Full screen map, also bring the 5 cards that show
+   * live monitoring to be on Right side of the map, align vertically".
+   */
+  it("stands the readouts in a column beside the full-screen map, on a laptop only", () => {
+    // The laptop-only block: the last place that asks for a fine pointer on its own.
+    const at = css.lastIndexOf("@media (min-width: 1280px) and (pointer: fine) {");
+    expect(at).toBeGreaterThan(0);
+    const rest = css.slice(at);
+    // Its own block and no more: the tablet's is written straight after it.
+    const block = rest.slice(0, rest.indexOf("\n@media", 1));
+    // Three columns now: the pickers, the map, the readouts.
+    const columns = block.slice(block.indexOf("grid-template-columns:"));
+    expect(columns.slice(0, columns.indexOf(";"))).toBe(
+      "grid-template-columns: minmax(0, 21rem) minmax(0, 1fr) minmax(0, 20rem)",
+    );
+    const tiles = block.slice(block.indexOf("[data-map-full] [data-console-tiles] {"));
+    const rule = tiles.slice(0, tiles.indexOf("}"));
+    expect(rule).toContain("grid-column: 3");
+    expect(rule).toContain("grid-row: 1 / span 2");
+    // One card above the next, and the column scrolls rather than the map moving.
+    expect(rule).toContain("grid-template-columns: minmax(0, 1fr)");
+    expect(rule).toContain("overflow-y: auto");
+    /*
+     * It comes after the block that hides everything but the map and the pickers, because that
+     * list is shared with the tablet - where a third column would leave the map about 350 px.
+     */
+    expect(at).toBeGreaterThan(css.indexOf('> *:not([data-console-area="rail"]'));
+    expect(block).not.toContain("@media (min-width: 1024px)");
+    // And the console block it follows still ends where it did: the tablet reads it too.
+    expect(css.slice(0, at)).toContain("[data-places-toggle] {");
+  });
+
   it("keeps the readout's own controls above the cover that opens the card", () => {
     const at = css.indexOf("[data-tile-card] [data-tile-head],");
     expect(at).toBeGreaterThan(0);
@@ -519,21 +554,70 @@ describe("the run a readout opens, and the marks it lights", () => {
     expect(gaugesLit([])).toEqual([]);
   });
 
-  it("puts a spilling reservoir before a full one, and the main dam before the rest", () => {
-    const quiet = dam({ code: "quiet" });
-    const full = dam({
-      code: "full",
-      signal: { percentFull: 97 } as Dam["signal"],
-      storageMaxMcm: 100,
-      storageNormalMcm: 90,
+  /** A reservoir past the level it is normally held at, by `over` of its whole capacity. */
+  const past = (code: string, over: number, size = 100) =>
+    dam({
+      code,
+      signal: { percentFull: (0.8 + over) * 100 } as Dam["signal"],
+      storageMaxMcm: size,
+      storageNormalMcm: size * 0.8,
     });
+
+  it("puts a spilling reservoir before a full one, and the worst of each first", () => {
+    const quiet = dam({ code: "quiet" });
+    const full = past("full", 0.17);
     const spilling = dam({ code: "spilling", signal: { spilledCms: 40 } as Dam["signal"] });
     const run = damRun([quiet, full, spilling]);
     expect(run.map((d) => d.code)).toEqual(["spilling", "full", "quiet"]);
     expect(damsLit(run).map((d) => d.code)).toEqual(["spilling", "full"]);
-    // Nothing doing anything: the dam the chips and the home screen mean, and only that one.
-    const main = dam({ code: "bang_lang" });
-    expect(damsLit(damRun([quiet, main], "bang_lang")).map((d) => d.code)).toEqual(["bang_lang"]);
+    // Within each half, criticality: more water over the spillway, and further past normal.
+    const trickle = dam({ code: "trickle", signal: { spilledCms: 2 } as Dam["signal"] });
+    expect(damRun([trickle, spilling]).map((d) => d.code)).toEqual(["spilling", "trickle"]);
+    expect(damRun([past("a", 0.02), past("b", 0.12)]).map((d) => d.code)).toEqual(["b", "a"]);
     expect(damsLit([])).toEqual([]);
+  });
+
+  it("opens the largest reservoir first when all of them are normal", () => {
+    // The owner, 23 Oct 2026: "for the normal situation for all, it should bring the largest
+    // capacity first, sort by that" - not the dam the chips happen to mean.
+    const small = dam({ code: "small", storageMaxMcm: 100 });
+    const big = dam({ code: "big", storageMaxMcm: 1420 });
+    const mid = dam({ code: "mid", storageMaxMcm: 400 });
+    expect(damRun([small, big, mid]).map((d) => d.code)).toEqual(["big", "mid", "small"]);
+    // And only that one is lit, because there is nothing to point at.
+    expect(damsLit(damRun([small, big, mid])).map((d) => d.code)).toEqual(["big"]);
+  });
+
+  it("counts every reservoir for the dam readout, and blinks when any of them is doing something", () => {
+    const quiet = dam({ code: "quiet", storageMaxMcm: 1420 });
+    const spilling = dam({ code: "spilling", signal: { spilledCms: 40 } as Dam["signal"] });
+    const calm = damsTally([quiet]);
+    expect(calm).toMatchObject({ spilling: 0, aboveNormal: 0, watch: 0, total: 1, live: false });
+    expect(calm.lead?.dam.code).toBe("quiet");
+    expect(damsAlarm(calm)).toBeNull();
+
+    const busy = damsTally([quiet, spilling, past("full", 0.1)]);
+    expect(busy).toMatchObject({ spilling: 1, aboveNormal: 1, watch: 2, total: 3 });
+    // Titled by the worst, never by the biggest, while anything is happening.
+    expect(busy.lead?.dam.code).toBe("spilling");
+    expect(damsAlarm(busy)).toBe("attention");
+
+    /*
+     * The dot beside the figure is about that figure: the reservoir the card names. A dot fed by
+     * some other reservoir's clock would say "live" about a number that is a day old.
+     */
+    const sending = dam({
+      code: "sending",
+      storageMaxMcm: 2000,
+      signal: { percentFull: 40, observedAt: "2026-10-23T01:00:00Z", stale: false } as Dam["signal"],
+    });
+    expect(damsTally([quiet, sending]).live).toBe(true);
+    const stopped = dam({
+      code: "stopped",
+      storageMaxMcm: 3000,
+      signal: { percentFull: 40, observedAt: "2026-10-01T01:00:00Z", stale: true } as Dam["signal"],
+    });
+    // The biggest leads here, and its feed has stopped - whatever the others are sending.
+    expect(damsTally([stopped, sending]).live).toBe(false);
   });
 });
