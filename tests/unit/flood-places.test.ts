@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { PROVINCES } from "@/lib/coverage";
 import {
   alertsIn,
+  gaugeFacts,
+  isLiveGauge,
   isPlaceSlug,
+  orderGauges,
+  type PlaceGauge,
   PLACE_PATHS,
   PLACE_SLUGS,
   PLACES,
@@ -91,5 +95,67 @@ describe("the alerts on a place's page", () => {
     const found = alertsIn("94", alerts);
     expect(found[0]!.id).toBe("a");
     expect(found[1]!.id).toBe("c");
+  });
+});
+
+const gauge = (code: string, over: Partial<PlaceGauge> = {}): PlaceGauge => ({
+  code,
+  name: { th: code },
+  basin: null,
+  value: 3,
+  observedAt: "2026-11-20T06:00:00.000Z",
+  rise3h: 0,
+  bank: 5,
+  status: "normal",
+  ...over,
+});
+
+describe("the gauges on a place's page", () => {
+  it("count as live only while their reading is current", () => {
+    expect(isLiveGauge(gauge("a"))).toBe(true);
+    expect(isLiveGauge(gauge("b", { status: "no_recent_data" }))).toBe(false);
+    expect(isLiveGauge(gauge("c", { value: null }))).toBe(false);
+  });
+
+  it("are listed nearest the bank first, silent ones last", () => {
+    const sorted = orderGauges([
+      gauge("quiet", { status: "no_recent_data", value: null }),
+      gauge("normal"),
+      gauge("over", { status: "above_evacuate" }),
+      gauge("near", { status: "above_warning" }),
+      gauge("high-rising", { status: "above_watch", rise3h: 0.4 }),
+      gauge("high-flat", { status: "above_watch", rise3h: 0 }),
+    ]);
+    expect(sorted.map((g) => g.code)).toEqual([
+      "over",
+      "near",
+      "high-rising",
+      "high-flat",
+      "normal",
+      "quiet",
+    ]);
+  });
+
+  it("are counted without a silent gauge passing for a reporting one", () => {
+    const facts = gaugeFacts([
+      gauge("a", { status: "above_evacuate", rise3h: 0.2, observedAt: "2026-11-20T05:00:00.000Z" }),
+      gauge("b", { status: "above_warning", rise3h: -0.3 }),
+      gauge("c", { rise3h: 0.01 }),
+      gauge("d", { status: "no_recent_data", value: null, observedAt: "2026-11-19T01:00:00.000Z" }),
+    ]);
+    expect(facts).toEqual({
+      total: 4,
+      reporting: 3,
+      overBank: 1,
+      nearBank: 1,
+      // 1 cm in three hours is noise, as it is on the map; the silent gauge never rises.
+      rising: 1,
+      latest: "2026-11-20T06:00:00.000Z",
+    });
+  });
+
+  it("have no latest time when none is current", () => {
+    expect(gaugeFacts([gauge("d", { status: "no_recent_data", value: null })]).latest).toBeNull();
+    expect(gaugeFacts([]).reporting).toBe(0);
   });
 });

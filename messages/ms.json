@@ -5311,7 +5311,12 @@
       "title": "Stesen paras air di {place}",
       "lead": "Ini bacaan yang diukur, bukan amaran.",
       "none": "Jaga belum ada stesen paras air di {place}.",
-      "unavailable": "Bacaan stesen paras air tidak dapat dibaca sekarang."
+      "unavailable": "Bacaan stesen paras air tidak dapat dibaca sekarang.",
+      "facts": {
+        "over": "{count} stesen pada atau melebihi paras tebing",
+        "near": "{count} stesen hampir paras tebing",
+        "rising": "{count} stesen naik dalam 3 jam lepas"
+      }
     },
     "places": {
       "title": "Tempat selamat di {place}",
@@ -5338,6 +5343,27 @@
     },
     "inProvince": "Daerah lain di {province} yang mempunyai halaman sendiri",
     "others": "Wilayah lain yang dijaga Jaga",
-    "coverage": "Jaga menjaga empat wilayah: Patani, Yala, Narathiwat dan Songkhla. Jika anda di wilayah lain, hubungi 1784 atau 1669."
+    "coverage": "Jaga menjaga empat wilayah: Patani, Yala, Narathiwat dan Songkhla. Jika anda di wilayah lain, hubungi 1784 atau 1669.",
+    "live": {
+      "now": "Langsung · {count} stesen paras air melapor, bacaan terbaru {time}"
+    },
+    "stats": {
+      "ratio": "{count}/{total}",
+      "gauges": "stesen melapor",
+      "tambons": "mukim dijaga",
+      "places": "tempat selamat"
+    },
+    "more": {
+      "title": "Peta Jaga menunjukkan lebih banyak",
+      "lead": "Halaman ini ringkas sahaja. Peta menunjukkan gambaran penuh keempat-empat wilayah, tanpa log masuk.",
+      "items": {
+        "gauges": "Setiap stesen paras air, dengan arah naik atau turun dalam 3 jam",
+        "hazard": "Kawasan berisiko banjir mengikut tahap risiko",
+        "reports": "Laporan banjir daripada penduduk dalam 72 jam lepas",
+        "places": "Tempat selamat berhampiran anda, dengan arah ke sana dalam aplikasi peta anda",
+        "dam": "Pelepasan air Empangan Bang Lang"
+      },
+      "cta": "Lihat semuanya pada peta"
+    }
   }
 }

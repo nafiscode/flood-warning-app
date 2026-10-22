@@ -3,10 +3,31 @@ import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { DrillMark } from "@/components/alerts/DrillMark";
 import { LevelCounts } from "@/components/alerts/LevelCounts";
 import { StaleMarker } from "@/components/alerts/StaleMarker";
+import { LivePulse } from "@/components/flood/LivePulse";
+import { PlaceGaugeGlyph } from "@/components/flood/PlaceGaugeGlyph";
+import { DropIcon, MapIcon, MessageIcon, PinIcon, WaveIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
+import { gaugeLook, trendOf, type Trend } from "@/lib/gauge-marks";
+import {
+  gaugeFacts,
+  isLiveGauge,
+  orderGauges,
+  type PlaceGauge,
+  type PlaceView,
+} from "@/lib/flood-places";
+import { localName } from "@/lib/places";
 import { isStale, reasonFor, type PublicAlert } from "@/lib/public-status";
-import type { PlaceView } from "@/lib/flood-places";
-import { buttonPrimary, buttonSecondary, card, errorNotice, hint, notice } from "@/lib/ui";
+import {
+  buttonPrimary,
+  buttonQuiet,
+  buttonSecondary,
+  card,
+  errorNotice,
+  hint,
+  notice,
+  offerCard,
+} from "@/lib/ui";
+import styles from "./FloodPlace.module.css";
 
 /**
  * One place's public flood page (A10, 21 Oct 2026): what is in force here, what the rivers read,
@@ -24,6 +45,13 @@ import { buttonPrimary, buttonSecondary, card, errorNotice, hint, notice } from 
  *   - An alert carries its level, area, issuer, reason, issue time and next-update time, with a
  *     grey stale marker once that time has passed and never a lowered level (safety rule 3).
  *   - A gauge reading is a measurement, never an alert (safety rule 2), and says so in words.
+ *
+ * It is also the first page many people will ever see of Jaga (the owner, 23 Oct 2026: "where most
+ * people find Jaga by search"), so it is made to be worth staying on: a live strip and three
+ * figures at the top, every river gauge as a card with its glass, its rise or fall and its margin
+ * to the bank, the river nearest its bank first, and a plain list of what the map adds. The slow
+ * teal pulse beside a figure means the reading is current - it is on every gauge that has
+ * reported in the last six hours and on none that has not - and it never means a level.
  */
 
 const AT_BANGKOK = {
@@ -86,6 +114,116 @@ function AlertCard({ alert, now }: { alert: PublicAlert; now: number }) {
   );
 }
 
+const TREND_PATH: Record<Trend, string> = {
+  up: "M12 19V5M5 12l7-7 7 7",
+  down: "M12 5v14M5 12l7 7 7-7",
+  flat: "M5 12h14",
+};
+
+/** A rise or fall as an arrow, always beside the words that say it. Ink, never an alert colour. */
+function TrendMark({ trend }: { trend: Trend }) {
+  return (
+    <svg
+      aria-hidden="true"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0"
+      data-gauge-trend-mark={trend}
+    >
+      <path d={TREND_PATH[trend]} />
+    </svg>
+  );
+}
+
+/**
+ * One river gauge: its glass, its name, how it stands against its own levels, the reading with
+ * its time, how far from the bank it is, and whether it has risen or fallen in the last three
+ * hours. The pulse sits beside the name only while the reading is current.
+ */
+function GaugeCard({
+  gauge,
+  index,
+  dated,
+}: {
+  gauge: PlaceGauge;
+  index: number;
+  dated: (iso: string) => string;
+}) {
+  const t = useTranslations("map.gauge");
+  const locale = useLocale();
+  const look = gaugeLook(gauge.status);
+  const live = isLiveGauge(gauge);
+  const trend = trendOf(gauge.rise3h ?? null, look);
+  return (
+    <li
+      className={`${styles.rise} flex items-start gap-3 rounded-xl border border-jaga-line bg-jaga-surface px-4 py-3`}
+      style={{ "--i": index } as React.CSSProperties}
+      data-gauge-status={gauge.status}
+      data-gauge-live={live}
+    >
+      <PlaceGaugeGlyph look={look} uid={gauge.code || String(index)} />
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <p className="font-bold text-jaga-ink">{localName(gauge.name, locale) || gauge.code}</p>
+          {live ? (
+            <span className="inline-flex items-center gap-1.5 text-small font-medium text-jaga-teal-ink">
+              <LivePulse />
+              {t("live")}
+            </span>
+          ) : null}
+        </div>
+        <p className="font-medium">{t(gauge.status)}</p>
+        {gauge.value !== null ? (
+          <p className="text-small text-jaga-text-2">
+            {t("level", { value: gauge.value })}
+            {gauge.observedAt ? ` · ${t("at", { time: dated(gauge.observedAt) })}` : ""}
+          </p>
+        ) : null}
+        {live && gauge.value !== null && gauge.bank !== null ? (
+          <p className="text-small">
+            {gauge.value >= gauge.bank
+              ? t("overBank", { value: (gauge.value - gauge.bank).toFixed(2) })
+              : t("belowBank", { value: (gauge.bank - gauge.value).toFixed(2) })}
+          </p>
+        ) : null}
+        {live && gauge.rise3h != null ? (
+          <p className="flex items-center gap-1.5 text-small" data-gauge-trend={trend}>
+            <TrendMark trend={trend} />
+            {t(`rise.${trend}`, { value: Math.abs(gauge.rise3h).toFixed(2) })}
+          </p>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
+/** One of the three figures under the title. */
+function Stat({
+  value,
+  label,
+  index,
+}: {
+  value: string | number;
+  label: string;
+  index: number;
+}) {
+  return (
+    <li
+      className={`${styles.rise} flex min-w-0 flex-col gap-0.5 rounded-xl border border-jaga-line bg-jaga-surface px-3 py-3`}
+      style={{ "--i": index } as React.CSSProperties}
+    >
+      <span className="text-h2 font-bold leading-none text-jaga-ink">{value}</span>
+      <span className="text-small text-jaga-text-2">{label}</span>
+    </li>
+  );
+}
+
 type Props = {
   view: PlaceView;
   /** This place's name as the page says it: "จ.ปัตตานี", or "อ.หาดใหญ่ จ.สงขลา". */
@@ -99,9 +237,9 @@ type Props = {
 export function FloodPlace({ view, name, province, siblings }: Props) {
   const t = useTranslations("province");
   const tHome = useTranslations("home");
-  const tGauge = useTranslations("map.gauge");
   const format = useFormatter();
   const { status, alerts, tally, summary, kind } = view;
+  const facts = summary ? gaugeFacts(summary.gauges) : null;
   /** "Data as of" is at most 60 s old by construction, so the hour alone is unambiguous. */
   const clock = (iso: string) =>
     format.dateTime(new Date(iso), {
@@ -123,8 +261,33 @@ export function FloodPlace({ view, name, province, siblings }: Props) {
       <header className="flex flex-col gap-2">
         <h1 className="text-h2 font-bold text-jaga-ink">{t("title", { place: name })}</h1>
         <p className={hint}>{t("lead", { place: name })}</p>
+        {/*
+          The live strip: how many gauges are reporting, and the newest reading's time. Shown only
+          when at least one reading is current, so it can never describe a feed that has stopped.
+        */}
+        {facts && facts.reporting > 0 && facts.latest ? (
+          <p
+            className="inline-flex items-center gap-2 self-start rounded-full border border-jaga-teal-ink bg-jaga-teal-ink/10 px-3 py-1.5 text-small font-medium text-jaga-ink"
+            data-place-live="true"
+          >
+            <LivePulse />
+            {t("live.now", { count: facts.reporting, time: clock(facts.latest) })}
+          </p>
+        ) : null}
         {status ? <p className={hint}>{t("asOf", { time: clock(status.generatedAt) })}</p> : null}
       </header>
+
+      {summary ? (
+        <ul className="grid grid-cols-3 gap-2" data-place-stats="true">
+          <Stat
+            index={0}
+            value={t("stats.ratio", { count: facts?.reporting ?? 0, total: summary.gauges.length })}
+            label={t("stats.gauges")}
+          />
+          <Stat index={1} value={summary.tambons} label={t("stats.tambons")} />
+          <Stat index={2} value={summary.places.total} label={t("stats.places")} />
+        </ul>
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-h3 font-bold text-jaga-ink">{t("levels.title")}</h2>
@@ -176,25 +339,63 @@ export function FloodPlace({ view, name, province, siblings }: Props) {
         ) : summary.gauges.length === 0 ? (
           <p className={notice}>{t("gauges.none", { place: name })}</p>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {summary.gauges.map((gauge) => (
-              <li
-                key={gauge.code}
-                className="flex flex-col gap-1 rounded-xl border border-jaga-line px-4 py-3"
-                data-gauge-status={gauge.status}
-              >
-                <p className="font-medium text-jaga-ink">{gauge.name.th ?? gauge.code}</p>
-                <p className="text-small">{tGauge(gauge.status)}</p>
-                {gauge.value !== null ? (
-                  <p className="text-small text-jaga-text-2">
-                    {tGauge("level", { value: gauge.value })}
-                    {gauge.observedAt ? ` · ${tGauge("at", { time: dated(gauge.observedAt) })}` : ""}
-                  </p>
+          <>
+            {/* Only what is above zero is said: a zero here would read as calm (safety rule 10). */}
+            {facts && (facts.overBank > 0 || facts.nearBank > 0 || facts.rising > 0) ? (
+              <ul className="flex flex-wrap gap-2" data-gauge-facts="true">
+                {facts.overBank > 0 ? (
+                  <li className="rounded-full border-2 border-jaga-edge px-3 py-1 text-small font-medium text-jaga-ink">
+                    {t("gauges.facts.over", { count: facts.overBank })}
+                  </li>
                 ) : null}
-              </li>
-            ))}
-          </ul>
+                {facts.nearBank > 0 ? (
+                  <li className="rounded-full border-2 border-jaga-edge px-3 py-1 text-small font-medium text-jaga-ink">
+                    {t("gauges.facts.near", { count: facts.nearBank })}
+                  </li>
+                ) : null}
+                {facts.rising > 0 ? (
+                  <li className="rounded-full border border-jaga-line px-3 py-1 text-small text-jaga-ink">
+                    {t("gauges.facts.rising", { count: facts.rising })}
+                  </li>
+                ) : null}
+              </ul>
+            ) : null}
+            <ul className="flex flex-col gap-2">
+              {orderGauges(summary.gauges).map((gauge, index) => (
+                <GaugeCard key={gauge.code} gauge={gauge} index={index} dated={dated} />
+              ))}
+            </ul>
+          </>
         )}
+      </section>
+
+      {/*
+        What the map adds. Each line is something the map really draws, in plain words, so a person
+        who came for one number learns there is more and has one obvious thing to press.
+      */}
+      <section className={offerCard} data-place-more="true">
+        <h2 className="text-h3 font-bold text-jaga-ink">{t("more.title")}</h2>
+        <p className={hint}>{t("more.lead")}</p>
+        <ul className="flex flex-col gap-2">
+          {(
+            [
+              [WaveIcon, "gauges"],
+              [MapIcon, "hazard"],
+              [MessageIcon, "reports"],
+              [PinIcon, "places"],
+              [DropIcon, "dam"],
+            ] as const
+          ).map(([Icon, key]) => (
+            <li key={key} className="flex items-start gap-3">
+              <Icon size={22} className="mt-0.5 shrink-0 text-jaga-teal-ink" />
+              <span>{t(`more.items.${key}`)}</span>
+            </li>
+          ))}
+        </ul>
+        <Link href="/map" prefetch={false} className={`${buttonQuiet} justify-center`}>
+          <MapIcon size={22} />
+          {t("more.cta")}
+        </Link>
       </section>
 
       {/*

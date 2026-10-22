@@ -5311,7 +5311,12 @@
       "title": "River gauges in {place}",
       "lead": "These are measured readings, not an alert.",
       "none": "Jaga has no river gauge in {place} yet.",
-      "unavailable": "The river gauge readings cannot be read right now."
+      "unavailable": "The river gauge readings cannot be read right now.",
+      "facts": {
+        "over": "{count, plural, one {# gauge} other {# gauges}} at or over the bank",
+        "near": "{count, plural, one {# gauge} other {# gauges}} close to the bank",
+        "rising": "{count, plural, one {# gauge} other {# gauges}} rising in the last 3 hours"
+      }
     },
     "places": {
       "title": "Safe places in {place}",
@@ -5338,6 +5343,27 @@
     },
     "inProvince": "Other districts in {province} with a page of their own",
     "others": "The other provinces Jaga covers",
-    "coverage": "Jaga covers four provinces: Pattani, Yala, Narathiwat and Songkhla. If you are in another province, call 1784 or 1669."
+    "coverage": "Jaga covers four provinces: Pattani, Yala, Narathiwat and Songkhla. If you are in another province, call 1784 or 1669.",
+    "live": {
+      "now": "Live · {count, plural, one {# river gauge is} other {# river gauges are}} reporting, newest reading {time}"
+    },
+    "stats": {
+      "ratio": "{count}/{total}",
+      "gauges": "gauges reporting",
+      "tambons": "tambons covered",
+      "places": "safe places"
+    },
+    "more": {
+      "title": "Jaga's map shows more",
+      "lead": "This page is a short summary. The map shows all four provinces in full, with no sign-in.",
+      "items": {
+        "gauges": "Every river gauge, with whether it rose or fell in 3 hours",
+        "hazard": "Flood-prone areas by level of risk",
+        "reports": "Flood reports from residents in the last 72 hours",
+        "places": "Safe places near you, with directions in your own map app",
+        "dam": "The Bang Lang dam's releases"
+      },
+      "cta": "See it all on the map"
+    }
   }
 }

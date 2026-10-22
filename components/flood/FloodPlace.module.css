@@ -1,0 +1,54 @@
+/* The place page's small movements. Every one of them stops for someone who asked for less motion,
+   and none of them is needed to read the page: the words say everything the movement hints at. */
+
+/* A card settles into place as the page opens, one after another. `backwards` keeps it visible if
+   the animation never runs. */
+.rise {
+  animation: rise 0.5s ease-out backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* "Live": the slow teal pulse the map's chips wear, with a ring that opens and fades behind it. */
+.beat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: beat 2.4s ease-in-out infinite;
+}
+.ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring 2.4s ease-out infinite;
+}
+@keyframes beat {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+@keyframes ring {
+  from {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .beat,
+  .ring {
+    animation: none;
+  }
+  .ring {
+    opacity: 0;
+  }
+}

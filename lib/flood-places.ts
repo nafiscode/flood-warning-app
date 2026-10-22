@@ -1,5 +1,6 @@
 import { inService } from "@/lib/features";
 import { levelTally, type LevelTally } from "@/lib/map-console";
+import { gaugeLook, trendOf, type GaugeLook } from "@/lib/gauge-marks";
 import { GAUGE_STATUSES, type Gauge } from "@/lib/map-data";
 import { toPublicAlert, type PublicAlert, type PublicStatus } from "@/lib/public-status";
 import { supabaseConfigured } from "@/lib/supabase/env";
@@ -129,6 +130,69 @@ function toSummary(value: unknown): PlaceSummary | null {
     gauges: (row.gauges as Record<string, unknown>[]).map(toGauge),
     tambonList: Array.isArray(row.tambonList) ? (row.tambonList as PlaceTambon[]) : null,
     places: { total: count(places.total), verified: count(places.verified) },
+  };
+}
+
+/**
+ * Whether a gauge's reading is current. Only a current reading may carry the live pulse: a dot
+ * that beats beside a feed that has stopped says "live" about figures that are not (the owner's
+ * own rule for the console's pulse, 20 Oct 2026).
+ */
+export function isLiveGauge(gauge: Pick<PlaceGauge, "status" | "value">): boolean {
+  return gauge.status !== "no_recent_data" && gauge.value !== null;
+}
+
+/** Closest to its bank first. */
+const LOOK_RANK: Record<GaugeLook, number> = {
+  over: 0,
+  near: 1,
+  high: 2,
+  normal: 3,
+  nolevels: 4,
+  quiet: 5,
+};
+
+/**
+ * The gauges in the order a reader needs them: the river nearest its bank first, then the ones
+ * rising fastest, and the silent ones last. A new array; the input is left as it is.
+ */
+export function orderGauges<T extends Pick<PlaceGauge, "status" | "rise3h" | "code">>(
+  gauges: readonly T[],
+): T[] {
+  return [...gauges].sort(
+    (a, b) =>
+      LOOK_RANK[gaugeLook(a.status)] - LOOK_RANK[gaugeLook(b.status)] ||
+      (b.rise3h ?? 0) - (a.rise3h ?? 0) ||
+      a.code.localeCompare(b.code),
+  );
+}
+
+/**
+ * What the gauges say in a few numbers, for the strip at the top of a page. All of it is a
+ * measurement; none of it is a level (safety rule 2), and a count of zero is never worded as calm
+ * (the page prints a count only when it is above zero).
+ */
+export type GaugeFacts = {
+  total: number;
+  reporting: number;
+  overBank: number;
+  nearBank: number;
+  rising: number;
+  /** The newest reading's time, ISO; null when nothing is current. */
+  latest: string | null;
+};
+
+export function gaugeFacts(gauges: readonly PlaceGauge[]): GaugeFacts {
+  const live = gauges.filter(isLiveGauge);
+  const looks = live.map((g) => gaugeLook(g.status));
+  const times = live.flatMap((g) => (g.observedAt ? [g.observedAt] : []));
+  return {
+    total: gauges.length,
+    reporting: live.length,
+    overBank: looks.filter((look) => look === "over").length,
+    nearBank: looks.filter((look) => look === "near").length,
+    rising: live.filter((g) => trendOf(g.rise3h ?? null, gaugeLook(g.status)) === "up").length,
+    latest: times.length ? times.reduce((a, b) => (Date.parse(a) >= Date.parse(b) ? a : b)) : null,
   };
 }
 
