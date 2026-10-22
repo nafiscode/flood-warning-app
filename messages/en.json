@@ -222,7 +222,7 @@
     "phoneHint": "Without a number, rescuers can't call you.",
     "location": {
       "locating": "Finding your location…",
-      "found": "Location found (about {meters} m)",
+      "found": "Location found (accurate to about {meters} m)",
       "failed": "Couldn't find your location. Drop a pin on the map, or type a place.",
       "useMap": "Drop a pin on the map",
       "hideMap": "Hide the map",
@@ -246,7 +246,7 @@
       "body": "Your request has reached Jaga. We are looking for a rescue team covering your area, and Jaga's admins can see it too. Follow it on this page.",
       "merged": "This was added to your request that is still open, with your latest details.",
       "queuedTitle": "Not sent yet, still trying",
-      "queuedBody": "There is no connection. Your request is kept on this device and goes out as soon as there is signal. Keep the app open. If it is urgent, call or send an SMS below.",
+      "queuedBody": "There is no internet signal. Your request is kept on this device and will be sent as soon as there is signal. Do not close the app. If it is urgent, call or send an SMS with the buttons below.",
       "failedTitle": "The request couldn't be sent",
       "failedBody": "Call for help on the numbers below now.",
       "retry": "Try again",
@@ -262,7 +262,7 @@
       "rescued": "Rescued",
       "safe_cancelled": "You said you are safe",
       "dismissed": "This request was closed",
-      "waiting": "Your request has reached the rescuers. Please wait for them to respond.",
+      "waiting": "Rescuers can see your request. Please wait for them to respond.",
       "repeat_merged": "A repeat request was added to this case",
       "details_added": "Details added",
       "unit": "Unit responsible: {unit}",
@@ -275,7 +275,7 @@
       "safeConfirm": "Confirm that you are safe and no longer need help.",
       "rescuedNow": "Confirm I was rescued",
       "closing": "Saving…",
-      "closed": "The request is closed. If you need help again, send a new SOS.",
+      "closed": "The request is closed. If you need help again, you can send a new SOS right away.",
       "openCase": "You have a request that is still open.",
       "openCaseLink": "See the status of your request",
       "on_site": "The team has arrived",
@@ -334,7 +334,7 @@
       "searching": "Looking for a team",
       "searchingBody": "No team has accepted your request yet. It is being offered to the teams in your area, one after another.",
       "exhausted": "No team has accepted yet",
-      "exhaustedBody": "The teams in your area have not accepted this request. It is now with Jaga's admins, and any team in your area can still accept it.",
+      "exhaustedBody": "No team in your area has accepted this request yet. It has reached Jaga's admins, and teams in your area can still accept it at any time.",
       "waited": "Waiting {minutes} min",
       "callNow": "If it is urgent, call now. Don't wait.",
       "accepted": "A team has accepted your request",
@@ -366,7 +366,7 @@
     "needs": {
       "water": "Drinking water",
       "food": "Food",
-      "baby": "Baby items (milk, nappies)",
+      "baby": "Baby items (powdered milk, nappies)",
       "medicine": "Medicine",
       "clothes": "Clothes, blankets",
       "hygiene": "Hygiene items (sanitary pads, soap)",
@@ -389,14 +389,14 @@
       "left": {
         "none": "Nothing left",
         "today": "Enough for today",
-        "days": "Enough for a few days"
+        "days": "Enough for 2–3 more days"
       },
       "noteLabel": "More detail (optional)",
       "noteHint": "For example clothes sizes, a child's age, the name of a medicine, or how to reach the house.",
       "medicineHint": "If someone needs medicine urgently, call 1669 or send an SOS.",
       "scope": "Jaga passes your request only to verified teams. Jaga itself holds no goods and collects no donations. Delivery depends on the teams in your area and may take time.",
       "soonTitle": "Requests for food and water aren't open yet",
-      "sentBody": "Your request has been received. Keep this page to see when a team accepts it.",
+      "sentBody": "Your request has been received. Keep this page open to see which team accepts it.",
       "statusTitle": "Your request for food and water",
       "asked": "What you asked for",
       "closed": "This request is closed. If you need more, send a new request.",
@@ -408,7 +408,7 @@
         "on_site": "The team has arrived",
         "rescued": "Supplies received",
         "rescued_by_team": "The team says it has delivered your supplies",
-        "confirmed": "The delivery was confirmed",
+        "confirmed": "Receipt of the goods confirmed",
         "safe_cancelled": "You said you no longer need this",
         "not_rescued": "You said nothing has arrived",
         "released": "The team couldn't continue. Looking for another team."
@@ -419,7 +419,7 @@
         "body": "Is that right? Please confirm, so this request can be closed.",
         "yes": "Yes, I received them",
         "no": "No, nothing has arrived",
-        "noHint": "If you say no, your request goes straight back to looking for a team."
+        "noHint": "If you say no, your request goes straight back to finding a new team."
       },
       "escalate": {
         "button": "It got worse: I need rescue",
@@ -1525,7 +1525,7 @@
       "left": {
         "none": "Nothing left",
         "today": "Enough for today",
-        "days": "Enough for a few days"
+        "days": "Enough for 2–3 more days"
       },
       "note": "Detail: {text}",
       "status": {
@@ -3361,7 +3361,7 @@
         "dismissed": "This request was closed"
       },
       "wait": {
-        "accepted": "Looking for a team. Your request has reached the rescuers; please wait for them to respond. If life is in danger, call 1669 or 1784.",
+        "accepted": "Looking for a team. Rescuers can see your request; please wait for them to respond. If life is in danger, call 1669 or 1784.",
         "en_route": "The team has accepted and is getting ready to set out.",
         "on_site": "The team is on its way to you.",
         "finished": "The team is with you.",
