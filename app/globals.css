@@ -669,15 +669,20 @@
     grid-column: 2;
     grid-row: 1 / span 2;
   }
-  /* In the rail: the way back, and the switches for the map's own layers. */
-  [data-map-full] [data-console-area="rail"] > *:not([data-map-fulltools], [data-map-features]) {
+  /* In the rail: the way back, the switches for the map's own layers, and what the satellite saw
+     - which joined them in the rail on 22 Oct and has to be named here too, because this is a
+     list of what is kept and not a list of what goes. */
+  [data-map-full]
+    [data-console-area="rail"]
+    > *:not([data-map-fulltools], [data-map-features], [data-satellite]) {
     display: none;
   }
   [data-map-full] [data-map-fulltools] {
     display: flex;
   }
-  /* In the side: the satellite's flood and the safe places, which the owner asked to come over to
-     the left; the basemap goes onto the map itself, and the rest is dashboard. */
+  /* In the side: the safe places and the reader's own pins, which the owner asked to come over to
+     the left; the basemap goes onto the map itself, and the rest is dashboard. (What the
+     satellite saw used to be here as well; it is in the rail above since 22 Oct.) */
   [data-map-full] [data-console-area="side"] > *:not([data-map-layers], [data-selected-panel]) {
     display: none;
   }
@@ -745,6 +750,22 @@
   /* The frozen copy of the chip row is a phone's answer to a long page; the console's rail keeps
      the real one in view, so the copy would only cover the map. */
   [data-map-chips-float] {
+    display: none;
+  }
+  /*
+   * "Show safe places" is written twice: once as a chip in the left rail ("choose what to see on
+   * the map") and once as a switch in the right-hand panel. They are the same switch - both set
+   * the same `showPlaces` - and where there are two rails the reader can see both at once, which
+   * is simply the same control asked for twice (the owner, 22 Oct 2026: "no need to have Show
+   * safe places again on the right panel, it's already on the left layers panel").
+   *
+   * The chip is the one that stays, so this is the console's copy going. `display: none` and not
+   * a hidden class on purpose: it takes the duplicate out of the tab order and out of what a
+   * screen reader reads, which is the point - a keyboard met the same switch twice too. The
+   * legend under it, what a square with a house and a square with a P mean, is not a duplicate
+   * and stays. A phone has one column and meets them one after another, so it is left alone.
+   */
+  [data-places-toggle] {
     display: none;
   }
 }

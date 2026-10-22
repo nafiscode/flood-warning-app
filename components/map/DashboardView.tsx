@@ -32,7 +32,7 @@ import {
 } from "@/components/icons";
 import { BackToMap } from "@/components/map/BackToMap";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
-import { useConsoleView } from "@/lib/console-view";
+import { LAPTOP_QUERY, useConsoleView } from "@/lib/console-view";
 import {
   areaName,
   pickName,
@@ -1175,6 +1175,29 @@ export function DashboardView(props: DashboardViewProps) {
       setFlashSatellite((was) => was + 1);
     }
   }
+  /*
+   * ...and the reader is brought to the map, unless they are already looking at it (the owner,
+   * 22 Oct 2026, asking for the switch to move to the left: "it should bring the view to the map
+   * for ipad").
+   *
+   * Only on a laptop is the switch beside the map: there the rail is the left-hand column and
+   * both are on the screen together, so moving the window would be moving it for nothing. On a
+   * tablet held sideways the rail is a full-width row **under** the map, and on a phone the
+   * switch is among the explainers under it - so on both of those the map travels to the
+   * hexagons and blinks three times somewhere the reader cannot see, which is the very thing the
+   * travelling was added to prevent. The scroll is in an effect rather than in the render above
+   * because it reads the laid-out page.
+   */
+  useEffect(() => {
+    if (!flashSatellite) return;
+    // Guarded the way lib/console-view guards it: jsdom has no matchMedia, and where the bands
+    // cannot be told apart there is no laid-out page to scroll either.
+    if (!window.matchMedia || window.matchMedia(LAPTOP_QUERY).matches) return;
+    reveal(() => document.querySelector<HTMLElement>("[data-map-frame]"), {
+      mark: false,
+      focus: false,
+    });
+  }, [flashSatellite]);
 
   /*
    * "Back to the start" (the owner, 20 Oct 2026): the view the map opens on, and everything that
@@ -1839,6 +1862,31 @@ export function DashboardView(props: DashboardViewProps) {
                     {t("full.home")}
                   </Link>
                 </div>
+                {/*
+                 * What the satellite saw, with the other switches for what is drawn on the map
+                 * (the owner, 22 Oct 2026: bring it to the left). It was in the right-hand panel,
+                 * a column away from the six chips that do the same kind of thing.
+                 *
+                 * It goes **above** the chips, not below them, and that was measured: the chips
+                 * are 477 px of a rail that is 324 px tall on a 900 px laptop screen, so put
+                 * after them this switch sat at y=960 - off the bottom of the window, in a rail
+                 * the reader would have to scroll to find it in. It was the first thing in the
+                 * right-hand panel before, and it is the first thing in this one now.
+                 *
+                 * On a phone nothing moves: the phone band gives every explainer below the map
+                 * `order: 4`, and this was one of `[data-map-layers]`'s children before and is a
+                 * child of the rail now - both catch that same rule, so it sits exactly where it
+                 * sat, below the map and not folded behind the layers pill.
+                 */}
+                {props.onSatelliteDays && (
+                  <SatelliteFloodPanel
+                    days={props.satelliteDays ?? null}
+                    onDays={onSatelliteDays}
+                    flood={props.satellite ?? null}
+                    load={props.satelliteLoad ?? "loading"}
+                    dark={nightMap}
+                  />
+                )}
                 {/* The sea's own report, for fishermen, right under the chips while the sea is
                     shown (the owner, 15 Oct: the switches under the map are gone, the chips do
                     that). */}
@@ -2242,20 +2290,14 @@ export function DashboardView(props: DashboardViewProps) {
                   )}
                 </fieldset>
                 {/*
-                 * What is drawn on the map: the satellite's flood and the safe places (the owner,
+                 * What is drawn on the map: the safe places and the reader's own pins (the owner,
                  * 18 Oct, so that the full-screen panel can hold them with the other layer
                  * pickers). `contents` means this wrapper is nothing at all until then.
+                 *
+                 * What the satellite saw used to be here too. It moved to the left rail on
+                 * 22 Oct, where the other "what to draw on the map" switches are.
                  */}
                 <div className="contents" data-map-layers="true">
-                  {props.onSatelliteDays && (
-                    <SatelliteFloodPanel
-                      days={props.satelliteDays ?? null}
-                      onDays={onSatelliteDays}
-                      flood={props.satellite ?? null}
-                      load={props.satelliteLoad ?? "loading"}
-                      dark={nightMap}
-                    />
-                  )}
                   {placesOnOffer && (
                     <label
                       data-places-toggle="true"
@@ -2271,7 +2313,15 @@ export function DashboardView(props: DashboardViewProps) {
                       <span>{t("places.toggle", { count: data ? data.places.length : 0 })}</span>
                     </label>
                   )}
-                  {showPlaces && placesOnOffer && <p className={hint}>{t("places.hint")}</p>}
+                  {/* The legend for the two pin shapes. It stays here when the switch above it
+                      does not (the console hides that one - the chip in the left rail is the one
+                      control), because what a square with a house means is a legend, and the
+                      legend is what this panel is for. */}
+                  {showPlaces && placesOnOffer && (
+                    <p className={hint} data-places-hint="true">
+                      {t("places.hint")}
+                    </p>
+                  )}
                   {mine.length > 0 && (
                     <label className={checkRow} data-mine-toggle="true">
                       <input
