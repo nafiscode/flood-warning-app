@@ -463,7 +463,18 @@ describe("the roads an alert travels", () => {
     expect(await inPublicStatus(id)).toBe(1);
   });
 
-  it("defaults to both, and refuses a road that is not one", async () => {
+  it("leaves LINE out unless it is ticked (owner, 22 Oct: no paid LINE plan for now)", async () => {
+    await asOwner(db);
+    const [c] = await rows<{ d: string }>(
+      db,
+      `select column_default as d from information_schema.columns
+        where table_schema = 'public' and table_name = 'alerts' and column_name = 'channels'`,
+    );
+    expect(c!.d).toContain("push");
+    expect(c!.d).not.toContain("line");
+  });
+
+  it("keeps both roads when both are ticked, and refuses a road that is not one", async () => {
     await as(db, { uid: w.admin });
     const id = await publish([w.yala1], { drill: false });
     await asOwner(db);

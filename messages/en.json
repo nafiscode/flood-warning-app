@@ -2945,7 +2945,7 @@
         "push": "Phone notifications",
         "pushHint": "Free, and reaches every phone that turned notifications on.",
         "line": "LINE",
-        "lineHint": "Counts against this month's LINE quota. Leave it out so a drill does not spend it.",
+        "lineHint": "Off unless ticked. Counts against this month's LINE quota (500 messages on the free plan; one message per person).",
         "none": "No road ticked. The alert still stands in the app, on the map and in the bell, but no notification leaves."
       }
     },

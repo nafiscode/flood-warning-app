@@ -2945,7 +2945,7 @@
         "push": "Pemberitahuan telefon",
         "pushHint": "Percuma; sampai kepada telefon yang menghidupkan pemberitahuan.",
         "line": "LINE",
-        "lineHint": "Dikira dalam kuota mesej LINE bulan ini. Boleh ditinggalkan supaya latihan tidak membelanjakannya.",
+        "lineHint": "Tidak dihantar kecuali ditanda. Dikira dalam kuota mesej LINE bulan ini (500 mesej dalam pelan percuma; satu mesej setiap orang).",
         "none": "Tiada saluran dipilih. Amaran tetap ada dalam aplikasi, di peta dan di loceng, tetapi tiada pemberitahuan dihantar."
       }
     },

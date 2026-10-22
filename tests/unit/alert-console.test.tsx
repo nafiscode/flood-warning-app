@@ -190,6 +190,12 @@ describe("the review step", () => {
     expect(container.querySelector("[data-drill='true']")).not.toBeNull();
     expect(container.querySelector("[data-publish]")!.textContent).toBe("Save as a drill");
     expect(container.querySelector("[data-review-overlaps='1']")).not.toBeNull();
+    // LINE is off until ticked (owner, 22 Oct), so no quota is spent and none is reported.
+    expect(container.textContent).not.toContain("201 of 200");
+    fireEvent.click(container.querySelector("input[name='modeChoice'][value='real']")!);
+    expect(container.querySelector("[data-channels]")!.getAttribute("data-channels")).toBe("push");
+    expect(container.textContent).not.toContain("201 of 200");
+    fireEvent.click(container.querySelector("input[name='channels'][value='line']")!);
     expect(container.textContent).toContain("201 of 200");
   });
 

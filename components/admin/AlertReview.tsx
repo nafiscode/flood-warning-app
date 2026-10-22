@@ -24,6 +24,9 @@ type State =
 
 const LOCALES = ["th", "ms", "en"] as const;
 
+/** Read when the admin presses review, never while rendering. */
+const hoursFromNow = (hours: number) => new Date(Date.now() + hours * 3_600_000).toISOString();
+
 /**
  * The step between filling the form and publishing (spec 6.2). It asks the server for the words
  * exactly as they would be sent and for who they would reach, and only then offers the publish
@@ -48,11 +51,11 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
   const [chosen, setChosen] = useState<Mode>("drill");
   const [audience, setAudience] = useState<DrillAudience[]>([]);
   /*
-   * Which roads it travels (the owner, 21 Oct). Both to begin with, for a drill as much as for
-   * a real alert: a drill that leaves LINE out is not a test of LINE. Unticking LINE is how an
-   * admin keeps a drill from spending the month's quota.
+   * Which roads it travels (the owner, 21 Oct). Push only to begin with (the owner, 22 Oct: no
+   * paid LINE plan for now, and the free one is 500 messages a month). Ticking LINE is how an
+   * admin chooses to spend the month's quota on this one alert.
    */
-  const [channels, setChannels] = useState<AlertChannel[]>([...ALERT_CHANNELS]);
+  const [channels, setChannels] = useState<AlertChannel[]>(["push"]);
 
   useEffect(() => {
     const form = root.current?.closest("form");
@@ -108,7 +111,7 @@ export function AlertReview({ fixedMode }: { fixedMode?: "drill" | "real" }) {
         kind: "ready",
         preview,
         launched: body.launched === true,
-        nextUpdateAt: new Date(Date.now() + hours * 3_600_000).toISOString(),
+        nextUpdateAt: hoursFromNow(hours),
       });
     } catch {
       setState({ kind: "error", error: "unavailable" });
