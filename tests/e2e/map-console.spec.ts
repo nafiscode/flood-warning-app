@@ -438,10 +438,31 @@ test.describe("the live map on a laptop", () => {
     await page.locator('[data-map-full-toggle="open"]').click();
     await expect(page.locator("[data-map-full]")).toHaveCount(1);
 
-    // The dashboard goes: no readouts, no weather bar, no legend.
-    await expect(page.locator("[data-console-tiles]")).toBeHidden();
+    // The dashboard goes: no weather bar, no legend.
     await expect(page.locator("[data-console-sky]")).toBeHidden();
     await expect(page.locator("[data-legend]")).toBeHidden();
+
+    /*
+     * The five readouts stay, in a column on the right (the owner, 23 Oct 2026: "also bring the
+     * 5 cards that show live monitoring to be on Right side of the map, align vertically"). The
+     * strip used to go with the rest of the dashboard, and then the reservoirs' and the rivers'
+     * figures could not be reached in full screen at all.
+     */
+    await expect(page.locator("[data-console-tiles]")).toBeVisible();
+    const cards = page.locator("[data-console-tile] [data-tile-card]");
+    await expect(cards).toHaveCount(5);
+    const boxes = [];
+    for (let i = 0; i < 5; i += 1) boxes.push((await cards.nth(i).boundingBox())!);
+    const mapBox = (await page.locator("[data-map-frame]").boundingBox())!;
+    for (const box of boxes) expect(box.x).toBeGreaterThanOrEqual(mapBox.x + mapBox.width - 1);
+    // One above the next, all in the same column: a ladder, not a row.
+    expect(new Set(boxes.map((b) => Math.round(b.x))).size).toBe(1);
+    const tops = boxes.map((b) => Math.round(b.y));
+    expect([...tops].sort((a, b) => a - b)).toEqual(tops);
+    // And open, not folded: the dam card says how all the reservoirs stand without being hovered.
+    await expect(
+      page.locator('[data-console-tile="dam"] [data-tile-more]').first(),
+    ).toBeVisible();
 
     // What is left beside the map is what decides what the map draws - including the two the
     // owner asked to bring over, the satellite's flood and the safe places.
