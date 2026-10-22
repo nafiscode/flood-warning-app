@@ -885,6 +885,37 @@
       "drill": "This is a drill; the public does not see it.",
       "act": "Go to signals",
       "see": "See the history"
+    },
+    "queue": {
+      "act": "Go and deal with it",
+      "units": {
+        "title": "Teams waiting to be verified",
+        "body": "{count, plural, one {# team has registered and is waiting to be verified} other {# teams have registered and are waiting to be verified}}"
+      },
+      "reports": {
+        "title": "Flood reports waiting to be checked",
+        "body": "{count, plural, one {# resident's report is waiting to be checked before anyone sees it} other {# residents' reports are waiting to be checked before anyone sees them}}"
+      },
+      "damNotice": {
+        "title": "A dam has reported a release",
+        "body": "{count, plural, one {# notice has been raised and sent to nobody. It is waiting for you to read it and decide} other {# notices have been raised and sent to nobody. They are waiting for you to read them and decide}}"
+      },
+      "spam": {
+        "title": "Requests flagged as suspected",
+        "body": "{count, plural, one {# request is flagged as possible nuisance. It was delivered like any other; it is the flag that waits for you} other {# requests are flagged as possible nuisance. They were delivered like any other; it is the flags that wait for you}}"
+      },
+      "duplicates": {
+        "title": "Requests that may be the same",
+        "body": "{count, plural, one {# request may be the same emergency as another, waiting to be merged or told apart} other {# requests may be the same emergency as another, waiting to be merged or told apart}}"
+      },
+      "unconfirmed": {
+        "title": "Rescues nobody has confirmed",
+        "body": "{count, plural, one {# case a team says it finished has not been confirmed by anyone} other {# cases a team says it finished have not been confirmed by anyone}}"
+      },
+      "staleAlerts": {
+        "title": "An alert is past its update time",
+        "body": "{count, plural, one {# alert still in force is past its next-update time. People already see the marker; you can extend, replace or cancel it} other {# alerts still in force are past their next-update time. People already see the marker; you can extend, replace or cancel them}}"
+      }
     }
   },
   "placeFinder": {

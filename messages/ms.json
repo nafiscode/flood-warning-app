@@ -885,6 +885,37 @@
       "drill": "Ini latihan; orang awam tidak nampak.",
       "act": "Pergi ke isyarat",
       "see": "Lihat sejarah"
+    },
+    "queue": {
+      "act": "Pergi uruskan",
+      "units": {
+        "title": "Pasukan menunggu pengesahan",
+        "body": "{count, plural, other {# pasukan telah mendaftar dan menunggu disahkan}}"
+      },
+      "reports": {
+        "title": "Laporan banjir menunggu semakan",
+        "body": "{count, plural, other {# laporan penduduk menunggu semakan sebelum sesiapa melihatnya}}"
+      },
+      "damNotice": {
+        "title": "Empangan melaporkan pelepasan air",
+        "body": "{count, plural, other {# perkara dibangkitkan dan belum dihantar kepada sesiapa. Ia menunggu semakan dan keputusan anda}}"
+      },
+      "spam": {
+        "title": "Permintaan yang ditanda disyaki",
+        "body": "{count, plural, other {# permintaan ditanda mungkin gangguan. Semuanya tetap dihantar seperti biasa; tanda itu yang menunggu anda}}"
+      },
+      "duplicates": {
+        "title": "Permintaan yang mungkin sama",
+        "body": "{count, plural, other {# permintaan mungkin kecemasan yang sama, menunggu digabung atau diasingkan}}"
+      },
+      "unconfirmed": {
+        "title": "Penyelamatan belum disahkan",
+        "body": "{count, plural, other {# kes yang pasukan kata sudah selesai dan belum disahkan sesiapa}}"
+      },
+      "staleAlerts": {
+        "title": "Amaran melepasi masa kemas kini",
+        "body": "{count, plural, other {# amaran masih berkuat kuasa telah melepasi masa kemas kini seterusnya. Orang ramai sudah nampak tandanya; anda boleh lanjutkan, ganti atau batalkan}}"
+      }
     }
   },
   "placeFinder": {

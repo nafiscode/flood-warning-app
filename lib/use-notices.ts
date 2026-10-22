@@ -9,6 +9,7 @@ import {
   unreadCount,
   type KnownCase,
   type NoticeItem,
+  type AdminAttention,
   type AutoAlarm,
   type NoticeRow,
   type ReportDecision,
@@ -32,7 +33,13 @@ type StoredUnits = {
   /** What an admin decided about their own flood reports. */
   reports?: ReportDecision[];
   /** For an admin: automatic alarms, and every alert when they chose to hear all of them. */
-  admin?: { allAlerts: boolean; autoAlarms: AutoAlarm[]; alerts: NoticeRow[] } | null;
+  admin?: {
+    allAlerts: boolean;
+    autoAlarms: AutoAlarm[];
+    alerts: NoticeRow[];
+    /** Every queue with something waiting in it (A10, 22 Oct). */
+    attention?: AdminAttention[];
+  } | null;
   checkedAt: number;
 };
 
@@ -219,6 +226,7 @@ export function useNotices(options: {
       fieldWaiting: storedUnits?.fieldWaiting ?? null,
       reports: storedUnits?.reports ?? [],
       autoAlarms: storedUnits?.admin?.autoAlarms ?? [],
+      attention: storedUnits?.admin?.attention ?? [],
       // Zero until the phone's clock is readable (the server's HTML draws an empty bell).
       now,
       homeLabel,

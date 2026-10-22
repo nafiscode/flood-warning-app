@@ -21,7 +21,10 @@ export function ringForAll(
   rung: readonly string[],
 ): { sound: SoundName | null; ids: string[] } {
   const seen = new Set([...read, ...rung]);
-  const fresh = items.filter((i) => !seen.has(i.id));
+  // An admin's queue never makes a sound (the owner, 22 Oct). It is left out here rather than
+  // given a quiet tone, because the fallback at the end of this function would otherwise ring
+  // "notice" for it - and a backlog has no moment at which it happens.
+  const fresh = items.filter((i) => !seen.has(i.id) && i.kind !== "adminQueue");
   if (fresh.length === 0) return { sound: null, ids: [] };
   const ids = fresh.map((i) => i.id);
   const alert = ringFor(items, read, rung).sound;

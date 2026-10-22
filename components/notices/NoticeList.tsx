@@ -6,7 +6,7 @@ import { DrillMark } from "@/components/alerts/DrillMark";
 import { ClockIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { alertWords } from "@/lib/alert-words";
-import type { NoticeItem } from "@/lib/notices";
+import { ADMIN_QUEUE_HREF, type NoticeItem } from "@/lib/notices";
 
 /**
  * One item of the bell's list. An alert keeps its level badge — icon, word and colour together,
@@ -51,19 +51,21 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         ) : (
           <span className="inline-flex items-center gap-2 font-bold text-jaga-ink">
             <LifebuoyIcon size={24} />
-            {item.kind === "autoAlarm"
-              ? t("auto.title")
-              : item.kind === "fieldWaiting"
-                ? t("fieldWaiting.title")
-                : item.kind === "report"
-                  ? t("report.title")
-                  : item.kind === "field"
-                    ? t("field.title")
-                    : item.kind === "unit"
-                      ? t("unit.title")
-                      : item.kind === "sos" && item.supplies
-                        ? t("supply.title")
-                        : t("sos.title")}
+            {item.kind === "adminQueue"
+              ? t(`queue.${item.queue}.title`)
+              : item.kind === "autoAlarm"
+                ? t("auto.title")
+                : item.kind === "fieldWaiting"
+                  ? t("fieldWaiting.title")
+                  : item.kind === "report"
+                    ? t("report.title")
+                    : item.kind === "field"
+                      ? t("field.title")
+                      : item.kind === "unit"
+                        ? t("unit.title")
+                        : item.kind === "sos" && item.supplies
+                          ? t("supply.title")
+                          : t("sos.title")}
           </span>
         )}
         {unread && (
@@ -114,6 +116,10 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         </p>
       )}
       {item.kind === "fieldWaiting" && <p>{t("fieldWaiting.body", { count: item.count })}</p>}
+      {/* A queue only an admin can clear (A10). One line, a count, and the way to it. */}
+      {item.kind === "adminQueue" && (
+        <p>{t(`queue.${item.queue}.body`, { count: item.count })}</p>
+      )}
       {item.kind === "autoAlarm" && (
         <>
           <AlertBadge level={item.level} />
@@ -160,6 +166,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         {item.kind === "fieldWaiting" && (
           <Link href="/admin/field-rescues" prefetch={false} className="underline">
             {t("fieldWaiting.see")}
+          </Link>
+        )}
+        {item.kind === "adminQueue" && (
+          <Link href={ADMIN_QUEUE_HREF[item.queue]} prefetch={false} className="underline">
+            {t("queue.act")}
           </Link>
         )}
         {item.kind === "autoAlarm" && (

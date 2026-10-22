@@ -1,8 +1,10 @@
 import { toUnitRequest, type UnitRequest } from "@/lib/journey";
 import {
+  toAdminAttention,
   toAutoAlarm,
   toNoticeRow,
   toReportDecision,
+  type AdminAttention,
   type AutoAlarm,
   type NoticeRow,
   type ReportDecision,
@@ -66,9 +68,16 @@ export async function GET() {
     !feed.error && feed.data && typeof feed.data === "object"
       ? (feed.data as Record<string, unknown>)
       : null;
+  // Everything else waiting for an admin (A10, 22 Oct): a count and the newest record per
+  // queue, nothing about any person. Refused for everyone else, and then simply left out.
+  const queues = await supabase.rpc("admin_attention");
+  const attention = (Array.isArray(queues.data) ? (queues.data as Record<string, unknown>[]) : [])
+    .map(toAdminAttention)
+    .filter((a): a is AdminAttention => a !== null);
   const admin = raw
     ? {
         allAlerts: raw.allAlerts === true,
+        attention,
         autoAlarms: (Array.isArray(raw.autoAlarms)
           ? (raw.autoAlarms as Record<string, unknown>[])
           : []

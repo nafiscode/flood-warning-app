@@ -78,9 +78,62 @@ export type NoticeItem = Base &
       }
     | { kind: "field"; event: "approved" | "rejected" }
     | { kind: "fieldWaiting"; count: number }
+    | { kind: "adminQueue"; queue: AdminQueue; count: number }
     | { kind: "report"; event: "approved" | "hidden"; tambon: { th: string; en: string } | null }
     | ({ kind: "autoAlarm" } & Omit<AutoAlarm, "id" | "createdAt" | "decidedAt">)
   );
+
+/**
+ * The queues an admin is the only one who can clear (A10, the owner on 22 Oct). The bell carries
+ * one line each, so an admin away from the console still knows a team is waiting.
+ *
+ * They are backlogs rather than events, so none of them rings and none is pushed (the owner's
+ * choice the same day): a count has no moment at which it happens, and a sound at 2am for a
+ * flood report is how an admin comes to ignore the bell before the season. The one queue that
+ * does ring is the pending automatic alarm, which was already here and publishes itself if
+ * nobody acts.
+ */
+export const ADMIN_QUEUES = [
+  "units",
+  "reports",
+  "damNotice",
+  "spam",
+  "duplicates",
+  "unconfirmed",
+  "staleAlerts",
+] as const;
+export type AdminQueue = (typeof ADMIN_QUEUES)[number];
+
+/** Where each queue is cleared. A tap on the line goes straight there (the owner, 22 Oct). */
+export const ADMIN_QUEUE_HREF: Record<AdminQueue, string> = {
+  units: "/admin/authorities",
+  reports: "/admin/moderation",
+  damNotice: "/admin/war-room",
+  spam: "/admin/moderation",
+  duplicates: "/admin/duplicates",
+  unconfirmed: "/admin/war-room",
+  staleAlerts: "/admin/alerts",
+};
+
+/** One queue, as admin_attention() gives it: how many wait, and the newest of them. */
+export type AdminAttention = {
+  queue: AdminQueue;
+  count: number;
+  newestId: string | null;
+  newestAt: string | null;
+};
+
+export function toAdminAttention(row: Record<string, unknown>): AdminAttention | null {
+  const queue = ADMIN_QUEUES.find((q) => q === row.queue);
+  const count = Number(row.waiting);
+  if (!queue || !Number.isFinite(count) || count <= 0) return null;
+  return {
+    queue,
+    count,
+    newestId: typeof row.newest_id === "string" ? row.newest_id : null,
+    newestAt: isoOrNull(row.newest_at),
+  };
+}
 
 /** What became of one automatic alarm (A8, safety rule 2's one exception). */
 export const AUTO_ALARM_STATUSES = [
@@ -306,13 +359,15 @@ export function buildNotices(input: {
   reports?: ReportDecision[];
   /** For an admin: the automatic alarms of the last fourteen days. */
   autoAlarms?: AutoAlarm[];
+  /** For an admin: every queue with something waiting in it. */
+  attention?: AdminAttention[];
   now: number;
   /** The word for the person's own home, and how to name a chosen area, both translated. */
   homeLabel: string;
   areaLabel: (area: Area) => string;
 }): NoticeItem[] {
   const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
-  const { fieldWaiting, reports = [], autoAlarms = [] } = input;
+  const { fieldWaiting, reports = [], autoAlarms = [], attention = [] } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -415,6 +470,24 @@ export function buildNotices(input: {
       at: isoOrNull(fieldWaiting.newestAt) ?? new Date(now).toISOString(),
       places: [],
       count: fieldWaiting.count,
+    });
+  }
+
+  /*
+   * And the rest of what waits for an admin (A10). Keyed on the newest record in the queue, so
+   * the line is unread again when something newer joins it and not before - an admin who has
+   * seen "3 teams waiting" is not told again at every poll. Like the one above, it is not held
+   * to the fourteen days: it stays while anything waits and goes when the queue is empty.
+   */
+  for (const queue of attention) {
+    if (queue.count <= 0) continue;
+    items.push({
+      kind: "adminQueue",
+      id: `adminq:${queue.queue}:${queue.newestId ?? queue.count}`,
+      at: isoOrNull(queue.newestAt) ?? new Date(now).toISOString(),
+      places: [],
+      queue: queue.queue,
+      count: queue.count,
     });
   }
 
