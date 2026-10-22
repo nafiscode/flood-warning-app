@@ -1356,6 +1356,9 @@ html {
 }
 
 body {
+  /* A phone held sideways from the home screen: nothing under the notch (viewportFit "cover"). */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
   background: var(--jaga-ground);
   color: var(--jaga-text);
   font-family: var(--font-sans);

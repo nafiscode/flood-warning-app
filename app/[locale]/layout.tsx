@@ -87,6 +87,11 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  // Opened from the home-screen icon, iOS and iPadOS keep a strip under the page for the home
+  // indicator and paint it plain, so the hotline bar floated above the foot of the screen (the
+  // owner's iPad, 22 Oct). "cover" gives the page the whole screen; the header, the bar and the
+  // body pad themselves by the safe-area insets instead (app/globals.css).
+  viewportFit: "cover",
 };
 
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
@@ -135,7 +140,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               as the hotline bar already is at the bottom. It sits above the page but below the
               skip link.
             */}
-            <header className="sticky top-0 z-20 bg-jaga-slate">
+            <header className="sticky top-0 z-20 bg-jaga-slate pt-[env(safe-area-inset-top)]">
               {/* The laptop console runs edge to edge, and the header goes with it
                   (app/globals.css, the console block). */}
               <div
@@ -242,7 +247,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               {/* What Jaga can do (A17), at the end of every page but the ones for asking help. */}
               <FeaturesLink hasAbout={hasAbout} />
             </main>
-            <footer className="sticky bottom-0 z-10">
+            {/* Its own colour runs down under the home indicator, so the bar meets the screen's edge. */}
+            <footer className="sticky bottom-0 z-10 bg-jaga-surface pb-[env(safe-area-inset-bottom)]">
               <HotlineBar />
             </footer>
             <QueueRunner />
