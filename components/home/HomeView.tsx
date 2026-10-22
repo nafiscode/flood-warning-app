@@ -5,11 +5,12 @@ import { type ReactNode, useState } from "react";
 import {
   AddSquareIcon,
   EditIcon,
-  ParcelIcon,
+  ForwardIcon,
   PhoneIcon,
   PinIcon,
   WaveIcon,
 } from "@/components/icons";
+import { useInstallWanted } from "@/components/InstallCard";
 import { MapFeatureTiles } from "@/components/map/MapFeatures";
 import { SignInHint } from "@/components/account/SignInOffer";
 import { SafePlaces } from "@/components/places/SafePlaces";
@@ -22,14 +23,20 @@ import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces } from "@/lib/places";
 import { areaStatus, damReleaseAt, severity, type PublicStatus } from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
-import { buttonSecondary, card, hint, notice } from "@/lib/ui";
-import type { LoadState } from "@/lib/use-public";
+import { homeStage, setupSteps } from "@/lib/home-stage";
+import { useConsoleView } from "@/lib/console-view";
+import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
+import { type LoadState, useSignedIn } from "@/lib/use-public";
 import { DamFigureCard } from "@/components/dam/DamFigureCard";
 import { DamNotice } from "@/components/map/Dam";
 import { attention, damForFigure, onPath, type Dam } from "@/lib/dam";
 import { AlertHero, type HeroStatus } from "./AlertHero";
 import { AreaChooser } from "./AreaChooser";
 import { Checklist } from "./Checklist";
+import { HomeFirst } from "./HomeFirst";
+import { OtherHelp } from "./OtherHelp";
+import { SetupSteps } from "./SetupSteps";
+import { SuppliesLink } from "./SuppliesLink";
 import { WatchedPlaces, WorseBanner, type WatchedStatus } from "./WatchedPlaces";
 
 /**
@@ -126,7 +133,7 @@ export function heroStatusFor(
 export function HomeView(props: HomeViewProps) {
   const { ready, status, checkedAt, failed, me, places, placesState, now } = props;
   const t = useTranslations("home");
-  const tSos = useTranslations("sos");
+  const tFlow = useTranslations("homeFlow");
   const locale = useLocale();
   const format = useFormatter();
   const [choosing, setChoosing] = useState(false);
@@ -190,6 +197,42 @@ export function HomeView(props: HomeViewProps) {
     (s) => s?.kind === "alert" && (s.alert.level === "warning" || s.alert.level === "evacuate"),
   );
   const sos = <SOSButton href={getPathname({ href: "/sos", locale })} />;
+  /*
+   * A laptop gets one thing at a time (the owner, 23 Oct 2026; lib/home-stage.ts): the one-question
+   * first screen until there is an area, then the status with one setup card. A phone and a tablet
+   * held upright are never asked (`useConsoleView` is false there, and on the server), so they keep
+   * the layouts approved on 20 and 21 Oct exactly as they were.
+   */
+  const wide = useConsoleView();
+  const signedIn = useSignedIn();
+  const installPending = useInstallWanted("home");
+  const stage = wide ? homeStage({ hasHome: !!home, signedIn, installPending, tense }) : null;
+  // Folded away for a visitor who has not signed in: the report needs an account, food and water
+  // moves under "Other ways to ask for help", and the setup card does the inviting.
+  const visitorFocus = stage === "area" && !signedIn;
+  const notInServiceNote =
+    !loading && status && !status.inService && hero?.kind !== "notInService" ? (
+      // Said on every home screen before launch, also beside a real alert or the chooser.
+      <p className={notice} data-not-in-service="true">
+        <span className="block font-bold">{t("notInService.title")}</span>
+        {t("notInService.body")}
+      </p>
+    ) : null;
+  if (stage === "first") {
+    return (
+      <HomeFirst
+        loading={loading}
+        sos={sos}
+        onChooseArea={(area) => {
+          setChoosing(false);
+          props.onChooseArea(area);
+        }}
+        projectLine={props.projectLine}
+        myReports={props.myReports}
+        notInService={notInServiceNote}
+      />
+    );
+  }
   /*
    * The dam's drawing and figures. On a laptop the owner wants it in the left-hand column, under
    * the flood-risk summary (16 Oct); on a phone it stays at the foot of the page, which is where
@@ -332,12 +375,30 @@ export function HomeView(props: HomeViewProps) {
         )}
 
         {/*
+         * The risk map, offered inside the status as a way on (the owner, 23 Oct): on a laptop,
+         * once there is an area and nothing is at Warning or Evacuate. It names the place, so it
+         * reads as the reward for choosing one rather than another card to weigh up.
+         */}
+        {wide && stage !== "tense" && !loading && !choosing && home && (
+          <Link
+            href="/map"
+            prefetch={false}
+            data-map-cta="true"
+            className={`${buttonPrimary} gap-2`}
+          >
+            {tFlow("mapCta", { place: tambonName(locale, home) })}
+            <ForwardIcon size={20} className="rtl:-scale-x-100" />
+          </Link>
+        )}
+
+        {/*
          * Under the hero and nowhere else (the owner, 18 Oct): what the tambon's level is stays
          * the first thing on the screen, and how to join Jaga is the second. It is in the static
          * HTML on purpose - the people it is for arrive from a link, often on a slow phone - and
-         * it goes once a place of theirs is at Warning or Evacuate.
+         * it goes once a place of theirs is at Warning or Evacuate. On a laptop the setup card
+         * (components/home/SetupSteps.tsx) does this inviting, one step at a time (23 Oct).
          */}
-        {!tense && props.joinJaga}
+        {!tense && !wide && props.joinJaga}
 
         {/*
          * And one line saying Jaga can be installed, because on a phone the card itself is 56%
@@ -354,13 +415,7 @@ export function HomeView(props: HomeViewProps) {
           <ReportsNear near={reportsNearMe(props.reports, myCodes)} />
         )}
 
-        {!loading && status && !status.inService && hero?.kind !== "notInService" && (
-          // Said on every home screen before launch, also beside a real alert or the chooser.
-          <p className={notice} data-not-in-service="true">
-            <span className="block font-bold">{t("notInService.title")}</span>
-            {t("notInService.body")}
-          </p>
-        )}
+        {notInServiceNote}
 
         {checkedAt !== null && !loading && (
           <p
@@ -412,40 +467,44 @@ export function HomeView(props: HomeViewProps) {
       <div data-home-col="act" className="flex flex-col gap-5 lg:col-start-2 lg:row-start-1">
         {!evacuate && sos}
 
+        {/* One setup card on a laptop, asking for one thing at a time (the owner, 23 Oct). */}
+        {stage === "area" && !loading && !choosing && home && (
+          <SetupSteps
+            steps={setupSteps({ hasHome: true, signedIn, installPending })}
+            place={tambonName(locale, home)}
+            install={props.install}
+          />
+        )}
+        {visitorFocus && !loading && <OtherHelp projectLine={props.projectLine} />}
+
         {/* For someone who has just found Jaga: what it can do, one tap away (owner, 16 Oct). */}
-        {!loading && !tense && props.welcome}
+        {!loading && !tense && !wide && props.welcome}
 
-        <Link
-          href="/report"
-          prefetch={false}
-          className={`${buttonSecondary} min-h-16 gap-3 text-h3 font-bold`}
-        >
-          <WaveIcon size={30} />
-          {t("report")}
-        </Link>
-        {/* Reporting needs an account; a visitor is told so before tapping (the owner, 15 Oct). */}
-        {ready && !me?.signedIn && <SignInHint what="report" />}
+        {/* On a laptop, "Report flood" appears once someone has signed in (the owner, 23 Oct). */}
+        {!visitorFocus && (
+          <>
+            <Link
+              href="/report"
+              prefetch={false}
+              className={`${buttonSecondary} min-h-16 gap-3 text-h3 font-bold`}
+            >
+              <WaveIcon size={30} />
+              {t("report")}
+            </Link>
+            {/* Reporting needs an account; a visitor is told so before tapping (the owner, 15 Oct). */}
+            {ready && !me?.signedIn && <SignInHint what="report" />}
 
-        {/* For someone safe but cut off (spec 4.10). Quieter than SOS and never in its way. */}
-        <Link
-          href="/supplies"
-          prefetch={false}
-          data-supplies-link="true"
-          className={`${buttonSecondary} min-h-16 gap-3`}
-        >
-          <ParcelIcon size={30} />
-          <span className="flex flex-col items-start leading-tight">
-            <span className="text-h3 font-bold">{tSos("supplies.label")}</span>
-            <span className="text-small font-normal">{tSos("supplies.homeHint")}</span>
-          </span>
-        </Link>
+            {/* For someone safe but cut off (spec 4.10). Quieter than SOS and never in its way. */}
+            <SuppliesLink />
+          </>
+        )}
 
         {props.myReports}
 
         {/* Laptop only: the unit's way in, under "Follow my requests" (the owner, 20 Oct). */}
         {!tense && props.unitCard}
 
-        {props.projectLine && (
+        {props.projectLine && !visitorFocus && (
           <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>
             <PhoneIcon size={22} />
             {t("projectLine")} {props.projectLine}
@@ -467,7 +526,7 @@ export function HomeView(props: HomeViewProps) {
          * above the map and the safe places. It is still kept away while a place of theirs is at
          * Warning or Evacuate, and it still goes for three weeks on "Not now".
          */}
-        {!loading && !choosing && !tense && props.install}
+        {!loading && !choosing && !tense && !wide && props.install}
 
         <WatchedPlaces items={watched} now={now} />
         {me?.signedIn && (

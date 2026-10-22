@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { AboutLink } from "@/components/AboutLink";
+import { TeamsLink } from "@/components/TeamsLink";
 import { AccountLink } from "@/components/AccountLink";
 import { AdminLink } from "@/components/AdminLink";
 import { Logo } from "@/components/brand/Logo";
@@ -221,6 +222,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     leads to the science and the system, and the block at its foot to all three.
                   */}
                   <AboutLink has={hasAbout} />
+                  {/* A rescue team's way in, on a laptop (the owner, 23 Oct). */}
+                  <TeamsLink />
                   {/* "Sign in" for a visitor, "Account" once signed in (the owner, 15 Oct). */}
                   <AccountLink />
                   {/* Only an admin ever sees this one, and only in their own browser. */}

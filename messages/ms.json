@@ -1,4 +1,26 @@
 {
+  "homeFlow": {
+    "firstTitle": "Adakah kawasan anda berisiko banjir sekarang?",
+    "firstBody": "Pilih kawasan anda dan Jaga akan menunjukkan amaran untuk tambon anda serta tempat selamat berdekatan.",
+    "firstEmpty": "Belum memilih kawasan, jadi belum ada status untuk ditunjukkan.",
+    "linkWhat": "Apa yang Jaga boleh lakukan",
+    "linkMap": "Peta risiko banjir",
+    "linkTeams": "Untuk pasukan penyelamat dan agensi",
+    "linksLabel": "Lagi dalam Jaga",
+    "otherHelp": "Cara lain untuk meminta bantuan",
+    "mapCta": "Lihat risiko banjir sekitar {place}",
+    "navTeams": "Untuk pasukan penyelamat",
+    "setup": {
+      "title": "Sediakan Jaga",
+      "progress": "{done} daripada {total}",
+      "done": "Selesai",
+      "area": "Pilih kawasan anda",
+      "signIn": "Terima amaran melalui LINE",
+      "signInBody": "Untuk {place}, walaupun aplikasi ditutup. Anda juga boleh melaporkan banjir di kawasan anda.",
+      "install": "Pasang Jaga pada peranti ini",
+      "installWait": "Boleh dibuat selepas log masuk"
+    }
+  },
   "app": {
     "name": "Jaga",
     "nameThai": "จากา",

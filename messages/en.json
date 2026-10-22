@@ -1,4 +1,26 @@
 {
+  "homeFlow": {
+    "firstTitle": "Is your area at risk of flooding right now?",
+    "firstBody": "Choose your area and Jaga shows the alerts for your tambon and the safe places near you.",
+    "firstEmpty": "No area chosen yet, so there is no status to show.",
+    "linkWhat": "What Jaga can do",
+    "linkMap": "Flood risk map",
+    "linkTeams": "For rescue teams and agencies",
+    "linksLabel": "More in Jaga",
+    "otherHelp": "Other ways to ask for help",
+    "mapCta": "See flood risk around {place}",
+    "navTeams": "For rescue teams",
+    "setup": {
+      "title": "Get Jaga ready",
+      "progress": "{done} of {total}",
+      "done": "Done",
+      "area": "Choose your area",
+      "signIn": "Get alerts on LINE",
+      "signInBody": "For {place}, even when the app is closed. You can also report flooding in your area.",
+      "install": "Install Jaga on this device",
+      "installWait": "Available after you sign in"
+    }
+  },
   "app": {
     "name": "Jaga",
     "nameThai": "จากา",
