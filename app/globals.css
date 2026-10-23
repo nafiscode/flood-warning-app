@@ -914,6 +914,34 @@
     inset-inline-start: calc(0.75rem + 21rem + 1rem + 20rem + 0.75rem);
     width: max(20rem, min(26rem, calc(100vw - 65.5rem)));
   }
+  /*
+   * The map's own controls stay reachable (the owner, 23 Oct 2026: "when the meter panel is open
+   * and I want to pin, it covers 'All 4 provinces' and the reset button... this should also apply
+   * to the details panel"). Both panels are fixed to the map's top-left corner, which is also
+   * where the map keeps its tools - "All 4 provinces", reset, my places, full screen - and, at its
+   * foot, the 2D/3D switch and the basemap button. A panel there sat on top of all of them and
+   * could not be moved off, because it is the controls that were underneath.
+   *
+   * So the panels start below the tools row (a 3 rem row set 1.25 rem from the top, and a gap)
+   * and stop above the bottom-left controls (the 2D/3D switch and the basemap button, one on the
+   * other, 7 rem with their gap). They already scroll inside themselves, so a long card or a
+   * column of dials gives up height, not content. Measured at 1440 x 900: the tools row is
+   * 20-68 px, the controls at the foot begin 112 px above the map's lower edge.
+   *
+   * The basemap's open list rises from the button over the same ground the panels stand on, and
+   * it cannot be lifted above them (it lives inside the map's own layer, which sits below the
+   * panels), so while it is open the panels step aside. Choosing a basemap, or the button again,
+   * shuts the list and they come back as they were: nothing is closed, only hidden.
+   */
+  [data-map-full] [data-dam-meters-host],
+  [data-map-full] [data-selected-panel] {
+    inset-block-start: 4.75rem;
+    max-height: calc(100dvh - var(--jaga-hotlines, 4.5rem) - 4.75rem - 1.25rem - 7rem);
+  }
+  [data-map-full]:has([data-basemap-open="true"])
+    :is([data-dam-meters-host], [data-selected-panel]) {
+    visibility: hidden;
+  }
 }
 
 /*

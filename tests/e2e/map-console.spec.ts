@@ -567,6 +567,69 @@ test.describe("the live map on a laptop", () => {
     await expect(page.locator("[data-dam-meters]")).toBeVisible();
   });
 
+  /*
+   * The map's own buttons stay reachable (the owner, 23 Oct 2026: with the meters open, "All 4
+   * provinces" and reset were under them, and the same went for a reservoir's card). The panels
+   * start below the tools and stop above the 2D/3D switch and the basemap button.
+   */
+  test("the meters and a card leave the map's own buttons uncovered", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+    await page.locator('[data-map-full-toggle="open"]').click();
+
+    // True when the point at the middle of the element is the element itself, not a panel above.
+    const reachable = (selector: string) =>
+      page.evaluate((s) => {
+        const el = document.querySelector(s);
+        if (!el) return false;
+        const box = el.getBoundingClientRect();
+        if (box.width === 0) return false;
+        const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return top === el || el.contains(top);
+      }, selector);
+    const controls = [
+      "[data-zoom-all]",
+      "[data-map-reset]",
+      "[data-scene-switch]",
+      "[data-basemap-open]",
+    ];
+    const allReachable = async () => Promise.all(controls.map(reachable));
+
+    await page.locator("[data-open-dams]").click();
+    await page.locator("[data-dam-choice-meters]").click();
+    await expect(page.locator("[data-dam-meter]").first()).toBeVisible();
+    expect(await allReachable()).toEqual([true, true, true, true]);
+
+    // Pinned, with a reservoir's own card open beside them: still nothing covered.
+    await page.locator("[data-dam-meters-pin]").click();
+    await page.locator("[data-dam-meter]").first().click();
+    await expect(page.locator("[data-selected-panel]")).toBeVisible();
+    await expect(page.locator("[data-dam-meters]")).toBeVisible();
+    expect(await allReachable()).toEqual([true, true, true, true]);
+
+    // The panels sit between the tools and the controls at the foot, and above the hotlines.
+    const tools = (await page.locator("[data-map-tools]").boundingBox())!;
+    const foot = (await page.locator("[data-scene-switch]").boundingBox())!;
+    for (const panel of ["[data-dam-meters-host]", "[data-selected-panel]"]) {
+      const box = (await page.locator(panel).boundingBox())!;
+      expect(box.y).toBeGreaterThanOrEqual(tools.y + tools.height);
+      expect(box.y + box.height).toBeLessThanOrEqual(foot.y);
+    }
+
+    // The basemap list rises over the same ground, so the panels step aside while it is open and
+    // come back, as they were, when it shuts.
+    await page.locator("[data-basemap-open]").click();
+    await expect(
+      page.locator("[data-map-basemap-picker] [data-basemap-choice]").first(),
+    ).toBeVisible();
+    expect(await reachable("[data-map-basemap-picker] [data-basemap-choice]")).toBe(true);
+    await expect(page.locator("[data-dam-meters-host]")).toBeHidden();
+    await page.locator("[data-basemap-open]").click();
+    await expect(page.locator("[data-dam-meters-host]")).toBeVisible();
+    await expect(page.locator("[data-selected-panel]")).toBeVisible();
+  });
+
   test("a hazard still to come is a placeholder, never an empty console", async ({ page }) => {
     await serve(page);
     await page.goto("/th/map");
