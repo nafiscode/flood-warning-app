@@ -72,6 +72,7 @@ describe("Jaga's own tambons", () => {
       lat: 6.878,
       lon: 101.272,
       source: "tambon",
+      code: "940104",
     });
     expect(searchDirectory("bana", ROWS, "en")[0]).toMatchObject({
       name: "Bana",

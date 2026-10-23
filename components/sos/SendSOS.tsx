@@ -253,6 +253,8 @@ export function SendSOS({ projectLine, place }: Props) {
                 setShowArea(false);
               }}
               onCancel={() => setShowArea(false)}
+              // The box for exact coordinates is over the pin map above, where it keeps them exact.
+              withFinder={false}
             />
           )}
         </div>

@@ -193,6 +193,33 @@ test.describe("laptop home", () => {
     await noSidewaysScroll(page);
   });
 
+  test("a first visitor can paste exact coordinates instead of using the list", async ({
+    page,
+  }) => {
+    await serve(page, { inService: true, alerts: [] }, null);
+    // What the position check answers for a point in Bana.
+    await page.route("**/api/geo/locate**", (route) =>
+      route.fulfill({ json: { kind: "tambon", area: BANA } }),
+    );
+    await page.goto("/");
+    await page.locator("[data-area-find]").click();
+    await page.getByPlaceholder(th.locationFinder.placeholder).fill("6.87821, 101.27191");
+    await page.locator("[data-finder-search]").click();
+    await expect(page.locator("[data-home-first]")).toHaveCount(0);
+    await expect(page.locator("[data-area]")).toHaveText(/บานา/);
+  });
+
+  test("a first visitor can search a tambon by name", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [] }, null);
+    await page.goto("/");
+    await page.locator("[data-area-find]").click();
+    await page.getByPlaceholder(th.locationFinder.placeholder).fill("บานา");
+    await page.locator("[data-finder-search]").click();
+    await page.locator(`[data-finder-result="${BANA.code}"]`).click();
+    await expect(page.locator("[data-home-first]")).toHaveCount(0);
+    await expect(page.locator("[data-area]")).toHaveText(/บานา/);
+  });
+
   test("an area already chosen skips the first screen", async ({ page }) => {
     await serve(page, { inService: true, alerts: [] });
     await page.goto("/");

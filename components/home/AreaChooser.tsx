@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, ListIcon, LocateIcon } from "@/components/icons";
+import { CheckIcon, ListIcon, LocateIcon, PinIcon } from "@/components/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
@@ -13,11 +13,18 @@ import {
   type TambonEntry,
 } from "@/lib/area";
 import { buttonPrimary, buttonSecondary, errorNotice, hint, input, label } from "@/lib/ui";
+import { LocationFinder, type FoundLocation } from "./LocationFinder";
 
 type Props = {
   onChoose: (area: Area) => void;
   /** Shown when the chooser was opened to change an area that is already chosen. */
   onCancel?: () => void;
+  /**
+   * The third way in, beside the position and the list: paste coordinates or type a tambon name
+   * (the owner, 23 Oct 2026). On by default; the SOS screens have their own box over the pin map,
+   * where a pasted point stays exact, and turn this one off.
+   */
+  withFinder?: boolean;
 };
 
 type Problem =
@@ -35,15 +42,32 @@ async function getJson<T>(url: string): Promise<T> {
  * to sign in for this. The choice is handed to the caller, which keeps it on the phone only; the
  * position is sent once to find the tambon and is not stored on the server.
  */
-export function AreaChooser({ onChoose, onCancel }: Props) {
+export function AreaChooser({ onChoose, onCancel, withFinder = true }: Props) {
   const t = useTranslations("home.area");
+  const tFind = useTranslations("locationFinder");
   const locale = useLocale();
   const [locating, setLocating] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
   const [problem, setProblem] = useState<Problem | null>(null);
   const [directory, setDirectory] = useState<AreaDirectory | "loading" | null>(null);
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
   const [tambon, setTambon] = useState("");
+
+  /** Which tambon a point is in, from the position or from coordinates the person pasted. */
+  function resolvePoint(lat: number, lon: number) {
+    setLocating(true);
+    getJson<Located>(`/api/geo/locate?lat=${lat.toFixed(6)}&lon=${lon.toFixed(6)}`)
+      .then((found) => {
+        if (found.kind === "tambon") onChoose(found.area);
+        else if (found.kind === "notCovered") {
+          const p = found.province;
+          setProblem({ kind: "notCovered", province: pickName(locale, p.nameTh, p.nameEn) });
+        } else setProblem({ kind: "outside" });
+      })
+      .catch(() => setProblem({ kind: "locate" }))
+      .finally(() => setLocating(false));
+  }
 
   function locate() {
     setProblem(null);
@@ -53,25 +77,20 @@ export function AreaChooser({ onChoose, onCancel }: Props) {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        getJson<Located>(`/api/geo/locate?lat=${latitude.toFixed(6)}&lon=${longitude.toFixed(6)}`)
-          .then((found) => {
-            if (found.kind === "tambon") onChoose(found.area);
-            else if (found.kind === "notCovered") {
-              const p = found.province;
-              setProblem({ kind: "notCovered", province: pickName(locale, p.nameTh, p.nameEn) });
-            } else setProblem({ kind: "outside" });
-          })
-          .catch(() => setProblem({ kind: "locate" }))
-          .finally(() => setLocating(false));
-      },
+      (position) => resolvePoint(position.coords.latitude, position.coords.longitude),
       () => {
         setLocating(false);
         setProblem({ kind: "gps" });
       },
       { enableHighAccuracy: true, timeout: 20_000, maximumAge: 60_000 },
     );
+  }
+
+  /** From the box: a tambon picked by name is the area itself; coordinates are placed first. */
+  function found(location: FoundLocation) {
+    setProblem(null);
+    if (location.area) onChoose(location.area);
+    else resolvePoint(location.point.lat, location.point.lon);
   }
 
   function openList() {
@@ -100,6 +119,21 @@ export function AreaChooser({ onChoose, onCancel }: Props) {
         <LocateIcon size={22} />
         {locating ? t("locating") : t("useGps")}
       </button>
+      {withFinder && (
+        <>
+          <button
+            type="button"
+            onClick={() => setFindOpen(!findOpen)}
+            aria-expanded={findOpen}
+            data-area-find="true"
+            className={buttonSecondary}
+          >
+            <PinIcon size={22} />
+            {tFind("open")}
+          </button>
+          {findOpen && <LocationFinder onFound={found} />}
+        </>
+      )}
       {!loaded && (
         <button
           type="button"

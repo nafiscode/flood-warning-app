@@ -20,6 +20,8 @@ export type FoundPlace = {
   lon: number;
   /** tambon: Jaga's own list. landmark: OpenStreetMap. town: the weather service's gazetteer. */
   source: "tambon" | "landmark" | "town" | "code";
+  /** The official tambon code, for a result from Jaga's own list: the home chooser picks by it. */
+  code?: string;
 };
 
 export type DirectoryRow = {
@@ -76,6 +78,7 @@ function asPlace(row: DirectoryRow, thai: boolean): FoundPlace {
         lat: row.lat,
         lon: row.lon,
         source: "tambon",
+        code: row.code,
       }
     : {
         name: row.nameEn,
@@ -83,6 +86,7 @@ function asPlace(row: DirectoryRow, thai: boolean): FoundPlace {
         lat: row.lat,
         lon: row.lon,
         source: "tambon",
+        code: row.code,
       };
 }
 

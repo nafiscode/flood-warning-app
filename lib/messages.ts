@@ -31,6 +31,8 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       "unitWay",
       // A laptop's first screen and its setup card (23 Oct).
       "homeFlow",
+      // The area chooser's box for coordinates and tambon names (23 Oct).
+      "locationFinder",
       // Saying what a safe place is like now, from its card (20 Oct), and the line of what
       // residents have said. It carries its own copy of the three words about the road rather
       // than pulling the whole "report" namespace onto the home screen.
@@ -88,7 +90,8 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
 export function sosMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   const all = messages as Messages;
   return {
-    ...pick(messages, ["sos", "report", "hotlines", "home", "push", "journey"]),
+    // "locationFinder": the box over the pin map for coordinates and tambon names (23 Oct).
+    ...pick(messages, ["sos", "report", "hotlines", "home", "push", "journey", "locationFinder"]),
     map: { province: all.map!.province! },
   };
 }
@@ -99,7 +102,7 @@ export function installMessages(messages: AbstractIntlMessages): AbstractIntlMes
 }
 
 export function reportMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
-  return pick(messages, ["report", "sos", "hotlines", "reportsNear"]);
+  return pick(messages, ["report", "sos", "hotlines", "reportsNear", "locationFinder"]);
 }
 
 export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
