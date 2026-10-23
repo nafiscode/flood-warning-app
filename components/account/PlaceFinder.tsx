@@ -88,7 +88,13 @@ export function PlaceFinder({
         return;
       }
       setFound(answer);
-      setStatus(answer.places.length === 0 ? { kind: "say", what: "none" } : { kind: "idle" });
+      // An incomplete search that found nothing has not looked everywhere: "not found" would be
+      // a guess, so it says the search failed and to try again.
+      setStatus(
+        answer.places.length === 0
+          ? { kind: "say", what: answer.partial ? "failed" : "none" }
+          : { kind: "idle" },
+      );
     } catch {
       if (asked.current === turn) setStatus({ kind: "say", what: "failed" });
     }

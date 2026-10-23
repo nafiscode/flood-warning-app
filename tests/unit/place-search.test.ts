@@ -8,9 +8,12 @@ import { describe, expect, it } from "vitest";
 import { resolveMapLink, type Fetcher } from "@/lib/map-link";
 import { decodePlusCode } from "@/lib/place-input";
 import {
+  combineLandmarks,
   fromNominatim,
+  fromPhoton,
   mergePlaces,
   nominatimUrl,
+  photonUrl,
   placeFromShortCode,
   plainName,
   preferNearby,
@@ -202,6 +205,95 @@ describe("landmarks from OpenStreetMap", () => {
     const many = Array.from({ length: 12 }, (_, i) => ({ ...a, name: `P${i}`, lat: 6 + i }));
     expect(mergePlaces([a], [twin])).toEqual([a]);
     expect(mergePlaces(many)).toHaveLength(8);
+  });
+});
+
+describe("the second landmark search (Photon)", () => {
+  it("leans toward where the map is looking, or the middle of the four provinces", () => {
+    const near = new URL(photonUrl("มหาวิทยาลัยสงขลานครินทร์", { lat: 7.0069, lon: 100.5013 }));
+    expect(near.searchParams.get("q")).toBe("มหาวิทยาลัยสงขลานครินทร์");
+    expect(near.searchParams.get("lat")).toBe("7.0069");
+    expect(near.searchParams.get("lon")).toBe("100.5013");
+    const middle = new URL(photonUrl("x", null));
+    expect(middle.searchParams.get("lat")).toBe(SERVICE_MIDDLE.lat.toFixed(4));
+    expect(middle.searchParams.get("lon")).toBe(SERVICE_MIDDLE.lon.toFixed(4));
+  });
+
+  it("reads a place with its name, where it is, and what narrows it down", () => {
+    // The shape of Photon's answer for the university in Hat Yai.
+    const found = fromPhoton({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [100.5013, 7.0069] },
+          properties: {
+            name: "มหาวิทยาลัยสงขลานครินทร์",
+            district: "คอหงส์",
+            city: "หาดใหญ่",
+            county: "หาดใหญ่",
+            state: "สงขลา",
+            country: "ประเทศไทย",
+          },
+        },
+      ],
+    });
+    expect(found).toEqual([
+      {
+        name: "มหาวิทยาลัยสงขลานครินทร์",
+        // Each name once, the country left out.
+        detail: "คอหงส์, หาดใหญ่, สงขลา",
+        lat: 7.0069,
+        lon: 100.5013,
+        source: "landmark",
+      },
+    ]);
+  });
+
+  it("leaves out anything without a name or a position, and survives a bad answer", () => {
+    expect(
+      fromPhoton({
+        features: [
+          { geometry: { coordinates: [100.5, 7.0] }, properties: {} },
+          { geometry: { coordinates: ["east", "north"] }, properties: { name: "x" } },
+          { properties: { name: "y" } },
+        ],
+      }),
+    ).toEqual([]);
+    expect(fromPhoton({ message: "busy" })).toEqual([]);
+    expect(fromPhoton(null)).toEqual([]);
+  });
+});
+
+describe("what the two landmark searches say together", () => {
+  const place = (name: string, lat: number, lon: number) => ({
+    name,
+    detail: "",
+    lat,
+    lon,
+    source: "landmark" as const,
+  });
+  const psu = place("มหาวิทยาลัยสงขลานครินทร์", 7.007, 100.501);
+
+  it("is complete when either could be asked, even if it found nothing", () => {
+    expect(combineLandmarks([], null)).toEqual({ places: [], complete: true });
+    expect(combineLandmarks(null, [])).toEqual({ places: [], complete: true });
+  });
+
+  it("is incomplete only when neither could be asked, so 'not found' is never a guess", () => {
+    expect(combineLandmarks(null, null)).toEqual({ places: [], complete: false });
+  });
+
+  it("still gives the answer of the one that worked when the other was refused", () => {
+    expect(combineLandmarks(null, [psu])).toEqual({ places: [psu], complete: true });
+    expect(combineLandmarks([psu], null)).toEqual({ places: [psu], complete: true });
+  });
+
+  it("lists a place both found once, and keeps what only one of them knew", () => {
+    const sameButNudged = { ...psu, lat: 7.0071 };
+    const hospital = place("โรงพยาบาลสงขลานครินทร์", 7.007, 100.495);
+    const both = combineLandmarks([psu], [sameButNudged, hospital]);
+    expect(both.places.map((p) => p.name)).toEqual([psu.name, hospital.name]);
   });
 });
 

@@ -205,6 +205,74 @@ export function fromNominatim(raw: unknown): FoundPlace[] {
   return places;
 }
 
+export const PHOTON = "https://photon.komoot.io/api/";
+
+/**
+ * The second place to ask (the owner, 23 Oct: a university in Hat Yai was not found). Photon is a
+ * free search over the same OpenStreetMap data, with no key and no account. It is asked at the same
+ * time as OpenStreetMap's own search because that one is a shared service that turns away or
+ * throttles servers on shared cloud addresses, and because it matches whole words almost exactly
+ * where Photon forgives a partial one. `near` biases the answer toward where the map is looking
+ * without fencing anything out.
+ */
+export function photonUrl(query: string, near: Point | null): string {
+  const at = near ?? SERVICE_MIDDLE;
+  const params = new URLSearchParams({
+    q: query,
+    limit: "5",
+    lat: at.lat.toFixed(4),
+    lon: at.lon.toFixed(4),
+    location_bias_scale: "0.4",
+  });
+  return `${PHOTON}?${params}`;
+}
+
+type RawPhoton = { geometry?: { coordinates?: unknown }; properties?: Record<string, unknown> };
+
+const clean = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
+
+/** Photon's answer as places. Anything without a name or a usable position is left out. */
+export function fromPhoton(raw: unknown): FoundPlace[] {
+  const features = (raw as { features?: unknown } | null)?.features;
+  if (!Array.isArray(features)) return [];
+  const places: FoundPlace[] = [];
+  for (const feature of features as RawPhoton[]) {
+    const at = feature.geometry?.coordinates;
+    if (!Array.isArray(at)) continue;
+    const lon = Number(at[0]);
+    const lat = Number(at[1]);
+    const properties = feature.properties ?? {};
+    const name = clean(properties.name) || clean(properties.street);
+    if (name === "" || !Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    const where = [properties.district, properties.city, properties.county, properties.state]
+      .map(clean)
+      .filter((part) => part !== "" && part !== name);
+    places.push({
+      name,
+      detail: [...new Set(where)].slice(0, 3).join(", "),
+      lat: Number(lat.toFixed(6)),
+      lon: Number(lon.toFixed(6)),
+      source: "landmark",
+    });
+  }
+  return places;
+}
+
+/**
+ * What the two landmark searches together say. `null` is a search that could not be made at all
+ * (busy, refused, down); an empty list is a search that was made and found nothing. Only when
+ * neither could be made is the answer incomplete: then "no such place" would be a guess.
+ */
+export function combineLandmarks(
+  osm: FoundPlace[] | null,
+  photon: FoundPlace[] | null,
+): { places: FoundPlace[]; complete: boolean } {
+  return {
+    places: mergePlaces(osm ?? [], photon ?? []),
+    complete: osm !== null || photon !== null,
+  };
+}
+
 /** Thailand, Malaysia and their neighbours: where a place someone here watches might be. */
 const REGION = { south: -1, north: 21, west: 96, east: 110 };
 
