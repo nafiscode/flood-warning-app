@@ -482,16 +482,14 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
       />
 
       <Tile
-        id="gauges"
-        alarm={alarm(gaugeFigures0 ? gaugeAlarm(gaugeFigures0) : null)}
-        label={t("gauges.label")}
-        brief={gauge.brief}
-        more={gauge.more}
-        pinned={isPinned("gauges")}
-        onPin={() => pin("gauges")}
+        id="reports"
+        alarm={alarm(reportFigures0 ? reportsAlarm(reportFigures0) : null)}
+        label={t("reports.label")}
+        brief={reportParts.brief}
+        more={reportParts.more}
+        pinned={isPinned("reports")}
+        onPin={() => pin("reports")}
         pinWords={pinWords}
-        onOpen={gauges && gauges.length > 0 ? props.onOpenGauges : undefined}
-        openLabel={t("gauges.open")}
       />
 
       <Tile
@@ -516,14 +514,16 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
       />
 
       <Tile
-        id="reports"
-        alarm={alarm(reportFigures0 ? reportsAlarm(reportFigures0) : null)}
-        label={t("reports.label")}
-        brief={reportParts.brief}
-        more={reportParts.more}
-        pinned={isPinned("reports")}
-        onPin={() => pin("reports")}
+        id="gauges"
+        alarm={alarm(gaugeFigures0 ? gaugeAlarm(gaugeFigures0) : null)}
+        label={t("gauges.label")}
+        brief={gauge.brief}
+        more={gauge.more}
+        pinned={isPinned("gauges")}
+        onPin={() => pin("gauges")}
         pinWords={pinWords}
+        onOpen={gauges && gauges.length > 0 ? props.onOpenGauges : undefined}
+        openLabel={t("gauges.open")}
       />
 
       {/*

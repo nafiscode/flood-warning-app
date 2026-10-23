@@ -399,6 +399,36 @@ describe("the console's arrangement", () => {
     );
   });
 
+  /*
+   * The owner, 23 Oct 2026: the meters "should show the same location where the detail info of
+   * dams opened up (most left of the map). Align vertically".
+   */
+  it("floats the reservoir meters where a reservoir's card opens, and moves the card aside", () => {
+    // The card's own rule is the first of its name (the laptop block only raises its z-index).
+    const rule = (selector: string, first = false) => {
+      const at = first ? css.indexOf(selector + " {") : css.lastIndexOf(selector + " {");
+      expect(at).toBeGreaterThan(0);
+      return css.slice(at, css.indexOf("}", at));
+    };
+    const meters = rule("[data-map-full] [data-dam-meters-host]");
+    const card = rule("[data-map-full] [data-selected-panel]", true);
+    // The same left edge and the same top as the card they share the spot with.
+    const left = (r: string) => /inset-inline-start: ([^;]+);/.exec(r)?.[1];
+    const top = (r: string) => /inset-block-start: ([^;]+);/.exec(r)?.[1];
+    expect(meters).toContain("position: fixed");
+    expect(left(meters)).toBeDefined();
+    expect(top(meters)).toBe(top(card));
+    // It scrolls inside itself rather than running under the hotline bar.
+    expect(meters).toContain("overflow-y: auto");
+    expect(meters).toContain("var(--jaga-hotlines");
+    // The card steps beside a pinned column instead of covering it, by the column's own width.
+    const shifted = rule('[data-map-full][data-meters="on"] [data-selected-panel]');
+    expect(shifted).toContain("inset-inline-start: calc(0.75rem + 21rem + 1rem + 20rem + 0.75rem)");
+    expect(meters).toContain("width: 20rem");
+    // Full screen's list of what stays in the map's column names the meters, or they vanish.
+    expect(css).toContain("> *:not([data-map-frame], [data-dam-meters-host])");
+  });
+
   it("keeps the readout's own controls above the cover that opens the card", () => {
     const at = css.indexOf("[data-tile-card] [data-tile-head],");
     expect(at).toBeGreaterThan(0);

@@ -474,9 +474,7 @@ test.describe("the live map on a laptop", () => {
     const tops = boxes.map((b) => Math.round(b.y));
     expect([...tops].sort((a, b) => a - b)).toEqual(tops);
     // And open, not folded: the dam card says how all the reservoirs stand without being hovered.
-    await expect(
-      page.locator('[data-console-tile="dam"] [data-tile-more]').first(),
-    ).toBeVisible();
+    await expect(page.locator('[data-console-tile="dam"] [data-tile-more]').first()).toBeVisible();
 
     // What is left beside the map is what decides what the map draws - including the two the
     // owner asked to bring over, the satellite's flood and the safe places.
@@ -509,6 +507,64 @@ test.describe("the live map on a laptop", () => {
     await page.keyboard.press("Escape");
     await expect(page.locator("[data-map-full]")).toHaveCount(0);
     await expect(page.locator("[data-console-tiles]")).toBeVisible();
+  });
+
+  /*
+   * The war room (the owner, 23 Oct 2026): in full screen, "See how the reservoirs stand" asks
+   * how to look - as meters, or in full - and the meters float where a reservoir's card opens.
+   */
+  test("full screen offers the reservoirs as meters, in a column where the card opens, and can pin them", async ({
+    page,
+  }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await expect(page.locator("[data-map-frame]")).toBeVisible();
+    await page.locator('[data-map-full-toggle="open"]').click();
+
+    // Two ways to look, asked rather than assumed.
+    await page.locator("[data-open-dams]").click();
+    const choice = page.locator("[data-dam-choice] button");
+    await expect(choice).toHaveCount(2);
+    await page.locator("[data-dam-choice-meters]").click();
+
+    // A meter for every reservoir, one above the next, with the reading in words as well.
+    const meters = page.locator("[data-dam-meter]");
+    await expect(meters.first()).toBeVisible();
+    const count = await meters.count();
+    expect(count).toBeGreaterThan(1);
+    const column = (await page.locator("[data-dam-meters-host]").boundingBox())!;
+    const first = (await meters.first().boundingBox())!;
+    const second = (await meters.nth(1).boundingBox())!;
+    expect(Math.round(second.x)).toBe(Math.round(first.x));
+    expect(second.y).toBeGreaterThan(first.y);
+    await expect(meters.first().locator("[data-dam-dial]")).toBeVisible();
+    expect(await meters.first().getAttribute("aria-label")).toMatch(/\d+%|-%/);
+
+    // Where the card opens: the map's own left edge, beside the pickers, over the map.
+    const mapBox = (await page.locator("[data-map-frame]").boundingBox())!;
+    expect(column.x).toBeGreaterThanOrEqual(mapBox.x - 8);
+    expect(column.x + column.width).toBeLessThan(mapBox.x + mapBox.width / 2);
+
+    // Pinned, they stay while a reservoir's own card opens beside them, and the card is
+    // beside them rather than on top: its left edge is past the meters' right edge.
+    await page.locator("[data-dam-meters-pin]").click();
+    await meters.first().click();
+    const card = page.locator("[data-selected-panel]");
+    await expect(card).toBeVisible();
+    await expect(page.locator("[data-dam-meters]")).toBeVisible();
+    const cardBox = (await card.boundingBox())!;
+    expect(cardBox.x).toBeGreaterThanOrEqual(column.x + column.width - 1);
+
+    // The hotlines stay below it all (safety rule 4).
+    const hotlines = (await page.locator("footer").boundingBox())!;
+    expect(column.y + column.height).toBeLessThanOrEqual(hotlines.y + 1);
+
+    // And a pin is remembered: leave full screen and come back, and they are up already.
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Escape");
+    await expect(page.locator("[data-map-full]")).toHaveCount(0);
+    await page.locator('[data-map-full-toggle="open"]').click();
+    await expect(page.locator("[data-dam-meters]")).toBeVisible();
   });
 
   test("a hazard still to come is a placeholder, never an empty console", async ({ page }) => {

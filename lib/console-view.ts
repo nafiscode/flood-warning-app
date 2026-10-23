@@ -65,3 +65,22 @@ const onConsole = () =>
 export function useConsoleView(): boolean {
   return useSyncExternalStore(subscribe, onConsole, () => false);
 }
+
+function subscribeLaptop(onChange: () => void): () => void {
+  if (typeof window === "undefined" || !window.matchMedia) return () => {};
+  const query = window.matchMedia(LAPTOP_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+const onLaptop = () =>
+  typeof window !== "undefined" && !!window.matchMedia && window.matchMedia(LAPTOP_QUERY).matches;
+
+/**
+ * True on a laptop or desktop only - the band with room for what is drawn over the full-screen
+ * map (the reservoir meters, the readouts). False on the server and before hydration, like the
+ * console hook above, so what the server sends does not depend on a width it cannot know.
+ */
+export function useLaptopView(): boolean {
+  return useSyncExternalStore(subscribeLaptop, onLaptop, () => false);
+}

@@ -821,6 +821,24 @@
     "join": {
       "title": "Set it up once, and Jaga can do more for you",
       "sub": "Free, and under a minute"
+    },
+    "meters": {
+      "title": "Reservoir level meters",
+      "basis": "% of full capacity · from the dam operators",
+      "pin": "Pin the meters to the map",
+      "unpin": "Unpin the meters",
+      "close": "Close the meters",
+      "label": "{dam}, {percent}% full. See the dam's details",
+      "normalNow": "Within its normal level",
+      "spilling": "Water over the spillway",
+      "aboveNormal": "Past its normal level",
+      "normalAt": "Normal level {percent}%",
+      "noReading": "No reading from the dam yet",
+      "stale": "not updated",
+      "hint": "Tap a meter for that dam's details",
+      "choose": "Choose how to view",
+      "asMeters": "Show as meters",
+      "asDetails": "Show full details"
     }
   },
   "attribution": {

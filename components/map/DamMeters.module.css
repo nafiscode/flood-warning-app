@@ -1,0 +1,68 @@
+/*
+ * The reservoir meters on the full-screen map. Instruments, so they move like instruments: the
+ * needle sweeps up from empty and settles with the small overshoot a real needle has, and the
+ * arc fills behind it. Both are keyframes read from the reading itself (--to and --share), so a
+ * meter that is drawn already full does not play a second sweep when something else re-renders.
+ *
+ * Nothing here is an alert colour. A reservoir's level is a measurement; only an alert an admin
+ * published wears red or amber (safety rule 2), so the arc is the brand's water teal whatever
+ * the reading, and "something is happening" is a slow ring of the same teal plus words.
+ */
+.needle {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  transform: rotate(var(--to));
+  animation: sweep 1.5s cubic-bezier(0.22, 1.28, 0.42, 1) both;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.55));
+}
+@keyframes sweep {
+  from {
+    transform: rotate(-135deg);
+  }
+  to {
+    transform: rotate(var(--to));
+  }
+}
+
+.fill {
+  stroke-dasharray: var(--share) 100;
+  animation: fill 1.5s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+  filter: drop-shadow(0 0 3px rgb(127 209 201 / 0.65));
+}
+@keyframes fill {
+  from {
+    stroke-dasharray: 0 100;
+  }
+  to {
+    stroke-dasharray: var(--share) 100;
+  }
+}
+
+/* A reading nobody has refreshed: the needle is the last one known, shown as such. */
+.stale .needle,
+.stale .fill {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+/* Something is happening: a slow ring, about one beat every two seconds - nowhere near 3 a second. */
+.attention {
+  animation: ring 2.4s ease-in-out infinite;
+}
+@keyframes ring {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgb(127 209 201 / 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 7px rgb(127 209 201 / 0.85));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .needle,
+  .fill,
+  .attention {
+    animation: none;
+  }
+}

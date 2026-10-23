@@ -21,7 +21,7 @@ import {
   exampleStatus,
 } from "@/lib/dev-examples";
 import { damFrame, type Dam } from "@/lib/dam";
-import { CONSOLE_QUERY } from "@/lib/console-view";
+import { CONSOLE_QUERY, LAPTOP_QUERY } from "@/lib/console-view";
 import { layersFor } from "@/lib/hazards";
 import {
   boundsAround,
@@ -1432,6 +1432,157 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
     const c = dashboard({ dams: [EXAMPLE_DAM] });
     expect(c.querySelector("button[data-open-dams]")).toBeNull();
     expect(c.querySelector(`[data-open-dam="${EXAMPLE_DAM.code}"]`)).not.toBeNull();
+  });
+
+  /*
+   * The owner, 23 Oct 2026: "Swap resident reports card with river gauges position. Same in the
+   * full screen". The full-screen column is the same list in the same order, so one order holds
+   * for the strip and for the column.
+   */
+  it("puts the residents' reports where the rivers were, and the rivers where the reports were", () => {
+    const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: NEAR_THREE }, dams: [EXAMPLE_DAM] });
+    const order = [...c.querySelectorAll("[data-console-tile]")].map((el) =>
+      el.getAttribute("data-console-tile"),
+    );
+    expect(order.slice(0, 4)).toEqual(["alerts", "reports", "dam", "gauges"]);
+  });
+
+  /*
+   * The war room (the owner, 23 Oct 2026: "once the card 'See how the reservoirs stand' is
+   * clicked, it should show 2 choices ... meters only, or full details"; "I intend to make full
+   * screen as war room for users who use laptop").
+   */
+  describe("the reservoir meters in the laptop's full screen", () => {
+    const laptop = () => {
+      const was = window.matchMedia;
+      window.matchMedia = ((q: string) =>
+        ({
+          matches: q === CONSOLE_QUERY || q === LAPTOP_QUERY,
+          media: q,
+          addEventListener() {},
+          removeEventListener() {},
+        }) as unknown as MediaQueryList) as typeof window.matchMedia;
+      return () => {
+        window.matchMedia = was;
+        window.localStorage.clear();
+      };
+    };
+    const second: Dam = {
+      ...EXAMPLE_DAM,
+      code: "small_dam",
+      name: { th: "เขื่อนเล็ก", en: "Small dam" },
+      storageMaxMcm: 100,
+      storageNormalMcm: 90,
+      signal: { ...exampleDamSignal("watch")!, percentFull: 40 },
+    };
+    const inFull = (c: HTMLElement) => {
+      fireEvent.click(c.querySelector('[data-map-full-toggle="open"]')!);
+      return c.querySelector("[data-open-dams]")!;
+    };
+
+    it("offers two ways to look, and only in full screen", () => {
+      const restore = laptop();
+      try {
+        const c = dashboard({ dams: [EXAMPLE_DAM, second] });
+        // Not in full screen: the button opens the card at once, as it always did.
+        fireEvent.click(c.querySelector("[data-open-dams]")!);
+        expect(c.querySelector("[data-dam-choice]")).toBeNull();
+        expect(c.querySelector("[data-selected='dam']")).not.toBeNull();
+      } finally {
+        restore();
+      }
+      const again = laptop();
+      try {
+        const c = dashboard({ dams: [EXAMPLE_DAM, second] });
+        fireEvent.click(inFull(c));
+        const choice = c.querySelector("[data-dam-choice]")!;
+        expect(choice.querySelectorAll("button")).toHaveLength(2);
+        expect(choice.querySelector("[data-dam-choice-meters]")).not.toBeNull();
+        // Nothing opened yet: it is a question, not an answer.
+        expect(c.querySelector("[data-dam-meters]")).toBeNull();
+        expect(c.querySelector("[data-selected='dam']")).toBeNull();
+        // The details are what the button has always opened.
+        fireEvent.click(choice.querySelector("[data-dam-choice-details]")!);
+        expect(c.querySelector("[data-selected='dam']")).not.toBeNull();
+        expect(c.querySelector("[data-dam-meters]")).toBeNull();
+      } finally {
+        again();
+      }
+    });
+
+    it("draws a meter for every reservoir, in the readout's order, with the reading as words too", () => {
+      const restore = laptop();
+      try {
+        const c = dashboard({ dams: [second, EXAMPLE_DAM] });
+        fireEvent.click(inFull(c));
+        fireEvent.click(c.querySelector("[data-dam-choice-meters]")!);
+        const meters = [...c.querySelectorAll("[data-dam-meter]")];
+        // Bang Lang is above the level it is held at, so it leads; the small dam is normal.
+        expect(meters.map((m) => m.getAttribute("data-dam-meter"))).toEqual([
+          EXAMPLE_DAM.code,
+          "small_dam",
+        ]);
+        for (const meter of meters) {
+          expect(meter.querySelector("[data-dam-dial]")).not.toBeNull();
+          // The notch where the reservoir is normally held, and its figure in words.
+          expect(meter.querySelector("[data-dam-normal]")).not.toBeNull();
+          expect(meter.getAttribute("aria-label")).toMatch(/\d+%/);
+        }
+        expect(meters[0]!.textContent).toContain("เกินระดับเก็บกักปกติ");
+        expect(meters[1]!.textContent).toContain("อยู่ในเกณฑ์ปกติ");
+        // The console wears the flag the stylesheet moves a card aside by.
+        expect(c.querySelector("[data-map-console]")!.getAttribute("data-meters")).toBe("on");
+      } finally {
+        restore();
+      }
+    });
+
+    it("hands the place to a card unless the meters are pinned, and remembers a pin", () => {
+      const restore = laptop();
+      try {
+        const c = dashboard({ dams: [EXAMPLE_DAM, second] });
+        fireEvent.click(inFull(c));
+        fireEvent.click(c.querySelector("[data-dam-choice-meters]")!);
+        // Unpinned: a press on a meter opens that reservoir's card in its place.
+        fireEvent.click(c.querySelector('[data-dam-meter="small_dam"]')!);
+        expect(c.querySelector("[data-selected='dam']")).not.toBeNull();
+        expect(c.querySelector("[data-dam-meters]")).toBeNull();
+
+        // Pinned: the meters stay while the card opens beside them.
+        fireEvent.click(c.querySelector("[data-open-dams]")!);
+        fireEvent.click(c.querySelector("[data-dam-choice-meters]")!);
+        fireEvent.click(c.querySelector("[data-dam-meters-pin]")!);
+        expect(window.localStorage.getItem("jaga.map.meters.pinned")).toBe("true");
+        fireEvent.click(c.querySelector(`[data-dam-meter="${EXAMPLE_DAM.code}"]`)!);
+        expect(c.querySelector("[data-dam-meters]")).not.toBeNull();
+        expect(c.querySelector("[data-selected='dam']")).not.toBeNull();
+
+        // Closing them lets go of the pin: a panel that comes back by itself is not closed.
+        fireEvent.click(c.querySelector("[data-dam-meters-close]")!);
+        expect(c.querySelector("[data-dam-meters]")).toBeNull();
+        expect(window.localStorage.getItem("jaga.map.meters.pinned")).toBeNull();
+      } finally {
+        restore();
+      }
+    });
+
+    it("is a war room that was pinned: full screen opens with it already up", () => {
+      const restore = laptop();
+      try {
+        window.localStorage.setItem("jaga.map.meters.pinned", "true");
+        const c = dashboard({ dams: [EXAMPLE_DAM, second] });
+        // Pinned, but not on the map until the map is on its own.
+        expect(c.querySelector("[data-dam-meters]")).toBeNull();
+        fireEvent.click(c.querySelector('[data-map-full-toggle="open"]')!);
+        expect(c.querySelector("[data-dam-meters]")).not.toBeNull();
+        // Leaving full screen takes it away, and the pin is still there for next time.
+        fireEvent.click(c.querySelector("[data-map-full-exit]")!);
+        expect(c.querySelector("[data-dam-meters]")).toBeNull();
+        expect(window.localStorage.getItem("jaga.map.meters.pinned")).toBe("true");
+      } finally {
+        restore();
+      }
+    });
   });
 
   it("lights every reservoir doing something, and walks through the dams as well", () => {

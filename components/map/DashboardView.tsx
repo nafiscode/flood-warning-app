@@ -33,7 +33,9 @@ import {
 } from "@/components/icons";
 import { BackToMap } from "@/components/map/BackToMap";
 import { ProvinceSelect } from "@/components/ProvinceSelect";
-import { LAPTOP_QUERY, useConsoleView } from "@/lib/console-view";
+import { LAPTOP_QUERY, useConsoleView, useLaptopView } from "@/lib/console-view";
+import { useStored, writeStored } from "@/lib/phone-store";
+import { DamMetersPanel, MeterIcon } from "@/components/map/DamMeters";
 import {
   areaName,
   pickName,
@@ -887,6 +889,29 @@ export function DashboardView(props: DashboardViewProps) {
     if (lit.length > 0) lightDams(lit[0]!, lit, "panel");
   };
   /*
+   * The war room's meters (the owner, 23 Oct 2026). Pinned, they stay on the map while a card
+   * opens beside them; unpinned, a card takes their place - they are the same spot, so one of
+   * the two has to give way, and the reader who wanted both pinned them. The pin is the reader's
+   * own and is remembered; closing the meters is also letting go of the pin, because a panel
+   * that comes back by itself after being closed is not closed.
+   */
+  const toggleMetersPin = () => {
+    if (metersPinned) writeStored("map.meters.pinned", null);
+    else {
+      writeStored("map.meters.pinned", true);
+      setMetersOpen(true);
+    }
+  };
+  const closeMeters = () => {
+    setMetersOpen(false);
+    writeStored("map.meters.pinned", null);
+  };
+  const openFromMeter = (dam: Dam) => {
+    if (!metersPinned) setMetersOpen(false);
+    openDam(dam);
+    revealPanel();
+  };
+  /*
    * The rivers' readout opens the stations that matter, the way the reservoirs' card opens (the
    * owner, 18 Oct: "apply for river gauges as well"; 20 Oct: the worst three together). Which
    * stations those are is worked out in lib/map-console.ts and is the same every time for the
@@ -958,6 +983,21 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const [full, setFull] = useState(false);
   const [basemapOpen, setBasemapOpen] = useState(false);
+  /*
+   * The reservoir meters, which only the full-screen laptop map has (the owner, 23 Oct 2026: "I
+   * intend to make full screen as war room for users who use laptop"). `metersOpen` is for this
+   * visit to full screen; the pin is the reader's own and is kept on the laptop, so a war room
+   * that was pinned is a war room the next time full screen opens.
+   */
+  const laptop = useLaptopView();
+  const [metersOpen, setMetersOpen] = useState(false);
+  const [damChoice, setDamChoice] = useState(false);
+  const metersPinned = useStored<boolean>("map.meters.pinned") === true;
+  const leaveFull = () => {
+    setFull(false);
+    setMetersOpen(false);
+    setDamChoice(false);
+  };
 
   /*
    * Stepping in and out of the full-screen map. Three things have to happen, and none of them
@@ -1001,6 +1041,8 @@ export function DashboardView(props: DashboardViewProps) {
         return;
       }
       setFull(false);
+      setMetersOpen(false);
+      setDamChoice(false);
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", measure);
@@ -1610,6 +1652,7 @@ export function DashboardView(props: DashboardViewProps) {
       data-map-phone={consoleOn ? "true" : undefined}
       data-phone-panel={phonePanel ?? undefined}
       data-map-full={consoleOn && full ? "true" : undefined}
+      data-meters={consoleOn && full && laptop && (metersOpen || metersPinned) ? "on" : undefined}
       data-side={consoleOn ? (sideOpen ? "open" : "closed") : undefined}
       data-side-peek={consoleOn && !sideOpen ? (sidePeek ? "on" : "off") : undefined}
     >
@@ -1858,7 +1901,7 @@ export function DashboardView(props: DashboardViewProps) {
                    * same card on 21 Oct).
                    */
                   if (!monitoringOpen) {
-                    setFull(false);
+                    leaveFull();
                     reveal(() => document.getElementById("monitoring-detail-console"));
                   }
                   setMonitoringOpen((was) => !was);
@@ -1877,7 +1920,7 @@ export function DashboardView(props: DashboardViewProps) {
                   <button
                     type="button"
                     data-map-full-exit="true"
-                    onClick={() => setFull(false)}
+                    onClick={leaveFull}
                     className={`${buttonSecondary} gap-2`}
                   >
                     <BackIcon size={20} />
@@ -1930,19 +1973,66 @@ export function DashboardView(props: DashboardViewProps) {
                          * map, where the dam legend already names every reservoir with a button.
                          */}
                         {onConsole && dams.length > 0 && (
-                          <button
-                            type="button"
-                            data-open-dams="true"
-                            onClick={() => {
-                              openDams();
-                              revealPanel();
-                            }}
-                            className={`${buttonQuiet} justify-between self-start text-start`}
-                          >
-                            <DropIcon size={24} />
-                            {t("console.dam.situation")}
-                            <span aria-hidden="true">→</span>
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              data-open-dams="true"
+                              aria-expanded={full && laptop ? damChoice : undefined}
+                              onClick={() => {
+                                /*
+                                 * In the laptop's full screen there are two ways to look (the
+                                 * owner, 23 Oct 2026): the meters, or the full details this
+                                 * button has always opened. Anywhere else there is only the one.
+                                 */
+                                if (full && laptop) {
+                                  setDamChoice((was) => !was);
+                                  return;
+                                }
+                                openDams();
+                                revealPanel();
+                              }}
+                              className={`${buttonQuiet} justify-between self-start text-start`}
+                            >
+                              <DropIcon size={24} />
+                              {t("console.dam.situation")}
+                              <span aria-hidden="true">{full && laptop ? "▾" : "→"}</span>
+                            </button>
+                            {full && laptop && damChoice && (
+                              <div
+                                role="group"
+                                aria-label={t("meters.choose")}
+                                data-dam-choice="true"
+                                className="flex flex-col gap-2 ps-4"
+                              >
+                                <button
+                                  type="button"
+                                  data-dam-choice-meters="true"
+                                  onClick={() => {
+                                    setDamChoice(false);
+                                    setMetersOpen(true);
+                                  }}
+                                  className={`${buttonQuiet} justify-start self-start text-start`}
+                                >
+                                  <MeterIcon />
+                                  {t("meters.asMeters")}
+                                </button>
+                                <button
+                                  type="button"
+                                  data-dam-choice-details="true"
+                                  onClick={() => {
+                                    setDamChoice(false);
+                                    if (!metersPinned) setMetersOpen(false);
+                                    openDams();
+                                    revealPanel();
+                                  }}
+                                  className={`${buttonQuiet} justify-start self-start text-start`}
+                                >
+                                  <DropIcon size={24} />
+                                  {t("meters.asDetails")}
+                                </button>
+                              </div>
+                            )}
+                          </>
                         )}
                         {showSea ? (
                           <button
@@ -2017,6 +2107,20 @@ export function DashboardView(props: DashboardViewProps) {
                * console this is the middle column, and the map takes whatever height is left.
                */}
               <div className="contents" data-console-area="map">
+                {/* The war room's meters, over the map where a reservoir's own card opens. */}
+                {consoleOn && full && laptop && (metersOpen || metersPinned) && (
+                  <div data-dam-meters-host="true">
+                    <DamMetersPanel
+                      dams={damOrder}
+                      locale={locale}
+                      time={time}
+                      pinned={metersPinned}
+                      onPin={toggleMetersPin}
+                      onClose={closeMeters}
+                      onOpenDam={openFromMeter}
+                    />
+                  </div>
+                )}
                 {damsOnMyPath.map(({ dam, hit }) => (
                   <DamNotice
                     key={dam.code}
@@ -2193,7 +2297,7 @@ export function DashboardView(props: DashboardViewProps) {
                           <button
                             type="button"
                             data-map-full-toggle="close"
-                            onClick={() => setFull(false)}
+                            onClick={leaveFull}
                             className={mapButton}
                           >
                             <BackIcon size={20} />

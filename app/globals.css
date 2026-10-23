@@ -744,7 +744,7 @@
     padding-inline: 0.5rem;
   }
   /* Beside the map: only the map. The notices above it belong to the console. */
-  [data-map-full] [data-console-area="map"] > *:not([data-map-frame]) {
+  [data-map-full] [data-console-area="map"] > *:not([data-map-frame], [data-dam-meters-host]) {
     display: none;
   }
   /* The hotline bar stays above the map, and above anything the map draws over itself. */
@@ -885,6 +885,34 @@
   /* The card a press opens still floats over the map, and must stay above the readouts. */
   [data-map-full] [data-selected-panel] {
     z-index: 31;
+  }
+  /*
+   * The reservoir meters (the owner, 23 Oct 2026: "show the same location where the detail info
+   * of dams opened up (most left of the map). Align vertically"). They float where a card opens -
+   * the map's left edge, from the same top - as a column of dials, and scroll inside themselves
+   * when there are more than the screen is tall.
+   */
+  [data-map-full] [data-dam-meters-host] {
+    position: fixed;
+    inset-inline-start: calc(0.75rem + 21rem + 1rem);
+    inset-block-start: 1.25rem;
+    z-index: 27;
+    width: 20rem;
+    max-height: calc(100dvh - var(--jaga-hotlines, 4.5rem) - 2.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.25rem;
+    margin: -0.25rem;
+  }
+  /*
+   * A card that opens while the meters are pinned takes the room beside them rather than on top
+   * of them: it is the same spot, so one has to move, and the reader chose to keep the meters.
+   * What is left between the meters and the readouts is about 24rem at 1440 px; it narrows with
+   * the window to 20rem and then stops, covering the readouts' edge before it covers its own text.
+   */
+  [data-map-full][data-meters="on"] [data-selected-panel] {
+    inset-inline-start: calc(0.75rem + 21rem + 1rem + 20rem + 0.75rem);
+    width: max(20rem, min(26rem, calc(100vw - 65.5rem)));
   }
 }
 

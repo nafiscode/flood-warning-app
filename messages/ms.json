@@ -821,6 +821,24 @@
     "join": {
       "title": "Tetapkan sekali, Jaga boleh bantu anda lebih",
       "sub": "Percuma, kurang seminit"
+    },
+    "meters": {
+      "title": "Meter paras air empangan",
+      "basis": "% kapasiti penuh · daripada pengendali empangan",
+      "pin": "Semat meter pada peta",
+      "unpin": "Leraikan semat meter",
+      "close": "Tutup meter",
+      "label": "{dam}, takungan {percent}%. Lihat maklumat empangan",
+      "normalNow": "Dalam paras biasa",
+      "spilling": "Air melimpah melalui alur limpah",
+      "aboveNormal": "Melepasi paras takungan biasa",
+      "normalAt": "Paras biasa {percent}%",
+      "noReading": "Belum ada bacaan empangan",
+      "stale": "belum dikemas kini",
+      "hint": "Ketik meter untuk maklumat empangan itu",
+      "choose": "Pilih cara melihat",
+      "asMeters": "Tunjukkan sebagai meter",
+      "asDetails": "Tunjukkan semua butiran"
     }
   },
   "attribution": {
