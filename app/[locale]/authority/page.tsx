@@ -39,7 +39,7 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
   const units = await readMyUnits(session.userId);
   if (units.length === 0) {
     return (
-      <section className={card}>
+      <section className={card} data-tour="not-verified">
         <h1 className="text-h3 font-bold text-jaga-ink">{t("notVerified.title")}</h1>
         <p>{t("notVerified.body")}</p>
         <Link href="/account" className={buttonSecondary}>

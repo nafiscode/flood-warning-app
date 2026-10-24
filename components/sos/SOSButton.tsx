@@ -13,6 +13,7 @@ export function SOSButton({ href, className = "" }: Props) {
   return (
     <a
       href={href}
+      data-tour="sos"
       className={`flex min-h-20 w-full items-center justify-center gap-3 rounded-2xl bg-sos px-6 py-3 text-sos-fg shadow-md active:translate-y-px ${className}`}
     >
       <LifebuoyIcon size={36} />

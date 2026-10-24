@@ -1657,14 +1657,23 @@
         "failed": "The record couldn't be loaded. Try again later.",
         "person": "Person",
         "taken": "Cases taken",
-        "reported": "Rescues reported"
+        "reported": "Rescues reported",
+        "mineSupplies": "Your team: {points} points from {cases, plural, one {# confirmed delivery} other {# confirmed deliveries}}",
+        "mineBoth": "Your team: {points} points from {cases, plural, one {# confirmed case} other {# confirmed cases}}",
+        "noneSupplies": "No confirmed deliveries yet.",
+        "noneBoth": "No confirmed cases yet.",
+        "reportedSupplies": "Deliveries reported",
+        "reportedBoth": "Cases reported",
+        "ruleSupplies": "5 points for a confirmed delivery, and 1 more for each person who received it. Nothing for accepting alone.",
+        "ruleBoth": "A confirmed rescue is worth 10 points, 2 more for each person rescued and 3 more when vulnerable people were involved. A confirmed delivery of food and water is worth 5 points, and 1 more for each person. Nothing for accepting alone."
       },
       "home": "Overview",
       "sharingShort": "Show the team's number to the person",
       "tools": "Team tools",
       "siren": {
         "idle": "No requests for help coming in right now"
-      }
+      },
+      "suppliesOffered": "{count, plural, one {# request for food and water is offered to your team} other {# requests for food and water are offered to your team}}"
     }
   },
   "admin": {
@@ -5646,5 +5655,292 @@
     "showPhone": "Show the phone number",
     "directionsWarning": "Road directions don't know which roads are flooded or closed.",
     "rescued": "Report: rescued"
+  },
+  "guide": {
+    "show": "Show me around",
+    "label": "Guide to this page",
+    "progress": "{n} of {total}",
+    "close": "Close guide",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "home": {
+      "sos": {
+        "title": "SOS",
+        "body": "If you or someone near you is in danger, press this. No sign-in. Only your location is needed; a phone number lets rescuers call you."
+      },
+      "hero": {
+        "title": "Alert level for your area",
+        "body": "The level now, who issued it, when, and when the next update is due. The level is always shown with an icon and words, never by color alone."
+      },
+      "area": {
+        "title": "Choose your area",
+        "body": "Pick your province, district and tambon, or use your location, so the alert is for where you are."
+      },
+      "watched": {
+        "title": "Places you watch",
+        "body": "Save a home, a relative's house or a workplace. Each shows its own alert level."
+      },
+      "map": {
+        "title": "Open the map",
+        "body": "Rivers, rain, dams and safe places across the four provinces."
+      },
+      "supplies": {
+        "title": "Food and water",
+        "body": "Ask for food, water or medicine when you are stuck but not in danger. For danger to life, use SOS."
+      },
+      "bell": {
+        "title": "The bell",
+        "body": "Alerts and messages you missed while the app was closed are kept here."
+      },
+      "weather": {
+        "title": "Weather",
+        "body": "The weather near you now. Forecasts are estimates, not certainties."
+      },
+      "hotlines": {
+        "title": "Emergency numbers",
+        "body": "1784 disaster prevention, 1669 medical emergency, 191 police, 199 fire. One tap calls, even offline."
+      },
+      "tabs": {
+        "title": "Bottom bar",
+        "body": "Home, Map, SOS and Account are one tap away from every page."
+      }
+    },
+    "map": {
+      "frame": {
+        "title": "The map",
+        "body": "Tap a river station, reservoir or area to open its details. Drag or pinch to move. Only public data is shown: never the exact place of anyone asking for help."
+      },
+      "zoomAll": {
+        "title": "Whole region",
+        "body": "Zoom out to all four provinces."
+      },
+      "zoomMine": {
+        "title": "My places",
+        "body": "Zoom in to the places you saved."
+      },
+      "full": {
+        "title": "Full screen",
+        "body": "Make the map fill the screen. The same place has the button to come back."
+      },
+      "layers": {
+        "title": "Layers",
+        "body": "Choose what the map shows: rain, rivers, flood-prone ground, safe places. Switch off what you do not need."
+      },
+      "place": {
+        "title": "Place",
+        "body": "Choose the area or place the map is about."
+      },
+      "sky": {
+        "title": "Weather above the map",
+        "body": "The weather near the map, with the time of the reading."
+      },
+      "features": {
+        "title": "Quick views",
+        "body": "Each chip jumps the map to one kind of information. Tap to switch it on or off."
+      },
+      "outlook": {
+        "title": "Season outlook",
+        "body": "How wet the season may be, as a range. It is an outlook, not a promise."
+      }
+    },
+    "account": {
+      "signIn": {
+        "title": "Sign in",
+        "body": "Sign in with LINE or a phone number to keep your places and requests on every device. You never need to sign in to ask for help."
+      },
+      "setup": {
+        "title": "Your details",
+        "body": "Your name and phone number. The number is never public; rescuers see it only when they are helping you."
+      },
+      "requests": {
+        "title": "My requests",
+        "body": "Follow each request you sent: sent, seen, team on its way, done."
+      },
+      "places": {
+        "title": "My places",
+        "body": "The places you watch, each with its alert level."
+      },
+      "household": {
+        "title": "My household",
+        "body": "Tell teams who lives at home and who may need extra help. Only verified teams covering your tambon can read it."
+      },
+      "myCases": {
+        "title": "My cases",
+        "body": "For team members: the cases handed to you."
+      },
+      "console": {
+        "title": "Team board",
+        "body": "For verified teams: the requests waiting in your coverage area."
+      },
+      "register": {
+        "title": "Register a team",
+        "body": "Register your organization or rescue group. An admin verifies it before it can see anything."
+      },
+      "join": {
+        "title": "Join a team",
+        "body": "Enter the code from your team's owner to join as a member."
+      },
+      "signOut": {
+        "title": "Sign out",
+        "body": "Leave this account on this device."
+      }
+    },
+    "requests": {
+      "list": {
+        "title": "Your requests",
+        "body": "Every request for help or supplies you sent, newest first."
+      },
+      "journey": {
+        "title": "Progress",
+        "body": "Each request shows its steps: sent, seen, accepted, on the way, done."
+      }
+    },
+    "supplies": {
+      "people": {
+        "title": "How many people",
+        "body": "The number of people who need the supplies."
+      },
+      "location": {
+        "title": "Where to bring it",
+        "body": "Your location is read from your device. If GPS fails, pin the place on the map."
+      },
+      "note": {
+        "title": "What is needed",
+        "body": "Water, food, medicine, baby milk, anything else."
+      },
+      "send": {
+        "title": "Send",
+        "body": "Sends the request to teams that cover your area. For danger to life use SOS or call 1669."
+      }
+    },
+    "report": {
+      "location": {
+        "title": "Where",
+        "body": "Where the flood is. Your device's location is used, or pin it by hand."
+      },
+      "depth": {
+        "title": "How deep",
+        "body": "Choose how deep the water is where you are."
+      },
+      "send": {
+        "title": "Send the report",
+        "body": "Reports are checked before they show on the map. Your name is never shown."
+      }
+    },
+    "notVerified": {
+      "waiting": {
+        "title": "Waiting for verification",
+        "body": "Your team is registered, but an admin has not verified it yet. Until then you cannot see requests. In an emergency call 1784 or 1669."
+      }
+    },
+    "console": {
+      "tools": {
+        "title": "Team tools",
+        "body": "Record a rescue, check places, and manage your team's people."
+      },
+      "status": {
+        "title": "Team status",
+        "body": "Whether your team rings for new requests, and the siren."
+      },
+      "duty": {
+        "title": "On duty",
+        "body": "Switch your team on or off duty. Off duty, new requests do not ring."
+      },
+      "views": {
+        "title": "Views",
+        "body": "Switch between the board, the map, coverage, reports and points."
+      },
+      "cases": {
+        "title": "A request",
+        "body": "Each card is one request: the need, the area, the time and its state. Open it for details."
+      },
+      "advance": {
+        "title": "Move it forward",
+        "body": "Mark your team on its way, then arrived. The person who asked sees each step."
+      },
+      "navigate": {
+        "title": "Navigate",
+        "body": "Opens the location in your maps app."
+      },
+      "phone": {
+        "title": "Show phone",
+        "body": "Reveals the requester's number. Every reveal is logged under your name."
+      },
+      "complete": {
+        "title": "Finish",
+        "body": "Close the case when done, with a photo if you can."
+      },
+      "release": {
+        "title": "Hand back",
+        "body": "Release a case your team cannot reach, so another team can take it."
+      },
+      "team": {
+        "title": "Your team's people",
+        "body": "Invite members and approve who has joined."
+      }
+    },
+    "mine": {
+      "cases": {
+        "title": "Your cases",
+        "body": "Cases assigned to you. You see the exact point and phone only for these, until they close."
+      },
+      "navigate": {
+        "title": "Navigate",
+        "body": "Opens the location in your maps app."
+      },
+      "phone": {
+        "title": "Show phone",
+        "body": "Reveals the requester's number. Every reveal is logged under your name."
+      },
+      "advance": {
+        "title": "Move it forward",
+        "body": "Mark yourself on the way, then arrived. The person who asked sees each step."
+      },
+      "complete": {
+        "title": "Finish",
+        "body": "Close the case when done, with a photo if you can."
+      },
+      "open": {
+        "title": "Open requests",
+        "body": "Requests your team can take. Tap Take to claim one."
+      }
+    },
+    "team": {
+      "waiting": {
+        "title": "Waiting to join",
+        "body": "People who used your code. Approve or refuse each one."
+      },
+      "invite": {
+        "title": "Invite",
+        "body": "Make a code or link to bring in a dispatcher or a field member."
+      }
+    },
+    "join": {
+      "code": {
+        "title": "Team code",
+        "body": "Type the code your team's owner gave you. The owner then approves you."
+      }
+    },
+    "register": {
+      "form": {
+        "title": "Team registration",
+        "body": "Choose your type, coverage area and contact. An admin checks it before your team goes live."
+      }
+    },
+    "fieldRescue": {
+      "position": {
+        "title": "Your position",
+        "body": "Read from your device when you press Record. It cannot be placed by hand."
+      },
+      "photos": {
+        "title": "Photos",
+        "body": "At least one photo of the rescue is required, without clear faces where you can."
+      },
+      "send": {
+        "title": "Record",
+        "body": "Saves the rescue your team did without an SOS. An admin may check it."
+      }
+    }
   }
 }

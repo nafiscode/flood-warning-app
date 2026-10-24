@@ -1657,14 +1657,23 @@
         "failed": "Rekod tidak dapat dimuatkan. Cuba lagi nanti.",
         "person": "Orang",
         "taken": "Kes diambil",
-        "reported": "Penyelamatan dilaporkan"
+        "reported": "Penyelamatan dilaporkan",
+        "mineSupplies": "Pasukan anda: {points} mata daripada {cases} penghantaran yang disahkan",
+        "mineBoth": "Pasukan anda: {points} mata daripada {cases} kes yang disahkan",
+        "noneSupplies": "Belum ada penghantaran yang disahkan.",
+        "noneBoth": "Belum ada kes yang disahkan.",
+        "reportedSupplies": "Penghantaran dilaporkan",
+        "reportedBoth": "Kes dilaporkan",
+        "ruleSupplies": "5 mata untuk satu penghantaran yang disahkan, dan 1 mata lagi bagi setiap orang yang menerimanya. Tiada mata untuk menerima sahaja.",
+        "ruleBoth": "Satu penyelamatan yang disahkan bernilai 10 mata, 2 mata lagi bagi setiap orang diselamatkan dan 3 mata lagi apabila ada orang yang terdedah. Satu penghantaran makanan dan air yang disahkan bernilai 5 mata, dan 1 mata lagi bagi setiap orang. Tiada mata untuk menerima sahaja."
       },
       "home": "Gambaran keseluruhan",
       "sharingShort": "Tunjukkan nombor pasukan kepada pemohon",
       "tools": "Alat pasukan",
       "siren": {
         "idle": "Tiada permintaan bantuan masuk buat masa ini"
-      }
+      },
+      "suppliesOffered": "{count} permintaan makanan dan air ditawarkan kepada pasukan anda"
     }
   },
   "admin": {
@@ -5646,5 +5655,292 @@
     "showPhone": "Lihat nombor telefon",
     "directionsWarning": "Arah jalan tidak tahu jalan mana yang banjir atau ditutup.",
     "rescued": "Lapor: sudah diselamatkan"
+  },
+  "guide": {
+    "show": "Tunjukkan halaman ini",
+    "label": "Panduan halaman ini",
+    "progress": "{n} daripada {total}",
+    "close": "Tutup panduan",
+    "back": "Kembali",
+    "next": "Seterusnya",
+    "done": "Selesai",
+    "home": {
+      "sos": {
+        "title": "SOS",
+        "body": "Jika anda atau orang berhampiran dalam bahaya, tekan ini. Tidak perlu log masuk. Hanya lokasi anda diperlukan; nombor telefon membolehkan penyelamat menghubungi anda."
+      },
+      "hero": {
+        "title": "Tahap amaran kawasan anda",
+        "body": "Tahap sekarang, siapa yang mengeluarkannya, bila, dan bila kemas kini seterusnya. Tahap sentiasa ditunjukkan dengan ikon dan perkataan, bukan warna sahaja."
+      },
+      "area": {
+        "title": "Pilih kawasan anda",
+        "body": "Pilih wilayah, daerah dan tambon, atau guna lokasi anda, supaya amaran yang dipaparkan untuk tempat anda berada."
+      },
+      "watched": {
+        "title": "Tempat yang anda pantau",
+        "body": "Simpan rumah, rumah saudara atau tempat kerja. Setiap satu menunjukkan tahap amarannya sendiri."
+      },
+      "map": {
+        "title": "Buka peta",
+        "body": "Sungai, hujan, empangan dan tempat selamat di empat wilayah."
+      },
+      "supplies": {
+        "title": "Makanan dan air",
+        "body": "Minta makanan, air atau ubat apabila anda terperangkap tetapi tidak dalam bahaya. Jika nyawa terancam, guna SOS."
+      },
+      "bell": {
+        "title": "Loceng",
+        "body": "Amaran dan mesej yang anda terlepas semasa aplikasi ditutup disimpan di sini."
+      },
+      "weather": {
+        "title": "Cuaca",
+        "body": "Cuaca berhampiran anda sekarang. Ramalan ialah anggaran, bukan kepastian."
+      },
+      "hotlines": {
+        "title": "Nombor kecemasan",
+        "body": "1784 pencegahan bencana, 1669 kecemasan perubatan, 191 polis, 199 bomba. Satu ketikan untuk menelefon, walaupun luar talian."
+      },
+      "tabs": {
+        "title": "Bar bawah",
+        "body": "Laman Utama, Peta, SOS dan Akaun hanya satu ketikan dari setiap halaman."
+      }
+    },
+    "map": {
+      "frame": {
+        "title": "Peta",
+        "body": "Ketik stesen sungai, takungan atau kawasan untuk melihat butirannya. Seret atau cubit untuk menggerakkan. Hanya data awam dipaparkan: tidak pernah lokasi tepat sesiapa yang meminta bantuan."
+      },
+      "zoomAll": {
+        "title": "Seluruh kawasan",
+        "body": "Zum keluar untuk melihat keempat-empat wilayah."
+      },
+      "zoomMine": {
+        "title": "Tempat saya",
+        "body": "Zum ke tempat yang anda simpan."
+      },
+      "full": {
+        "title": "Skrin penuh",
+        "body": "Penuhkan skrin dengan peta. Butang yang sama digunakan untuk kembali."
+      },
+      "layers": {
+        "title": "Lapisan",
+        "body": "Pilih apa yang peta tunjukkan: hujan, sungai, kawasan mudah banjir, tempat selamat. Matikan yang tidak perlu."
+      },
+      "place": {
+        "title": "Tempat",
+        "body": "Pilih kawasan atau tempat yang menjadi tumpuan peta."
+      },
+      "sky": {
+        "title": "Cuaca di atas peta",
+        "body": "Cuaca berhampiran peta, dengan masa bacaan."
+      },
+      "features": {
+        "title": "Paparan pantas",
+        "body": "Setiap cip membawa peta ke satu jenis maklumat. Ketik untuk hidup atau matikan."
+      },
+      "outlook": {
+        "title": "Jangkaan musim",
+        "body": "Betapa basahnya musim ini, sebagai julat. Ia jangkaan, bukan janji."
+      }
+    },
+    "account": {
+      "signIn": {
+        "title": "Log masuk",
+        "body": "Log masuk dengan LINE atau nombor telefon untuk menyimpan tempat dan permintaan anda pada setiap peranti. Anda tidak perlu log masuk untuk meminta bantuan."
+      },
+      "setup": {
+        "title": "Butiran anda",
+        "body": "Nama dan nombor telefon anda. Nombor tidak pernah awam; penyelamat melihatnya hanya apabila sedang membantu anda."
+      },
+      "requests": {
+        "title": "Permintaan saya",
+        "body": "Ikuti setiap permintaan yang dihantar: dihantar, dilihat, pasukan dalam perjalanan, selesai."
+      },
+      "places": {
+        "title": "Tempat saya",
+        "body": "Tempat yang anda pantau, setiap satu dengan tahap amarannya."
+      },
+      "household": {
+        "title": "Isi rumah saya",
+        "body": "Beritahu pasukan siapa tinggal di rumah dan siapa memerlukan bantuan tambahan. Hanya pasukan disahkan yang meliputi tambon anda boleh membacanya."
+      },
+      "myCases": {
+        "title": "Kes saya",
+        "body": "Untuk ahli pasukan: kes yang diserahkan kepada anda."
+      },
+      "console": {
+        "title": "Papan pasukan",
+        "body": "Untuk pasukan disahkan: permintaan yang menunggu di kawasan liputan anda."
+      },
+      "register": {
+        "title": "Daftar pasukan",
+        "body": "Daftarkan organisasi atau kumpulan penyelamat anda. Pentadbir mengesahkannya sebelum ia boleh melihat apa-apa."
+      },
+      "join": {
+        "title": "Sertai pasukan",
+        "body": "Masukkan kod daripada pemilik pasukan anda untuk menyertai sebagai ahli."
+      },
+      "signOut": {
+        "title": "Log keluar",
+        "body": "Keluar daripada akaun ini pada peranti ini."
+      }
+    },
+    "requests": {
+      "list": {
+        "title": "Permintaan anda",
+        "body": "Setiap permintaan bantuan atau bekalan yang anda hantar, yang terbaharu dahulu."
+      },
+      "journey": {
+        "title": "Kemajuan",
+        "body": "Setiap permintaan menunjukkan langkahnya: dihantar, dilihat, diterima, dalam perjalanan, selesai."
+      }
+    },
+    "supplies": {
+      "people": {
+        "title": "Berapa orang",
+        "body": "Bilangan orang yang memerlukan bekalan."
+      },
+      "location": {
+        "title": "Ke mana dihantar",
+        "body": "Lokasi anda dibaca daripada peranti. Jika GPS gagal, tanda tempat itu pada peta."
+      },
+      "note": {
+        "title": "Apa yang diperlukan",
+        "body": "Air, makanan, ubat, susu bayi, atau yang lain."
+      },
+      "send": {
+        "title": "Hantar",
+        "body": "Menghantar permintaan kepada pasukan yang meliputi kawasan anda. Jika nyawa terancam, guna SOS atau telefon 1669."
+      }
+    },
+    "report": {
+      "location": {
+        "title": "Di mana",
+        "body": "Di mana banjir berlaku. Lokasi peranti anda digunakan, atau tanda dengan tangan."
+      },
+      "depth": {
+        "title": "Sedalam mana",
+        "body": "Pilih kedalaman air di tempat anda."
+      },
+      "send": {
+        "title": "Hantar laporan",
+        "body": "Laporan disemak sebelum muncul pada peta. Nama anda tidak pernah dipaparkan."
+      }
+    },
+    "notVerified": {
+      "waiting": {
+        "title": "Menunggu pengesahan",
+        "body": "Pasukan anda telah didaftarkan, tetapi pentadbir belum mengesahkannya. Sehingga itu anda tidak boleh melihat permintaan. Dalam kecemasan, telefon 1784 atau 1669."
+      }
+    },
+    "console": {
+      "tools": {
+        "title": "Alat pasukan",
+        "body": "Rekod penyelamatan, semak tempat, dan urus ahli pasukan anda."
+      },
+      "status": {
+        "title": "Status pasukan",
+        "body": "Sama ada pasukan anda berbunyi untuk permintaan baharu, dan siren."
+      },
+      "duty": {
+        "title": "Bertugas",
+        "body": "Hidupkan atau matikan tugas pasukan. Apabila tidak bertugas, permintaan baharu tidak berbunyi."
+      },
+      "views": {
+        "title": "Paparan",
+        "body": "Tukar antara papan, peta, liputan, laporan dan mata."
+      },
+      "cases": {
+        "title": "Satu permintaan",
+        "body": "Setiap kad ialah satu permintaan: keperluan, kawasan, masa dan keadaannya. Buka untuk butiran."
+      },
+      "advance": {
+        "title": "Majukan",
+        "body": "Tandakan pasukan dalam perjalanan, kemudian tiba. Orang yang meminta melihat setiap langkah."
+      },
+      "navigate": {
+        "title": "Navigasi",
+        "body": "Membuka lokasi dalam aplikasi peta anda."
+      },
+      "phone": {
+        "title": "Tunjuk telefon",
+        "body": "Mendedahkan nombor pemohon. Setiap pendedahan direkodkan atas nama anda."
+      },
+      "complete": {
+        "title": "Selesaikan",
+        "body": "Tutup kes apabila selesai, dengan foto jika boleh."
+      },
+      "release": {
+        "title": "Serah balik",
+        "body": "Lepaskan kes yang tidak dapat dicapai pasukan anda, supaya pasukan lain boleh mengambilnya."
+      },
+      "team": {
+        "title": "Orang dalam pasukan",
+        "body": "Jemput ahli dan luluskan siapa yang telah menyertai."
+      }
+    },
+    "mine": {
+      "cases": {
+        "title": "Kes anda",
+        "body": "Kes yang diserahkan kepada anda. Anda melihat titik tepat dan telefon hanya untuk kes ini, sehingga ia ditutup."
+      },
+      "navigate": {
+        "title": "Navigasi",
+        "body": "Membuka lokasi dalam aplikasi peta anda."
+      },
+      "phone": {
+        "title": "Tunjuk telefon",
+        "body": "Mendedahkan nombor pemohon. Setiap pendedahan direkodkan atas nama anda."
+      },
+      "advance": {
+        "title": "Majukan",
+        "body": "Tandakan anda dalam perjalanan, kemudian tiba. Orang yang meminta melihat setiap langkah."
+      },
+      "complete": {
+        "title": "Selesaikan",
+        "body": "Tutup kes apabila selesai, dengan foto jika boleh."
+      },
+      "open": {
+        "title": "Permintaan terbuka",
+        "body": "Permintaan yang boleh diambil pasukan anda. Ketik Ambil untuk menuntutnya."
+      }
+    },
+    "team": {
+      "waiting": {
+        "title": "Menunggu untuk menyertai",
+        "body": "Orang yang menggunakan kod anda. Luluskan atau tolak seorang demi seorang."
+      },
+      "invite": {
+        "title": "Jemput",
+        "body": "Buat kod atau pautan untuk membawa masuk penyelaras atau ahli lapangan."
+      }
+    },
+    "join": {
+      "code": {
+        "title": "Kod pasukan",
+        "body": "Taip kod yang diberikan pemilik pasukan anda. Pemilik kemudian meluluskan anda."
+      }
+    },
+    "register": {
+      "form": {
+        "title": "Pendaftaran pasukan",
+        "body": "Pilih jenis, kawasan liputan dan hubungan. Pentadbir menyemaknya sebelum pasukan anda mula digunakan."
+      }
+    },
+    "fieldRescue": {
+      "position": {
+        "title": "Kedudukan anda",
+        "body": "Dibaca daripada peranti apabila anda menekan Rekod. Ia tidak boleh ditanda dengan tangan."
+      },
+      "photos": {
+        "title": "Foto",
+        "body": "Sekurang-kurangnya satu foto penyelamatan diperlukan, tanpa muka jelas jika boleh."
+      },
+      "send": {
+        "title": "Rekod",
+        "body": "Menyimpan penyelamatan yang pasukan anda lakukan tanpa SOS. Pentadbir mungkin menyemaknya."
+      }
+    }
   }
 }

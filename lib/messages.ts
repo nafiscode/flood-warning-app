@@ -253,6 +253,8 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     // The level names for the badge, and the drill mark's three lines: the bell is where a sent
     // drill is read, and without them next-intl prints the key path (the owner saw it, 21 Oct).
     alert: { level: (all.alert as Messages).level!, drill: (all.alert as Messages).drill! },
+    // The guide tour: the words of every page's steps (24 Oct 2026).
+    guide: all.guide!,
     // The laptop header's "For rescue teams" (23 Oct): one phrase of the home flow's words.
     homeFlow: { navTeams: (all.homeFlow as Messages).navTeams! },
     // The "What Jaga can do" line at the end of each page (A17): one word.

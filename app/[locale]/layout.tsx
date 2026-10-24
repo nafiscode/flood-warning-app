@@ -14,6 +14,7 @@ import { PhoneMenu } from "@/components/PhoneMenu";
 import { PhoneTabs } from "@/components/PhoneTabs";
 import { DaylightTheme } from "@/components/DaylightTheme";
 import { FeaturesLink } from "@/components/FeaturesLink";
+import { GuideTour } from "@/components/GuideTour";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { OfflineWarmup } from "@/components/OfflineWarmup";
 import { QueueRunner } from "@/components/QueueRunner";
@@ -254,6 +255,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               {children}
               {/* What Jaga can do (A17), at the end of every page but the ones for asking help. */}
               <FeaturesLink hasAbout={hasAbout} />
+              {/* "Show me around": the guide tour of this page, never in the way (24 Oct). */}
+              <GuideTour />
             </main>
             {/* Its own colour runs down under the home indicator, so the bar meets the screen's edge. */}
             <footer className="sticky bottom-0 z-10 bg-jaga-surface pb-[env(safe-area-inset-bottom)]">
