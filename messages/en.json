@@ -2182,6 +2182,41 @@
       "open": "Food and water requests open: {count}"
     }
   },
+  "impactPublic": {
+    "link": "Jaga's record of help",
+    "title": "The help Jaga carried",
+    "lead": "Jaga carries requests to a team; the people on the ground do the rescues. This page will record what Jaga carried and what the teams did with it. It is open to everyone, with no account.",
+    "status": {
+      "tag": "No figures yet",
+      "title": "No figures to show yet",
+      "body": "Jaga has not been through a flood season yet. We will not put in made-up numbers. The first real figures appear here once there is data from the first flood season. An empty page does not mean nobody needed help."
+    },
+    "rules": {
+      "title": "What we hold ourselves to",
+      "one": "Jaga rescues no one. It carries a request to a team; the teams and volunteers on the ground are the ones who help.",
+      "two": "Failures are shown beside successes: requests no team accepted, requests that reached the admins, the longest waits, and cases closed with nobody confirming.",
+      "three": "Jaga does not know what happens outside the app. Most people in a flood are helped by their neighbours, and that is not in our figures.",
+      "four": "Every figure states its period, when it was computed and how it was counted."
+    },
+    "will": {
+      "title": "What will be shown here",
+      "lead": "Once there is real data, this page will show:",
+      "one": "The requests Jaga carried to a team, and what became of each",
+      "two": "How long requests waited before a team accepted, as a median and a spread, per province",
+      "three": "The alerts issued, by level, and how many tambons they covered",
+      "four": "What each verified unit did, listed by province and name, with no ranking",
+      "five": "How many devices used the app, per province per day"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "body": "Only totals per province and per day are shown. No location, name, phone number or exact time of anyone, and no individual is named. Credit goes to the unit and its organisation."
+    },
+    "help": {
+      "title": "Need help now?",
+      "body": "Don't wait for this page. Send an SOS in the app, or call 1784 (disaster prevention), 1669 (medical emergency), 191 (police) or 199 (fire).",
+      "sos": "Send an SOS"
+    }
+  },
   "impact": {
     "title": "The help Jaga carried",
     "period": "{from} – {to}",

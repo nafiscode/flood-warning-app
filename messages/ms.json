@@ -2182,6 +2182,41 @@
       "open": "Permintaan makanan dan air yang masih terbuka: {count}"
     }
   },
+  "impactPublic": {
+    "link": "Rekod bantuan Jaga",
+    "title": "Rekod bantuan yang Jaga sampaikan",
+    "lead": "Jaga menyampaikan permintaan kepada pasukan; penyelamatan dilakukan oleh orang di lapangan. Halaman ini akan merekodkan apa yang Jaga sampaikan dan apa yang pasukan lakukan. Terbuka kepada semua orang, tanpa akaun.",
+    "status": {
+      "tag": "Belum ada angka",
+      "title": "Belum ada angka untuk dipaparkan",
+      "body": "Jaga belum melalui musim banjir. Kami tidak akan meletakkan angka rekaan. Angka sebenar yang pertama akan muncul di sini apabila ada data daripada musim banjir pertama. Halaman kosong tidak bermakna tiada sesiapa yang memerlukan bantuan."
+    },
+    "rules": {
+      "title": "Prinsip kami",
+      "one": "Jaga tidak menyelamatkan sesiapa. Jaga menyampaikan permintaan kepada pasukan; pasukan dan sukarelawan di lapangan yang membantu.",
+      "two": "Kegagalan ditunjukkan bersama kejayaan: permintaan yang tiada pasukan terima, permintaan yang sampai kepada pentadbir, tempoh menunggu terlama, dan kes yang ditutup tanpa pengesahan.",
+      "three": "Jaga tidak tahu apa yang berlaku di luar aplikasi. Kebanyakan orang dalam banjir dibantu oleh jiran, dan itu tiada dalam angka kami.",
+      "four": "Setiap angka menyatakan tempohnya, bila ia dikira dan cara ia dikira."
+    },
+    "will": {
+      "title": "Apa yang akan dipaparkan di sini",
+      "lead": "Apabila ada data sebenar, halaman ini akan menunjukkan:",
+      "one": "Permintaan yang Jaga sampaikan kepada pasukan, dan apa jadi kepada setiap satu",
+      "two": "Tempoh permintaan menunggu sebelum pasukan menerima, sebagai median dan sebaran, bagi setiap wilayah",
+      "three": "Amaran yang dikeluarkan, mengikut tahap, dan bilangan tambon yang dilindungi",
+      "four": "Apa yang dilakukan setiap unit yang disahkan, disenaraikan mengikut wilayah dan nama, tanpa kedudukan",
+      "five": "Bilangan peranti yang menggunakan aplikasi, bagi setiap wilayah setiap hari"
+    },
+    "privacy": {
+      "title": "Privasi",
+      "body": "Hanya jumlah mengikut wilayah dan hari dipaparkan. Tiada lokasi, nama, nombor telefon atau masa tepat sesiapa, dan tiada individu dinamakan. Kredit diberikan kepada unit dan organisasinya."
+    },
+    "help": {
+      "title": "Perlukan bantuan sekarang?",
+      "body": "Jangan tunggu halaman ini. Hantar SOS dalam aplikasi, atau telefon 1784 (pencegahan bencana), 1669 (kecemasan perubatan), 191 (polis) atau 199 (bomba).",
+      "sos": "Hantar SOS"
+    }
+  },
   "impact": {
     "title": "Rekod bantuan yang Jaga sampaikan",
     "period": "Tempoh {from} – {to}",

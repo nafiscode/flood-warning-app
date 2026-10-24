@@ -231,6 +231,8 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
       link: (all.howItWorks as Messages).link!,
       nav: { about: ((all.howItWorks as Messages).nav as Messages).about! },
     },
+    // And the record of help (24 Oct): the page's own words travel with the page, this is its link.
+    impactPublic: { link: (all.impactPublic as Messages).link! },
   };
 }
 
