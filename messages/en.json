@@ -1253,7 +1253,7 @@
   },
   "authorityRegister": {
     "title": "Register a response unit",
-    "intro": "After you send this form, a Jaga admin calls the contact person before approving it. Until then you won't see the personal data of people asking for help.",
+    "intro": "After you send this form, a Jaga admin calls the contact person before approving it. Until then you won't see the personal data of people asking for help. Once approved, you can invite your own people to the team.",
     "orgType": {
       "label": "Type of organization",
       "government": "Government",
@@ -4558,12 +4558,12 @@
       "team": {
         "name": "Rescue teams",
         "who": "Rescue units and volunteer teams",
-        "intro": "Register once. After a Jaga admin calls your team's official number, requests in your area come to you."
+        "intro": "Register once. After a Jaga admin calls your team's official number, requests in your area come to you. Then add your dispatchers and field crew yourself."
       },
       "supplies": {
         "name": "Food and water teams",
         "who": "Groups that bring food, water and essentials",
-        "intro": "You see only requests for food and water. Rescue requests never come to your team."
+        "intro": "You see only requests for food and water. Rescue requests never come to your team. Add your people and hand a delivery to whoever is going, as rescue teams do."
       },
       "admin": {
         "name": "Jaga's admins",
@@ -4623,7 +4623,7 @@
       },
       "finish": {
         "title": "Finish with a photo",
-        "text": "Report the rescue with a photo. The person confirms they are safe.",
+        "text": "Report the rescue with a photo. You, or anyone on the crew at the scene, can send it from their own phone. The person confirms they are safe.",
         "where": "Case board › the case you accepted"
       },
       "field": {
@@ -4680,6 +4680,21 @@
         "title": "Send a dam release notice",
         "text": "Tells the land below Bang Lang dam when the water may arrive, as time ranges.",
         "where": "Admin › Dam release"
+      },
+      "people": {
+        "title": "Add the people on your team",
+        "text": "Make a code for a dispatcher at a computer or for crew in the field. They enter it and wait for your yes. A code works once, within 24 hours.",
+        "where": "Case board › Team tools › Team people"
+      },
+      "crew": {
+        "title": "Hand a case to whoever is going",
+        "text": "Pick the person who goes. Their own phone shows where to go and rings, they report on the way and arrived, and send the photos when it is done.",
+        "where": "Case board › a case your team has accepted"
+      },
+      "teamRoom": {
+        "title": "See everything on a big screen",
+        "text": "On a laptop or a tablet held sideways: the list of cases, a live map, your people and your team's record on one page. Choose the map background, as on the main map.",
+        "where": "Case board (opened on a laptop or tablet)"
       }
     },
     "extras": {
@@ -4733,7 +4748,8 @@
       "accept": "Accept",
       "safe": "Safe",
       "reviewed": "Reviewed",
-      "publish": "Publish"
+      "publish": "Publish",
+      "letIn": "Let in"
     },
     "welcome": {
       "title": "New to Jaga?",
@@ -4986,7 +5002,7 @@
           "text": "A screen can be lied to. So the rules about who may see a phone number or an exact location are written into the database itself, as rules on the rows, and they apply to every way in: the app, an export, a direct query, a mistake in new code.",
           "points": {
             "1": "Every table is closed by default and opens only to a named role. Nothing is private merely because no screen happens to show it.",
-            "2": "A rescue team sees requests for help in the areas it covers and nothing outside them. Data about vulnerable households needs a rescue or coordination role as well.",
+            "2": "A rescue team sees requests for help in the areas it covers and nothing outside them. Data about vulnerable households needs a rescue or coordination role as well. Field crew whom the team's owner invites see only the point and phone number of the case handed to them, until that case ends.",
             "3": "The rules are tested like code: a suite of policy tests runs for every role, a visitor, a resident, a team in the wrong district, a team in the right one and an admin, and a change that opens a row it should not opens fails the build.",
             "4": "An admin's console and a team's console are the same database seen through different rules, not a separate, more trusting system."
           }
@@ -5400,7 +5416,7 @@
   "unitWay": {
     "title": "Register your team",
     "who": "Rescue units and volunteer teams",
-    "body": "Register once. After a Jaga admin calls your team's official number, requests in your area come to you.",
+    "body": "Register once. After a Jaga admin calls your team's official number, requests in your area come to you. Then add your dispatchers and field crew yourself.",
     "register": "Register a unit",
     "quiet": "A rescue team, civil-defence volunteer or volunteer unit?",
     "mine": "See your unit's status",

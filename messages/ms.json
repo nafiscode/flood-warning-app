@@ -1253,7 +1253,7 @@
   },
   "authorityRegister": {
     "title": "Daftar pasukan bantuan",
-    "intro": "Selepas borang dihantar, pentadbir Jaga akan telefon penyelaras sebelum meluluskan. Sementara menunggu, anda belum boleh nampak data peribadi orang yang minta tolong.",
+    "intro": "Selepas borang dihantar, pentadbir Jaga akan telefon penyelaras sebelum meluluskan. Sementara menunggu, anda belum boleh nampak data peribadi orang yang minta tolong. Setelah diluluskan, anda boleh menjemput orang anda ke dalam pasukan.",
     "orgType": {
       "label": "Jenis organisasi",
       "government": "Jabatan kerajaan",
@@ -4558,12 +4558,12 @@
       "team": {
         "name": "Pasukan penyelamat",
         "who": "Unit penyelamat dan pasukan sukarelawan",
-        "intro": "Daftar sekali. Selepas pentadbir Jaga menelefon nombor rasmi pasukan anda, permintaan di kawasan anda akan sampai kepada anda."
+        "intro": "Daftar sekali. Selepas pentadbir Jaga menelefon nombor rasmi pasukan anda, permintaan di kawasan anda akan sampai kepada anda. Kemudian tambah penyelaras dan kru lapangan anda sendiri."
       },
       "supplies": {
         "name": "Pasukan makanan dan air",
         "who": "Kumpulan yang menghantar makanan, air dan barang keperluan",
-        "intro": "Anda hanya melihat permintaan makanan dan air. Permintaan menyelamat tidak akan sampai kepada pasukan anda."
+        "intro": "Anda hanya melihat permintaan makanan dan air. Permintaan menyelamat tidak akan sampai kepada pasukan anda. Tambah orang anda dan serahkan penghantaran kepada orang yang pergi, seperti pasukan penyelamat."
       },
       "admin": {
         "name": "Pentadbir Jaga",
@@ -4623,7 +4623,7 @@
       },
       "finish": {
         "title": "Tutup dengan gambar",
-        "text": "Laporkan penyelamatan dengan gambar. Peminta mengesahkan mereka selamat.",
+        "text": "Laporkan penyelamatan dengan gambar. Anda, atau sesiapa dalam kru di tempat kejadian, boleh menghantarnya dari telefon sendiri. Peminta mengesahkan mereka selamat.",
         "where": "Papan kes › kes yang diterima"
       },
       "field": {
@@ -4680,6 +4680,21 @@
         "title": "Hantar notis pelepasan empangan",
         "text": "Memberitahu kawasan di hilir Empangan Bang Lang bila air mungkin tiba, sebagai julat masa.",
         "where": "Pentadbir › Notis pelepasan"
+      },
+      "people": {
+        "title": "Tambah orang dalam pasukan anda",
+        "text": "Buat kod untuk penyelaras di komputer atau kru di lapangan. Mereka memasukkannya dan menunggu kebenaran anda. Kod hanya sah sekali dalam 24 jam.",
+        "where": "Papan kes › Alat pasukan › Orang dalam pasukan"
+      },
+      "crew": {
+        "title": "Serahkan kes kepada orang yang akan pergi",
+        "text": "Pilih orang yang pergi. Telefon mereka sendiri menunjukkan lokasi dan berbunyi, mereka melapor dalam perjalanan dan sudah tiba, dan menghantar gambar apabila selesai.",
+        "where": "Papan kes › kes yang telah diterima pasukan anda"
+      },
+      "teamRoom": {
+        "title": "Lihat semuanya pada skrin besar",
+        "text": "Pada komputer riba atau tablet yang dipegang mendatar: senarai kes, peta langsung, orang anda dan rekod pasukan dalam satu halaman. Pilih latar peta seperti pada peta utama.",
+        "where": "Papan kes (dibuka pada komputer riba atau tablet)"
       }
     },
     "extras": {
@@ -4733,7 +4748,8 @@
       "accept": "Terima",
       "safe": "Selamat",
       "reviewed": "Disemak",
-      "publish": "Siarkan"
+      "publish": "Siarkan",
+      "letIn": "Benarkan"
     },
     "welcome": {
       "title": "Baru menggunakan Jaga?",
@@ -4986,7 +5002,7 @@
           "text": "Skrin boleh ditipu. Jadi peraturan tentang siapa boleh melihat nombor telefon atau kedudukan tepat ditulis di dalam pangkalan data itu sendiri, sebagai peraturan pada baris data, dan ia berkuat kuasa pada setiap jalan masuk: aplikasi, eksport data, pertanyaan terus, dan kesilapan dalam kod baharu.",
           "points": {
             "1": "Setiap jadual tertutup secara lalai dan hanya terbuka kepada peranan yang dinamakan. Tiada apa-apa yang rahsia semata-mata kerana tiada skrin yang menunjukkannya.",
-            "2": "Pasukan penyelamat melihat permintaan bantuan di kawasan yang diliputinya dan tiada apa-apa di luarnya. Data rumah yang terdedah memerlukan peranan penyelamat atau penyelarasan sebagai syarat tambahan.",
+            "2": "Pasukan penyelamat melihat permintaan bantuan di kawasan yang diliputinya dan tiada apa-apa di luarnya. Data rumah yang terdedah memerlukan peranan penyelamat atau penyelarasan sebagai syarat tambahan. Kru lapangan yang dijemput pemilik pasukan hanya melihat lokasi dan nombor telefon kes yang diserahkan kepada mereka, sehingga kes itu tamat.",
             "3": "Peraturan diuji seperti kod: satu set ujian polisi dijalankan untuk setiap peranan, iaitu pelawat, penduduk, pasukan di daerah yang salah, pasukan di daerahnya sendiri dan pentadbir, dan satu perubahan yang membuka baris yang tidak sepatutnya terbuka akan menggagalkan binaan.",
             "4": "Skrin pentadbir dan skrin pasukan ialah pangkalan data yang sama dilihat melalui peraturan yang berbeza, bukan sistem berasingan yang lebih dipercayai."
           }
@@ -5400,7 +5416,7 @@
   "unitWay": {
     "title": "Daftar pasukan anda",
     "who": "Unit penyelamat dan pasukan sukarelawan",
-    "body": "Daftar sekali. Selepas pentadbir Jaga menelefon nombor rasmi pasukan anda, permintaan di kawasan anda akan sampai kepada anda.",
+    "body": "Daftar sekali. Selepas pentadbir Jaga menelefon nombor rasmi pasukan anda, permintaan di kawasan anda akan sampai kepada anda. Kemudian tambah penyelaras dan kru lapangan anda sendiri.",
     "register": "Daftar pasukan",
     "quiet": "Pasukan penyelamat, APM atau sukarelawan?",
     "mine": "Lihat status unit anda",

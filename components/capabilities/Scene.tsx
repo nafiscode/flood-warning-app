@@ -10,6 +10,7 @@ import {
   MegaphoneIcon,
   ParcelIcon,
   PhoneIcon,
+  PersonIcon,
   PinIcon,
   ShieldIcon,
   TriangleIcon,
@@ -492,6 +493,104 @@ function Drawing({ name }: { name: SceneName }) {
           <span className={s.bar} style={{ width: "75%" }} />
           <span className={s.bar} style={{ width: "50%" }} />
         </Screen>
+      );
+
+    case "people":
+      return (
+        <Screen>
+          <span className="w-fit rounded-md border border-jaga-line px-2 py-0.5 font-mono text-[0.7rem] font-bold tracking-widest text-jaga-ink">
+            7F3A9-C21B4
+          </span>
+          {[0, 1].map((row) => (
+            <span key={row} className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-full bg-jaga-ground text-jaga-text-2">
+                <PersonIcon size={14} />
+              </span>
+              <span className={s.bar} style={{ width: row === 0 ? "38%" : "28%" }} />
+              {row === 0 ? (
+                <span className={`${s.chip} ${s.chipOn} ${s.s3}`}>
+                  <CheckIcon size={12} />
+                  {t("letIn")}
+                </span>
+              ) : (
+                <span className={`${s.chip} ${s.s1}`}>{t("letIn")}</span>
+              )}
+            </span>
+          ))}
+        </Screen>
+      );
+
+    case "crew":
+      return (
+        <Screen>
+          <span className="flex items-center gap-2 font-bold text-jaga-ink">
+            <LifebuoyIcon size={16} />
+            <span className={s.bar} style={{ width: "45%" }} />
+          </span>
+          <div className="flex items-center gap-2">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className={`grid size-7 place-items-center rounded-full ${
+                  i === 1 ? `${s.ping} bg-jaga-slate text-white` : "bg-jaga-ground text-jaga-text-2"
+                }`}
+              >
+                <PersonIcon size={16} />
+              </span>
+            ))}
+          </div>
+          <span className={`${s.chip} ${s.chipOn} ${s.s3} w-fit`}>
+            <PinIcon size={12} />
+            {t("coming")}
+          </span>
+        </Screen>
+      );
+
+    case "teamRoom":
+      return (
+        <svg viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" className="size-full">
+          <rect x="6" y="8" width="38" height="84" rx="5" fill="var(--jaga-ground)" />
+          {[0, 1, 2].map((i) => (
+            <rect
+              key={i}
+              x="10"
+              y={14 + i * 16}
+              width="30"
+              height="11"
+              rx="3"
+              fill={i === 0 ? "var(--jaga-sos)" : "var(--jaga-line)"}
+            />
+          ))}
+          <rect x="50" y="8" width="94" height="84" rx="5" fill="var(--jaga-ground)" />
+          <path
+            d="M50 62 C 75 50, 95 78, 144 52"
+            fill="none"
+            stroke="var(--jaga-dam)"
+            strokeWidth="3"
+            opacity="0.5"
+            className={s.flow}
+          />
+          <circle cx="92" cy="46" r="6" fill="var(--jaga-sos)" />
+          <circle cx="92" cy="46" r="11" fill="none" stroke="var(--jaga-sos)" strokeWidth="1.5" />
+          <circle cx="116" cy="64" r="4" fill="var(--jaga-text)" />
+          <rect
+            x="150"
+            y="8"
+            width="44"
+            height="84"
+            rx="5"
+            fill="var(--jaga-surface)"
+            stroke="var(--jaga-line)"
+          />
+          <rect x="155" y="14" width="34" height="8" rx="3" fill="var(--jaga-line)" />
+          <rect x="155" y="26" width="24" height="5" rx="2" fill="var(--jaga-line)" />
+          <g className={s.s3}>
+            <rect x="155" y="70" width="34" height="14" rx="5" fill="var(--jaga-slate)" />
+            <text x="172" y="80" textAnchor="middle" fontSize="8" fontWeight="700" fill="white">
+              {t("accept")}
+            </text>
+          </g>
+        </svg>
       );
 
     case "verify":

@@ -31,6 +31,10 @@ export const SCENES = [
   "signals",
   "autoAlarm",
   "warRoom",
+  // The team's people, handing a case to one of them, and the war room on a laptop (24 Oct 2026).
+  "people",
+  "crew",
+  "teamRoom",
   "verify",
   "dam",
 ] as const;
@@ -78,16 +82,21 @@ export const CAPABILITIES: Record<CapabilityRole, Capability[]> = {
   ],
   team: [
     { key: "register", icon: "add", scene: "register", href: "/authority/register" },
+    { key: "people", icon: "shield", scene: "people", href: "/authority/team" },
     { key: "offer", icon: "bell", scene: "offer", href: "/authority" },
+    { key: "crew", icon: "pin", scene: "crew", href: "/authority" },
     { key: "eta", icon: "clock", scene: "eta", href: "/authority" },
     { key: "finish", icon: "camera", scene: "finish", href: "/authority" },
     { key: "field", icon: "list", scene: "field", href: "/authority/field-rescue" },
+    { key: "teamRoom", icon: "map", scene: "teamRoom", href: "/authority" },
     { key: "coverage", icon: "trophy", scene: "coverage", href: "/authority" },
   ],
   supplies: [
     { key: "suppliesRegister", icon: "add", scene: "register", href: "/authority/register" },
     { key: "suppliesBoard", icon: "parcel", scene: "suppliesBoard", href: "/authority" },
     { key: "escalate", icon: "sos", scene: "escalate", href: "/authority" },
+    { key: "people", icon: "shield", scene: "people", href: "/authority/team" },
+    { key: "crew", icon: "pin", scene: "crew", href: "/authority" },
   ],
   admin: [
     { key: "console", icon: "megaphone", scene: "console", href: "/admin/alerts" },
