@@ -110,7 +110,9 @@ with no automatic action (a budget action can pause the deployment).
 Jaga launches on the free Supabase project `jaga-dev` (decision of 24 Oct 2026). From Supabase's own
 pages: free projects "may" be paused after a week of low activity; daily backups exist only on Pro and
 free projects are told to export their own data; the limits are 500 MB of database and 5 GB of
-egress a month. On 24 Oct the database was 52 MB.
+egress a month, counted per billing cycle (the owner's runs 28th to 28th; it resets, it is not a deadline). On 24 Oct
+Supabase showed the database at 71 MB (14%), egress 1.24 GB (25%) and log ingestion 0.4 of 1 GB (40%, a limit it
+marks as upcoming).
 
 - **If the project is paused:** the alerts, requests for help and the consoles stop. Restore it from
   Dashboard → `jaga-dev` → Restore project (a few minutes), post a notice in
