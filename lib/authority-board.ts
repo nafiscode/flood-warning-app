@@ -13,6 +13,8 @@ import type {
   DeclineReason,
   EtaBand,
   MyUnit,
+  CrewMember,
+  CaseAssignment,
 } from "@/lib/dispatch";
 import type {
   CoverageRow,
@@ -98,7 +100,49 @@ export async function readAuthorityBoard(userId: string, hours = 72): Promise<Au
     const byId = new Map(((names as Row[]) ?? []).map((r) => [String(r.id), String(r.unit_name)]));
     for (const c of cases) c.offeredToName = c.offeredTo ? (byId.get(c.offeredTo) ?? null) : null;
   }
-  return { cases, units, readAt: new Date().toISOString() };
+  const { crew, assignments } = await readCrew(supabase, units);
+  return { cases, units, crew, assignments, readAt: new Date().toISOString() };
+}
+
+/**
+ * Who is on each team the caller runs and who holds which open case (24 Oct). Two small reads per
+ * team, each refused by the database for anyone who is not that team's owner or a dispatcher; a
+ * failure leaves the lists empty and the board as it was.
+ */
+async function readCrew(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  units: MyUnit[],
+): Promise<{ crew: CrewMember[]; assignments: CaseAssignment[] }> {
+  const crew: CrewMember[] = [];
+  const assignments: CaseAssignment[] = [];
+  await Promise.all(
+    units.map(async (unit) => {
+      const [people, held] = await Promise.all([
+        supabase.rpc("unit_crew", { p_unit: unit.id }),
+        supabase.rpc("unit_assignments", { p_unit: unit.id }),
+      ]);
+      for (const m of (people.data as Row[]) ?? []) {
+        crew.push({
+          unitId: unit.id,
+          userId: String(m.user_id),
+          name: typeof m.display_name === "string" ? m.display_name : "",
+          role: m.role === "owner" || m.role === "dispatcher" ? m.role : "field",
+          openCases: Number(m.open_cases ?? 0),
+        });
+      }
+      for (const a of (held.data as Row[]) ?? []) {
+        assignments.push({
+          id: String(a.assignment_id),
+          sosId: String(a.sos_id),
+          userId: String(a.user_id),
+          name: typeof a.display_name === "string" ? a.display_name : "",
+          selfAssigned: Boolean(a.self_assigned),
+          assignedAt: String(a.assigned_at),
+        });
+      }
+    }),
+  );
+  return { crew, assignments };
 }
 
 /**
@@ -131,10 +175,22 @@ async function addVillages(
  */
 export async function readMyUnits(userId: string): Promise<MyUnit[]> {
   const supabase = await createClient();
+  // A team is the registrant's or one the owner has let this person into (24 Oct): an active
+  // owner or dispatcher. A field member has no board until they are given a case.
+  const { data: mine, error: memberError } = await supabase
+    .from("authority_unit_members")
+    .select("unit_id, role")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .in("role", ["owner", "dispatcher"]);
+  if (memberError) throw new Error(memberError.message);
+  const memberRows = (mine as Row[]) ?? [];
+  const owned = new Set(memberRows.filter((m) => m.role === "owner").map((m) => String(m.unit_id)));
+  const ids = memberRows.map((m) => String(m.unit_id));
   const { data, error } = await supabase
     .from("authority_units")
-    .select("id, unit_name, on_duty, poc_phone_to_requester, status, organizations(name)")
-    .eq("user_id", userId)
+    .select("id, user_id, unit_name, on_duty, poc_phone_to_requester, status, organizations(name)")
+    .or(ids.length > 0 ? `user_id.eq.${userId},id.in.(${ids.join(",")})` : `user_id.eq.${userId}`)
     .eq("status", "verified")
     .order("created_at");
   if (error) throw new Error(error.message);
@@ -144,6 +200,7 @@ export async function readMyUnits(userId: string): Promise<MyUnit[]> {
     orgName: String((r.organizations as { name?: string } | null)?.name ?? ""),
     onDuty: Boolean(r.on_duty),
     sharesPocPhone: Boolean(r.poc_phone_to_requester),
+    isOwner: r.user_id === userId || owned.has(String(r.id)),
   }));
 }
 
@@ -417,4 +474,18 @@ export async function revealUnitContact(unitId: string): Promise<UnitContact> {
   if (error) throw new Error(error.message);
   const row = ((data as Row[]) ?? [])[0] ?? {};
   return { name: text(row.poc_name), phone: text(row.poc_phone) };
+}
+
+/** Hand an open case this team holds to one of its people. */
+export async function assignCase(sosId: string, userId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("assign_case", { p_sos: sosId, p_user: userId });
+  if (error) throw new Error(error.message);
+}
+
+/** Take one person off a case (an owner or dispatcher, or the person themself). */
+export async function unassignCase(assignmentId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("release_assignment", { p_assignment: assignmentId });
+  if (error) throw new Error(error.message);
 }

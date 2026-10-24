@@ -228,19 +228,21 @@ export function BoardView({
                   <span className={hint}>{t("unit.dutyHint")}</span>
                 </span>
               </label>
-              <label className={checkRow}>
-                <input
-                  type="checkbox"
-                  className={checkBox}
-                  checked={unit.sharesPocPhone}
-                  onChange={(e) => unitActions.sharing(unit.id, e.target.checked)}
-                  data-sharing="true"
-                />
-                <span className="flex flex-col">
-                  <span className="font-medium">{t("unit.sharing")}</span>
-                  {!unit.sharesPocPhone && <span className={hint}>{t("unit.sharingOff")}</span>}
-                </span>
-              </label>
+              {unit.isOwner && (
+                <label className={checkRow}>
+                  <input
+                    type="checkbox"
+                    className={checkBox}
+                    checked={unit.sharesPocPhone}
+                    onChange={(e) => unitActions.sharing(unit.id, e.target.checked)}
+                    data-sharing="true"
+                  />
+                  <span className="flex flex-col">
+                    <span className="font-medium">{t("unit.sharing")}</span>
+                    {!unit.sharesPocPhone && <span className={hint}>{t("unit.sharingOff")}</span>}
+                  </span>
+                </label>
+              )}
             </section>
           ))}
         </div>
@@ -352,6 +354,14 @@ export function BoardView({
             phone={c.sosId in phones ? { number: phones[c.sosId] ?? null } : null}
             media={media[c.sosId] ?? null}
             actions={actions}
+            crew={
+              c.claimedBy && board.units.some((u) => u.id === c.claimedBy)
+                ? {
+                    members: board.crew.filter((m) => m.unitId === c.claimedBy),
+                    assigned: board.assignments.filter((a) => a.sosId === c.sosId),
+                  }
+                : undefined
+            }
           />
         ))}
       </>

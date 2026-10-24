@@ -240,6 +240,8 @@ describe("the console's views", () => {
           complete: vi.fn(),
           confirm: vi.fn(),
           media: vi.fn(),
+          assign: vi.fn(),
+          unassign: vi.fn(),
         }}
         unitActions={{ duty: vi.fn(), sharing: vi.fn() }}
         view="points"

@@ -1625,6 +1625,22 @@
         "mine": "Your team reported this delivery. Waiting for the person to confirm it.",
         "other": "{unit} reported this delivery. Waiting for the person to confirm it."
       }
+    },
+    "crew": {
+      "title": "People on this case",
+      "none": "Nobody is on this case yet. Hand it to someone on the team so its point and phone number open on their phone.",
+      "noName": "No name",
+      "tookIt": "took it themself",
+      "remove": "Take {name} off this case",
+      "removeShort": "Remove",
+      "pick": "Choose a person",
+      "assign": "Hand over",
+      "open": "{count, plural, one {# case} other {# cases}}",
+      "role": {
+        "owner": "Owner",
+        "dispatcher": "Dispatcher",
+        "field": "Field"
+      }
     }
   },
   "admin": {
@@ -3394,7 +3410,11 @@
       "rescuedBody": "Open Jaga to confirm, or to say you still need help.",
       "rescuedSuppliesTitle": "The team reports the supplies were delivered",
       "rescuedSuppliesBody": "Open Jaga to confirm you received them, or to say you did not.",
-      "announcementTitle": "Announcement from Jaga"
+      "announcementTitle": "Announcement from Jaga",
+      "assignedTitle": "A case in {tambon} was handed to you",
+      "assignedBody": "Your team gave you this case. Open it to see where to go and what to know.",
+      "assignedSuppliesTitle": "A food and water delivery in {tambon} was handed to you",
+      "assignedSuppliesBody": "Your team gave you this delivery. Open it to see where to go."
     },
     "quiet": {
       "button": "Let Jaga through Do Not Disturb and Sleep",
@@ -5477,5 +5497,102 @@
       },
       "cta": "See it all on the map"
     }
+  },
+  "unitTeam": {
+    "title": "Your team's people",
+    "intro": "Invite people to your team with a code, and you decide who is let in. A dispatcher sees the team's board the same way you do.",
+    "none": "You have no verified team yet. Once your team is verified, you can invite people here.",
+    "noName": "No name",
+    "you": "you",
+    "role": {
+      "owner": "Owner",
+      "dispatcher": "Dispatcher",
+      "field": "Field"
+    },
+    "waiting": {
+      "title": "Waiting for your yes",
+      "hint": "These people entered a code. They cannot see the team's information until you let them in.",
+      "yes": "Let in",
+      "no": "Not now"
+    },
+    "people": {
+      "title": "On the team",
+      "remove": "Remove {name} from the team",
+      "removeShort": "Remove"
+    },
+    "invite": {
+      "title": "Invite someone",
+      "hint": "Make a code for a dispatcher who will take requests from a computer or tablet. A code works once, within 24 hours.",
+      "make": "Make an invitation code",
+      "code": "Invitation code (shown only now)",
+      "until": "Valid until {time}",
+      "copy": "Copy the invitation link",
+      "copied": "Copied",
+      "once": "Send the code only to someone you trust. Even with the code, they wait for your yes.",
+      "open": "Unused code ({role}), valid until {time}",
+      "cancel": "Cancel",
+      "makeField": "Make a code for field crew",
+      "hintField": "Field crew see only the cases the team hands them, on their own phone."
+    },
+    "errors": {
+      "failed": "That did not work. Try again.",
+      "limit": "That is the most allowed for now. Try again later."
+    },
+    "join": {
+      "title": "Join a team",
+      "intro": "Enter the invitation code the team's owner sent you, then wait for the owner to let you in.",
+      "codeLabel": "Invitation code",
+      "codeHint": "10 characters, like 1A2B3-C4D5E",
+      "submit": "Ask to join",
+      "wrong": "This code does not work. It may be used, expired or mistyped. Ask the owner for a new one.",
+      "limit": "Too many tries. Wait an hour and try again.",
+      "waiting": "Request sent. Wait for the owner to let you in. You will not see the team's information until then.",
+      "already": "You are already on this team."
+    },
+    "link": "Team people",
+    "linkWaiting": "Team people ({count} waiting)",
+    "joinLink": "Join a team with a code",
+    "joined": {
+      "title": "Teams you joined",
+      "waiting": "Waiting for the owner's yes",
+      "open": "Open the team's board"
+    },
+    "myCasesLink": "Cases my team gave me"
+  },
+  "fieldCrew": {
+    "title": "Cases your team gave you",
+    "intro": "Where to go and what to know before you arrive. Keep this page open while you work.",
+    "none": {
+      "title": "Nothing is assigned to you yet",
+      "body": "When a dispatcher hands you a case it shows here, or tap “Take this” on a case your team is holding."
+    },
+    "status": {
+      "assigned": "Team accepted",
+      "en_route": "On the way",
+      "on_site": "Arrived"
+    },
+    "supplies": "Food and water delivery",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "copy": "Copy the coordinates",
+    "noPhone": "The sender gave no phone number",
+    "stepOff": "I can't go: hand this back to the team",
+    "open": {
+      "title": "Cases your team is holding",
+      "hint": "Nobody on the team has taken these. Take one to see where to go and the phone number.",
+      "crew": "{count} on it",
+      "take": "Take this"
+    },
+    "message": {
+      "failed": "That did not send. Try again.",
+      "refused": "That did not work. The case may be closed or no longer yours.",
+      "upload": "The photo did not upload. Try again.",
+      "done": "Report sent. The person who asked for help will be asked to confirm."
+    },
+    "enRoute": "We are on the way",
+    "arrived": "We have arrived",
+    "navigate": "Navigate",
+    "showPhone": "Show the phone number",
+    "directionsWarning": "Road directions don't know which roads are flooded or closed.",
+    "rescued": "Report: rescued"
   }
 }

@@ -226,10 +226,39 @@ export type MyUnit = {
   orgName: string;
   onDuty: boolean;
   sharesPocPhone: boolean;
+  /** The team's owner may change its phone tick and its people; a dispatcher may not. */
+  isOwner: boolean;
 };
 
 /** Everything the console draws. `readAt` is the server's clock, which the countdown follows. */
-export type AuthorityBoard = { cases: BoardCase[]; units: MyUnit[]; readAt: string };
+export type AuthorityBoard = {
+  cases: BoardCase[];
+  units: MyUnit[];
+  /** The people on the caller's teams, for handing a case out (owner and dispatchers only). */
+  crew: CrewMember[];
+  /** Who holds which open case, across the caller's teams. */
+  assignments: CaseAssignment[];
+  readAt: string;
+};
+
+/** One person on a team the caller runs, with how many open cases they hold. */
+export type CrewMember = {
+  unitId: string;
+  userId: string;
+  name: string;
+  role: "owner" | "dispatcher" | "field";
+  openCases: number;
+};
+
+/** One person on one open case. */
+export type CaseAssignment = {
+  id: string;
+  sosId: string;
+  userId: string;
+  name: string;
+  selfAssigned: boolean;
+  assignedAt: string;
+};
 
 /**
  * What the team holding a case reports next: on the way, then arrived. Null when there is nothing

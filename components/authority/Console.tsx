@@ -207,6 +207,8 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
     eta: (sos, band) => send({ action: "eta", sos, band }, sos),
     advance: (sos, status) => send({ action: "advance", sos, status }, sos),
     release: (sos, reason) => send({ action: "release", sos, reason }, sos),
+    assign: (sos, userId) => send({ action: "assign", sos, id: userId }, sos),
+    unassign: (assignmentId) => send({ action: "unassign", id: assignmentId }, assignmentId),
     phone: (sos) =>
       send({ action: "phone", sos }, sos, (answer) =>
         setPhones((seen) => ({ ...seen, [sos]: answer.phone ?? null })),

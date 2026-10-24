@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { runPushTick } from "@/lib/push-server";
 import {
   acceptCase,
+  assignCase,
   advanceCase,
   completeCase,
   confirmRescue,
@@ -16,6 +17,7 @@ import {
   setDuty,
   setEta,
   setPhoneSharing,
+  unassignCase,
 } from "@/lib/authority-board";
 import { getSessionProfile } from "@/lib/auth";
 import {
@@ -53,7 +55,7 @@ type Input = {
   on?: boolean;
   photos?: unknown;
   note?: unknown;
-  /** A household or a report, for the two reads that are not about a case. */
+  /** A household or a report, the person to hand a case to, or the assignment to end. */
   id?: string;
 };
 
@@ -163,6 +165,18 @@ export async function POST(request: Request) {
         const id = typeof input.id === "string" && UUID.test(input.id) ? input.id : null;
         if (!id) return answer({ error: "bad_request" }, 400);
         return answer({ media: await readReportMedia(id) });
+      }
+      case "assign": {
+        const member = typeof input.id === "string" && UUID.test(input.id) ? input.id : null;
+        if (!sos || !member) return answer({ error: "bad_request" }, 400);
+        await assignCase(sos, member);
+        break;
+      }
+      case "unassign": {
+        const id = typeof input.id === "string" && UUID.test(input.id) ? input.id : null;
+        if (!id) return answer({ error: "bad_request" }, 400);
+        await unassignCase(id);
+        break;
       }
       case "duty": {
         if (!unit || typeof input.on !== "boolean") return answer({ error: "bad_request" }, 400);

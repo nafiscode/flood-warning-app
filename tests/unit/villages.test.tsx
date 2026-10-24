@@ -28,6 +28,8 @@ function draw(board: AuthorityBoard, locale: "th" | "en") {
         complete: fn,
         confirm: fn,
         media: fn,
+        assign: fn,
+        unassign: fn,
       }}
       unitActions={{ duty: fn, sharing: fn }}
     />,

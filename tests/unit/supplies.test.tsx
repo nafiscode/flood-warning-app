@@ -257,6 +257,8 @@ describe("a team's board", () => {
     complete: vi.fn(),
     confirm: vi.fn(),
     media: vi.fn(),
+    assign: vi.fn(),
+    unassign: vi.fn(),
   });
   const draw = (cases: BoardCase[] = EXAMPLE_AUTHORITY_BOARD.cases) => {
     const taps = actions();

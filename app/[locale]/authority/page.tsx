@@ -10,6 +10,7 @@ import { getSessionProfile, localePath } from "@/lib/auth";
 import { authorityMessages } from "@/lib/messages";
 import { buttonSecondary, card } from "@/lib/ui";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { countWaiting } from "@/lib/unit-team";
 
 export async function generateMetadata({
   params,
@@ -50,6 +51,10 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
   const board = await readAuthorityBoard(session.userId);
   const tField = await getTranslations("fieldRescue");
   const tChecks = await getTranslations("placeChecks");
+  // Only the registrant has the team's people to manage; a dispatcher is not shown the link.
+  const tTeam = await getTranslations("unitTeam");
+  const isOwner = units.some((u) => u.isOwner);
+  const waiting = isOwner ? await countWaiting(session.userId) : 0;
   return (
     <div className="flex flex-col gap-5">
       {/* For people the team found by itself, who never sent an SOS (the owner, 13-14 Oct). */}
@@ -64,6 +69,11 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
       <Link href="/authority/places" className={buttonSecondary} data-place-checks-link="true">
         {tChecks("link")}
       </Link>
+      {isOwner && (
+        <Link href="/authority/team" className={buttonSecondary} data-team-link="true">
+          {waiting > 0 ? tTeam("linkWaiting", { count: waiting }) : tTeam("link")}
+        </Link>
+      )}
       <NextIntlClientProvider messages={authorityMessages(await getMessages())}>
         <Console initial={board} />
       </NextIntlClientProvider>

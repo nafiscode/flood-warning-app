@@ -75,6 +75,12 @@ const blank: BoardCase = {
 
 export const EXAMPLE_AUTHORITY_BOARD: AuthorityBoard = {
   readAt: new Date(EXAMPLE_NOW).toISOString(),
+  crew: [
+    { unitId: MY_UNIT, userId: "u-owner", name: "สมชาย (เจ้าของทีม)", role: "owner", openCases: 0 },
+    { unitId: MY_UNIT, userId: "u-boat1", name: "วิชัย (เรือ 1)", role: "field", openCases: 1 },
+    { unitId: MY_UNIT, userId: "u-boat2", name: "มานะ (เรือ 2)", role: "field", openCases: 0 },
+  ],
+  assignments: [],
   units: [
     {
       id: MY_UNIT,
@@ -82,6 +88,7 @@ export const EXAMPLE_AUTHORITY_BOARD: AuthorityBoard = {
       orgName: "มูลนิธิตัวอย่าง",
       onDuty: true,
       sharesPocPhone: true,
+      isOwner: true,
     },
   ],
   cases: [
@@ -419,7 +426,9 @@ export type ExampleTap =
   | { action: "complete"; sos: string; photos: number }
   | { action: "confirm"; sos: string }
   | { action: "duty"; unit: string; on: boolean }
-  | { action: "sharing"; unit: string; on: boolean };
+  | { action: "sharing"; unit: string; on: boolean }
+  | { action: "assign"; sos: string; userId: string }
+  | { action: "unassign"; assignmentId: string };
 
 /**
  * What the database would do with a tap, near enough for a review page: accepting makes the case
@@ -437,6 +446,30 @@ export function applyExample(board: AuthorityBoard, tap: ExampleTap, now: number
             : { ...u, sharesPocPhone: tap.on },
       ),
     };
+  }
+  // Handing a case to a person changes the crew lists, not the case.
+  if (tap.action === "assign") {
+    const who = board.crew.find((m) => m.userId === tap.userId);
+    if (!who || board.assignments.some((a) => a.sosId === tap.sos && a.userId === tap.userId)) {
+      return board;
+    }
+    return {
+      ...board,
+      assignments: [
+        ...board.assignments,
+        {
+          id: `a-${tap.sos}-${tap.userId}`,
+          sosId: tap.sos,
+          userId: tap.userId,
+          name: who.name,
+          selfAssigned: false,
+          assignedAt: new Date(now).toISOString(),
+        },
+      ],
+    };
+  }
+  if (tap.action === "unassign") {
+    return { ...board, assignments: board.assignments.filter((a) => a.id !== tap.assignmentId) };
   }
   const mine = board.units[0];
   const cases = board.cases.map((c): BoardCase => {

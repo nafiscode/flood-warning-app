@@ -12,6 +12,7 @@ import {
   TriangleIcon,
   WaveIcon,
 } from "@/components/icons";
+import { CrewPanel } from "@/components/authority/CrewPanel";
 import { MediaView, PhotoForm } from "@/components/authority/Finish";
 import { Link } from "@/i18n/navigation";
 import {
@@ -36,6 +37,8 @@ import {
   type DeclineReason,
   type EtaBand,
   type ReleaseReason,
+  type CaseAssignment,
+  type CrewMember,
 } from "@/lib/dispatch";
 import { buttonPrimary, buttonSecondary, hint } from "@/lib/ui";
 
@@ -61,6 +64,9 @@ export type CaseActions = {
   confirm: (sosId: string, photos: File[], note: string) => void;
   /** Ask for the case's photos, voice note and evidence. */
   media: (sosId: string) => void;
+  /** Hand the case to a person on the team, or take them off it. */
+  assign: (sosId: string, userId: string) => void;
+  unassign: (assignmentId: string) => void;
 };
 
 type Props = {
@@ -72,6 +78,8 @@ type Props = {
   /** Set once the photos were asked for. */
   media: CaseMedia | "failed" | null;
   actions: CaseActions;
+  /** The team's people and who holds this case, when the caller runs the team that holds it. */
+  crew?: { members: CrewMember[]; assigned: CaseAssignment[] };
 };
 
 const STATE_ICON: Record<CaseState, typeof CheckIcon> = {
@@ -125,7 +133,7 @@ function Chip({ children, strong = false }: { children: ReactNode; strong?: bool
   );
 }
 
-export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
+export function CaseCard({ c, now, busy, phone, media, actions, crew }: Props) {
   const t = useTranslations("authority");
   const tSos = useTranslations("sos");
   const tReport = useTranslations("report");
@@ -470,6 +478,16 @@ export function CaseCard({ c, now, busy, phone, media, actions }: Props) {
               </button>
             ))}
         </div>
+      )}
+
+      {state === "mine" && c.status !== "rescued" && crew && (
+        <CrewPanel
+          crew={crew.members}
+          assigned={crew.assigned}
+          busy={busy}
+          onAssign={(userId) => actions.assign(c.sosId, userId)}
+          onUnassign={(id) => actions.unassign(id)}
+        />
       )}
 
       {hasMedia && !media && state !== "held_by_other" && (

@@ -1625,6 +1625,22 @@
         "mine": "Pasukan anda melaporkan penghantaran ini. Menunggu orang itu mengesahkannya.",
         "other": "{unit} melaporkan penghantaran ini. Menunggu orang itu mengesahkannya."
       }
+    },
+    "crew": {
+      "title": "Orang pada kes ini",
+      "none": "Belum ada sesiapa pada kes ini. Berikan kepada seseorang dalam pasukan supaya lokasi dan nombor telefon terbuka di telefon mereka.",
+      "noName": "Tiada nama",
+      "tookIt": "mengambilnya sendiri",
+      "remove": "Keluarkan {name} daripada kes ini",
+      "removeShort": "Keluarkan",
+      "pick": "Pilih seseorang",
+      "assign": "Serahkan",
+      "open": "{count} kes",
+      "role": {
+        "owner": "Pemilik pasukan",
+        "dispatcher": "Penyelaras",
+        "field": "Lapangan"
+      }
     }
   },
   "admin": {
@@ -3394,7 +3410,11 @@
       "rescuedBody": "Buka Jaga untuk mengesahkan, atau beritahu anda masih perlukan bantuan.",
       "rescuedSuppliesTitle": "Pasukan melaporkan barang sudah dihantar",
       "rescuedSuppliesBody": "Buka Jaga untuk mengesahkan anda menerimanya, atau beritahu belum terima.",
-      "announcementTitle": "Pengumuman daripada Jaga"
+      "announcementTitle": "Pengumuman daripada Jaga",
+      "assignedTitle": "Kes di {tambon} diserahkan kepada anda",
+      "assignedBody": "Pasukan anda menyerahkan kes ini kepada anda. Buka untuk melihat lokasi dan apa yang perlu diketahui.",
+      "assignedSuppliesTitle": "Penghantaran makanan dan air di {tambon} diserahkan kepada anda",
+      "assignedSuppliesBody": "Pasukan anda menyerahkan penghantaran ini kepada anda. Buka untuk melihat lokasi."
     },
     "quiet": {
       "button": "Benarkan Jaga walaupun mod Jangan Ganggu atau Tidur dihidupkan",
@@ -5477,5 +5497,102 @@
       },
       "cta": "Lihat semuanya pada peta"
     }
+  },
+  "unitTeam": {
+    "title": "Orang dalam pasukan anda",
+    "intro": "Jemput orang ke pasukan anda dengan kod, dan anda yang membenarkan mereka masuk. Penyelaras melihat papan pasukan sama seperti anda.",
+    "none": "Anda belum ada pasukan yang telah disahkan. Setelah pasukan anda disahkan, anda boleh menjemput orang di sini.",
+    "noName": "Tiada nama",
+    "you": "anda",
+    "role": {
+      "owner": "Pemilik pasukan",
+      "dispatcher": "Penyelaras",
+      "field": "Lapangan"
+    },
+    "waiting": {
+      "title": "Menunggu kebenaran anda",
+      "hint": "Mereka telah memasukkan kod. Mereka belum boleh melihat maklumat pasukan sehingga anda membenarkan.",
+      "yes": "Benarkan",
+      "no": "Bukan sekarang"
+    },
+    "people": {
+      "title": "Dalam pasukan",
+      "remove": "Keluarkan {name} daripada pasukan",
+      "removeShort": "Keluarkan"
+    },
+    "invite": {
+      "title": "Jemput seseorang",
+      "hint": "Buat kod untuk penyelaras yang akan menerima permintaan daripada komputer atau tablet. Kod hanya sah sekali, dalam 24 jam.",
+      "make": "Buat kod jemputan",
+      "code": "Kod jemputan (hanya ditunjukkan sekarang)",
+      "until": "Sah sehingga {time}",
+      "copy": "Salin pautan jemputan",
+      "copied": "Disalin",
+      "once": "Hantar kod hanya kepada orang yang anda percayai. Walaupun ada kod, mereka tetap menunggu kebenaran anda.",
+      "open": "Kod belum digunakan ({role}), sah sehingga {time}",
+      "cancel": "Batal",
+      "makeField": "Buat kod untuk kru lapangan",
+      "hintField": "Kru lapangan hanya melihat kes yang pasukan serahkan kepada mereka, di telefon mereka."
+    },
+    "errors": {
+      "failed": "Tidak berjaya. Cuba lagi.",
+      "limit": "Had telah dicapai buat masa ini. Cuba lagi nanti."
+    },
+    "join": {
+      "title": "Sertai pasukan",
+      "intro": "Masukkan kod jemputan daripada pemilik pasukan, kemudian tunggu pemilik membenarkan anda masuk.",
+      "codeLabel": "Kod jemputan",
+      "codeHint": "10 aksara, contohnya 1A2B3-C4D5E",
+      "submit": "Mohon menyertai",
+      "wrong": "Kod ini tidak berfungsi. Mungkin sudah digunakan, tamat tempoh atau tersalah taip. Minta kod baharu daripada pemilik.",
+      "limit": "Terlalu banyak percubaan. Tunggu sejam dan cuba lagi.",
+      "waiting": "Permintaan dihantar. Tunggu pemilik membenarkan anda. Anda belum akan melihat maklumat pasukan sehingga itu.",
+      "already": "Anda sudah berada dalam pasukan ini."
+    },
+    "link": "Orang dalam pasukan",
+    "linkWaiting": "Orang dalam pasukan ({count} menunggu)",
+    "joinLink": "Sertai pasukan dengan kod",
+    "joined": {
+      "title": "Pasukan yang anda sertai",
+      "waiting": "Menunggu kebenaran pemilik",
+      "open": "Buka papan pasukan"
+    },
+    "myCasesLink": "Kes yang pasukan berikan kepada saya"
+  },
+  "fieldCrew": {
+    "title": "Kes yang diberikan pasukan anda",
+    "intro": "Ke mana hendak pergi dan apa yang perlu diketahui sebelum tiba. Biarkan halaman ini terbuka semasa bertugas.",
+    "none": {
+      "title": "Belum ada kes diberikan kepada anda",
+      "body": "Apabila penyelaras memberikan kes, ia muncul di sini, atau tekan “Ambil kes ini” pada kes yang dipegang pasukan anda."
+    },
+    "status": {
+      "assigned": "Pasukan menerima",
+      "en_route": "Dalam perjalanan",
+      "on_site": "Sudah tiba"
+    },
+    "supplies": "Penghantaran makanan dan air",
+    "people": "{count} orang",
+    "copy": "Salin koordinat",
+    "noPhone": "Penghantar tidak memberi nombor telefon",
+    "stepOff": "Tidak dapat pergi: pulangkan kepada pasukan",
+    "open": {
+      "title": "Kes yang dipegang pasukan anda",
+      "hint": "Belum ada ahli pasukan yang mengambilnya. Ambil satu untuk melihat lokasi dan nombor telefon.",
+      "crew": "{count} orang menguruskannya",
+      "take": "Ambil kes ini"
+    },
+    "message": {
+      "failed": "Tidak dihantar. Cuba lagi.",
+      "refused": "Tidak berjaya. Kes mungkin sudah ditutup atau bukan lagi milik anda.",
+      "upload": "Foto tidak dimuat naik. Cuba lagi.",
+      "done": "Laporan dihantar. Pemohon akan diminta mengesahkan."
+    },
+    "enRoute": "Kami dalam perjalanan",
+    "arrived": "Kami sudah sampai",
+    "navigate": "Arah jalan",
+    "showPhone": "Lihat nombor telefon",
+    "directionsWarning": "Arah jalan tidak tahu jalan mana yang banjir atau ditutup.",
+    "rescued": "Lapor: sudah diselamatkan"
   }
 }

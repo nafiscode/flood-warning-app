@@ -149,6 +149,28 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
   };
 }
 
+/** The owner's team page and the join page (24 Oct 2026): their own words, and nothing else. */
+export function unitTeamMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  return pick(messages, ["unitTeam"]);
+}
+
+/**
+ * A crew member's page (24 Oct 2026): its own words, plus the sender's vulnerability flags and
+ * needs, the depth labels and the photo form a rescue is reported with, so a crew reads the same
+ * words as the board.
+ */
+export function fieldCrewMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  const authority = all.authority as Messages;
+  const sos = all.sos as Messages;
+  return {
+    ...pick(messages, ["fieldCrew", "push"]),
+    authority: { finish: authority.finish!, supplies: authority.supplies! },
+    sos: { vulnerable: sos.vulnerable!, needs: sos.needs! },
+    report: { depths: (all.report as Messages).depths! },
+  };
+}
+
 /** The weather page: its own text, plus the attribution line Open-Meteo requires. */
 export function weatherMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   return pick(messages, ["weather", "attribution"]);

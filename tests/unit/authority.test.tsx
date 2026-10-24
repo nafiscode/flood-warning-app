@@ -42,6 +42,8 @@ function actions(): CaseActions {
     complete: vi.fn(),
     confirm: vi.fn(),
     media: vi.fn(),
+    assign: vi.fn(),
+    unassign: vi.fn(),
   };
 }
 

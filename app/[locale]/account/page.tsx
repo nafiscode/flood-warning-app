@@ -25,6 +25,7 @@ import {
   SignOutIcon,
 } from "@/components/icons";
 import { SignOutForm } from "@/components/account/SignOutForm";
+import { readMemberships } from "@/lib/unit-team";
 import { askForAdminAccess } from "./actions";
 
 export async function generateMetadata({
@@ -48,6 +49,7 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
   const tWatched = await getTranslations("watched");
   const tHousehold = await getTranslations("household");
   const tJourney = await getTranslations("journey");
+  const tTeam = await getTranslations("unitTeam");
 
   const supabase = await createClient();
   const { data: units } = await supabase
@@ -55,6 +57,8 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
     .select("id, unit_name, status, created_at, verified_at, updated_at")
     .eq("user_id", session.userId)
     .order("created_at");
+  // Teams an owner has let this person into, or that they are waiting to join (24 Oct).
+  const memberships = await readMemberships();
   // Why an admin turned a registration down (owner, 16 Oct): read through the function, because
   // the audit log that holds the words is admins-only.
   const { data: reviewed } = await supabase.rpc("my_unit_reviews");
@@ -122,7 +126,23 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
             </div>
           );
         })}
-        {(units ?? []).some((unit) => unit.status === "verified") && (
+        {memberships.length > 0 && (
+          <div className="flex flex-col gap-2" data-memberships="true">
+            <h3 className="font-bold">{tTeam("joined.title")}</h3>
+            {memberships.map((m) => (
+              <p key={m.unitId} data-membership={m.unitId}>
+                {m.unitName}
+                <span className={`block ${hint}`}>
+                  {m.orgName ? `${m.orgName} · ` : ""}
+                  {tTeam(`role.${m.role}`)}
+                  {m.status === "pending" ? ` · ${tTeam("joined.waiting")}` : ""}
+                </span>
+              </p>
+            ))}
+          </div>
+        )}
+        {((units ?? []).some((unit) => unit.status === "verified") ||
+          memberships.some((m) => m.status === "active" && m.role === "dispatcher")) && (
           <Link href="/authority" className={buttonPrimary}>
             <LifebuoyIcon size={22} />
             {t("authority.console")}
@@ -132,6 +152,16 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
         <Link href="/authority/register" className={buttonSecondary}>
           <AddSquareIcon size={22} />
           {t("authority.register")}
+        </Link>
+        {memberships.some((m) => m.status === "active") && (
+          <Link href="/authority/mine" className={buttonPrimary} data-my-cases-link="true">
+            <LifebuoyIcon size={22} />
+            {tTeam("myCasesLink")}
+          </Link>
+        )}
+        <Link href="/authority/join" className={buttonSecondary} data-join-link="true">
+          <AddSquareIcon size={22} />
+          {tTeam("joinLink")}
         </Link>
       </section>
 
@@ -143,7 +173,9 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
           <h2 className="text-body font-bold">{t("adminAsk.title")}</h2>
           {query.adminError && (
             <p role="alert" className={notice}>
-              {t(`adminAsk.error.${["phone", "note", "already", "save"].includes(String(query.adminError)) ? query.adminError : "save"}`)}
+              {t(
+                `adminAsk.error.${["phone", "note", "already", "save"].includes(String(query.adminError)) ? query.adminError : "save"}`,
+              )}
             </p>
           )}
           {adminRequest ? (

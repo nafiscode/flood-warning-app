@@ -24,5 +24,12 @@ export async function GET() {
     .from("authority_units")
     .select("id", { count: "exact", head: true })
     .eq("user_id", session.userId);
-  return answer(session.role, (count ?? 0) > 0);
+  if ((count ?? 0) > 0) return answer(session.role, true);
+  // A person an owner has let into a team (or who is waiting to be) is not asked to register one.
+  const { count: joined } = await supabase
+    .from("authority_unit_members")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", session.userId)
+    .in("status", ["pending", "active"]);
+  return answer(session.role, (joined ?? 0) > 0);
 }

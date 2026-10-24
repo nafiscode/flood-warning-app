@@ -82,6 +82,8 @@ export function AuthorityExample({
     complete: (sos, photos) => tap({ action: "complete", sos, photos: photos.length }),
     confirm: (sos) => tap({ action: "confirm", sos }),
     media: (sos) => setMedia((seen) => ({ ...seen, [sos]: "failed" })),
+    assign: (sos, userId) => tap({ action: "assign", sos, userId }),
+    unassign: (assignmentId) => tap({ action: "unassign", assignmentId }),
   };
 
   return (

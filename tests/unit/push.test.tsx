@@ -184,6 +184,16 @@ describe("notifications about a request for help", () => {
     expect(accepted.sticky).toBe(false);
   });
 
+  it("a person handed a case is told which tambon, and the tap opens their own cases", () => {
+    const p = casePayload(row("assigned"), words)!;
+    expect(p.title).toBe(words.assignedTitle.replace("{tambon}", "บานา"));
+    expect(p.url).toBe("/authority/mine");
+    expect(p.tag).toBe("assigned-0b0e7c1e-0000-4000-8000-000000000002");
+    expect(casePayload(row("assigned", { request: "supplies" }), words)!.title).toBe(
+      words.assignedSuppliesTitle.replace("{tambon}", "บานา"),
+    );
+  });
+
   it("the admins are sent to the war room when nobody has accepted", () => {
     expect(casePayload(row("unclaimed"), words)!.url).toBe("/admin/war-room");
   });

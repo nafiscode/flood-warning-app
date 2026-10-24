@@ -60,6 +60,8 @@ export type PushPayload = {
  */
 export const CASE_KINDS = [
   "offer",
+  // To one person on a team: the dispatcher handed them this case (24 Oct 2026).
+  "assigned",
   "unclaimed",
   "accepted",
   "en_route",
@@ -159,6 +161,7 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
     supplies && words[`${name}SuppliesTitle`] ? `${name}Supplies` : name;
   const name = {
     offer: "offer",
+    assigned: "assigned",
     unclaimed: "unclaimed",
     accepted: "accepted",
     en_route: "enRoute",
@@ -168,7 +171,7 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
   const title = words[`${key(name)}Title`];
   const body = words[`${key(name)}Body`];
   if (!title || !body) return null;
-  const forSender = kind !== "offer" && kind !== "unclaimed";
+  const forSender = kind !== "offer" && kind !== "unclaimed" && kind !== "assigned";
   return {
     kind,
     title: fill(title, values),
@@ -177,7 +180,9 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
       ? `${prefix}/sos/${row.sos_id}`
       : kind === "offer"
         ? `${prefix}/authority`
-        : `${prefix}/admin/war-room`,
+        : kind === "assigned"
+          ? `${prefix}/authority/mine`
+          : `${prefix}/admin/war-room`,
     // One notification per case and audience: the next step replaces the last.
     tag: `${forSender ? "case" : kind}-${row.sos_id}`,
     sticky: kind === "offer",
