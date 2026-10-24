@@ -206,6 +206,8 @@ export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlM
     ...pick(messages, ["authority", "push"]),
     // The capability names are the war room's, so a team and an admin read the same words.
     warRoom: { capability: (all.warRoom as Messages).capability! },
+    // The war room's basemap buttons say what the main map's say.
+    map: { basemap: (all.map as Messages).basemap! },
     sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard!, needs: sos.needs! },
     report: {
       depths: (all.report as Messages).depths!,

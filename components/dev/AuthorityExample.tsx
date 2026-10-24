@@ -9,6 +9,8 @@ import {
 } from "@/components/authority/BoardView";
 import type { CaseActions } from "@/components/authority/CaseCard";
 import { OtherView } from "@/components/authority/OtherView";
+import { TeamWarRoom } from "@/components/authority/TeamWarRoom";
+import { useConsoleView } from "@/lib/console-view";
 import {
   EXAMPLE_AUTHORITY_BOARD,
   EXAMPLE_COVERAGE,
@@ -21,8 +23,40 @@ import {
   type ExampleTap,
 } from "@/lib/authority-examples";
 import type { UnitContact } from "@/lib/coverage";
-import { shouldAlarm, type AuthorityBoard } from "@/lib/dispatch";
+import { shouldAlarm, type AuthorityBoard, type TeamRecord } from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
+
+const EXAMPLE_RECORD: TeamRecord[] = [
+  {
+    unitId: "e0000000-0000-4000-8000-000000000001",
+    unitName: "ทีมกู้ภัยตัวอย่าง บานา",
+    points: 58,
+    cases: 4,
+    members: [
+      {
+        userId: "u-owner",
+        name: "สมชาย (เจ้าของทีม)",
+        role: "owner",
+        casesTaken: 1,
+        rescuesReported: 1,
+      },
+      {
+        userId: "u-boat1",
+        name: "วิชัย (เรือ 1)",
+        role: "field",
+        casesTaken: 3,
+        rescuesReported: 2,
+      },
+      {
+        userId: "u-boat2",
+        name: "มานะ (เรือ 2)",
+        role: "field",
+        casesTaken: 2,
+        rescuesReported: 1,
+      },
+    ],
+  },
+];
 
 /**
  * The authority console with made-up cases, for the owner to look at and to hear. It answers taps
@@ -85,6 +119,33 @@ export function AuthorityExample({
     assign: (sos, userId) => tap({ action: "assign", sos, userId }),
     unassign: (assignmentId) => tap({ action: "unassign", assignmentId }),
   };
+
+  // On a laptop or a landscape tablet the example shows the war room, as the real console does.
+  const warRoom = useConsoleView();
+  if (warRoom) {
+    return (
+      <TeamWarRoom
+        board={board}
+        now={now}
+        alarm={alarm}
+        onArm={() => void arm().then((ok) => setAlarm(ok ? "on" : "none"))}
+        busy={null}
+        notice={notice}
+        phones={phones}
+        media={media}
+        stale={false}
+        onRefresh={null}
+        actions={actions}
+        unitActions={{
+          duty: (unit, on) => tap({ action: "duty", unit, on }),
+          sharing: (unit, on) => tap({ action: "sharing", unit, on }),
+        }}
+        coverage={EXAMPLE_COVERAGE}
+        record={EXAMPLE_RECORD}
+        live
+      />
+    );
+  }
 
   return (
     <BoardView

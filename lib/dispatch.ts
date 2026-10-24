@@ -336,3 +336,22 @@ export function tambonsOnBoard(cases: BoardCase[]): { code: string; th: string; 
   }
   return [...seen.values()].sort((a, b) => a.code.localeCompare(b.code));
 }
+
+/**
+ * A team's record for the war room's foot (24 Oct 2026): the team's points and confirmed cases
+ * from the same ledger as the points view, and each person's part in them. The per-person
+ * counts come from who held a case and who reported the rescue; points stay with the team.
+ */
+export type TeamRecord = {
+  unitId: string;
+  unitName: string;
+  points: number;
+  cases: number;
+  members: {
+    userId: string;
+    name: string;
+    role: CrewMember["role"];
+    casesTaken: number;
+    rescuesReported: number;
+  }[];
+};

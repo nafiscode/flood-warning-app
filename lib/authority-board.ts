@@ -15,6 +15,7 @@ import type {
   MyUnit,
   CrewMember,
   CaseAssignment,
+  TeamRecord,
 } from "@/lib/dispatch";
 import type {
   CoverageRow,
@@ -488,4 +489,36 @@ export async function unassignCase(assignmentId: string): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("release_assignment", { p_assignment: assignmentId });
   if (error) throw new Error(error.message);
+}
+
+/**
+ * The record of each team the caller runs (24 Oct): its points and confirmed cases from the
+ * ledger, and each person's part. One small read per team; the database refuses anyone who is
+ * not that team's owner or a dispatcher.
+ */
+export async function readTeamRecords(userId: string): Promise<TeamRecord[]> {
+  const supabase = await createClient();
+  const [units, board] = await Promise.all([
+    readMyUnits(userId),
+    readLeaderboard().catch(() => [] as PointsRow[]),
+  ]);
+  return Promise.all(
+    units.map(async (unit) => {
+      const { data } = await supabase.rpc("unit_member_record", { p_unit: unit.id });
+      const mine = board.find((row) => row.unitId === unit.id);
+      return {
+        unitId: unit.id,
+        unitName: unit.name,
+        points: mine?.points ?? 0,
+        cases: mine?.cases ?? 0,
+        members: ((data as Row[]) ?? []).map((m) => ({
+          userId: String(m.user_id),
+          name: typeof m.display_name === "string" ? m.display_name : "",
+          role: m.role === "owner" || m.role === "dispatcher" ? m.role : ("field" as const),
+          casesTaken: Number(m.cases_taken ?? 0),
+          rescuesReported: Number(m.rescues_reported ?? 0),
+        })),
+      };
+    }),
+  );
 }

@@ -265,6 +265,45 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
     expect(looks.length).toBeGreaterThan(0);
   });
 
+  test("on a laptop the same console is the team's war room, with the case the team holds in it", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await signIn(page);
+    await page.goto("/authority");
+
+    const room = page.locator("[data-team-war-room]");
+    await expect(room).toBeVisible();
+    // The queue lists the case, and it is this team's.
+    const row = room.locator(`[data-war-case="${sos!.id}"]`);
+    await expect(row).toHaveAttribute("data-war-state", "mine");
+    await row.click();
+    // The same card as on the phone opens beside the map, with the same buttons.
+    const card = room.locator(`[data-war-panel] [data-case="${sos!.id}"]`);
+    await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute("data-case-state", "mine");
+    // The map is drawn, on the main map's basemaps, and a different one can be chosen.
+    await expect(room.locator("[data-map-ready]")).toBeVisible();
+    await expect(room.locator("[data-basemap-choice]")).toHaveCount(4);
+    await room.locator('[data-basemap-choice="satellite"]').click();
+    await expect(room.locator('[data-basemap-choice="satellite"]')).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    // A team of one is not shown a crew list, and its record has no table of people.
+    await expect(room.locator("[data-war-crew]")).toHaveCount(0);
+    await expect(room.locator("[data-war-record]")).toBeVisible();
+    await expect(room.locator("[data-war-record] table")).toHaveCount(0);
+    // The console's other views are still there: points replace the war room, and it comes back.
+    await room.locator('[data-war-views] [data-console-view="points"]').click();
+    await expect(room.locator("[data-war-queue]")).toHaveCount(0);
+    await room.locator('[data-war-views] [data-console-view="cases"]').click();
+    await expect(room.locator(`[data-war-case="${sos!.id}"]`)).toBeVisible();
+    // Nothing on a laptop scrolls sideways either.
+    await page.evaluate(() => window.scrollTo(9999, 0));
+    expect(await page.evaluate(() => window.scrollX)).toBe(0);
+  });
+
   test("giving the case back takes a reason and leaves nobody holding it", async ({ page }) => {
     await signIn(page);
     await page.goto("/authority");

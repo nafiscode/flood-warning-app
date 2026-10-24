@@ -13,6 +13,8 @@ import { isGap, type CoverageRow } from "@/lib/coverage";
 import type { BoardCase } from "@/lib/dispatch";
 import {
   createServiceAreaMap,
+  setBasemap,
+  type Basemap,
   mapHalo,
   mapInk,
   TAMBON_FILL_LAYER,
@@ -35,6 +37,7 @@ const CASES = "jaga-ab-cases";
 const COVER = "jaga-ab-cover";
 const MINE = "jaga-ab-mine";
 const PICKED = "jaga-ab-picked";
+const SELECTED = "jaga-ab-selected";
 
 export type BoardMapMode = "cases" | "coverage";
 
@@ -94,9 +97,26 @@ type Props = {
   onPickCase: (sosId: string) => void;
   onPickTambon: (code: string) => void;
   text: { loading: string; failed: string };
+  /** The ground under the marks: the main map's own four (lib/map.ts). */
+  basemap?: Basemap;
+  /** The case open beside the map, ringed and brought into view. */
+  selected?: string | null;
+  /** The map's size; the war room fills the space it is given. */
+  className?: string;
 };
 
-export function BoardMap({ cases, coverage, mode, picked, onPickCase, onPickTambon, text }: Props) {
+export function BoardMap({
+  cases,
+  coverage,
+  mode,
+  picked,
+  onPickCase,
+  onPickTambon,
+  text,
+  basemap = "streets",
+  selected = null,
+  className = "h-[50vh] min-h-72 w-full overflow-hidden rounded-xl border border-jaga-line lg:h-[60vh]",
+}: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const held = useRef<GeoJSON.FeatureCollection | null>(null);
@@ -105,6 +125,9 @@ export function BoardMap({ cases, coverage, mode, picked, onPickCase, onPickTamb
   const framed = useRef("");
   const moved = useRef(false);
   const draw = useRef<() => void>(() => {});
+  // The basemap the map was made with, and the one it shows now (changed without a new map).
+  const basemapAtStart = useRef(basemap);
+  const applied = useRef(basemap);
   const handlers = useRef({ onPickCase, onPickTambon, mode });
   const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
 
@@ -175,6 +198,23 @@ export function BoardMap({ cases, coverage, mode, picked, onPickCase, onPickTamb
             },
           });
         }
+        if (!m.getLayer(SELECTED)) {
+          m.addLayer({
+            id: SELECTED,
+            type: "circle",
+            source: CASES,
+            filter: ["==", ["get", "id"], ""],
+            paint: {
+              "circle-radius": 17,
+              "circle-color": "rgba(0,0,0,0)",
+              "circle-stroke-color": ink,
+              "circle-stroke-width": 3,
+            },
+          });
+        }
+        m.setFilter(SELECTED, ["==", ["get", "id"], selected ?? ""]);
+        m.setPaintProperty(SELECTED, "circle-stroke-color", ink);
+        m.setLayoutProperty(SELECTED, "visibility", mode === "cases" ? "visible" : "none");
         // A gap is the map ink, a covered tambon the teal: built from the data, so TypeScript
         // can't see the tuple MapLibre wants.
         const fill = (gaps.length || covered.length
@@ -223,12 +263,30 @@ export function BoardMap({ cases, coverage, mode, picked, onPickCase, onPickTamb
       }
     };
     draw.current();
-  }, [cases, coverage, mode, picked]);
+  }, [cases, coverage, mode, picked, selected]);
+
+  // A case picked in the list is brought into view; a hand on the map is never overruled by
+  // anything else, but picking is a hand too.
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !selected || state !== "ready") return;
+    const target = cases.find((c) => c.sosId === selected);
+    if (!target) return;
+    m.easeTo({ center: [target.lon, target.lat], zoom: Math.max(m.getZoom(), 13), duration: 500 });
+    moved.current = true;
+  }, [selected, state]); // eslint-disable-line react-hooks/exhaustive-deps -- only when the pick changes
+
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready" || applied.current === basemap) return;
+    applied.current = basemap;
+    setBasemap(m, basemap);
+  }, [basemap, state]);
 
   useEffect(() => {
     if (!container.current) return;
     let cancelled = false;
-    createServiceAreaMap(container.current)
+    createServiceAreaMap(container.current, basemapAtStart.current)
       .then((created) => {
         if (cancelled) {
           created.remove();
@@ -285,13 +343,13 @@ export function BoardMap({ cases, coverage, mode, picked, onPickCase, onPickTamb
     );
   }
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <div
         ref={container}
         data-map="true"
         data-map-mode={mode}
         data-map-ready={state === "ready"}
-        className="h-[50vh] min-h-72 w-full overflow-hidden rounded-xl border border-jaga-line lg:h-[60vh]"
+        className={className}
       />
       {state === "loading" && (
         <p className="absolute inset-x-0 top-3 text-center text-small text-jaga-text-2">

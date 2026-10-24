@@ -405,3 +405,69 @@ describe("the phone of a person handed a case", () => {
     expect(await assignedFor()).toHaveLength(0);
   });
 });
+
+describe("the team's record by person", () => {
+  type Record = { user_id: string; cases_taken: number; rescues_reported: number };
+
+  it("counts the cases each person took part in and the rescues they reported", async () => {
+    const field = await joinAs("field");
+    const idle = await joinAs("field");
+    await accept();
+    await assign(field);
+    const path = await proof();
+    await as(db, { uid: field });
+    await db.query("select authority_complete_sos($1, $2, null)", [w.yalaSos, [path]]);
+    await as(db, { uid: w.yalaRescue.user });
+    const got = await rows<Record>(db, "select * from unit_member_record($1)", [w.yalaRescue.id]);
+    const by = (u: string) => got.find((r) => r.user_id === u)!;
+    expect(by(field)).toMatchObject({ cases_taken: 1, rescues_reported: 1 });
+    expect(by(idle)).toMatchObject({ cases_taken: 0, rescues_reported: 0 });
+    expect(by(w.yalaRescue.user)).toMatchObject({ cases_taken: 0, rescues_reported: 0 });
+    // The most useful person is listed first.
+    expect(got[0]!.user_id).toBe(field);
+  });
+
+  it("is read by the owner and a dispatcher only", async () => {
+    const dispatcher = await joinAs("dispatcher");
+    const field = await joinAs("field");
+    await as(db, { uid: dispatcher });
+    expect(await rows(db, "select * from unit_member_record($1)", [w.yalaRescue.id])).toHaveLength(
+      3,
+    );
+    for (const caller of [field, w.otherUser, w.songkhlaRescue.user, w.requester]) {
+      await as(db, { uid: caller });
+      expect(
+        await expectDenied(db, "select * from unit_member_record($1)", [w.yalaRescue.id]),
+      ).toBe("42501");
+    }
+    await as(db, "anon");
+    await expectDenied(db, "select * from unit_member_record($1)", [w.yalaRescue.id]);
+  });
+});
+
+describe("live updates", () => {
+  it("the three tables a war room listens to are published, and only those", async () => {
+    await asOwner(db);
+    const got = (
+      await rows<{ tablename: string }>(
+        db,
+        "select tablename from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public'",
+      )
+    )
+      .map((r) => r.tablename)
+      .filter((t) => ["sos_requests", "sos_claims", "case_assignments"].includes(t))
+      .sort();
+    expect(got).toEqual(["case_assignments", "sos_claims", "sos_requests"]);
+  });
+
+  it("a person who cannot read a case has no policy that lets its row through", async () => {
+    // Realtime hands a row only to someone whose own read policy passes; this is that policy.
+    const field = await joinAs("field");
+    await accept();
+    await as(db, { uid: field });
+    expect(await rows(db, "select 1 from sos_requests where id = $1", [w.yalaSos])).toHaveLength(0);
+    expect(await rows(db, "select 1 from sos_claims where sos_id = $1", [w.yalaSos])).toHaveLength(
+      0,
+    );
+  });
+});

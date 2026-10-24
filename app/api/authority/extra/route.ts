@@ -3,6 +3,7 @@ import {
   readCoverageUnits,
   readLeaderboard,
   readTeamHouseholds,
+  readTeamRecords,
   readTeamReports,
 } from "@/lib/authority-board";
 import { getSessionProfile } from "@/lib/auth";
@@ -28,6 +29,8 @@ export async function GET(request: Request) {
   try {
     if (what === "coverage") return answer({ coverage: await readCoverage() });
     if (what === "points") return answer({ points: await readLeaderboard() });
+    // The war room's foot: the team's points and each person's part in them (24 Oct).
+    if (what === "record") return answer({ records: await readTeamRecords(session.userId) });
     if (what === "reports") return answer({ reports: await readTeamReports() });
     // Refused by the database for a team without rescue or coordination capability, and every
     // read that does come back is written to the access log there (spec 4.7).

@@ -3,7 +3,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { CaseCard, type CaseActions } from "@/components/authority/CaseCard";
-import { BellIcon, CheckIcon, TriangleIcon } from "@/components/icons";
+import { TeamControls } from "@/components/authority/TeamControls";
+import { TriangleIcon } from "@/components/icons";
 import {
   caseState,
   filterCases,
@@ -14,7 +15,7 @@ import {
   type BoardScope,
   type CaseMedia,
 } from "@/lib/dispatch";
-import { buttonPrimary, card, checkBox, checkRow, hint, input } from "@/lib/ui";
+import { checkBox, checkRow, hint, input } from "@/lib/ui";
 
 const BOARD_KINDS: BoardKind[] = ["all", "rescue", "supplies"];
 
@@ -86,6 +87,26 @@ type Props = {
 const good = (notice: BoardNotice) =>
   notice.kind === "accepted" || notice.kind === "completed" || notice.kind === "confirmed";
 
+/** The one line that says what a tap did: it worked, it was taken, or it was refused. */
+export function BoardNoticeLine({ notice }: { notice: BoardNotice }) {
+  const t = useTranslations("authority");
+  return (
+    <p
+      role={good(notice) ? "status" : "alert"}
+      data-board-notice={notice.kind}
+      className={`rounded-xl border-2 bg-jaga-surface px-4 py-2 font-medium ${
+        good(notice) ? "border-jaga-teal-ink" : "border-sos"
+      }`}
+    >
+      {notice.kind === "taken"
+        ? notice.unit
+          ? t("notice.taken", { unit: notice.unit })
+          : t("notice.takenNoName")
+        : t(`notice.${notice.kind}`)}
+    </p>
+  );
+}
+
 export function BoardView({
   board,
   now,
@@ -153,21 +174,7 @@ export function BoardView({
             {t("pollFailed")}
           </p>
         )}
-        {notice && (
-          <p
-            role={good(notice) ? "status" : "alert"}
-            data-board-notice={notice.kind}
-            className={`rounded-xl border-2 bg-jaga-surface px-4 py-2 font-medium ${
-              good(notice) ? "border-jaga-teal-ink" : "border-sos"
-            }`}
-          >
-            {notice.kind === "taken"
-              ? notice.unit
-                ? t("notice.taken", { unit: notice.unit })
-                : t("notice.takenNoName")
-              : t(`notice.${notice.kind}`)}
-          </p>
-        )}
+        {notice && <BoardNoticeLine notice={notice} />}
       </header>
 
       {/* The offer itself, said in words as well as in sound: sound is never the only channel. */}
@@ -184,67 +191,7 @@ export function BoardView({
       {/* Two columns on a laptop: the team's own switches beside the cases. */}
       <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:items-start lg:gap-6">
         <div className="flex flex-col gap-4">
-          <section className={card} data-alarm={alarm}>
-            <h2 className="flex items-center gap-2 font-bold text-jaga-ink">
-              <BellIcon size={22} />
-              {t("alarm.title")}
-            </h2>
-            {alarm === "on" && (
-              <p className="flex items-center gap-2 font-medium">
-                <CheckIcon size={20} />
-                {t("alarm.on")}
-              </p>
-            )}
-            {alarm === "off" && (
-              <>
-                <p className="font-medium">{t("alarm.off")}</p>
-                <button type="button" onClick={onArm} className={buttonPrimary}>
-                  {t("alarm.arm")}
-                </button>
-              </>
-            )}
-            {alarm === "none" && <p className="font-medium">{t("alarm.none")}</p>}
-            <p className={hint}>{t("alarm.openOnly")}</p>
-          </section>
-
-          {board.units.map((unit) => (
-            <section key={unit.id} className={card} data-unit={unit.id}>
-              <div className="flex flex-col">
-                <h2 className="font-bold text-jaga-ink">{unit.name}</h2>
-                {unit.orgName && <p className={hint}>{unit.orgName}</p>}
-              </div>
-              <label className={checkRow}>
-                <input
-                  type="checkbox"
-                  className={checkBox}
-                  checked={unit.onDuty}
-                  onChange={(e) => unitActions.duty(unit.id, e.target.checked)}
-                  data-duty="true"
-                />
-                <span className="flex flex-col">
-                  <span className="font-bold">
-                    {unit.onDuty ? t("unit.onDuty") : t("unit.offDuty")}
-                  </span>
-                  <span className={hint}>{t("unit.dutyHint")}</span>
-                </span>
-              </label>
-              {unit.isOwner && (
-                <label className={checkRow}>
-                  <input
-                    type="checkbox"
-                    className={checkBox}
-                    checked={unit.sharesPocPhone}
-                    onChange={(e) => unitActions.sharing(unit.id, e.target.checked)}
-                    data-sharing="true"
-                  />
-                  <span className="flex flex-col">
-                    <span className="font-medium">{t("unit.sharing")}</span>
-                    {!unit.sharesPocPhone && <span className={hint}>{t("unit.sharingOff")}</span>}
-                  </span>
-                </label>
-              )}
-            </section>
-          ))}
+          <TeamControls alarm={alarm} onArm={onArm} units={board.units} unitActions={unitActions} />
         </div>
 
         <div className="flex flex-col gap-4">

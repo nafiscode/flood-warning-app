@@ -1641,6 +1641,25 @@
         "dispatcher": "Penyelaras",
         "field": "Lapangan"
       }
+    },
+    "war": {
+      "live": "Dikemas kini sebaik sahaja kes berubah",
+      "poll": "Menyemak setiap beberapa saat",
+      "offered": "Ditawarkan kepada pasukan anda",
+      "unanswered": "Belum ada pasukan menerima",
+      "people": "{count} orang",
+      "legend": "Petunjuk peta",
+      "crew": "Pasukan dan apa yang dipegang setiap orang",
+      "free": "Bebas",
+      "pick": "Pilih kes daripada senarai atau peta untuk melihat butirannya dan menyerahkannya kepada ahli pasukan.",
+      "record": {
+        "title": "Rekod pasukan",
+        "failed": "Rekod tidak dapat dimuatkan. Cuba lagi nanti.",
+        "person": "Orang",
+        "taken": "Kes diambil",
+        "reported": "Penyelamatan dilaporkan"
+      },
+      "home": "Gambaran keseluruhan"
     }
   },
   "admin": {

@@ -1641,6 +1641,25 @@
         "dispatcher": "Dispatcher",
         "field": "Field"
       }
+    },
+    "war": {
+      "live": "Updates the moment a case changes",
+      "poll": "Checking every few seconds",
+      "offered": "Offered to your team",
+      "unanswered": "No team has it",
+      "people": "{count, plural, one {# person} other {# people}}",
+      "legend": "Map key",
+      "crew": "The team and what each is holding",
+      "free": "Free",
+      "pick": "Pick a case from the list or the map to see its details and hand it to someone on the team.",
+      "record": {
+        "title": "The team's record",
+        "failed": "The record couldn't be loaded. Try again later.",
+        "person": "Person",
+        "taken": "Cases taken",
+        "reported": "Rescues reported"
+      },
+      "home": "Overview"
     }
   },
   "admin": {

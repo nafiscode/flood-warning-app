@@ -1,6 +1,9 @@
 "use client";
 
 import { PushCard } from "@/components/push/PushCard";
+import { TeamWarRoom } from "@/components/authority/TeamWarRoom";
+import { useConsoleView } from "@/lib/console-view";
+import { useBoardRealtime } from "@/lib/use-board-realtime";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BoardView,
@@ -19,7 +22,13 @@ import type {
   TeamReport,
   UnitContact,
 } from "@/lib/coverage";
-import { shouldAlarm, supplyOffers, type AuthorityBoard, type CaseMedia } from "@/lib/dispatch";
+import {
+  shouldAlarm,
+  supplyOffers,
+  type AuthorityBoard,
+  type CaseMedia,
+  type TeamRecord,
+} from "@/lib/dispatch";
 import { arm, play } from "@/lib/sounds";
 import { uploadProof } from "@/lib/upload";
 
@@ -94,6 +103,11 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
         asking.current = false;
       });
   }, [take]);
+
+  // On a laptop or a landscape tablet the console is the team's war room (24 Oct 2026); it hears
+  // about a changed case at once, and the poll below carries on for the clock-driven offers.
+  const warRoom = useConsoleView();
+  const live = useBoardRealtime(refresh, warRoom);
 
   useEffect(() => {
     refresh();
@@ -246,6 +260,29 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
   const [reportMedia, setReportMedia] = useState<Record<string, CaseMedia | "failed">>({});
   const [householdPhones, setHouseholdPhones] = useState<Record<string, string | null>>({});
   const [contacts, setContacts] = useState<Record<string, UnitContact | "failed">>({});
+  const [record, setRecord] = useState<TeamRecord[] | "failed" | null>(null);
+
+  // The war room's map frames the team's own tambons, and its foot shows the team's record.
+  useEffect(() => {
+    if (!warRoom) return;
+    const readRecord = () =>
+      ask<{ records: TeamRecord[] }>(
+        "what=record",
+        (answer) => setRecord(answer.records),
+        () => setRecord((was) => (Array.isArray(was) ? was : "failed")),
+      );
+    if (!Array.isArray(coverage)) {
+      ask<{ coverage: CoverageRow[] }>(
+        "what=coverage",
+        (answer) => setCoverage(answer.coverage),
+        () => setCoverage("failed"),
+      );
+    }
+    readRecord();
+    const again = window.setInterval(readRecord, 60_000);
+    return () => window.clearInterval(again);
+    // The record is read when the war room opens and every minute; `ask` is stable in use.
+  }, [warRoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** One household's number or one report's photos: asked for by a tap, never with the list. */
   const one = <T,>(body: Record<string, unknown>, take: (answer: T) => void, fail: () => void) => {
@@ -314,68 +351,91 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
     sharing: (unit, on) => send({ action: "sharing", unit, on }, unit),
   };
 
+  const otherView = view !== "cases" && (
+    <OtherView
+      view={view}
+      cases={board.cases}
+      now={now}
+      busy={busy}
+      phones={phones}
+      media={media}
+      actions={actions}
+      coverage={coverage}
+      points={points}
+      picked={picked}
+      onPickTambon={pickTambon}
+      reads={{
+        reports,
+        households,
+        reportMedia,
+        householdPhones,
+        onReportMedia: (id) =>
+          one<{ media: CaseMedia }>(
+            { action: "report_media", id },
+            (answer) => setReportMedia((seen) => ({ ...seen, [id]: answer.media })),
+            () => setReportMedia((seen) => ({ ...seen, [id]: "failed" })),
+          ),
+        onHouseholdPhone: (id) =>
+          one<{ phone: string | null }>(
+            { action: "household_phone", id },
+            (answer) => setHouseholdPhones((seen) => ({ ...seen, [id]: answer.phone })),
+            () => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
+          ),
+        contacts,
+        onContact: (id) =>
+          one<{ contact: UnitContact }>(
+            { action: "unit_phone", unit: id },
+            (answer) => setContacts((seen) => ({ ...seen, [id]: answer.contact })),
+            () => setContacts((seen) => ({ ...seen, [id]: "failed" })),
+          ),
+      }}
+    />
+  );
+
   return (
     <>
       {/* The offer reaches this phone with the board closed once notifications are on (A7). */}
       <PushCard place="team" />
-      <BoardView
-        board={board}
-        now={now}
-        alarm={alarm}
-        onArm={onArm}
-        busy={busy}
-        notice={notice}
-        phones={phones}
-        media={media}
-        stale={stale}
-        onRefresh={refresh}
-        actions={actions}
-        unitActions={unitActions}
-        view={view}
-        onView={openView}
-        other={
-          view !== "cases" && (
-            <OtherView
-              view={view}
-              cases={board.cases}
-              now={now}
-              busy={busy}
-              phones={phones}
-              media={media}
-              actions={actions}
-              coverage={coverage}
-              points={points}
-              picked={picked}
-              onPickTambon={pickTambon}
-              reads={{
-                reports,
-                households,
-                reportMedia,
-                householdPhones,
-                onReportMedia: (id) =>
-                  one<{ media: CaseMedia }>(
-                    { action: "report_media", id },
-                    (answer) => setReportMedia((seen) => ({ ...seen, [id]: answer.media })),
-                    () => setReportMedia((seen) => ({ ...seen, [id]: "failed" })),
-                  ),
-                onHouseholdPhone: (id) =>
-                  one<{ phone: string | null }>(
-                    { action: "household_phone", id },
-                    (answer) => setHouseholdPhones((seen) => ({ ...seen, [id]: answer.phone })),
-                    () => setHouseholdPhones((seen) => ({ ...seen, [id]: null })),
-                  ),
-                contacts,
-                onContact: (id) =>
-                  one<{ contact: UnitContact }>(
-                    { action: "unit_phone", unit: id },
-                    (answer) => setContacts((seen) => ({ ...seen, [id]: answer.contact })),
-                    () => setContacts((seen) => ({ ...seen, [id]: "failed" })),
-                  ),
-              }}
-            />
-          )
-        }
-      />
+      {warRoom ? (
+        <TeamWarRoom
+          board={board}
+          now={now}
+          alarm={alarm}
+          onArm={onArm}
+          busy={busy}
+          notice={notice}
+          phones={phones}
+          media={media}
+          stale={stale}
+          onRefresh={refresh}
+          actions={actions}
+          unitActions={unitActions}
+          coverage={Array.isArray(coverage) ? coverage : null}
+          record={record}
+          live={live}
+          view={view}
+          onView={openView}
+          other={otherView}
+        />
+      ) : (
+        <BoardView
+          board={board}
+          now={now}
+          alarm={alarm}
+          onArm={onArm}
+          busy={busy}
+          notice={notice}
+          phones={phones}
+          media={media}
+          stale={stale}
+          onRefresh={refresh}
+          actions={actions}
+          unitActions={unitActions}
+          view={view}
+          onView={openView}
+          other={otherView}
+        />
+      )}
     </>
   );
 }
