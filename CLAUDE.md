@@ -33,6 +33,7 @@ Read the relevant doc before starting a task. Don't load all of them every time.
 5. Access to sensitive data is enforced by Postgres RLS (row-level security), never by the frontend alone.
    - Covered data: exact locations of SOS requesters, households and reporters; every personal phone number; authority POC phones; vulnerable-household data.
    - Only verified authorities covering that tambon, and admins, can read it. Vulnerable-household data additionally needs rescue or coordination capability.
+   - A verified team's people count as the team (24 Oct 2026): the owner and active dispatchers read what the team may read. A **field member** reads only the exact point and the requester's phone of a case **assigned to them**, until it closes; never vulnerable-household data. Every reveal is logged under their own account.
    - Personal phone numbers are never public. An organization's official phone is public only if the org opts in (`organizations.public_contact_opt_in`, default false).
    - One exception, and only this one: the POC phone of the unit that has **accepted** an SOS is shown to the sender of that case while it is open, so they can reach the team on its way (`docs/spec.md` 5.3). The unit can turn it off, and every reveal is logged like any other.
    - Authorities may read other units' POC phones only within shared coverage.

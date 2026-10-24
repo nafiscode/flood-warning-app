@@ -350,6 +350,14 @@ Built 14 Oct 2026 (`/authority/field-rescue`, `/admin/field-rescues`). For peopl
 - Reports feed for the coverage area.
 - Vulnerable-household list (with the restrictions in 4.7).
 
+### 5.8 Team members and field crews
+Built in steps from 24 Oct 2026. A team (a verified unit) can have several people.
+- **Roles:** `owner` (the registrant: everything, including the people and the POC phone tick), `dispatcher` (the board, accept, decline, assign, on-duty; rung with the owner) and `field` (only the cases assigned to them).
+- **Joining:** the owner makes a code (24 hours, single use, stored as a hash). Whoever redeems it waits as `pending` until the owner says yes. Ten wrong codes an hour lock an account out. Admins do not verify individual members; the owner vouches.
+- **Removing** a member, or suspending the team, closes access at once (it is read from the database on every call).
+- **Field members** read the exact point and the requester's phone of a case assigned to them only, until it closes (safety rule 5); they report en route, on site and rescued, and attach the photos. The owner or a dispatcher assigns a claimed case to one or more members; a field member may also take an unassigned claimed case. A team with no field members works as before.
+- **Team war room** (laptop and landscape tablet, from 1280 px): offers and queue, the live map on the main map's basemaps (`BASEMAPS` in `lib/map.ts`), the selected case with its crew, and the team's record. Phones keep the tabbed console.
+
 ## 6. Admin features
 
 ### 6.1 Accounts
