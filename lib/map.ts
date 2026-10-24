@@ -605,6 +605,123 @@ export async function createServiceAreaMap(
 }
 
 /**
+ * The opening shot (the owner, 25 Oct 2026): the map starts as the whole Earth seen from space
+ * and glides down to the four provinces. By day the globe is NASA's true-colour satellite picture
+ * of yesterday, clouds and all; after dark it is the Earth at night, city lights on black (NASA
+ * GIBS, free, no key; the same day/night as the rest of the map, nightNow). The picture fades out
+ * as the flight nears the provinces, leaving Jaga's ordinary map. It is only decoration and never
+ * stands in anyone's way: the map answers touch from the first frame, the first touch, scroll or
+ * key stops the flight where it is, and it is skipped when the visitor asks for less motion or has
+ * Data Saver on. Once per browser tab, so a second visit to the map is not slowed down by it.
+ */
+const INTRO_KEY = "jaga.map.intro";
+const INTRO_MS = 7000;
+const INTRO_SOURCE = "jaga-intro-earth";
+const INTRO_LAYER = "jaga-intro-earth";
+const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
+
+function introTiles(night: boolean): { tiles: string[]; maxzoom: number; attribution: string } {
+  if (night) {
+    return {
+      tiles: [
+        `${GIBS}/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`,
+      ],
+      maxzoom: 8,
+      attribution: "Night lights: NASA Earth Observatory / NOAA / GIBS",
+    };
+  }
+  // Yesterday in UTC: today's mosaic is still being built.
+  const day = new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 10);
+  return {
+    tiles: [
+      `${GIBS}/MODIS_Terra_CorrectedReflectance_TrueColor/default/${day}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+    ],
+    maxzoom: 9,
+    attribution: "Satellite: NASA EOSDIS GIBS / MODIS",
+  };
+}
+
+export function playIntro(map: MapLibreMap): void {
+  try {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const link = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (link?.saveData) return;
+    if (sessionStorage.getItem(INTRO_KEY)) return;
+    sessionStorage.setItem(INTRO_KEY, "1");
+  } catch {
+    return;
+  }
+  const target = map.cameraForBounds(
+    [
+      [SERVICE_BOUNDS[0], SERVICE_BOUNDS[1]],
+      [SERVICE_BOUNDS[2], SERVICE_BOUNDS[3]],
+    ],
+    { padding: 8 },
+  );
+  if (!target?.center || typeof target.zoom !== "number") return;
+  const center = target.center as { lng: number; lat: number };
+  const goal = target.zoom;
+  const maxBounds = map.getMaxBounds();
+  const minZoom = map.getMinZoom();
+
+  // The Earth picture goes over everything, solid while far away and gone before the end.
+  const night = nightNow();
+  try {
+    map.addSource(INTRO_SOURCE, { type: "raster", tileSize: 256, ...introTiles(night) });
+    map.addLayer({
+      id: INTRO_LAYER,
+      type: "raster",
+      source: INTRO_SOURCE,
+      paint: {
+        "raster-fade-duration": 300,
+        "raster-opacity": ["interpolate", ["linear"], ["zoom"], goal - 3, 1, goal - 0.8, 0],
+      },
+    });
+  } catch {
+    // No Earth picture this time; the flight still plays over the ordinary map.
+  }
+  // A globe up high that flattens into the ordinary map before the end of the descent.
+  map.setProjection({
+    type: ["interpolate", ["linear"], ["zoom"], 0, "vertical-perspective", goal - 0.6, "mercator"],
+  } as never);
+  map.setMaxBounds(null);
+  map.setMinZoom(0);
+  map.jumpTo({ center: [center.lng - 28, center.lat + 4], zoom: 0.7, bearing: 0, pitch: 0 });
+
+  let done = false;
+  const stops = ["mousedown", "touchstart", "wheel"] as const;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    const el = map.getCanvasContainer();
+    stops.forEach((name) => el.removeEventListener(name, interrupt));
+    window.removeEventListener("keydown", interrupt);
+    map.off("moveend", finish);
+    map.setProjection({ type: "mercator" });
+    map.setMinZoom(minZoom);
+    if (maxBounds) map.setMaxBounds(maxBounds);
+    if (map.getLayer(INTRO_LAYER)) map.removeLayer(INTRO_LAYER);
+    if (map.getSource(INTRO_SOURCE)) map.removeSource(INTRO_SOURCE);
+  };
+  function interrupt() {
+    map.stop();
+    finish();
+  }
+  const el = map.getCanvasContainer();
+  stops.forEach((name) => el.addEventListener(name, interrupt, { passive: true, once: true }));
+  window.addEventListener("keydown", interrupt, { once: true });
+  map.once("moveend", finish);
+  map.flyTo({
+    center: [center.lng, center.lat],
+    zoom: goal,
+    duration: INTRO_MS,
+    curve: 1.5,
+    easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+    essential: false,
+  });
+}
+
+/**
  * A box that holds every one of these points, for the map to fly to (the owner's request of
  * 12 Oct: opening the dam's figures should also show the dam **and** the places the person has
  * saved, so the distance between them is something they can see).

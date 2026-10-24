@@ -82,6 +82,7 @@ import {
   mapIsDark,
   nightNow,
   photoNow,
+  playIntro,
   PROVINCE_LINE_LAYER,
   PROVINCE_SOURCE,
   provinceLinePaint,
@@ -1600,6 +1601,7 @@ export function MapView({
           redraw();
           setState("ready");
           setLoaded(created);
+          playIntro(created);
         });
         // After the basemap replaces the style, sources may hold their first data again.
         created.on("style.load", () => held.current.clear());

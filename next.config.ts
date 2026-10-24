@@ -31,6 +31,8 @@ function securityHeaders() {
     "https://tiles.maps.eox.at",
     "https://elevation-tiles-prod.s3.amazonaws.com",
     "https://*.arcgis.com",
+    "https://gis.earthdata.nasa.gov",
+    "https://gibs.earthdata.nasa.gov",
     tiles,
   ]
     .filter(Boolean)
