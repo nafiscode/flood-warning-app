@@ -447,30 +447,35 @@ export async function pushUnitWaiting(unitId: string): Promise<PushOutcome> {
     const gone: string[] = [];
     let sent = 0;
     let failed = 0;
-    for (const row of data as Row[]) {
-      const words = UNIT_WORDS[row.locale] ?? UNIT_WORDS.th!;
-      const payload = {
-        // The service worker's plain kind: a title, words, and a page of this app to open.
-        kind: "announcement",
-        title: words.title,
-        body: words.body.replace("{unit}", row.unit_name),
-        url: `${row.locale === "th" ? "" : `/${row.locale}`}/admin/authorities`,
-        tag: `unit-${unitId}`,
-        sticky: false,
-      };
-      try {
-        await webpush.sendNotification(
-          { endpoint: row.endpoint, keys: row.keys },
-          JSON.stringify(payload),
-          { TTL: 24 * 3600, urgency: "normal" },
-        );
-        sent++;
-      } catch (e) {
-        const status = (e as { statusCode?: number }).statusCode;
-        if (status === 404 || status === 410) gone.push(row.endpoint);
-        else failed++;
-      }
-    }
+    // All the admins' phones at once, and at high priority: an Android phone that is idle holds a
+    // normal one back until it next wakes, which is how the first version arrived "a little late"
+    // (the owner, 24 Oct). The sound is still the phone's ordinary one; priority is only speed.
+    await Promise.all(
+      (data as Row[]).map(async (row) => {
+        const words = UNIT_WORDS[row.locale] ?? UNIT_WORDS.th!;
+        const payload = {
+          // The service worker's plain kind: a title, words, and a page of this app to open.
+          kind: "announcement",
+          title: words.title,
+          body: words.body.replace("{unit}", row.unit_name),
+          url: `${row.locale === "th" ? "" : `/${row.locale}`}/admin/authorities`,
+          tag: `unit-${unitId}`,
+          sticky: false,
+        };
+        try {
+          await webpush.sendNotification(
+            { endpoint: row.endpoint, keys: row.keys },
+            JSON.stringify(payload),
+            { TTL: 24 * 3600, urgency: "high" },
+          );
+          sent++;
+        } catch (e) {
+          const status = (e as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) gone.push(row.endpoint);
+          else failed++;
+        }
+      }),
+    );
     if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
     return { sent, failed, gone: gone.length };
   } catch {
