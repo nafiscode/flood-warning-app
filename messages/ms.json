@@ -1705,7 +1705,8 @@
         "rescue": "Pasukan penyelamat",
         "supplies": "Pasukan makanan dan air",
         "pending": "Pasukan menunggu pengesahan",
-        "operator": "Pengendali empangan"
+        "operator": "Pengendali empangan",
+        "crew": "Ahli kru"
       },
       "usage": "Penggunaan aplikasi",
       "back": "Kembali ke utama pentadbir",
@@ -3984,7 +3985,8 @@
       "rescue": "pasukan penyelamat",
       "supplies": "pasukan makanan dan air",
       "pending": "pasukan yang menunggu pengesahan",
-      "operator": "pengendali empangan (EGAT)"
+      "operator": "pengendali empangan (EGAT)",
+      "crew": "ahli kru dalam pasukan"
     },
     "visitor": {
       "note": "Seseorang yang membuka Jaga buat kali pertama, belum log masuk dan belum memilih kawasan."
@@ -4009,6 +4011,14 @@
       "notYet": "Belum ada sesiapa boleh mendaftar sebagai pengendali empangan sehingga wakil di empangan bersetuju.",
       "send": "Hantar notis pelepasan air",
       "sent": "Pratonton: tiada apa-apa dihantar. Pada skrin sebenar, notis ini akan dikeluarkan untuk zon itu serta-merta, dan pentadbir akan melihatnya pada masa yang sama."
+    },
+    "crew": {
+      "note": "Apa yang dilihat ahli kru pada telefon sendiri: kes yang pasukan serahkan, lokasi, butang dalam perjalanan dan sudah tiba, dan laporan dengan gambar. Setiap butang berfungsi; contoh menjawab sendiri dan tiada apa-apa dihantar."
+    },
+    "team": {
+      "board": "Papan kes",
+      "people": "Orang dalam pasukan",
+      "peopleNote": "Halaman yang digunakan pemilik pasukan untuk menjemput orang: kod jemputan, orang yang menunggu kebenaran, dan pasukan. Contoh ini tidak membuat kod sebenar dan tidak mengubah apa-apa."
     }
   },
   "usage": {

@@ -1,12 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { fireEvent } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { DamReleaseForm, type DamForRelease } from "@/components/admin/DamReleaseForm";
+import { MyCases } from "@/components/authority/MyCases";
+import { TeamMembers } from "@/components/authority/TeamMembers";
 import { ADMIN_ITEMS, itemsOf } from "@/lib/admin-menu";
 import { EXAMPLE_AUTHORITY_BOARD } from "@/lib/authority-examples";
-import { shouldAlarm } from "@/lib/dispatch";
+import { shouldAlarm, teamKind } from "@/lib/dispatch";
 import { unitJourney } from "@/lib/journey";
 import {
+  exampleCrewWork,
   examplePendingUnit,
+  exampleRescueBoard,
   exampleSupplyBoard,
+  exampleTeam,
   isPreviewRole,
   PREVIEW_ROLES,
   residentScenario,
@@ -16,6 +22,9 @@ import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
 
+// The team page refreshes itself through the app router, which a unit test has not mounted.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
 describe("the roles an admin can view the app as", () => {
   it("are the ones the owner chose, each with a page in the admin menu", () => {
     expect([...PREVIEW_ROLES]).toEqual([
@@ -23,6 +32,7 @@ describe("the roles an admin can view the app as", () => {
       "resident",
       "rescue",
       "supplies",
+      "crew",
       "pending",
       "operator",
     ]);
@@ -78,6 +88,55 @@ describe("the roles an admin can view the app as", () => {
       }
       expect(m.rolePreview.banner).toContain("{role}");
     }
+  });
+});
+
+describe("the team views added on 24 Oct 2026", () => {
+  it("a food and water team's example board is a food-and-water team, so its record says deliveries", () => {
+    expect(exampleSupplyBoard().units.every((u) => teamKind(u.capabilities) === "supplies")).toBe(
+      true,
+    );
+    expect(exampleRescueBoard().units.every((u) => teamKind(u.capabilities) === "rescue")).toBe(
+      true,
+    );
+  });
+
+  it("a crew member's example is one case handed to them and one their team still holds", () => {
+    const work = exampleCrewWork(Date.parse("2026-10-24T03:00:00Z"));
+    expect(work.cases).toHaveLength(1);
+    expect(work.open).toHaveLength(1);
+    // The exact point is there, because it is theirs to navigate to; a phone number is not.
+    expect(JSON.stringify(work)).not.toMatch(/\+?66\d{8,9}|0[689]\d{8}/);
+  });
+
+  it("the crew screen in a preview answers itself and sends nothing", () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    const { container } = renderWithIntl(
+      <MyCases initial={exampleCrewWork(Date.parse("2026-10-24T03:00:00Z"))} preview />,
+      "en",
+    );
+    expect(container.querySelector("[data-my-case]")).not.toBeNull();
+    fireEvent.click(container.querySelector('[data-advance="en_route"]')!);
+    expect(container.querySelector('[data-advance="on_site"]')).not.toBeNull();
+    fireEvent.click(container.querySelector("[data-take]")!);
+    expect(container.querySelectorAll("[data-my-case]")).toHaveLength(2);
+    fireEvent.click(container.querySelector("[data-show-phone]")!);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  });
+
+  it("the team page in a preview makes only a sample code and sends nothing", () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    const { container } = renderWithIntl(
+      <TeamMembers teams={exampleTeam(Date.parse("2026-10-24T03:00:00Z"))} preview />,
+      "en",
+    );
+    expect(container.querySelector("[data-team-waiting]")).not.toBeNull();
+    fireEvent.click(container.querySelector('[data-invite="true"]')!);
+    expect(container.querySelector("[data-invite-code]")!.textContent).toBe("7F3A9-C21B4");
+    fireEvent.click(container.querySelector("[data-member-yes]")!);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
   });
 });
 

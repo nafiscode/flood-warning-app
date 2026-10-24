@@ -30,7 +30,7 @@ const POLL_MS = 10_000;
 
 type Answer = { work?: MyWork | null; phone?: string | null; error?: string };
 
-export function MyCases({ initial }: { initial: MyWork }) {
+export function MyCases({ initial, preview = false }: { initial: MyWork; preview?: boolean }) {
   const t = useTranslations("fieldCrew");
   const tSos = useTranslations("sos");
   const tReport = useTranslations("report");
@@ -59,14 +59,65 @@ export function MyCases({ initial }: { initial: MyWork }) {
   }, []);
 
   useEffect(() => {
+    // The admin's preview shows made-up cases and never asks the server for anyone's.
+    if (preview) return;
     const id = setInterval(() => {
       if (document.visibilityState === "visible") refresh();
     }, POLL_MS);
     return () => clearInterval(id);
-  }, [refresh]);
+  }, [refresh, preview]);
 
   const send = useCallback(
     (body: Record<string, unknown>, key: string, after?: (answer: Answer) => void) => {
+      if (preview) {
+        // Answered here, from the made-up list: nothing is sent and no real number is shown.
+        setMessage(null);
+        setWork((was) => {
+          const sos = String(body.sos ?? "");
+          if (body.action === "advance") {
+            return {
+              ...was,
+              cases: was.cases.map((c) =>
+                c.sosId === sos
+                  ? { ...c, status: body.status === "on_site" ? "on_site" : "en_route" }
+                  : c,
+              ),
+            };
+          }
+          if (body.action === "take") {
+            const taken = was.open.find((o) => o.sosId === sos);
+            if (!taken) return was;
+            return {
+              ...was,
+              open: was.open.filter((o) => o.sosId !== sos),
+              cases: [
+                ...was.cases,
+                {
+                  ...(was.cases[0] ?? (initial.cases[0] as FieldCase)),
+                  sosId: sos,
+                  assignmentId: `a-${sos}`,
+                  status: "assigned",
+                  kind: taken.kind,
+                  tambonTh: taken.tambonTh,
+                  tambonEn: taken.tambonEn,
+                  peopleCount: taken.peopleCount,
+                  needs: taken.kind === "supplies" ? ["water", "food"] : [],
+                },
+              ],
+            };
+          }
+          if (body.action === "release" || body.action === "complete") {
+            return {
+              ...was,
+              cases: was.cases.filter((c) => c.sosId !== sos && c.assignmentId !== body.id),
+            };
+          }
+          return was;
+        });
+        if (body.action === "complete") setMessage("done");
+        after?.({ phone: null });
+        return;
+      }
       setBusy(key);
       setMessage(null);
       fetch("/api/authority/mine", {
@@ -88,11 +139,16 @@ export function MyCases({ initial }: { initial: MyWork }) {
         .catch(() => setMessage("failed"))
         .finally(() => setBusy(null));
     },
-    [refresh],
+    [refresh, preview, initial.cases],
   );
 
   /** The photos go from this phone into the private bucket; then the report names them. */
   const finish = (sos: string, photos: File[], note: string) => {
+    if (preview) {
+      // No photo leaves the page in a preview.
+      send({ action: "complete", sos }, sos, () => setFinishing(null));
+      return;
+    }
     setBusy(sos);
     setMessage(null);
     uploadProof(sos, photos).then(
@@ -121,7 +177,7 @@ export function MyCases({ initial }: { initial: MyWork }) {
   return (
     <div className="flex flex-col gap-5">
       {/* A case handed to this person reaches their phone with the page closed once this is on. */}
-      <PushCard place="team" />
+      {!preview && <PushCard place="team" />}
       {message && (
         <p
           className={message === "done" ? notice : errorNotice}

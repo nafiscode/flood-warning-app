@@ -31,7 +31,7 @@ type Fresh = { unitId: string; code: string; expiresAt: string };
 
 const time = new Intl.DateTimeFormat("en-GB", BANGKOK_DATE_TIME);
 
-export function TeamMembers({ teams }: { teams: OwnedTeam[] }) {
+export function TeamMembers({ teams, preview = false }: { teams: OwnedTeam[]; preview?: boolean }) {
   const t = useTranslations("unitTeam");
   const locale = useLocale();
   const router = useRouter();
@@ -41,6 +41,18 @@ export function TeamMembers({ teams }: { teams: OwnedTeam[] }) {
   const [copied, setCopied] = useState(false);
 
   async function send(key: string, body: Record<string, unknown>) {
+    if (preview) {
+      // The admin's preview: a sample code is shown and nothing is made, sent or changed.
+      if (body.action === "invite") {
+        setFresh({
+          unitId: String(body.unit),
+          code: "7F3A9C21B4",
+          expiresAt: teams[0]?.invites[0]?.expiresAt ?? "2026-10-26T00:00:00.000Z",
+        });
+        setCopied(false);
+      }
+      return;
+    }
     setBusy(key);
     setError(null);
     try {

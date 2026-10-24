@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { DamReleaseForm } from "@/components/admin/DamReleaseForm";
+import { MyCases } from "@/components/authority/MyCases";
+import { TeamMembers } from "@/components/authority/TeamMembers";
 import { AuthorityExample } from "@/components/dev/AuthorityExample";
 import { HomeExample, MapExample } from "@/components/dev/Examples";
 import { Journey } from "@/components/journey/Journey";
@@ -11,10 +13,20 @@ import { getSessionProfile, isAdminRole } from "@/lib/auth";
 import { bangkokValue } from "@/lib/dam-release";
 import { readDamsForRelease } from "@/lib/dam-release-data";
 import { unitJourney } from "@/lib/journey";
-import { authorityMessages, damReleaseMessages, homeMessages, mapMessages } from "@/lib/messages";
 import {
+  authorityMessages,
+  damReleaseMessages,
+  fieldCrewMessages,
+  homeMessages,
+  mapMessages,
+  unitTeamMessages,
+} from "@/lib/messages";
+import {
+  exampleCrewWork,
   examplePendingUnit,
+  exampleRescueBoard,
   exampleSupplyBoard,
+  exampleTeam,
   isPreviewRole,
   previewNow,
   PREVIEW_ROLES,
@@ -127,14 +139,49 @@ export default async function RolePreview({
       );
     }
     if (r === "rescue" || r === "supplies") {
+      // The board (a war room on a laptop, the tabbed board on a phone) or the page the team's
+      // owner invites people on (24 Oct 2026).
+      const view = query.view === "people" ? "people" : "board";
       return (
-        <NextIntlClientProvider messages={authorityMessages(messages)}>
-          {r === "rescue" ? (
-            <AuthorityExample />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-2" data-preview-views>
+            {(["board", "people"] as const).map((v) => (
+              <Link
+                key={v}
+                href={{ pathname: `/admin/preview/${r}`, query: { view: v } }}
+                aria-current={v === view ? "page" : undefined}
+                className={`${chip} ${v === view ? chipHere : ""}`}
+              >
+                {t(`team.${v}`)}
+              </Link>
+            ))}
+          </div>
+          {view === "people" ? (
+            <>
+              <p className={hint}>{t("team.peopleNote")}</p>
+              <NextIntlClientProvider messages={unitTeamMessages(messages)}>
+                <TeamMembers teams={exampleTeam(now)} preview />
+              </NextIntlClientProvider>
+            </>
           ) : (
-            <AuthorityExample start={exampleSupplyBoard()} />
+            <NextIntlClientProvider messages={authorityMessages(messages)}>
+              {r === "rescue" ? (
+                <AuthorityExample start={exampleRescueBoard()} />
+              ) : (
+                <AuthorityExample start={exampleSupplyBoard()} />
+              )}
+            </NextIntlClientProvider>
           )}
-        </NextIntlClientProvider>
+        </div>
+      );
+    }
+    if (r === "crew") {
+      return (
+        <PhoneFrame>
+          <NextIntlClientProvider messages={fieldCrewMessages(messages)}>
+            <MyCases initial={exampleCrewWork(now)} preview />
+          </NextIntlClientProvider>
+        </PhoneFrame>
       );
     }
     if (r === "pending") {

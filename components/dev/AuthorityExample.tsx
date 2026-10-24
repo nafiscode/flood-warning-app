@@ -141,7 +141,13 @@ export function AuthorityExample({
           sharing: (unit, on) => tap({ action: "sharing", unit, on }),
         }}
         coverage={EXAMPLE_COVERAGE}
-        record={EXAMPLE_RECORD}
+        // The record belongs to whichever example team is on the board (a rescue team, or one that
+        // only brings food and water), so its words match what that team does.
+        record={EXAMPLE_RECORD.map((r) => ({
+          ...r,
+          unitId: board.units[0]?.id ?? r.unitId,
+          unitName: board.units[0]?.name ?? r.unitName,
+        }))}
         live
       />
     );

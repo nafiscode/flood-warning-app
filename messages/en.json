@@ -1705,7 +1705,8 @@
         "rescue": "Rescue team",
         "supplies": "Food & water team",
         "pending": "Team awaiting verification",
-        "operator": "Dam operator"
+        "operator": "Dam operator",
+        "crew": "Crew member"
       },
       "usage": "App usage",
       "back": "Back to the admin home",
@@ -3984,7 +3985,8 @@
       "rescue": "a rescue team",
       "supplies": "a food and water team",
       "pending": "a team waiting for verification",
-      "operator": "a dam operator (EGAT)"
+      "operator": "a dam operator (EGAT)",
+      "crew": "a crew member on a team"
     },
     "visitor": {
       "note": "Someone opening Jaga for the first time, not signed in, with no area chosen yet."
@@ -4009,6 +4011,14 @@
       "notYet": "Nobody can register as a dam operator yet: this waits for a contact at the dam to agree.",
       "send": "Send the release notice",
       "sent": "Preview: nothing was sent. On the real screen this notice would be published for the zone at once, and the admins would see it at the same time."
+    },
+    "crew": {
+      "note": "What a crew member sees on their own phone: the case the team handed them, where to go, the on the way and arrived buttons, and the report with photos. Every button works; the example answers by itself and nothing is sent."
+    },
+    "team": {
+      "board": "Case board",
+      "people": "Team people",
+      "peopleNote": "The page a team's owner uses to invite people: the invitation code, people waiting for a yes, and the team. This example makes no real code and changes nothing."
     }
   },
   "usage": {

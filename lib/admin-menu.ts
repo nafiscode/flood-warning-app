@@ -57,6 +57,7 @@ export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "preview.resident", href: "/admin/preview/resident", group: "preview" },
   { key: "preview.rescue", href: "/admin/preview/rescue", group: "preview" },
   { key: "preview.supplies", href: "/admin/preview/supplies", group: "preview" },
+  { key: "preview.crew", href: "/admin/preview/crew", group: "preview" },
   { key: "preview.pending", href: "/admin/preview/pending", group: "preview" },
   { key: "preview.operator", href: "/admin/preview/operator", group: "preview" },
 ];
@@ -69,9 +70,7 @@ export function itemsOf(group: AdminGroup, access: AdminAccess | boolean): Admin
   const a: AdminAccess =
     typeof access === "boolean" ? { superAdmin: access, manages: access } : access;
   return ADMIN_ITEMS.filter(
-    (i) =>
-      i.group === group &&
-      (!i.only || (i.only === "super" ? a.superAdmin : a.manages)),
+    (i) => i.group === group && (!i.only || (i.only === "super" ? a.superAdmin : a.manages)),
   );
 }
 
@@ -93,10 +92,7 @@ export function waitingIn(
   counts: AdminCounts,
   access: AdminAccess | boolean = true,
 ): number {
-  return itemsOf(group, access).reduce(
-    (sum, i) => sum + (i.count ? (counts[i.count] ?? 0) : 0),
-    0,
-  );
+  return itemsOf(group, access).reduce((sum, i) => sum + (i.count ? (counts[i.count] ?? 0) : 0), 0);
 }
 
 /** A count as shown: nothing for none, "99+" past 99. */
