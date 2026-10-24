@@ -11,7 +11,8 @@ import {
   type UnitWayState,
 } from "@/components/authority/UnitWay";
 import { useStored, writeStored } from "@/lib/phone-store";
-import { useHasUnit } from "@/lib/use-public";
+import { TeamEntryCard } from "@/components/authority/TeamEntry";
+import { useHasUnit, useTeamEntry } from "@/lib/use-public";
 
 /**
  * The two ways in, under the hero: a rescue unit's and a resident's, as equals (the owner,
@@ -36,6 +37,9 @@ import { useHasUnit } from "@/lib/use-public";
 export function JoinJaga({ place = "hero" }: { place?: "hero" | "act" }) {
   const state = useStored<UnitWayState>(UNIT_WAY_KEY);
   const hasUnit = useHasUnit();
+  // An approved team gets one highlighted way back to its board instead of an invitation to
+  // register (24 Oct); a registration still waiting keeps the quiet line to its status.
+  const team = useTeamEntry();
 
   // One visit a browser session, not one a render.
   useEffect(() => {
@@ -52,6 +56,17 @@ export function JoinJaga({ place = "hero" }: { place?: "hero" | "act" }) {
   }, []);
 
   const full = unitWayFull(state, hasUnit);
+  if (team) {
+    return place === "act" ? (
+      <div data-join-jaga-act="team" className="hidden console:block">
+        <TeamEntryCard />
+      </div>
+    ) : (
+      <div data-join-jaga="team" className="console:hidden">
+        <TeamEntryCard />
+      </div>
+    );
+  }
   if (place === "act") {
     return (
       <div data-join-jaga-act={full ? "card" : "line"} className="hidden console:block">

@@ -195,6 +195,7 @@ export function useMyRole(ask = true): string | null {
     if (!hasSession()) {
       if (readStored("role") !== null) writeStored("role", null);
       if (readStored("unit") !== null) writeStored("unit", null);
+      if (readStored("team") !== null) writeStored("team", null);
       return;
     }
     if (!ask) return;
@@ -204,7 +205,10 @@ export function useMyRole(ask = true): string | null {
     const askNow = () => {
       if (cancelled || answered || busy) return;
       busy = true;
-      getJsonTrying<{ role: string | null; hasUnit?: boolean }>("/api/me/role", () => cancelled)
+      getJsonTrying<{ role: string | null; hasUnit?: boolean; team?: string | null }>(
+        "/api/me/role",
+        () => cancelled,
+      )
         .then(
           (me) => {
             if (cancelled) return;
@@ -212,6 +216,8 @@ export function useMyRole(ask = true): string | null {
             writeStored("role", me.role);
             // Kept beside the role, so no page spends a second request on it (see useHasUnit).
             writeStored("unit", me.hasUnit === true ? true : null);
+            // And which page an approved team goes back to, for the highlighted way in (24 Oct).
+            writeStored("team", me.team === "board" || me.team === "mine" ? me.team : null);
             setLive(me.role);
           },
           () => {},
@@ -238,6 +244,17 @@ export function useMyRole(ask = true): string | null {
  */
 export function useHasUnit(): boolean | null {
   return useStored<boolean>("unit");
+}
+
+/**
+ * Whether this person belongs to an approved team, and which page is theirs: "board" for the
+ * owner or a dispatcher, "mine" for crew. Null for everyone else, and until an answer has been
+ * had, so nobody is shown a way into a console they cannot open. It only decides what is drawn;
+ * the console checks again in the database (safety rule 5).
+ */
+export function useTeamEntry(): "board" | "mine" | null {
+  const stored = useStored<string>("team");
+  return stored === "board" || stored === "mine" ? stored : null;
 }
 
 /** `checkedAt` since A9 (15 Oct 2026); lists kept before then have none. */

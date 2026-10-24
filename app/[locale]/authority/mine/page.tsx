@@ -32,6 +32,7 @@ export default async function MyCasesPage({ params }: PageProps<"/[locale]/autho
     redirect(`${localePath(locale, "/sign-in")}?next=${localePath(locale, "/authority/mine")}`);
   }
   const t = await getTranslations("fieldCrew");
+  const tNav = await getTranslations("nav");
   const work = await readMyWork().catch(() => ({ cases: [], open: [], readAt: "" }));
   return (
     <div className="flex flex-col gap-5">
@@ -40,7 +41,10 @@ export default async function MyCasesPage({ params }: PageProps<"/[locale]/autho
       <NextIntlClientProvider messages={fieldCrewMessages(await getMessages())}>
         <MyCases initial={work} />
       </NextIntlClientProvider>
-      <BackLink label={(await getTranslations("nav"))("backHome")} />
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <BackLink href="/account" label={tNav("backAccount")} />
+        <BackLink label={tNav("backHome")} />
+      </div>
     </div>
   );
 }

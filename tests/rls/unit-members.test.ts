@@ -430,3 +430,45 @@ describe("who is told", () => {
     ).toBe("42501");
   });
 });
+
+describe("the way back into the team's board (my_team_entry)", () => {
+  const entry = async (uid: string | "anon") => {
+    await as(db, uid === "anon" ? "anon" : { uid });
+    return (await rows<{ e: string | null }>(db, "select my_team_entry() as e"))[0]!.e;
+  };
+
+  it("is 'board' for the owner and a dispatcher, 'mine' for crew, and nothing for anyone else", async () => {
+    const dispatcher = await joinAs("dispatcher");
+    const field = await joinAs("field");
+    expect(await entry(w.yalaRescue.user)).toBe("board");
+    expect(await entry(dispatcher.person)).toBe("board");
+    expect(await entry(field.person)).toBe("mine");
+    for (const nobody of [w.otherUser, w.requester, w.admin, w.yalaPending.user]) {
+      expect(await entry(nobody)).toBeNull();
+    }
+  });
+
+  it("is nothing for someone still waiting, someone removed, or a team that is not verified", async () => {
+    const waiting = await newUser(db, "waiting");
+    await redeem(waiting, await invite());
+    expect(await entry(waiting)).toBeNull();
+
+    const field = await joinAs("field");
+    await as(db, { uid: w.yalaRescue.user });
+    await db.query("select remove_unit_member($1)", [field.memberId]);
+    expect(await entry(field.person)).toBeNull();
+
+    const kept = await joinAs("dispatcher");
+    await asOwner(db);
+    await db.query("update authority_units set status = 'suspended' where id = $1", [
+      w.yalaRescue.id,
+    ]);
+    expect(await entry(kept.person)).toBeNull();
+    expect(await entry(w.yalaRescue.user)).toBeNull();
+  });
+
+  it("is not for visitors", async () => {
+    await as(db, "anon");
+    await expectDenied(db, "select my_team_entry()");
+  });
+});

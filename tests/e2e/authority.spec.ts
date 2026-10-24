@@ -304,6 +304,26 @@ test.describe("a team accepts, and the sender sees who is coming", () => {
     expect(await page.evaluate(() => window.scrollX)).toBe(0);
   });
 
+  test("an approved team is shown its way back on the home screen and on the map", async ({
+    page,
+  }) => {
+    await signIn(page);
+    await page.goto("/");
+    // The highlighted card replaces the invitation to register, and goes to the board.
+    const card = page.locator('[data-team-entry="card"]:visible');
+    await expect(card).toBeVisible();
+    await expect(card.locator("[data-team-open]")).toHaveAttribute("href", /\/authority$/);
+    await expect(page.locator('[data-unit-way="card"]:visible')).toHaveCount(0);
+    // And one small pill on the map page.
+    await page.goto("/map");
+    const chip = page.locator('[data-team-entry="chip"]');
+    await expect(chip).toBeVisible();
+    await expect(chip).toHaveAttribute("href", /\/authority$/);
+    await chip.click();
+    // The board is a heavy page: the first visit to it on a dev server takes a while to compile.
+    await expect(page).toHaveURL(/\/authority$/, { timeout: 45_000 });
+  });
+
   test("giving the case back takes a reason and leaves nobody holding it", async ({ page }) => {
     await signIn(page);
     await page.goto("/authority");

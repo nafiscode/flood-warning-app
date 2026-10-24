@@ -55,8 +55,9 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
   const tTeam = await getTranslations("unitTeam");
   const isOwner = units.some((u) => u.isOwner);
   const waiting = isOwner ? await countWaiting(session.userId) : 0;
-  return (
-    <div className="flex flex-col gap-5">
+  // The team's other tools: stacked above the board on a phone, one menu in the war room (24 Oct).
+  const tools = (
+    <nav className="flex flex-col gap-3" data-team-tools="true">
       {/* For people the team found by itself, who never sent an SOS (the owner, 13-14 Oct). */}
       <Link
         href="/authority/field-rescue"
@@ -74,8 +75,12 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
           {waiting > 0 ? tTeam("linkWaiting", { count: waiting }) : tTeam("link")}
         </Link>
       )}
+    </nav>
+  );
+  return (
+    <div className="flex flex-col gap-5">
       <NextIntlClientProvider messages={authorityMessages(await getMessages())}>
-        <Console initial={board} />
+        <Console initial={board} tools={tools} />
       </NextIntlClientProvider>
       <BackLink label={(await getTranslations("nav"))("backHome")} />
     </div>

@@ -33,6 +33,7 @@ import { attention, damForFigure, onPath, type Dam } from "@/lib/dam";
 import { AlertHero, type HeroStatus } from "./AlertHero";
 import { AreaChooser } from "./AreaChooser";
 import { Checklist } from "./Checklist";
+import { TeamEntryCard } from "@/components/authority/TeamEntry";
 import { HomeFirst } from "./HomeFirst";
 import { OtherHelp } from "./OtherHelp";
 import { SetupSteps } from "./SetupSteps";
@@ -399,6 +400,9 @@ export function HomeView(props: HomeViewProps) {
          * (components/home/SetupSteps.tsx) does this inviting, one step at a time (23 Oct).
          */}
         {!tense && !wide && props.joinJaga}
+        {/* An approved team's way back to its board stays, even while a warning is in force:
+            it is when the board is needed most (24 Oct). Nothing is drawn for anyone else. */}
+        {tense && !wide && <TeamEntryCard />}
 
         {/*
          * And one line saying Jaga can be installed, because on a phone the card itself is 56%
@@ -503,6 +507,11 @@ export function HomeView(props: HomeViewProps) {
 
         {/* Laptop only: the unit's way in, under "Follow my requests" (the owner, 20 Oct). */}
         {!tense && props.unitCard}
+        {tense && (
+          <div className="hidden console:block">
+            <TeamEntryCard />
+          </div>
+        )}
 
         {props.projectLine && !visitorFocus && (
           <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>

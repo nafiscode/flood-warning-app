@@ -12,8 +12,8 @@ import { NO_STORE } from "@/lib/supabase/public";
  * (safety rule 5).
  */
 export async function GET() {
-  const answer = (role: string | null, hasUnit = false) =>
-    Response.json({ role, hasUnit }, { headers: { "Cache-Control": NO_STORE } });
+  const answer = (role: string | null, hasUnit = false, team: "board" | "mine" | null = null) =>
+    Response.json({ role, hasUnit, team }, { headers: { "Cache-Control": NO_STORE } });
   if (!supabaseConfigured()) return answer(null);
   const session = await getSessionProfile();
   if (!session) return answer(null);
@@ -24,12 +24,16 @@ export async function GET() {
     .from("authority_units")
     .select("id", { count: "exact", head: true })
     .eq("user_id", session.userId);
-  if ((count ?? 0) > 0) return answer(session.role, true);
+  // Whether they belong to an approved team, and which page is theirs: the board for an owner or
+  // a dispatcher, their own cases for crew. One word, no team and no name (24 Oct).
+  const { data: entry } = await supabase.rpc("my_team_entry");
+  const team = entry === "board" || entry === "mine" ? entry : null;
+  if ((count ?? 0) > 0) return answer(session.role, true, team);
   // A person an owner has let into a team (or who is waiting to be) is not asked to register one.
   const { count: joined } = await supabase
     .from("authority_unit_members")
     .select("id", { count: "exact", head: true })
     .eq("user_id", session.userId)
     .in("status", ["pending", "active"]);
-  return answer(session.role, (joined ?? 0) > 0);
+  return answer(session.role, (joined ?? 0) > 0, team);
 }

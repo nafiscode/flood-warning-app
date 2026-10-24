@@ -357,6 +357,7 @@ Built in steps from 24 Oct 2026. A team (a verified unit) can have several peopl
 - **Removing** a member, or suspending the team, closes access at once (it is read from the database on every call).
 - **Field members** read the exact point and the requester's phone of a case assigned to them only, until it closes (safety rule 5); they report en route, on site and rescued, and attach the photos. The owner or a dispatcher assigns a claimed case to one or more members; a field member may also take an unassigned claimed case. A team with no field members works as before.
 - **Team war room** (laptop and landscape tablet, from 1280 px): offers and queue, the live map on the main map's basemaps (`BASEMAPS` in `lib/map.ts`), the selected case with its crew, and the team's record. Phones keep the tabbed console.
+- **The way back** (24 Oct 2026): an approved team's people see a highlighted "Your team" card on the home screen (in place of the invitation to register) and a small "Your team's board" pill beside the map page's title; the owner and dispatchers go to the board, crew to their own cases. Drawn for nobody else.
 
 ## 6. Admin features
 

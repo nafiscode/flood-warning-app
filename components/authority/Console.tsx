@@ -4,7 +4,7 @@ import { PushCard } from "@/components/push/PushCard";
 import { TeamWarRoom } from "@/components/authority/TeamWarRoom";
 import { useConsoleView } from "@/lib/console-view";
 import { useBoardRealtime } from "@/lib/use-board-realtime";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BoardView,
   type AlarmState,
@@ -57,7 +57,14 @@ type Answer = {
   error?: string;
 };
 
-export function Console({ initial }: { initial: AuthorityBoard }) {
+export function Console({
+  initial,
+  tools = null,
+}: {
+  initial: AuthorityBoard;
+  /** The team's other tools, drawn above the board on a phone and in a menu in the war room. */
+  tools?: ReactNode;
+}) {
   const [polled, setPolled] = useState<AuthorityBoard | null>(null);
   const board = polled && polled.readAt > initial.readAt ? polled : initial;
   const [now, setNow] = useState(() => Date.parse(initial.readAt));
@@ -395,7 +402,8 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
   return (
     <>
       {/* The offer reaches this phone with the board closed once notifications are on (A7). */}
-      <PushCard place="team" />
+      {!warRoom && tools}
+      {!warRoom && <PushCard place="team" />}
       {warRoom ? (
         <TeamWarRoom
           board={board}
@@ -416,6 +424,8 @@ export function Console({ initial }: { initial: AuthorityBoard }) {
           view={view}
           onView={openView}
           other={otherView}
+          tools={tools}
+          extras={<PushCard place="team" />}
         />
       ) : (
         <BoardView

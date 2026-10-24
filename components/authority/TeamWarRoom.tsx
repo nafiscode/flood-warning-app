@@ -14,7 +14,7 @@ import {
 } from "@/components/authority/BoardView";
 import { CaseCard, type CaseActions } from "@/components/authority/CaseCard";
 import { CASE_MARKS } from "@/components/authority/marks";
-import { TeamControls } from "@/components/authority/TeamControls";
+import { TeamStatusBar } from "@/components/authority/TeamStatusBar";
 import { ClockIcon, LifebuoyIcon, TriangleIcon } from "@/components/icons";
 import { useLaptopView } from "@/lib/console-view";
 import type { CoverageRow } from "@/lib/coverage";
@@ -41,14 +41,19 @@ const BoardMap = dynamic(() => import("@/components/authority/BoardMap").then((m
 
 /**
  * The team's war room (the owner, 24 Oct 2026), for the person at a laptop or a tablet held
- * sideways: the queue of cases and the offer that is ringing on the left, the live map in the
- * middle on the main map's own basemaps, the case that was picked with its crew on the right
- * (under the map on a tablet), and the team's record along the foot.
+ * sideways, drawn like a dispatch console rather than a long page:
  *
- * It is the same console with the same data and the same taps as the phone's board - CaseCard,
- * the alarm and the switches are the very components - laid out so a dispatcher sees everything
- * at once. It decides nothing and reads nothing itself (safety rule 5: what each tap may do is
- * checked again in the database).
+ *   * on a laptop it fits the window - the queue of cases and the offer that is ringing on the
+ *     left, the map in the middle taking every spare pixel with its own controls laid over it,
+ *     and the case in front with its crew and the team's record on the right - and each column
+ *     scrolls on its own, so the map never moves out of sight while a card is read;
+ *   * on a tablet held sideways the queue sits beside the map, with the case and the record
+ *     under it, because two columns is all that width holds (the owner, 21 Oct).
+ *
+ * The alarm and the team's switches are one slim row at the top. It is the same console with the
+ * same data and the same taps as the phone's board - CaseCard is the very component - and it
+ * decides nothing and reads nothing itself (safety rule 5: what each tap may do is checked again
+ * in the database). The map uses the main map's four basemaps (lib/map.ts).
  */
 
 const BASEMAP_KEY = "jaga.team.basemap";
@@ -86,6 +91,10 @@ type Props = {
   view?: ConsoleView;
   onView?: (view: ConsoleView) => void;
   other?: ReactNode;
+  /** The team's other tools (record a rescue, check places, people), folded into one menu. */
+  tools?: ReactNode;
+  /** The notification card: out of the way at the foot of the right-hand column. */
+  extras?: ReactNode;
 };
 
 export function TeamWarRoom({
@@ -107,6 +116,8 @@ export function TeamWarRoom({
   view = "cases",
   onView,
   other = null,
+  tools = null,
+  extras = null,
 }: Props) {
   const t = useTranslations("authority");
   const locale = useLocale();
@@ -153,7 +164,7 @@ export function TeamWarRoom({
       : undefined;
 
   const queue = (
-    <section className={card} data-war-queue="true">
+    <section className={`${card} ${laptop ? "h-full min-h-0" : ""}`} data-war-queue="true">
       <div className="flex flex-wrap items-center gap-2">
         {(["open", "closed"] as const).map((key) => (
           <button
@@ -214,7 +225,11 @@ export function TeamWarRoom({
               : t("empty.filtered")}
         </p>
       ) : (
-        <ul className="flex max-h-[46vh] flex-col gap-2 overflow-y-auto pe-1">
+        <ul
+          className={`flex flex-col gap-2 overflow-y-auto pe-1 ${
+            laptop ? "min-h-0 flex-1" : "max-h-[46vh]"
+          }`}
+        >
           {shown.map((c) => {
             const state = caseState(c);
             const loud = state === "offered_to_me" || state === "unanswered";
@@ -234,18 +249,20 @@ export function TeamWarRoom({
                   }`}
                 >
                   <span className="flex items-center gap-2 font-bold text-jaga-ink">
-                    {loud ? (
-                      <span className="inline-flex items-center gap-1 rounded-lg bg-sos px-2 py-0.5 text-small text-sos-fg">
-                        <TriangleIcon size={16} />
-                        {state === "offered_to_me" ? t("war.offered") : t("war.unanswered")}
-                      </span>
-                    ) : state === "searching" ? (
-                      <ClockIcon size={18} />
-                    ) : (
-                      <LifebuoyIcon size={18} />
-                    )}
+                    {!loud &&
+                      (state === "searching" ? (
+                        <ClockIcon size={18} />
+                      ) : (
+                        <LifebuoyIcon size={18} />
+                      ))}
                     {place(c)}
                   </span>
+                  {loud && (
+                    <span className="inline-flex items-center gap-1 self-start rounded-lg bg-sos px-2 py-0.5 text-small font-bold text-sos-fg">
+                      <TriangleIcon size={16} />
+                      {state === "offered_to_me" ? t("war.offered") : t("war.unanswered")}
+                    </span>
+                  )}
                   <span className={hint}>
                     {t(`state.${state}`, { unit: c.claimedByName ?? c.offeredToName ?? "" })}
                     {c.peopleCount ? ` · ${t("war.people", { count: c.peopleCount })}` : ""}
@@ -263,35 +280,49 @@ export function TeamWarRoom({
     </section>
   );
 
+  // The map with its own controls laid over it, so every spare pixel is map: the basemaps along
+  // the top and the key folded into one corner.
   const map = (
-    <section className="flex flex-col gap-2" data-war-map="true">
-      <BasemapPicker value={basemap} onPick={chooseBasemap} />
-      <div className="h-[62vh] min-h-[28rem]">
-        <BoardMap
-          cases={shown}
-          coverage={coverage}
-          mode="cases"
-          picked={null}
-          onPickCase={setPicked}
-          onPickTambon={() => {}}
-          text={{ loading: t("map.loading"), failed: t("map.failed") }}
-          basemap={basemap}
-          selected={current?.sosId ?? null}
-          className="h-full w-full overflow-hidden rounded-xl border border-jaga-line"
+    <section
+      className={`relative ${laptop ? "h-full min-h-0" : "h-[56vh] min-h-[26rem]"}`}
+      data-war-map="true"
+    >
+      <BoardMap
+        cases={shown}
+        coverage={coverage}
+        mode="cases"
+        picked={null}
+        onPickCase={setPicked}
+        onPickTambon={() => {}}
+        text={{ loading: t("map.loading"), failed: t("map.failed") }}
+        basemap={basemap}
+        selected={current?.sosId ?? null}
+        className="h-full w-full overflow-hidden rounded-xl border border-jaga-line"
+      />
+      <div className="pointer-events-none absolute inset-x-2 top-2 z-10 flex">
+        <BasemapPicker
+          value={basemap}
+          onPick={chooseBasemap}
+          className="pointer-events-auto flex max-w-[calc(100%-4rem)] flex-wrap gap-1 rounded-xl bg-jaga-surface/95 p-1 shadow"
         />
       </div>
-      <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small" aria-label={t("war.legend")}>
-        {CASE_MARKS.map((m) => (
-          <li key={m.key} className="flex items-center gap-2">
-            <span
-              className="inline-block size-3.5 rounded-full"
-              style={m.style}
-              aria-hidden="true"
-            />
-            {t(`map.case.${m.key}`)}
-          </li>
-        ))}
-      </ul>
+      <details className="absolute start-2 bottom-7 z-10 rounded-xl bg-jaga-surface/95 text-small shadow">
+        <summary className="flex min-h-tap cursor-pointer items-center px-3 font-medium text-jaga-ink">
+          {t("war.legend")}
+        </summary>
+        <ul className="flex flex-col gap-1 px-3 pb-3">
+          {CASE_MARKS.map((m) => (
+            <li key={m.key} className="flex items-center gap-2">
+              <span
+                className="inline-block size-3.5 rounded-full"
+                style={m.style}
+                aria-hidden="true"
+              />
+              {t(`map.case.${m.key}`)}
+            </li>
+          ))}
+        </ul>
+      </details>
     </section>
   );
 
@@ -329,26 +360,6 @@ export function TeamWarRoom({
         </div>
       ))}
     </section>
-  );
-
-  const panel = (
-    <div className="flex flex-col gap-4" data-war-panel="true">
-      {current ? (
-        <CaseCard
-          key={current.sosId}
-          c={current}
-          now={now}
-          busy={busy === current.sosId}
-          phone={current.sosId in phones ? { number: phones[current.sosId] ?? null } : null}
-          media={media[current.sosId] ?? null}
-          actions={actions}
-          crew={crewFor(current)}
-        />
-      ) : (
-        <p className={`${card} font-medium`}>{t("war.pick")}</p>
-      )}
-      {roster}
-    </div>
   );
 
   const foot = (
@@ -391,95 +402,125 @@ export function TeamWarRoom({
     </section>
   );
 
+  const panel = (
+    <div className="flex flex-col gap-4" data-war-panel="true">
+      {current ? (
+        <CaseCard
+          key={current.sosId}
+          c={current}
+          now={now}
+          busy={busy === current.sosId}
+          phone={current.sosId in phones ? { number: phones[current.sosId] ?? null } : null}
+          media={media[current.sosId] ?? null}
+          actions={actions}
+          crew={crewFor(current)}
+        />
+      ) : (
+        <p className={`${card} font-medium`}>{t("war.pick")}</p>
+      )}
+      {roster}
+    </div>
+  );
+
   return (
     <div
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-3"
+      // Marks the page as a console, so it is given the whole width of the window (app/globals.css).
+      data-console-page="team"
       data-team-war-room={laptop ? "laptop" : "tablet"}
       data-live={live}
     >
-      <header className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
           <p className={hint} data-war-live={live ? "live" : "poll"}>
             {live ? t("war.live") : t("war.poll")}
           </p>
-        </div>
-        {stale && (
-          <p
-            role="status"
-            className="rounded-xl border-2 border-jaga-edge bg-jaga-ground px-4 py-2 font-medium"
-          >
-            {t("pollFailed")}
-          </p>
-        )}
-        {notice && <BoardNoticeLine notice={notice} />}
-        {ringing.length > 0 && (
-          <p
-            role="alert"
-            className="flex items-center gap-2 rounded-2xl bg-sos px-4 py-3 text-h3 font-bold text-sos-fg"
-          >
-            <TriangleIcon size={24} />
-            {t("alarm.ringing", { count: ringing.length })}
-          </p>
-        )}
-      </header>
-
-      {onView && (
-        <nav aria-label={t("views.label")} className="flex flex-wrap gap-2" data-war-views="true">
-          {/* The war room is the case list and the map together, so the "map" view has no tab of its own. */}
-          {CONSOLE_VIEWS.filter((key) => key !== "map").map((key) => (
-            <button
-              key={key}
-              type="button"
-              aria-pressed={view === key}
-              onClick={() => onView(key)}
-              data-console-view={key}
-              className={`inline-flex min-h-tap items-center rounded-xl px-4 font-medium ${
-                view === key
-                  ? "bg-jaga-teal-ink text-white"
-                  : "border border-jaga-edge bg-jaga-surface text-jaga-ink"
-              }`}
+          {/* The offer, in words as well as in sound, without taking a row of its own. */}
+          {ringing.length > 0 && (
+            <p
+              role="alert"
+              className="inline-flex items-center gap-2 rounded-xl bg-sos px-3 py-1 font-bold text-sos-fg"
             >
-              {key === "cases" ? t("war.home") : t(`views.${key}`)}
-            </button>
-          ))}
-        </nav>
+              <TriangleIcon size={20} />
+              {t("alarm.ringing", { count: ringing.length })}
+            </p>
+          )}
+        </div>
+        <TeamStatusBar alarm={alarm} onArm={onArm} units={board.units} unitActions={unitActions} />
+      </header>
+      {stale && (
+        <p
+          role="status"
+          className="rounded-xl border-2 border-jaga-edge bg-jaga-ground px-4 py-2 font-medium"
+        >
+          {t("pollFailed")}
+        </p>
       )}
+      {notice && <BoardNoticeLine notice={notice} />}
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {onView ? (
+          <nav aria-label={t("views.label")} className="flex flex-wrap gap-2" data-war-views="true">
+            {/* The war room is the case list and the map together, so the "map" view has no tab of its own. */}
+            {CONSOLE_VIEWS.filter((key) => key !== "map").map((key) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={view === key}
+                onClick={() => onView(key)}
+                data-console-view={key}
+                className={`inline-flex min-h-tap items-center rounded-xl px-4 font-medium ${
+                  view === key
+                    ? "bg-jaga-teal-ink text-white"
+                    : "border border-jaga-edge bg-jaga-surface text-jaga-ink"
+                }`}
+              >
+                {key === "cases" ? t("war.home") : t(`views.${key}`)}
+              </button>
+            ))}
+          </nav>
+        ) : (
+          <span />
+        )}
+        {tools && (
+          <details className="relative" data-war-tools="true">
+            <summary className="inline-flex min-h-tap cursor-pointer items-center rounded-xl border border-jaga-edge bg-jaga-surface px-4 font-medium text-jaga-ink">
+              {t("war.tools")}
+            </summary>
+            <div className="absolute end-0 z-20 mt-1 flex w-80 flex-col gap-2 rounded-xl border border-jaga-line bg-jaga-surface p-3 shadow-lg">
+              {tools}
+            </div>
+          </details>
+        )}
+      </div>
 
       {view !== "cases" ? (
         other
       ) : laptop ? (
-        <div className="grid grid-cols-[minmax(300px,340px)_minmax(0,1fr)_minmax(360px,420px)] items-start gap-4">
-          <div className="flex flex-col gap-4">
-            {queue}
-            <TeamControls
-              alarm={alarm}
-              onArm={onArm}
-              units={board.units}
-              unitActions={unitActions}
-            />
-          </div>
+        // Fits the window under the page's own header and the hotline bar; each column scrolls.
+        <div className="grid h-[calc(100dvh-24rem)] min-h-[28rem] grid-cols-[minmax(260px,290px)_minmax(0,1fr)_minmax(340px,390px)] gap-4">
+          <div className="min-h-0">{queue}</div>
           {map}
-          {panel}
+          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pe-1">
+            {panel}
+            {foot}
+            {extras}
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-[minmax(280px,320px)_minmax(0,1fr)] items-start gap-4">
-          <div className="flex flex-col gap-4">
+        <>
+          <div className="grid grid-cols-[minmax(280px,320px)_minmax(0,1fr)] items-start gap-4">
             {queue}
-            <TeamControls
-              alarm={alarm}
-              onArm={onArm}
-              units={board.units}
-              unitActions={unitActions}
-            />
+            <div className="flex flex-col gap-4">
+              {map}
+              {panel}
+            </div>
           </div>
-          <div className="flex flex-col gap-4">
-            {map}
-            {panel}
-          </div>
-        </div>
+          {foot}
+          {extras}
+        </>
       )}
-      {view === "cases" && foot}
     </div>
   );
 }

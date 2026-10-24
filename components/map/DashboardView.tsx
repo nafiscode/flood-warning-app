@@ -107,6 +107,7 @@ import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { MapFeatureChips } from "./MapFeatures";
 import { InstallCard } from "@/components/InstallCard";
+import { TeamEntryChip } from "@/components/authority/TeamEntry";
 import { MapJoin } from "@/components/map/MapJoin";
 import { CardSteps } from "./CardSteps";
 import { MapMethod } from "./MapMethod";
@@ -1684,6 +1685,8 @@ export function DashboardView(props: DashboardViewProps) {
         <p className="hidden text-small text-jaga-text-2 console:block" data-console-note="true">
           {t("console.note")}
         </p>
+        {/* Only for an approved team: one pill back to its board, up where the page starts (24 Oct). */}
+        <TeamEntryChip />
         {/*
          * Without signal the map draws what this phone kept (A9: every saved thing says how old
          * it is). The time given is the older of the alert status and the map's own data.

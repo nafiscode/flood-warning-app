@@ -38,6 +38,7 @@ export default async function JoinPage({
   const session = await getSessionProfile();
   if (!session) redirect(`${localePath(locale, "/sign-in")}?next=${encodeURIComponent(here)}`);
   const t = await getTranslations("unitTeam");
+  const tNav = await getTranslations("nav");
   return (
     <div className={`flex flex-col gap-5 ${formColumn}`}>
       <h1 className="text-h2 font-bold text-jaga-ink">{t("join.title")}</h1>
@@ -45,7 +46,11 @@ export default async function JoinPage({
       <NextIntlClientProvider messages={unitTeamMessages(await getMessages())}>
         <JoinTeam initialCode={code} />
       </NextIntlClientProvider>
-      <BackLink label={(await getTranslations("nav"))("backHome")} />
+      {/* Back to the account it was reached from, and to the home screen (24 Oct). */}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <BackLink href="/account" label={tNav("backAccount")} />
+        <BackLink label={tNav("backHome")} />
+      </div>
     </div>
   );
 }

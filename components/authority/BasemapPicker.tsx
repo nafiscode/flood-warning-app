@@ -11,16 +11,18 @@ import { BASEMAPS, type Basemap } from "@/lib/map";
 export function BasemapPicker({
   value,
   onPick,
+  className = "flex flex-wrap gap-2",
 }: {
   value: Basemap;
   onPick: (basemap: Basemap) => void;
+  className?: string;
 }) {
   const t = useTranslations("map");
   return (
     <div
       role="group"
       aria-label={t("basemap.title")}
-      className="flex flex-wrap gap-2"
+      className={className}
       data-basemap-picker="true"
     >
       {BASEMAPS.map((kind) => (

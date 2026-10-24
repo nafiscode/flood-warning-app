@@ -1659,7 +1659,9 @@
         "taken": "Kes diambil",
         "reported": "Penyelamatan dilaporkan"
       },
-      "home": "Gambaran keseluruhan"
+      "home": "Gambaran keseluruhan",
+      "sharingShort": "Tunjukkan nombor pasukan kepada pemohon",
+      "tools": "Alat pasukan"
     }
   },
   "admin": {
@@ -5396,7 +5398,13 @@
     "register": "Daftar pasukan",
     "quiet": "Pasukan penyelamat, APM atau sukarelawan?",
     "mine": "Lihat status unit anda",
-    "signInFirst": "Masuk dengan LINE dahulu, kemudian Jaga akan membawa anda ke borang pendaftaran pasukan."
+    "signInFirst": "Masuk dengan LINE dahulu, kemudian Jaga akan membawa anda ke borang pendaftaran pasukan.",
+    "teamTitle": "Pasukan anda",
+    "teamBody": "Permintaan bantuan, penggera dan ahli pasukan anda ada di sini.",
+    "teamOpen": "Lihat status unit anda",
+    "teamOpenMine": "Lihat kes yang pasukan berikan kepada saya",
+    "teamChip": "Papan pasukan anda",
+    "teamChipMine": "Kes yang pasukan berikan kepada saya"
   },
   "placeChecks": {
     "title": "Periksa tempat selamat",

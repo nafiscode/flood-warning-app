@@ -1659,7 +1659,9 @@
         "taken": "Cases taken",
         "reported": "Rescues reported"
       },
-      "home": "Overview"
+      "home": "Overview",
+      "sharingShort": "Show the team's number to the person",
+      "tools": "Team tools"
     }
   },
   "admin": {
@@ -5396,7 +5398,13 @@
     "register": "Register a unit",
     "quiet": "A rescue team, civil-defence volunteer or volunteer unit?",
     "mine": "See your unit's status",
-    "signInFirst": "Sign in with LINE first, and Jaga will take you to the unit registration form."
+    "signInFirst": "Sign in with LINE first, and Jaga will take you to the unit registration form.",
+    "teamTitle": "Your team",
+    "teamBody": "Requests for help, the alarm and your crew are here.",
+    "teamOpen": "See your unit's status",
+    "teamOpenMine": "See the cases your team gave me",
+    "teamChip": "Your team's board",
+    "teamChipMine": "Cases my team gave me"
   },
   "placeChecks": {
     "title": "Check the safe places",

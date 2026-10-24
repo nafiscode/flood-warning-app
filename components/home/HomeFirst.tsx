@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
+import { TeamEntryCard } from "@/components/authority/TeamEntry";
 import { ForwardIcon } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import { card } from "@/lib/ui";
@@ -109,6 +110,8 @@ export function HomeFirst({
 
       <div className="flex flex-col gap-5">
         {sos}
+        {/* Under SOS, which stays first: an approved team's way back to its board (24 Oct). */}
+        <TeamEntryCard />
         <OtherHelp projectLine={projectLine} />
         {myReports}
       </div>
