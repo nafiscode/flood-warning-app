@@ -74,11 +74,11 @@ Read the relevant doc before starting a task. Don't load all of them every time.
   - Admins: invite-only, by email magic link or phone OTP.
 - **SMS:** Supabase Send SMS Hook calling a provider adapter. The provider is not chosen yet, so keep the interface generic and ship a dev/console adapter.
 - **Science pipeline:** Python 3.11+ in `pipeline/` (earthengine-api, rasterio, geopandas, xarray, pysheds or WhiteboxTools, osmnx). Outputs are COG/PMTiles files (uploaded to R2 with `pipeline/r2sync`) plus tables loaded into Supabase.
-- **Hosting:** Vercel for the web app (Hobby for the 2026 launch; Pro only when traffic or a trigger in `docs/runbook.md` "Vercel's free plan limit is reached" calls for it), Supabase Pro for the database.
+- **Hosting:** Vercel for the web app and Supabase for the database. **Both stay on their free plans for the 2026 launch** (owner, 24 Oct), and the live site keeps reading `jaga-dev`; no `jaga-live` project and no Pro plan until traffic, a sponsor's credit or a trigger in `docs/runbook.md` ("Vercel's free plan limit is reached", "Supabase's free plan") calls for it. Because `jaga-dev` is the live database, never run `db:reset`, e2e or the RLS suite against it after launch without asking.
 - **Attribution:** show Open-Meteo attribution wherever its data appears (free non-commercial use; owner confirming for a non-profit).
 
 ## Budget guardrails
-- Budget is about $25/month while Vercel stays on Hobby (Supabase Pro), $45/month once Vercel Pro is bought, and at most $150/month from October to December. Vercel Hobby has no spend control and pauses the site at its limits, so it has upgrade triggers (decisions.md, 24 Oct 2026).
+- Budget is $0/month while Vercel and Supabase stay on their free plans, about $45/month once both are Pro ($25 + $20), and at most $150/month from October to December. Neither free plan can bill: Vercel pauses the site at its limits and Supabase has no backups and may pause an idle project, so both have upgrade triggers (decisions.md, 24 Oct 2026).
 - Ask before adding any dependency or service that costs money, bills per request, or needs a new account.
 - Compress images on the client before upload: longest side 1600 px or less, JPEG/WebP quality about 0.7. Keep voice notes to 60 s or less.
 - R2 stays inside its free tier (10 GB stored, 1M writes and 10M reads a month; downloads free). Tile reads go through the custom domain's cache before launch. Warn the owner if storage passes ~7 GB.

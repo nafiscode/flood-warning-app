@@ -10,17 +10,17 @@ Owner = needs the owner's account or payment. Claude = done from the laptop.
 
 - [ ] Security review written up with fixes (`docs/security-review-2026.md`), RLS tests for each fix. (Claude)
 - [ ] `docs/runbook.md` written. (Claude)
-- [ ] New Supabase organisation on **Pro**, live project created in Singapore (Owner). jaga-dev stays in its free organisation.
-- [ ] Live project built from migrations and seed (`npm run db:push` against the live project, then the seed files in order). (Claude)
-- [ ] Live project's dashboard settings, copied from SETUP.md (Owner, walkthrough on the tracker):
+- [x] ~~New Supabase organisation on Pro, separate live project~~ **Deferred (owner, 24 Oct):** the 2026 launch runs on `jaga-dev`, free. Walkthrough 7 on the tracker is parked until a trigger in the runbook calls for it.
+- [x] ~~Live project built from migrations and seed~~ Deferred with the item above. `jaga-dev` already holds the migrations and seed.
+- [ ] `jaga-dev` dashboard settings are what the live site uses; check them once (Owner):
   - [ ] Authentication → URL Configuration: Site URL `https://jagaapp.org`, redirect URLs `https://jagaapp.org/**`.
   - [ ] Custom OAuth2 provider `custom:line` (as in SETUP.md "One-time: LINE sign-in"), and the live project's callback URL added to the LINE Login channel.
   - [ ] Custom SMTP (Gmail app password), magic-link and invite templates using `{{ .TokenHash }}` → `/api/auth/confirm`.
-  - [ ] Daily backups visible under Database → Backups.
-- [ ] On the live project: `npm run admin:super -- <project email>`, `npm run push:gate -- https://jagaapp.org`, dam history backfilled (`dam_fetch_range` for the last 60 days). (Claude)
-- [x] Vercel stays on **Hobby** for launch (owner, 24 Oct: wait for traffic before paying). Upgrade triggers are in `docs/runbook.md`, "Vercel's free plan limit is reached". (Owner)
-- [ ] Vercel Production environment points at the live project (`NEXT_PUBLIC_SUPABASE_URL`, publishable key, and any server key); Preview environment points at jaga-dev for the `staging` branch (Owner, walkthrough).
-- [ ] Backup and restore test done and written up. (Claude, with the owner's dashboard access)
+  - [x] ~~Daily backups visible~~ Not on the free plan. Replaced by a dump from the laptop (see Backup and restore test).
+- [x] ~~On the live project: super admin, push gate, dam backfill~~ Already done on `jaga-dev`.
+- [x] Vercel stays on **Hobby** and Supabase on **Free** for launch (owner, 24 Oct: wait for traffic before paying). Upgrade triggers are in `docs/runbook.md`. (Owner)
+- [x] ~~Vercel Production environment points at the live project~~ It keeps pointing at `jaga-dev`; no environment switch at launch.
+- [ ] Backup and restore test done and written up: a dump of `jaga-dev` taken from the laptop (it holds personal data, so it is kept off the repo) and restored into a scratch project. The free plan has no backups of its own. (Claude)
 - [ ] Load test done and written up (`docs/load-test-2026.md`). (Claude)
 - [ ] Replay tool for the dry run ready on staging. (Claude)
 
@@ -44,17 +44,17 @@ its new start date.
 3. **Hotlines:** 1784, 1669, 191 and 199 are one tap away on every screen, online and offline.
 4. **Security:** no open critical or high finding in `docs/security-review-2026.md`.
 5. **Load:** the load test met its target (5,000 people opening home in 10 minutes) with no errors attributable to Jaga, inside the plan limits. On Hobby the test also reports CDN requests per visit, so the 1,000,000 a month can be read as a number of people.
-6. **Restore:** a backup was restored and checked.
+6. **Restore:** a dump of the database was restored into a scratch project and checked (the free plan has no daily backups).
 7. **Data:** gauges, dam and forecast feeds have run on the live project for at least 24 hours without a gap longer than an hour.
 8. **People:** at least two admins who can take shifts, have signed in on the live site, and have read the runbook; at least one verified response team per province, or a written reason why not.
 9. **Words:** the owner has read the Thai of every safety screen (alert, checklists, SOS, safe places, hotlines). Malay may launch as it is, said on the tracker.
-10. **Costs:** Supabase Pro is paid; Vercel stays on the free Hobby plan with its upgrade triggers written down (owner, 24 Oct); the LINE plan is decided (the free plan's 500 messages a month cover one alert to fewer than 500 people).
+10. **Costs:** nothing is paid for hosting at launch; Vercel and Supabase stay on their free plans with their upgrade triggers written down (owner, 24 Oct); the LINE plan is decided (the free plan's 500 messages a month cover one alert to fewer than 500 people).
 
 ## 5. Launch day (Sun 25 Oct)
 
 In this order, with the owner on the laptop and one admin on a phone:
 
-1. [ ] Vercel → Production → remove `JAGA_DEV_PAGES`, so `/dev/*` answers 404.
+1. [ ] Vercel → Production → remove `JAGA_DEV_PAGES`, so `/dev/*` answers 404. (No environment switch: production already reads `jaga-dev`.)
 2. [ ] Vercel → Production → set `JAGA_IN_SERVICE=1`. Tambons without an alert now show Normal instead of "not in service yet", and the SOS button sends instead of calling first.
 3. [ ] Redeploy, then check on a phone: home shows Normal or a level, SOS opens the request form, `/dev/brand` is 404.
 4. [ ] Forward `jaga-neon.vercel.app` to `https://jagaapp.org` (Vercel → Domains → redirect).
@@ -66,5 +66,5 @@ In this order, with the owner on the laptop and one admin on a phone:
 
 ## After launch
 
-- First week: the owner reads `/admin/usage` and the audit log daily, and Vercel → Usage (Hobby has no warning emails that we know of; at 50% of any meter, upgrade).
+- First week: the owner reads `/admin/usage` and the audit log daily, Vercel → Usage (Hobby has no warning emails that we know of; at 50% of any meter, upgrade) and the Supabase dashboard (project not paused; database size, egress).
 - Reminders tab on the tracker carries everything that repeats (keys, quotas, reruns).

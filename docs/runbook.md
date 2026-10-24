@@ -103,6 +103,27 @@ Upgrade to Pro (about 2 minutes, $20 a month, can be undone later). Upgrade when
 Afterwards, record it in `docs/decisions.md` and set the Vercel spend notification to notify only,
 with no automatic action (a budget action can pause the deployment).
 
+## Supabase's free plan: a paused project, size, and no backups
+
+Jaga launches on the free Supabase project `jaga-dev` (decision of 24 Oct 2026). From Supabase's own
+pages: free projects "may" be paused after a week of low activity; daily backups exist only on Pro and
+free projects are told to export their own data; the limits are 500 MB of database and 5 GB of
+egress a month. On 24 Oct the database was 52 MB.
+
+- **If the project is paused:** the alerts, requests for help and the consoles stop. Restore it from
+  Dashboard → `jaga-dev` → Restore project (a few minutes), post a notice in
+  `public/status/notice.json` and send the LINE broadcast meanwhile. Installed phones keep their saved
+  status and hotlines and queue an SOS.
+- **Backups:** a dump from the laptop (it holds phone numbers and request locations, so it is kept off
+  the repo and off shared drives). Take one before every migration and each week.
+- **Upgrade to Pro** ($25 a month, Dashboard → organisation → Billing): when the database passes 300 MB
+  or egress passes half the month's 5 GB; before the season's first wide Warning or Evacuate; the day a
+  sponsor's credit arrives; and at once after any pause. Pro also lets the refresh-token revocation be
+  turned off (admins on the iPhone home-screen app stop being signed out) and gives daily backups.
+  A separate paid `jaga-live` project is optional then (tracker walkthrough 7 keeps the steps).
+- **Never run `npm run db:reset`, the full e2e suite or the RLS suite against `jaga-dev` after launch**
+  without asking: it is the live database now.
+
 ## The SMS provider fails
 
 Jaga does not send SMS in 2026: phone sign-in stays off until a provider is chosen after launch, and
