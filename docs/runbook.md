@@ -92,7 +92,9 @@ call buttons offered, because it goes through the site (`/api/sos`).
 **Upgrade to Pro before that happens.** The owner does it: vercel.com → team → Settings → Billing →
 Upgrade to Pro (about 2 minutes, $20 a month, can be undone later). Upgrade when any of these is true:
 
-- Any meter on Vercel → Usage is at 50% of its limit.
+- Active CPU on Vercel → Usage is past 3 hours (75% of 4), or any other meter is at 50%. On 24 Oct, before launch, the
+  meters read: transfer 3.6 GB (3.6%), CDN requests 192k (19%), function calls 94k (9%), active CPU 1h 52m
+  (47%). CPU is the tight one: look at it twice a day around launch and on any day with an alert.
 - Before the season's first Warning or Evacuate for a wide area, or when heavy rain is forecast.
 - Before the donation feature is switched on or any admin stipend is paid: Vercel counts payment for
   producing or hosting the site as commercial use (asking for donations alone is not).
