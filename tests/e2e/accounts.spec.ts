@@ -323,6 +323,23 @@ test("an authority registers and stays pending", async ({ page }) => {
     poc_phone_verified_by_call: false,
   });
   expect(unit!.tambons).toBe(unit!.expected);
+
+  // The admins' phones were told once (24 Oct): the database marks the unit when the server asked
+  // for their addresses, which happens right after the answer has gone back.
+  await expect
+    .poll(
+      async () =>
+        (
+          (await sql(
+            `select u.admins_notified_at is not null as told
+               from public.authority_units u
+               join public.organizations o on o.id = u.org_id where o.name = $1`,
+            [ORG],
+          )) as { told: boolean }[]
+        )[0]?.told,
+      { timeout: 20_000 },
+    )
+    .toBe(true);
 });
 
 test("only an invited email becomes an admin, and only after signing in with it", async ({

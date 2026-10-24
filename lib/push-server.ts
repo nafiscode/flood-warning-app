@@ -420,3 +420,60 @@ export async function pushFieldHeld(rescueId: string): Promise<PushOutcome> {
     return { skipped: "error" };
   }
 }
+
+const UNIT_WORDS: Record<string, { title: string; body: string }> = {
+  th: th.adminTools.unitWaiting.push,
+  ms: ms.adminTools.unitWaiting.push,
+  en: en.adminTools.unitWaiting.push,
+};
+
+/**
+ * Tell the admins' phones that a team has registered and is waiting to be verified (the owner,
+ * 24 Oct). The same shape as the held field rescue above: asked with the server's own token, the
+ * database hands the admins' addresses out once per unit, it names the team and nothing else, and
+ * it never throws - the team is in the admins' bell whether or not a notification leaves.
+ */
+export async function pushUnitWaiting(unitId: string): Promise<PushOutcome> {
+  try {
+    const token = gateToken();
+    if (!token || !configured()) return { skipped: "no_keys" };
+    const supabase = createPublicClient();
+    const { data, error } = await supabase.rpc("push_unit_waiting", {
+      p_token: token,
+      p_unit: unitId,
+    });
+    if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
+    type Row = Target & { unit_name: string };
+    const gone: string[] = [];
+    let sent = 0;
+    let failed = 0;
+    for (const row of data as Row[]) {
+      const words = UNIT_WORDS[row.locale] ?? UNIT_WORDS.th!;
+      const payload = {
+        // The service worker's plain kind: a title, words, and a page of this app to open.
+        kind: "announcement",
+        title: words.title,
+        body: words.body.replace("{unit}", row.unit_name),
+        url: `${row.locale === "th" ? "" : `/${row.locale}`}/admin/authorities`,
+        tag: `unit-${unitId}`,
+        sticky: false,
+      };
+      try {
+        await webpush.sendNotification(
+          { endpoint: row.endpoint, keys: row.keys },
+          JSON.stringify(payload),
+          { TTL: 24 * 3600, urgency: "normal" },
+        );
+        sent++;
+      } catch (e) {
+        const status = (e as { statusCode?: number }).statusCode;
+        if (status === 404 || status === 410) gone.push(row.endpoint);
+        else failed++;
+      }
+    }
+    if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
+    return { sent, failed, gone: gone.length };
+  } catch {
+    return { skipped: "error" };
+  }
+}

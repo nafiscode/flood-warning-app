@@ -3361,6 +3361,12 @@
         "title": "Jaga: a rescue record is waiting",
         "body": "{unit} recorded a rescue in {place}. It is waiting for your approval."
       }
+    },
+    "unitWaiting": {
+      "push": {
+        "title": "Jaga: a team is waiting to be verified",
+        "body": "{unit} has registered. It is waiting for you to verify it."
+      }
     }
   },
   "reportsNear": {

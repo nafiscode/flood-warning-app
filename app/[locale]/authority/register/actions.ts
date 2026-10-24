@@ -1,8 +1,10 @@
 "use server";
 
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { localePath } from "@/lib/auth";
 import { normalizePhone } from "@/lib/phone";
+import { pushUnitWaiting } from "@/lib/push-server";
 import { createClient } from "@/lib/supabase/server";
 
 const ORG_TYPES = ["government", "private", "nonprofit", "volunteer"];
@@ -64,7 +66,7 @@ export async function registerAuthority(form: FormData) {
   ];
   if (coverage.length === 0) fail("coverage");
 
-  const { error } = await supabase.rpc("register_authority_unit", {
+  const { data: unitId, error } = await supabase.rpc("register_authority_unit", {
     p_org_name: orgName,
     p_org_type: orgType,
     p_unit_name: unitName,
@@ -76,5 +78,8 @@ export async function registerAuthority(form: FormData) {
     p_coverage: coverage,
   });
   if (error) fail(error.message.includes("at most 5") ? "limit" : "save");
+  // The admins' phones are told once, after the answer has gone back (24 Oct); the bell has it
+  // either way.
+  if (typeof unitId === "string") after(() => void pushUnitWaiting(unitId));
   redirect(`${localePath(locale, "/account")}?registered=1`);
 }

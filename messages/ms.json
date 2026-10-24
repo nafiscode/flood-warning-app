@@ -3361,6 +3361,12 @@
         "title": "Jaga: rekod penyelamatan menunggu semakan",
         "body": "{unit} merekod penyelamatan di {place}. Menunggu kelulusan anda."
       }
+    },
+    "unitWaiting": {
+      "push": {
+        "title": "Jaga: sebuah pasukan menunggu pengesahan",
+        "body": "{unit} telah mendaftar. Ia menunggu anda mengesahkannya."
+      }
     }
   },
   "reportsNear": {
