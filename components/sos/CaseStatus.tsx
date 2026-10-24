@@ -24,7 +24,7 @@ import {
 import { arm, play } from "@/lib/sounds";
 import { useNow } from "@/lib/use-public";
 import { useBattery, useLocation, useQueue } from "@/lib/use-sending";
-import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
+import { buttonPrimary, buttonSecondary, card, formColumn, hint, notice } from "@/lib/ui";
 
 const FIVE_MINUTES = 5 * 60 * 1000;
 // An open request is looked at often: the moment a team accepts is the news this screen is for.
@@ -308,7 +308,7 @@ export function CaseStatus({ id, merged }: Props) {
   if (state === "unknown") {
     const others = (cases ?? []).filter((c) => c.id !== id);
     return (
-      <section className="flex flex-col gap-4" data-case-state="unknown">
+      <section className={`flex flex-col gap-4 ${formColumn}`} data-case-state="unknown">
         <h1 className="text-h3 font-bold text-jaga-ink">{t("status.title")}</h1>
         <p className={notice}>{t("status.notFound")}</p>
         {others.length > 0 && (
@@ -328,7 +328,7 @@ export function CaseStatus({ id, merged }: Props) {
 
   return (
     <section
-      className="flex flex-col gap-4"
+      className={`flex flex-col gap-4 ${formColumn}`}
       data-case-state={timeline?.status ?? "unknown"}
       data-case-kind={timeline?.kind ?? "rescue"}
     >

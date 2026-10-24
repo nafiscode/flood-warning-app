@@ -7,7 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { pickName } from "@/lib/area";
 import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { buttonPrimary, buttonSecondary, card, hint, notice } from "@/lib/ui";
+import { buttonPrimary, buttonSecondary, card, formColumn, hint, notice } from "@/lib/ui";
 
 const MAX_PLACES = 10;
 
@@ -56,7 +56,7 @@ export default async function WatchedPlaces({
   const done = query.done === "saved" || query.done === "deleted" ? query.done : null;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`flex flex-col gap-5 ${formColumn}`}>
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p>{t("intro")}</p>
       {done && (

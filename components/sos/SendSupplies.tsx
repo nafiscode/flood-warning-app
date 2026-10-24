@@ -37,6 +37,7 @@ import {
   card,
   checkBox,
   checkRow,
+  formColumn,
   hint,
   input,
   label,
@@ -173,7 +174,7 @@ export function SendSupplies() {
   if (phase === "queued" || phase === "failed") {
     const failed = phase === "failed";
     return (
-      <section className="flex flex-col gap-4" data-supplies-state={phase}>
+      <section className={`flex flex-col gap-4 ${formColumn}`} data-supplies-state={phase}>
         <div className={notice}>
           <h1 className="text-h3 font-bold text-jaga-ink">
             {failed ? t("sent.failedTitle") : t("sent.queuedTitle")}
@@ -191,7 +192,11 @@ export function SendSupplies() {
   }
 
   return (
-    <section className="flex flex-col gap-4" data-supplies-state="ready" data-supplies-live={live}>
+    <section
+      className={`flex flex-col gap-4 ${formColumn}`}
+      data-supplies-state="ready"
+      data-supplies-live={live}
+    >
       <h1 className="flex items-center gap-2 text-h3 font-bold text-jaga-ink">
         <ParcelIcon size={28} />
         {t("supplies.title")}

@@ -6,6 +6,7 @@ import { MyRequests } from "@/components/journey/MyRequests";
 import { journeyMessages } from "@/lib/journey-messages";
 import { PRIVATE_PAGE } from "@/lib/seo";
 
+import { formColumn } from "@/lib/ui";
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/requests">): Promise<Metadata> {
@@ -26,7 +27,7 @@ export default async function RequestsPage({ params }: PageProps<"/[locale]/requ
   setRequestLocale(locale);
   const t = await getTranslations("nav");
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`flex flex-col gap-5 ${formColumn}`}>
       <BackLink label={t("backHome")} />
       <NextIntlClientProvider messages={journeyMessages(await getMessages())}>
         <MyRequests />

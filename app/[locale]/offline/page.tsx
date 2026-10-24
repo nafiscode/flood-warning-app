@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { OfflineRetry } from "@/components/OfflineRetry";
 import { PRIVATE_PAGE } from "@/lib/seo";
 
+import { formColumn } from "@/lib/ui";
 /** The page the service worker shows instead of one it could not load: never a search result. */
 export const metadata: Metadata = PRIVATE_PAGE;
 
@@ -12,7 +13,7 @@ export default async function Offline({ params }: PageProps<"/[locale]/offline">
   setRequestLocale(locale);
   const t = await getTranslations("offline");
   return (
-    <section className="flex flex-col gap-3">
+    <section className={`flex flex-col gap-3 ${formColumn}`}>
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p>{t("body")}</p>
       <OfflineRetry label={t("retry")} />

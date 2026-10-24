@@ -146,7 +146,9 @@ export function DayBars({
         ))}
       </div>
       <details className="text-small">
-        <summary className="cursor-pointer text-jaga-text-2">{t("table")}</summary>
+        <summary className="flex min-h-tap cursor-pointer items-center text-jaga-text-2">
+          {t("table")}
+        </summary>
         <table className="mt-2 w-full text-start tabular-nums">
           <thead>
             <tr className="text-jaga-text-2">

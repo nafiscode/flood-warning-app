@@ -13,6 +13,7 @@ import {
   checkBox,
   checkRow,
   errorNotice,
+  formColumn,
   hint,
   input,
   label,
@@ -55,7 +56,7 @@ export default async function AccountSetup({
   const next = safeNextPath(typeof query.next === "string" ? query.next : null) ?? "";
 
   return (
-    <form action={saveProfile} className="flex flex-col gap-5">
+    <form action={saveProfile} className={`flex flex-col gap-5 ${formColumn}`}>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="next" value={next} />
       <h1 className="text-h3 font-bold text-jaga-ink">{t("setup.title")}</h1>

@@ -11,6 +11,7 @@ import {
   checkBox,
   checkRow,
   errorNotice,
+  formColumn,
   hint,
   input,
   label,
@@ -86,7 +87,7 @@ export default async function AuthorityRegister({
     ((tambons ?? []) as Tambon[]).filter((tb) => tb.district_code === district);
 
   return (
-    <form action={registerAuthority} className="flex flex-col gap-5">
+    <form action={registerAuthority} className={`flex flex-col gap-5 ${formColumn}`}>
       <input type="hidden" name="locale" value={locale} />
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={notice}>{t("intro")}</p>

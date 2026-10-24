@@ -81,7 +81,7 @@ function CreditCard({ credit }: { credit: Credit }) {
           href={credit.href}
           target="_blank"
           rel="noopener noreferrer external"
-          className="font-bold leading-snug text-jaga-ink underline"
+          className="relative font-bold leading-snug text-jaga-ink underline after:absolute after:inset-x-0 after:-inset-y-3 after:content-['']"
         >
           {credit.name}
         </a>

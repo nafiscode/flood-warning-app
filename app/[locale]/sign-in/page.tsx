@@ -10,6 +10,7 @@ import {
   buttonSecondary,
   card,
   errorNotice,
+  formColumn,
   hint,
   input,
   label,
@@ -61,7 +62,7 @@ export default async function SignIn({ params, searchParams }: PageProps<"/[loca
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`flex flex-col gap-5 ${formColumn}`}>
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p className={notice}>{t("visitorNote")}</p>
       {/*

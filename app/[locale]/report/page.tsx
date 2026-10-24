@@ -7,7 +7,7 @@ import { getPathname, Link } from "@/i18n/navigation";
 import { getSessionProfile, localePath } from "@/lib/auth";
 import { sosSendingEnabled } from "@/lib/features";
 import { reportMessages } from "@/lib/messages";
-import { buttonPrimary, buttonSecondary, notice } from "@/lib/ui";
+import { buttonPrimary, buttonSecondary, formColumn, notice } from "@/lib/ui";
 import { alternates } from "@/lib/seo";
 
 /**
@@ -50,7 +50,7 @@ export default async function ReportPage({ params }: PageProps<"/[locale]/report
   const profile = await getSessionProfile();
   if (!profile) {
     return (
-      <section className="flex flex-col gap-4" data-report-state="signIn">
+      <section className={`flex flex-col gap-4 ${formColumn}`} data-report-state="signIn">
         <h1 className="text-h3 font-bold text-jaga-ink">{t("signInTitle")}</h1>
         <p>{t("signInBody")}</p>
         {/* Back to the form once signed in (the owner, 15 Oct: every way in returns the person). */}

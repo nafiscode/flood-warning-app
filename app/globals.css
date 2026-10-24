@@ -1666,3 +1666,89 @@ body {
 .maplibregl-popup {
   z-index: 20;
 }
+
+/*
+ * Apple's Human Interface Guidelines, applied to every other page on a tablet (the owner, 24 Oct
+ * 2026: "see all other pages on tablet view against Apple HIG, anything to improve please do").
+ * Measured first on the pages at 1,180x820 and 820x1,180 (.claude/local/q-higpages.mjs); two
+ * rules came out of it that belong to the whole app and not to any one page.
+ */
+
+/*
+ * A readable measure. The guidelines' layout guide keeps text to about 672 pt on an iPad however
+ * wide the window is; here `#main` opens to 1,152 px from 1,024 px up for the pages that use the
+ * width, and every paragraph on every other page ran the whole of it - 118 to 123 characters a
+ * line on a tablet held sideways, about half as many again as reads comfortably.
+ *
+ * Not on a page built on the console (`data-console-page`: the map, the home screen, the admin
+ * homes). A dashboard lays out its own widths, and this rule found that out the hard way: the
+ * console's head note is one line by design - the head must stay under 60 px so the map keeps its
+ * room - and capped at 42rem it wrapped to two and the head grew to 61.6 px, which an end-to-end
+ * test caught (map-console, "the turning globe at the head ... takes no room from the map").
+ *
+ * Paragraphs only, and only the ones that are text: a paragraph that is a flex or grid row is a
+ * layout (a label beside a value, an icon beside a sentence) and capping it would pull its two
+ * ends together. Cards, figures, buttons and the dashboards keep the width; it is the line of
+ * words that is held to 42rem.
+ *
+ * In the base layer, so that a page that says its own `max-w-*` - and several do - is never
+ * overruled by this: Tailwind's utilities sit above it.
+ */
+@layer base {
+  @media (min-width: 1024px) {
+    #main:not(:has([data-console-page])) p:not([class*="flex"], [class*="grid"]) {
+      max-width: 42rem;
+    }
+    /* A centred paragraph keeps its place under its heading rather than sliding to the start. */
+    #main:not(:has([data-console-page])) p.text-center {
+      margin-inline: auto;
+    }
+    /*
+     * The other way text reaches the page: a bullet row, an icon and a sentence in the list item
+     * itself (`flex items-start gap-2`), which is how the About, How it works and Impact pages
+     * list what they stand on - 116 characters a line, with no paragraph for the rule above to
+     * find. Only that idiom: a list item that is a bordered card, a filled one or a row justified
+     * to both ends is a layout, and keeps the width.
+     */
+    #main:not(:has([data-console-page]))
+      li[class~="items-start"]:not(
+        [class*="rounded"],
+        [class*="border"],
+        [class*="bg-"],
+        [class*="justify-between"]
+      ) {
+      max-width: 42rem;
+    }
+  }
+}
+
+/*
+ * MapLibre's own controls, on every screen a finger drives. Its zoom buttons are 29 px square and
+ * its attribution toggle 24 px, against the 44 pt Apple asks for. The main map's were fixed on
+ * 23 Oct inside the tablet block, but the app builds nine more maps of its own - the pin on the
+ * SOS page, the dam, the weather, the authority board and coverage, and four on the admin side -
+ * and they had the same defect, so this is for all of them.
+ *
+ * The selectors are MapLibre's own control classes, not `.maplibregl-map`: React owns the class
+ * attribute of a map's container and writes it again on a re-render, so the library's class on it
+ * cannot be relied on (the first version of this rule, written against it, reached the main map
+ * and missed the weather and dam maps). `div.` and the parent selector are only there to beat
+ * MapLibre's own `.maplibregl-ctrl-group button` on specificity, whichever sheet loads last.
+ *
+ * A button made bigger than its icon tiles the icon - the icons are background images - hence
+ * the no-repeat.
+ */
+@media (pointer: coarse) {
+  div.maplibregl-ctrl-group > button,
+  .maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  div.maplibregl-ctrl-group > button .maplibregl-ctrl-icon {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 1.5rem 1.5rem;
+  }
+}

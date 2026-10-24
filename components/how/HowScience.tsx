@@ -246,7 +246,7 @@ function PartCard({ part, n }: { part: SciencePart; n: number }) {
       )}
 
       {part.sources.length > 0 && (
-        <p className="flex flex-wrap items-baseline gap-2 text-small">
+        <p className="flex flex-wrap items-center gap-2 text-small">
           <span className="font-medium text-jaga-text-2">{t("labels.sources")}:</span>
           {part.sources.map((id) => {
             const credit = creditById(id);
@@ -254,7 +254,7 @@ function PartCard({ part, n }: { part: SciencePart; n: number }) {
               <a
                 key={id}
                 href="#credits"
-                className="rounded-full border border-jaga-line bg-jaga-ground px-3 py-1 text-jaga-text hover:border-jaga-teal-ink"
+                className="inline-flex min-h-tap items-center rounded-full border border-jaga-line bg-jaga-ground px-4 text-jaga-text hover:border-jaga-teal-ink"
                 data-how-source={id}
               >
                 {credit.short}

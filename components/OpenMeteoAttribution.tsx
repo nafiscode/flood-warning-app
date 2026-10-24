@@ -9,7 +9,7 @@ export function OpenMeteoAttribution() {
         href="https://open-meteo.com/"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-jaga-teal-ink underline"
+        className="relative inline-block text-jaga-teal-ink underline after:absolute after:inset-x-0 after:-inset-y-3 after:content-['']"
       >
         {t("openMeteo")}
       </a>

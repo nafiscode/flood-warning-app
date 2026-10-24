@@ -27,7 +27,7 @@ import {
   type SentSos,
 } from "@/lib/sos";
 import { useBattery, useLocation, useQueue } from "@/lib/use-sending";
-import { buttonSecondary, card, hint, input, label, notice } from "@/lib/ui";
+import { buttonSecondary, card, formColumn, hint, input, label, notice } from "@/lib/ui";
 
 type Place = { id: string; label: string; lat: number; lon: number };
 
@@ -155,7 +155,7 @@ export function SendSOS({ projectLine, place }: Props) {
   if (phase === "queued" || phase === "failed") {
     const failed = phase === "failed";
     return (
-      <section className="flex flex-col gap-4" data-sos-state={phase}>
+      <section className={`flex flex-col gap-4 ${formColumn}`} data-sos-state={phase}>
         <div className={notice}>
           <h1 className="text-h3 font-bold text-jaga-ink">
             {failed ? t("sent.failedTitle") : t("sent.queuedTitle")}
@@ -181,7 +181,11 @@ export function SendSOS({ projectLine, place }: Props) {
   }
 
   return (
-    <section className="flex flex-col gap-4" data-sos-state="ready" data-sos-live={live}>
+    <section
+      className={`flex flex-col gap-4 ${formColumn}`}
+      data-sos-state="ready"
+      data-sos-live={live}
+    >
       <h1 className="text-h3 font-bold text-jaga-ink">
         {place ? t("forPlace.title", { place: place.label }) : t("title")}
       </h1>

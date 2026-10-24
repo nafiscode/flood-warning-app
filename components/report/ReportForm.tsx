@@ -16,6 +16,7 @@ import {
   buttonSecondary,
   card,
   errorNotice,
+  formColumn,
   hint,
   input,
   label,
@@ -105,7 +106,7 @@ export function ReportForm() {
   if (state === "sent" || state === "queued") {
     const queued = state === "queued";
     return (
-      <section className="flex flex-col gap-4" data-report-state={state}>
+      <section className={`flex flex-col gap-4 ${formColumn}`} data-report-state={state}>
         <div className={notice}>
           <h1 className="text-h3 font-bold text-jaga-ink">
             {queued ? t("queuedTitle") : t("sentTitle")}
@@ -139,7 +140,7 @@ export function ReportForm() {
   }
 
   return (
-    <section className="flex flex-col gap-4" data-report-state={state}>
+    <section className={`flex flex-col gap-4 ${formColumn}`} data-report-state={state}>
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p>{t("intro")}</p>
       <p className={notice}>

@@ -8,6 +8,7 @@ import { getSessionProfile, localePath } from "@/lib/auth";
 import { unitTeamMessages } from "@/lib/messages";
 import { PRIVATE_PAGE } from "@/lib/seo";
 
+import { formColumn } from "@/lib/ui";
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/authority/join">): Promise<Metadata> {
@@ -38,7 +39,7 @@ export default async function JoinPage({
   if (!session) redirect(`${localePath(locale, "/sign-in")}?next=${encodeURIComponent(here)}`);
   const t = await getTranslations("unitTeam");
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`flex flex-col gap-5 ${formColumn}`}>
       <h1 className="text-h2 font-bold text-jaga-ink">{t("join.title")}</h1>
       <p>{t("join.intro")}</p>
       <NextIntlClientProvider messages={unitTeamMessages(await getMessages())}>
