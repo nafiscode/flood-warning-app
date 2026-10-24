@@ -114,8 +114,10 @@ egress a month. On 24 Oct the database was 52 MB.
   Dashboard → `jaga-dev` → Restore project (a few minutes), post a notice in
   `public/status/notice.json` and send the LINE broadcast meanwhile. Installed phones keep their saved
   status and hotlines and queue an SOS.
-- **Backups:** a dump from the laptop (it holds phone numbers and request locations, so it is kept off
-  the repo and off shared drives). Take one before every migration and each week.
+- **Backups:** `npm run db:dump` writes a dump to `../jaga-backups/`, outside the repo (it holds phone numbers
+  and request locations, so it stays off GitHub, shared drives and chat). Take one before every migration
+  and each week; the first was taken on 24 Oct (4.4 MB, 116 tables). A restore into a scratch project
+  has not been tested yet.
 - **Upgrade to Pro** ($25 a month, Dashboard → organisation → Billing): when the database passes 300 MB
   or egress passes half the month's 5 GB; before the season's first wide Warning or Evacuate; the day a
   sponsor's credit arrives; and at once after any pause. Pro also lets the refresh-token revocation be

@@ -5,7 +5,7 @@
  * The connection string is passed straight to the CLI and never printed.
  *
  *   node scripts/db.mjs db push [--dry-run]
- *   node scripts/db.mjs db reset          (dev project only: wipes and rebuilds from migrations + seed)
+ *   node scripts/db.mjs db reset          (dev project only, and refused unless JAGA_ALLOW_RESET=1)
  *   node scripts/db.mjs migration list
  *
  * With `--live` as the first argument it acts on the live project instead (LIVE_DB_URL), which
@@ -56,6 +56,18 @@ if (live && args[0] === "db" && WIPES.has(args[1] ?? "")) {
     `Refusing to run "db ${args[1]}" on the live project. It would wipe the database Jaga ` +
       "answers an SOS from. Rebuild the dev project instead (npm run db:reset), or restore the " +
       "live one from a backup on purpose.",
+  );
+  process.exit(2);
+}
+
+// From the 25 Oct launch on the free plan, the dev project is the database the live site reads, so
+// wiping it is refused too. A deliberate rebuild (a scratch dev project, or a restore) sets
+// JAGA_ALLOW_RESET=1 for that one command.
+if (!live && args[0] === "db" && WIPES.has(args[1] ?? "") && process.env.JAGA_ALLOW_RESET !== "1") {
+  console.error(
+    `Refusing to run "db ${args[1]}": SUPABASE_DB_URL is the database the live site reads while ` +
+      "Jaga runs on the free plan. Take a dump first (npm run db:dump). If you really mean it, " +
+      "set JAGA_ALLOW_RESET=1 for this one command.",
   );
   process.exit(2);
 }

@@ -146,7 +146,8 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - `npm run db:push` (add `-- --dry-run` to preview): apply new migrations to `jaga-dev`
 - `npm run db:migrations`: which migrations are applied on `jaga-dev`
 - `npm run db:push:live` / `npm run db:migrations:live`: the same against the live project, from `LIVE_DB_URL`. `scripts/db.mjs --live` refuses `db reset`, refuses to run at all if the two addresses are the same, and names the project it is about to touch. There is no live reset, by design.
-- `npm run db:reset`: wipe `jaga-dev` and rebuild it from migrations and seed (dev project only, never the live one)
+- `npm run db:reset`: wipe `jaga-dev` and rebuild it from migrations and seed. **Refused unless `JAGA_ALLOW_RESET=1` is set for that command**, because from the 25 Oct launch on the free plan `jaga-dev` is the database the live site reads.
+- `npm run db:dump`: dump `jaga-dev` (schemas public, auth, storage) to `../jaga-backups/`, outside the repo; the free plan has no backups of its own. Needs a Postgres 17 `pg_dump` (`PG_DUMP` in `.env.local`). The file holds personal data: never commit or share it.
 - These use `SUPABASE_DB_URL` from `.env.local` via `scripts/db.mjs` (never printed), so no `supabase login` or `link` is needed.
 - `npm run lint` / `npm run typecheck` / `npm test` / `npm run test:e2e`
 - `npm run admin:super -- <email>`: make the one super admin (the project account). Run once per Supabase project.

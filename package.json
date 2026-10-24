@@ -25,6 +25,7 @@
     "format:check": "prettier --check .",
     "db:push": "node scripts/db.mjs db push",
     "db:reset": "node scripts/db.mjs db reset",
+    "db:dump": "node scripts/db-dump.mjs",
     "db:migrations": "node scripts/db.mjs migration list",
     "db:push:live": "node scripts/db.mjs --live db push",
     "db:migrations:live": "node scripts/db.mjs --live migration list",
