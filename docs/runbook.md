@@ -81,6 +81,28 @@ Installed apps keep showing their saved status, safe places and hotlines, and ke
 queue. Nobody new can open the site. Use the LINE broadcast as above. Check vercel-status.com; there
 is nothing to fix on Jaga's side.
 
+## Vercel's free plan limit is reached
+
+Jaga is on Vercel Hobby for the 2026 launch (decision of 24 Oct 2026). Hobby cannot bill past its
+limits, so it stops instead: 100 GB transfer, 1,000,000 CDN requests, 1,000,000 function calls and
+4 CPU-hours a month. New visitors then see `503 DEPLOYMENT_PAUSED`. Installed apps keep their saved
+status, safe places and hotlines, and an SOS sent meanwhile waits in the phone's queue with the SMS and
+call buttons offered, because it goes through the site (`/api/sos`).
+
+**Upgrade to Pro before that happens.** The owner does it: vercel.com → team → Settings → Billing →
+Upgrade to Pro (about 2 minutes, $20 a month, can be undone later). Upgrade when any of these is true:
+
+- Any meter on Vercel → Usage is at 50% of its limit.
+- Before the season's first Warning or Evacuate for a wide area, or when heavy rain is forecast.
+- Before the donation feature is switched on or any admin stipend is paid: Vercel counts payment for
+  producing or hosting the site as commercial use (asking for donations alone is not).
+- At once, if visitors see `503 DEPLOYMENT_PAUSED`. Vercel's guide says upgrading resolves the pause; it
+  does not say whether it is instant, so also post a notice in `public/status/notice.json` and send the
+  LINE broadcast while it clears.
+
+Afterwards, record it in `docs/decisions.md` and set the Vercel spend notification to notify only,
+with no automatic action (a budget action can pause the deployment).
+
 ## The SMS provider fails
 
 Jaga does not send SMS in 2026: phone sign-in stays off until a provider is chosen after launch, and

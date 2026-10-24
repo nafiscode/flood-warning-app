@@ -18,7 +18,7 @@ Owner = needs the owner's account or payment. Claude = done from the laptop.
   - [ ] Custom SMTP (Gmail app password), magic-link and invite templates using `{{ .TokenHash }}` → `/api/auth/confirm`.
   - [ ] Daily backups visible under Database → Backups.
 - [ ] On the live project: `npm run admin:super -- <project email>`, `npm run push:gate -- https://jagaapp.org`, dam history backfilled (`dam_fetch_range` for the last 60 days). (Claude)
-- [ ] Vercel moved to **Pro** (Owner).
+- [x] Vercel stays on **Hobby** for launch (owner, 24 Oct: wait for traffic before paying). Upgrade triggers are in `docs/runbook.md`, "Vercel's free plan limit is reached". (Owner)
 - [ ] Vercel Production environment points at the live project (`NEXT_PUBLIC_SUPABASE_URL`, publishable key, and any server key); Preview environment points at jaga-dev for the `staging` branch (Owner, walkthrough).
 - [ ] Backup and restore test done and written up. (Claude, with the owner's dashboard access)
 - [ ] Load test done and written up (`docs/load-test-2026.md`). (Claude)
@@ -43,12 +43,12 @@ its new start date.
 2. **Alerts:** an admin publishes an alert on the live project; it shows on the home screen and map within a minute, and reaches a test phone by web push (and by LINE, if the quota allows) in the affected tambon and not outside it.
 3. **Hotlines:** 1784, 1669, 191 and 199 are one tap away on every screen, online and offline.
 4. **Security:** no open critical or high finding in `docs/security-review-2026.md`.
-5. **Load:** the load test met its target (5,000 people opening home in 10 minutes) with no errors attributable to Jaga, inside the plan limits.
+5. **Load:** the load test met its target (5,000 people opening home in 10 minutes) with no errors attributable to Jaga, inside the plan limits. On Hobby the test also reports CDN requests per visit, so the 1,000,000 a month can be read as a number of people.
 6. **Restore:** a backup was restored and checked.
 7. **Data:** gauges, dam and forecast feeds have run on the live project for at least 24 hours without a gap longer than an hour.
 8. **People:** at least two admins who can take shifts, have signed in on the live site, and have read the runbook; at least one verified response team per province, or a written reason why not.
 9. **Words:** the owner has read the Thai of every safety screen (alert, checklists, SOS, safe places, hotlines). Malay may launch as it is, said on the tracker.
-10. **Costs:** Supabase Pro and Vercel Pro are paid; the LINE plan is decided (the free plan's 500 messages a month cover one alert to fewer than 500 people).
+10. **Costs:** Supabase Pro is paid; Vercel stays on the free Hobby plan with its upgrade triggers written down (owner, 24 Oct); the LINE plan is decided (the free plan's 500 messages a month cover one alert to fewer than 500 people).
 
 ## 5. Launch day (Sun 25 Oct)
 
@@ -66,5 +66,5 @@ In this order, with the owner on the laptop and one admin on a phone:
 
 ## After launch
 
-- First week: the owner reads `/admin/usage` and the audit log daily.
+- First week: the owner reads `/admin/usage` and the audit log daily, and Vercel → Usage (Hobby has no warning emails that we know of; at 50% of any meter, upgrade).
 - Reminders tab on the tracker carries everything that repeats (keys, quotas, reruns).
