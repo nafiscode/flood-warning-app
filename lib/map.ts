@@ -743,6 +743,15 @@ export function detailZoom(overview: number): number {
   return Math.round((overview + DETAIL_STEP) * 100) / 100;
 }
 
+/**
+ * The basemap's village and hamlet names (OpenFreeMap's `label_village` and `label_other`, the
+ * same ids in its light and dark styles). Towns, cities and roads are not these: they still come
+ * back with the detail, because a reader who has zoomed in a little wants to know where Hat Yai is.
+ */
+export function isVillageLabel(id: string): boolean {
+  return /(^|[_-])(village|hamlet|suburb|neighbourhood|other)$/.test(id);
+}
+
 /** A basemap name keeps its own starting zoom when that is already later than ours. */
 export function labelMinzoom(original: number | undefined, detail: number): number {
   return Math.max(original ?? 0, detail);
@@ -790,6 +799,14 @@ export function quietOverview(map: MapLibreMap, ownLabels: readonly string[] = [
     if (layer.type !== "symbol") continue;
     if (layer.id.startsWith("jaga-") && !ownLabels.includes(layer.id)) continue;
     if (!originals.has(layer.id)) originals.set(layer.id, layer.minzoom);
-    range(layer.id, labelMinzoom(originals.get(layer.id), detail), layer.maxzoom ?? 24);
+    /*
+     * Village names wait for the tambon names (the owner, 24 Oct 2026: "the village labels should
+     * only appear when zoom in very near to a tambon boundary ... it's too crowded"). Until then
+     * a province on the screen is a thousand hamlet names over the risk shading and the alert
+     * colours; at the tambon step the map is about one province wide, which is where a village
+     * name starts to mean something.
+     */
+    const from = isVillageLabel(layer.id) ? Math.max(detail, steps.tambon) : detail;
+    range(layer.id, labelMinzoom(originals.get(layer.id), from), layer.maxzoom ?? 24);
   }
 }

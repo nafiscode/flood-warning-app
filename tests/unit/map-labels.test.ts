@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CAPITAL_LAYER,
   detailZoom,
+  isVillageLabel,
   labelMinzoom,
   labelsToLift,
   PROVINCE_LINE_LAYER,
@@ -118,5 +119,15 @@ describe("the four provinces at a glance (owner, 15 Oct)", () => {
     const n = f.calls.length;
     quietOverview(f.map, ["jaga-dam-labels"]);
     expect(f.calls.length).toBe(n);
+  });
+});
+
+describe("which basemap names are villages", () => {
+  // The owner, 24 Oct 2026: village names only very near a tambon; towns and cities stay.
+  it("takes OpenFreeMap's village and hamlet layers and leaves towns, cities and roads", () => {
+    for (const id of ["label_village", "label_other"]) expect(isVillageLabel(id)).toBe(true);
+    for (const id of ["label_town", "label_city", "label_city_capital", "label_state", "highway-name"]) {
+      expect(isVillageLabel(id)).toBe(false);
+    }
   });
 });
