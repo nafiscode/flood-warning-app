@@ -1661,7 +1661,10 @@
       },
       "home": "Overview",
       "sharingShort": "Show the team's number to the person",
-      "tools": "Team tools"
+      "tools": "Team tools",
+      "siren": {
+        "idle": "No requests for help coming in right now"
+      }
     }
   },
   "admin": {

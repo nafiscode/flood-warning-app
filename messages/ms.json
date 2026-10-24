@@ -1661,7 +1661,10 @@
       },
       "home": "Gambaran keseluruhan",
       "sharingShort": "Tunjukkan nombor pasukan kepada pemohon",
-      "tools": "Alat pasukan"
+      "tools": "Alat pasukan",
+      "siren": {
+        "idle": "Tiada permintaan bantuan masuk buat masa ini"
+      }
     }
   },
   "admin": {

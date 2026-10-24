@@ -31,6 +31,8 @@ import {
   type CaseMedia,
   type TeamRecord,
 } from "@/lib/dispatch";
+import { Siren } from "@/components/authority/Siren";
+import { ConsoleSky, ConsoleWeather } from "@/components/map/ConsoleSky";
 import { BASEMAPS, type Basemap } from "@/lib/map";
 import { card, checkBox, checkRow, hint, input } from "@/lib/ui";
 
@@ -430,69 +432,91 @@ export function TeamWarRoom({
       data-team-war-room={laptop ? "laptop" : "tablet"}
       data-live={live}
     >
-      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
-          <p className={hint} data-war-live={live ? "live" : "poll"}>
-            {live ? t("war.live") : t("war.poll")}
-          </p>
-          {/* The offer, in words as well as in sound, without taking a row of its own. */}
-          {ringing.length > 0 && (
-            <p
-              role="alert"
-              className="inline-flex items-center gap-2 rounded-xl bg-sos px-3 py-1 font-bold text-sos-fg"
-            >
-              <TriangleIcon size={20} />
-              {t("alarm.ringing", { count: ringing.length })}
+      {/*
+       * The header and the view tabs sit on the weather, as the map console's header does (the
+       * owner, 24 Oct 2026). Laptop only: a tablet's header is short of room, and the sky is
+       * decoration that costs nothing to leave out.
+       */}
+      <div
+        data-war-bar={laptop ? "true" : undefined}
+        className={laptop ? "relative z-10 flex flex-col gap-3 px-4 py-3" : "contents"}
+      >
+        {laptop && <ConsoleSky bar />}
+        <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Siren ringing={ringing.length} />
+            <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
+            <p className={hint} data-war-live={live ? "live" : "poll"}>
+              {live ? t("war.live") : t("war.poll")}
             </p>
+            {/* The offer, in words as well as in sound, without taking a row of its own. */}
+            {ringing.length > 0 && (
+              <p
+                role="alert"
+                className="inline-flex items-center gap-2 rounded-xl bg-sos px-3 py-1 font-bold text-sos-fg"
+              >
+                <TriangleIcon size={20} />
+                {t("alarm.ringing", { count: ringing.length })}
+              </p>
+            )}
+          </div>
+          {laptop && <ConsoleWeather />}
+          <TeamStatusBar
+            alarm={alarm}
+            onArm={onArm}
+            units={board.units}
+            unitActions={unitActions}
+          />
+        </header>
+        {stale && (
+          <p
+            role="status"
+            className="rounded-xl border-2 border-jaga-edge bg-jaga-ground px-4 py-2 font-medium"
+          >
+            {t("pollFailed")}
+          </p>
+        )}
+        {notice && <BoardNoticeLine notice={notice} />}
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {onView ? (
+            <nav
+              aria-label={t("views.label")}
+              className="flex flex-wrap gap-2"
+              data-war-views="true"
+            >
+              {/* The war room is the case list and the map together, so the "map" view has no tab of its own. */}
+              {CONSOLE_VIEWS.filter((key) => key !== "map").map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={view === key}
+                  onClick={() => onView(key)}
+                  data-console-view={key}
+                  className={`inline-flex min-h-tap items-center rounded-xl px-4 font-medium ${
+                    view === key
+                      ? "bg-jaga-teal-ink text-white"
+                      : "border border-jaga-edge bg-jaga-surface text-jaga-ink"
+                  }`}
+                >
+                  {key === "cases" ? t("war.home") : t(`views.${key}`)}
+                </button>
+              ))}
+            </nav>
+          ) : (
+            <span />
+          )}
+          {tools && (
+            <details className="relative" data-war-tools="true">
+              <summary className="inline-flex min-h-tap cursor-pointer items-center rounded-xl border border-jaga-edge bg-jaga-surface px-4 font-medium text-jaga-ink">
+                {t("war.tools")}
+              </summary>
+              <div className="absolute end-0 z-20 mt-1 flex w-80 flex-col gap-2 rounded-xl border border-jaga-line bg-jaga-surface p-3 shadow-lg">
+                {tools}
+              </div>
+            </details>
           )}
         </div>
-        <TeamStatusBar alarm={alarm} onArm={onArm} units={board.units} unitActions={unitActions} />
-      </header>
-      {stale && (
-        <p
-          role="status"
-          className="rounded-xl border-2 border-jaga-edge bg-jaga-ground px-4 py-2 font-medium"
-        >
-          {t("pollFailed")}
-        </p>
-      )}
-      {notice && <BoardNoticeLine notice={notice} />}
-
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        {onView ? (
-          <nav aria-label={t("views.label")} className="flex flex-wrap gap-2" data-war-views="true">
-            {/* The war room is the case list and the map together, so the "map" view has no tab of its own. */}
-            {CONSOLE_VIEWS.filter((key) => key !== "map").map((key) => (
-              <button
-                key={key}
-                type="button"
-                aria-pressed={view === key}
-                onClick={() => onView(key)}
-                data-console-view={key}
-                className={`inline-flex min-h-tap items-center rounded-xl px-4 font-medium ${
-                  view === key
-                    ? "bg-jaga-teal-ink text-white"
-                    : "border border-jaga-edge bg-jaga-surface text-jaga-ink"
-                }`}
-              >
-                {key === "cases" ? t("war.home") : t(`views.${key}`)}
-              </button>
-            ))}
-          </nav>
-        ) : (
-          <span />
-        )}
-        {tools && (
-          <details className="relative" data-war-tools="true">
-            <summary className="inline-flex min-h-tap cursor-pointer items-center rounded-xl border border-jaga-edge bg-jaga-surface px-4 font-medium text-jaga-ink">
-              {t("war.tools")}
-            </summary>
-            <div className="absolute end-0 z-20 mt-1 flex w-80 flex-col gap-2 rounded-xl border border-jaga-line bg-jaga-surface p-3 shadow-lg">
-              {tools}
-            </div>
-          </details>
-        )}
       </div>
 
       {view !== "cases" ? (

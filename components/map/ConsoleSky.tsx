@@ -64,10 +64,12 @@ function useConsoleWeather() {
 }
 
 /**
- * The moving sky itself, behind everything on the console. It goes in as the first child of the
+ * The moving sky itself, behind everything on the console (or, with `bar`, behind the header of
+ * the team's war room - the owner, 24 Oct 2026: "on the laptop view, add on the header the weather
+ * animation like the main map page"). It goes in as the first child of the
  * console, and the rest of the console is lifted above it in app/globals.css.
  */
-export function ConsoleSky() {
+export function ConsoleSky({ bar = false }: { bar?: boolean } = {}) {
   const sky = useConsoleWeather();
   if (!sky) return null;
   const veil = consoleVeil(SCENE_LOOKS[sky.scene].sky);
@@ -79,7 +81,10 @@ export function ConsoleSky() {
     <div
       data-console-sky={sky.scene}
       aria-hidden="true"
-      className="hidden console:block"
+      className={bar ? undefined : "hidden console:block"}
+      // On the team's war room the sky is a bar behind its header, placed by its own wrapper
+      // (app/globals.css, [data-sky-bar]) and not by the map console's grid.
+      data-sky-bar={bar ? "true" : undefined}
       /*
        * How much of this sky may show: the lightest veil that still leaves the console's weakest
        * text at 4.5:1 on it (lib/map-console.ts). A clear day comes through as a blue sky; a

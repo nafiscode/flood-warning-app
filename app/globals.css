@@ -202,6 +202,31 @@
     position: relative;
     z-index: 1;
   }
+  /*
+   * The same sky as a bar behind the team war room's header (the owner, 24 Oct 2026). It is the
+   * map console's sky and veil unchanged - same contrast arithmetic, so a word on it reads as it
+   * does on the map page - only placed by its wrapper instead of the console's grid.
+   */
+  [data-war-bar] {
+    isolation: isolate;
+    --console-veil-color: 250 252 253;
+  }
+  :root[data-theme="dark"] [data-war-bar] {
+    --console-veil-color: 9 20 30;
+  }
+  [data-war-bar] > *:not([data-console-sky]) {
+    position: relative;
+    z-index: 1;
+  }
+  [data-console-sky][data-sky-bar] {
+    position: absolute;
+    inset: 0;
+    grid-column: auto;
+    grid-row: auto;
+    margin: 0;
+    z-index: 0;
+    border-radius: 0.75rem;
+  }
   /* Readings line up in a column, the way an instrument panel reads. The brand face stays: a
      monospace fallback would break Thai (docs/brand.md), so only the figures are tabular. */
   [data-console-readout] {
