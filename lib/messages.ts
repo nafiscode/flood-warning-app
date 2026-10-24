@@ -208,6 +208,13 @@ export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlM
     warRoom: { capability: (all.warRoom as Messages).capability! },
     // The war room's basemap buttons say what the main map's say.
     map: { basemap: (all.map as Messages).basemap! },
+    // The weather in words on its header (the same line the map console writes). Without these
+    // the line printed its own key, "weather.codes.drizzle", to the people it was meant for.
+    weather: {
+      codes: (all.weather as Messages).codes!,
+      chip: (all.weather as Messages).chip!,
+      modelTime: (all.weather as Messages).modelTime!,
+    },
     sos: { vulnerable: sos.vulnerable!, hazard: sos.hazard!, needs: sos.needs! },
     report: {
       depths: (all.report as Messages).depths!,

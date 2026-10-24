@@ -33,3 +33,21 @@ describe("the war room's siren", () => {
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*animation: none/);
   });
 });
+
+/*
+ * The war room's header writes the weather in words, from the `weather` words. The page only
+ * hands the room the messages named in `authorityMessages`, so a missing group shows as the raw
+ * key ("weather.codes.drizzle") - which is how the team found it on 24 Oct.
+ */
+describe("the war room's messages carry what its header says", () => {
+  it("includes every weather word the header writes", async () => {
+    const { authorityMessages } = await import("@/lib/messages");
+    const weather = (authorityMessages(th) as unknown as { weather: Record<string, unknown> })
+      .weather;
+    expect(Object.keys(weather).sort()).toEqual(["chip", "codes", "modelTime"]);
+    for (const key of ["reading", "readingAt", "readingNoTemp"]) {
+      expect((weather.chip as Record<string, string>)[key]).toBeTruthy();
+    }
+    expect((weather.codes as Record<string, string>).drizzle).toBeTruthy();
+  });
+});
