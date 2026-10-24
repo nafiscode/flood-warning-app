@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { HouseIcon } from "@/components/icons";
 import { ReportForm } from "@/components/report/ReportForm";
 import { NotYet } from "@/components/sos/NotYet";
 import { getPathname, Link } from "@/i18n/navigation";
@@ -51,6 +52,14 @@ export default async function ReportPage({ params }: PageProps<"/[locale]/report
   if (!profile) {
     return (
       <section className={`flex flex-col gap-4 ${formColumn}`} data-report-state="signIn">
+        <Link
+          href="/"
+          className="inline-flex min-h-tap items-center gap-2 self-start font-medium underline"
+          data-back-home="true"
+        >
+          <HouseIcon size={22} />
+          {t("home")}
+        </Link>
         <h1 className="text-h3 font-bold text-jaga-ink">{t("signInTitle")}</h1>
         <p>{t("signInBody")}</p>
         {/* Back to the form once signed in (the owner, 15 Oct: every way in returns the person). */}

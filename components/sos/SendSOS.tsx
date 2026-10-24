@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
 import { AreaChooser } from "@/components/home/AreaChooser";
 import {
+  HouseIcon,
   LifebuoyIcon,
   ListIcon,
   LocateIcon,
@@ -156,6 +157,14 @@ export function SendSOS({ projectLine, place }: Props) {
     const failed = phase === "failed";
     return (
       <section className={`flex flex-col gap-4 ${formColumn}`} data-sos-state={phase}>
+        <Link
+          href="/"
+          className="inline-flex min-h-tap items-center gap-2 self-start font-medium underline"
+          data-back-home="true"
+        >
+          <HouseIcon size={22} />
+          {t("back")}
+        </Link>
         <div className={notice}>
           <h1 className="text-h3 font-bold text-jaga-ink">
             {failed ? t("sent.failedTitle") : t("sent.queuedTitle")}
@@ -186,6 +195,14 @@ export function SendSOS({ projectLine, place }: Props) {
       data-sos-state="ready"
       data-sos-live={live}
     >
+      <Link
+        href="/"
+        className="inline-flex min-h-tap items-center gap-2 self-start font-medium underline"
+        data-back-home="true"
+      >
+        <HouseIcon size={22} />
+        {t("back")}
+      </Link>
       <h1 className="text-h3 font-bold text-jaga-ink">
         {place ? t("forPlace.title", { place: place.label }) : t("title")}
       </h1>

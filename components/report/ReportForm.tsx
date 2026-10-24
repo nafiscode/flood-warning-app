@@ -141,6 +141,14 @@ export function ReportForm() {
 
   return (
     <section className={`flex flex-col gap-4 ${formColumn}`} data-report-state={state}>
+      <Link
+        href="/"
+        className="inline-flex min-h-tap items-center gap-2 self-start font-medium underline"
+        data-back-home="true"
+      >
+        <HouseIcon size={22} />
+        {t("home")}
+      </Link>
       <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
       <p>{t("intro")}</p>
       <p className={notice}>
