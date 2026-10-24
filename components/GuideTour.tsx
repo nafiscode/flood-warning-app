@@ -4,7 +4,15 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
 import { buttonQuiet } from "@/lib/ui";
-import { bare, markSeen, NO_TOUR, readSeen, toursFor, type GuideTour } from "@/lib/guide-tour";
+import {
+  bare,
+  markSeen,
+  NO_TOUR,
+  readSeen,
+  stepKey,
+  toursFor,
+  type GuideTour,
+} from "@/lib/guide-tour";
 
 type Open = { tour: GuideTour; steps: string[]; manual: boolean };
 
@@ -59,8 +67,12 @@ export function GuideTour() {
       setOffer(tour);
       // Never by itself on a screen for asking help, nor while the area is in an alert (A16).
       const quiet = document.querySelector('[data-hero="alert"], [data-place-alert]');
-      if (!tour.manualOnly && !quiet && !readSeen()[tour.id]) {
-        setOpen({ tour, steps: present(tour), manual: false });
+      // By itself only the steps this device has not been shown yet: a button that was hidden
+      // on earlier visits (signed out, no team yet) is new the first time it is on the page.
+      const seen = readSeen();
+      const fresh = present(tour).filter((id) => !seen[stepKey(tour.id, id)]);
+      if (!tour.manualOnly && !quiet && fresh.length > 0) {
+        setOpen({ tour, steps: fresh, manual: false });
         setIndex(0);
       }
       return true;
@@ -77,7 +89,7 @@ export function GuideTour() {
   const close = useCallback(() => {
     setOpen((current) => {
       if (current) {
-        markSeen(current.tour.id);
+        markSeen(current.steps.map((id) => stepKey(current.tour.id, id)));
         if (current.manual) opener.current?.focus();
       }
       return null;

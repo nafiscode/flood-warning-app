@@ -188,9 +188,16 @@ export function toursFor(pathname: string): GuideTour[] {
 /** Never on the SOS screens: nothing stands between a person and a request for help. */
 export const NO_TOUR = /^\/sos(\/|$)/;
 
-const KEY = "jaga.guide.v1";
+const KEY = "jaga.guide.v2";
 
-/** Which tours were closed or finished on this device. Storage may be blocked: then none are. */
+/** The key a step is remembered by. */
+export const stepKey = (tour: string, step: string) => `${tour}.${step}`;
+
+/**
+ * Which steps this device has been shown. It is kept per step, not per tour: a button that only
+ * appears later (after sign-in, once a team is verified) is a first sighting when it first
+ * appears, however often the page was visited before. Storage may be blocked: then none are.
+ */
 export function readSeen(): Record<string, true> {
   try {
     const raw = window.localStorage.getItem(KEY);
@@ -201,9 +208,11 @@ export function readSeen(): Record<string, true> {
   }
 }
 
-export function markSeen(id: string): void {
+export function markSeen(keys: string[]): void {
   try {
-    window.localStorage.setItem(KEY, JSON.stringify({ ...readSeen(), [id]: true }));
+    const seen: Record<string, true> = readSeen();
+    for (const key of keys) seen[key] = true;
+    window.localStorage.setItem(KEY, JSON.stringify(seen));
   } catch {
     // Blocked storage: the tour will open once more on the next visit, which harms nobody.
   }

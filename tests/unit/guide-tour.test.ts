@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -61,5 +62,16 @@ describe("the guide tour", () => {
     expect(bare("/ms/map/")).toBe("/map");
     expect(toursFor("/en/authority").map((t) => t.id)).toEqual(["notVerified", "console"]);
     expect(toursFor("/th/authority/mine").map((t) => t.id)).toEqual(["mine"]);
+  });
+});
+
+describe("what the guide remembers", () => {
+  it("remembers steps one by one, so a button that appears later is still new", async () => {
+    const { markSeen, readSeen, stepKey } = await import("@/lib/guide-tour");
+    window.localStorage.clear();
+    markSeen([stepKey("account", "setup"), stepKey("account", "requests")]);
+    const seen = readSeen();
+    expect(seen[stepKey("account", "setup")]).toBe(true);
+    expect(seen[stepKey("account", "myCases")]).toBeUndefined();
   });
 });
