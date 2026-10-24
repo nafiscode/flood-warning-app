@@ -647,7 +647,6 @@ export function playIntro(map: MapLibreMap): void {
     const link = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
     if (link?.saveData) return;
     if (sessionStorage.getItem(INTRO_KEY)) return;
-    sessionStorage.setItem(INTRO_KEY, "1");
   } catch {
     return;
   }
@@ -699,6 +698,14 @@ export function playIntro(map: MapLibreMap): void {
       ],
     } as never);
   };
+  // Labels are lifted over the layers after a redraw; the Earth stays on top of them.
+  const lift = () => {
+    const layers = map.getStyle()?.layers;
+    if (layers?.at(-1)?.id !== INTRO_LAYER && map.getLayer(INTRO_LAYER)) {
+      map.moveLayer(INTRO_LAYER);
+    }
+  };
+  map.getContainer().setAttribute("data-map-intro", "");
   dress();
   map.setMaxBounds(null);
   map.setMinZoom(0);
@@ -713,7 +720,11 @@ export function playIntro(map: MapLibreMap): void {
     stops.forEach((name) => el.removeEventListener(name, interrupt));
     window.removeEventListener("keydown", interrupt);
     map.off("moveend", finish);
+    map.off("idle", start);
+    window.clearTimeout(wait);
     map.off("style.load", dress);
+    map.off("styledata", lift);
+    map.getContainer().removeAttribute("data-map-intro");
     map.setProjection({ type: "mercator" });
     map.setMinZoom(minZoom);
     if (maxBounds) map.setMaxBounds(maxBounds);
@@ -728,15 +739,30 @@ export function playIntro(map: MapLibreMap): void {
   stops.forEach((name) => el.addEventListener(name, interrupt, { passive: true, once: true }));
   window.addEventListener("keydown", interrupt, { once: true });
   map.on("style.load", dress);
-  map.once("moveend", finish);
-  map.flyTo({
-    center: [center.lng, center.lat],
-    zoom: goal,
-    duration: INTRO_MS,
-    curve: 1.5,
-    easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
-    essential: false,
-  });
+  map.on("styledata", lift);
+  // Leave only when the first Earth tiles are in, or the descent starts over black.
+  let started = false;
+  const start = () => {
+    if (started || done) return;
+    started = true;
+    window.clearTimeout(wait);
+    try {
+      sessionStorage.setItem(INTRO_KEY, "1");
+    } catch {
+      // Private window: it may play again next time.
+    }
+    map.flyTo({
+      center: [center.lng, center.lat],
+      zoom: goal,
+      duration: INTRO_MS,
+      curve: 1.5,
+      easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+      essential: false,
+    });
+    map.once("moveend", finish);
+  };
+  const wait = window.setTimeout(start, 2500);
+  map.once("idle", start);
 }
 
 /**

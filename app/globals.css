@@ -1777,3 +1777,16 @@ body {
     background-size: 1.5rem 1.5rem;
   }
 }
+
+/* The opening flight (playIntro in lib/map.ts): the clouds and pins wait until it has landed. */
+.maplibregl-marker {
+  transition: opacity 0.8s ease;
+}
+[data-map-intro] {
+  background: #05080d;
+}
+[data-map-intro] .maplibregl-marker {
+  /* MapLibre writes a marker's opacity inline on a globe, so only !important wins. */
+  opacity: 0 !important;
+  transition: none;
+}
