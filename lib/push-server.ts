@@ -389,31 +389,35 @@ export async function pushFieldHeld(rescueId: string): Promise<PushOutcome> {
     const gone: string[] = [];
     let sent = 0;
     let failed = 0;
-    for (const row of data as Row[]) {
-      const words = FIELD_WORDS[row.locale] ?? FIELD_WORDS.th!;
-      const place = row.locale === "th" || !row.tambon_en ? row.tambon_th : row.tambon_en;
-      const payload = {
-        // The service worker's plain kind: a title, words, and a page of this app to open.
-        kind: "announcement",
-        title: words.title,
-        body: words.body.replace("{unit}", row.unit_name).replace("{place}", place),
-        url: `${row.locale === "th" ? "" : `/${row.locale}`}/admin/field-rescues`,
-        tag: `field-${rescueId}`,
-        sticky: false,
-      };
-      try {
-        await webpush.sendNotification(
-          { endpoint: row.endpoint, keys: row.keys },
-          JSON.stringify(payload),
-          { TTL: 24 * 3600, urgency: "normal" },
-        );
-        sent++;
-      } catch (e) {
-        const status = (e as { statusCode?: number }).statusCode;
-        if (status === 404 || status === 410) gone.push(row.endpoint);
-        else failed++;
-      }
-    }
+    // All the admins' phones at once, and at high priority like the registration push (owner,
+    // 24 Oct): an idle Android phone holds a normal one back. Speed only, never a ring.
+    await Promise.all(
+      (data as Row[]).map(async (row) => {
+        const words = FIELD_WORDS[row.locale] ?? FIELD_WORDS.th!;
+        const place = row.locale === "th" || !row.tambon_en ? row.tambon_th : row.tambon_en;
+        const payload = {
+          // The service worker's plain kind: a title, words, and a page of this app to open.
+          kind: "announcement",
+          title: words.title,
+          body: words.body.replace("{unit}", row.unit_name).replace("{place}", place),
+          url: `${row.locale === "th" ? "" : `/${row.locale}`}/admin/field-rescues`,
+          tag: `field-${rescueId}`,
+          sticky: false,
+        };
+        try {
+          await webpush.sendNotification(
+            { endpoint: row.endpoint, keys: row.keys },
+            JSON.stringify(payload),
+            { TTL: 24 * 3600, urgency: "high" },
+          );
+          sent++;
+        } catch (e) {
+          const status = (e as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) gone.push(row.endpoint);
+          else failed++;
+        }
+      }),
+    );
     if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
     return { sent, failed, gone: gone.length };
   } catch {
