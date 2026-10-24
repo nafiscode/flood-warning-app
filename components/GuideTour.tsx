@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
-import { buttonQuiet } from "@/lib/ui";
 import {
   bare,
   markSeen,
@@ -13,6 +12,10 @@ import {
   toursFor,
   type GuideTour,
 } from "@/lib/guide-tour";
+
+// Pale and plain on purpose: the tour is a margin note, not part of Jaga's own look.
+const plain =
+  "inline-flex min-h-tap items-center rounded-xl border border-jaga-line bg-jaga-surface px-4 font-medium text-jaga-text active:translate-y-px";
 
 type Open = { tour: GuideTour; steps: string[]; manual: boolean };
 
@@ -54,6 +57,7 @@ export function GuideTour() {
   useEffect(() => {
     const tours = NO_TOUR.test(path) ? [] : toursFor(path);
     let tries = 0;
+    let counted = -1;
     // The previous page's tour is dropped first, inside the timer so the render stays pure.
     const reset = window.setTimeout(() => {
       setOpen(null);
@@ -64,6 +68,12 @@ export function GuideTour() {
       tries += 1;
       const tour = tours.find((candidate) => present(candidate).length > 0);
       if (!tour) return tries >= 16;
+      // Wait until the page has stopped filling in (two looks the same), or a step whose
+      // button arrives a moment late would be left out now and shown on the next visit.
+      const count = present(tour).length;
+      const settled = count === counted;
+      counted = count;
+      if (!settled && tries < 12) return false;
       setOffer(tour);
       // Never by itself on a screen for asking help, nor while the area is in an alert (A16).
       const quiet = document.querySelector('[data-hero="alert"], [data-place-alert]');
@@ -159,7 +169,7 @@ export function GuideTour() {
         <button
           ref={opener}
           type="button"
-          className={buttonQuiet}
+          className="inline-flex min-h-tap items-center px-2 font-medium text-jaga-ink underline"
           onClick={() => {
             setIndex(0);
             setOpen({ tour: offer, steps: present(offer), manual: true });
@@ -174,7 +184,7 @@ export function GuideTour() {
             <div
               aria-hidden="true"
               data-guide-ring="true"
-              className="pointer-events-none fixed z-30 rounded-xl border-4 border-jaga-teal-ink shadow-[0_0_0_3px_#fff]"
+              className="pointer-events-none fixed z-30 rounded-xl border-2 border-dashed border-jaga-text-2 shadow-[0_0_0_2px_#fff]"
               style={{
                 top: ring.top - 6,
                 left: ring.left - 6,
@@ -191,25 +201,25 @@ export function GuideTour() {
             aria-live="polite"
             data-guide-card={open.tour.id}
             data-guide-step={step.id}
-            className="fixed inset-x-2 z-30 mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border-2 border-jaga-teal-ink bg-jaga-surface p-4 shadow-lg outline-none"
+            className="fixed inset-x-2 z-30 mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border border-jaga-line bg-jaga-ground p-4 text-jaga-text shadow-md outline-none"
             style={cardAtBottom ? { bottom } : { top }}
           >
             <p className="text-small text-jaga-text-2">
               {t("progress", { n: index + 1, total })}
             </p>
-            <h2 className="text-h3 font-bold text-jaga-ink">
+            <h2 className="text-body font-bold text-jaga-text">
               {t(`${open.tour.id}.${step.id}.title`)}
             </h2>
             <p>{t(`${open.tour.id}.${step.id}.body`)}</p>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <button type="button" className={buttonQuiet} onClick={close}>
+              <button type="button" className={plain} onClick={close}>
                 {t("close")}
               </button>
               <div className="flex gap-2">
                 {index > 0 && (
                   <button
                     type="button"
-                    className={buttonQuiet}
+                    className={plain}
                     onClick={() => setIndex(index - 1)}
                   >
                     {t("back")}
@@ -217,7 +227,7 @@ export function GuideTour() {
                 )}
                 <button
                   type="button"
-                  className="inline-flex min-h-tap items-center rounded-xl bg-jaga-teal-ink px-5 font-medium text-white"
+                  className={`${plain} border-jaga-text-2`}
                   onClick={() => (last ? close() : setIndex(index + 1))}
                 >
                   {last ? t("done") : t("next")}
