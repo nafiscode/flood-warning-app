@@ -569,8 +569,7 @@ export function MapView({
      * per-feature value. Measured, not guessed: the frame's mean brightness was identical with
      * the paint set and without it.
      */
-    const source =
-      flashKind === "gauge" ? GAUGES : flashKind === "sea" ? SEA : DAM_WATER_SOURCE;
+    const source = flashKind === "gauge" ? GAUGES : flashKind === "sea" ? SEA : DAM_WATER_SOURCE;
     const show = (on: boolean) => {
       if (!m.getSource(source)) return;
       try {
@@ -766,10 +765,7 @@ export function MapView({
        * the e2e checks that closing the satellite layer puts the reader back where they were,
        * and a frame it cannot see is a frame it has to take on trust.
        */
-      container.current?.setAttribute(
-        "data-map-view",
-        box.map((n) => n.toFixed(3)).join(","),
-      );
+      container.current?.setAttribute("data-map-view", box.map((n) => n.toFixed(3)).join(","));
       view.current?.(box);
     };
     m.on("moveend", moved);
@@ -1601,7 +1597,8 @@ export function MapView({
           redraw();
           setState("ready");
           setLoaded(created);
-          playIntro(created);
+          // After the first fit has been made, or they would cut the flight short.
+          window.setTimeout(() => playIntro(created), 400);
         });
         // After the basemap replaces the style, sources may hold their first data again.
         created.on("style.load", () => held.current.clear());

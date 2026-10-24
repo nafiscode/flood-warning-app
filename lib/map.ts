@@ -664,26 +664,42 @@ export function playIntro(map: MapLibreMap): void {
   const maxBounds = map.getMaxBounds();
   const minZoom = map.getMinZoom();
 
-  // The Earth picture goes over everything, solid while far away and gone before the end.
+  // The Earth picture goes over everything, solid while far away and gone before the end. A
+  // style swap (the basemap settling in just after the map loads) wipes it, so it is put back.
   const night = nightNow();
-  try {
-    map.addSource(INTRO_SOURCE, { type: "raster", tileSize: 256, ...introTiles(night) });
-    map.addLayer({
-      id: INTRO_LAYER,
-      type: "raster",
-      source: INTRO_SOURCE,
-      paint: {
-        "raster-fade-duration": 300,
-        "raster-opacity": ["interpolate", ["linear"], ["zoom"], goal - 3, 1, goal - 0.8, 0],
-      },
-    });
-  } catch {
-    // No Earth picture this time; the flight still plays over the ordinary map.
-  }
-  // A globe up high that flattens into the ordinary map before the end of the descent.
-  map.setProjection({
-    type: ["interpolate", ["linear"], ["zoom"], 0, "vertical-perspective", goal - 0.6, "mercator"],
-  } as never);
+  const dress = () => {
+    try {
+      if (!map.getSource(INTRO_SOURCE)) {
+        map.addSource(INTRO_SOURCE, { type: "raster", tileSize: 256, ...introTiles(night) });
+      }
+      if (!map.getLayer(INTRO_LAYER)) {
+        map.addLayer({
+          id: INTRO_LAYER,
+          type: "raster",
+          source: INTRO_SOURCE,
+          paint: {
+            "raster-fade-duration": 300,
+            "raster-opacity": ["interpolate", ["linear"], ["zoom"], goal - 3, 1, goal - 0.8, 0],
+          },
+        });
+      }
+    } catch {
+      // No Earth picture this time; the flight still plays over the ordinary map.
+    }
+    // A globe up high that flattens into the ordinary map before the end of the descent.
+    map.setProjection({
+      type: [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0,
+        "vertical-perspective",
+        goal - 0.6,
+        "mercator",
+      ],
+    } as never);
+  };
+  dress();
   map.setMaxBounds(null);
   map.setMinZoom(0);
   map.jumpTo({ center: [center.lng - 28, center.lat + 4], zoom: 0.7, bearing: 0, pitch: 0 });
@@ -697,6 +713,7 @@ export function playIntro(map: MapLibreMap): void {
     stops.forEach((name) => el.removeEventListener(name, interrupt));
     window.removeEventListener("keydown", interrupt);
     map.off("moveend", finish);
+    map.off("style.load", dress);
     map.setProjection({ type: "mercator" });
     map.setMinZoom(minZoom);
     if (maxBounds) map.setMaxBounds(maxBounds);
@@ -710,6 +727,7 @@ export function playIntro(map: MapLibreMap): void {
   const el = map.getCanvasContainer();
   stops.forEach((name) => el.addEventListener(name, interrupt, { passive: true, once: true }));
   window.addEventListener("keydown", interrupt, { once: true });
+  map.on("style.load", dress);
   map.once("moveend", finish);
   map.flyTo({
     center: [center.lng, center.lat],
