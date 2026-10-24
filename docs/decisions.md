@@ -531,3 +531,4 @@ Newest entries at the bottom. Format: date — decision — reason.
 
 ## 25 Oct 2026: The map opens with a fly-in from space
 Decision: on a first visit in a tab the map starts as the Earth (NASA GIBS true-colour with clouds by day, night lights after dark) and glides to the four provinces; any touch stops it; skipped for reduced motion and Data Saver. Reason: owner request; decoration only, never in the way of an SOS or an alert.
+- **25 Oct 2026, no guide tour on a phone.** Under 640 px wide neither the tour nor its "Show me around" link is drawn; tablets and laptops keep both. — The owner found it annoying on the phone.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "@/i18n/navigation";
 import {
   bare,
@@ -16,6 +16,14 @@ import {
 // Pale and plain on purpose: the tour is a margin note, not part of Jaga's own look.
 const plain =
   "inline-flex min-h-tap items-center rounded-xl border border-jaga-line bg-jaga-surface px-4 font-medium text-jaga-text active:translate-y-px";
+
+/** A phone's width (the Tailwind `sm` line, as PhoneTabs uses): there is no tour there (the owner, 25 Oct). */
+const PHONE = "(max-width: 639px)";
+const onPhone = (notify: () => void) => {
+  const query = window.matchMedia(PHONE);
+  query.addEventListener("change", notify);
+  return () => query.removeEventListener("change", notify);
+};
 
 type Open = { tour: GuideTour; steps: string[]; manual: boolean };
 
@@ -52,10 +60,15 @@ export function GuideTour() {
   const opener = useRef<HTMLButtonElement>(null);
 
   const path = bare(pathname);
+  const phone = useSyncExternalStore(
+    onPhone,
+    () => window.matchMedia(PHONE).matches,
+    () => true,
+  );
 
   // On every page: find the tour that fits what is drawn, offer its button, and open it once.
   useEffect(() => {
-    const tours = NO_TOUR.test(path) ? [] : toursFor(path);
+    const tours = phone || NO_TOUR.test(path) ? [] : toursFor(path);
     let tries = 0;
     let counted = -1;
     // The previous page's tour is dropped first, inside the timer so the render stays pure.
@@ -94,7 +107,7 @@ export function GuideTour() {
       window.clearTimeout(reset);
       window.clearInterval(timer);
     };
-  }, [path]);
+  }, [path, phone]);
 
   const close = useCallback(() => {
     setOpen((current) => {
@@ -159,7 +172,7 @@ export function GuideTour() {
     if (open?.manual) card.current?.focus();
   }, [open, index]);
 
-  if (!offer) return null;
+  if (phone || !offer) return null;
   const total = open?.steps.length ?? 0;
   const last = index >= total - 1;
 
