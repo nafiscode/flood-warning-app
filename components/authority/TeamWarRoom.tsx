@@ -20,6 +20,7 @@ import { useLaptopView } from "@/lib/console-view";
 import type { CoverageRow } from "@/lib/coverage";
 import {
   caseState,
+  teamKind,
   clockText,
   filterCases,
   secondsLeft,
@@ -150,12 +151,30 @@ export function TeamWarRoom({
       caseState(c) === "offered_to_me" &&
       Date.parse(c.offerExpiresAt ?? "") > now,
   );
-  // The case in front: the one picked, or the offer that is ringing so that accepting is one tap.
+  // A request for food and water is offered quietly: no alarm, no red banner, but it is offered
+  // all the same, and a team that brings food and water gets the same one-tap accept (24 Oct).
+  const supplyOffers = sorted.filter(
+    (c) =>
+      c.kind === "supplies" &&
+      caseState(c) === "offered_to_me" &&
+      Date.parse(c.offerExpiresAt ?? "") > now,
+  );
+  // The case in front: the one picked, or the offer that is waiting so that accepting is one tap.
   const pickedCase = picked ? sorted.find((c) => c.sosId === picked) : undefined;
-  const current = pickedCase ?? ringing[0];
+  const current = pickedCase ?? ringing[0] ?? supplyOffers[0];
 
   const place = (c: BoardCase) =>
     (locale === "th" ? c.tambonNameTh : (c.tambonNameEn ?? c.tambonNameTh)) ?? "";
+
+  // Accepting pins the case: it was in front only because it was waiting to be answered, and the
+  // card must stay for the estimate, the crew and the report that come next (24 Oct).
+  const cardActions: CaseActions = {
+    ...actions,
+    accept: (sosId) => {
+      setPicked(sosId);
+      actions.accept(sosId);
+    },
+  };
 
   const crewFor = (c: BoardCase) =>
     c.claimedBy && board.units.some((u) => u.id === c.claimedBy)
@@ -364,43 +383,82 @@ export function TeamWarRoom({
     </section>
   );
 
+  const kindOf = (unitId: string) =>
+    teamKind(board.units.find((u) => u.id === unitId)?.capabilities ?? ["rescue"]);
+  // The points rule that matches what these teams do: rescues, deliveries, or both.
+  const kinds = new Set((Array.isArray(record) ? record : []).map((r) => kindOf(r.unitId)));
+  const ruleWords =
+    kinds.size === 1 && kinds.has("supplies")
+      ? t("war.record.ruleSupplies")
+      : kinds.size === 1 && kinds.has("rescue")
+        ? t("points.rule")
+        : kinds.size === 0
+          ? t("points.rule")
+          : t("war.record.ruleBoth");
   const foot = (
     <section className={card} data-war-record="true">
       <h2 className="font-bold text-jaga-ink">{t("war.record.title")}</h2>
       {record === null && <p className={hint}>{t("views.loading")}</p>}
       {record === "failed" && <p className={hint}>{t("war.record.failed")}</p>}
       {Array.isArray(record) &&
-        record.map((r) => (
-          <div key={r.unitId} className="flex flex-col gap-2" data-record-unit={r.unitId}>
-            <p className="font-medium">
-              {record.length > 1 ? `${r.unitName} · ` : ""}
-              {r.cases === 0
-                ? t("points.none")
-                : t("points.mine", { points: r.points, cases: r.cases })}
-            </p>
-            {r.members.length > 1 && (
-              <table className="w-full text-start text-small">
-                <thead>
-                  <tr className="text-jaga-text-2">
-                    <th className="py-1 text-start font-medium">{t("war.record.person")}</th>
-                    <th className="py-1 text-end font-medium">{t("war.record.taken")}</th>
-                    <th className="py-1 text-end font-medium">{t("war.record.reported")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {r.members.map((m) => (
-                    <tr key={m.userId} className="border-t border-jaga-line">
-                      <td className="py-1">{m.name || t("crew.noName")}</td>
-                      <td className="py-1 text-end tabular-nums">{m.casesTaken}</td>
-                      <td className="py-1 text-end tabular-nums">{m.rescuesReported}</td>
+        record.map((r) => {
+          // A team that only brings food and water counts deliveries, not rescues (24 Oct).
+          const kind = kindOf(r.unitId);
+          const words = kind === "rescue" ? "" : kind === "supplies" ? "Supplies" : "Both";
+          return (
+            <div
+              key={r.unitId}
+              className="flex flex-col gap-2"
+              data-record-unit={r.unitId}
+              data-record-kind={kind}
+            >
+              <p className="font-medium">
+                {record.length > 1 ? `${r.unitName} · ` : ""}
+                {r.cases === 0
+                  ? kind === "rescue"
+                    ? t("points.none")
+                    : t(`war.record.none${words}` as "war.record.noneSupplies")
+                  : kind === "rescue"
+                    ? t("points.mine", { points: r.points, cases: r.cases })
+                    : t(`war.record.mine${words}` as "war.record.mineSupplies", {
+                        points: r.points,
+                        cases: r.cases,
+                      })}
+              </p>
+              {r.members.length > 1 && (
+                <table className="w-full text-start text-small">
+                  <thead>
+                    <tr className="text-jaga-text-2">
+                      <th className="py-1 text-start font-medium">{t("war.record.person")}</th>
+                      <th className="py-1 text-end font-medium">{t("war.record.taken")}</th>
+                      <th className="py-1 text-end font-medium">
+                        {t(
+                          `war.record.reported${
+                            kindOf(r.unitId) === "rescue"
+                              ? ""
+                              : kindOf(r.unitId) === "supplies"
+                                ? "Supplies"
+                                : "Both"
+                          }` as "war.record.reported",
+                        )}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        ))}
-      <p className={hint}>{t("points.rule")}</p>
+                  </thead>
+                  <tbody>
+                    {r.members.map((m) => (
+                      <tr key={m.userId} className="border-t border-jaga-line">
+                        <td className="py-1">{m.name || t("crew.noName")}</td>
+                        <td className="py-1 text-end tabular-nums">{m.casesTaken}</td>
+                        <td className="py-1 text-end tabular-nums">{m.rescuesReported}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          );
+        })}
+      <p className={hint}>{ruleWords}</p>
     </section>
   );
 
@@ -414,7 +472,7 @@ export function TeamWarRoom({
           busy={busy === current.sosId}
           phone={current.sosId in phones ? { number: phones[current.sosId] ?? null } : null}
           media={media[current.sosId] ?? null}
-          actions={actions}
+          actions={cardActions}
           crew={crewFor(current)}
         />
       ) : (
@@ -449,6 +507,17 @@ export function TeamWarRoom({
             <p className={hint} data-war-live={live ? "live" : "poll"}>
               {live ? t("war.live") : t("war.poll")}
             </p>
+            {/* A request for food and water: said calmly, never in the alarm's red. */}
+            {supplyOffers.length > 0 && (
+              <p
+                role="status"
+                data-war-supply-offer="true"
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-jaga-teal-ink bg-jaga-surface px-3 py-1 font-bold text-jaga-ink"
+              >
+                <LifebuoyIcon size={20} />
+                {t("war.suppliesOffered", { count: supplyOffers.length })}
+              </p>
+            )}
             {/* The offer, in words as well as in sound, without taking a row of its own. */}
             {ringing.length > 0 && (
               <p

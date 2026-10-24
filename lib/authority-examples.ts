@@ -89,6 +89,7 @@ export const EXAMPLE_AUTHORITY_BOARD: AuthorityBoard = {
       onDuty: true,
       sharesPocPhone: true,
       isOwner: true,
+      capabilities: ["rescue", "supplies"],
     },
   ],
   cases: [

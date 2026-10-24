@@ -228,7 +228,20 @@ export type MyUnit = {
   sharesPocPhone: boolean;
   /** The team's owner may change its phone tick and its people; a dispatcher may not. */
   isOwner: boolean;
+  /** What the team registered for (rescue, supplies, coordination ...). */
+  capabilities: string[];
 };
+
+/**
+ * What a team's cases are, for the words around its record: "deliveries" for a team that only
+ * brings food and water, "cases" for one that does both, "rescues" for the rest (24 Oct 2026).
+ */
+export function teamKind(capabilities: string[]): "rescue" | "supplies" | "both" {
+  const supplies = capabilities.includes("supplies");
+  const rescue = capabilities.includes("rescue");
+  if (supplies && rescue) return "both";
+  return supplies ? "supplies" : "rescue";
+}
 
 /** Everything the console draws. `readAt` is the server's clock, which the countdown follows. */
 export type AuthorityBoard = {

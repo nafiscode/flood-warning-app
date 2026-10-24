@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { CaseActions } from "@/components/authority/CaseCard";
 import { TeamWarRoom } from "@/components/authority/TeamWarRoom";
 import { EXAMPLE_AUTHORITY_BOARD, EXAMPLE_NOW } from "@/lib/authority-examples";
+import { caseState } from "@/lib/dispatch";
 import type { AuthorityBoard, TeamRecord } from "@/lib/dispatch";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
@@ -37,7 +38,7 @@ function actions(): CaseActions {
 
 const record: TeamRecord[] = [
   {
-    unitId: "u",
+    unitId: EXAMPLE_AUTHORITY_BOARD.units[0]!.id,
     unitName: "Team",
     points: 36,
     cases: 3,
@@ -198,6 +199,72 @@ describe("the team's war room", () => {
     expect(other.container.querySelector("[data-war-record]")).toBeNull();
     // Still the war room's own page: the alarm's state and the notice stay above it.
     expect(other.container.querySelector("[data-team-war-room]")).not.toBeNull();
+  });
+
+  it("a team that only brings food and water counts deliveries, not rescues", () => {
+    const board = {
+      ...EXAMPLE_AUTHORITY_BOARD,
+      units: EXAMPLE_AUTHORITY_BOARD.units.map((u) => ({ ...u, capabilities: ["supplies"] })),
+    };
+    const { container } = draw({ board });
+    const foot = container.querySelector("[data-war-record]")!;
+    expect(foot.getAttribute("data-war-record")).not.toBeNull();
+    expect(container.querySelector("[data-record-kind]")!.getAttribute("data-record-kind")).toBe(
+      "supplies",
+    );
+    expect(foot.textContent).toContain("36 points from 3 confirmed deliveries");
+    expect(foot.textContent).toContain("Deliveries reported");
+    expect(foot.textContent).toContain("5 points for a confirmed delivery");
+    expect(foot.textContent).not.toContain("rescue");
+  });
+
+  it("a team that does both says cases, and gives both rules", () => {
+    const { container } = draw();
+    const foot = container.querySelector("[data-war-record]")!;
+    expect(container.querySelector("[data-record-kind]")!.getAttribute("data-record-kind")).toBe(
+      "both",
+    );
+    expect(foot.textContent).toContain("3 confirmed cases");
+    expect(foot.textContent).toContain("confirmed delivery of food and water");
+  });
+
+  it("a rescue-only team still says rescues", () => {
+    const board = {
+      ...EXAMPLE_AUTHORITY_BOARD,
+      units: EXAMPLE_AUTHORITY_BOARD.units.map((u) => ({ ...u, capabilities: ["rescue"] })),
+    };
+    const { container } = draw({ board });
+    expect(container.querySelector("[data-war-record]")!.textContent).toContain(
+      "3 confirmed rescues",
+    );
+  });
+
+  it("opens an offered request for food and water by itself, with a calm pill and no alarm", () => {
+    const offered = EXAMPLE_AUTHORITY_BOARD.cases.filter(
+      (c) => c.kind === "supplies" && caseState(c) === "offered_to_me",
+    );
+    expect(offered.length).toBeGreaterThan(0);
+    // Only the request for food and water is on the board: nothing rings.
+    const board = { ...EXAMPLE_AUTHORITY_BOARD, cases: offered };
+    const { container } = draw({ board });
+    expect(container.querySelector("[data-war-supply-offer]")).not.toBeNull();
+    expect(container.querySelector('[role="alert"].bg-sos')).toBeNull();
+    // Its card is already in front, so accepting is one tap.
+    expect(
+      container.querySelector(`[data-war-panel] [data-case="${offered[0]!.sosId}"] [data-accept]`),
+    ).not.toBeNull();
+  });
+
+  it("keeps the case in front after it is accepted", () => {
+    const offered = EXAMPLE_AUTHORITY_BOARD.cases.filter((c) => caseState(c) === "offered_to_me");
+    const board = { ...EXAMPLE_AUTHORITY_BOARD, cases: offered };
+    const { container, act } = draw({ board });
+    const accept = container.querySelector<HTMLElement>("[data-war-panel] [data-accept]")!;
+    fireEvent.click(accept);
+    expect(act.accept).toHaveBeenCalledTimes(1);
+    // The board comes back with the case held by this team, and the card is still there.
+    const id = (act.accept as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
+    expect(container.querySelector(`[data-war-panel] [data-case="${id}"]`)).not.toBeNull();
   });
 
   it("every language has every line of the war room", () => {

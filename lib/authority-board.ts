@@ -190,7 +190,9 @@ export async function readMyUnits(userId: string): Promise<MyUnit[]> {
   const ids = memberRows.map((m) => String(m.unit_id));
   const { data, error } = await supabase
     .from("authority_units")
-    .select("id, user_id, unit_name, on_duty, poc_phone_to_requester, status, organizations(name)")
+    .select(
+      "id, user_id, unit_name, on_duty, poc_phone_to_requester, status, capabilities, organizations(name)",
+    )
     .or(ids.length > 0 ? `user_id.eq.${userId},id.in.(${ids.join(",")})` : `user_id.eq.${userId}`)
     .eq("status", "verified")
     .order("created_at");
@@ -202,6 +204,7 @@ export async function readMyUnits(userId: string): Promise<MyUnit[]> {
     onDuty: Boolean(r.on_duty),
     sharesPocPhone: Boolean(r.poc_phone_to_requester),
     isOwner: r.user_id === userId || owned.has(String(r.id)),
+    capabilities: Array.isArray(r.capabilities) ? (r.capabilities as string[]) : [],
   }));
 }
 
