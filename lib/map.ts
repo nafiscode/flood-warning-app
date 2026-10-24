@@ -606,8 +606,8 @@ export async function createServiceAreaMap(
 
 /**
  * The opening shot (the owner, 25 Oct 2026): the map starts as the whole Earth seen from space
- * and glides down to the four provinces. By day the globe is NASA's true-colour satellite picture
- * of yesterday, clouds and all; after dark it is the Earth at night, city lights on black (NASA
+ * and glides down to the four provinces. By day the globe is NASA's Blue Marble picture of the
+ * Earth, seamless, in a halo of atmosphere; after dark it is the Earth at night, city lights on black (NASA
  * GIBS, free, no key; the same day/night as the rest of the map, nightNow). The picture fades out
  * as the flight nears the provinces, leaving Jaga's ordinary map. It is only decoration and never
  * stands in anyone's way: the map answers touch from the first frame, the first touch, scroll or
@@ -620,24 +620,24 @@ const INTRO_SOURCE = "jaga-intro-earth";
 const INTRO_LAYER = "jaga-intro-earth";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
 
+/** Few, coarse tiles: the descent never waits on the network, and the picture is gone before it blurs. */
 function introTiles(night: boolean): { tiles: string[]; maxzoom: number; attribution: string } {
   if (night) {
     return {
       tiles: [
         `${GIBS}/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`,
       ],
-      maxzoom: 8,
+      maxzoom: 3,
       attribution: "Night lights: NASA Earth Observatory / NOAA / GIBS",
     };
   }
-  // Yesterday in UTC: today's mosaic is still being built.
-  const day = new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 10);
+  // Blue Marble: one seamless picture of the whole Earth, no scan strips or gaps.
   return {
     tiles: [
-      `${GIBS}/MODIS_Terra_CorrectedReflectance_TrueColor/default/${day}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+      `${GIBS}/BlueMarble_NextGeneration/default/2004-08-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg`,
     ],
-    maxzoom: 9,
-    attribution: "Satellite: NASA EOSDIS GIBS / MODIS",
+    maxzoom: 3,
+    attribution: "Earth: NASA Earth Observatory / Blue Marble / GIBS",
   };
 }
 
@@ -660,6 +660,7 @@ export function playIntro(map: MapLibreMap): void {
   if (!target?.center || typeof target.zoom !== "number") return;
   const center = target.center as { lng: number; lat: number };
   const goal = target.zoom;
+  const sky = map.getSky?.();
   const maxBounds = map.getMaxBounds();
   const minZoom = map.getMinZoom();
 
@@ -685,6 +686,30 @@ export function playIntro(map: MapLibreMap): void {
     } catch {
       // No Earth picture this time; the flight still plays over the ordinary map.
     }
+    // A thin blue halo round the globe, gone by the time the map is flat.
+    try {
+      map.setSky({
+        "sky-color": night ? "#0b1d3a" : "#6aa8ff",
+        "horizon-color": night ? "#1c3f7a" : "#bfe0ff",
+        "fog-color": night ? "#0b1d3a" : "#9cc8ff",
+        "sky-horizon-blend": 0.6,
+        "horizon-fog-blend": 0.5,
+        "fog-ground-blend": 0.5,
+        "atmosphere-blend": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          1,
+          goal - 2.5,
+          1,
+          goal - 0.6,
+          0,
+        ],
+      });
+    } catch {
+      // No halo; the globe is still drawn.
+    }
     // A globe up high that flattens into the ordinary map before the end of the descent.
     map.setProjection({
       type: [
@@ -709,7 +734,16 @@ export function playIntro(map: MapLibreMap): void {
   dress();
   map.setMaxBounds(null);
   map.setMinZoom(0);
-  map.jumpTo({ center: [center.lng - 28, center.lat + 4], zoom: 0.7, bearing: 0, pitch: 0 });
+  // The whole globe fits the box (it is about 135 px across at zoom 0, doubling with each step).
+  const fit = Math.log2(
+    (0.8 * Math.min(map.getCanvas().clientWidth, map.getCanvas().clientHeight)) / 135,
+  );
+  map.jumpTo({
+    center: [center.lng - 28, center.lat + 4],
+    zoom: Math.min(2.2, Math.max(0.3, fit)),
+    bearing: 0,
+    pitch: 0,
+  });
 
   let done = false;
   const stops = ["mousedown", "touchstart", "wheel"] as const;
@@ -720,12 +754,17 @@ export function playIntro(map: MapLibreMap): void {
     stops.forEach((name) => el.removeEventListener(name, interrupt));
     window.removeEventListener("keydown", interrupt);
     map.off("moveend", finish);
-    map.off("idle", start);
+    map.off("sourcedata", loadedYet);
     window.clearTimeout(wait);
     map.off("style.load", dress);
     map.off("styledata", lift);
     map.getContainer().removeAttribute("data-map-intro");
     map.setProjection({ type: "mercator" });
+    try {
+      map.setSky(sky ?? { "atmosphere-blend": 0 });
+    } catch {
+      // Left as it is.
+    }
     map.setMinZoom(minZoom);
     if (maxBounds) map.setMaxBounds(maxBounds);
     if (map.getLayer(INTRO_LAYER)) map.removeLayer(INTRO_LAYER);
@@ -740,11 +779,12 @@ export function playIntro(map: MapLibreMap): void {
   window.addEventListener("keydown", interrupt, { once: true });
   map.on("style.load", dress);
   map.on("styledata", lift);
-  // Leave only when the first Earth tiles are in, or the descent starts over black.
+  // Leave only when the Earth tiles are in (or after 5 s), or the descent starts over black.
   let started = false;
   const start = () => {
     if (started || done) return;
     started = true;
+    map.off("sourcedata", loadedYet);
     window.clearTimeout(wait);
     try {
       sessionStorage.setItem(INTRO_KEY, "1");
@@ -761,8 +801,11 @@ export function playIntro(map: MapLibreMap): void {
     });
     map.once("moveend", finish);
   };
-  const wait = window.setTimeout(start, 2500);
-  map.once("idle", start);
+  const wait = window.setTimeout(start, 5000);
+  const loadedYet = () => {
+    if (map.getSource(INTRO_SOURCE) && map.isSourceLoaded(INTRO_SOURCE)) start();
+  };
+  map.on("sourcedata", loadedYet);
 }
 
 /**
