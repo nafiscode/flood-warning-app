@@ -1790,3 +1790,6 @@ body {
   opacity: 0 !important;
   transition: none;
 }
+[data-map-intro="wait"] .maplibregl-canvas-container {
+  visibility: hidden;
+}

@@ -542,6 +542,14 @@ export async function createServiceAreaMap(
   // The worker is served from public/vendor (scripts/vendor-maplibre.mjs), not from the bundle.
   maplibre.setWorkerUrl(`/vendor/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`);
   await registerPmtiles(maplibre);
+  // The opening flight starts from a hidden map, so the real extent never shows first.
+  if (introWanted()) {
+    container.setAttribute("data-map-intro", "wait");
+    window.setTimeout(() => {
+      if (container.getAttribute("data-map-intro") === "wait")
+        container.removeAttribute("data-map-intro");
+    }, 12000);
+  }
   const map = new maplibre.Map({
     container,
     style: startStyle(mapIsDark()),
@@ -641,13 +649,22 @@ function introTiles(night: boolean): { tiles: string[]; maxzoom: number; attribu
   };
 }
 
-export function playIntro(map: MapLibreMap): void {
+/** Whether this visit gets the opening flight: not with reduced motion or Data Saver, once a tab. */
+export function introWanted(): boolean {
   try {
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return false;
     const link = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    if (link?.saveData) return;
-    if (sessionStorage.getItem(INTRO_KEY)) return;
+    if (link?.saveData) return false;
+    return !sessionStorage.getItem(INTRO_KEY);
   } catch {
+    return false;
+  }
+}
+
+export function playIntro(map: MapLibreMap): void {
+  const container = map.getContainer();
+  if (!introWanted()) {
+    container.removeAttribute("data-map-intro");
     return;
   }
   const target = map.cameraForBounds(
@@ -657,7 +674,10 @@ export function playIntro(map: MapLibreMap): void {
     ],
     { padding: 8 },
   );
-  if (!target?.center || typeof target.zoom !== "number") return;
+  if (!target?.center || typeof target.zoom !== "number") {
+    container.removeAttribute("data-map-intro");
+    return;
+  }
   const center = target.center as { lng: number; lat: number };
   const goal = target.zoom;
   const sky = map.getSky?.();
@@ -730,16 +750,16 @@ export function playIntro(map: MapLibreMap): void {
       map.moveLayer(INTRO_LAYER);
     }
   };
-  map.getContainer().setAttribute("data-map-intro", "");
+  container.setAttribute("data-map-intro", "wait");
   dress();
   map.setMaxBounds(null);
   map.setMinZoom(0);
-  // The whole globe fits the box (it is about 135 px across at zoom 0, doubling with each step).
+  // The whole globe fits the box (it is about 172 px across at zoom 0, doubling with each step).
   const fit = Math.log2(
-    (0.8 * Math.min(map.getCanvas().clientWidth, map.getCanvas().clientHeight)) / 135,
+    (0.58 * Math.min(map.getCanvas().clientWidth, map.getCanvas().clientHeight)) / 172,
   );
   map.jumpTo({
-    center: [center.lng - 28, center.lat + 4],
+    center: [center.lng - 24, 8],
     zoom: Math.min(2.2, Math.max(0.3, fit)),
     bearing: 0,
     pitch: 0,
@@ -784,6 +804,7 @@ export function playIntro(map: MapLibreMap): void {
   const start = () => {
     if (started || done) return;
     started = true;
+    container.setAttribute("data-map-intro", "fly");
     map.off("sourcedata", loadedYet);
     window.clearTimeout(wait);
     try {
