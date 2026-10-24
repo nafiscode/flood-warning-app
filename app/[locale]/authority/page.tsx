@@ -82,7 +82,10 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
       <NextIntlClientProvider messages={authorityMessages(await getMessages())}>
         <Console initial={board} tools={tools} />
       </NextIntlClientProvider>
-      <BackLink label={(await getTranslations("nav"))("backHome")} />
+      {/* On a laptop or tablet the war room fills the window and the header has Home (24 Oct). */}
+      <div className="flex flex-col console:hidden">
+        <BackLink label={(await getTranslations("nav"))("backHome")} />
+      </div>
     </div>
   );
 }
