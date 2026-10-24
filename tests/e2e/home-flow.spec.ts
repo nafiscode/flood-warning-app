@@ -211,6 +211,23 @@ test.describe("laptop home", () => {
 
   test("a first visitor can search a tambon by name", async ({ page }) => {
     await serve(page, { inService: true, alerts: [] }, null);
+    await page.route("**/api/geo/search**", (route) =>
+      route.fulfill({
+        json: {
+          partial: false,
+          places: [
+            {
+              name: "ต.บานา",
+              detail: "อ.เมืองปัตตานี จ.ปัตตานี",
+              lat: BANA.lat,
+              lon: BANA.lon,
+              source: "tambon",
+              code: BANA.code,
+            },
+          ],
+        },
+      }),
+    );
     await page.goto("/");
     await page.locator("[data-area-find]").click();
     await page.getByPlaceholder(th.locationFinder.placeholder).fill("บานา");

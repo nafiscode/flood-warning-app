@@ -16,6 +16,7 @@ import {
   type FoundPlace,
 } from "@/lib/place-search";
 import type { Point } from "@/lib/place-input";
+import { allowSearch } from "@/lib/search-allowance";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { createPublicClient, NO_STORE, unavailable } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -31,11 +32,13 @@ import { geocodeUrl, placeDetail, toPlaces, USER_AGENT } from "@/lib/weather";
  * leave the box empty. If neither finds anything, the gazetteer the weather screens already use
  * is tried for a town.
  *
- * Only for someone signed in. Every page that has the box needs an account anyway, and it keeps
- * Jaga from being an open door to somebody else's free service: OpenStreetMap asks for no more
- * than a request a second and no search-as-you-type, so the box searches when the button is
- * pressed, never while typing. What was typed is passed on from our server, so the phone's
- * address is never seen there; the answer is kept in that browser for an hour.
+ * Open to visitors too (the owner, 24 Oct 2026: the home box and the SOS pin map found no landmark
+ * without an account; this supersedes "signed in only" of 12 Oct). Someone with no account gets a
+ * few searches a minute from one address (lib/search-allowance.ts), because OpenStreetMap asks for
+ * no more than a request a second and no search-as-you-type: the box searches when the button is
+ * pressed, never while typing, and the services' answers are kept for a day. What was typed is
+ * passed on from our server, so the phone's address is never seen there; the answer is kept in
+ * that browser for an hour.
  */
 const KEEP = "private, max-age=3600";
 
@@ -126,7 +129,10 @@ export async function GET(request: NextRequest) {
   if (!supabaseConfigured()) return unavailable();
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
-  if (!claims?.claims.sub) return unavailable(401);
+  if (!claims?.claims.sub) {
+    const address = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (!allowSearch(address)) return unavailable(429);
+  }
 
   const asked = request.nextUrl.searchParams.get("lang") ?? routing.defaultLocale;
   const language = (routing.locales as readonly string[]).includes(asked)

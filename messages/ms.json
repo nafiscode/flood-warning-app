@@ -1,18 +1,19 @@
 {
   "locationFinder": {
-    "open": "Cari nama atau tampal koordinat",
-    "label": "Cari nama tambon, atau tampal koordinat",
-    "hint": "Taip nama tambon atau daerah, atau tampal koordinat yang disalin dari peta, contohnya 6.8782, 101.2719.",
-    "placeholder": "Contoh: Bana, atau 6.8782, 101.2719",
+    "open": "Cari nama tempat atau tampal koordinat",
+    "label": "Cari nama tempat, atau tampal koordinat",
+    "hint": "Taip nama tempat seperti universiti, pasar atau masjid, atau nama tambon dan daerah, atau tampal koordinat yang disalin dari peta, contohnya 6.8782, 101.2719.",
+    "placeholder": "Contoh: Universiti Prince of Songkla, atau 6.8782, 101.2719",
     "search": "Cari",
     "paste": "Tampal yang disalin",
     "searching": "Sedang mencari…",
     "results": "Ketik tempat yang betul",
-    "none": "Nama itu tiada dalam senarai tambon Jaga. Cuba nama tambon atau daerah, atau tampal koordinat.",
+    "none": "Nama itu tidak ditemui. Cuba nama yang lebih pendek, nama tambon atau daerah, atau tampal koordinat.",
     "offline": "Tidak dapat memuatkan senarai tambon. Anda masih boleh menampal koordinat.",
     "shortLink": "Pautan pendek ini tidak boleh dibuka di sini. Tampal pautan penuh atau koordinat dari Google Maps.",
     "unknownLink": "Pautan itu bukan pautan peta yang boleh dibaca. Cuba koordinat.",
-    "pinned": "Lokasi ditetapkan."
+    "pinned": "Lokasi ditetapkan.",
+    "failed": "Carian nama tempat tidak berjaya sekarang. Cuba lagi sebentar lagi, atau tampal koordinat."
   },
   "homeFlow": {
     "firstTitle": "Adakah kawasan anda berisiko banjir sekarang?",

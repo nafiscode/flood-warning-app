@@ -1,18 +1,19 @@
 {
   "locationFinder": {
-    "open": "Search by name or paste coordinates",
-    "label": "Search a tambon name, or paste coordinates",
-    "hint": "Type a tambon or district name, or paste coordinates copied from a map, such as 6.8782, 101.2719.",
-    "placeholder": "For example Bana, or 6.8782, 101.2719",
+    "open": "Search by place name or paste coordinates",
+    "label": "Search a place name, or paste coordinates",
+    "hint": "Type a place such as a university, market or mosque, or a tambon or district name, or paste coordinates copied from a map, such as 6.8782, 101.2719.",
+    "placeholder": "For example Prince of Songkla University, or 6.8782, 101.2719",
     "search": "Search",
     "paste": "Paste what you copied",
     "searching": "Searching…",
     "results": "Tap the right place",
-    "none": "That name is not in Jaga's list of tambons. Try a tambon or district name, or paste coordinates.",
+    "none": "That name was not found. Try a shorter name, a tambon or district name, or paste coordinates.",
     "offline": "Could not load the list of tambons. You can still paste coordinates.",
     "shortLink": "This short link cannot be opened here. Paste the full link or the coordinates from Google Maps.",
     "unknownLink": "That link is not a map link Jaga can read. Try the coordinates.",
-    "pinned": "Location set."
+    "pinned": "Location set.",
+    "failed": "Searching by place name did not work just now. Try again in a moment, or paste coordinates."
   },
   "homeFlow": {
     "firstTitle": "Is your area at risk of flooding right now?",

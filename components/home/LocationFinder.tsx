@@ -6,7 +6,7 @@ import { entryToArea, type Area, type AreaDirectory } from "@/lib/area";
 import { lookupLocation, rowsFromDirectory, type Lookup } from "@/lib/location-lookup";
 import { useOnPhone } from "@/lib/phone-store";
 import { readPlaceInput, type Point } from "@/lib/place-input";
-import type { DirectoryRow, FoundPlace } from "@/lib/place-search";
+import { searchDirectory, type DirectoryRow, type FoundPlace } from "@/lib/place-search";
 import { buttonSecondary, hint, input as inputStyle, label as labelStyle } from "@/lib/ui";
 
 /**
@@ -21,14 +21,17 @@ type Directory = { directory: AreaDirectory; rows: DirectoryRow[] };
 type Status =
   | { kind: "idle" }
   | { kind: "busy" }
-  | { kind: "say"; what: "none" | "offline" | "shortLink" | "unknownLink" | "pinned" };
+  | { kind: "say"; what: "none" | "failed" | "offline" | "shortLink" | "unknownLink" | "pinned" };
 
 /**
  * Finding a place without an account (the owner, 23 Oct 2026): paste the exact latitude and
  * longitude copied from a map, or type a tambon or district name. It is the visitor's version of
- * the "find the place" box on the account pages (components/account/PlaceFinder.tsx) and does
- * only what needs no server and no third party: coordinates are read in the browser, so pasting
- * works with no signal, and names are looked up in Jaga's own list of tambons
+ * the "find the place" box on the account pages (components/account/PlaceFinder.tsx).
+ * Coordinates are read in the browser, so pasting works with no signal. A name goes to
+ * /api/geo/search, which looks through Jaga's tambons and then landmarks (a university, a
+ * market, a mosque); the owner asked on 24 Oct that visitors get landmarks too, after finding that
+ * the tambon list alone answered nothing for a name like Prince of Songkla University. If that
+ * cannot be asked, the tambon list in this browser still answers
  * (lib/location-lookup.ts). The name search searches when the button is pressed, never while
  * typing.
  *
@@ -99,9 +102,44 @@ export function LocationFinder({ onFound }: { onFound: (found: FoundLocation) =>
     }
   }
 
+  /** A name: Jaga's tambons and landmarks from the server, else the tambons held here. */
+  async function searchByName(query: string, turn: number) {
+    setStatus({ kind: "busy" });
+    // Asked beside the search, so a tambon picked from the answer can be handed over as an area.
+    const listing = directory();
+    try {
+      const params = new URLSearchParams({ q: query, lang: locale });
+      const response = await fetch(`/api/geo/search?${params}`);
+      if (!response.ok) throw new Error(String(response.status));
+      const answer = (await response.json()) as { places: FoundPlace[]; partial: boolean };
+      await listing;
+      if (asked.current !== turn) return;
+      if (answer.places.length > 0) {
+        setResults(answer.places);
+        setStatus({ kind: "idle" });
+      } else {
+        // Landmarks not looked through is not "no such place".
+        setStatus({ kind: "say", what: answer.partial ? "failed" : "none" });
+      }
+    } catch {
+      const list = await listing;
+      if (asked.current !== turn) return;
+      const places = list ? searchDirectory(query, list.rows, locale) : [];
+      if (places.length > 0) {
+        setResults(places);
+        setStatus({ kind: "idle" });
+      } else setStatus({ kind: "say", what: list ? "failed" : "offline" });
+    }
+  }
+
   async function run(raw: string) {
     const turn = (asked.current += 1);
     setResults(null);
+    const read = readPlaceInput(raw);
+    if (read.kind === "search") {
+      await searchByName(read.query, turn);
+      return;
+    }
     let found = lookupLocation(raw, loaded.current?.rows ?? null, locale);
     if (found.kind === "needsDirectory") {
       setStatus({ kind: "busy" });

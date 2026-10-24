@@ -45,11 +45,22 @@ const DIRECTORY: AreaDirectory = {
 
 const calls: string[] = [];
 let areasOk = true;
+/** What /api/geo/search answers; null makes it fail. */
+let searched: { places: unknown[]; partial: boolean } | null = null;
+const BANA_PLACE = {
+  name: "ต.บานา",
+  detail: "อ.เมืองปัตตานี จ.ปัตตานี",
+  lat: 6.878,
+  lon: 101.272,
+  source: "tambon",
+  code: "940104",
+};
 let located: Located = { kind: "tambon", area: BANA };
 
 beforeEach(() => {
   calls.length = 0;
   areasOk = true;
+  searched = { places: [BANA_PLACE], partial: false };
   located = { kind: "tambon", area: BANA };
   vi.stubGlobal(
     "fetch",
@@ -58,6 +69,10 @@ beforeEach(() => {
       if (String(url).startsWith("/api/geo/areas")) {
         if (!areasOk) throw new Error("offline");
         return new Response(JSON.stringify(DIRECTORY), { status: 200 });
+      }
+      if (String(url).startsWith("/api/geo/search")) {
+        if (!searched) return new Response("{}", { status: 503 });
+        return new Response(JSON.stringify(searched), { status: 200 });
       }
       if (String(url).startsWith("/api/geo/locate")) {
         return new Response(JSON.stringify(located), { status: 200 });
@@ -97,7 +112,8 @@ describe("the box on its own", () => {
     expect(area).toMatchObject({ code: "940104", provinceTh: "ปัตตานี", from: "list" });
   });
 
-  it("says a name is not in the list instead of inventing a place", async () => {
+  it("says a name is not found instead of inventing a place", async () => {
+    searched = { places: [], partial: false };
     const onFound = vi.fn();
     renderWithIntl(<LocationFinder onFound={onFound} />);
     type("กรุงเทพ");
@@ -107,8 +123,45 @@ describe("the box on its own", () => {
     expect(onFound).not.toHaveBeenCalled();
   });
 
-  it("still takes coordinates when the list cannot be loaded, and says so for a name", async () => {
+  it("hands over a landmark's exact spot with no area, for the caller to place", async () => {
+    searched = {
+      places: [
+        {
+          name: "มหาวิทยาลัยสงขลานครินทร์",
+          detail: "หาดใหญ่ สงขลา",
+          lat: 7.0067,
+          lon: 100.4985,
+          source: "landmark",
+        },
+      ],
+      partial: false,
+    };
+    const onFound = vi.fn();
+    renderWithIntl(<LocationFinder onFound={onFound} />);
+    type("มหาวิทยาลัยสงขลานครินทร์");
+    fireEvent.click(await screen.findByText("มหาวิทยาลัยสงขลานครินทร์"));
+    expect(onFound).toHaveBeenCalledWith({ point: { lat: 7.0067, lon: 100.4985 }, area: null });
+  });
+
+  it("does not say not-found when the landmark search could not be made", async () => {
+    searched = { places: [], partial: true };
+    renderWithIntl(<LocationFinder onFound={vi.fn()} />);
+    type("มหาวิทยาลัยสงขลานครินทร์");
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toBe(th.locationFinder.failed),
+    );
+  });
+
+  it("falls back to the tambons held in the browser when the search cannot be asked", async () => {
+    searched = null;
+    renderWithIntl(<LocationFinder onFound={vi.fn()} />);
+    type("บานา");
+    expect(await screen.findByText("ต.บานา")).toBeTruthy();
+  });
+
+  it("still takes coordinates when nothing can be loaded, and says so for a name", async () => {
     areasOk = false;
+    searched = null;
     const onFound = vi.fn();
     renderWithIntl(<LocationFinder onFound={onFound} />);
     type("บานา");
@@ -128,11 +181,11 @@ describe("the box on its own", () => {
     );
   });
 
-  it("never sends what was typed anywhere but Jaga's own public list", async () => {
+  it("never sends what was typed anywhere but Jaga's own server", async () => {
     renderWithIntl(<LocationFinder onFound={vi.fn()} />);
     type("บานา");
     await screen.findByText("ต.บานา");
-    expect(calls.every((url) => url.startsWith("/api/geo/areas"))).toBe(true);
+    expect(calls.every((url) => url.startsWith("/api/geo/"))).toBe(true);
   });
 });
 
