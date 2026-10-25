@@ -60,7 +60,7 @@ export type NoticeItem = Base &
         messages: Record<string, string>;
         alertId: string;
       }
-    | { kind: "announcement"; messages: Record<string, string> }
+    | { kind: "announcement"; messages: Record<string, string>; cta?: "share_app" }
     | {
         kind: "sos";
         caseId: string;
@@ -233,6 +233,8 @@ export type NoticeRow = {
   tambons: string[];
   /** A drill the admins sent on purpose (A10): shown, and shown as a drill. */
   drill?: boolean;
+  /** An announcement's call to action, when it carries one: for now only "share_app" (A10). */
+  cta?: "share_app" | null;
 };
 
 function isoOrNull(value: unknown): string | null {
@@ -274,6 +276,7 @@ export function toNoticeRow(row: Record<string, unknown>): NoticeRow | null {
     endedAt: isoOrNull(row.ended_at),
     source: typeof row.source === "string" && row.source !== "" ? row.source : null,
     tambons: Array.isArray(row.tambons) ? row.tambons.map(String) : [],
+    cta: row.cta === "share_app" ? "share_app" : null,
   };
 }
 
@@ -385,6 +388,7 @@ export function buildNotices(input: {
           at: row.issuedAt,
           places,
           messages: row.messages,
+          ...(row.cta === "share_app" ? { cta: "share_app" as const } : {}),
         });
       }
       continue;

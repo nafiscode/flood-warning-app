@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { DrillMark } from "@/components/alerts/DrillMark";
 import { ClockIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
+import { ShareJagaButton } from "@/components/ShareJagaButton";
 import { Link } from "@/i18n/navigation";
 import { alertWords } from "@/lib/alert-words";
 import { ADMIN_QUEUE_HREF, type NoticeItem } from "@/lib/notices";
@@ -87,6 +88,9 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         <>
           <p>{text(item.messages)}</p>
           <p className="text-small text-jaga-text-2">{t("announcementNote")}</p>
+          {/* An announcement may ask the reader to pass the app on (A10): the button opens the
+              phone's own share sheet and nothing about it reads as an alert (safety rule 10). */}
+          {item.cta === "share_app" && <ShareJagaButton />}
         </>
       )}
       {item.kind === "unit" && (

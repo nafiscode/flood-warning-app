@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { AnnouncementDraft } from "@/components/admin/AnnouncementDraft";
 import { AreaTree } from "@/components/admin/AreaTree";
 import { DualTime } from "@/components/admin/DualTime";
 import { readAreas } from "@/lib/admin-alerts";
@@ -29,7 +30,7 @@ export async function generateMetadata({
 
 export const dynamic = "force-dynamic";
 
-const ERRORS = ["thai", "area", "save"] as const;
+const ERRORS = ["thai", "area", "noTeam", "save"] as const;
 const DONE = ["posted", "cancelled"] as const;
 
 /**
@@ -68,8 +69,16 @@ export default async function Announcements({
         </p>
       )}
 
-      <form action={postAnnouncement.bind(null, locale)} className={card}>
+      <form action={postAnnouncement.bind(null, locale)} className={card} data-announce-form="true">
         <h2 className="text-body font-bold">{t("announce.new")}</h2>
+        <AnnouncementDraft
+          label={t("announce.draft.noTeam.button")}
+          text={{
+            th: t("announce.draft.noTeam.th"),
+            ms: t("announce.draft.noTeam.ms"),
+            en: t("announce.draft.noTeam.en"),
+          }}
+        />
         {(["th", "ms", "en"] as const).map((lang) => (
           <div key={lang} className="flex flex-col gap-1">
             <label htmlFor={`text-${lang}`} className={label}>
@@ -113,7 +122,21 @@ export default async function Announcements({
             </summary>
             <AreaTree areas={areas} locale={locale} />
           </details>
+          <label className={checkRow}>
+            <input type="radio" name="scope" value="noTeam" className={checkBox} data-scope="noTeam" />
+            <span>
+              <span className="font-bold">{t("announce.noTeam")}</span>
+              <span className={`block ${hint}`}>{t("announce.noTeamHint")}</span>
+            </span>
+          </label>
         </fieldset>
+        <label className={checkRow}>
+          <input type="checkbox" name="cta" value="share_app" className={checkBox} data-cta="share_app" />
+          <span>
+            <span className="font-bold">{t("announce.ctaShare")}</span>
+            <span className={`block ${hint}`}>{t("announce.ctaShareHint")}</span>
+          </span>
+        </label>
         <button type="submit" className={buttonPrimary} data-post-announcement="true">
           {t("announce.send")}
         </button>

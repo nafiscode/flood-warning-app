@@ -238,6 +238,51 @@ describe("announcements", () => {
   });
 });
 
+describe("tambons without a team", () => {
+  const without = () =>
+    rows<{ admin_tambons_without_team: string }>(
+      db,
+      "select admin_tambons_without_team() order by 1",
+    ).then((r) => r.map((row) => row.admin_tambons_without_team));
+
+  it("only an admin may ask", async () => {
+    await as(db, { uid: w.requester });
+    expect(await expectDenied(db, "select admin_tambons_without_team()")).toBe("42501");
+  });
+
+  it("lists service-area tambons no verified unit covers", async () => {
+    await as(db, { uid: w.admin });
+    const list = await without();
+    // yala1 and songkhla each have a verified unit; yala2 has none.
+    expect(list).toContain(w.yala2);
+    expect(list).not.toContain(w.yala1);
+    expect(list).not.toContain(w.songkhla);
+    // Only the service provinces (codes 90/94/95/96) are ever in it.
+    expect(list.every((code) => ["90", "94", "95", "96"].includes(code.slice(0, 2)))).toBe(true);
+  });
+
+  it("drops a tambon as soon as a verified unit covers it", async () => {
+    await as(db, { uid: w.admin });
+    expect(await without()).toContain(w.yala2);
+    await asOwner(db);
+    const unit = (
+      await rows<{ id: string }>(
+        db,
+        `insert into authority_units (org_id, user_id, unit_name, capabilities, status)
+         values ((select id from organizations limit 1), $1, 'Yala2 unit',
+                 '{support}'::authority_capability[], 'verified') returning id`,
+        [w.admin],
+      )
+    )[0]!.id;
+    await db.query(
+      "insert into authority_coverage (unit_id, tambon, selected_level, selected_code) values ($1, $2, 'tambon', $2)",
+      [unit, w.yala2],
+    );
+    await as(db, { uid: w.admin });
+    expect(await without()).not.toContain(w.yala2);
+  });
+});
+
 describe("exports", () => {
   const PRIVATE = /phone|requester|reporter|device|text|voice|photo_|name|injur|vulnerable/;
 

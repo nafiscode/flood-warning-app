@@ -3257,7 +3257,19 @@
       "everyone": "Semua orang",
       "someAreas": "Kawasan tertentu sahaja",
       "chooseAreas": "Pilih kawasan",
+      "noTeam": "Kawasan yang belum ada pasukan penyelamat",
+      "noTeamHint": "Hanya mukim dalam kawasan perkhidmatan yang belum ada pasukan disahkan. Dikira semasa anda menghantar.",
       "tambons": "{count} mukim",
+      "ctaShare": "Tunjukkan butang “Kongsi Jaga”",
+      "ctaShareHint": "Menambah butang kongsi di bawah mesej dalam loceng, supaya pembaca boleh sebarkan aplikasi.",
+      "draft": {
+        "noTeam": {
+          "button": "Guna teks “tiada pasukan penyelamat di sini”",
+          "th": "พื้นที่ของคุณยังไม่มีทีมกู้ภัยลงทะเบียน โปรดแชร์แอป Jaga ให้ทีมหรือหน่วยงานที่คุณรู้จัก เพื่อให้พวกเขาใช้แอปช่วยเหลือคุณเมื่อคุณต้องการ การกดปุ่ม SOS โดยไม่มีทีมลงทะเบียนในพื้นที่ แอปจะช่วยประสานความช่วยเหลือให้ไม่ได้ แชร์แอปเลยตอนนี้",
+          "ms": "Kawasan anda belum ada pasukan penyelamat yang berdaftar. Sila kongsi aplikasi Jaga kepada pasukan atau organisasi yang anda kenal, supaya mereka boleh guna aplikasi ini untuk membantu anda apabila anda perlukan. Jika anda tekan butang SOS tanpa pasukan berdaftar di kawasan anda, aplikasi tidak dapat menyalurkan bantuan kepada anda. Kongsi aplikasi sekarang.",
+          "en": "Your area has no rescue team registered yet. Please share the Jaga app with teams or organisations you know, so they can use the app to help you when you need it. If you press SOS with no team registered in your area, the app cannot facilitate help for you. Share the app now."
+        }
+      },
       "send": "Hantar pengumuman",
       "list": "Pengumuman terdahulu",
       "none": "Belum ada pengumuman.",
@@ -3274,6 +3286,7 @@
       "error": {
         "thai": "Teks Thai diperlukan.",
         "area": "“Kawasan tertentu” dipilih tetapi tiada kawasan ditandakan.",
+        "noTeam": "Setiap kawasan sudah ada pasukan, jadi tiada penerima untuk ini.",
         "save": "Tidak berjaya dihantar. Cuba lagi."
       }
     },

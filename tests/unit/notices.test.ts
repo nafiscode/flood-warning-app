@@ -186,6 +186,39 @@ describe("building the list", () => {
     expect("level" in items[0]!).toBe(false);
   });
 
+  it("carries an announcement's share call to action through to the item", () => {
+    const row = {
+      kind: "announcement" as const,
+      id: "33333333-3333-4333-8333-333333333333",
+      hazard: null,
+      level: null,
+      reason: "",
+      messages: { th: "พื้นที่ของคุณยังไม่มีทีม" },
+      issuedAt: daysAgo(1),
+      nextUpdateAt: null,
+      endedAt: null,
+      source: null,
+      tambons: [],
+    };
+    expect(build([{ ...row, cta: "share_app" }])[0]).toMatchObject({ cta: "share_app" });
+    // Without the flag the item has no cta at all, so no button is shown.
+    expect("cta" in build([row])[0]!).toBe(false);
+  });
+
+  it("reads the share call to action from a feed row, only when it is known", () => {
+    const base = {
+      kind: "announcement",
+      id: "a",
+      level: null,
+      messages: { th: "x" },
+      issued_at: "2026-11-19T03:00:00Z",
+      tambons: [],
+    };
+    expect(toNoticeRow({ ...base, cta: "share_app" })!.cta).toBe("share_app");
+    expect(toNoticeRow({ ...base, cta: "something_else" })!.cta).toBeNull();
+    expect(toNoticeRow(base)!.cta).toBeNull();
+  });
+
   it("shows the steps of their own SOS, and not the ones that are not news", () => {
     const timeline: SosTimeline = {
       status: "en_route",

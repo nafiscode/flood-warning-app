@@ -154,6 +154,30 @@ describe("announcements", () => {
       ),
     ).toBe("23514");
   });
+
+  it("carries a share call to action to the feed, and refuses an unknown one", async () => {
+    await as(db, { uid: w.admin });
+    const id = (
+      await rows<{ admin_announce: string }>(
+        db,
+        "select admin_announce($1::jsonb, null, null, 'share_app')",
+        [JSON.stringify({ th: "พื้นที่ของคุณยังไม่มีทีม" })],
+      )
+    )[0]!.admin_announce;
+    await as(db, "anon");
+    const [row] = await rows<{ cta: string | null }>(
+      db,
+      "select cta from public_notices($1) where id = $2",
+      [[w.yala1], id],
+    );
+    expect(row!.cta).toBe("share_app");
+    await as(db, { uid: w.admin });
+    expect(
+      await expectDenied(db, "select admin_announce($1::jsonb, null, null, 'bogus')", [
+        JSON.stringify({ th: "x" }),
+      ]),
+    ).toBe("23514");
+  });
 });
 
 describe("what a person has read", () => {

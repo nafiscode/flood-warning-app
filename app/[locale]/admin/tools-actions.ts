@@ -122,9 +122,12 @@ export async function postAnnouncement(locale: string, form: FormData) {
   }
   const hours = Number(form.get("hours"));
   if (!(ANNOUNCE_HOURS as readonly number[]).includes(hours)) redirect(`${back}?error=save`);
+  const cta = form.get("cta") === "share_app" ? "share_app" : null;
 
+  const supabase = await createClient();
+  const scope = form.get("scope");
   let tambons: string[] | null = null;
-  if (form.get("scope") === "area") {
+  if (scope === "area") {
     const areas = await readAreas();
     tambons = chosenTambons(
       areas.tambons.map((t) => t.code),
@@ -134,12 +137,21 @@ export async function postAnnouncement(locale: string, form: FormData) {
     if (tambons.length === 0) redirect(`${back}?error=area`);
     // The table holds at most 500 codes; more than that is "everyone" in all but name.
     if (tambons.length > 500) tambons = null;
+  } else if (scope === "noTeam") {
+    // Every tambon in the service area that still has no verified unit covering it, worked out in
+    // the database so the browser never sees where people live. Empty means every area already has
+    // a team - there is nothing to send. The 377 service tambons fit well under the table's 500.
+    const { data, error } = await supabase.rpc("admin_tambons_without_team");
+    if (error) redirect(`${back}?error=save`);
+    tambons = (Array.isArray(data) ? data : []).map(String).filter((c) => /^[0-9]{6}$/.test(c));
+    if (tambons.length === 0) redirect(`${back}?error=noTeam`);
+    if (tambons.length > 500) tambons = tambons.slice(0, 500);
   }
-  const supabase = await createClient();
   const { data: posted, error } = await supabase.rpc("admin_announce", {
     p_messages: messages,
     p_tambons: tambons,
     p_ends_at: hours === 0 ? null : new Date(Date.now() + hours * 3_600_000).toISOString(),
+    p_cta: cta,
   });
   // The phones it is for are told (A7), after this page has answered. It is in the bell either way.
   if (!error && typeof posted === "string") {
