@@ -655,6 +655,7 @@
     "mine": {
       "toggle": "Tunjukkan tempat saya pada peta ({count})",
       "home": "Rumah saya",
+      "chosen": "Tempat yang saya pilih",
       "note": "Hanya anda yang nampak titik ini; ia tidak ditunjukkan kepada orang lain.",
       "manage": "Urus tempat yang saya pantau",
       "person": "Hubungi: {name}",

@@ -55,7 +55,14 @@ import { damRainCode, reservoirCentre } from "@/lib/dam-map";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { boundsAround, COVERAGE_COLOR, nightNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } from "@/lib/map";
+import {
+  boundsAround,
+  COVERAGE_COLOR,
+  nightNow,
+  PROVINCE_BOUNDS,
+  provincesBox,
+  SERVICE_BOUNDS,
+} from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
@@ -574,7 +581,7 @@ export function DashboardView(props: DashboardViewProps) {
    * it is in no public answer. A place pinned outside the covered tambons has no area and is
    * left out, because the map covers only the four provinces.
    */
-  const mine: MinePlace[] = !props.me?.signedIn
+  const saved: MinePlace[] = !props.me?.signedIn
     ? []
     : [
         ...(props.me.home
@@ -620,6 +627,32 @@ export function DashboardView(props: DashboardViewProps) {
               : null,
           })),
       ];
+  /*
+   * The place chosen on this device (the home screen's box, the list or the GPS) gets its pin too
+   * (the owner, 25 Oct 2026: a university found by name left no pin for someone without a saved
+   * place). It is kept on the phone, so it needs no account; a saved place at the same spot
+   * already has its own pin and is not doubled.
+   */
+  const chosenArea = props.area;
+  const mine: MinePlace[] =
+    chosenArea &&
+    !saved.some(
+      (p) => Math.abs(p.lat - chosenArea.lat) < 0.0005 && Math.abs(p.lon - chosenArea.lon) < 0.0005,
+    )
+      ? [
+          ...saved,
+          {
+            id: "chosen",
+            label: t("mine.chosen"),
+            lat: chosenArea.lat,
+            lon: chosenArea.lon,
+            home: true,
+            color: homeColor(dark),
+            lines: [areaName(locale, chosenArea)],
+            call: null,
+          },
+        ]
+      : saved;
 
   // Until the list arrives (or if it can't), floods are the one hazard the map knows.
   const hazards: Hazard[] = props.hazards ?? [
@@ -1428,12 +1461,15 @@ export function DashboardView(props: DashboardViewProps) {
   } else if (selection?.kind === "mine") {
     const place = mine.find((p) => p.id === selection.id);
     const area =
-      selection.id === "home"
-        ? props.me?.signedIn
-          ? props.me.home
-          : null
-        : ((props.me?.signedIn ? props.me.places.find((p) => p.id === selection.id)?.area : null) ??
-          null);
+      selection.id === "chosen"
+        ? (props.area ?? null)
+        : selection.id === "home"
+          ? props.me?.signedIn
+            ? props.me.home
+            : null
+          : ((props.me?.signedIn
+              ? props.me.places.find((p) => p.id === selection.id)?.area
+              : null) ?? null);
     selected = place ? (
       <section className={card} data-selected="mine">
         <p className="font-bold">{place.label}</p>

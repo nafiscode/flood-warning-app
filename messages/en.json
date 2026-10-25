@@ -655,6 +655,7 @@
     "mine": {
       "toggle": "Show my places on the map ({count})",
       "home": "My home",
+      "chosen": "The place I chose",
       "note": "Only you see this point; it is not shown to anyone else.",
       "manage": "Manage the places I watch",
       "person": "Contact: {name}",
