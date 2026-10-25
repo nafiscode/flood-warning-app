@@ -687,6 +687,32 @@ export function playIntro(map: MapLibreMap): void {
   // The Earth picture goes over everything, solid while far away and gone before the end. A
   // style swap (the basemap settling in just after the map loads) wipes it, so it is put back.
   const night = nightNow();
+  /*
+   * While the Earth is a globe, the basemap's own layers are switched off: wrapped round a sphere
+   * they look like a candy wrapper. They come back under the Earth picture, which is still solid,
+   * a little before it fades into the flat map.
+   */
+  const hidden = new Set<string>();
+  let revealed = false;
+  const hideBasemap = () => {
+    if (revealed) return;
+    for (const layer of map.getStyle()?.layers ?? []) {
+      if (layer.id === INTRO_LAYER || map.getLayoutProperty(layer.id, "visibility") === "none")
+        continue;
+      map.setLayoutProperty(layer.id, "visibility", "none");
+      hidden.add(layer.id);
+    }
+  };
+  const reveal = () => {
+    if (revealed) return;
+    revealed = true;
+    for (const id of hidden)
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "visible");
+    hidden.clear();
+  };
+  const revealAt = () => {
+    if (map.getZoom() >= goal - 2) reveal();
+  };
   const dress = () => {
     try {
       if (!map.getSource(INTRO_SOURCE)) {
@@ -699,7 +725,7 @@ export function playIntro(map: MapLibreMap): void {
           source: INTRO_SOURCE,
           paint: {
             "raster-fade-duration": 300,
-            "raster-opacity": ["interpolate", ["linear"], ["zoom"], goal - 3, 1, goal - 0.8, 0],
+            "raster-opacity": ["interpolate", ["linear"], ["zoom"], goal - 1.4, 1, goal - 0.3, 0],
           },
         });
       }
@@ -738,13 +764,15 @@ export function playIntro(map: MapLibreMap): void {
         ["zoom"],
         0,
         "vertical-perspective",
-        goal - 0.6,
+        goal - 0.4,
         "mercator",
       ],
     } as never);
+    hideBasemap();
   };
   // Labels are lifted over the layers after a redraw; the Earth stays on top of them.
   const lift = () => {
+    hideBasemap();
     const layers = map.getStyle()?.layers;
     if (layers?.at(-1)?.id !== INTRO_LAYER && map.getLayer(INTRO_LAYER)) {
       map.moveLayer(INTRO_LAYER);
@@ -778,6 +806,8 @@ export function playIntro(map: MapLibreMap): void {
     window.clearTimeout(wait);
     map.off("style.load", dress);
     map.off("styledata", lift);
+    map.off("zoom", revealAt);
+    reveal();
     map.getContainer().removeAttribute("data-map-intro");
     map.setProjection({ type: "mercator" });
     try {
@@ -799,6 +829,7 @@ export function playIntro(map: MapLibreMap): void {
   window.addEventListener("keydown", interrupt, { once: true });
   map.on("style.load", dress);
   map.on("styledata", lift);
+  map.on("zoom", revealAt);
   // Leave only when the Earth tiles are in (or after 5 s), or the descent starts over black.
   let started = false;
   const start = () => {
