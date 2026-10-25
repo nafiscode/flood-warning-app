@@ -92,6 +92,11 @@ import {
   setBasemap,
   setScene,
   TAMBON_FILL_LAYER,
+  COVERAGE_COVERED_OPACITY,
+  COVERAGE_FILL_LAYER,
+  COVERAGE_GAP_OPACITY,
+  COVERAGE_MINE_LAYER,
+  TEAL,
   TAMBON_LINE_LAYER,
   TAMBON_SOURCE,
 } from "@/lib/map";
@@ -169,6 +174,16 @@ type Props = {
   showDamZone?: boolean;
   /** The `pmtiles://` address of the flood-hazard classes; null until the manifest names one. */
   hazardUrl?: string | null;
+  /**
+   * The responsibility map (spec 2, 9), drawn as on the authority console's own map: the tambons a
+   * rescue team covers, the gaps (no rescue team), and the viewer's own tambons. Readable only by
+   * verified authorities and admins (safety rule 5), so for everyone else the caller passes empty
+   * lists and the switch is never offered.
+   */
+  coverageCovered?: readonly string[];
+  coverageGaps?: readonly string[];
+  coverageMine?: readonly string[];
+  showCoverage?: boolean;
   /** The basemap under our layers (lib/map.ts). */
   basemap?: Basemap;
   /** 3D: the ground raised and the map tilted (lib/map.ts, setScene). 2D when left out. */
@@ -459,6 +474,10 @@ export function MapView({
   cooperative = false,
   gestureText,
   hazardUrl = null,
+  coverageCovered = [],
+  coverageGaps = [],
+  coverageMine = [],
+  showCoverage = false,
   basemap = "streets",
   scene = false,
   fill = false,
@@ -939,6 +958,60 @@ export function MapView({
         }
         m.setPaintProperty(SATELLITE, "fill-color", satelliteColor(mapIsDark()));
         m.setPaintProperty(SATELLITE_LINE, "line-color", satelliteEdge(mapIsDark()));
+        /*
+         * The responsibility map (spec 2, 9), exactly as the authority console draws it
+         * (components/authority/BoardMap.tsx): a covered tambon is teal, a gap - no rescue team -
+         * is the map ink, and the viewer's own tambons get a teal outline. Never an alert colour
+         * (brand.md). Only verified authorities and admins are ever given these lists (safety
+         * rule 5), so for everyone else they are empty and the layer stays hidden.
+         */
+        if (!m.getLayer(COVERAGE_FILL_LAYER)) {
+          m.addLayer(
+            { id: COVERAGE_FILL_LAYER, type: "fill", source: TAMBON_SOURCE, paint: {} },
+            above,
+          );
+          m.addLayer(
+            {
+              id: COVERAGE_MINE_LAYER,
+              type: "line",
+              source: TAMBON_SOURCE,
+              paint: { "line-color": TEAL, "line-width": 2.5 },
+            },
+            above,
+          );
+        }
+        const covered = [...coverageCovered];
+        const gaps = [...coverageGaps];
+        const coverInk = mapInk();
+        // A match built from the data, so TypeScript cannot see the tuple MapLibre wants.
+        const coverFill = (gaps.length || covered.length
+          ? [
+              "match",
+              ["get", "code"],
+              ...(gaps.length ? [gaps, coverInk] : []),
+              ...(covered.length ? [covered, TEAL] : []),
+              TEAL,
+            ]
+          : TEAL) as unknown as string;
+        const coverOpacity = (gaps.length || covered.length
+          ? [
+              "match",
+              ["get", "code"],
+              ...(gaps.length ? [gaps, COVERAGE_GAP_OPACITY] : []),
+              ...(covered.length ? [covered, COVERAGE_COVERED_OPACITY] : []),
+              0,
+            ]
+          : 0) as unknown as number;
+        m.setPaintProperty(COVERAGE_FILL_LAYER, "fill-color", coverFill as never);
+        m.setPaintProperty(COVERAGE_FILL_LAYER, "fill-opacity", coverOpacity as never);
+        m.setFilter(COVERAGE_MINE_LAYER, [
+          "in",
+          ["get", "code"],
+          ["literal", [...coverageMine]],
+        ] as unknown as never);
+        for (const id of [COVERAGE_FILL_LAYER, COVERAGE_MINE_LAYER]) {
+          m.setLayoutProperty(id, "visibility", showCoverage ? "visible" : "none");
+        }
         if (!m.getLayer(ALERT_FILL)) {
           m.addLayer({ id: ALERT_FILL, type: "fill", source: TAMBON_SOURCE, paint: {} }, above);
         }
@@ -1572,6 +1645,10 @@ export function MapView({
     outletLabel,
     damLocale,
     hazardUrl,
+    coverageCovered,
+    coverageGaps,
+    coverageMine,
+    showCoverage,
     satelliteData,
     seaData,
     areaNameData,

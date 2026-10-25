@@ -78,6 +78,7 @@ import { ConsoleTiles } from "./ConsoleTiles";
 import { OrbitGlobe } from "./OrbitGlobe";
 import { HazardPlaceholder } from "./HazardPlaceholder";
 import { SatelliteFloodPanel } from "./SatelliteFlood";
+import { isGap, type CoverageRow } from "@/lib/coverage";
 import type { SatelliteFlood, SatelliteWindow } from "@/lib/satellite-flood";
 import { Link } from "@/i18n/navigation";
 import { checkBox, checkRow } from "@/lib/ui";
@@ -173,6 +174,12 @@ export type DashboardViewProps = {
   dams?: Dam[] | null;
   /** The `pmtiles://` address of the flood-hazard classes; null while there is none to draw. */
   hazardTiles?: string | null;
+  /**
+   * The responsibility map (spec 2, 9): per-tambon team coverage, the same rows the authority
+   * console reads. Given only when the viewer is a verified authority or admin (safety rule 5);
+   * null or empty means no switch is shown, so visitors and ordinary users never see it.
+   */
+  coverage?: CoverageRow[] | null;
   /**
    * Flood seen by satellite (GISTDA): the window asked for (null = switched off), the answer
    * and how the asking went. Left out, the switch is not offered.
@@ -693,6 +700,26 @@ export function DashboardView(props: DashboardViewProps) {
       (l !== "hazard" || showHazard || !hazardOnOffer),
   );
   const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
+
+  /*
+   * The responsibility map (spec 2, 9): the tambons a verified team covers, on its own switch,
+   * off to begin with. Offered only when the server returned coverage, which it does only for a
+   * verified authority or admin (safety rule 5), so the switch is simply absent for everyone else.
+   */
+  const [coverageOn, setCoverageOn] = useState(false);
+  const coverageOffered = (props.coverage?.length ?? 0) > 0;
+  const coverageCovered = useMemo(
+    () => (props.coverage ?? []).filter((r) => !isGap(r)).map((r) => r.tambon),
+    [props.coverage],
+  );
+  const coverageGaps = useMemo(
+    () => (props.coverage ?? []).filter(isGap).map((r) => r.tambon),
+    [props.coverage],
+  );
+  const coverageMine = useMemo(
+    () => (props.coverage ?? []).filter((r) => r.mine).map((r) => r.tambon),
+    [props.coverage],
+  );
 
   /*
    * Where the map looks: the whole province of the person's chosen area, together with the
@@ -2080,6 +2107,37 @@ export function DashboardView(props: DashboardViewProps) {
                     dark={nightMap}
                   />
                 )}
+                {/*
+                 * The responsibility map (spec 2, 9): per-tambon team coverage, drawn the same way
+                 * as the authority console's map - teal where a rescue team covers, the map ink for
+                 * a gap, a teal outline on the viewer's own tambons (never an alert colour, brand.md).
+                 * Offered only to verified authorities and admins (the server returns no coverage to
+                 * anyone else, safety rule 5), off to begin with.
+                 */}
+                {coverageOffered && (
+                  <div className="flex flex-col gap-1" data-coverage-switch="true">
+                    <button
+                      type="button"
+                      aria-pressed={coverageOn}
+                      data-coverage-toggle={coverageOn ? "on" : "off"}
+                      onClick={() => setCoverageOn((on) => !on)}
+                      className={`${chip} ${coverageOn ? chipOn : chipOff} items-center gap-2`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="size-4 shrink-0 rounded-sm border border-white"
+                        style={{ backgroundColor: "#2f9c95" }}
+                      />
+                      {t("coverage.show")}
+                    </button>
+                    <span className={hint}>
+                      {t("coverage.note", {
+                        covered: coverageCovered.length,
+                        gaps: coverageGaps.length,
+                      })}
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-2" data-mode-row="true">
                   <p className="font-medium" id="mode-label">
                     {t("mode.label")}
@@ -2393,6 +2451,10 @@ export function DashboardView(props: DashboardViewProps) {
                     showMine={showMine}
                     dams={dams}
                     hazardUrl={props.hazardTiles ?? null}
+                    coverageCovered={coverageCovered}
+                    coverageGaps={coverageGaps}
+                    coverageMine={coverageMine}
+                    showCoverage={coverageOffered && coverageOn}
                     sea={seaMarks}
                     satellite={
                       props.satelliteDays && props.satellite?.days === props.satelliteDays

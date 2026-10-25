@@ -575,6 +575,10 @@
       "risk": "Risiko",
       "live": "Keadaan sekarang"
     },
+    "coverage": {
+      "show": "Liputan pasukan",
+      "note": "Teal: ada pasukan menyelamat ({covered}). Gelap: belum ada pasukan ({gaps}). Tambon pasukan anda bergaris. Pasukan dan admin sahaja."
+    },
     "layers": {
       "title": "Apa yang ditunjukkan pada peta",
       "alerts": "Tahap amaran setiap tambon",

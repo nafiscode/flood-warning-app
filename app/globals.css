@@ -720,7 +720,13 @@
      the satellite's own panel on 22 Oct, and an end-to-end test caught it, not a unit test. */
   [data-map-full]
     [data-console-area="rail"]
-    > *:not([data-map-fulltools], [data-map-features], [data-satellite], [data-mine-toggle]) {
+    > *:not(
+      [data-map-fulltools],
+      [data-map-features],
+      [data-satellite],
+      [data-mine-toggle],
+      [data-coverage-switch]
+    ) {
     display: none;
   }
   [data-map-full] [data-map-fulltools] {

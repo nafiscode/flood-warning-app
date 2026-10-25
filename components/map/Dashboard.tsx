@@ -11,9 +11,17 @@ import type { Hazard } from "@/lib/hazards";
 import { readFocus } from "@/lib/map-focus";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
+import type { CoverageRow } from "@/lib/coverage";
 import { SEA_URL, type SeaData } from "@/lib/sea";
 import { satelliteUrl, type SatelliteFlood, type SatelliteWindow } from "@/lib/satellite-flood";
-import { useFetched, useLiveGauges, useMyPlaces, useNow, usePublicStatus } from "@/lib/use-public";
+import {
+  useFetched,
+  useLiveGauges,
+  useMyPlaces,
+  useMyRole,
+  useNow,
+  usePublicStatus,
+} from "@/lib/use-public";
 import { DashboardView } from "./DashboardView";
 
 /**
@@ -79,6 +87,12 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   // half an hour, so it is asked for with the map, like the dam.
   const sea = useFetched<SeaData>(SEA_URL);
   const me = useMyPlaces();
+  // The responsibility map (spec 2, 9): asked for only when the viewer is a team or an admin, so
+  // visitors and ordinary users never call for it; RLS returns nothing to anyone else anyway
+  // (safety rule 5). The switch appears only once coverage has come back.
+  const role = useMyRole();
+  const canSeeCoverage = role === "authority" || role === "admin" || role === "super_admin";
+  const coverage = useFetched<{ rows: CoverageRow[] }>(canSeeCoverage ? "/api/geo/coverage" : null);
   // Where the person said they are on the home screen: their saved home first, else the area
   // they chose on this phone. The map opens there (the owner's note, 9 Oct).
   const chosen = useStored<Area>("area");
@@ -99,6 +113,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       dataState={data.state}
       dams={damsWithZones}
       hazardTiles={hazardSourceUrl(tiles, manifest.data)}
+      coverage={coverage.data?.rows ?? null}
       satelliteDays={satelliteDays}
       onSatelliteDays={setSatelliteDays}
       satellite={satellite.data}

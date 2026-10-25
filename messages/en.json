@@ -575,6 +575,10 @@
       "risk": "Risk",
       "live": "Now"
     },
+    "coverage": {
+      "show": "Team coverage",
+      "note": "Teal: a rescue team covers it ({covered}). Dark: no team yet ({gaps}). Your own tambons are outlined. Teams and admins only."
+    },
     "layers": {
       "title": "What the map shows",
       "alerts": "Alert level per tambon",

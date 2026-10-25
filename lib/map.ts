@@ -203,9 +203,21 @@ const BOUNDARY_CREDIT = "Boundaries: Royal Thai Survey Department via OCHA (CC B
 
 // Brand colors (docs/brand.md). Map layers can't read CSS variables.
 const SLATE = "#1d3b53";
-const TEAL = "#2f9c95";
+export const TEAL = "#2f9c95";
 const GROUND = "#f0f2ee";
 const GROUND_DARK = "#0f1c26";
+
+/*
+ * The coverage (responsibility) layer on the main map (spec 2, 9) draws exactly as the authority
+ * console's own map does (components/authority/BoardMap.tsx): a covered tambon is teal, a gap -
+ * no rescue team - is the map ink, and the viewer's own tambons get a teal outline. A missing
+ * team is not an alert level, so no alert colour is ever used for it (brand.md). Shown only to
+ * verified authorities and admins (safety rule 5).
+ */
+export const COVERAGE_FILL_LAYER = "jaga-coverage-fill";
+export const COVERAGE_MINE_LAYER = "jaga-coverage-mine";
+export const COVERAGE_COVERED_OPACITY = 0.2;
+export const COVERAGE_GAP_OPACITY = 0.42;
 
 /**
  * The tambon outlines. On a street map, slate (pale at night) and quiet. On a photograph the slate
