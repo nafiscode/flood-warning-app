@@ -577,7 +577,7 @@
     },
     "coverage": {
       "show": "Liputan pasukan",
-      "note": "Teal: ada pasukan menyelamat ({covered}). Gelap: belum ada pasukan ({gaps}). Tambon pasukan anda bergaris. Pasukan dan admin sahaja."
+      "note": "Ungu: ada pasukan menyelamat berdaftar ({covered}). Tambon tanpa warna belum ada pasukan berdaftar ({gaps}). Tambon pasukan anda bergaris. Pasukan dan admin sahaja."
     },
     "layers": {
       "title": "Apa yang ditunjukkan pada peta",

@@ -55,7 +55,7 @@ import { damRainCode, reservoirCentre } from "@/lib/dam-map";
 import { ReportsNear } from "@/components/reports/ReportsNear";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import { layersFor, type Hazard, type MapLayer, type MapMode } from "@/lib/hazards";
-import { boundsAround, nightNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } from "@/lib/map";
+import { boundsAround, COVERAGE_COLOR, nightNow, PROVINCE_BOUNDS, provincesBox, SERVICE_BOUNDS } from "@/lib/map";
 import type { MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
@@ -2126,7 +2126,7 @@ export function DashboardView(props: DashboardViewProps) {
                       <span
                         aria-hidden="true"
                         className="size-4 shrink-0 rounded-sm border border-white"
-                        style={{ backgroundColor: "#2f9c95" }}
+                        style={{ backgroundColor: COVERAGE_COLOR }}
                       />
                       {t("coverage.show")}
                     </button>

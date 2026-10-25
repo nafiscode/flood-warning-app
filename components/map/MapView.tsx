@@ -94,6 +94,7 @@ import {
   TAMBON_FILL_LAYER,
   COVERAGE_COVERED_OPACITY,
   COVERAGE_FILL_LAYER,
+  COVERAGE_COLOR,
   COVERAGE_GAP_OPACITY,
   COVERAGE_MINE_LAYER,
   TEAL,
@@ -989,10 +990,10 @@ export function MapView({
               "match",
               ["get", "code"],
               ...(gaps.length ? [gaps, coverInk] : []),
-              ...(covered.length ? [covered, TEAL] : []),
-              TEAL,
+              ...(covered.length ? [covered, COVERAGE_COLOR] : []),
+              COVERAGE_COLOR,
             ]
-          : TEAL) as unknown as string;
+          : COVERAGE_COLOR) as unknown as string;
         const coverOpacity = (gaps.length || covered.length
           ? [
               "match",

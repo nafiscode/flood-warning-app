@@ -577,7 +577,7 @@
     },
     "coverage": {
       "show": "Team coverage",
-      "note": "Teal: a rescue team covers it ({covered}). Dark: no team yet ({gaps}). Your own tambons are outlined. Teams and admins only."
+      "note": "Violet: a registered rescue team covers it ({covered}). Other tambons are left plain; that means no team has registered there yet ({gaps}). Your own tambons are outlined. Teams and admins only."
     },
     "layers": {
       "title": "What the map shows",
