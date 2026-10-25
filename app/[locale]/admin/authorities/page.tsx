@@ -86,6 +86,63 @@ export default async function AdminAuthorities({
     contact = (rows as { poc_name: string; poc_phone: string }[] | null)?.[0] ?? null;
   }
 
+  // Names for the codes a unit selected: a province, a district (with its province) or tambons
+  // (grouped under their district and province), so the admin sees where, not only how many.
+  const [provinceRows, districtRows, tambonRows] = await Promise.all([
+    supabase.from("provinces").select("code, name_th, name_en"),
+    supabase.from("districts").select("code, province_code, name_th, name_en"),
+    supabase.rpc("tambon_directory").limit(2000),
+  ]);
+  const pick = (a: { name_th: string; name_en: string }) =>
+    locale === "th" ? a.name_th : a.name_en;
+  const provinceName = new Map((provinceRows.data ?? []).map((p) => [p.code, pick(p)]));
+  const districtInfo = new Map(
+    (districtRows.data ?? []).map((d) => [
+      d.code,
+      { name: pick(d), province: provinceName.get(d.province_code) ?? d.province_code },
+    ]),
+  );
+  const tambonInfo = new Map(
+    (
+      (tambonRows.data ?? []) as {
+        code: string;
+        name_th: string;
+        name_en: string;
+        district_code: string;
+      }[]
+    ).map((x) => [x.code, { name: pick(x), district: x.district_code }]),
+  );
+
+  const areaLists = (unit: Unit) => {
+    const codes = (level: string) => [
+      ...new Set(
+        unit.authority_coverage
+          .filter((c) => c.selected_level === level)
+          .map((c) => c.selected_code),
+      ),
+    ];
+    const provinces = codes("province").map((c) => provinceName.get(c) ?? c);
+    const districts = codes("district").map((c) => {
+      const d = districtInfo.get(c);
+      return d ? `${d.name} (${d.province})` : c;
+    });
+    const byDistrict = new Map<string, string[]>();
+    for (const c of codes("tambon")) {
+      const x = tambonInfo.get(c);
+      const key = x?.district ?? "";
+      byDistrict.set(key, [...(byDistrict.get(key) ?? []), x?.name ?? c]);
+    }
+    const tambons = [...byDistrict].map(([district, names]) => {
+      const d = districtInfo.get(district);
+      return {
+        key: district,
+        names: names.join(", "),
+        place: d ? t("authorities.tambonIn", { district: d.name, province: d.province }) : "",
+      };
+    });
+    return { provinces, districts, tambons };
+  };
+
   const summary = (unit: Unit) => {
     const selected = new Set(
       unit.authority_coverage.map((c) => `${c.selected_level}:${c.selected_code}`),
@@ -119,6 +176,29 @@ export default async function AdminAuthorities({
           .join(", ")}
       </p>
       <p>{summary(unit)}</p>
+      {(() => {
+        const a = areaLists(unit);
+        return (
+          <ul className="flex flex-col gap-1">
+            {a.provinces.length > 0 && (
+              <li>
+                <b>{t("authorities.areaProvinces")}:</b> {a.provinces.join(", ")}
+              </li>
+            )}
+            {a.districts.length > 0 && (
+              <li>
+                <b>{t("authorities.areaDistricts")}:</b> {a.districts.join(", ")}
+              </li>
+            )}
+            {a.tambons.map((g) => (
+              <li key={g.key}>
+                <b>{t("authorities.areaTambons")}:</b> {g.names}{" "}
+                {g.place && <span className={hint}>({g.place})</span>}
+              </li>
+            ))}
+          </ul>
+        );
+      })()}
       <p className={hint}>
         {t("authorities.registered")} <DualTime iso={unit.created_at} />
       </p>
