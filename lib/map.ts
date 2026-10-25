@@ -638,6 +638,7 @@ const INTRO_KEY = "jaga.map.intro";
 const INTRO_MS = 7000;
 const INTRO_SOURCE = "jaga-intro-earth";
 const INTRO_LAYER = "jaga-intro-earth";
+const INTRO_BG_LAYER = "jaga-intro-bg";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
 
 /** Few, coarse tiles: the descent never waits on the network, and the picture is gone before it blurs. */
@@ -709,7 +710,11 @@ export function playIntro(map: MapLibreMap): void {
   const hideBasemap = () => {
     if (revealed) return;
     for (const layer of map.getStyle()?.layers ?? []) {
-      if (layer.id === INTRO_LAYER || map.getLayoutProperty(layer.id, "visibility") === "none")
+      if (
+        layer.id === INTRO_LAYER ||
+        layer.id === INTRO_BG_LAYER ||
+        map.getLayoutProperty(layer.id, "visibility") === "none"
+      )
         continue;
       map.setLayoutProperty(layer.id, "visibility", "none");
       hidden.add(layer.id);
@@ -729,6 +734,20 @@ export function playIntro(map: MapLibreMap): void {
   };
   const dress = () => {
     try {
+      /*
+       * A full sphere to draw the Earth on. Web Mercator tiles stop at about 85 degrees, so beyond
+       * them - the two poles, at the top and bottom of the disc - the globe has no picture and used
+       * to show empty space, which flattened those ends ("a candy wrapper", the owner, 25 Oct). This
+       * background fills the whole sphere first, so the disc is a complete circle; the poles read as
+       * deep ocean by day and melt into the night sky after dark.
+       */
+      if (!map.getLayer(INTRO_BG_LAYER)) {
+        map.addLayer({
+          id: INTRO_BG_LAYER,
+          type: "background",
+          paint: { "background-color": night ? "#05080d" : "#0b2740" },
+        });
+      }
       if (!map.getSource(INTRO_SOURCE)) {
         map.addSource(INTRO_SOURCE, { type: "raster", tileSize: 256, ...introTiles(night) });
       }
@@ -824,6 +843,7 @@ export function playIntro(map: MapLibreMap): void {
     map.setMinZoom(minZoom);
     if (maxBounds) map.setMaxBounds(maxBounds);
     if (map.getLayer(INTRO_LAYER)) map.removeLayer(INTRO_LAYER);
+    if (map.getLayer(INTRO_BG_LAYER)) map.removeLayer(INTRO_BG_LAYER);
     if (map.getSource(INTRO_SOURCE)) map.removeSource(INTRO_SOURCE);
   };
   function interrupt() {
