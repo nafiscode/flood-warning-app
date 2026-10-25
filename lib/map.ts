@@ -214,6 +214,7 @@ const GROUND_DARK = "#0f1c26";
  * team is not an alert level, so no alert colour is ever used for it (brand.md). Shown only to
  * verified authorities and admins (safety rule 5).
  */
+export const COVERAGE_FILL_LAYER = "jaga-coverage-fill";
 export const COVERAGE_MINE_LAYER = "jaga-coverage-mine";
 export const COVERAGE_COVERED_OPACITY = 0.2;
 export const COVERAGE_GAP_OPACITY = 0.42;
@@ -787,13 +788,20 @@ export function playIntro(map: MapLibreMap): void {
   dress();
   map.setMaxBounds(null);
   map.setMinZoom(0);
-  // The whole globe fits the box (it is about 172 px across at zoom 0, doubling with each step).
-  const fit = Math.log2(
-    (0.58 * Math.min(map.getCanvas().clientWidth, map.getCanvas().clientHeight)) / 172,
-  );
+  /*
+   * The globe starts a little larger than the view, so its top and bottom - the two poles - sit
+   * just off screen. Web Mercator tiles stop near 85 degrees, and different machines draw the
+   * last sliver to the pole differently: some flatten it, some stretch it into a point, so the
+   * disc looked cut or "like a candy wrapper" at the ends (the owner, 25 Oct 2026). Kept off
+   * screen, there is nothing there to misdraw: what shows is a clean curved Earth, filling the
+   * frame, that the flight then descends into. The globe is about 172 px across at zoom 0 and
+   * doubles with each step.
+   */
+  const height = map.getCanvas().clientHeight || 600;
+  const fit = Math.log2((1.4 * height) / 172);
   map.jumpTo({
-    center: [center.lng - 24, 8],
-    zoom: Math.min(2.2, Math.max(0.3, fit)),
+    center: [center.lng, center.lat],
+    zoom: Math.max(1.8, fit),
     bearing: 0,
     pitch: 0,
   });

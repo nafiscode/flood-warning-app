@@ -1,34 +1,37 @@
 import { NextResponse } from "next/server";
-import { PROVINCE_CAPITALS } from "@/lib/map";
-import { supabaseConfigured } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
 
-type Row = { code: string; name_th: string; name_en: string; geom_web: unknown };
+import { PROVINCE_CAPITALS } from "@/lib/map";
+
+import outlines from "./outlines.generated.json";
+
+type Outline = {
+  type: "Feature";
+  geometry: unknown;
+  properties: { code: string; name_th: string; name_en: string; kind: string };
+};
 
 /**
  * The four covered provinces as GeoJSON: each outline, and a point at its capital town carrying
  * the province's names, for the Flood Risk Map's four-province view (lib/map.ts, quietOverview).
  * Public reference data, the same for everyone.
+ *
+ * The outlines are the dissolve of the tambon polygons (ST_Union by province), not the provinces
+ * table's own coarser geometry, so the province border sits exactly on the tambon borders the map
+ * draws (the owner, 25 Oct 2026: the two were not aligned; the tambon one has the better detail).
+ * Regenerate with `node scripts/gen-province-outlines.mjs` after the tambon boundaries change.
  */
-export async function GET() {
-  if (!supabaseConfigured()) return NextResponse.json({ error: "unavailable" }, { status: 503 });
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("provinces")
-    .select("code, name_th, name_en, geom_web")
-    .eq("status", "active")
-    .order("code");
-  if (error || !data) return NextResponse.json({ error: "unavailable" }, { status: 503 });
-  const features = (data as Row[]).flatMap(({ geom_web, ...names }) => {
-    const capital = PROVINCE_CAPITALS[names.code];
+export function GET() {
+  const features = (outlines as { features: Outline[] }).features.flatMap((province) => {
+    const capital = PROVINCE_CAPITALS[province.properties.code];
+    const { code, name_th, name_en } = province.properties;
     return [
-      { type: "Feature", geometry: geom_web, properties: { ...names, kind: "province" } },
+      province,
       ...(capital
         ? [
             {
-              type: "Feature",
+              type: "Feature" as const,
               geometry: { type: "Point", coordinates: capital },
-              properties: { ...names, kind: "capital" },
+              properties: { code, name_th, name_en, kind: "capital" },
             },
           ]
         : []),
