@@ -649,7 +649,16 @@
       "updated": "Bacaan terbaru {time} · disemak semula setiap 5 minit",
       "legendTrend": "Anak panah: naik atau turun dalam 3 jam lepas",
       "legendFull": "Semakin penuh bulatan, semakin hampir sungai dengan tebingnya",
-      "notAlertShort": "Ini ukuran, bukan amaran."
+      "notAlertShort": "Ini ukuran, bukan amaran.",
+      "sea": {
+        "open": "Laut: air surut seperti biasa, sungai boleh mengalir keluar",
+        "narrowing": "Laut: air surut kurang daripada biasa, sungai mungkin mengalir keluar lebih perlahan",
+        "shut": "Laut: air laut kekal tinggi sejak {from}, air sungai mungkin lambat keluar ke laut",
+        "unknown": "Laut: belum ada ramalan paras laut terkini, jadi belum dapat dinyatakan",
+        "at": "Ramalan laut dikeluarkan pada {time}",
+        "caveat": "Dibandingkan dengan rekod muara ini sendiri, bukan ketinggian dan bukan amaran"
+      },
+      "seaShort": "Air laut tidak surut"
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",
     "mine": {
@@ -4388,6 +4397,10 @@
     "sea": {
       "lead": "Laut, daripada model ombak dan cuaca",
       "text": "Tujuh tempat di luar pantai dari Songkhla hingga Tak Bai, dibaca daripada model ombak dan model cuaca Open-Meteo setiap setengah jam. Ombak 1 m, angin 30 km/j atau ribut petir dikira bergelora; ombak 2 m, angin 40 km/j atau tiupan 60 km/j bermakna bot kecil patut tidak keluar, mengikut kata-kata TMD. Ia tidak pernah berkata laut selamat, dan ketinggian pasang surut tidak ditunjukkan kerana model berbeza kira-kira 0.7 m daripada stesen air."
+    },
+    "gate": {
+      "lead": "Laut di sebelah sungai",
+      "text": "Pada tolok yang dicapai pasang surut, Jaga membandingkan ramalan paras laut semasa surut (Open-Meteo) dengan rekod musim banjir muara itu sendiri. Jika paras surut terendah sehari kekal tinggi melebihi had rekod itu selama dua hari berturut-turut, kad menyatakan air sungai mungkin lambat keluar ke laut. Ketinggian laut tidak ditunjukkan kerana model tersasar kira-kira 0.7 m daripada tolok sebenar, dan ini bukan amaran."
     },
     "more": "Keseluruhan kaedahnya, lapisan demi lapisan: bagaimana Jaga berfungsi",
     "names": {

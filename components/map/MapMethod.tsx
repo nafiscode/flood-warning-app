@@ -13,6 +13,7 @@ const POINTS = [
   "live",
   "places",
   "sea",
+  "gate",
   "weather",
   "names",
 ] as const;

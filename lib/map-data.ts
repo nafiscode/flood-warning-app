@@ -39,7 +39,48 @@ export type Gauge = {
   rise3h?: number | null;
   /** The bank level, m MSL. */
   bank?: number | null;
+  /** Only on a gauge the tide reaches, and only when the forecast could be read; see `SeaGate`. */
+  sea?: SeaGate;
 };
+
+/**
+ * What the sea is doing to a tidal gauge's drainage, as one word (`gauge_sea_gate()`, A10 25 Oct
+ * 2026; science plan Module 10). Never a height and never a level (safety rules 2 and 8): it
+ * compares the forecast low water with the same mouth's own flood-season record. `unknown` is
+ * never shown as good news.
+ */
+export const SEA_STATES = ["open", "narrowing", "shut", "unknown"] as const;
+export type SeaState = (typeof SEA_STATES)[number];
+export type SeaGate = {
+  state: SeaState;
+  /** First day of the longest run of shut days (ISO), when there is one. */
+  shutFrom: string | null;
+  shutDays: number;
+  /** When the sea forecast behind the word was issued (ISO). */
+  issuedAt: string | null;
+};
+
+/** `gauge_sea_gate()` rows, laid onto the gauges by station code. A gauge with no row keeps none. */
+export function withSea(gauges: Gauge[], rows: unknown): Gauge[] {
+  if (!Array.isArray(rows)) return gauges;
+  const byCode = new Map<string, SeaGate>();
+  for (const r of rows as Record<string, unknown>[]) {
+    if (typeof r.code !== "string") continue;
+    const state = (SEA_STATES as readonly string[]).includes(String(r.state))
+      ? (r.state as SeaState)
+      : "unknown";
+    byCode.set(r.code, {
+      state,
+      shutFrom: typeof r.shut_from === "string" ? r.shut_from : null,
+      shutDays: typeof r.shut_days === "number" ? r.shut_days : 0,
+      issuedAt: typeof r.issued_at === "string" ? r.issued_at : null,
+    });
+  }
+  return gauges.map((g) => {
+    const sea = g.code ? byCode.get(g.code) : undefined;
+    return sea ? { ...g, sea } : g;
+  });
+}
 
 /** Answer of /api/public/gauges: the gauges alone, small enough to ask for again every few minutes. */
 export type GaugeData = { gauges: Gauge[] };

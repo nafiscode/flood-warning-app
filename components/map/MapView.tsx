@@ -62,8 +62,10 @@ import {
   gaugeLook,
   gaugePaint,
   reducedMotion,
+  seaLook,
   trendOf,
   type GaugeLook,
+  type SeaLook,
   type Trend,
 } from "@/lib/gauge-marks";
 import { areaLabelFeatures, type AreaLabel } from "@/lib/area-labels";
@@ -272,7 +274,7 @@ type Props = {
   onSelect: (selection: MapSelection) => void;
   text: { loading: string; failed: string };
   /** The words written beside a gauge near or over its bank (lib/gauge-marks.ts). */
-  gaugeWords?: { near: string; over: string };
+  gaugeWords?: { near: string; over: string; seaShut?: string };
   /**
    * The compact pop-up for a reservoir, a gauge or a safe place, drawn by the caller (it holds
    * the figures and the words). Without it only the person's own places have a pop-up.
@@ -413,7 +415,7 @@ function toCollections(
   mine: MinePlace[],
   dams: Dam[],
   damText: { spillway: string; outlet: string; locale: string },
-  gaugeWords: { near: string; over: string },
+  gaugeWords: { near: string; over: string; seaShut?: string },
 ): Record<string, Collection> {
   return {
     ...damCollections(dams, damText),
@@ -442,6 +444,7 @@ function toCollections(
             id: gauge.id,
             look,
             trend: trendOf(gauge.rise3h ?? null, look),
+            sea: seaLook(gauge.sea),
             rank: GAUGE_RANK[look],
             ...gaugeLabels(gauge, gaugeWords),
           },
@@ -491,7 +494,7 @@ export function MapView({
   gaugeWords = { near: "", over: "" },
   peek,
 }: Props) {
-  const { near: nearWord, over: overWord } = gaugeWords;
+  const { near: nearWord, over: overWord, seaShut: seaShutWord } = gaugeWords;
   // One object for as long as the sea's marks are the same.
   const seaData = useMemo(
     () =>
@@ -859,7 +862,7 @@ export function MapView({
           outlet: outletLabel,
           locale: damLocale,
         },
-        { near: nearWord, over: overWord },
+        { near: nearWord, over: overWord, seaShut: seaShutWord },
       ),
       [SATELLITE]: satelliteData,
       [SEA]: seaData,
@@ -1371,14 +1374,14 @@ export function MapView({
         const gaugeKinds = new Set(
           (data?.gauges ?? []).map((g) => {
             const look = gaugeLook(g.status);
-            return `${look}|${trendOf(g.rise3h ?? null, look)}`;
+            return `${look}|${trendOf(g.rise3h ?? null, look)}|${seaLook(g.sea)}`;
           }),
         );
         for (const kind of gaugeKinds) {
-          const [look, trend] = kind.split("|") as [GaugeLook, Trend];
-          const name = gaugeImageName(look, trend, night);
+          const [look, trend, sea] = kind.split("|") as [GaugeLook, Trend, SeaLook];
+          const name = gaugeImageName(look, trend, night, sea);
           if (!m.hasImage(name)) {
-            const picture = gaugeImage(look, trend, night, moving);
+            const picture = gaugeImage(look, trend, night, moving, sea);
             if (picture) m.addImage(name, picture, { pixelRatio: GAUGE_IMAGE_RATIO });
           }
         }
@@ -1388,6 +1391,8 @@ export function MapView({
           ["get", "look"],
           "-",
           ["get", "trend"],
+          "-",
+          ["get", "sea"],
           night ? "-night" : "-day",
         ] as unknown as string;
         if (m.getLayer(GAUGES) && m.getLayer(GAUGES)!.type !== "symbol") m.removeLayer(GAUGES);
@@ -1655,6 +1660,7 @@ export function MapView({
     areaNameData,
     nearWord,
     overWord,
+    seaShutWord,
   ]);
 
   useEffect(() => {

@@ -20,6 +20,20 @@ import { DAM_WATER, DAM_WATER_DARK } from "@/lib/dam-map";
  * over its bank, and in the card a tap opens - so nothing rests on the picture alone.
  */
 
+/**
+ * The sea beside a tidal gauge, drawn as a small tide mark at the glass's lower right (A10, 25 Oct
+ * 2026): a gentle swell when the sea lets the river out, a slow one when it is narrowing, and a
+ * flat line under a bar when the low water holds the river in. `none` (no mark) for a gauge the
+ * tide does not reach, and for `unknown`: a missing forecast is not drawn as calm. The word for a
+ * shut sea is written on the map as well, and the card says all of it (safety rule 8).
+ */
+export type SeaLook = "none" | "open" | "narrowing" | "shut";
+export const SEA_LOOKS: SeaLook[] = ["none", "open", "narrowing", "shut"];
+
+export function seaLook(sea: Gauge["sea"]): SeaLook {
+  return sea && sea.state !== "unknown" ? sea.state : "none";
+}
+
 export type GaugeLook = "over" | "near" | "high" | "normal" | "nolevels" | "quiet";
 export type Trend = "up" | "down" | "flat";
 
@@ -90,8 +104,8 @@ export function gaugePaint(dark: boolean): GaugePaint {
     : { water: DAM_WATER, glass: "#ffffff", rim: "#0d4a5e", halo: "#ffffff", muted: "#5f6c74" };
 }
 
-export const gaugeImageName = (look: GaugeLook, trend: Trend, dark: boolean) =>
-  `jaga-gauge-${look}-${trend}-${dark ? "night" : "day"}`;
+export const gaugeImageName = (look: GaugeLook, trend: Trend, dark: boolean, sea: SeaLook = "none") =>
+  `jaga-gauge-${look}-${trend}-${sea}-${dark ? "night" : "day"}`;
 
 /** The picture's size in CSS pixels; drawn at twice that for sharp phones. */
 export const GAUGE_IMAGE_SIZE = 64;
@@ -106,13 +120,18 @@ export const animates = (look: GaugeLook) => look !== "quiet";
  * zoom, for a gauge near or over its bank, so the one that matters is never a picture alone.
  */
 export function gaugeLabels(
-  gauge: Pick<Gauge, "value" | "status">,
-  words: { near: string; over: string },
+  gauge: Pick<Gauge, "value" | "status"> & { sea?: Gauge["sea"] },
+  words: { near: string; over: string; seaShut?: string },
 ): { short: string; long: string } {
   const look = gaugeLook(gauge.status);
-  const state = look === "over" ? words.over : look === "near" ? words.near : "";
+  const river = look === "over" ? words.over : look === "near" ? words.near : "";
+  // Only a shut sea is written on the map; open and narrowing are the picture and the card.
+  const shut = seaLook(gauge.sea) === "shut" ? (words.seaShut ?? "") : "";
   const value = look !== "quiet" && gauge.value !== null ? `${gauge.value.toFixed(2)} m` : "";
-  return { short: state, long: [value, state].filter(Boolean).join(" · ") };
+  return {
+    short: [river, shut].filter(Boolean).join(" · "),
+    long: [value, river, shut].filter(Boolean).join(" · "),
+  };
 }
 
 /**
@@ -126,6 +145,7 @@ export function drawGauge(
   trend: Trend,
   dark: boolean,
   t: number,
+  sea: SeaLook = "none",
 ): void {
   const p = gaugePaint(dark);
   const k = size / GAUGE_IMAGE_SIZE;
@@ -213,6 +233,8 @@ export function drawGauge(
   ctx.stroke();
   ctx.setLineDash([]);
 
+  if (sea !== "none") drawSea(ctx, c, r, k, p, sea, t);
+
   // Rising or falling: a chevron above or below the glass, with the halo behind it.
   if (trend !== "flat") {
     const up = trend === "up";
@@ -237,6 +259,45 @@ export function drawGauge(
   }
 }
 
+/** Draws the tide mark at the glass's lower right: a swell, and a bar over it when the sea is shut. */
+function drawSea(ctx: CanvasRenderingContext2D, c: number, r: number, k: number, p: GaugePaint, sea: SeaLook, t: number) {
+  const x0 = c + r * 0.55;
+  const y0 = c + r * 0.95;
+  const w = 13 * k;
+  const amp = (sea === "open" ? 2.4 : sea === "narrowing" ? 1.4 : 0.4) * k;
+  const speed = sea === "open" ? 1 : sea === "narrowing" ? 0.5 : 0.15;
+  const sway = (t / WAVE_MS) * Math.PI * 2 * speed;
+  const line = (color: string, width: number) => {
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 0.5 * k) {
+      const y = y0 + Math.sin((x / w) * Math.PI * 2 + sway) * amp;
+      if (x === 0) ctx.moveTo(x0 + x, y);
+      else ctx.lineTo(x0 + x, y);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.stroke();
+  };
+  line(p.halo, 5 * k);
+  line(p.water, 2.2 * k);
+  if (sea === "shut") {
+    // The river's way out held shut: a bar across the swell.
+    for (const [color, width] of [
+      [p.halo, 5 * k],
+      [p.rim, 2.2 * k],
+    ] as const) {
+      ctx.beginPath();
+      ctx.moveTo(x0 + w, y0 - 7 * k);
+      ctx.lineTo(x0 + w, y0 + 5 * k);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.stroke();
+    }
+  }
+}
+
 /** Frames a second while moving: smooth enough to read as water, light on a cheap phone. */
 export const GAUGE_FPS = 20;
 
@@ -255,17 +316,23 @@ type Repainter = { triggerRepaint: () => void };
  * A MapLibre style image that redraws itself (MapLibre's "animated image" interface). Still -
  * one frame, never repainting - when the look does not move or the person asked for less motion.
  */
-export function gaugeImage(look: GaugeLook, trend: Trend, dark: boolean, moving: boolean) {
+export function gaugeImage(
+  look: GaugeLook,
+  trend: Trend,
+  dark: boolean,
+  moving: boolean,
+  sea: SeaLook = "none",
+) {
   const size = GAUGE_IMAGE_SIZE * GAUGE_IMAGE_RATIO;
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) return null;
-  const live = moving && animates(look);
+  const live = moving && (animates(look) || sea !== "none");
   const clock = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
   const frame = (t: number) => {
-    drawGauge(ctx, size, look, trend, dark, t);
+    drawGauge(ctx, size, look, trend, dark, t, sea);
     return new Uint8Array(ctx.getImageData(0, 0, size, size).data.buffer);
   };
   let map: Repainter | null = null;

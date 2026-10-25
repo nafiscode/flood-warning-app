@@ -1,4 +1,4 @@
-import { toGauge, type GaugeData } from "@/lib/map-data";
+import { toGauge, withSea, type GaugeData } from "@/lib/map-data";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/public";
 
@@ -9,10 +9,15 @@ import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/publi
  */
 export async function GET() {
   if (!supabaseConfigured()) return unavailable();
-  const { data, error } = await createPublicClient().rpc("station_status");
+  const supabase = createPublicClient();
+  const [{ data, error }, sea] = await Promise.all([
+    supabase.rpc("station_status"),
+    supabase.rpc("gauge_sea_gate"),
+  ]);
   if (error) return unavailable();
+  // The sea beside the river is extra: if it cannot be read the gauges still go out without it.
   const body: GaugeData = {
-    gauges: ((data ?? []) as Record<string, unknown>[]).map(toGauge),
+    gauges: withSea(((data ?? []) as Record<string, unknown>[]).map(toGauge), sea.error ? null : sea.data),
   };
   return Response.json(body, { headers: { "Cache-Control": CACHE_60S } });
 }

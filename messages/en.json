@@ -649,7 +649,16 @@
       "updated": "Newest reading {time} · checked again every 5 minutes",
       "legendTrend": "Chevron: risen or fallen in the last 3 hours",
       "legendFull": "The fuller the glass, the closer the river is to its bank",
-      "notAlertShort": "A measurement, not an alert."
+      "notAlertShort": "A measurement, not an alert.",
+      "sea": {
+        "open": "Sea: low water is normal, so the river can drain",
+        "narrowing": "Sea: low water is not dropping as far as usual, so the river may drain more slowly",
+        "shut": "Sea: the water has stayed high since {from}, so river water may be slow to leave",
+        "unknown": "Sea: no recent sea-level forecast, so this cannot be said",
+        "at": "Sea forecast issued {time}",
+        "caveat": "Compared with this river mouth's own record. Not a height and not an alert"
+      },
+      "seaShort": "Sea not draining"
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
     "mine": {
@@ -4388,6 +4397,10 @@
     "sea": {
       "lead": "The sea, from wave and weather models",
       "text": "Seven points off the coast from Songkhla to Tak Bai, read from Open-Meteo's wave and weather models every half hour. Waves from 1 m, wind from 30 km/h or thunderstorms count as rough; waves from 2 m, wind from 40 km/h or gusts from 60 km/h mean small boats should stay in port, in TMD's own words. It never says the sea is safe, and tide heights are not shown because the model differs from the tide gauges by about 0.7 m."
+    },
+    "gate": {
+      "lead": "The sea beside the river",
+      "text": "At gauges the tide reaches, Jaga compares the forecast low water (Open-Meteo) with that river mouth's own flood-season record. If each day's lowest water stays above the record's 90th percentile for two days running, the card says river water may be slow to leave. No sea height is shown, because the model sits about 0.7 m off the real tide gauge, and it is never an alert."
     },
     "more": "The whole method, layer by layer: how Jaga works",
     "names": {

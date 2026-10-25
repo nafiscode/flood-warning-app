@@ -1585,6 +1585,19 @@ export function DashboardView(props: DashboardViewProps) {
         {gauge.observedAt && (
           <p className={hint}>{t("gauge.at", { time: time(gauge.observedAt) })}</p>
         )}
+        {gauge.sea && (
+          <div data-gauge-sea={gauge.sea.state}>
+            <p className="font-medium">
+              {t(`gauge.sea.${gauge.sea.state}`, {
+                from: gauge.sea.shutFrom ? time(gauge.sea.shutFrom) : "",
+              })}
+            </p>
+            {gauge.sea.issuedAt && (
+              <p className={hint}>{t("gauge.sea.at", { time: time(gauge.sea.issuedAt) })}</p>
+            )}
+            <p className={hint}>{t("gauge.sea.caveat")}</p>
+          </div>
+        )}
         <p className={hint}>{t("gauge.notAlert")}</p>
       </section>
     ) : null;
@@ -2481,7 +2494,11 @@ export function DashboardView(props: DashboardViewProps) {
                       zoomCtrl: t("phone.zoomCtrl"),
                       zoomCmd: t("phone.zoomCmd"),
                     }}
-                    gaugeWords={{ near: t("gauge.nearShort"), over: t("gauge.overShort") }}
+                    gaugeWords={{
+                      near: t("gauge.nearShort"),
+                      over: t("gauge.overShort"),
+                      seaShut: t("gauge.seaShort"),
+                    }}
                     peek={renderPeek}
                     mine={mine}
                     showMine={showMine}

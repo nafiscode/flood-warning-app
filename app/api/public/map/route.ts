@@ -1,4 +1,4 @@
-import { toGauge, type MapData } from "@/lib/map-data";
+import { toGauge, withSea, type MapData } from "@/lib/map-data";
 import { toSafePlace } from "@/lib/places";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/public";
@@ -41,10 +41,11 @@ export async function GET() {
     }
     return { data: rows, error: null };
   };
-  const [places, reports, gauges] = await Promise.all([
+  const [places, reports, gauges, sea] = await Promise.all([
     allPlaces(),
     supabase.rpc("report_hex_bins"),
     supabase.rpc("station_status"),
+    supabase.rpc("gauge_sea_gate"),
   ]);
   if (places.error || reports.error || gauges.error) return unavailable();
   const body: MapData = {
@@ -57,7 +58,10 @@ export async function GET() {
       deepest: (row.deepest as string | null) ?? null,
       latest: String(row.latest),
     })),
-    gauges: ((gauges.data ?? []) as Record<string, unknown>[]).map(toGauge),
+    gauges: withSea(
+      ((gauges.data ?? []) as Record<string, unknown>[]).map(toGauge),
+      sea.error ? null : sea.data,
+    ),
   };
   return Response.json(body, { headers: { "Cache-Control": CACHE_60S } });
 }

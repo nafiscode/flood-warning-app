@@ -94,3 +94,34 @@ describe("the coastal gate reference", () => {
     expect(row?.zone_id).toBeNull();
   });
 });
+
+describe("the public sea word per gauge (gauge_sea_gate)", () => {
+  it("is open to everyone, and hands out a word, never a height or a percentile", async () => {
+    await as(db, "anon");
+    const out = await db.query("select * from public.gauge_sea_gate() limit 0");
+    expect(out.fields.map((f) => f.name).sort()).toEqual(
+      ["code", "issued_at", "shut_days", "shut_from", "state"].sort(),
+    );
+  });
+
+  it("says 'unknown' for a tidal gauge with no sea forecast, never 'open'", async () => {
+    await asOwner(db);
+    await db.query(
+      `update public.stations set zone_id = $1 where id = (select id from public.stations order by id limit 1)`,
+      [ZONE],
+    );
+    await db.query(
+      `insert into public.gauge_recession (station_id, method)
+       select id, '{"flags": {"tidal": true}}'::jsonb from public.stations where zone_id = $1
+       on conflict (station_id) do update set method = excluded.method`,
+      [ZONE],
+    );
+    await as(db, "anon");
+    const got = await rows<{ state: string }>(
+      db,
+      "select g.state from public.gauge_sea_gate() g join public.stations s on s.code = g.code where s.zone_id = $1",
+      [ZONE],
+    );
+    for (const r of got) expect(r.state).toBe("unknown");
+  });
+});
