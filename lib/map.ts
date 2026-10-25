@@ -216,8 +216,11 @@ const GROUND_DARK = "#0f1c26";
  */
 export const COVERAGE_FILL_LAYER = "jaga-coverage-fill";
 export const COVERAGE_MINE_LAYER = "jaga-coverage-mine";
-export const COVERAGE_COVERED_OPACITY = 0.2;
-export const COVERAGE_GAP_OPACITY = 0.42;
+export const COVERAGE_COVERED_OPACITY = 0.55;
+/** Only the tambons with a registered team are highlighted; a gap is left plain, not filled. */
+export const COVERAGE_GAP_OPACITY = 0;
+/** Violet: easy to spot on the map and not one of the alert or brand status colours. */
+export const COVERAGE_COLOR = "#8e2de2";
 
 /**
  * The tambon outlines. On a street map, slate (pale at night) and quiet. On a photograph the slate
@@ -730,7 +733,14 @@ export function playIntro(map: MapLibreMap): void {
   const dress = () => {
     try {
       if (!map.getSource(INTRO_SOURCE)) {
-        map.addSource(INTRO_SOURCE, { type: "raster", tileSize: 256, ...introTiles(night) });
+        // Clamp to Web Mercator's own range: nothing is drawn past ~85 degrees, so the imagery is
+        // never stretched up to the poles (it was pulled into points there - "a lemon" - the owner).
+        map.addSource(INTRO_SOURCE, {
+          type: "raster",
+          tileSize: 256,
+          bounds: [-180, -85.0511, 180, 85.0511],
+          ...introTiles(night),
+        });
       }
       if (!map.getLayer(INTRO_LAYER)) {
         map.addLayer({
@@ -775,13 +785,18 @@ export function playIntro(map: MapLibreMap): void {
   dress();
   map.setMaxBounds(null);
   map.setMinZoom(0);
-  // The whole globe sits in the view with a little space around it (about 172 px across at zoom 0,
-  // doubling with each step), centred on Jaga's part of the world so the flight descends into it.
-  const span = Math.min(map.getCanvas().clientWidth, map.getCanvas().clientHeight) || 600;
-  const fit = Math.log2((0.72 * span) / 172);
+  /*
+   * A large round Earth, centred on Jaga's part of the world, with its two poles just off the top
+   * and bottom of the view. Web Mercator imagery stops near 85 degrees, and some machines draw the
+   * last sliver to the pole as a stretched point ("a lemon", the owner, 25 Oct 2026) - so the poles
+   * are kept off screen, where there is nothing to misdraw, while the globe still curves away on
+   * the left and right. About 172 px across at zoom 0, doubling with each step.
+   */
+  const height = map.getCanvas().clientHeight || 600;
+  const fit = Math.log2((1.35 * height) / 172);
   map.jumpTo({
-    center: [center.lng - 18, center.lat + 4],
-    zoom: Math.min(2.2, Math.max(0.3, fit)),
+    center: [center.lng, center.lat],
+    zoom: Math.max(1.8, fit),
     bearing: 0,
     pitch: 0,
   });
