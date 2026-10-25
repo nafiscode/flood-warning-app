@@ -635,7 +635,7 @@ function introTiles(night: boolean): { tiles: string[]; maxzoom: number; attribu
       tiles: [
         `${GIBS}/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`,
       ],
-      maxzoom: 3,
+      maxzoom: 5,
       attribution: "Night lights: NASA Earth Observatory / NOAA / GIBS",
     };
   }
@@ -644,7 +644,7 @@ function introTiles(night: boolean): { tiles: string[]; maxzoom: number; attribu
     tiles: [
       `${GIBS}/BlueMarble_NextGeneration/default/2004-08-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg`,
     ],
-    maxzoom: 3,
+    maxzoom: 5,
     attribution: "Earth: NASA Earth Observatory / Blue Marble / GIBS",
   };
 }
@@ -710,8 +710,10 @@ export function playIntro(map: MapLibreMap): void {
       if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "visible");
     hidden.clear();
   };
+  // Hold the basemap back until the globe has flattened into the ordinary map, so it is never seen
+  // wrapped round a sphere. By then the Earth picture, still solid, covers it; the picture then fades.
   const revealAt = () => {
-    if (map.getZoom() >= goal - 2) reveal();
+    if (map.getZoom() >= goal - 0.8) reveal();
   };
   const dress = () => {
     try {
@@ -725,7 +727,7 @@ export function playIntro(map: MapLibreMap): void {
           source: INTRO_SOURCE,
           paint: {
             "raster-fade-duration": 300,
-            "raster-opacity": ["interpolate", ["linear"], ["zoom"], goal - 1.4, 1, goal - 0.3, 0],
+            "raster-opacity": ["interpolate", ["linear"], ["zoom"], goal - 0.7, 1, goal - 0.15, 0],
           },
         });
       }
@@ -747,9 +749,9 @@ export function playIntro(map: MapLibreMap): void {
           ["zoom"],
           0,
           1,
-          goal - 2.5,
+          goal - 1.5,
           1,
-          goal - 0.6,
+          goal - 0.8,
           0,
         ],
       });
@@ -758,15 +760,7 @@ export function playIntro(map: MapLibreMap): void {
     }
     // A globe up high that flattens into the ordinary map before the end of the descent.
     map.setProjection({
-      type: [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        0,
-        "vertical-perspective",
-        goal - 0.4,
-        "mercator",
-      ],
+      type: ["interpolate", ["linear"], ["zoom"], 0, "vertical-perspective", goal - 1, "mercator"],
     } as never);
     hideBasemap();
   };
