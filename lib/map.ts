@@ -746,29 +746,16 @@ export function playIntro(map: MapLibreMap): void {
     } catch {
       // No Earth picture this time; the flight still plays over the ordinary map.
     }
-    // A thin blue halo round the globe, gone by the time the map is flat.
+    /*
+     * No atmosphere halo. The Earth picture is Web Mercator and stops near 85 degrees, so it is a
+     * touch smaller than the full sphere the halo would ring; that left a faint second, smaller
+     * globe inside the glow (the owner, 25 Oct 2026). Turned off, there is just the one clean Earth
+     * on black.
+     */
     try {
-      map.setSky({
-        "sky-color": night ? "#0b1d3a" : "#6aa8ff",
-        "horizon-color": night ? "#1c3f7a" : "#bfe0ff",
-        "fog-color": night ? "#0b1d3a" : "#9cc8ff",
-        "sky-horizon-blend": 0.6,
-        "horizon-fog-blend": 0.5,
-        "fog-ground-blend": 0.5,
-        "atmosphere-blend": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          0,
-          1,
-          goal - 1.5,
-          1,
-          goal - 0.8,
-          0,
-        ],
-      });
+      map.setSky({ "atmosphere-blend": 0 });
     } catch {
-      // No halo; the globe is still drawn.
+      // Nothing to turn off.
     }
     // A globe up high that flattens into the ordinary map before the end of the descent.
     map.setProjection({
@@ -788,20 +775,13 @@ export function playIntro(map: MapLibreMap): void {
   dress();
   map.setMaxBounds(null);
   map.setMinZoom(0);
-  /*
-   * The globe starts a little larger than the view, so its top and bottom - the two poles - sit
-   * just off screen. Web Mercator tiles stop near 85 degrees, and different machines draw the
-   * last sliver to the pole differently: some flatten it, some stretch it into a point, so the
-   * disc looked cut or "like a candy wrapper" at the ends (the owner, 25 Oct 2026). Kept off
-   * screen, there is nothing there to misdraw: what shows is a clean curved Earth, filling the
-   * frame, that the flight then descends into. The globe is about 172 px across at zoom 0 and
-   * doubles with each step.
-   */
-  const height = map.getCanvas().clientHeight || 600;
-  const fit = Math.log2((1.4 * height) / 172);
+  // The whole globe sits in the view with a little space around it (about 172 px across at zoom 0,
+  // doubling with each step), centred on Jaga's part of the world so the flight descends into it.
+  const span = Math.min(map.getCanvas().clientWidth, map.getCanvas().clientHeight) || 600;
+  const fit = Math.log2((0.72 * span) / 172);
   map.jumpTo({
-    center: [center.lng, center.lat],
-    zoom: Math.max(1.8, fit),
+    center: [center.lng - 18, center.lat + 4],
+    zoom: Math.min(2.2, Math.max(0.3, fit)),
     bearing: 0,
     pitch: 0,
   });
