@@ -250,6 +250,9 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     nav: all.nav!,
     weather: { chip: weather.chip, codes: weather.codes },
     notices: all.notices!,
+    // The Share Jaga button a "share_app" announcement shows in the bell (25 Oct): its words,
+    // the one group of "install", or next-intl prints "install.share.button" there (owner saw it).
+    install: { share: (all.install as Messages).share! },
     // The level names for the badge, and the drill mark's three lines: the bell is where a sent
     // drill is read, and without them next-intl prints the key path (the owner saw it, 21 Oct).
     alert: { level: (all.alert as Messages).level!, drill: (all.alert as Messages).drill! },
