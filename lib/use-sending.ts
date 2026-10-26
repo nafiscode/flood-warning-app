@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { rememberSent } from "@/lib/feedback-store";
 import { flush, type Delivered, pending, type Queued, takeDelivered } from "@/lib/queue";
 import { rememberCase, rememberedCases, type SentSos } from "@/lib/sos";
 
@@ -90,9 +91,22 @@ export function useBattery(): number | null {
   return level;
 }
 
-/** What a delivered SOS means for the phone's memory of its cases. */
+/**
+ * What a delivered item means for the phone's memory: an SOS becomes a case it can follow, and a
+ * comment sent offline hands back the key that is the only way to take it down again (A15).
+ */
 function remember(delivered: Delivered[]): void {
   for (const item of delivered) {
+    if (item.kind === "feedback") {
+      const result = item.result as { id?: string | null; key?: string | null };
+      // A key is issued only for an anonymous comment offered for the page, so its presence is
+      // what says this one is worth remembering. A signed-in sender reads their own back from
+      // their account instead, so nothing of theirs needs keeping on the phone.
+      if (typeof result?.id === "string" && typeof result.key === "string") {
+        rememberSent({ id: result.id, key: result.key, publicOk: true });
+      }
+      continue;
+    }
     if (item.kind !== "sos") continue;
     const result = item.result as unknown as SentSos;
     if (!result?.id) continue;

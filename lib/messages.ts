@@ -149,9 +149,13 @@ export function mapMessages(messages: AbstractIntlMessages): AbstractIntlMessage
   };
 }
 
-/** The owner's team page and the join page (24 Oct 2026): their own words, and nothing else. */
+/**
+ * The owner's team page and the join page (24 Oct 2026): their own words, and the two lines of
+ * the quiet feedback ask that follows a team's finished case (A15).
+ */
 export function unitTeamMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
-  return pick(messages, ["unitTeam"]);
+  const all = messages as Messages;
+  return { ...pick(messages, ["unitTeam"]), feedback: { ask: (all.feedback as Messages).ask! } };
 }
 
 /**
@@ -224,6 +228,15 @@ export function authorityMessages(messages: AbstractIntlMessages): AbstractIntlM
   };
 }
 
+/**
+ * The feedback page (A15, spec 17): its own words only. The form, the withdrawal panel and the
+ * quiet ask all read from one namespace, so a chip's words cannot drift between the form that
+ * offers it and the figures that count it.
+ */
+export function feedbackMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  return pick(messages, ["feedback"]);
+}
+
 /** The impact dashboard (spec 16): its own text only. */
 export function impactMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   return pick(messages, ["impact"]);
@@ -269,6 +282,9 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     },
     // And the record of help (24 Oct): the page's own words travel with the page, this is its link.
     impactPublic: { link: (all.impactPublic as Messages).link! },
+    // "Rate Jaga" at the end of each page, and the quiet ask's one line (A15): two groups, not
+    // the whole namespace - the form's words travel with /feedback itself.
+    feedback: { link: (all.feedback as Messages).link!, ask: (all.feedback as Messages).ask! },
   };
 }
 

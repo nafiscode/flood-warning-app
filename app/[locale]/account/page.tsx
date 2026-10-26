@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { RateLink } from "@/components/feedback/RateLink";
 import { InstallCard } from "@/components/InstallCard";
 import { Journey } from "@/components/journey/Journey";
 import { ShareApp } from "@/components/ShareApp";
@@ -229,6 +230,9 @@ export default async function Account({ params, searchParams }: PageProps<"/[loc
         <MapIcon size={22} />
         {tCapabilities("link")}
       </Link>
+
+      {/* "Rate Jaga / tell us something", always on this page (A15, spec 17). */}
+      <RateLink where="account" />
 
       {isAdminRole(session.role) && (
         <Link href="/admin" className={buttonSecondary}>

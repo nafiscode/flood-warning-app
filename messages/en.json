@@ -1728,7 +1728,8 @@
       },
       "usage": "App usage",
       "back": "Back to the admin home",
-      "members": "Admin team"
+      "members": "Admin team",
+      "feedback": "Feedback"
     },
     "role": {
       "admin": "Admin",
@@ -2237,7 +2238,10 @@
       },
       "feedFailed": "The dam's figures could not be read; last tried at {time}. What is shown may not be the newest.",
       "send": "Send the release notice",
-      "noPath": "No channel below this reservoir is in the map data, so Jaga cannot say where released water would go. The reservoir’s own figures still stand."
+      "noPath": "No channel below this reservoir is in the map data, so Jaga cannot say where released water would go. The reservoir’s own figures still stand.",
+      "allQuiet": "All {count} reservoirs are within their normal level, with nothing to review",
+      "othersQuiet": "{count} other reservoirs are within their normal level",
+      "seeReservoirs": "See every reservoir and its thresholds"
     },
     "unconfirmed": {
       "title": "Rescues waiting for confirmation",
@@ -4019,6 +4023,57 @@
     "pushClear": {
       "title": "The water is back down at {zone}",
       "body": "A “safe to return” draft is waiting. Send it, change it or dismiss it; if nobody acts it is sent by itself at {time}."
+    },
+    "reservoirs": {
+      "title": "Reservoirs and dams",
+      "intro": "Each reservoir's thresholds, and the switch for whether Jaga may draft an alert by itself — the same panel the river gauges have. Every figure is a share of capacity.",
+      "armedCount": "The automatic alarm is armed for {armed} of {total} reservoirs",
+      "operator": "Operated by {operator}",
+      "capacity": "Capacity {mcm} Mm³",
+      "feed": {
+        "hourly": "Reported hourly",
+        "daily": "Reported once a day"
+      },
+      "now": "Storage {percent}% of capacity ({mcm} Mm³)",
+      "noFigure": "The newest reading carries no share of capacity",
+      "noReading": "No reading from this reservoir yet",
+      "observed": "Read at",
+      "stale": "not updated",
+      "thresholds": "Thresholds, as a share of capacity",
+      "nearFull": "Watchful (%)",
+      "full": "Draft an alert (%)",
+      "asMcm": "= {mcm} Mm³",
+      "off": "this threshold is off",
+      "thresholdsHint": "Leave a box empty to switch that threshold off; the reservoir is still graded on its release, its inflow and how fast it is filling. The draft-an-alert threshold applies when storage reaches that share and is still rising.",
+      "save": "Save thresholds",
+      "saved": "The reservoir's thresholds are saved",
+      "error": "Could not save. Each figure must be between 1 and 150, and Watchful cannot be higher than the share that drafts an alert.",
+      "auto": "Let Jaga draft an alert by itself for this reservoir",
+      "autoHint": "At the threshold, and still filling, a draft goes to every admin's phone. If nobody sends or dismisses it within the grace time, Jaga publishes it itself, marked as issued without review. The level is Warning only — nothing here ever tells an area to evacuate on its own.",
+      "autoSince": "Armed by {who} on",
+      "autoBySeed": "the initial setting",
+      "saveAuto": "Save the switch",
+      "autoSaved": "The automatic alarm switch is saved",
+      "autoError": "Could not save the switch",
+      "zone": "Its zone would warn {count} tambons",
+      "gap": {
+        "noThreshold": "The switch is on but no threshold is set, so there is nothing that could draft an alert.",
+        "noZone": "No tambons are in this reservoir's zone yet, so there is nobody to send a draft to.",
+        "noReading": "No reading from this reservoir yet, so there is nothing to compare against."
+      },
+      "reason": {
+        "spilling": "Water is discharging over the spillway",
+        "above_turbines": "Total outflow exceeds turbine discharge capacity",
+        "release_high": "The release is high for the size of this reservoir",
+        "above_normal_high": "Storage is above the capacity at normal high water level",
+        "near_full": "The reservoir is close to full",
+        "full_and_rising": "Nearly full and still filling",
+        "inflow_high": "Inflow to the reservoir is high",
+        "rising_fast": "Reservoir storage is rising sharply"
+      }
+    },
+    "operators": {
+      "rid": "Royal Irrigation Department (RID)"
     }
   },
   "lineQuota": {
@@ -6006,6 +6061,244 @@
         "title": "Record",
         "body": "Saves the rescue your team did without an SOS. An admin may check it."
       }
+    }
+  },
+  "feedback": {
+    "link": "Rate Jaga",
+    "title": "Rate Jaga, and say what should be better",
+    "lead": "Jaga is built for the people who live with the floods. Tell us what works and what does not. Nothing here is required, and you do not need an account.",
+    "notFlood": "This page is about the app. It is not flood information and it carries no alert.",
+    "emergency": "In an emergency press SOS or call 1669.",
+    "home": "Home",
+    "words": {
+      "1": "Bad",
+      "2": "Not good",
+      "3": "All right",
+      "4": "Good",
+      "5": "Very good"
+    },
+    "form": {
+      "ratingTitle": "How is Jaga for you?",
+      "ratingHint": "Tap a face. You can skip it.",
+      "ratingChosen": "You chose: {word}",
+      "likedTitle": "What do you love about Jaga?",
+      "likedHint": "Choose as many as you like.",
+      "likedNote": "Anything else you love",
+      "likedNotePlaceholder": "In your own words",
+      "improveTitle": "What should be better?",
+      "improveHint": "Choose as many as you like. We would rather hear it than not.",
+      "improveNote": "Anything else that should be better",
+      "improveNotePlaceholder": "In your own words",
+      "beforeTitle": "Before you send",
+      "contactOk": "You may contact me about this",
+      "contactHint": "Used only to answer you about this, and deleted when the item is closed.",
+      "contactLabel": "Phone, LINE id or email",
+      "publicOk": "You may show this on Jaga's feedback page",
+      "publicHint": "An admin reads it first. Only your words and the name you choose are shown, nothing else about you.",
+      "publicNeedsWords": "Write a line above, and you can ask for it to be shown on this page.",
+      "displayName": "Name to show",
+      "displayNameHint": "Leave it empty to stay anonymous.",
+      "anonymous": "Anonymous",
+      "send": "Send",
+      "sending": "Sending…",
+      "nothing": "Nothing to send yet. Tap a face, choose something, or write a line.",
+      "sentTitle": "Thank you",
+      "sentBody": "It has arrived. An admin reads everything that comes in.",
+      "sentPublic": "You asked for your words to be shown on this page. An admin reads them first; you can take them down at any time.",
+      "limitedTitle": "You have already sent feedback today",
+      "limitedBody": "Thank you. Come back tomorrow if there is more to say.",
+      "queuedTitle": "Saved on this device",
+      "queuedBody": "There is no connection right now. It is sent by itself once there is one.",
+      "failed": "It could not be sent. Try again in a moment.",
+      "another": "Send something else"
+    },
+    "chips": {
+      "liked": {
+        "warns_in_time": "It warns me in time",
+        "asking_is_easy": "Asking for help is easy",
+        "risk_map": "The flood-risk map",
+        "safe_places": "Safe places and routes",
+        "river_levels": "Live river levels",
+        "bad_signal": "It works on a bad signal",
+        "hotlines": "The hotlines are easy to find",
+        "easy_language": "Easy language",
+        "no_signup": "No sign-up needed",
+        "other": "Something else"
+      },
+      "improve": {
+        "late_warning": "Warned too late",
+        "too_many_warnings": "Warned too often",
+        "area_not_covered": "It does not cover my area",
+        "no_team_came": "No team picked it up",
+        "slow_to_open": "The app is slow to open",
+        "map_hard_to_read": "The map is hard to read",
+        "malay_incomplete": "The Malay is incomplete",
+        "safe_place_wrong": "The safe-place details are wrong",
+        "no_notifications": "The notifications do not arrive",
+        "hard_for_elders": "Hard for older people",
+        "other": "Something else"
+      }
+    },
+    "figures": {
+      "title": "Jaga's own figures",
+      "lead": "The last 12 months, the unflattering numbers with the rest.",
+      "notEnough": "{count, plural, =1 {One more answer} other {# more answers}} and the figures for this period appear here. Under {min} answers a number would say more than it knows.",
+      "answers": "{count, plural, =1 {# answer} other {# answers}}",
+      "average": "Average rating",
+      "outOf": "out of 5",
+      "monthsTitle": "By month",
+      "monthShort": "Too few answers",
+      "likedTitle": "What people say they love",
+      "improveTitle": "What people say should be better",
+      "improveLead": "How many people said it, and what was done about it.",
+      "doneNothing": "Nothing has been done about this yet.",
+      "changeRef": "Change: {ref}",
+      "people": "{count, plural, =1 {# person} other {# people}}"
+    },
+    "comments": {
+      "title": "What people wrote",
+      "notFlood": "These are people's opinions of the app, not flood information.",
+      "moderated": "Every comment here was read by an admin before it was shown.",
+      "none": "No comments have been shown here yet.",
+      "anonymous": "Anonymous",
+      "likedHead": "What they love",
+      "improveHead": "What should be better"
+    },
+    "mine": {
+      "title": "What you sent from this device",
+      "kept": "This device remembers it, so you can take it down without an account.",
+      "status": {
+        "pending": "Waiting for an admin to read it. It is not on this page yet.",
+        "approved": "Shown on this page.",
+        "refused": "An admin decided not to show it on this page. It stays in the record and still counts.",
+        "not_requested": "Not asked to be shown on this page."
+      },
+      "withdraw": "Take it down",
+      "withdrawing": "Taking it down…",
+      "withdrawn": "It is gone from this page.",
+      "withdrawFailed": "It could not be taken down. Try again in a moment."
+    },
+    "ask": {
+      "line": "Is Jaga working for you?",
+      "open": "Tell us",
+      "dismiss": "Not now"
+    }
+  },
+  "adminFeedback": {
+    "title": "Ratings and feedback",
+    "intro": "Everything people sent, with what was done about it. Free text and contacts are admins-only. A comment reaches the public page only when you approve it.",
+    "none": "Nothing here.",
+    "count": "{count, plural, =1 {# item} other {# items}}",
+    "filters": {
+      "title": "Show",
+      "all": "All",
+      "status": "Status",
+      "public": "For the public page",
+      "rating": "Rating",
+      "locale": "Language",
+      "screen": "Screen",
+      "role": "Role",
+      "days": "Last {days} days",
+      "apply": "Show"
+    },
+    "status": {
+      "new": "New",
+      "read": "Read",
+      "planned": "Planned",
+      "done": "Done",
+      "wont_do": "Won't do",
+      "hidden": "Hidden"
+    },
+    "publicStatus": {
+      "not_requested": "Not offered",
+      "pending": "Waiting for you",
+      "approved": "On the page",
+      "refused": "Refused"
+    },
+    "row": {
+      "rating": "Rating {rating} of 5",
+      "noRating": "No rating",
+      "liked": "Loves",
+      "improve": "Should be better",
+      "message": "Message",
+      "screen": "Screen",
+      "locale": "Language",
+      "device": "Device",
+      "version": "Version",
+      "district": "District",
+      "role": "Role",
+      "moment": "Asked",
+      "case": "Case",
+      "signedIn": "Signed in",
+      "anonymous": "Anonymous",
+      "anonymised": "Anonymised on {date}",
+      "displayName": "Name to show",
+      "noName": "anonymous"
+    },
+    "moments": {
+      "menu": "Opened the page",
+      "closed_request": "After a closed request",
+      "ended_report": "After an ended report",
+      "finished_case": "After a finished case",
+      "line": "In LINE"
+    },
+    "contact": {
+      "has": "This person agreed to be contacted",
+      "show": "Show the contact",
+      "logged": "Every reveal is written to the access log.",
+      "none": "No contact was left.",
+      "cleared": "The contact was cleared when the item was closed."
+    },
+    "triage": {
+      "title": "Triage",
+      "note": "Note",
+      "changeRef": "Decision entry or commit",
+      "changeRefHint": "So a change can be traced back to the people who asked for it.",
+      "save": "Save",
+      "saved": "Saved.",
+      "closes": "Done, won't do and hidden clear the contact."
+    },
+    "publish": {
+      "title": "The public page",
+      "notOffered": "This sender did not ask for it to be shown, so it cannot be approved.",
+      "approve": "Show it on the page",
+      "refuse": "Do not show it",
+      "hide": "Take it off the page",
+      "rules": "Refuse anything that asserts a fact about flooding, water levels or whether an area is safe, even if it is true; and anything carrying a phone number, an address, a vehicle plate, a named person or one SOS case. Those stay admins-only. Approve a comment about the app: what worked, what did not, what is missing."
+    },
+    "trends": {
+      "title": "Trends",
+      "answers": "Answers",
+      "average": "Average rating",
+      "byMonth": "By month",
+      "byScreen": "By screen, worst first",
+      "byLocale": "By language",
+      "byRole": "By role",
+      "liked": "What people love",
+      "improve": "What should be better",
+      "waitingPublic": "{count, plural, =1 {# comment waiting for you} other {# comments waiting for you}}",
+      "noFigure": "—",
+      "months": "Last {months} months"
+    },
+    "outcomes": {
+      "title": "What was done about it",
+      "intro": "Written beside the count on the public page. Thai is shown where a language is missing.",
+      "code": "Weak point",
+      "th": "Thai",
+      "ms": "Malay",
+      "en": "English",
+      "changeRef": "Decision entry or commit",
+      "save": "Save",
+      "saved": "Saved.",
+      "none": "Nothing written yet."
+    },
+    "export": {
+      "title": "Export",
+      "csv": "Download CSV",
+      "hint": "Without contacts, device codes, accounts or case ids."
+    },
+    "error": {
+      "save": "It could not be saved. Try again."
     }
   }
 }

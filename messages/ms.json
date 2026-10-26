@@ -1728,7 +1728,8 @@
       },
       "usage": "Penggunaan aplikasi",
       "back": "Kembali ke utama pentadbir",
-      "members": "Pasukan pentadbir"
+      "members": "Pasukan pentadbir",
+      "feedback": "Nilai dan pendapat"
     },
     "role": {
       "admin": "Pentadbir",
@@ -2237,7 +2238,10 @@
       },
       "feedFailed": "Gagal membaca data empangan; cubaan terakhir pada {time}. Angka mungkin bukan yang terbaharu.",
       "send": "Hantar notis pelepasan",
-      "noPath": "Tiada saluran di bawah empangan ini dalam data peta, jadi Jaga tidak dapat menunjukkan ke mana air yang dilepaskan pergi. Angka empangan itu sendiri tetap sah."
+      "noPath": "Tiada saluran di bawah empangan ini dalam data peta, jadi Jaga tidak dapat menunjukkan ke mana air yang dilepaskan pergi. Angka empangan itu sendiri tetap sah.",
+      "allQuiet": "Kesemua {count} takungan berada dalam paras biasa dan tiada apa untuk disemak",
+      "othersQuiet": "{count} takungan lagi berada dalam paras biasa",
+      "seeReservoirs": "Lihat semua takungan dan ambangnya"
     },
     "unconfirmed": {
       "title": "Penyelamatan yang menunggu pengesahan",
@@ -4019,6 +4023,57 @@
     "pushClear": {
       "title": "Air sudah turun di {zone}",
       "body": "Draf “boleh balik rumah” sedang menunggu. Hantar, ubah atau batalkan; jika tiada siapa bertindak ia dihantar sendiri pada {time}."
+    },
+    "reservoirs": {
+      "title": "Takungan dan empangan",
+      "intro": "Ambang bagi setiap takungan, dan suis sama ada sistem boleh menyediakan draf amaran dengan sendiri — sama seperti tolok sungai. Semua angka ialah bahagian daripada kapasiti.",
+      "armedCount": "Amaran automatik dibuka untuk {armed} daripada {total} takungan",
+      "operator": "Dikendalikan oleh {operator}",
+      "capacity": "Kapasiti {mcm} juta m³",
+      "feed": {
+        "hourly": "Dilaporkan setiap jam",
+        "daily": "Dilaporkan sekali sehari"
+      },
+      "now": "Simpanan {percent}% daripada kapasiti ({mcm} juta m³)",
+      "noFigure": "Tiada bahagian kapasiti dalam bacaan terbaru",
+      "noReading": "Tiada bacaan daripada takungan ini",
+      "observed": "Dibaca pada",
+      "stale": "bacaan belum dikemas kini",
+      "thresholds": "Ambang sebagai bahagian kapasiti",
+      "nearFull": "Berjaga-jaga (%)",
+      "full": "Sediakan draf (%)",
+      "asMcm": "= {mcm} juta m³",
+      "off": "Ambang ini dimatikan",
+      "thresholdsHint": "Biarkan kosong untuk mematikan ambang itu; takungan masih dinilai pada pelepasan, alir masuk dan kadar kenaikan. Ambang sediakan draf digunakan apabila simpanan mencapai bahagian itu dan masih bertambah.",
+      "save": "Simpan ambang",
+      "saved": "Ambang takungan disimpan",
+      "error": "Tidak dapat disimpan. Pastikan angka antara 1 dan 150, dan ambang berjaga-jaga tidak lebih tinggi daripada ambang draf.",
+      "auto": "Benarkan draf amaran automatik bagi takungan ini",
+      "autoHint": "Apabila ambang dicapai dan air masih bertambah, draf dihantar ke telefon setiap pentadbir. Jika tiada siapa menghantar atau membatalkannya dalam masa yang diberi, sistem menerbitkannya sendiri, ditanda belum disemak. Tahapnya ialah Amaran sahaja — tiada arahan berpindah secara automatik.",
+      "autoSince": "Dibuka oleh {who} pada",
+      "autoBySeed": "tetapan awal",
+      "saveAuto": "Simpan suis",
+      "autoSaved": "Suis amaran automatik disimpan",
+      "autoError": "Suis tidak dapat disimpan",
+      "zone": "Kawasan yang akan menerima amaran: {count} mukim",
+      "gap": {
+        "noThreshold": "Suis dibuka tetapi tiada ambang ditetapkan, jadi tiada apa yang boleh menyediakan draf.",
+        "noZone": "Belum ada mukim dalam kawasan takungan ini, jadi tiada siapa untuk dihantar amaran.",
+        "noReading": "Tiada bacaan daripada takungan ini, jadi tiada apa untuk dibandingkan."
+      },
+      "reason": {
+        "spilling": "Air dilepaskan melalui alur limpah",
+        "above_turbines": "Jumlah pelepasan melebihi keupayaan lepasan turbin",
+        "release_high": "Kadar pelepasan tinggi berbanding kapasiti takungan",
+        "above_normal_high": "Isipadu simpanan melebihi kapasiti pada paras simpanan penuh biasa",
+        "near_full": "Takungan hampir penuh",
+        "full_and_rising": "Hampir penuh dan masih bertambah",
+        "inflow_high": "Kadar alir masuk ke takungan pada paras tinggi",
+        "rising_fast": "Isipadu simpanan takungan meningkat dengan cepat"
+      }
+    },
+    "operators": {
+      "rid": "Jabatan Pengairan Diraja (RID)"
     }
   },
   "lineQuota": {
@@ -6006,6 +6061,244 @@
         "title": "Rekod",
         "body": "Menyimpan penyelamatan yang pasukan anda lakukan tanpa SOS. Pentadbir mungkin menyemaknya."
       }
+    }
+  },
+  "feedback": {
+    "link": "Beri nilai Jaga",
+    "title": "Beri nilai Jaga, dan beritahu apa yang patut diperbaiki",
+    "lead": "Jaga dibina untuk orang yang hidup dengan banjir. Beritahu kami apa yang berguna dan apa yang belum. Tiada soalan yang wajib dijawab, dan anda tidak perlu akaun.",
+    "notFlood": "Halaman ini tentang aplikasi. Ia bukan maklumat banjir dan bukan amaran.",
+    "emergency": "Jika kecemasan, tekan SOS atau telefon 1669.",
+    "home": "Laman utama",
+    "words": {
+      "1": "Buruk",
+      "2": "Kurang baik",
+      "3": "Boleh",
+      "4": "Baik",
+      "5": "Sangat baik"
+    },
+    "form": {
+      "ratingTitle": "Bagaimana Jaga untuk anda?",
+      "ratingHint": "Tekan muka yang sesuai. Boleh dilangkau.",
+      "ratingChosen": "Anda pilih: {word}",
+      "likedTitle": "Apa yang anda suka tentang Jaga?",
+      "likedHint": "Pilih seberapa banyak yang anda mahu.",
+      "likedNote": "Perkara lain yang anda suka",
+      "likedNotePlaceholder": "Dengan kata-kata anda sendiri",
+      "improveTitle": "Apa yang patut diperbaiki?",
+      "improveHint": "Pilih seberapa banyak yang anda mahu. Kami lebih mahu tahu daripada tidak.",
+      "improveNote": "Perkara lain yang patut diperbaiki",
+      "improveNotePlaceholder": "Dengan kata-kata anda sendiri",
+      "beforeTitle": "Sebelum hantar",
+      "contactOk": "Anda boleh hubungi saya tentang perkara ini",
+      "contactHint": "Digunakan hanya untuk menjawab anda tentang perkara ini, dan dihapus apabila perkara ini ditutup.",
+      "contactLabel": "Nombor telefon, ID LINE atau e-mel",
+      "publicOk": "Anda boleh tunjukkan ini di halaman pendapat Jaga",
+      "publicHint": "Pentadbir Jaga membacanya dahulu. Hanya kata-kata anda dan nama yang anda pilih ditunjukkan, tiada maklumat lain tentang anda.",
+      "publicNeedsWords": "Tulis sesuatu di atas, barulah anda boleh minta ia ditunjukkan di halaman ini.",
+      "displayName": "Nama untuk ditunjukkan",
+      "displayNameHint": "Biarkan kosong untuk tanpa nama.",
+      "anonymous": "Tanpa nama",
+      "send": "Hantar",
+      "sending": "Menghantar…",
+      "nothing": "Belum ada apa-apa untuk dihantar. Tekan muka, pilih tajuk, atau tulis sesuatu.",
+      "sentTitle": "Terima kasih",
+      "sentBody": "Ia sudah sampai. Pentadbir Jaga membaca setiap satu yang masuk.",
+      "sentPublic": "Anda minta kata-kata anda ditunjukkan di halaman ini. Pentadbir Jaga membacanya dahulu, dan anda boleh menariknya bila-bila masa.",
+      "limitedTitle": "Anda sudah menghantar pendapat hari ini",
+      "limitedBody": "Terima kasih. Jika ada lagi, kembalilah esok.",
+      "queuedTitle": "Disimpan dalam peranti ini",
+      "queuedBody": "Tiada sambungan sekarang. Ia dihantar sendiri apabila sambungan kembali.",
+      "failed": "Tidak dapat dihantar. Cuba lagi sebentar nanti.",
+      "another": "Hantar perkara lain"
+    },
+    "chips": {
+      "liked": {
+        "warns_in_time": "Memberi amaran tepat masa",
+        "asking_is_easy": "Mudah minta bantuan",
+        "risk_map": "Peta risiko banjir",
+        "safe_places": "Tempat selamat dan jalan",
+        "river_levels": "Paras sungai secara langsung",
+        "bad_signal": "Berfungsi walaupun isyarat lemah",
+        "hotlines": "Nombor talian kecemasan mudah dicari",
+        "easy_language": "Bahasa mudah difahami",
+        "no_signup": "Tidak perlu mendaftar",
+        "other": "Perkara lain"
+      },
+      "improve": {
+        "late_warning": "Amaran terlalu lambat",
+        "too_many_warnings": "Amaran terlalu kerap",
+        "area_not_covered": "Tidak meliputi kawasan saya",
+        "no_team_came": "Tiada pasukan mengambil",
+        "slow_to_open": "Aplikasi lambat dibuka",
+        "map_hard_to_read": "Peta sukar dibaca",
+        "malay_incomplete": "Bahasa Melayu belum lengkap",
+        "safe_place_wrong": "Maklumat tempat selamat tidak betul",
+        "no_notifications": "Pemberitahuan tidak sampai",
+        "hard_for_elders": "Sukar untuk orang tua",
+        "other": "Perkara lain"
+      }
+    },
+    "figures": {
+      "title": "Angka Jaga sendiri",
+      "lead": "12 bulan lalu, angka yang baik dan yang tidak.",
+      "notEnough": "{count, plural, =1 {Satu jawapan lagi} other {# jawapan lagi}} dan angka bagi tempoh ini akan muncul di sini. Di bawah {min} jawapan, satu angka akan berkata lebih daripada yang diketahuinya.",
+      "answers": "{count, plural, other {# jawapan}}",
+      "average": "Nilai purata",
+      "outOf": "daripada 5",
+      "monthsTitle": "Mengikut bulan",
+      "monthShort": "Jawapan terlalu sedikit",
+      "likedTitle": "Apa yang orang kata mereka suka",
+      "improveTitle": "Apa yang orang kata patut diperbaiki",
+      "improveLead": "Berapa orang berkata demikian, dan apa yang dibuat tentangnya.",
+      "doneNothing": "Belum ada apa-apa dibuat tentang ini.",
+      "changeRef": "Perubahan: {ref}",
+      "people": "{count, plural, other {# orang}}"
+    },
+    "comments": {
+      "title": "Apa yang orang tulis",
+      "notFlood": "Ini pendapat orang tentang aplikasi, bukan maklumat banjir.",
+      "moderated": "Setiap pendapat di sini dibaca oleh pentadbir Jaga sebelum ditunjukkan.",
+      "none": "Belum ada pendapat ditunjukkan di sini.",
+      "anonymous": "Tanpa nama",
+      "likedHead": "Apa yang mereka suka",
+      "improveHead": "Apa yang patut diperbaiki"
+    },
+    "mine": {
+      "title": "Apa yang anda hantar dari peranti ini",
+      "kept": "Peranti ini mengingatinya, jadi anda boleh menariknya tanpa akaun.",
+      "status": {
+        "pending": "Menunggu pentadbir Jaga membacanya. Belum di halaman ini.",
+        "approved": "Ditunjukkan di halaman ini.",
+        "refused": "Pentadbir Jaga tidak menunjukkannya di halaman ini. Ia kekal dalam rekod dan masih dikira.",
+        "not_requested": "Tidak diminta untuk ditunjukkan di halaman ini."
+      },
+      "withdraw": "Tarik balik",
+      "withdrawing": "Menarik balik…",
+      "withdrawn": "Sudah tiada di halaman ini.",
+      "withdrawFailed": "Tidak dapat ditarik balik. Cuba lagi sebentar nanti."
+    },
+    "ask": {
+      "line": "Adakah Jaga berguna untuk anda?",
+      "open": "Beritahu kami",
+      "dismiss": "Lain kali"
+    }
+  },
+  "adminFeedback": {
+    "title": "Nilai dan pendapat",
+    "intro": "Semua yang dihantar orang, dengan apa yang dibuat tentangnya. Kata-kata bebas dan maklumat hubungan hanya untuk pentadbir. Satu pendapat sampai ke halaman awam hanya apabila anda meluluskannya.",
+    "none": "Tiada apa-apa di sini.",
+    "count": "{count, plural, other {# perkara}}",
+    "filters": {
+      "title": "Tunjuk",
+      "all": "Semua",
+      "status": "Status",
+      "public": "Untuk halaman awam",
+      "rating": "Nilai",
+      "locale": "Bahasa",
+      "screen": "Skrin",
+      "role": "Peranan",
+      "days": "{days} hari lalu",
+      "apply": "Tunjuk"
+    },
+    "status": {
+      "new": "Baharu",
+      "read": "Sudah dibaca",
+      "planned": "Dirancang",
+      "done": "Selesai",
+      "wont_do": "Tidak akan dibuat",
+      "hidden": "Disembunyikan"
+    },
+    "publicStatus": {
+      "not_requested": "Tidak diminta",
+      "pending": "Menunggu anda",
+      "approved": "Di halaman awam",
+      "refused": "Tidak diluluskan"
+    },
+    "row": {
+      "rating": "Nilai {rating} daripada 5",
+      "noRating": "Tiada nilai",
+      "liked": "Yang disukai",
+      "improve": "Yang patut diperbaiki",
+      "message": "Mesej",
+      "screen": "Skrin",
+      "locale": "Bahasa",
+      "device": "Peranti",
+      "version": "Versi",
+      "district": "Daerah",
+      "role": "Peranan",
+      "moment": "Ditanya",
+      "case": "Kes",
+      "signedIn": "Sudah masuk akaun",
+      "anonymous": "Tanpa nama",
+      "anonymised": "Maklumat pengenalan dibuang pada {date}",
+      "displayName": "Nama untuk ditunjukkan",
+      "noName": "tanpa nama"
+    },
+    "moments": {
+      "menu": "Membuka halaman",
+      "closed_request": "Selepas permintaan ditutup",
+      "ended_report": "Selepas laporan ditamatkan",
+      "finished_case": "Selepas kes selesai",
+      "line": "Dalam LINE"
+    },
+    "contact": {
+      "has": "Orang ini bersetuju untuk dihubungi",
+      "show": "Tunjukkan maklumat hubungan",
+      "logged": "Setiap kali ia ditunjukkan, ia dicatat dalam log akses.",
+      "none": "Tiada maklumat hubungan diberikan.",
+      "cleared": "Maklumat hubungan dibuang apabila perkara ini ditutup."
+    },
+    "triage": {
+      "title": "Pengurusan",
+      "note": "Nota",
+      "changeRef": "Catatan keputusan atau commit",
+      "changeRefHint": "Supaya satu perubahan boleh dijejak kembali kepada orang yang memintanya.",
+      "save": "Simpan",
+      "saved": "Sudah disimpan.",
+      "closes": "Selesai, tidak akan dibuat dan disembunyikan akan membuang maklumat hubungan."
+    },
+    "publish": {
+      "title": "Halaman awam",
+      "notOffered": "Penghantar tidak meminta ia ditunjukkan, jadi ia tidak boleh diluluskan.",
+      "approve": "Tunjukkan di halaman awam",
+      "refuse": "Jangan tunjukkan",
+      "hide": "Keluarkan dari halaman awam",
+      "rules": "Jangan luluskan apa-apa yang menyatakan fakta tentang banjir, paras air atau sama ada satu kawasan selamat, walaupun benar; dan apa-apa yang membawa nombor telefon, alamat, nombor pendaftaran kenderaan, nama orang, atau satu kes SOS tertentu. Itu kekal untuk pentadbir sahaja. Luluskan pendapat tentang aplikasi: apa yang berguna, apa yang tidak, apa yang belum ada."
+    },
+    "trends": {
+      "title": "Arah aliran",
+      "answers": "Jawapan",
+      "average": "Nilai purata",
+      "byMonth": "Mengikut bulan",
+      "byScreen": "Mengikut skrin, yang paling buruk dahulu",
+      "byLocale": "Mengikut bahasa",
+      "byRole": "Mengikut peranan",
+      "liked": "Apa yang orang suka",
+      "improve": "Apa yang patut diperbaiki",
+      "waitingPublic": "{count, plural, other {# pendapat menunggu anda}}",
+      "noFigure": "—",
+      "months": "{months} bulan lalu"
+    },
+    "outcomes": {
+      "title": "Apa yang dibuat tentangnya",
+      "intro": "Ditunjukkan di sebelah jumlah di halaman awam. Bahasa Thai digunakan apabila satu bahasa tiada.",
+      "code": "Kelemahan",
+      "th": "Thai",
+      "ms": "Melayu",
+      "en": "Inggeris",
+      "changeRef": "Catatan keputusan atau commit",
+      "save": "Simpan",
+      "saved": "Sudah disimpan.",
+      "none": "Belum ditulis."
+    },
+    "export": {
+      "title": "Eksport",
+      "csv": "Muat turun CSV",
+      "hint": "Tanpa maklumat hubungan, kod peranti, akaun atau id kes."
+    },
+    "error": {
+      "save": "Tidak dapat disimpan. Cuba lagi."
     }
   }
 }

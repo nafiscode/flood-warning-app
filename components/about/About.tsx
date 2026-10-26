@@ -8,6 +8,7 @@ import {
   QuestionIcon,
   ShieldIcon,
 } from "@/components/icons";
+import { RateLink } from "@/components/feedback/RateLink";
 import { HowNav } from "@/components/how/HowNav";
 import { ShareThisPage } from "@/components/ShareThisPage";
 import { Link } from "@/i18n/navigation";
@@ -243,7 +244,7 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
       <section className="flex flex-col gap-4 rounded-3xl bg-jaga-slate px-5 py-6 text-white lg:px-8">
         <h2 className="text-h3 font-bold">{t("closing.title")}</h2>
         <p className="text-white/90">{t("closing.text")}</p>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <Link href="/how-it-works" prefetch={false} className={buttonSecondary}>
             <ForwardIcon size={22} className="rtl:-scale-x-100" />
             {t("closing.how")}
@@ -256,6 +257,8 @@ export function About({ showPortrait = PORTRAIT_READY }: { showPortrait?: boolea
             <MapIcon size={22} />
             {t("closing.map")}
           </Link>
+          {/* "Rate Jaga", the one way out of this page that leads back to the reader (A15). */}
+          <RateLink where="about" />
         </div>
       </section>
 

@@ -679,3 +679,31 @@ export function MenuIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/**
+ * The five faces of the rating (A15, spec 17): a face for each step from 1 to 5, each one shown
+ * with its word and its number underneath, so the step never depends on the drawing alone
+ * (CLAUDE.md: never colour alone, and these are read by people who read little).
+ *
+ * Two dots and a mouth. Not an eye icon - the ban in docs/brand.md is on the lone eye that reads
+ * as watching, which is why the logo lost its; a face with two of them reads as a face.
+ */
+const MOUTHS: Record<number, string> = {
+  1: "M8.2 16.6q3.8-4.4 7.6 0",
+  2: "M8.2 16q3.8-2.4 7.6 0",
+  3: "M8.2 15.1h7.6",
+  4: "M8.2 14.4q3.8 2.4 7.6 0",
+  5: "M8.2 13.6q3.8 4.4 7.6 0",
+};
+
+export function FaceIcon({ mood = 3, ...rest }: IconProps & { mood?: number }) {
+  const mouth = MOUTHS[mood] ?? MOUTHS[3]!;
+  return (
+    <Icon {...rest}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="9.1" cy="9.6" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="14.9" cy="9.6" r="0.9" fill="currentColor" stroke="none" />
+      <path d={mouth} strokeWidth={1.8} />
+    </Icon>
+  );
+}

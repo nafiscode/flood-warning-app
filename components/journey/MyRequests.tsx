@@ -2,6 +2,7 @@
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { FeedbackAsk } from "@/components/feedback/FeedbackAsk";
 import { Journey } from "@/components/journey/Journey";
 import { Link } from "@/i18n/navigation";
 import { pickName } from "@/lib/area";
@@ -108,6 +109,19 @@ export function MyRequestsView({ data, loading }: { data: MyRequestsData; loadin
       Number(b.journey.open) - Number(a.journey.open) || Date.parse(b.at) - Date.parse(a.at),
   );
   const unread = data.cases.filter((c) => !c.timeline).length;
+  /*
+   * What has finished, with nothing still open. A case counts only once the journey itself says
+   * it is closed, which for a request for help means the sender confirmed it (lib/journey.ts) -
+   * the ask must not follow a case a team merely reported as done.
+   */
+  const stillOpen = cards.some((c) => c.journey.open);
+  const finished: "case" | "report" | null = stillOpen
+    ? null
+    : cards.some((c) => c.key.startsWith("sos:"))
+      ? "case"
+      : cards.some((c) => c.key.startsWith("report:"))
+        ? "report"
+        : null;
 
   return (
     <div className="flex flex-col gap-5" data-my-requests={cards.length}>
@@ -158,6 +172,14 @@ export function MyRequestsView({ data, loading }: { data: MyRequestsData; loadin
         ))}
       </div>
       {!data.signedIn && <p className={hint}>{t("page.signInNote")}</p>}
+      {/*
+        The quiet ask (A15, spec 17), once and never again for 30 days on this phone. The moment
+        is "nothing of theirs is still open and something of theirs has finished": a request that
+        closed and was confirmed, or a report that ended. **Never while a request is open** - that
+        is what `when` carries, and it is why the ask lives at the foot of this page rather than
+        inside the SOS flow, which may never show it at all.
+      */}
+      <FeedbackAsk moment={finished === "case" ? "closed_request" : "ended_report"} when={!!finished} />
     </div>
   );
 }

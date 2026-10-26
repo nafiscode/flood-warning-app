@@ -3,10 +3,12 @@ import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/BackLink";
+import { FeedbackAsk } from "@/components/feedback/FeedbackAsk";
 import { TeamMembers } from "@/components/authority/TeamMembers";
 import { getSessionProfile, localePath } from "@/lib/auth";
 import { unitTeamMessages } from "@/lib/messages";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { readTeamRecords } from "@/lib/authority-board";
 import { readOwnedTeams } from "@/lib/unit-team";
 
 export async function generateMetadata({
@@ -34,12 +36,21 @@ export default async function TeamPage({ params }: PageProps<"/[locale]/authorit
   }
   const t = await getTranslations("unitTeam");
   const teams = await readOwnedTeams(session.userId);
+  /*
+   * "For a team, after it has finished a case" (A15, spec 17). The ask goes on this page and not
+   * on the case board: the board is where live requests are, and nothing invites a dispatcher to
+   * rate the app with a case waiting. A confirmed case in the team's own record is the signal, so
+   * a team that has never finished one is never asked.
+   */
+  const records = await readTeamRecords(session.userId).catch(() => []);
+  const finishedACase = records.some((r) => r.cases > 0);
   return (
     <div className="flex flex-col gap-5">
       <h1 className="text-h2 font-bold text-jaga-ink">{t("title")}</h1>
       <p>{t("intro")}</p>
       <NextIntlClientProvider messages={unitTeamMessages(await getMessages())}>
         <TeamMembers teams={teams} />
+        <FeedbackAsk moment="finished_case" when={finishedACase} />
       </NextIntlClientProvider>
       <BackLink href="/authority" label={(await getTranslations("nav"))("backBoard")} />
     </div>

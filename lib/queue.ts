@@ -20,7 +20,31 @@ const MEDIA = "media";
 
 export const SYNC_TAG = "jaga-queue";
 
-export type QueuedKind = "sos" | "sos-details" | "sos-location" | "sos-close" | "report";
+export type QueuedKind =
+  | "sos"
+  | "sos-details"
+  | "sos-location"
+  | "sos-close"
+  | "report"
+  | "feedback";
+
+/**
+ * Which items go first when several are waiting (safety rule 1: never delay an SOS).
+ *
+ * Time order alone is not enough. Somebody offline can rate the app at ten past and press SOS at
+ * twenty past; when the signal returns, strict time order would spend the first round trip of a
+ * recovered connection on the rating. The bands fix the order between kinds; inside a band it is
+ * still oldest first, which is what keeps a detail step behind the SOS it belongs to - all four
+ * SOS kinds share band 0 on purpose.
+ */
+const BAND: Record<QueuedKind, number> = {
+  sos: 0,
+  "sos-details": 0,
+  "sos-location": 0,
+  "sos-close": 0,
+  report: 1,
+  feedback: 2,
+};
 
 export type Queued = {
   /** Local id, also the order: time plus a random tail, so it sorts by when it was added. */
@@ -132,7 +156,9 @@ export async function enqueue(
 export async function pending(): Promise<Queued[]> {
   try {
     const all = await run<Queued[]>(PENDING, "readonly", (s) => s.getAll());
-    return all.sort((a, b) => a.key.localeCompare(b.key));
+    return all.sort(
+      (a, b) => (BAND[a.kind] ?? 9) - (BAND[b.kind] ?? 9) || a.key.localeCompare(b.key),
+    );
   } catch {
     return [];
   }
@@ -178,8 +204,9 @@ export type FlushResult = { sent: number; left: number; failed: number };
 let running: Promise<FlushResult> | null = null;
 
 /**
- * Try to send everything in the queue, oldest first. Order matters: a detail step must not pass
- * the SOS it belongs to, so a network failure stops the run and leaves the rest for later.
+ * Try to send everything in the queue, requests for help first and then oldest first (see `BAND`).
+ * Order matters: a detail step must not pass the SOS it belongs to, so a network failure stops the
+ * run and leaves the rest for later.
  * A refusal the server will give again (a 4xx that is not 429) marks the item failed instead of
  * jamming the queue for ever; the page then shows it and keeps the hotlines in reach.
  */
