@@ -2,6 +2,7 @@ import { DualTime } from "@/components/admin/DualTime";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { Link } from "@/i18n/navigation";
 import type { AutoAlarm } from "@/lib/notices";
+import { localName } from "@/lib/places";
 import { buttonPrimary, card, hint } from "@/lib/ui";
 
 type T = (key: string, values?: Record<string, string | number>) => string;
@@ -11,7 +12,16 @@ type T = (key: string, values?: Record<string, string | number>) => string;
  * sent it, dismissed it, it published itself, or the river fell back first. Admins only - the
  * page is behind the admin layout and the database function checks again.
  */
-export function AutoAlarmLog({ alarms, t }: { alarms: AutoAlarm[]; t: T }) {
+export function AutoAlarmLog({
+  alarms,
+  t,
+  locale,
+}: {
+  alarms: AutoAlarm[];
+  t: T;
+  /** Which language to read the river's or reservoir's name in. */
+  locale: string;
+}) {
   return (
     <section
       id="auto-alarms"
@@ -41,13 +51,28 @@ export function AutoAlarmLog({ alarms, t }: { alarms: AutoAlarm[]; t: T }) {
                 </span>
               )}
             </div>
-            <p className="font-bold text-jaga-ink">{a.zone}</p>
+            {/* The river's or the reservoir's name in the reader's language; `zone` is its Thai. */}
+            <p className="font-bold text-jaga-ink">
+              {a.names ? localName(a.names, locale) : a.zone}
+            </p>
             <p>
-              {t("auto.reading", {
-                gauge: a.gauge ?? "–",
-                value: a.value ?? "–",
-                threshold: a.threshold ?? "–",
-              })}
+              {/* Metres for a gauge, a share of capacity for a reservoir: never one line for both. */}
+              {a.subject === "clear"
+                ? t("auto.readingClear", {
+                    value: a.value ?? "–",
+                    threshold: a.threshold ?? "–",
+                  })
+                : a.subject === "reservoir"
+                ? t("auto.readingReservoir", {
+                    percent: a.percent ?? "–",
+                    value: a.value ?? "–",
+                    threshold: a.threshold ?? "–",
+                  })
+                : t("auto.reading", {
+                    gauge: a.gauge ?? "–",
+                    value: a.value ?? "–",
+                    threshold: a.threshold ?? "–",
+                  })}
             </p>
             <p className={hint}>
               {t("auto.raised")} <DualTime iso={a.createdAt} />

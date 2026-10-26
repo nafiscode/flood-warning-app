@@ -21,6 +21,14 @@ Commands
                          <dam>_zone.tif and geojson/<dam>_zone.geojson. Needs `geometry`, the
                          hazard module's elevation model and the radar products on disk.
 
+  spill [--seed]         the overflow zone of each reservoir with no gauge below it: the flow path
+                         the elevation model itself gives, cut where the water joins a channel ten
+                         times its size, and the level that holds one day of spill from a full
+                         reservoir. Writes <output_dir>/spill/<code>.json and _by_tambon.csv,
+                         geojson/<code>_spill.geojson and, with --seed,
+                         supabase/seed/43_dam_spill_zone.sql. Needs the hazard module's elevation
+                         model and flow directions, and the daily rain archive.
+
 Settings: dam_release/config.yaml. See docs/science-plan.md Module 7 and METHODS.md.
 """
 
@@ -36,7 +44,7 @@ import yaml
 
 from ingest_thaiwater.settings import PIPELINE_DIR, REPO_DIR, data_dir, env_value
 
-from . import build, find, osm, thresholds, travel, zone
+from . import build, find, osm, spill, thresholds, travel, zone
 
 CONFIG_PATH = Path(__file__).with_name("config.yaml")
 log = logging.getLogger("dam_release")
@@ -297,6 +305,93 @@ def cmd_zone(cfg: dict, seed: bool = False) -> int:
     return 0
 
 
+def cmd_spill(cfg: dict, write_seed: bool) -> int:
+    """The overflow zone of every reservoir with no gauge below it (spill.py)."""
+    out = output_dir(cfg)
+    wanted = set(cfg["spill"]["reservoirs"])
+    dams = [dam for dam in cfg["dams"] if dam["code"] in wanted]
+    missing = wanted - {dam["code"] for dam in dams}
+    if missing:
+        raise SystemExit(f"spill.reservoirs names a dam config.yaml has no entry for: {missing}")
+    results = []
+    for dam in dams:
+        result = spill.run(dam, cfg, PIPELINE_DIR, data_dir(), out)
+        results.append(result)
+        print(f"\n{dam['name']['en']} ({result['code']}), {result['storage_max_mcm']} Mm3 full")
+        print(f"  catchment above it   {result['catchment_km2']} km2")
+        print(f"  flow path            {result['traced_km']} km traced, "
+              f"{result['reach_km']} km kept ({result['stopped_because']})")
+        print(f"  channel surface      {result['channel_surface_m'][0]} m at the wall to "
+              f"{result['channel_surface_m'][1]} m at the end of the reach")
+        rain = result["rain"]
+        print(f"  wettest day           {rain['rain_mm']} mm, from the {rain['kind']}")
+        if rain.get("satellite"):
+            sat = rain["satellite"]
+            print(f"    satellite           {sat['rain_mm']} mm over the catchment, 24 h ending "
+                  f"{sat['ending']} ({sat['seasons']})")
+        gauge = rain["gauges"]
+        print(f"    rain gauges         {gauge['rain_mm']} mm at {gauge['stations'][0]['name_th']}, "
+              f"{gauge['stations'][0]['km']} km away, on {gauge['stations'][0]['max_on']} "
+              f"({len(gauge['stations'])} stations within {gauge['radius_km']:.0f} km, "
+              f"{gauge['from']} to {gauge['to']})")
+        if rain.get("basin_check"):
+            check = rain["basin_check"]
+            print(f"    whole basin         {check['mm']} mm over {check['basin']} "
+                  f"(24 h ending {check['ending']}) - a check, not an input")
+        for band in ("zone", "outer"):
+            figures = result["bands"][band]
+            note = f"  [{figures['bound']}]" if figures["bound"] else ""
+            print(f"  {band:5s} {figures['wanted_mcm']:7.3f} Mm3 of spill stands "
+                  f"{figures['depth_m']:.2f} m above the channel{note}")
+        print(f"  zone                 {result['zone_km2']} km2, "
+              f"{result['buildings_zone']} buildings")
+        print(f"  with the outer band  {result['outer_km2']} km2, "
+              f"{result['buildings_outer']} buildings, {result['tambons']} tambons")
+        print(f"  the water arrives    {result['arrival_h'][0]} to {result['arrival_h'][1]} h "
+              f"after it leaves, at {result['velocity_ms'][0]} to {result['velocity_ms'][1]} m/s "
+              "(assumed, not measured)")
+        for name, against in (result["radar"] or {}).items():
+            print(f"  against {name:12s} holds {against['zone']['flood_held_pct']}% of the "
+                  f"radar's flood in the corridor, {against['zone']['zone_seen_wet_pct']}% of the "
+                  f"zone seen wet (outer: {against['outer']['flood_held_pct']}% / "
+                  f"{against['outer']['zone_seen_wet_pct']}%)")
+        for entry in result["tambon_rows"]:
+            tambon, row = entry["tambon"], entry["row"]
+            arrival = next(a for a in result["arrivals"] if a["tambon_code"] == tambon["code"])
+            print(f"    {tambon['name_th']:12s} {tambon['name_en']:16s} km {row['km_from_dam']:5.1f}  "
+                  f"zone {row['zone_km2']:6.2f} km2  outer {row['outer_km2']:6.2f}  "
+                  f"buildings {row.get('buildings_outer', 0):5d}  "
+                  f"{arrival['earliest_h']}-{arrival['latest_h']} h  {arrival['via']}")
+    print(f"\njson and per-tambon csv in {out / 'spill'}")
+    print(f"geojson            {out / 'geojson'}/<code>_spill.geojson")
+    if not write_seed:
+        print("\n--seed not given: no seed written.")
+        return 0
+    # The rain gauges cannot carry a design rain: the archive holds single "days" of 1,052 mm and
+    # three 420 mm days in a row (spill.py, `daily_rain`). A seed is only written once the
+    # satellite has been asked about these catchments.
+    on_gauges = [result["code"] for result in results if result["rain"]["kind"] != "satellite"]
+    if on_gauges:
+        raise SystemExit("run `spill-rain` first: " + ", ".join(on_gauges)
+                         + " would rest on the rain gauges, which the archive shows cannot carry "
+                           "a single day's figure.")
+    path = REPO_DIR / "supabase" / "seed" / "43_dam_spill_zone.sql"
+    path.write_text(spill.seed_sql(results, cfg), encoding="utf-8")
+    print(f"seed               {path}")
+    return 0
+
+
+def cmd_spill_rain(cfg: dict, season: list[int] | None) -> int:
+    """Ask the satellite how much rain the reservoir catchments have taken (spill.py)."""
+    project = env_value("EE_PROJECT")
+    if not project:
+        raise SystemExit("EE_PROJECT is not set in .env.local.")
+    out = output_dir(cfg)
+    spill.fetch_catchment_rain(out, cfg, project, season)
+    print(f"wrote {out / 'spill' / 'rain'}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="dam_release", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -312,6 +407,14 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("travel", help="travel times and arrival ranges per tambon").add_argument("--dry-run", action="store_true")
     sub.add_parser("zone", help="the land a rise in the river can reach, from the elevation model").add_argument(
         "--seed", action="store_true", help="also write supabase/seed/42_dam_zone.sql (the zone as the dam's geometry)")
+    spiller = sub.add_parser("spill", help="the overflow zone of a reservoir with no gauge below it")
+    spiller.add_argument("--seed", action="store_true",
+                         help="also write supabase/seed/43_dam_spill_zone.sql")
+    spiller.add_argument("--only", nargs="+", default=None, metavar="CODE",
+                         help="just these reservoirs")
+    rainer = sub.add_parser("spill-rain", help="GSMaP over the reservoir catchments (Earth Engine)")
+    rainer.add_argument("--season", type=int, nargs="+", default=None,
+                        help="just these seasons (by their first year)")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     cfg = load_config()
@@ -321,6 +424,12 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_travel(cfg, args.dry_run)
     if args.command == "zone":
         return cmd_zone(cfg, args.seed)
+    if args.command == "spill":
+        if args.only:
+            cfg["spill"]["reservoirs"] = args.only
+        return cmd_spill(cfg, args.seed)
+    if args.command == "spill-rain":
+        return cmd_spill_rain(cfg, args.season)
     if args.command == "find":
         if args.within is not None:
             find.SEARCH_KM = args.within

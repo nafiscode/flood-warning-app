@@ -387,7 +387,15 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
           </LiveFigure>
           <p className="text-small text-jaga-text-2">
             {[
-              (mine.spilledCms ?? 0) > 0 ? t("dam.spillingOne") : t("dam.aboveNormalOne"),
+              /* What it is doing, in its own terms: over the spillway, past its normal level, or
+                 one of Jaga's own rules met (27 Oct 2026). */
+              (mine.spilledCms ?? 0) > 0
+                ? t("dam.spillingOne")
+                : mine.percentFull !== null &&
+                    mine.normalMark !== null &&
+                    mine.percentFull / 100 > mine.normalMark
+                  ? t("dam.aboveNormalOne")
+                  : t("dam.gradedOne"),
               all.others > 0 ? t("dam.others", { count: all.others }) : null,
             ]
               .filter(Boolean)
@@ -404,6 +412,7 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
             ? [
                 all.spilling > 0 ? t("dam.spilling", { count: all.spilling }) : null,
                 all.aboveNormal > 0 ? t("dam.aboveNormal", { count: all.aboveNormal }) : null,
+                all.graded > 0 ? t("dam.graded", { count: all.graded }) : null,
               ]
                 .filter(Boolean)
                 .join(" · ")

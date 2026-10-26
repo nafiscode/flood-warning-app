@@ -1,6 +1,6 @@
 import { contrastRatio } from "@/lib/brand/contrast";
 import { ALERT_LEVELS, brand, darkBrand, type AlertLevel } from "@/lib/brand/tokens";
-import type { Dam } from "@/lib/dam";
+import type { Dam, DamGrade } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
 import { gaugeLook, type GaugeLook } from "@/lib/gauge-marks";
 import { gaugesNear } from "@/lib/monitoring";
@@ -196,6 +196,13 @@ export type DamTally = {
   outflowCms: number | null;
   inflowCms: number | null;
   observedAt: string | null;
+  /**
+   * What Jaga's own rules make of the figures (lib/dam.ts). It is in the tally because for the
+   * five irrigation reservoirs the capacity at normal high water *is* the full capacity, so
+   * "past its normal level" can only ever fire above 100% and a reservoir at 96% and filling
+   * would have blinked at nobody (27 Oct 2026).
+   */
+  grade: DamGrade | null;
   /** The feed has not been updated: the figures are shown with their age, never as current. */
   stale: boolean;
 };
@@ -214,22 +221,28 @@ export function damTally(dam: Dam | undefined): DamTally | null {
     outflowCms: signal?.outflowCms ?? signal?.releasedCms ?? null,
     inflowCms: signal?.inflowCms ?? null,
     observedAt: signal?.observedAt ?? null,
+    grade: signal?.grade ?? null,
     stale: signal?.stale ?? false,
   };
 }
 
 /**
  * Where a reservoir stands in the run a press on the dam readout walks through: water going over
- * the spillway first, then a reservoir past the level it is normally held at, then the rest -
- * the same two facts `damAlarm` asks about, so the card and the pulse can never disagree.
+ * the spillway first, then a reservoir past the level it is normally held at, then one Jaga's own
+ * rules have something to say about - releasing before watchful - then the rest. The same facts
+ * `damAlarm` asks about, so the card and the pulse can never disagree.
  */
+export const DAM_CONCERN_RANKS = 4;
+
 function damRank(dam: Dam): number {
   const tally = damTally(dam);
-  if (!tally) return 3;
+  if (!tally) return DAM_CONCERN_RANKS;
   if ((tally.spilledCms ?? 0) > 0) return 0;
   const { percentFull, normalMark } = tally;
   if (percentFull !== null && normalMark !== null && percentFull / 100 > normalMark) return 1;
-  return 2;
+  if (tally.grade === "releasing") return 2;
+  if (tally.grade === "watchful") return 3;
+  return DAM_CONCERN_RANKS;
 }
 
 /**
@@ -243,8 +256,12 @@ function damSeverity(dam: Dam): number {
   const spilled = tally.spilledCms ?? 0;
   if (spilled > 0) return spilled;
   const { percentFull, normalMark } = tally;
-  if (percentFull !== null && normalMark !== null) return percentFull / 100 - normalMark;
-  return 0;
+  if (percentFull !== null && normalMark !== null && percentFull / 100 > normalMark) {
+    return percentFull / 100 - normalMark;
+  }
+  // Within the graded ranks the question is how full it is, which is the figure the rules that
+  // put it there are written on.
+  return percentFull ?? 0;
 }
 
 /**
@@ -314,7 +331,7 @@ export function damRun(dams: readonly Dam[], context: DamContext = NO_DAM_CONTEX
 
 /** The reservoirs a press lights: the ones doing something, at most three, else the first. */
 export function damsLit(run: readonly Dam[]): Dam[] {
-  const concern = run.filter((d) => damRank(d) < 2);
+  const concern = run.filter((d) => damRank(d) < DAM_CONCERN_RANKS);
   return (concern.length > 0 ? concern : run.slice(0, 1)).slice(0, LIT_MAX);
 }
 
@@ -323,7 +340,13 @@ export type DamsTally = {
   spilling: number;
   /** Reservoirs past the level they are normally held at. */
   aboveNormal: number;
-  /** The two together: how many reservoirs are worth a look. */
+  /**
+   * Reservoirs Jaga's own rules have something to say about without their being over the
+   * spillway or past their normal level: near full and still filling, a high release for their
+   * size, a fast rise (27 Oct 2026).
+   */
+  graded: number;
+  /** All three together: how many reservoirs are worth a look. */
   watch: number;
   total: number;
   /** How many have a reading at all. Zero means the card cannot say the situation is normal. */
@@ -358,18 +381,20 @@ export function damsTally(dams: readonly Dam[], context: DamContext = NO_DAM_CON
   const ranks = run.map(damRank);
   const spilling = ranks.filter((r) => r === 0).length;
   const aboveNormal = ranks.filter((r) => r === 1).length;
-  const named = run.find((d) => context.onPath.has(d.code) && damRank(d) < 2);
+  const graded = ranks.filter((r) => r === 2 || r === 3).length;
+  const named = run.find((d) => context.onPath.has(d.code) && damRank(d) < DAM_CONCERN_RANKS);
   const mine = named ? damTally(named) : null;
   const tallies = run.map((d) => damTally(d)!).filter((t) => t.dam.signal);
   const current = (t: DamTally) => !t.stale && t.observedAt !== null;
   return {
     spilling,
     aboveNormal,
-    watch: spilling + aboveNormal,
+    graded,
+    watch: spilling + aboveNormal + graded,
     total: run.length,
     reporting: tallies.length,
     mine,
-    others: spilling + aboveNormal - (mine ? 1 : 0),
+    others: spilling + aboveNormal + graded - (mine ? 1 : 0),
     newestAt: tallies.reduce<string | null>(
       (best, t) => (t.observedAt && (!best || t.observedAt > best) ? t.observedAt : best),
       null,
@@ -459,7 +484,17 @@ export function gaugeAlarm(tally: Pick<GaugeTally, "over">): TileAlarm {
   return tally.over > 0 ? "attention" : null;
 }
 
-/** Water going over the spillway, or a reservoir past the level it is normally held at. */
+/**
+ * Water going over the spillway, a reservoir past the level it is normally held at, or one Jaga's
+ * own rules have something to say about.
+ *
+ * The third was added on 27 Oct 2026 with the reservoirs' own alarm: for the five irrigation
+ * reservoirs the capacity at normal high water *is* the full capacity, so the second test can
+ * only fire above 100%, and a reservoir at 96% and still filling - the very state that now rings
+ * every admin's phone - lit nothing on the map. The grade is where those rules live, so the tile
+ * blinks exactly when the card beside it says something (safety rule 2: still plain attention,
+ * never an alert colour).
+ */
 export function damAlarm(tally: DamTally | null): TileAlarm {
   if (!tally) return null;
   if ((tally.spilledCms ?? 0) > 0) return "attention";
@@ -467,6 +502,7 @@ export function damAlarm(tally: DamTally | null): TileAlarm {
   if (percentFull !== null && normalMark !== null && percentFull / 100 > normalMark) {
     return "attention";
   }
+  if (tally.grade === "watchful" || tally.grade === "releasing") return "attention";
   return null;
 }
 

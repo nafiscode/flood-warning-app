@@ -12,6 +12,7 @@ import {
   flow,
   operatorName,
   pathMapped,
+  spillZone,
   trend,
   volume,
   type Dam,
@@ -399,15 +400,24 @@ export function DamCard({
         {note.spillway_channel_mapped === false && (
           <p className={hint}>{t("path.spillwayNotMapped")}</p>
         )}
-        <p className={hint}>{t("path.credit")}</p>
+        {/*
+         * Which zone this is. The two rest on different things, so the credit cannot be one line
+         * for both: Bang Lang's band is what its river gauges have reached, and the five
+         * irrigation reservoirs have no gauge below them (lib/dam.ts, spillZone).
+         */}
+        <p className={hint}>{t(spillZone(dam) ? "path.creditSpill" : "path.credit")}</p>
       </div>
 
       {dam.arrivals.length > 0 ? (
-        <DamArrivalLines
-          dam={dam}
-          tambonCodes={tambonCode ? [tambonCode] : []}
-          tambonName={tambonName}
-        />
+        <>
+          <DamArrivalLines
+            dam={dam}
+            tambonCodes={tambonCode ? [tambonCode] : []}
+            tambonName={tambonName}
+          />
+          {/* An assumed channel speed must never read as a measured travel time (safety rule 8). */}
+          {spillZone(dam) && <p className={hint}>{t("path.arrivalAssumed")}</p>}
+        </>
       ) : (
         <p>{t("disclaimer.noArrivalTime")}</p>
       )}

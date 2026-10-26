@@ -150,9 +150,23 @@ export type AutoAlarmStatus = (typeof AUTO_ALARM_STATUSES)[number];
 export type AutoAlarm = {
   id: string;
   status: AutoAlarmStatus;
-  level: "warning" | "evacuate";
+  level: "warning" | "evacuate" | "return";
+  /**
+   * What crossed its threshold, because each is read differently: a gauge in metres above sea
+   * level, a reservoir as a share of its capacity, and `clear` is the all-clear that answers an
+   * alert rather than raising one (27 Oct 2026). Named `subject` and not `kind` because a notice
+   * of one of these already uses `kind` for its own place in the bell.
+   */
+  subject: "gauge" | "reservoir" | "clear";
+  /** The warning zone's or reservoir's name, one string per language (lib/places.ts localName). */
+  names: Record<string, string> | null;
+  /** The same name in Thai, for a screen that has no locale to hand. */
   zone: string;
   gauge: string | null;
+  /** The reservoir's code, where this is a reservoir. */
+  dam: string | null;
+  /** How full the reservoir was, as a percentage; null for a gauge. */
+  percent: number | null;
   value: number | null;
   threshold: number | null;
   createdAt: string;
@@ -170,7 +184,10 @@ export function toAutoAlarm(row: Record<string, unknown>): AutoAlarm | null {
   const createdAt = isoOrNull(row.createdAt);
   const deadline = isoOrNull(row.deadline);
   const status = AUTO_ALARM_STATUSES.find((s) => s === row.status);
-  const level = row.level === "warning" || row.level === "evacuate" ? row.level : null;
+  const level =
+    row.level === "warning" || row.level === "evacuate" || row.level === "return"
+      ? row.level
+      : null;
   if (typeof row.id !== "string" || !createdAt || !deadline || !status || !level) return null;
   const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
   const text = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);
@@ -178,8 +195,17 @@ export function toAutoAlarm(row: Record<string, unknown>): AutoAlarm | null {
     id: row.id,
     status,
     level,
+    // The row's own column is `kind`; a row without one is a gauge alarm, which was the only
+    // kind there was before the reservoirs.
+    subject: row.kind === "reservoir" || row.kind === "clear" ? row.kind : "gauge",
+    names:
+      row.names && typeof row.names === "object" && !Array.isArray(row.names)
+        ? (row.names as Record<string, string>)
+        : null,
     zone: text(row.zone) ?? "",
     gauge: text(row.gauge),
+    dam: text(row.dam),
+    percent: num(row.percent),
     value: num(row.value),
     threshold: num(row.threshold),
     createdAt,
@@ -513,8 +539,12 @@ export function buildNotices(input: {
       places: [],
       status: alarm.status,
       level: alarm.level,
+      subject: alarm.subject,
+      names: alarm.names,
       zone: alarm.zone,
       gauge: alarm.gauge,
+      dam: alarm.dam,
+      percent: alarm.percent,
       value: alarm.value,
       threshold: alarm.threshold,
       deadline: alarm.deadline,

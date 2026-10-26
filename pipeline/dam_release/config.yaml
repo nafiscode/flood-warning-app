@@ -64,6 +64,9 @@ dams:
   #     figure its percentage is of; we have no separate spillway-crest capacity for them, so
   #     max and normal are the same number and "above normal high" means above 100%.
   - code: khlong_sadao
+    # Inside the basin the thresholds module has GSMaP rain for, so `spill` can print the
+    # satellite's wettest day beside the rain gauge's as a check.
+    rain_basin: u_taphao.above_key
     name: {th: "อ่างเก็บน้ำคลองสะเดา", ms: "Empangan Khlong Sadao", en: "Khlong Sadao Reservoir"}
     river: {th: "คลองอู่ตะเภา", ms: "Sungai U-Taphao", en: "Khlong U-Taphao"}
     operator: RID
@@ -91,6 +94,9 @@ dams:
       stale_after_h: 48
 
   - code: khlong_la
+    # Inside the basin the thresholds module has GSMaP rain for, so `spill` can print the
+    # satellite's wettest day beside the rain gauge's as a check.
+    rain_basin: u_taphao.above_key
     name: {th: "อ่างเก็บน้ำคลองหลา", ms: "Empangan Khlong La", en: "Khlong La Reservoir"}
     river: {th: "คลองหลา", ms: "Sungai La", en: "Khlong La"}
     operator: RID
@@ -116,6 +122,9 @@ dams:
       stale_after_h: 48
 
   - code: khlong_chamrai
+    # Inside the basin the thresholds module has GSMaP rain for, so `spill` can print the
+    # satellite's wettest day beside the rain gauge's as a check.
+    rain_basin: u_taphao.above_key
     name: {th: "อ่างเก็บน้ำคลองจำไหร", ms: "Empangan Khlong Chamrai", en: "Khlong Chamrai Reservoir"}
     river: {th: "คลองจำไหร", ms: "Sungai Chamrai", en: "Khlong Chamrai"}
     operator: RID
@@ -283,5 +292,90 @@ zone:
   seed: {simplify_m: 60, min_patch_km2: 0.05}    # the outlines the database and the map get
   radar:
     season_2020: out/sar_floods/products/jaga_sar_max_season-2020_20m_c97e0bf.tif   # holds the January 2021 release
+    event_2024: out/sar_floods/products/jaga_sar_max_event-2024-nov-dec_10m_c97e0bf.tif
+    event_2025: out/sar_floods/products/jaga_sar_max_event-2025-nov-dec_10m_c97e0bf.tif
+
+# The overflow zone of a reservoir with no gauge below it (spill.py; METHODS.md, "A full
+# reservoir's own zone"). The owner's choices of 26 Oct 2026: a day's spill sets the depth, the
+# zone stops where the water joins a channel ten times its size, the arrival times are a plain
+# channel speed, and a reservoir merely being full now grades as something.
+#
+# The five here are the Royal Irrigation Department's. Bang Lang is not: it has four gauges below
+# it and keeps the zone S7 measured at them.
+spill:
+  source: spill                   # the geometry_source these zones are loaded under
+  arrival_source: spill-2026-10   # the version of the arrival times, beside S7's gauges-2026-10
+  reservoirs: [khlong_sadao, khlong_la, khlong_chamrai, klai_ban, ban_baik]
+  # The hazard module's surface and its flow directions. The elevation model is the **unburned**
+  # one for heights, as in `zone`; the pointer and the accumulation are from the breached copy,
+  # which is what makes a path exist where no channel is mapped.
+  dem: out/hazard/work/dem_utm.tif
+  pointer: out/hazard/work/d8_pointer.tif
+  accum: out/hazard/work/d8_accum.tif
+  buildings: out/hazard/buildings/buildings_2023_30m.tif
+  # Where the zone stops: the receiving channel draining this many times the reservoir's own
+  # catchment. Past that junction the flood is the river's, and the river gauges warn for it.
+  big_factor: 10
+  # Never longer than this, however small the reservoir: a hill stream can run a long way before
+  # it meets anything bigger than itself, and a 25 km reach is already more than one day's spill
+  # can fill to any depth.
+  max_reach_km: 25
+  # Only a bound on the work: the corridor itself is the land that drains into the reach.
+  max_distance_km: 3
+  # How far from the given wall position to look for the channel when the pool is not mapped.
+  snap_cells: 25
+  surface: {bin_m: 500, low_percentile: 25, within_cells: 1}
+  # Ground more than this far below the channel's surface counts as exactly this far below it:
+  # one pit in a 30 m model must not swallow the day's volume and leave the valley dry.
+  floor_below_channel_m: 2.0
+  # The band is never thinner than the first or deeper than the second. A valley flat enough to
+  # take the volume in a hand's depth still gets a drawable band; a gorge that would need more
+  # than the ceiling is cut there rather than drawn as a wall of water.
+  min_depth_m: 0.3
+  max_depth_m: 5.0
+  # The outer band is a margin as well as a wetter day: it is never drawn on the zone's own line.
+  outer_extra_m: 0.5
+  # A day's spill. The reservoir is already full, so what arrives has to leave: the catchment
+  # above the wall times the wettest day the rain archive holds near it times the share that runs
+  # off. The two coefficients give the two bands - 0.6 for the zone, and 0.9 for the outer band,
+  # where the ground is already saturated and nearly all of it runs off.
+  day_spill:
+    rain_stations_km: 15     # rain gauges this near the wall (widened by 10 km until one is found)
+    rain_min_days: 60        # a station with a shorter record than this is not used
+    # A point ceiling: the archive holds single "days" of 1,052 mm and three 420 mm days in a
+    # row at Sadao, which no rain in this region does (the satellite's wettest 24 hours over the
+    # whole Khlong U-Taphao basin is 345 mm). Above this it is a gauge fault, not weather.
+    rain_max_mm: 400
+    # Some stations report a running total through a wet spell rather than the day's rain (station
+    # 855 at Sadao ran to 1,035 mm over six days in November 2025). A run of this many days that
+    # never falls and reaches this figure is differenced back into days (spill.py, `daily_rain`).
+    accumulation_mm: 250
+    accumulation_days: 3
+    runoff: 0.6
+    runoff_outer: 0.9
+  # No gauge below these reservoirs, so no travel time can be measured. The fastest speed gives
+  # the earliest the water could arrive, the slowest the latest, and every screen that shows them
+  # says they are assumed (METHODS.md).
+  velocity_ms: [0.5, 2.0]
+  safety_margin: 0.2
+  # A reservoir simply being full raised nothing until now: for all five, the capacity at normal
+  # high water *is* the full capacity, so S7's `above_normal_high` could only fire above 100%.
+  # These two are the share of capacity at which it becomes watchful, and the share at which a
+  # notice goes to the admins. Admins own both numbers once they are in system_settings.
+  near_full_pct: 80
+  full_pct: 95
+  # `spill rain` asks the satellite about the catchments the first pass wrote. The same
+  # collection, band and grid the flood thresholds were measured on (thresholds/config.yaml), so
+  # the two figures can be set beside each other, and the same flood-season window.
+  seasons: {first: 2017, last: 2025, start_month: 10, end_month: 1}
+  rain_fetch:
+    collection: JAXA/GPM_L3/GSMaP/v8/operational
+    band: hourlyPrecipRateGC      # gauge-adjusted, mm per hour
+    scale_m: 11132                # the product's own 0.1 degree grid
+    chunk_days: 10
+  simplify_m: 30
+  seed: {simplify_m: 60, min_patch_km2: 0.05}
+  radar:
+    season_2020: out/sar_floods/products/jaga_sar_max_season-2020_20m_c97e0bf.tif
     event_2024: out/sar_floods/products/jaga_sar_max_event-2024-nov-dec_10m_c97e0bf.tif
     event_2025: out/sar_floods/products/jaga_sar_max_event-2025-nov-dec_10m_c97e0bf.tif

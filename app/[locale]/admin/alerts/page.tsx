@@ -274,7 +274,7 @@ export default async function AdminAlerts({
       </div>
 
       {/* What the automatic alarm did, and how much of all this rings in this admin's bell. */}
-      <AutoAlarmLog alarms={autoAlarms} t={t} />
+      <AutoAlarmLog alarms={autoAlarms} t={t} locale={locale} />
       <AllAlertsTick on={allAlerts} action={setAllAlerts.bind(null, locale)} t={t} />
 
       <h2 className="text-body font-bold text-jaga-ink">{t("ended.title")}</h2>

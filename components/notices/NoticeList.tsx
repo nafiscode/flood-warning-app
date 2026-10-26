@@ -7,6 +7,7 @@ import { ClockIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
 import { ShareJagaButton } from "@/components/ShareJagaButton";
 import { Link } from "@/i18n/navigation";
 import { alertWords } from "@/lib/alert-words";
+import { localName } from "@/lib/places";
 import { ADMIN_QUEUE_HREF, type NoticeItem } from "@/lib/notices";
 
 /**
@@ -128,17 +129,32 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         <>
           <AlertBadge level={item.level} />
           <p>
-            {t(`auto.${item.status}`, {
+            {/*
+             * A waiting draft is said in the terms of what raised it: a gauge in metres, a
+             * reservoir as a share of its capacity, and the all-clear as the water being down.
+             * Once it has been decided, one line covers all three.
+             */}
+            {t(
+              item.status !== "pending"
+                ? `auto.${item.status}`
+                : item.subject === "clear"
+                  ? "auto.pendingClear"
+                  : item.subject === "reservoir"
+                    ? "auto.pendingReservoir"
+                    : "auto.pending",
+              {
               level: tLevel(item.level),
-              zone: item.zone,
+              zone: item.names ? localName(item.names, locale) : item.zone,
               gauge: item.gauge ?? "–",
+              percent: item.percent ?? "–",
               value: item.value ?? "–",
               time: format.dateTime(new Date(item.deadline), {
                 timeZone: "Asia/Bangkok",
                 hour: "2-digit",
                 minute: "2-digit",
               }),
-            })}
+              },
+            )}
           </p>
           {item.drill && <p className="text-small text-jaga-text-2">{t("auto.drill")}</p>}
         </>

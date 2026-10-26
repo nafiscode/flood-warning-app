@@ -794,7 +794,9 @@
         "spillingOne": "Air melimpah melalui alur limpah",
         "aboveNormalOne": "Melepasi paras takungan biasa",
         "others": "dan {count} lagi perlu dipantau",
-        "openAll": "Lihat semua empangan"
+        "openAll": "Lihat semua empangan",
+        "graded": "{count} perlu diperhatikan",
+        "gradedOne": "Perlu diperhatikan"
       },
       "reports": {
         "label": "Laporan penduduk",
@@ -975,7 +977,9 @@
       "replaced": "Draf {level} untuk {zone} telah digantikan dengan draf baharu.",
       "drill": "Ini latihan; orang awam tidak nampak.",
       "act": "Pergi ke isyarat",
-      "see": "Lihat sejarah"
+      "see": "Lihat sejarah",
+      "pendingReservoir": "Draf amaran {level} untuk {zone} sedang menunggu pentadbir (takungan {percent}% daripada kapasiti). Jika tiada siapa menghantar atau membatalkannya, Jaga menerbitkannya sendiri pada {time}.",
+      "pendingClear": "Draf “boleh balik rumah” untuk {zone} sedang menunggu pentadbir. Air sudah turun di bawah ambang. Jika tiada siapa menghantar atau membatalkannya, Jaga menerbitkannya sendiri pada {time}."
     },
     "queue": {
       "act": "Pergi uruskan",
@@ -2200,7 +2204,9 @@
         "above_turbines": "Jumlah pelepasan melebihi keupayaan lepasan turbin",
         "above_normal_high": "Isipadu simpanan melebihi kapasiti pada paras simpanan penuh biasa",
         "inflow_high": "Kadar alir masuk ke takungan pada paras tinggi",
-        "rising_fast": "Isipadu simpanan takungan meningkat dengan cepat"
+        "rising_fast": "Isipadu simpanan takungan meningkat dengan cepat",
+        "near_full": "Takungan hampir penuh",
+        "full_and_rising": "Hampir penuh dan masih bertambah"
       },
       "outflow": "Jumlah pelepasan {cms, number} m³/s",
       "spilled": "{cms, number} melalui alur limpah",
@@ -2740,7 +2746,9 @@
       "above_normal_high": "Isipadu simpanan melebihi kapasiti pada paras simpanan penuh biasa",
       "inflow_high": "Kadar alir masuk ke takungan berada pada paras tinggi",
       "rising_fast": "Isipadu simpanan takungan meningkat dengan cepat dalam {hours} jam lepas",
-      "release_high": "Kadar pelepasan tinggi berbanding kapasiti takungan."
+      "release_high": "Kadar pelepasan tinggi berbanding kapasiti takungan.",
+      "near_full": "Takungan hampir penuh",
+      "full_and_rising": "Takungan hampir penuh dan masih bertambah, jadi air yang masuk mesti dilepaskan ke hilir"
     },
     "awaiting": {
       "release_unconfirmed": "Satu bacaan sahaja menunjukkan kadar pelepasan yang tinggi. Menunggu bacaan jam berikutnya untuk pengesahan, kerana rekod lalu mengandungi nilai sejam yang jelas tidak munasabah.",
@@ -2865,7 +2873,9 @@
       "limits": "Garis di peta ialah laluan sungai, bukan sempadan kawasan banjir. Kawasan di luar garis pun boleh dilanda banjir.",
       "spillwayNotMapped": "Saluran pelepasan dari alur limpah belum ada dalam data peta, jadi ia ditunjukkan sebagai titik bukan garis.",
       "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Kawasan berlorek ialah tanah yang pernah dicapai paras sungai, dianggar daripada model ketinggian 30 m dan stesen paras air; garis putus-putus ialah satu meter lebih tinggi. Ini bukan peta banjir dan bukan ramalan.",
-      "notMapped": "Tiada saluran di hilir takungan ini dalam pangkalan data peta, jadi Jaga belum boleh menunjukkan ke mana air yang dilepaskan mengalir."
+      "notMapped": "Tiada saluran di hilir takungan ini dalam pangkalan data peta, jadi Jaga belum boleh menunjukkan ke mana air yang dilepaskan mengalir.",
+      "creditSpill": "Garisan di bawah takungan ialah laluan air daripada model ketinggian 30 m, bukan alur yang dipetakan, dan berhenti di tempat air bertemu alur sepuluh kali lebih besar. Kawasan berteduh ialah tanah yang boleh ditakungi oleh satu hari limpahan dari takungan yang penuh; garisan putus-putus ialah hari yang lebih lembap dengan tambahan setengah meter. Hujan daripada GSMaP, ketinggian daripada FABDEM. Ini bukan peta banjir dan bukan ramalan.",
+      "arrivalAssumed": "Tiada tolok air di bawah takungan ini, jadi masa itu dikira daripada kelajuan alur yang dianggap 0.5 hingga 2 m/s, bukan diukur."
     },
     "legend": {
       "open": "Lihat data {dam} dan carta 14 hari",
@@ -3146,7 +3156,9 @@
       "deadline": "Diterbitkan sendiri pada",
       "decided": "{name}",
       "byJaga": "Jaga (automatik)",
-      "act": "Hantar atau tolak di isyarat"
+      "act": "Hantar atau tolak di isyarat",
+      "readingReservoir": "Simpanan {percent}% daripada kapasiti ({value} juta m³, ambang {threshold} juta m³)",
+      "readingClear": "Air sudah turun ({value}, di bawah ambang {threshold})"
     },
     "bell": {
       "title": "Loceng anda",
@@ -3999,6 +4011,14 @@
       "none": "Belum ada rekod bagi muara ini.",
       "noZoneTitle": "Muara yang belum mempunyai zon amaran",
       "noZone": "{name}: ada rekod tetapi tiada ramalan langsung, kerana tiada zon amaran meliputi Mueang Narathiwat. Dalam banjir 2024 dan 2025 paras terendah di sini berada pada persentil ke-96 dan ke-98. Muara Sungai Golok (Tak Bai) terletak 20 km di pantai yang sama, jadi ia boleh digunakan sebagai ganti buat sementara."
+    },
+    "pushReservoir": {
+      "title": "Takungan {zone} hampir penuh",
+      "body": "Takungan pada {percent}% daripada kapasiti dan masih bertambah. Draf amaran sedang menunggu. Hantar, ubah atau batalkan; jika tiada siapa bertindak ia dihantar sendiri pada {time}."
+    },
+    "pushClear": {
+      "title": "Air sudah turun di {zone}",
+      "body": "Draf “boleh balik rumah” sedang menunggu. Hantar, ubah atau batalkan; jika tiada siapa bertindak ia dihantar sendiri pada {time}."
     }
   },
   "lineQuota": {

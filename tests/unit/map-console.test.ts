@@ -223,6 +223,7 @@ describe("the laptop console's readout strip", () => {
       outflowCms: null,
       inflowCms: null,
       observedAt: null,
+      grade: null,
       stale: false,
     });
     const withSignal = {
@@ -539,6 +540,7 @@ describe("the readouts that ask for an admin's eye", () => {
       outflowCms: null,
       inflowCms: null,
       observedAt: null,
+      grade: null,
       stale: false,
       ...over,
     }) as Parameters<typeof damAlarm>[0];
@@ -577,6 +579,18 @@ describe("the readouts that ask for an admin's eye", () => {
     expect(damAlarm(dam({ percentFull: 75, normalMark: 0.8 }))).toBeNull();
     // Nothing published about the normal level is not a reason to blink.
     expect(damAlarm(dam({ percentFull: 99, normalMark: null }))).toBeNull();
+  });
+
+  /*
+   * The five irrigation reservoirs are held at their full capacity, so `normalMark` is 1 and the
+   * test above can only fire above 100%. Their own rules live in the grade, and the state that
+   * rings every admin's phone has to be the state that lights the tile (27 Oct 2026).
+   */
+  it("blinks the dam when Jaga's own rules have something to say, however full it is", () => {
+    expect(damAlarm(dam({ percentFull: 96, normalMark: 1, grade: "releasing" }))).toBe("attention");
+    expect(damAlarm(dam({ percentFull: 84, normalMark: 1, grade: "watchful" }))).toBe("attention");
+    // Quiet is quiet, even at the top of the range: nothing of Jaga's is asking to be looked at.
+    expect(damAlarm(dam({ percentFull: 96, normalMark: 1, grade: "quiet" }))).toBeNull();
   });
 
   it("pulses slowly enough to be safe, and stops when less motion is asked for", () => {

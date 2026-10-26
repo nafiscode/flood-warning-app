@@ -275,3 +275,78 @@ The owner does not take it as settled that the floods of late 2024 and 2025 came
 **4. The rain on both sides of the dam** (GSMaP basin means, collected for S5 on 14 Oct). From 24 November to 6 December 2024, 686 mm fell on the catchment above the dam and 835 mm on the 291 km² between the dam and X.77. The dam's own figures put 280 mm of that into the reservoir, a runoff share of 0.41. X.77's figures need 828 mm to have run off the land below, a share of 0.99: all of the rain. In 2025 (20 to 30 November): 762 mm and 963 mm of rain, shares of 0.16 above the dam and 0.38 below it. So the rain was heavier below the dam, but not three times heavier, and X.77 asks the land below the dam to shed more than twice the share of its rain that the land above did. If the lower land ran off as the upper did, about 140 Mm³ in 2024 and 60 Mm³ in 2025 at X.77 are not accounted for. A gauge that reads twice too high at flood stage would account for all of it; so would a release of that size.
 
 **Reading.** Nothing outside the operator contradicts the record, and the satellite confirms the part of it that can be seen from above. But the one independent gauge close to the dam shows more water than the land below the dam should easily give, in both floods, and it is too unsteady to say why. The question is not closed. What would close it: the rain on those 291 km² and on the catchment above the dam in the same days (GSMaP, collected in S5), and the department's rating notes for X.77.
+
+## A full reservoir's own zone (27 Oct 2026, not validated)
+
+`uv run python -m dam_release spill` builds, for each reservoir with no gauge below it, the land one day of spill from a full reservoir can reach. Outputs: `out/dam_release/spill/<code>.json` and `<code>_by_tambon.csv`, `out/dam_release/geojson/<code>_spill.geojson`, and with `--seed` the seed `supabase/seed/43_dam_spill_zone.sql`.
+
+**Why it exists.** The owner asked on 26 Oct 2026: which reservoirs have no release zone, and for an irrigation reservoir that merely collects water, where does the water go when it fills up and who is in the way? Five of the six reservoirs had no zone. Three of them — Khlong Chamrai, Klai Ban, Ban Baik — had no mapped channel below them either, so `admin_send_dam_release` refused to send for them at all ("that dam has no release zone"), and the other two had no arrival times. Khlong Chamrai, which prompted the question, went from 42.8 % full on 12 October to 55.8 % on 24 October with the season's rain still to come.
+
+**The six steps.**
+
+1. **The start.** The cell inside the mapped pool that the most land drains to; without a pool outline, the cell near the given wall position with the largest catchment that does not stand above the wall. Its flow accumulation is the catchment above the wall.
+2. **The path.** The hazard module's D8 pointer, followed downstream. It is built on the breached and filled surface, so a path exists where no channel is mapped — which is the whole point for three of these five.
+3. **The cut.** The path stops at the first cell whose own catchment is ten times the reservoir's. Past that junction the flood is the receiving river's, and that river has gauges and thresholds of its own. The owner chose this on 26 Oct 2026 over running to the sea: a 6 Mm³ reservoir must not put its name on Hat Yai's flood.
+4. **The corridor.** Not a radius: the land that drains into the kept reach, below the wall, from the same flow directions. A radius reaches over the divide into the next valley, which lies lower, and the volume balance of step 6 would then be spent filling somebody else's valley. (Measured: with a 3 km radius, a 0.1 m rise at Khlong Chamrai "held" 56.8 Mm³ — nine times the whole reservoir — because the corridor had taken in the neighbouring khlong's floor.)
+5. **A day's spill.** The reservoir is full, so what arrives has to leave: the catchment above the wall × the wettest day on record over it × the share that runs off. 0.6 for the zone, 0.9 for the outer band, where the ground is already saturated.
+6. **The fill.** The water surface, level above the channel's own falling surface (S7's `river_surface` and `height_above_river`, so both kinds of zone are read the same way), whose volume over the corridor equals that day's spill. Ground more than 2 m below the channel counts as exactly 2 m below it, so one pit in a 30 m model cannot swallow the volume. The band is never thinner than 0.3 m nor deeper than 5 m, and the outer band is never drawn on the zone's own line (at least 0.5 m more).
+
+**Checked against the dam that has a zone.** Traced from Bang Lang the method gives a catchment of 1,992 km² (RID's figure above the dam is about 2,080) and 129 km to the Pattani river mouth, against 134 km for the mapped channel. The path is right; it is the only part of this that can be checked against something independent.
+
+**The design rain, and why the rain gauges could not carry it.** `spill rain` asks GSMaP, hour by hour over each catchment, for the nine flood seasons 2017–2025 — the same collection, band and grid the flood thresholds were measured on. The rain gauges are the cross-check, and they are the reason the satellite is the input: ThaiWater's daily archive holds single "days" of 1,052 mm at Ban Pula Tiri and a run of 164 → 333 → 455 → 719 → 980 → 1,035 mm at Sadao over six days of November 2025, which is a running total and not daily rain. `daily_rain` differences a run of three days or more that never falls and reaches 250 mm, and anything still over 400 mm is treated as a gauge fault; even so, a point gauge cannot be trusted with a single day's extreme here. Where both can be read they agree:
+
+| Reservoir | Catchment | Satellite, wettest 24 h | The nearest usable gauge |
+| --- | --- | --- | --- |
+| Khlong Sadao | 23.2 km² | 311.6 mm (24 Nov 2025) | 248.4 mm, Sadao town, 9.9 km |
+| Khlong La | 24.2 km² | 339.3 mm (24 Nov 2025) | 300.6 mm, Ton Nga Chang, 11.0 km |
+| Khlong Chamrai | 8.4 km² | 345.3 mm (24 Nov 2025) | 311.2 mm, Sadao, 12.5 km |
+| Klai Ban | 2.5 km² | 557.0 mm (23 Nov 2025) | 102.5 mm, one gauge, one year of record |
+| Ban Baik | 2.8 km² | 411.0 mm (23 Nov 2025) | 388.8 mm, Raman, 12.5 km |
+
+All five fall in the floods of 23–24 November 2025. Klai Ban's 557 mm is the one figure to treat with suspicion: it is the highest of the five over the smallest catchment, its gauge has a year of record and says 102 mm, and GSMaP is known to read high at extremes. **A seed is refused unless the satellite has been asked** (`spill --seed`), so no zone rests on the gauges.
+
+**The result.**
+
+| Reservoir | Full | Reach kept | A day's spill | Zone | Outer band | Tambons | Water arrives |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Khlong Sadao | 56.7 Mm³ | 14.8 of 29.7 km | 4.35 Mm³ | 1.14 m, 5.7 km², 3,242 buildings | 1.64 m, 7.0 km², 3,862 | 2 | 0–6.4 h |
+| Khlong La | 21.4 Mm³ | 21.2 of 29.7 km | 4.93 Mm³ | 0.30 m, 8.6 km², 660 | 0.80 m, 13.2 km², 2,188 | 3 | 0–10.3 h |
+| Khlong Chamrai | 6.0 Mm³ | 5.3 of 29.4 km | 1.74 Mm³ | 1.74 m, 1.6 km², 150 | 2.25 m, 1.8 km², 163 | 1 | 0 h (it is in the tambon) |
+| Klai Ban | 3.7 Mm³ | 5.5 km, to the flats | 0.84 Mm³ | 0.42 m, 3.3 km², 85 | 0.92 m, 5.2 km², 240 | 2 | 0–0.2 h |
+| Ban Baik | 1.2 Mm³ | 7.6 of 28.9 km | 0.69 Mm³ | 0.30 m, 2.6 km², 271 | 0.80 m, 8.3 km², 2,127 | 3 | 0–3.0 h |
+
+Khlong Chamrai's zone is one tambon, Khlong Hoi Khong: 1.6 km² of low land along 5.3 km of khlong, about 150 buildings. That is the honest answer for a 6 Mm³ reservoir, and it is 150 buildings more than the nobody it could warn before.
+
+**Two results to look at again.** Ban Baik's outer band jumps from 2.6 km² and 271 buildings to 8.3 km² and 2,127 for half a metre more water, because its reach ends in the flats of Yala town where the ground is nearly level — so two Yala city tambons are on a 1.2 Mm³ reservoir's notice list. And Khlong Sadao's list falls from the 17 tambons of the interim OpenStreetMap path (the river line all the way through Hat Yai to Songkhla Lake) to 2, which is the cut of step 3 doing exactly what it was asked to do. Both follow from the owner's own choices; both are worth a second look before the season.
+
+**Against the radar** (the share of the radar's flood inside the corridor the zone holds / the share of the zone the radar saw wet):
+
+| Reservoir | Season 2020 | Nov–Dec 2024 | Nov–Dec 2025 |
+| --- | --- | --- | --- |
+| Khlong Sadao | 7.6 % / 2.1 % | 3.9 % / 0.5 % | 9.4 % / 3.5 % |
+| Khlong La | 55.0 % / 19.9 % | 59.7 % / 13.9 % | 38.0 % / 20.7 % |
+| Khlong Chamrai | 11.4 % / 1.6 % | 15.8 % / 1.8 % | 14.7 % / 2.6 % |
+| Klai Ban | 28.2 % / 10.9 % | 42.7 % / 21.7 % | 33.3 % / 14.9 % |
+| Ban Baik | 21.3 % / 13.8 % | 10.9 % / 3.7 % | 34.1 % / 43.3 % |
+
+Khlong La's figures sit where Bang Lang's zone sits (62–67 % held, 18–24 % wet) and Klai Ban's are respectable. Khlong Sadao's and Khlong Chamrai's are poor: their reaches are upland and narrow, where the radar is blind under trees and the wet pixels in the corridor are rain standing on the valley sides rather than water out of the channel. As with Bang Lang's zone this is a sanity check, not a score — but for those two it is a check the zone does not pass, and nothing here should be read as validation.
+
+**Limits.** Everything S7's zone cannot say, and five more:
+
+- There is no routing and no attenuation. A level pool holding a volume is not a flood wave; it says which land is low enough, joined to the channel, and inside the valley this reservoir's water goes down. The depth is the depth of the band, not a forecast for anybody's house.
+- The design rain is the wettest 24 hours in nine seasons of a satellite product, not a return period, and for the smallest catchments one GSMaP pixel is larger than the catchment itself.
+- The runoff shares, 0.6 and 0.9, are judgement. Nothing here measures them: the reservoirs publish no inflow history at all (`dam_medium_graph` is empty for every one of them), so there is no event to fit them to. **Revisit after the first flood these five see with Jaga watching.**
+- The arrival times are the reach length at an assumed 0.5 to 2 m/s. Nothing is measured, there is no gauge below any of these reservoirs to measure it with, and the peak is given the same window as the first rise because the two cannot be told apart over reaches this short. Every screen that shows them says so.
+- The cut at ten times the catchment is a ratio of catchments, not of volumes. For the biggest of the five it may cut too early: 57 Mm³ is a lot of water in absolute terms even where the receiving river drains thirteen times more land.
+
+## When a full reservoir rings the phones (27 Oct 2026)
+
+Three rules were added for the reservoirs, all of them in the database and all of them the admins' to change (migrations `..s7_reservoir_full_rule`, `..s7_reservoir_auto_alarm`, `..s7_auto_all_clear`).
+
+**Being full now grades as something.** For all five reservoirs the capacity at normal high water *is* the full capacity, so S7's `above_normal_high` could only fire above 100 % and a reservoir at 99 % and climbing graded as quiet. Now: at or above 80 % of capacity it is `watchful` with the reason `near_full`; at or above 95 % **and still filling** it is `releasing` with the reason `full_and_rising`, which raises a row on the war room. Full and steady is watchful, not releasing — the water is not rising towards anybody. The same grade also lights the reservoir's tile on the map, because the state that rings every admin's phone has to be the state a reader sees blinking.
+
+**The automated alarm, extended.** The owner asked on 27 Oct 2026 for the reservoirs to work like the river gauges under safety rule 2's one exception. A reservoir an admin has ticked (all five are, by `supabase/seed/44_auto_alarm_dams.sql`) raises a draft at 95 % and filling, on every admin's phone, from the reviewed template `reservoir_full_warning`, naming the tambons of its own overflow zone. If nobody sends or dismisses it within the grace time, Jaga publishes that draft itself, marked as issued without review and written to `audit_log`; if the reservoir has stopped filling by then, nothing is published. What is different from a gauge: one daily reading grades rather than two hourly ones, 48 hours old counts as fresh, and the level is **Warning, never Evacuate** — the biggest of the five holds 57 Mm³, the smallest 1.2, and their zones are a screening band from an elevation model. Telling a tambon to leave on that evidence stays a person's decision.
+
+**And when it is over.** Nothing used to take an alert down: it stood with its level until an admin superseded it. Now, when the water is clearly back down — a reservoir under 85 % of capacity, or a gauge 0.3 m under the threshold that fired, for two readings in a row — and the alert has stood for six hours, the same road carries the all-clear from the reviewed `flood_return` template, superseding the alert it answers. The margins are hysteresis: a reading wobbling across the line that fired would otherwise flap between warning and all-clear, which is worse than either. Only an alert the automated path published itself is cleared this way; a person's alert is a person's to take down. Six hours is the floor because an alert cleared twenty minutes after it was raised was a false alarm, and the way to deal with one of those is for a person to withdraw it, not for the machine to declare the area safe.
+
+**One bug found on the way.** `auto_alarm_check` had no `not is_drill` filter on the guards that ask whether an alert already stands over a zone, although the drill-delivery migration of 20 Oct 2026 recorded that the automated alarm "reads `not is_drill` already". It did not. A drill sent over an area would therefore have suppressed the automated alarm there for 48 hours — and a drill sent to everyone, over the whole service area, would have suppressed it everywhere. Fixed in `..s7_reservoir_auto_alarm` as part of the same replacement.

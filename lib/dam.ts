@@ -23,7 +23,9 @@ export type DamGrade = "quiet" | "watchful" | "releasing";
 export const DAM_REASONS = [
   "spilling",
   "above_turbines",
+  "full_and_rising",
   "above_normal_high",
+  "near_full",
   "inflow_high",
   "rising_fast",
 ] as const;
@@ -334,6 +336,21 @@ export function operatorName(operator: string, say: (key: string) => string): st
 /** True where OSM has no channel below the reservoir, so the app can say so instead of guessing. */
 export function pathMapped(dam: Dam): boolean {
   return dam.geometryNote.path_mapped !== false && dam.reaches.length > 0;
+}
+
+/** The geometry_source of an overflow zone (pipeline/dam_release/spill.py, 26 Oct 2026). */
+export const SPILL_SOURCE = "spill";
+
+/**
+ * True where this reservoir's zone is the overflow zone rather than S7's gauge-measured one.
+ *
+ * The two rest on different things and a screen has to say which it is showing (safety rule 8):
+ * Bang Lang's is the land four river gauges have been high enough to reach, and these five have
+ * no gauge below them at all - their line is the elevation model's own flow path and their band
+ * is one day of spill from a full reservoir.
+ */
+export function spillZone(dam: Dam): boolean {
+  return dam.geometrySource === SPILL_SOURCE;
 }
 
 /** The reaches that carry released water, in drawing order: tributaries first, river on top. */

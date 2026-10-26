@@ -276,10 +276,16 @@ export async function runPushTick(): Promise<PushOutcome> {
   }
 }
 
-const AUTO_WORDS: Record<string, { title: string; body: string }> = {
-  th: th.signals.push,
-  ms: ms.signals.push,
-  en: en.signals.push,
+/**
+ * The three sets of words the alarm's push to the admins can carry: a gauge over its bank, a
+ * reservoir near full, and the all-clear. A gauge reads in metres and a reservoir as a share of
+ * its capacity, and the all-clear is not a warning at all, so one body cannot serve all three
+ * (27 Oct 2026).
+ */
+const AUTO_WORDS: Record<string, Record<string, { title: string; body: string }>> = {
+  th: { gauge: th.signals.push, reservoir: th.signals.pushReservoir, clear: th.signals.pushClear },
+  ms: { gauge: ms.signals.push, reservoir: ms.signals.pushReservoir, clear: ms.signals.pushClear },
+  en: { gauge: en.signals.push, reservoir: en.signals.pushReservoir, clear: en.signals.pushClear },
 };
 
 /**
@@ -306,8 +312,10 @@ async function autoAlarmTick(
   }[]) {
     let payload: unknown = null;
     if (row.kind === "auto_alarm") {
-      const words = AUTO_WORDS[row.locale] ?? AUTO_WORDS.th!;
       const d = row.data;
+      const which = d.clear === true ? "clear" : d.dam ? "reservoir" : "gauge";
+      const set = AUTO_WORDS[row.locale] ?? AUTO_WORDS.th!;
+      const words = set[which] ?? set.gauge!;
       const zone =
         ((d.zone ?? {}) as Record<string, string>)[row.locale] ??
         (d.zone as Record<string, string>)?.th ??
@@ -324,6 +332,7 @@ async function autoAlarmTick(
           .replace("{level}", level)
           .replace("{zone}", zone)
           .replace("{gauge}", String(d.gauge ?? ""))
+          .replace("{percent}", String(d.percent ?? ""))
           .replace("{value}", String(d.value ?? ""))
           .replace("{time}", deadline);
       payload = {

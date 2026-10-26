@@ -794,7 +794,9 @@
         "spillingOne": "Water over the spillway",
         "aboveNormalOne": "Past its normal level",
         "others": "and {count} more to watch",
-        "openAll": "See every reservoir"
+        "openAll": "See every reservoir",
+        "graded": "{count} to watch",
+        "gradedOne": "Worth watching"
       },
       "reports": {
         "label": "Resident reports",
@@ -975,7 +977,9 @@
       "replaced": "The {level} draft for {zone} was replaced by a newer one.",
       "drill": "This is a drill; the public does not see it.",
       "act": "Go to signals",
-      "see": "See the history"
+      "see": "See the history",
+      "pendingReservoir": "A {level} draft for {zone} is waiting for an admin (reservoir {percent}% of capacity). If nobody sends or dismisses it, Jaga publishes it by itself at {time}.",
+      "pendingClear": "A “safe to return” draft for {zone} is waiting for an admin. The water is back down below the threshold. If nobody sends or dismisses it, Jaga publishes it by itself at {time}."
     },
     "queue": {
       "act": "Go and deal with it",
@@ -2200,7 +2204,9 @@
         "above_turbines": "Total outflow exceeds turbine discharge capacity",
         "above_normal_high": "Storage is above the capacity at normal high water level",
         "inflow_high": "Inflow to the reservoir is high",
-        "rising_fast": "Reservoir storage is rising sharply"
+        "rising_fast": "Reservoir storage is rising sharply",
+        "near_full": "The reservoir is close to full",
+        "full_and_rising": "Nearly full and still filling"
       },
       "outflow": "Total outflow {cms, number} m³/s",
       "spilled": "{cms, number} over the spillway",
@@ -2740,7 +2746,9 @@
       "above_normal_high": "Storage is above the capacity at normal high water level",
       "inflow_high": "Inflow to the reservoir is high",
       "rising_fast": "Reservoir storage has risen sharply over the last {hours} hours",
-      "release_high": "The release is high for the size of this reservoir."
+      "release_high": "The release is high for the size of this reservoir.",
+      "near_full": "The reservoir is close to full",
+      "full_and_rising": "The reservoir is nearly full and still filling, so the water it takes in has to pass on downstream"
     },
     "awaiting": {
       "release_unconfirmed": "A single reading indicates a high release rate. Waiting for the next hourly reading to confirm it, because the record contains clearly erroneous hourly values.",
@@ -2865,7 +2873,9 @@
       "limits": "The line on the map is the course of the river, not a flood extent. Areas off the line can still flood.",
       "spillwayNotMapped": "The spillway discharge channel is not in the map data, so it is shown as a point rather than a line.",
       "credit": "River and reservoir from OpenStreetMap. The shaded land is what the river has been high enough to reach, worked out from a 30 m elevation model and the river gauges; the dashed line is one metre higher. It is not a flood map and not a forecast.",
-      "notMapped": "No channel below this reservoir is in the map database yet, so Jaga cannot yet show where released water goes."
+      "notMapped": "No channel below this reservoir is in the map database yet, so Jaga cannot yet show where released water goes.",
+      "creditSpill": "The line below the reservoir is the flow path a 30 m elevation model gives, not a mapped channel, and it stops where the water joins a channel ten times its size. The shaded land is where one day of spill from a full reservoir could stand; the dashed line is a wetter day with half a metre on top. Rain from GSMaP, elevation from FABDEM. It is not a flood map and not a forecast.",
+      "arrivalAssumed": "No gauge stands below this reservoir, so the times are worked out from an assumed channel speed of 0.5 to 2 m/s, not measured."
     },
     "legend": {
       "open": "See {dam}'s figures and charts",
@@ -3146,7 +3156,9 @@
       "deadline": "Publishes itself at",
       "decided": "{name}",
       "byJaga": "Jaga (automatic)",
-      "act": "Send or dismiss it on Signals"
+      "act": "Send or dismiss it on Signals",
+      "readingReservoir": "Storage {percent}% of capacity ({value} Mm³, threshold {threshold} Mm³)",
+      "readingClear": "The water is back down ({value}, below {threshold})"
     },
     "bell": {
       "title": "Your bell",
@@ -3999,6 +4011,14 @@
       "none": "No record for this mouth yet.",
       "noZoneTitle": "Mouths with no warning zone yet",
       "noZone": "{name}: it has a record but no live forecast, because no warning zone covers Mueang Narathiwat. In the 2024 and 2025 floods its low water stood at the 96th and 98th percentile. The Kolok mouth at Tak Bai is 20 km along the same shore, so it stands in for now."
+    },
+    "pushReservoir": {
+      "title": "{zone} reservoir is nearly full",
+      "body": "The reservoir is at {percent}% of capacity and still filling. A draft alert is waiting. Send it, change it or dismiss it; if nobody acts it is sent by itself at {time}."
+    },
+    "pushClear": {
+      "title": "The water is back down at {zone}",
+      "body": "A “safe to return” draft is waiting. Send it, change it or dismiss it; if nobody acts it is sent by itself at {time}."
     }
   },
   "lineQuota": {

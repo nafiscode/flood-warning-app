@@ -1322,7 +1322,14 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
       ...EXAMPLE_DAM,
       code: "quiet_dam",
       name: { th: "เขื่อนสงบ", en: "Quiet dam" },
-      signal: { ...exampleDamSignal("watch")!, percentFull: 40 },
+      /*
+       * Really quiet: the "watch" example with its percentage lowered used to pass for one,
+       * because the card only asked about the spillway and the normal level. Since 27 Oct 2026 it
+       * also asks what Jaga's own rules make of the figures - which is the state that rings the
+       * admins' phones - so a watchful grade now counts as doing something, and a reservoir that
+       * is doing nothing has to be graded quiet.
+       */
+      signal: { ...exampleDamSignal("quiet")!, percentFull: 40 },
     };
     const admin = { signedIn: true as const, home: null, places: [], role: "admin" };
 
@@ -1407,7 +1414,9 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
         name: { th: "เขื่อนเล็ก", en: "Small dam" },
         storageMaxMcm: 100,
         storageNormalMcm: 90,
-        signal: { ...exampleDamSignal("watch")!, percentFull: 40 },
+        // Graded quiet, so the press lands on Bang Lang: a watchful grade is itself a reason to
+        // light a reservoir since 27 Oct 2026, and this one is only here to be second.
+        signal: { ...exampleDamSignal("quiet")!, percentFull: 40 },
       };
       const c = dashboard({ dams: [second, EXAMPLE_DAM] });
       const rail = c.querySelector('[data-map-features="map"]')!;
