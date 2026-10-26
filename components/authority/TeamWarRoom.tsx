@@ -502,7 +502,7 @@ export function TeamWarRoom({
         {laptop && <ConsoleSky bar />}
         <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Siren ringing={ringing.length} />
+            <Siren ringing={ringing.length} supplies={supplyOffers.length} />
             <h1 className="text-h3 font-bold text-jaga-ink">{t("title")}</h1>
             <p className={hint} data-war-live={live ? "live" : "poll"}>
               {live ? t("war.live") : t("war.poll")}

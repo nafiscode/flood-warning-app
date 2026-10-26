@@ -23,6 +23,30 @@ describe("the war room's siren", () => {
     expect(siren.getAttribute("aria-label")).toContain("2");
   });
 
+  it("lights up yellow for a request for food and water, with its own words, and red wins over it", () => {
+    const supplies = renderWithIntl(<Siren ringing={0} supplies={1} />, "en").container;
+    const s = supplies.querySelector("[data-siren]")!;
+    expect(s.getAttribute("data-siren")).toBe("supplies");
+    expect(s.getAttribute("aria-label")).toContain("food and water");
+    // Both waiting: the rescue request is what the light says.
+    const both = renderWithIntl(<Siren ringing={1} supplies={2} />, "en").container;
+    expect(both.querySelector("[data-siren]")!.getAttribute("data-siren")).toBe("on");
+  });
+
+  it("turns around an upright axis: the lamps swing sideways, not round like a wheel", async () => {
+    const { readFileSync } = await import("node:fs");
+    const css = readFileSync("components/authority/Siren.module.css", "utf8");
+    const keyframes = css.slice(css.indexOf("@keyframes turn"), css.indexOf("@media"));
+    expect(keyframes).toMatch(/translateX\(var\(--reach\)\)/);
+    expect(keyframes).toMatch(/translateX\(calc\(var\(--reach\) \* -1\)\)/);
+    // Nothing rotates in the plane of the screen (that was the wheel).
+    expect(css).not.toMatch(/rotate\(/);
+    // Yellow for food and water, red and blue for a rescue.
+    expect(css).toMatch(/\.supplies\s*\{[^}]*#ffc400/);
+    expect(css).toMatch(/--lamp-a: #ff3b30/);
+    expect(css).toMatch(/--lamp-b: #3d8bff/);
+  });
+
   it("turns slowly enough to be safe, and not at all for someone who asked for less", async () => {
     const { readFileSync } = await import("node:fs");
     const css = readFileSync("components/authority/Siren.module.css", "utf8");
