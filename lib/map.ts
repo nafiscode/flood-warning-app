@@ -802,12 +802,12 @@ export function playIntro(map: MapLibreMap): void {
   });
 
   let done = false;
-  const stops = ["mousedown", "touchstart", "wheel"] as const;
+  const stops = ["pointerdown", "mousedown", "touchstart", "wheel"] as const;
   const finish = () => {
     if (done) return;
     done = true;
-    const el = map.getCanvasContainer();
-    stops.forEach((name) => el.removeEventListener(name, interrupt));
+    // Anywhere on the page, not only the canvas: the zoom, locate and reset buttons sit outside it.
+    stops.forEach((name) => window.removeEventListener(name, interrupt, true));
     window.removeEventListener("keydown", interrupt);
     map.off("moveend", finish);
     map.off("sourcedata", loadedYet);
@@ -832,8 +832,10 @@ export function playIntro(map: MapLibreMap): void {
     map.stop();
     finish();
   }
-  const el = map.getCanvasContainer();
-  stops.forEach((name) => el.addEventListener(name, interrupt, { passive: true, once: true }));
+  // Capture phase, before the button's own click handler moves the map.
+  stops.forEach((name) =>
+    window.addEventListener(name, interrupt, { passive: true, once: true, capture: true }),
+  );
   window.addEventListener("keydown", interrupt, { once: true });
   map.on("style.load", dress);
   map.on("styledata", lift);
