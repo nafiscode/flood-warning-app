@@ -642,6 +642,24 @@ const INTRO_MS = 7000;
 const INTRO_SOURCE = "jaga-intro-earth";
 const INTRO_LAYER = "jaga-intro-earth";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
+/*
+ * A single crisp, cloud-free picture of the service area and its surroundings, prepared once and
+ * served from the app (public/intro/region.jpg, EOX Sentinel-2 cloudless, the same free mosaic the
+ * satellite basemap can fall back to). The global imagery is coarse, so without this the descent
+ * blurred as it closed in before the real tiles had loaded (the owner, 27 Oct 2026). It fades in as
+ * the flight nears the provinces and hands over to the live map at the end. Its corners are the
+ * lon/lat box it was cut to, clockwise from the top-left.
+ */
+const INTRO_REGION_SOURCE = "jaga-intro-region";
+const INTRO_REGION_LAYER = "jaga-intro-region";
+const introRegionUrl = (night: boolean) =>
+  night ? "/intro/region-night.webp" : "/intro/region.webp";
+const INTRO_REGION_BOX: [[number, number], [number, number], [number, number], [number, number]] = [
+  [98, 10],
+  [104.5, 10],
+  [104.5, 4],
+  [98, 4],
+];
 
 /** Few, coarse tiles: the descent never waits on the network, and the picture is gone before it blurs. */
 function introTiles(night: boolean): { tiles: string[]; maxzoom: number; attribution: string } {
@@ -712,7 +730,11 @@ export function playIntro(map: MapLibreMap): void {
   const hideBasemap = () => {
     if (revealed) return;
     for (const layer of map.getStyle()?.layers ?? []) {
-      if (layer.id === INTRO_LAYER || map.getLayoutProperty(layer.id, "visibility") === "none")
+      if (
+        layer.id === INTRO_LAYER ||
+        layer.id === INTRO_REGION_LAYER ||
+        map.getLayoutProperty(layer.id, "visibility") === "none"
+      )
         continue;
       map.setLayoutProperty(layer.id, "visibility", "none");
       hidden.add(layer.id);
@@ -753,6 +775,38 @@ export function playIntro(map: MapLibreMap): void {
           },
         });
       }
+      // The crisp service-area picture, over the coarse globe. It fades in as the flight closes on
+      // the provinces and cross-fades to the live map at the very end, so the zoom-in never blurs.
+      if (!map.getSource(INTRO_REGION_SOURCE)) {
+        map.addSource(INTRO_REGION_SOURCE, {
+          type: "image",
+          url: introRegionUrl(night),
+          coordinates: INTRO_REGION_BOX,
+        });
+      }
+      if (!map.getLayer(INTRO_REGION_LAYER)) {
+        map.addLayer({
+          id: INTRO_REGION_LAYER,
+          type: "raster",
+          source: INTRO_REGION_SOURCE,
+          paint: {
+            "raster-fade-duration": 0,
+            "raster-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              goal - 2.8,
+              0,
+              goal - 1.3,
+              1,
+              goal - 0.25,
+              1,
+              goal - 0.02,
+              0,
+            ],
+          },
+        });
+      }
     } catch {
       // No Earth picture this time; the flight still plays over the ordinary map.
     }
@@ -773,13 +827,12 @@ export function playIntro(map: MapLibreMap): void {
     } as never);
     hideBasemap();
   };
-  // Labels are lifted over the layers after a redraw; the Earth stays on top of them.
+  // The Earth and the crisp service-area picture are kept on top after any redraw, in that order,
+  // so a layer a redraw adds can never cover them while the flight is on.
   const lift = () => {
     hideBasemap();
-    const layers = map.getStyle()?.layers;
-    if (layers?.at(-1)?.id !== INTRO_LAYER && map.getLayer(INTRO_LAYER)) {
-      map.moveLayer(INTRO_LAYER);
-    }
+    if (map.getLayer(INTRO_LAYER)) map.moveLayer(INTRO_LAYER);
+    if (map.getLayer(INTRO_REGION_LAYER)) map.moveLayer(INTRO_REGION_LAYER);
   };
   container.setAttribute("data-map-intro", "wait");
   dress();
@@ -825,6 +878,8 @@ export function playIntro(map: MapLibreMap): void {
     }
     map.setMinZoom(minZoom);
     if (maxBounds) map.setMaxBounds(maxBounds);
+    if (map.getLayer(INTRO_REGION_LAYER)) map.removeLayer(INTRO_REGION_LAYER);
+    if (map.getSource(INTRO_REGION_SOURCE)) map.removeSource(INTRO_REGION_SOURCE);
     if (map.getLayer(INTRO_LAYER)) map.removeLayer(INTRO_LAYER);
     if (map.getSource(INTRO_SOURCE)) map.removeSource(INTRO_SOURCE);
   };
