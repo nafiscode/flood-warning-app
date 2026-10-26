@@ -1,5 +1,6 @@
 import type { DamArrival } from "@/lib/dam-arrival";
 import type { Dam, DamData, DamDaily, DamReach, DamSignal, DamTambon } from "@/lib/dam";
+import { toDamSignal } from "@/lib/dam";
 import type { DamDay } from "@/lib/dam-chart";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/public";
@@ -7,29 +8,7 @@ import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/publi
 type Row = Record<string, unknown>;
 
 /** The signal as the database names it, converted to the names the app uses. */
-function toSignal(row: Row | null | undefined): DamSignal | null {
-  if (!row) return null;
-  const number = (key: string) => (typeof row[key] === "number" ? (row[key] as number) : null);
-  return {
-    observedAt: String(row.observed_at),
-    fetchedAt: String(row.fetched_at),
-    storageMcm: number("storage_mcm"),
-    percentFull: number("percent_full"),
-    levelM: number("level_m"),
-    inflowCms: number("inflow_cms"),
-    releasedCms: number("released_cms"),
-    spilledCms: number("spilled_cms"),
-    outflowCms: number("outflow_cms"),
-    riseMcmPerH: number("rise_mcm_per_h"),
-    riseWindowH: Number(row.rise_window_h ?? 6),
-    grade: row.grade as DamSignal["grade"],
-    reasons: (row.reasons ?? []) as DamSignal["reasons"],
-    awaiting: (row.awaiting ?? []) as DamSignal["awaiting"],
-    readings: Number(row.readings ?? 0),
-    stale: Boolean(row.stale),
-    confirmedOver: Number(row.confirmed_over ?? 2),
-  };
-}
+const toSignal = (row: Row | null | undefined): DamSignal | null => toDamSignal(row);
 
 /** The day behind the newest reading, as the database names it (lib/dam.ts, DamDaily). */
 function toDaily(row: Row | null | undefined): DamDaily | null {

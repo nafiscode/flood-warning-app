@@ -1091,6 +1091,7 @@ export function SignalsView({
   modeAction,
   dismissAction,
   levelsAction,
+  reservoirs,
   refreshMinutes,
 }: {
   data: Signals;
@@ -1107,6 +1108,12 @@ export function SignalsView({
   modeAction?: (form: FormData) => void;
   dismissAction?: (form: FormData) => void;
   levelsAction?: (form: FormData) => void;
+  /**
+   * The reservoirs' own panel (components/admin/ReservoirLevels.tsx), passed in rather than read
+   * here so this view stays the pure thing the dev examples render: the page that fetches builds
+   * it. Under the gauges, because a reservoir is read after the river it feeds.
+   */
+  reservoirs?: ReactNode;
   /** Read the page again this often while it is open (the live page; never the example). */
   refreshMinutes?: number;
 }) {
@@ -1246,6 +1253,7 @@ export function SignalsView({
         />
       ))}
       {view === "map" ? null : <MouthsWithoutZone gates={gates} locale={locale} t={t} />}
+      {view === "map" ? null : reservoirs}
     </div>
   );
 }

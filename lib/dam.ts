@@ -333,6 +333,38 @@ export function operatorName(operator: string, say: (key: string) => string): st
   return key ? say(`operators.${key}`) : operator;
 }
 
+/**
+ * One row of `dam_signal()` as a DamSignal, or null when there is no reading.
+ *
+ * The database's own column names, in one place: this was written out three times over (the
+ * public dam route, the war room's board, and the reservoir console of 27 Oct 2026) and a field
+ * missed in one of them would show a reader a blank figure in one screen and the right one in
+ * another.
+ */
+export function toDamSignal(row: Record<string, unknown> | null | undefined): DamSignal | null {
+  if (!row) return null;
+  const number = (key: string) => (typeof row[key] === "number" ? (row[key] as number) : null);
+  return {
+    observedAt: String(row.observed_at),
+    fetchedAt: String(row.fetched_at),
+    storageMcm: number("storage_mcm"),
+    percentFull: number("percent_full"),
+    levelM: number("level_m"),
+    inflowCms: number("inflow_cms"),
+    releasedCms: number("released_cms"),
+    spilledCms: number("spilled_cms"),
+    outflowCms: number("outflow_cms"),
+    riseMcmPerH: number("rise_mcm_per_h"),
+    riseWindowH: Number(row.rise_window_h ?? 6),
+    grade: row.grade as DamSignal["grade"],
+    reasons: (row.reasons ?? []) as DamSignal["reasons"],
+    awaiting: (row.awaiting ?? []) as DamSignal["awaiting"],
+    readings: Number(row.readings ?? 0),
+    stale: Boolean(row.stale),
+    confirmedOver: Number(row.confirmed_over ?? 2),
+  };
+}
+
 /** True where OSM has no channel below the reservoir, so the app can say so instead of guessing. */
 export function pathMapped(dam: Dam): boolean {
   return dam.geometryNote.path_mapped !== false && dam.reaches.length > 0;

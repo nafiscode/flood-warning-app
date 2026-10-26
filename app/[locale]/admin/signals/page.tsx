@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ReservoirLevels } from "@/components/admin/ReservoirLevels";
 import { SignalsView } from "@/components/admin/Signals";
 import { isAdminHere } from "@/lib/admin-guard";
 import { toReferences } from "@/lib/coastal-gate";
+import { toDamLevelsList } from "@/lib/dam-levels";
 import { toSignals, withGaugeLevels, withRecession, withWettest } from "@/lib/signals";
 import { createClient } from "@/lib/supabase/server";
 import { hint } from "@/lib/ui";
 import {
   dismissAutoAlarm,
   setAutoAlarm,
+  setAutoAlarmDam,
   setAutoMode,
+  setDamLevels,
   setGaugeLevels,
   setThreshold,
 } from "./actions";
@@ -43,13 +47,15 @@ export default async function SignalsPage({
   if (!(await isAdminHere())) return null;
   const t = await getTranslations("signals");
   const supabase = await createClient();
-  const [{ data, error }, levels, wettest, recession, gates] = await Promise.all([
+  const [{ data, error }, levels, wettest, recession, gates, dams] = await Promise.all([
     supabase.rpc("admin_signals"),
     supabase.rpc("admin_gauge_levels"),
     supabase.rpc("admin_signal_wettest"),
     // Missing until the migration is applied: then `data` is null and the block is simply not drawn.
     supabase.rpc("admin_gauge_recession"),
     supabase.rpc("admin_coastal_gate"),
+    // The reservoirs, with their two shares and the alarm's tick (27 Oct 2026).
+    supabase.rpc("admin_dam_levels"),
   ]);
   if (error) return <p className={hint}>{t("noZones")}</p>;
   const saved = typeof query.saved === "string" ? query.saved : null;
@@ -62,7 +68,15 @@ export default async function SignalsPage({
           ? t("map.levels.saved")
           : query.error === "levels"
             ? t("map.levels.error")
-            : null;
+            : query.damLevels === "1"
+              ? t("reservoirs.saved")
+              : query.error === "damLevels"
+                ? t("reservoirs.error")
+                : query.damAuto === "1"
+                  ? t("reservoirs.autoSaved")
+                  : query.error === "damAuto"
+                    ? t("reservoirs.autoError")
+                    : null;
   const notice =
     autoNotice ??
     (saved ? t("thresholds.saved") : query.error === "threshold" ? t("thresholds.error") : null);
@@ -84,6 +98,15 @@ export default async function SignalsPage({
       modeAction={setAutoMode.bind(null, locale)}
       dismissAction={dismissAutoAlarm.bind(null, locale)}
       levelsAction={setGaugeLevels.bind(null, locale)}
+      reservoirs={
+        <ReservoirLevels
+          dams={toDamLevelsList(dams.data)}
+          t={(key, values) => t(key as never, values as never)}
+          locale={locale}
+          levelsAction={setDamLevels.bind(null, locale)}
+          autoAction={setAutoAlarmDam.bind(null, locale)}
+        />
+      }
       refreshMinutes={REFRESH_MINUTES}
     />
   );

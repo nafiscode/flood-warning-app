@@ -1131,13 +1131,20 @@ describe("the dam on the admins' war room", () => {
     expect(container.textContent).toContain(th.warRoom.dam.reason.above_normal_high);
   });
 
-  it("asks for nothing when the dam is quiet", () => {
+  /*
+   * A quiet reservoir with nothing to review is one line at the foot since 27 Oct 2026, not a
+   * card: the war room is the screen an admin keeps open while people wait for a boat, and the
+   * reservoir's own figures and thresholds now have their own panel on the signals dashboard.
+   * tests/unit/dam-board.test.tsx holds the rest of that behaviour.
+   */
+  it("asks for nothing when the dam is quiet, and takes up one line", () => {
     const { container, queryByText } = render({
       signal: exampleDamSignal("quiet"),
       notice: null,
     });
     expect(queryByText(th.warRoom.dam.reviewTitle)).toBeNull();
-    expect(container.querySelector("[data-dam-notice='none']")).toBeTruthy();
+    expect(container.querySelector("[data-dam-board]")).toBeNull();
+    expect(container.querySelector("[data-dam-quiet]")!.getAttribute("data-dam-quiet")).toBe("1");
   });
 
   it("shows who judged it once somebody has", () => {

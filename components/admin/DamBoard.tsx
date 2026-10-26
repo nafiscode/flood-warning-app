@@ -73,9 +73,33 @@ export function DamBoard({ dams, now, review }: Props) {
   const locale = useLocale();
   const format = useFormatter();
   if (dams.length === 0) return null;
+  /*
+   * Only the reservoirs that are asking for something (the owner, 27 Oct 2026, once the
+   * reservoirs got their own panel on the signals dashboard: "maybe we can remove dam section in
+   * the Admin/war room, since it has its own place").
+   *
+   * Not removed, because the row below is the only place an admin can mark a confirmed release
+   * reviewed, and that decision belongs on the screen they keep open during an event. What the
+   * war room does not need is six reservoirs in full while somebody is waiting for a boat, so a
+   * quiet one with nothing to review is a line at the foot instead, pointing at the panel that
+   * holds its figures and its thresholds.
+   */
+  const asking = dams.filter(
+    (dam) =>
+      dam.notice?.status === "open" ||
+      (dam.signal && dam.signal.grade !== "quiet") ||
+      // A reading that met a rule once and is waiting for the next to agree is shown, never
+      // graded on - and the war room is where it is shown. Hiding it would have been the one
+      // thing this panel exists to say (caught by tests/unit/dam.test.tsx).
+      (dam.signal?.awaiting.length ?? 0) > 0 ||
+      // A reservoir whose feed has stopped answering is not a quiet reservoir.
+      dam.signal?.stale === true ||
+      !dam.signal,
+  );
+  const quiet = dams.length - asking.length;
   return (
     <>
-      {dams.map((dam) => {
+      {asking.map((dam) => {
         const open = dam.notice?.status === "open";
         const name = localName(dam.name, locale);
         return (
@@ -206,6 +230,14 @@ export function DamBoard({ dams, now, review }: Props) {
           </section>
         );
       })}
+      {quiet > 0 && (
+        <p className={hint} data-dam-quiet={quiet}>
+          {t(asking.length === 0 ? "dam.allQuiet" : "dam.othersQuiet", { count: quiet })}{" "}
+          <Link href="/admin/signals#reservoirs" className="underline">
+            {t("dam.seeReservoirs")}
+          </Link>
+        </p>
+      )}
     </>
   );
 }

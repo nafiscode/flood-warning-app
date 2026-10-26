@@ -67,6 +67,52 @@ export async function setAutoMode(locale: string, form: FormData) {
   redirect(`${localePath(locale, "/admin/signals")}?${error ? "error=auto" : "autosaved=1"}`);
 }
 
+/**
+ * One reservoir's two shares of capacity (the owner, 27 Oct 2026). An empty box takes that rule
+ * off the reservoir, which is why null is sent rather than refused: the database then grades it on
+ * release, inflow and rise alone, as every dam was graded before 26 October.
+ */
+export async function setDamLevels(locale: string, form: FormData) {
+  const back = backTo(locale, form);
+  const join = back.includes("?") ? "&" : "?";
+  const dam = String(form.get("dam") ?? "");
+  const read = (name: string): number | null | "bad" => {
+    const text = String(form.get(name) ?? "")
+      .trim()
+      .replace(",", ".")
+      .replace("%", "");
+    if (text === "") return null;
+    const value = Number(text);
+    return Number.isFinite(value) && value > 0 && value <= 150 ? value : "bad";
+  };
+  const [nearFull, full] = [read("nearFull"), read("full")];
+  if (!/^[a-z0-9_]{2,40}$/.test(dam) || [nearFull, full].includes("bad"))
+    redirect(`${back}${join}error=damLevels`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_dam_levels", {
+    p_dam: dam,
+    p_near_full_pct: nearFull,
+    p_full_pct: full,
+    p_note: null,
+  });
+  redirect(`${back}${join}${error ? "error=damLevels" : "damLevels=1"}#reservoirs`);
+}
+
+/** The automatic alarm for one reservoir, armed or disarmed. */
+export async function setAutoAlarmDam(locale: string, form: FormData) {
+  const back = backTo(locale, form);
+  const join = back.includes("?") ? "&" : "?";
+  const dam = String(form.get("dam") ?? "");
+  const enabled = form.get("enabled") === "on";
+  if (!/^[a-z0-9_]{2,40}$/.test(dam)) redirect(`${back}${join}error=damAuto`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_auto_alarm_dam", {
+    p_dam: dam,
+    p_enabled: enabled,
+  });
+  redirect(`${back}${join}${error ? "error=damAuto" : "damAuto=1"}#reservoirs`);
+}
+
 /** Stop a waiting draft from being published by itself. */
 export async function dismissAutoAlarm(locale: string, form: FormData) {
   const event = String(form.get("event") ?? "");

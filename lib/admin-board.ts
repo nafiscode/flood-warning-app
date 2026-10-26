@@ -7,7 +7,7 @@
  * and `revealPersonPhone`, which call the logged reveal functions.
  */
 import type { PointsAward, TeamHousehold, UnconfirmedRescue } from "@/lib/coverage";
-import type { DamSignal } from "@/lib/dam";
+import { toDamSignal } from "@/lib/dam";
 import { createClient } from "@/lib/supabase/server";
 import type {
   DamBoardRow,
@@ -112,33 +112,12 @@ const EMPTY_OVERVIEW: Overview = toOverview({ unclaimed_minutes: 15 });
  */
 function toDam(r: Row): DamBoardRow {
   const s = (r.signal ?? null) as Row | null;
-  const n = (key: string) => (s && typeof s[key] === "number" ? (s[key] as number) : null);
   return {
     code: String(r.dam_code),
     name: (r.dam_name ?? {}) as Record<string, string>,
     river: (r.river ?? {}) as Record<string, string>,
     operator: String(r.operator ?? ""),
-    signal: s
-      ? {
-          observedAt: String(s.observed_at),
-          fetchedAt: String(s.fetched_at),
-          storageMcm: n("storage_mcm"),
-          percentFull: n("percent_full"),
-          levelM: n("level_m"),
-          inflowCms: n("inflow_cms"),
-          releasedCms: n("released_cms"),
-          spilledCms: n("spilled_cms"),
-          outflowCms: n("outflow_cms"),
-          riseMcmPerH: n("rise_mcm_per_h"),
-          riseWindowH: Number(s.rise_window_h ?? 6),
-          grade: s.grade as DamSignal["grade"],
-          reasons: (s.reasons ?? []) as DamSignal["reasons"],
-          awaiting: (s.awaiting ?? []) as DamSignal["awaiting"],
-          readings: Number(s.readings ?? 0),
-          stale: Boolean(s.stale),
-          confirmedOver: Number(s.confirmed_over ?? 2),
-        }
-      : null,
+    signal: toDamSignal(s),
     notice: r.notice_id
       ? {
           id: String(r.notice_id),
