@@ -121,7 +121,7 @@ export function NoticeBell({ className = "" }: { className?: string }) {
             // says it in words for a screen reader.
             <span
               data-badge="true"
-              className="absolute -end-2 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-sos px-1 text-small font-bold leading-none text-sos-fg ring-2 ring-jaga-slate"
+              className="absolute -end-4 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-sos px-1 text-[0.8125rem] font-bold leading-none text-sos-fg ring-2 ring-jaga-slate"
             >
               {badge}
             </span>

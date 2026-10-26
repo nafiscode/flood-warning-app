@@ -666,7 +666,7 @@ function Steps({ words }: { words: string[] }) {
           >
             <CheckIcon size={12} />
           </span>
-          <span className="text-[0.7rem] leading-tight text-jaga-text-2">{word}</span>
+          <span className="text-[0.8125rem] leading-tight text-jaga-text-2">{word}</span>
         </span>
       ))}
     </div>
