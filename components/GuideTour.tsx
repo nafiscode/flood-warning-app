@@ -143,12 +143,33 @@ export function GuideTour() {
         // only where it shows, so the ring never runs over the hotlines.
         const from = Math.max(box.top, head);
         const to = Math.min(box.bottom, foot);
-        setRing(to > from ? new DOMRect(box.left, from, box.width, to - from) : null);
+        // A target in the frozen header or the hotline bar lies outside the band between them by
+        // definition, so it was left with no outline at all: the card said "this is the bell" and
+        // pointed at nothing (the bell, the weather chip and the hotlines - three of the home
+        // screen's seven steps, measured on an iPad on 27 Oct). It is always on the screen, so it
+        // is outlined where it is; the ring sits above both bars.
+        const inChrome = !!target.closest("header, footer");
+        const outline =
+          to > from
+            ? { left: box.left, top: from, right: box.right, bottom: to }
+            : inChrome && box.width > 0 && box.bottom > 0 && box.top < innerHeight
+              ? { left: box.left, top: box.top, right: box.right, bottom: box.bottom }
+              : null;
+        setRing(
+          outline
+            ? new DOMRect(
+                outline.left,
+                outline.top,
+                outline.right - outline.left,
+                outline.bottom - outline.top,
+              )
+            : null,
+        );
         // The card's own size, once it has been drawn, so "does it fit beside" is a fact.
         const size = card.current;
         setPlace(
           placeCard({
-            ring: to > from ? { left: box.left, top: from, right: box.right, bottom: to } : null,
+            ring: outline,
             head,
             foot,
             viewport: { width: innerWidth, height: innerHeight },

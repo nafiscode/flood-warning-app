@@ -284,10 +284,24 @@ export function placeCard(input: {
     const y = place.how === "top" ? place.top : viewport.height - place.bottom - card.height;
     return { left, top: y, right: left + card.width, bottom: y + card.height };
   };
-  const clear = (place: CardPlace) => !overlaps(box(place), ring, GAP);
-
+  // A target in the frozen header or the hotline bar is outlined where it is (components/
+  // GuideTour.tsx), and its card belongs on the near side - just under the bell, just above the
+  // hotlines - not across the window from it. Anything else keeps the far side, which is what
+  // leaves a small target in the middle of the page in the clear.
+  const inHeader = ring.bottom <= head;
+  const inFooter = ring.top >= foot;
+  // The card is pinned 8 px from the bar by design, so for a target in the bar itself the bar is
+  // the separation and no extra margin is asked for; anywhere else it keeps its breathing room.
+  const margin = inHeader || inFooter ? 0 : GAP;
+  const clear = (place: CardPlace) => !overlaps(box(place), ring, margin);
   const lowerHalf = (ring.top + ring.bottom) / 2 >= (head + foot) / 2;
-  const [first, second] = lowerHalf ? [top, bottom] : [bottom, top];
+  const [first, second] = inHeader
+    ? [top, bottom]
+    : inFooter
+      ? [bottom, top]
+      : lowerHalf
+        ? [top, bottom]
+        : [bottom, top];
   if (clear(first)) return first;
   if (clear(second)) return second;
 

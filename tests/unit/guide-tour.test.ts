@@ -151,6 +151,18 @@ describe("where the guide's card sits", () => {
     expect(placeCard({ ring: narrow, ...LAND, card: CARD }).how).not.toBe("beside");
   });
 
+  it("keeps the card near a target in the header or the hotline bar", () => {
+    // The bell is in the frozen header, the hotlines in the bar: the card sits just under the one
+    // and just above the other, not across the window from what it names.
+    const bell: Rect = { left: 1097, top: 0, right: 1157, bottom: 60 };
+    expect(placeCard({ ring: bell, ...LAND, card: CARD })).toEqual({ how: "top", top: 115 });
+    const hotlines: Rect = { left: 0, top: 750, right: 1180, bottom: 820 };
+    expect(placeCard({ ring: hotlines, ...LAND, card: CARD })).toEqual({
+      how: "bottom",
+      bottom: 820 - 750 + 8,
+    });
+  });
+
   it("falls back to the top when the target is not on the screen", () => {
     expect(placeCard({ ring: null, ...LAND, card: CARD })).toEqual({ how: "top", top: 115 });
   });
