@@ -7,9 +7,11 @@ import {
   bare,
   markSeen,
   NO_TOUR,
+  placeCard,
   readSeen,
   stepKey,
   toursFor,
+  type CardPlace,
   type GuideTour,
 } from "@/lib/guide-tour";
 
@@ -53,9 +55,8 @@ export function GuideTour() {
   const [index, setIndex] = useState(0);
   const [offer, setOffer] = useState<GuideTour | null>(null);
   const [ring, setRing] = useState<DOMRect | null>(null);
-  const [cardAtBottom, setCardAtBottom] = useState(false);
-  const [bottom, setBottom] = useState(0);
-  const [top, setTop] = useState(0);
+  // Where the card sits (lib/guide-tour.ts placeCard): never over the thing it points at.
+  const [place, setPlace] = useState<CardPlace>({ how: "top", top: 0 });
   const card = useRef<HTMLDivElement>(null);
   const opener = useRef<HTMLButtonElement>(null);
 
@@ -143,9 +144,17 @@ export function GuideTour() {
         const from = Math.max(box.top, head);
         const to = Math.min(box.bottom, foot);
         setRing(to > from ? new DOMRect(box.left, from, box.width, to - from) : null);
-        setTop(head + 8);
-        setBottom(innerHeight - foot + 8);
-        setCardAtBottom(box.top + box.height / 2 < (head + foot) / 2);
+        // The card's own size, once it has been drawn, so "does it fit beside" is a fact.
+        const size = card.current;
+        setPlace(
+          placeCard({
+            ring: to > from ? { left: box.left, top: from, right: box.right, bottom: to } : null,
+            head,
+            foot,
+            viewport: { width: innerWidth, height: innerHeight },
+            card: { width: size?.offsetWidth ?? 384, height: size?.offsetHeight ?? 260 },
+          }),
+        );
       });
     };
     place();
@@ -215,11 +224,21 @@ export function GuideTour() {
             data-guide-card={open.tour.id}
             data-guide-step={step.id}
             className="fixed inset-x-2 z-30 mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border border-jaga-line bg-jaga-ground p-4 text-jaga-text shadow-md outline-none"
-            style={cardAtBottom ? { bottom } : { top }}
+            style={
+              place.how === "beside"
+                ? {
+                    left: place.left,
+                    top: place.top,
+                    right: "auto",
+                    width: place.width,
+                    marginInline: 0,
+                  }
+                : place.how === "bottom"
+                  ? { bottom: place.bottom }
+                  : { top: place.top }
+            }
           >
-            <p className="text-small text-jaga-text-2">
-              {t("progress", { n: index + 1, total })}
-            </p>
+            <p className="text-small text-jaga-text-2">{t("progress", { n: index + 1, total })}</p>
             <h2 className="text-body font-bold text-jaga-text">
               {t(`${open.tour.id}.${step.id}.title`)}
             </h2>
@@ -230,11 +249,7 @@ export function GuideTour() {
               </button>
               <div className="flex gap-2">
                 {index > 0 && (
-                  <button
-                    type="button"
-                    className={plain}
-                    onClick={() => setIndex(index - 1)}
-                  >
+                  <button type="button" className={plain} onClick={() => setIndex(index - 1)}>
                     {t("back")}
                   </button>
                 )}

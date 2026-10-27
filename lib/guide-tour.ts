@@ -217,3 +217,86 @@ export function markSeen(keys: string[]): void {
     // Blocked storage: the tour will open once more on the next visit, which harms nobody.
   }
 }
+
+/** A rectangle in window coordinates. */
+export type Rect = { left: number; top: number; right: number; bottom: number };
+
+/**
+ * Where the tour's card sits: pinned under the header, pinned above the hotline bar, or beside
+ * the thing it points at.
+ */
+export type CardPlace =
+  | { how: "top"; top: number }
+  | { how: "bottom"; bottom: number }
+  | { how: "beside"; left: number; top: number; width: number };
+
+/** Room kept between the card and the outline of what it points at, in px. */
+const GAP = 14;
+
+const overlaps = (a: Rect, b: Rect, gap: number) =>
+  a.left < b.right + gap &&
+  a.right > b.left - gap &&
+  a.top < b.bottom + gap &&
+  a.bottom > b.top - gap;
+
+/**
+ * Where the card goes so that it never covers the thing it is about (Apple's guidance for a
+ * popover that annotates something: the annotated thing stays visible, controls included).
+ *
+ * The card used to sit centred at the top or the bottom of the window, whichever half the target
+ * was not in. That is right for a small target - a readout, a button - and wrong for a tall one:
+ * the map fills most of the window on an iPad, so the card landed on top of it, and in portrait
+ * on top of the map's own toolbar, the very buttons the tour goes on to describe.
+ *
+ * So the old choice is kept whenever it is clear of the target, and changes only when it is not:
+ * first the other side of the window, then **beside** the target if there is room for the whole
+ * card (a landscape iPad has about 400 px free to the right of the map), and only when the target
+ * leaves nothing - a portrait iPad - the bottom edge, which leaves the toolbar and the zoom
+ * buttons at the top of the map in the clear.
+ *
+ * Pure so that it can be tested: nothing here reads the page.
+ */
+export function placeCard(input: {
+  /** The part of the target that is on the screen, or null when it has none. */
+  ring: Rect | null;
+  /** The bottom edge of the frozen header. */
+  head: number;
+  /** The top edge of the hotline bar. */
+  foot: number;
+  viewport: { width: number; height: number };
+  card: { width: number; height: number };
+}): CardPlace {
+  const { ring, head, foot, viewport, card } = input;
+  const top: CardPlace = { how: "top", top: head + 8 };
+  const bottom: CardPlace = { how: "bottom", bottom: viewport.height - foot + 8 };
+  if (!ring) return top;
+
+  const left = Math.max(8, (viewport.width - card.width) / 2);
+  const box = (place: CardPlace): Rect => {
+    if (place.how === "beside") {
+      return {
+        left: place.left,
+        top: place.top,
+        right: place.left + place.width,
+        bottom: place.top + card.height,
+      };
+    }
+    const y = place.how === "top" ? place.top : viewport.height - place.bottom - card.height;
+    return { left, top: y, right: left + card.width, bottom: y + card.height };
+  };
+  const clear = (place: CardPlace) => !overlaps(box(place), ring, GAP);
+
+  const lowerHalf = (ring.top + ring.bottom) / 2 >= (head + foot) / 2;
+  const [first, second] = lowerHalf ? [top, bottom] : [bottom, top];
+  if (clear(first)) return first;
+  if (clear(second)) return second;
+
+  const roomEnd = viewport.width - 8 - (ring.right + GAP);
+  const roomStart = ring.left - GAP - 8;
+  if (Math.max(roomEnd, roomStart) >= card.width) {
+    const x = roomEnd >= roomStart ? ring.right + GAP : ring.left - GAP - card.width;
+    const y = Math.min(Math.max(ring.top, head + 8), Math.max(head + 8, foot - 8 - card.height));
+    return { how: "beside", left: x, top: y, width: card.width };
+  }
+  return bottom;
+}
