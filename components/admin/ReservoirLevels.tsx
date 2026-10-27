@@ -1,8 +1,9 @@
 import { DualTime } from "@/components/admin/DualTime";
-import { DamStateChip } from "@/components/map/Dam";
+import { CheckIcon, ClockIcon, TriangleIcon, WaveIcon } from "@/components/icons";
+import type { DamLevel } from "@/lib/dam";
+import { damLevel, operatorName } from "@/lib/dam";
 import type { DamLevels } from "@/lib/dam-levels";
 import { damRuleGap, shareAsMcm } from "@/lib/dam-levels";
-import { operatorName } from "@/lib/dam";
 import { localName } from "@/lib/places";
 import { buttonPrimary, buttonSecondary, card, hint, input, label } from "@/lib/ui";
 
@@ -11,6 +12,44 @@ type T = (key: string, values?: Record<string, string | number>) => string;
 /** One decimal, and never a trailing ".0" where a whole number will do. */
 const pct = (value: number | null): string =>
   value === null ? "" : String(Math.round(value * 10) / 10);
+
+/*
+ * The same pill the public dam card wears, with this panel's own words.
+ *
+ * It does not reuse DamStateChip, which is a client component reading the `dam` namespace: that
+ * namespace is not among the few the layout hands to the browser (lib/messages.ts,
+ * layoutMessages), so on this page the chip printed "dam.state.releasing" at a reader. The
+ * colours and icons are the card's, so the two cannot drift apart in meaning; the words are this
+ * panel's, so it depends on nothing it was not given.
+ */
+const CHIP_CLASS: Record<DamLevel, string> = {
+  unknown: "bg-alert-stale text-alert-stale-fg",
+  normal: "bg-alert-normal text-alert-normal-fg",
+  watch: "bg-alert-watch text-alert-watch-fg",
+  releasing: "bg-alert-evacuate text-alert-evacuate-fg",
+};
+
+const CHIP_ICON: Record<DamLevel, typeof CheckIcon> = {
+  unknown: ClockIcon,
+  normal: CheckIcon,
+  watch: TriangleIcon,
+  releasing: WaveIcon,
+};
+
+function StateChip({ dam, t }: { dam: DamLevels; t: T }) {
+  const level = damLevel(dam.signal);
+  const Icon = CHIP_ICON[level];
+  return (
+    <span
+      data-reservoir-state={level}
+      className={`inline-flex min-h-tap items-center gap-2 self-start rounded-full px-4 py-1 font-bold ${CHIP_CLASS[level]}`}
+    >
+      <Icon size={24} aria-hidden="true" />
+      {/* Never the colour alone: the icon and the word ride with it (docs/brand.md). */}
+      <span>{t(`reservoirs.state.${level}`)}</span>
+    </span>
+  );
+}
 
 /**
  * The reservoirs on the signals dashboard: what each is doing now, the two shares of capacity it
@@ -68,8 +107,8 @@ export function ReservoirLevels({
                 </p>
               </header>
 
-              {/* What it is doing now, in the words and colours the public card uses. */}
-              <DamStateChip signal={dam.signal} />
+              {/* What it is doing now, in the same colours the public card uses. */}
+              <StateChip dam={dam} t={t} />
               {dam.signal ? (
                 <>
                   <p className="font-medium" data-reservoir-now>
@@ -100,7 +139,12 @@ export function ReservoirLevels({
               >
                 <input type="hidden" name="dam" value={dam.code} />
                 <p className="font-bold">{t("reservoirs.thresholds")}</p>
-                <div className="grid grid-cols-2 gap-2">
+                {/*
+                 * One box per row on a phone: side by side at 360 px the two labels wrap to
+                 * different heights, so the inputs and their "= x Mm3" lines sat at different
+                 * heights, and each box was half of a narrow screen to type a number into.
+                 */}
+                <div className="grid gap-2 sm:grid-cols-2">
                   <label className="flex flex-col gap-1">
                     <span className={label}>{t("reservoirs.nearFull")}</span>
                     <input
@@ -181,9 +225,7 @@ export function ReservoirLevels({
                 ) : null}
               </form>
 
-              <p className={hint}>
-                {t("reservoirs.zone", { count: dam.tambons })}
-              </p>
+              <p className={hint}>{t("reservoirs.zone", { count: dam.tambons })}</p>
             </article>
           );
         })}

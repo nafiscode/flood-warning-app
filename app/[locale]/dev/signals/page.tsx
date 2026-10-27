@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ReservoirLevels } from "@/components/admin/ReservoirLevels";
 import { SignalsView } from "@/components/admin/Signals";
 import { devPagesEnabled } from "@/lib/dev-pages";
 import {
   EXAMPLE_COASTAL_GATE,
+  EXAMPLE_DAM_LEVELS,
   EXAMPLE_GAUGE_LEVELS,
   EXAMPLE_SIGNALS,
 } from "@/lib/signals-examples";
@@ -41,6 +43,13 @@ export default async function SignalsExamplePage({
         view={query.view === "map" ? "map" : "cards"}
         locale={locale}
         t={(key, values) => t(key as never, values as never)}
+        reservoirs={
+          <ReservoirLevels
+            dams={EXAMPLE_DAM_LEVELS}
+            t={(key, values) => t(key as never, values as never)}
+            locale={locale}
+          />
+        }
       />
     </div>
   );

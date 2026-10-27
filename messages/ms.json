@@ -4055,7 +4055,7 @@
       "saveAuto": "Simpan suis",
       "autoSaved": "Suis amaran automatik disimpan",
       "autoError": "Suis tidak dapat disimpan",
-      "zone": "Kawasan yang akan menerima amaran: {count} mukim",
+      "zone": "Kawasan yang akan menerima amaran: {count, plural, other {# mukim}}",
       "gap": {
         "noThreshold": "Suis dibuka tetapi tiada ambang ditetapkan, jadi tiada apa yang boleh menyediakan draf.",
         "noZone": "Belum ada mukim dalam kawasan takungan ini, jadi tiada siapa untuk dihantar amaran.",
@@ -4070,6 +4070,12 @@
         "full_and_rising": "Hampir penuh dan masih bertambah",
         "inflow_high": "Kadar alir masuk ke takungan pada paras tinggi",
         "rising_fast": "Isipadu simpanan takungan meningkat dengan cepat"
+      },
+      "state": {
+        "unknown": "Tiada bacaan",
+        "normal": "Biasa",
+        "watch": "Perlu diperhatikan",
+        "releasing": "Sedang melepaskan air"
       }
     },
     "operators": {

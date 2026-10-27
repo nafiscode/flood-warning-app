@@ -4055,7 +4055,7 @@
       "saveAuto": "Save the switch",
       "autoSaved": "The automatic alarm switch is saved",
       "autoError": "Could not save the switch",
-      "zone": "Its zone would warn {count} tambons",
+      "zone": "Its zone would warn {count, plural, =0 {no tambons} one {# tambon} other {# tambons}}",
       "gap": {
         "noThreshold": "The switch is on but no threshold is set, so there is nothing that could draft an alert.",
         "noZone": "No tambons are in this reservoir's zone yet, so there is nobody to send a draft to.",
@@ -4070,6 +4070,12 @@
         "full_and_rising": "Nearly full and still filling",
         "inflow_high": "Inflow to the reservoir is high",
         "rising_fast": "Reservoir storage is rising sharply"
+      },
+      "state": {
+        "unknown": "No reading",
+        "normal": "Normal",
+        "watch": "Worth watching",
+        "releasing": "Releasing water"
       }
     },
     "operators": {

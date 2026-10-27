@@ -6,6 +6,7 @@
  * they can type into, the switch, and — the part that matters most — that a reservoir which is
  * armed but cannot actually fire says so instead of looking ready.
  */
+import IntlMessageFormat from "intl-messageformat";
 import { describe, expect, it } from "vitest";
 import { ReservoirLevels } from "@/components/admin/ReservoirLevels";
 import type { DamSignal } from "@/lib/dam";
@@ -54,14 +55,17 @@ const dam = (over: Partial<DamLevels> = {}): DamLevels => ({
   ...over,
 });
 
-// The English copy, so the assertions read as the admin would read them.
+/*
+ * The English copy, formatted as next-intl would format it, so the assertions read as the admin
+ * would read them - and so an ICU plural is exercised rather than printed raw. (It was printed
+ * raw by the first version of this helper, which is how "1 tambons" would have reached a screen.)
+ */
 const t = ((key: string, values?: Record<string, string | number>) => {
   const walk = (o: unknown, path: string[]): unknown =>
     path.length === 0 ? o : walk((o as Record<string, unknown>)[path[0]!], path.slice(1));
   const text = walk(en.signals, key.split(".")) as string;
-  return typeof text === "string"
-    ? text.replace(/\{(\w+)\}/g, (_, k) => String(values?.[k] ?? ""))
-    : key;
+  if (typeof text !== "string") return key;
+  return String(new IntlMessageFormat(text, "en").format(values ?? {}));
 }) as Parameters<typeof ReservoirLevels>[0]["t"];
 
 describe("reading admin_dam_levels()", () => {
@@ -116,8 +120,17 @@ describe("the reservoirs' panel", () => {
     expect(card).not.toBeNull();
     expect(card.textContent).toContain("Khlong Chamrai Reservoir");
     expect(card.querySelector("[data-reservoir-now]")!.textContent).toContain("55.8");
-    // Its own grade is said in words, never by colour alone.
+    // Its own grade is said in words, never by colour alone - and in this panel's own words,
+    // because the `dam` namespace the public chip reads never reaches the browser here.
+    expect(card.querySelector("[data-reservoir-state]")!.getAttribute("data-reservoir-state")).toBe(
+      "watch",
+    );
+    expect(card.textContent).toContain("Worth watching");
+    expect(card.textContent).not.toContain("dam.state");
     expect(card.textContent).toContain("Reservoir storage is rising sharply");
+    // One tambon is a tambon, not "1 tambons".
+    expect(card.textContent).toContain("1 tambon");
+    expect(card.textContent).not.toContain("1 tambons");
     // The two boxes, prefilled with what is stored, and the share in Mm3 beside each.
     const near = card.querySelector<HTMLInputElement>('input[data-level="nearFull"]')!;
     const full = card.querySelector<HTMLInputElement>('input[data-level="full"]')!;
@@ -184,6 +197,7 @@ describe("the reservoirs' panel", () => {
       "asMcm", "off", "thresholdsHint", "save", "saved", "error", "auto", "autoHint",
       "autoSince", "autoBySeed", "saveAuto", "autoSaved", "autoError", "zone",
       "gap.noThreshold", "gap.noZone", "gap.noReading",
+      "state.unknown", "state.normal", "state.watch", "state.releasing",
       "reason.near_full", "reason.full_and_rising", "reason.rising_fast", "reason.spilling",
     ];
     const files = { th, ms, en };

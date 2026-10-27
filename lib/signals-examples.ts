@@ -1,3 +1,5 @@
+import type { DamLevels } from "@/lib/dam-levels";
+import { exampleDamSignal } from "@/lib/dev-examples";
 import type { Point, Signals, Zone } from "@/lib/signals";
 
 /**
@@ -265,5 +267,64 @@ export const EXAMPLE_COASTAL_GATE = [
     season_days: 450,
     method: { source: "example" },
     updated_at: "2026-10-16T00:00:00Z",
+  },
+];
+
+/**
+ * The reservoirs' panel with made-up figures (27 Oct 2026), so it can be looked at on
+ * /dev/signals without an admin session. One near full and still filling, one quiet, one armed
+ * with nobody in its zone to warn - the three states the panel has to say something different
+ * about.
+ */
+export const EXAMPLE_DAM_LEVELS: DamLevels[] = [
+  {
+    code: "khlong_chamrai",
+    name: { th: "อ่างเก็บน้ำคลองจำไหร", ms: "Empangan Khlong Chamrai", en: "Khlong Chamrai Reservoir" },
+    operator: "RID",
+    feed: "daily",
+    storageMaxMcm: 6,
+    storageNormalMcm: 6,
+    nearFullPct: 80,
+    fullPct: 95,
+    auto: true,
+    autoSetAt: "2026-11-19T22:00:00.000Z",
+    autoSetBy: null,
+    tambons: 1,
+    signal: exampleDamSignal("watch")
+      ? { ...exampleDamSignal("watch")!, percentFull: 96.1, storageMcm: 5.77, riseMcmPerH: 0.02,
+          reasons: ["full_and_rising"], grade: "releasing" }
+      : null,
+  },
+  {
+    code: "khlong_sadao",
+    name: { th: "อ่างเก็บน้ำคลองสะเดา", ms: "Empangan Khlong Sadao", en: "Khlong Sadao Reservoir" },
+    operator: "RID",
+    feed: "daily",
+    storageMaxMcm: 56.741,
+    storageNormalMcm: 56.741,
+    nearFullPct: 80,
+    fullPct: 95,
+    auto: true,
+    autoSetAt: "2026-11-19T22:00:00.000Z",
+    autoSetBy: "สมชาย",
+    tambons: 2,
+    signal: exampleDamSignal("quiet")
+      ? { ...exampleDamSignal("quiet")!, percentFull: 39.9, storageMcm: 22.66 }
+      : null,
+  },
+  {
+    code: "ban_baik",
+    name: { th: "อ่างเก็บน้ำบ้านไบก์", ms: "Empangan Ban Baik", en: "Ban Baik Reservoir" },
+    operator: "RID",
+    feed: "daily",
+    storageMaxMcm: 1.2,
+    storageNormalMcm: 1.2,
+    nearFullPct: null,
+    fullPct: null,
+    auto: true,
+    autoSetAt: "2026-11-19T22:00:00.000Z",
+    autoSetBy: null,
+    tambons: 0,
+    signal: null,
   },
 ];
