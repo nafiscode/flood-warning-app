@@ -542,9 +542,9 @@ Acceptance: no published figure identifies a person or a household (test); re-ru
 
 Spec 4.10. A second kind of request beside the rescue SOS, for people who are safe and cut off, and a `supplies` capability for the teams that deliver. Built on the SOS record and the A5 relay. Still to do when A7 lands: the push notification for a supply offer uses the phone's ordinary notification sound, never the alarm channel.
 
-### A15: Ratings, feedback and the public comments page (after launch)
+### A15: Ratings, feedback and the public comments page (built 27 October 2026)
 
-Added 15 Oct 2026 (owner's request); the page of its own, public comments and public figures added 16 Oct 2026 (owner). **The owner approved the page on 16 Oct 2026** (“nice love this, save for A15”) from a drawing of the phone and laptop screens and the approval queue: the four-step form, both chip lists, the approval queue and the published counts are settled, so build what section 17 describes rather than re-proposing a shape. Open when it is built: the Thai and Malay wording (Thai to the owner's reviewer), and whether approved comments also appear on About.
+Added 15 Oct 2026 (owner's request); the page of its own, public comments and public figures added 16 Oct 2026 (owner). **The owner approved the page on 16 Oct 2026** (“nice love this, save for A15”) from a drawing of the phone and laptop screens and the approval queue: the four-step form, both chip lists, the approval queue and the published counts are settled, so build what section 17 describes rather than re-proposing a shape. **Built 27 Oct 2026** (/feedback, /admin/feedback, migrations ..a15_feedback and ..a15_line_feedback; see docs/decisions.md for that day's entries). Still open: the Thai wording to the owner's reviewer and the Malay to a Patani Malay reviewer (both are a first draft); whether approved comments also appear on About; and whether the LINE rich menu gains a seventh button for it, which needs the six-button image redrawn and republished.
 ```text
 Read docs/spec.md sections 17 and 9, and CLAUDE.md safety rules 1, 5 and 9.
 

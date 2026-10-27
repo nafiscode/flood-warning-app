@@ -196,3 +196,47 @@ the order in the admins' group chat before the season.
 
 Within a day: what happened, when, who noticed, what was done, what to change. A short entry in
 `docs/decisions.md` if something changes; this runbook updated if a step was wrong.
+
+## Season review: what people told us, and what changed (A15)
+
+Once a season, after the flood peak and **before the next season starts**. It is the one meeting
+that decides what gets built next, so it is driven by the record rather than by memory. Everything
+below is on `/admin/feedback`.
+
+1. **Clear the queue first.** Approve or refuse every comment still waiting for the public page.
+   The rules are printed on that screen: a comment about the app may be shown; one that asserts
+   anything about flooding, water levels or whether an area is safe stays admins-only even when it
+   is true, and so does one carrying a phone number, an address, a plate, a named person or one
+   SOS case. Nobody's words are ever edited - a comment is shown as it was written or not at all.
+2. **The lowest-rated screens.** Read "By screen, worst first" with the answer counts beside it.
+   A screen with four answers is a hint, not a finding; write down anything with twenty or more.
+3. **The most frequent problems.** Read "What should be better", in order. For each of the top
+   five, say which it is: built, planned, or not Jaga's to fix. Remember that **warned too late**
+   and **warned too often** are both offered on purpose - a warning system fails in both
+   directions, and the people living there are the only ones who can say which way it failed.
+4. **Did the rating move?** Compare the average by month against last season's, and against the
+   months the alerts went out. A rating that fell in a flood week is about the flood; one that
+   fell in a quiet month is about the app.
+5. **By language.** The Malay answers separately. A gap between the Thai and Malay averages is a
+   translation problem, not a feature problem.
+6. **Write what was done, in all three languages**, in "What was done about it" at the foot of the
+   page, with the decision entry or commit beside it. That text is what the public page shows next
+   to the count, and it is the half of that page that makes it a work list rather than a star
+   rating. A weak point with nothing written against it shows "nothing done about this yet" in
+   public, which is honest and uncomfortable, which is the point.
+7. **Triage everything that is left**: new → read → planned / done / won't do, each with a note
+   and, for planned and done, the decision entry or commit it led to.
+8. **Answer the people who asked to be answered.** Every `done` item whose sender left a contact
+   gets one short message saying what changed. The contact is revealed on a tap, and the tap is
+   logged; closing the item clears it.
+9. **Write the summary into `docs/decisions.md`**: the lowest-rated screens, the most frequent
+   problems, what changed, and whether the rating moved. Then put the same findings on the public
+   page beside the figures (step 6) - the public half and the decision log say the same thing or
+   one of them is wrong.
+10. **Export the CSV** (without contacts) and keep it with the season's other records.
+
+Two things to check rather than assume, every season: that a figure is still being withheld below
+twenty answers in a period, and that no feedback link or ask has crept onto an SOS, food-and-water,
+report or alert screen, or onto the home screen while somewhere is at Warning or Evacuate. The
+tests hold both (`tests/unit/feedback-gates.test.tsx`, `tests/rls/feedback.test.ts`), but a new
+screen is a new chance to get it wrong.

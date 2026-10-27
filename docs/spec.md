@@ -945,9 +945,9 @@ Added 9 Oct 2026 (decision of that date), built after launch (A13) on the first 
 
 **Export:** the published aggregates can be downloaded as CSV and JSON, so anyone can check the arithmetic and a funder can reuse it without asking.
 
-## 17. Ratings, feedback and the public comments page (after launch)
+## 17. Ratings, feedback and the public comments page (built 27 October 2026)
 
-Added 15 Oct 2026 (owner's request), built after launch (A15). People who use Jaga rate it and say what worked and what did not, and every answer is kept in the database with what the team did about it, so the app improves season by season on evidence rather than guesses.
+Added 15 Oct 2026 (owner's request), built on 27 Oct 2026 as A15: `/feedback` for everyone, `/admin/feedback` for the admins, `feedback` and `feedback_outcomes` in the database. People who use Jaga rate it and say what worked and what did not, and every answer is kept in the database with what the team did about it, so the app improves season by season on evidence rather than guesses.
 
 **Never in the way of help.** The same discipline as the donation rules (safety rule 9):
 - No rating prompt, star bar or feedback link inside the SOS, food-and-water, report or alert screens, in a notification, or on the home screen while the person's area or a watched place is at Warning or Evacuate.

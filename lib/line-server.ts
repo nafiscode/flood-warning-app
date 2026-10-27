@@ -8,7 +8,9 @@ import {
   batches,
   caseLineMessage,
   decisionLineMessage,
+  feedbackAsk,
   greetingSticker,
+  isFeedbackWord,
   readPress,
   statusSticker,
   stickerMessage,
@@ -35,6 +37,15 @@ const ALL = { th, ms, en } as const;
 type Locale = keyof typeof ALL;
 const localeOf = (value: string): Locale => (value === "ms" || value === "en" ? value : "th");
 const wordsOf = (locale: Locale): LineWords => ALL[locale].line;
+/** "How is Jaga for you?" and the five faces' words, in one language (A15). */
+const feedbackWords = (locale: Locale) => ({
+  title: ALL[locale].feedback.form.ratingTitle,
+  open: ALL[locale].feedback.link,
+  words: ALL[locale].feedback.words as Record<string, string>,
+});
+/** Where the chat points for the two lists and the comment the chat cannot carry. */
+const feedbackUrl = (locale: Locale) =>
+  `${siteUrl().replace(/\/+$/, "")}${locale === "th" ? "" : `/${locale}`}/feedback`;
 const levelOf = (locale: Locale, level: string) =>
   (ALL[locale].alert.level as Record<string, string>)[level] ?? level;
 /** "Drill · Warning": a sent drill says what it is before it says the level. */
@@ -244,6 +255,8 @@ type LineEvent = {
   type?: string;
   replyToken?: string;
   postback?: { data?: string };
+  /** What was written to the account, where this is a message event (A15 reads it for one word). */
+  message?: { type?: string; text?: string };
   source?: { type?: string; userId?: string };
 };
 
@@ -310,6 +323,56 @@ export async function handleLineEvents(events: LineEvent[]): Promise<void> {
         await runPushTick();
         continue;
       }
+      /*
+       * "How is Jaga for you?" (A15, spec 17 item 5). Asking and answering are both free replies,
+       * so neither costs a message from the month's quota. The rating lands in the same table the
+       * page writes to; the two lists and the comment are on the page, and the reply says so.
+       *
+       * Deliberately not offered beside an alert or a request: this path runs only when the
+       * person opened it themselves, from the menu or by writing to the account.
+       */
+      const askedForFeedback =
+        press?.kind === "feedback" ||
+        (event.type === "message" && isFeedbackWord(event.message?.text));
+      if (askedForFeedback && event.replyToken) {
+        const locale = localeOf(await lineLocale(supabase, token, user));
+        await call("/message/reply", {
+          method: "POST",
+          body: {
+            replyToken: event.replyToken,
+            messages: [feedbackAsk(feedbackWords(locale), feedbackUrl(locale))],
+          },
+        });
+        continue;
+      }
+      if (press?.kind === "rated" && event.replyToken) {
+        const locale = localeOf(await lineLocale(supabase, token, user));
+        const { data: stored } = await supabase.rpc("line_feedback", {
+          p_token: token,
+          p_line_user: user,
+          p_rating: press.rating,
+        });
+        const words = ALL[locale].feedback.form;
+        await call("/message/reply", {
+          method: "POST",
+          body: {
+            replyToken: event.replyToken,
+            messages: [
+              {
+                type: "text",
+                text:
+                  stored === true
+                    ? `${words.sentTitle}
+${words.sentBody}
+${feedbackUrl(locale)}`
+                    : `${words.limitedTitle}
+${words.limitedBody}`,
+              },
+            ],
+          },
+        });
+        continue;
+      }
       if ((event.type === "message" || event.type === "postback") && event.replyToken) {
         const { data } = await supabase.rpc("line_status_for", {
           p_token: token,
@@ -342,6 +405,24 @@ export async function handleLineEvents(events: LineEvent[]): Promise<void> {
       // One bad event must not stop the rest; LINE does not resend what was acknowledged.
     }
   }
+}
+
+/**
+ * The language this LINE user reads Jaga in, or Thai. Its own small read, because the two
+ * feedback branches need nothing else from the status - and a person who has never signed in has
+ * no row at all, which is Thai and not an error.
+ */
+async function lineLocale(
+  supabase: SupabaseClient,
+  token: string,
+  lineUser: string,
+): Promise<string> {
+  const { data } = await supabase.rpc("line_status_for", {
+    p_token: token,
+    p_line_user: lineUser,
+  });
+  const row = (Array.isArray(data) ? data[0] : data) as { locale?: string } | undefined;
+  return row?.locale ?? "th";
 }
 
 const SEND_WORDS = { th: th.push.send, ms: ms.push.send, en: en.push.send } as const;

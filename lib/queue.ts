@@ -111,9 +111,22 @@ function run<T>(
   );
 }
 
+/**
+ * A key that sorts by when the item was added, and never ties.
+ *
+ * The clock alone is not enough: two things put in the queue in the same millisecond - the SOS
+ * and the detail step of a fast tap, a rating and the report under it - used to be separated by
+ * a random tail, so they could come back out in the wrong order. The counter is what makes
+ * "oldest first" a real guarantee rather than one that usually holds; the random tail stays
+ * behind it so two tabs of the same app cannot collide on one key.
+ */
+let added = 0;
+
 function newKey(): string {
   const random = Math.random().toString(36).slice(2, 8);
-  return `${Date.now().toString().padStart(14, "0")}-${random}`;
+  added += 1;
+  const order = added.toString().padStart(6, "0");
+  return `${Date.now().toString().padStart(14, "0")}-${order}-${random}`;
 }
 
 /** Put an item in the queue. Never throws: a phone with no IndexedDB still sends when online. */

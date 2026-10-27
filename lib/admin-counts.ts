@@ -12,9 +12,13 @@ import {
 } from "@/lib/admin-menu";
 
 /**
- * How many wait for an admin, for the menu's counts. Three head counts, run side by side as the
+ * How many wait for an admin, for the menu's counts. Four head counts, run side by side as the
  * signed-in admin: row-level security lets an admin read these tables, and a count that fails is
  * simply left out rather than shown as nought.
+ *
+ * The feedback count is comments whose sender asked for them to be shown and that nobody has
+ * said yes or no to yet (A15): until an admin looks, they are invisible to the public, so a
+ * comment that waits is a person waiting.
  */
 export async function readAdminCounts(supabase: SupabaseClient): Promise<AdminCounts> {
   const pending = (table: string, column: string) =>
@@ -23,8 +27,9 @@ export async function readAdminCounts(supabase: SupabaseClient): Promise<AdminCo
     pending("authority_units", "status"),
     pending("field_rescues", "status"),
     pending("reports", "moderation_status"),
+    pending("feedback", "public_status"),
   ]);
-  const names: AdminCount[] = ["units", "fieldRescues", "reports"];
+  const names: AdminCount[] = ["units", "fieldRescues", "reports", "feedback"];
   const counts: AdminCounts = {};
   answers.forEach((a, i) => {
     if (!a.error && typeof a.count === "number") counts[names[i]!] = a.count;

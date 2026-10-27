@@ -14,7 +14,7 @@ export const ADMIN_GROUPS = ["watch", "warn", "review", "records", "preview"] as
 export type AdminGroup = (typeof ADMIN_GROUPS)[number];
 
 /** What a review page counts: how many are waiting for an admin. */
-export type AdminCount = "units" | "fieldRescues" | "reports";
+export type AdminCount = "units" | "fieldRescues" | "reports" | "feedback";
 export type AdminCounts = Partial<Record<AdminCount, number>>;
 
 export type AdminItem = {
@@ -44,6 +44,7 @@ export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "authorities", href: "/admin/authorities", group: "review", count: "units" },
   { key: "fieldRescues", href: "/admin/field-rescues", group: "review", count: "fieldRescues" },
   { key: "moderation", href: "/admin/moderation", group: "review", count: "reports" },
+  { key: "feedback", href: "/admin/feedback", group: "review", count: "feedback" },
   { key: "duplicates", href: "/admin/duplicates", group: "review" },
   { key: "safePlaces", href: "/admin/safe-places", group: "review" },
   { key: "households", href: "/admin/households", group: "records" },

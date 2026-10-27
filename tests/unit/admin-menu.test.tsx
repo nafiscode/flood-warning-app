@@ -59,6 +59,8 @@ describe("the admin pages, in groups", () => {
       "authorities",
       "fieldRescues",
       "moderation",
+      // Comments waiting for a yes or a no before they can reach the public page (A15).
+      "feedback",
       "duplicates",
       "safePlaces",
     ]);

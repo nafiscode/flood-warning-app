@@ -353,14 +353,73 @@ ${body}`;
   };
 }
 
-/** What a LINE button pressed means: the area status, or an answer about one request. */
+/**
+ * What a LINE button pressed means: the area status, an answer about one request, the feedback
+ * question, or one of its five faces (A15).
+ */
 export type LinePress =
-  { kind: "status" } | { kind: "rescue"; sos: string; rescued: boolean } | { kind: "other" };
+  | { kind: "status" }
+  | { kind: "rescue"; sos: string; rescued: boolean }
+  | { kind: "feedback" }
+  | { kind: "rated"; rating: number }
+  | { kind: "other" };
 
 export function readPress(data: unknown): LinePress {
   if (data === "status") return { kind: "status" };
+  if (data === "feedback") return { kind: "feedback" };
+  const rated = typeof data === "string" ? /^feedback:([1-5])$/.exec(data) : null;
+  if (rated) return { kind: "rated", rating: Number(rated[1]) };
   const m = typeof data === "string" ? /^rescue:([0-9a-f-]{36}):(yes|no)$/i.exec(data) : null;
   return m ? { kind: "rescue", sos: m[1]!, rescued: m[2] === "yes" } : { kind: "other" };
+}
+
+/**
+ * A word somebody writes to the account that means "I want to say something about the app"
+ * (A15). It exists because the rich menu the owner approved on 16 Oct has six buttons in two
+ * rows of three and no room for a seventh without redrawing it, which is theirs to decide. Until
+ * then this is the way in from the chat, and the menu's own entry is a `feedback` postback that
+ * the handler already answers, so adding the button later needs no code.
+ *
+ * Deliberately a small list of plain words rather than anything clever: a chat reply that
+ * mistakes "the water is rising" for a rating would be worse than no keyword at all. Everything
+ * else written to the account still gets that person's area status, as before.
+ */
+const FEEDBACK_WORDS =
+  /^\s*(feedback|rate|rating|review|ความเห็น|ความคิดเห็น|ให้คะแนน|คะแนน|ติชม|nilai|pendapat|ulasan)\s*[?!.]*\s*$/i;
+
+export function isFeedbackWord(text: unknown): boolean {
+  return typeof text === "string" && text.length <= 40 && FEEDBACK_WORDS.test(text);
+}
+
+/**
+ * "How is Jaga for you?" in the chat (A15, spec 17 item 5). The five faces go as quick replies -
+ * LINE draws them as buttons above the keyboard, and a tap sends a postback, so nobody has to
+ * type a number. The words are each language's own, and the message says where the rest of the
+ * form is, because a chat can carry one question well and not four.
+ *
+ * Quick replies carry no icon of their own here: LINE's label is text only, so the number does
+ * the work the face does on the page, and it never depends on a colour (CLAUDE.md).
+ */
+export function feedbackAsk(
+  words: { title: string; open: string; words: Record<string, string> },
+  url: string,
+) {
+  return {
+    type: "text" as const,
+    text: clip(`${words.title}
+${url}`, 380),
+    quickReply: {
+      items: [1, 2, 3, 4, 5].map((n) => ({
+        type: "action" as const,
+        action: {
+          type: "postback" as const,
+          label: clip(`${n} ${words.words[String(n)] ?? ""}`.trim(), 20),
+          data: `feedback:${n}`,
+          displayText: `${n} ${words.words[String(n)] ?? ""}`.trim(),
+        },
+      })),
+    },
+  };
 }
 
 /**
