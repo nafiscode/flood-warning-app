@@ -911,36 +911,6 @@ export function MapView({
         }
         const above = m.getLayer(TAMBON_LINE_LAYER) ? TAMBON_LINE_LAYER : undefined;
         /*
-         * The river body (pipeline/rivers): where water normally sits, the lowest of our layers so
-         * everything else sits on it. The map's water colour by day and by night, never an alert
-         * colour (lib/river-layer.ts). A context layer, not a flood extent (safety rule 10). Added
-         * before the hazard classes so it stays beneath them.
-         */
-        if (riverUrl && !m.getSource(RIVER)) {
-          m.addSource(RIVER, { type: "vector", url: riverUrl });
-        }
-        if (m.getSource(RIVER) && !m.getLayer(RIVER_FILL)) {
-          m.addLayer(
-            {
-              id: RIVER_FILL,
-              type: "fill",
-              source: RIVER,
-              "source-layer": RIVER_SOURCE_LAYER,
-              paint: { "fill-color": riverColor(false), "fill-opacity": RIVER_OPACITY },
-            },
-            above,
-          );
-        }
-        if (m.getLayer(RIVER_FILL)) {
-          m.setLayoutProperty(RIVER_FILL, "visibility", show("river"));
-          m.setPaintProperty(RIVER_FILL, "fill-color", riverColor(mapIsDark()));
-          m.setPaintProperty(
-            RIVER_FILL,
-            "fill-opacity",
-            mapIsDark() ? RIVER_OPACITY_NIGHT : RIVER_OPACITY,
-          );
-        }
-        /*
          * The hazard classes, under everything else of ours: they are the ground the other layers
          * sit on. Their colours are the same by day and by night (lib/hazard-layer.ts).
          */
@@ -971,6 +941,37 @@ export function MapView({
             HAZARD_FILL,
             "fill-opacity",
             mapIsDark() ? HAZARD_OPACITY_NIGHT : HAZARD_OPACITY,
+          );
+        }
+        /*
+         * The river body (pipeline/rivers): where water normally sits, drawn on top of the hazard
+         * classes so the real water shows over the risk shading (the owner, 29 Oct). The map's water
+         * colour by day and by night, never an alert colour (lib/river-layer.ts). A context layer,
+         * not a flood extent (safety rule 10). Added after the hazard fill, before the same anchor,
+         * so it sits above the risk map but still beneath the satellite flood, alerts and the rest.
+         */
+        if (riverUrl && !m.getSource(RIVER)) {
+          m.addSource(RIVER, { type: "vector", url: riverUrl });
+        }
+        if (m.getSource(RIVER) && !m.getLayer(RIVER_FILL)) {
+          m.addLayer(
+            {
+              id: RIVER_FILL,
+              type: "fill",
+              source: RIVER,
+              "source-layer": RIVER_SOURCE_LAYER,
+              paint: { "fill-color": riverColor(false), "fill-opacity": RIVER_OPACITY },
+            },
+            above,
+          );
+        }
+        if (m.getLayer(RIVER_FILL)) {
+          m.setLayoutProperty(RIVER_FILL, "visibility", show("river"));
+          m.setPaintProperty(RIVER_FILL, "fill-color", riverColor(mapIsDark()));
+          m.setPaintProperty(
+            RIVER_FILL,
+            "fill-opacity",
+            mapIsDark() ? RIVER_OPACITY_NIGHT : RIVER_OPACITY,
           );
         }
         /*

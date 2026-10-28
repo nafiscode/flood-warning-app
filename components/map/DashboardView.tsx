@@ -515,10 +515,11 @@ export function DashboardView(props: DashboardViewProps) {
   // the terrain from 13 Oct): the real ground people recognise, and where the hills are, which
   // says most about where water goes.
   const [showHazard, setShowHazard] = useState(true);
-  // The river body (pipeline/rivers) starts off: it is context, "where water normally sits", and
-  // the map should open calm. The owner can turn it on from its chip, and a home tile that opens
-  // "?focus=river" turns it on. Offered only once the tiles are published (riverOnOffer).
-  const [showRiver, setShowRiver] = useState(props.openFocus === "river");
+  // The river body (pipeline/rivers) starts on (the owner, 29 Oct 2026): the real water, drawn
+  // over the risk shading. It is context, "where water normally sits", in the map's water colour,
+  // never an alert, so it never reads as a flood. The owner can turn it off from its chip. Drawn
+  // only once the tiles are published (riverOnOffer below gates the chip and the layer).
+  const [showRiver, setShowRiver] = useState(true);
   // The sea's waves along the coast start on (the owner, 15 Oct 2026), and can be switched off.
   const [showSea, setShowSea] = useState(true);
   /*
