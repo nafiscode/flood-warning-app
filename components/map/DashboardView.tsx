@@ -874,6 +874,26 @@ export function DashboardView(props: DashboardViewProps) {
    * stepping through three stations still comes back to where the reader started.
    */
   const focusBack = useRef<[number, number, number, number] | null>(null);
+  /*
+   * The right panel's scrollbar gutter, measured and written to --side-gutter, so the fold button
+   * in its corner can be pulled flush over it (the owner, 29 Oct 2026: "merge boundary with the
+   * larger right panel"). A thin scrollbar is a different width on each browser, and zero where
+   * scrollbars overlay, so this is measured rather than guessed; it is re-measured whenever the
+   * panel resizes. On a phone the panel is `display: contents` and has no gutter, which reads as 0.
+   */
+  const sideRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = sideRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const measure = () => {
+      const gutter = el.offsetWidth - el.clientWidth;
+      el.style.setProperty("--side-gutter", `${gutter}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   /** Where the map is looking now, told by MapView after every move the reader or the app makes. */
   const viewBox = useRef<[number, number, number, number] | null>(null);
   const rememberView = (box: [number, number, number, number]) => {
@@ -2625,6 +2645,7 @@ export function DashboardView(props: DashboardViewProps) {
                * the browser - the map is the one thing here that must not be squeezed.
                */}
               <div
+                ref={sideRef}
                 className="contents"
                 data-console-area="side"
                 data-console-rail="true"

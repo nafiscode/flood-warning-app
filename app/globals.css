@@ -672,11 +672,36 @@
   [data-map-console][data-side="open"]:not([data-map-full]) [data-console-area="side"] {
     position: relative;
   }
+  /*
+   * Sticky, not absolute, so the button stays in its corner while the panel scrolls under it
+   * (the owner, 29 Oct 2026: "toggle button should freeze when scrolling"). It is a zero-height
+   * sticky strip at the top, full width so its button rests at the inline end; the button spills
+   * out of the strip over the content, so it still takes no row of its own. A negative inline-end
+   * margin pulls it flush over the scrollbar gutter, so its edge meets the panel's own boundary
+   * ("make toggle button merge boundary with the larger right panel"), and it sheds the border
+   * and rounding on the two outer edges so it reads as a notch of the panel, not a floating pill.
+   */
   [data-map-console][data-side="open"]:not([data-map-full]) [data-side-bar] {
-    position: absolute;
+    position: sticky;
     inset-block-start: 0;
-    inset-inline-end: 0;
     z-index: 2;
+    align-self: stretch;
+    height: 0;
+    min-height: 0;
+    overflow: visible;
+  }
+  [data-map-console][data-side="open"]:not([data-map-full]) [data-side-toggle] {
+    /* Pull the button out over the reserved scrollbar gutter so its edge meets the panel's own,
+       with nothing between them. The gutter width is measured in DashboardView and written to
+       --side-gutter, because a thin scrollbar is not the same width on every browser (and is zero
+       where scrollbars overlay), so a fixed value would leave a gap on one machine and hang off
+       the edge on another. */
+    margin-inline-end: calc(-1 * var(--side-gutter, 0px));
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-block-start: 0;
+    border-inline-end: 0;
   }
   /* The first thing in the panel keeps clear of the button in that corner - a heading or a card
      that would otherwise run under it is held short of it; the rest have the full width. Every
