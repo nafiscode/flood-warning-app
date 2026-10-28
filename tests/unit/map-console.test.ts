@@ -803,3 +803,46 @@ describe("the run a readout opens, and the marks it lights", () => {
     expect(damsTally([staleSpill, sending], mineOnly("staleSpill")).live).toBe(false);
   });
 });
+
+/**
+ * The tablet held sideways, 28 Oct 2026 (the owner: the layers panel "is in the middle, not
+ * looking good, make it align left side", and "the map looks too small, make it extend the length
+ * vertical"). The rail under the map flowed its blocks in order, so the one-line "my places"
+ * switch took the first cell and pushed the 506 px layers panel into the middle column; and the
+ * map was sized to fit the first screen, which made it 356 px tall on an iPad 11.
+ */
+describe("the tablet's rail and map height", () => {
+  const sheet = readFileSync("app/globals.css", "utf8");
+  const rule = (selector: string) => {
+    const at = sheet.indexOf(selector);
+    expect(at, selector).toBeGreaterThan(0);
+    return sheet.slice(at, sheet.indexOf("}", at));
+  };
+  const RAIL = '[data-map-console]:not([data-map-full]) [data-console-area="rail"]';
+
+  it("puts the layers panel in the first column, under my places, spanning the rows beside it", () => {
+    const chips = rule(`${RAIL} > [data-map-features]`);
+    expect(chips).toMatch(/grid-column:\s*1;/);
+    expect(chips).toMatch(/grid-row:\s*2 \/ span 3;/);
+    const mine = rule(`${RAIL} > [data-mine-toggle]`);
+    expect(mine).toMatch(/grid-column:\s*1;/);
+    expect(mine).toMatch(/grid-row:\s*1;/);
+  });
+
+  it("stands the satellite switch, the view row and the method card to its right", () => {
+    for (const name of ["data-satellite", "data-mode-row", "data-map-method"]) {
+      expect(rule(`${RAIL} > [${name}]`), name).toMatch(/grid-column:\s*[23];/);
+    }
+    // The last row is flexible, so a tall layers panel stretches nothing beside it.
+    expect(rule(`${RAIL} {`)).toContain("grid-template-rows: auto auto auto 1fr");
+  });
+
+  it("makes the map and the answer panel the height of the window's own band", () => {
+    const at = sheet.indexOf("height: calc(100dvh - var(--jaga-header");
+    expect(at).toBeGreaterThan(0);
+    const declaration = sheet.slice(at, sheet.indexOf(";", at));
+    expect(declaration).toContain("var(--jaga-hotlines");
+    // Not the old figure that fitted the whole map into the first screen.
+    expect(sheet).not.toContain("height: calc(100dvh - 29rem)");
+  });
+});

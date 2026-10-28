@@ -1033,26 +1033,48 @@
     min-height: 0;
   }
   /*
-   * They are told what the screen actually leaves them, rather than a figure from when the
-   * chrome above was taller: the header (107), the sticky hotline bar (70), the page's own
-   * padding and the three rows above the map - measured at 1,180x820, where it comes to 29rem
-   * and leaves 356 px. Both end where the hotline bar begins, so the screen a tablet opens on
-   * holds the whole of the map and the whole of the panel. That figure is the HIG pass at the
-   * foot of this block; before it the chrome was 100 px taller and the map began below the fold.
+   * The map and the answer panel are as tall as the window's own band (the owner, 28 Oct 2026:
+   * "the map looks too small, make it extend the length vertical"): the room between the frozen
+   * header and the hotline bar, less a little air. Both are measured into --jaga-header and
+   * --jaga-hotlines by components/map/DashboardView on every load, so this follows the real
+   * window - two lines of Thai or one of English, an enlarged text size - and not a guess.
+   *
+   * On 24 Oct this was `100dvh - 29rem`, which made the whole of the map and the panel fit the
+   * first screen: 356 px on an iPad 11 and 288 on a mini, a third of the window. That was the
+   * wrong trade. The page opens on the top of a map that is now about 620 px tall, and a short
+   * scroll takes the chrome above it out of the way and leaves the map filling the band exactly.
    */
   [data-map-console]:not([data-map-full]) [data-console-area="map"],
   [data-map-console]:not([data-map-full]) [data-console-area="side"] {
-    height: calc(100dvh - 29rem);
-    min-height: 18rem;
+    height: calc(100dvh - var(--jaga-header, 6.75rem) - var(--jaga-hotlines, 4.5rem) - 1.5rem);
+    min-height: 24rem;
   }
   /*
-   * The left rail's blocks, full width and wrapping: the hazard, the province, the layers, the
-   * method and the rest. They are controls, not reading, so three or four to a row is right and
-   * the rail no longer scrolls inside itself - the page does.
+   * The layers panel is on the left (the owner, 28 Oct 2026: it was "in the middle, not looking
+   * good, make it align left side").
+   *
+   * The rail is a full-width row under the map, in three columns. It used to flow them in
+   * order - my places, the layers, the satellite switch, ... - so the one-line "my places"
+   * switch took the first cell and pushed the layers panel, 506 px tall, into the middle one,
+   * with a blank column of 450 px under the switch beside it.
+   *
+   * Placed by name now, so the layers are the first column and what goes with them stands to
+   * their right:
+   *
+   *     my places     | satellite     | how this map was made
+   *     layers        | risk / live   |
+   *     (the chips)   |               |
+   *
+   * The layers span the rows under "my places" and the last row is `1fr`, so it takes whatever
+   * is left over and the satellite switch, the view row and the method card keep their own
+   * heights instead of being stretched apart to match a tall neighbour. With no saved places
+   * there is no "my places" switch: its row has no height and the layers simply start there.
+   * Anything the rail gains later is not named here and falls into the first free cell.
    */
   [data-map-console]:not([data-map-full]) [data-console-area="rail"] {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto auto auto 1fr;
     align-items: start;
     gap: 0.75rem 1rem;
     /*
@@ -1064,6 +1086,28 @@
      * The owner saw exactly that on an iPad Air held sideways.
      */
     overflow: visible;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-area="rail"] > [data-mine-toggle] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-area="rail"] > [data-map-features] {
+    grid-column: 1;
+    grid-row: 2 / span 3;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-area="rail"] > [data-satellite] {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-area="rail"] > [data-mode-row] {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  [data-map-console]:not([data-map-full]) [data-console-area="rail"] > [data-map-method] {
+    grid-column: 3;
+    /* Two rows, so its height is shared with the satellite switch and the view row beside it and
+       does not set the height of the first of them (it made a 40 px gap where 12 belongs). */
+    grid-row: 2 / span 2;
   }
   /*
    * No hover here. A tap on a touch screen leaves `:hover` stuck on the card it touched, which
