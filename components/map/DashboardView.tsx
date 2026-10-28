@@ -1054,6 +1054,12 @@ export function DashboardView(props: DashboardViewProps) {
   const [metersOpen, setMetersOpen] = useState(false);
   const [damChoice, setDamChoice] = useState(false);
   const metersPinned = useStored<boolean>("map.meters.pinned") === true;
+  /*
+   * Whether the laptop readout strip is open (the owner, 28 Oct 2026: fold it away for more map).
+   * Unset means folded, so a laptop opens on the most map; the choice is kept per browser and the
+   * strip is drawn and floated unchanged everywhere else (full screen, tablet, phone).
+   */
+  const readoutsOpen = useStored<boolean>("map.tiles.open") === true;
   const leaveFull = () => {
     setFull(false);
     setMetersOpen(false);
@@ -1733,6 +1739,10 @@ export function DashboardView(props: DashboardViewProps) {
       // that puts its reset button under the floating readouts, so they step down below the bar
       // (the owner, 28 Oct 2026). app/globals.css does the moving.
       data-map-tour={consoleOn && tourIndex !== null ? "on" : undefined}
+      // The readout strip folds away on a laptop so the map fills the screen (the owner,
+      // 28 Oct 2026). Only here: a phone has no strip, and in full screen the readouts float
+      // on the map instead. app/globals.css hides the strip and lets the map row grow.
+      data-tiles={consoleOn && laptop && !full ? (readoutsOpen ? "open" : "shut") : undefined}
       data-meters={consoleOn && full && laptop && (metersOpen || metersPinned) ? "on" : undefined}
       data-side={consoleOn ? (sideOpen ? "open" : "closed") : undefined}
       data-side-peek={consoleOn && !sideOpen ? (sidePeek ? "on" : "off") : undefined}
@@ -1945,6 +1955,27 @@ export function DashboardView(props: DashboardViewProps) {
                   )
                 )}
               </div>
+            )}
+            {/*
+             * The switch that folds the readout strip away for more map (the owner, 28 Oct 2026).
+             * It rides at the end of this control bar rather than taking a line of its own, so
+             * folded the strip's whole height goes to the map. A laptop only: `laptop` keeps it
+             * out of the DOM on a phone and a tablet (where the strip is left as it was), and
+             * `ms-auto` sets it at the far end of the bar. app/globals.css hides the strip while
+             * the root carries data-tiles="shut".
+             */}
+            {laptop && hazard.status === "active" && (
+              <button
+                type="button"
+                data-tiles-toggle={readoutsOpen ? "open" : "shut"}
+                aria-expanded={readoutsOpen}
+                aria-controls="console-readouts"
+                onClick={() => writeStored("map.tiles.open", !readoutsOpen)}
+                className={`${chipQuiet} ${chipOff} ms-auto`}
+              >
+                {t(readoutsOpen ? "console.readoutsHide" : "console.readoutsShow")}
+                <ChevronDown open={readoutsOpen} />
+              </button>
             )}
           </div>
 

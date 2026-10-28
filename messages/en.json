@@ -809,7 +809,9 @@
       "pin": "Keep this card open",
       "unpin": "Let this card close again",
       "panelHide": "Hide the side panel",
-      "panelShow": "Show the side panel"
+      "panelShow": "Show the side panel",
+      "readoutsHide": "Hide summary cards",
+      "readoutsShow": "Show summary cards"
     },
     "full": {
       "open": "Full screen",

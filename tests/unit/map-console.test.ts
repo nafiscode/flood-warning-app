@@ -388,6 +388,29 @@ describe("the console's arrangement", () => {
   });
 
   /*
+   * The owner, 28 Oct 2026: "make this part collapsed so will have more height for the map". The
+   * readout strip folds away on a laptop; folded, it is hidden and the map row - the 1fr - takes
+   * back its height. The fold line has its own grid row above the strip so neither the map nor
+   * the strip moves under the pointer.
+   */
+  it("folds the readout strip away and hands its whole height to the map", () => {
+    // Folded, the strip is gone: its auto row collapses and the 1fr map row grows into it. The
+    // switch rides on the control bar above, so folding costs the map no line of its own.
+    expect(css).toMatch(
+      /\[data-map-console\]\[data-tiles="shut"\] \[data-console-tiles\] \{\s*display: none/,
+    );
+    // No extra grid row was added for the fold switch: the strip's own row is the only one that
+    // moves, so the map gets the full strip height back rather than trading it for a toggle bar.
+    const areas = css.slice(
+      css.indexOf("grid-template-areas:", css.indexOf("[data-map-console] {")),
+    );
+    const list = areas.slice(0, areas.indexOf(";"));
+    expect(list).not.toContain("tilesbar");
+    expect(list.indexOf('"hazard')).toBeLessThan(list.indexOf('"tiles'));
+    expect(list.indexOf('"tiles')).toBeLessThan(list.indexOf('"rail'));
+  });
+
+  /*
    * The owner, 23 Oct 2026: "the card background is having transparency but not losing the text
    * reading ability". The share is the thing being tested, not the look: a card floating over a
    * basemap can have anything behind it, so the arithmetic is done against the two extremes.
