@@ -413,13 +413,14 @@
   }
   /*
    * Folding the hazard buttons and the province away (the owner, 28 Oct 2026: "Always show the
-   * summary cards but hide the province and Hazards button"). The fold switch rides on the control
-   * bar; folded, the two pickers are gone and the bar shrinks to the one line of the switch, so
-   * the map row (the 1fr below) takes the height back. The summary strip is always shown. Laptop
-   * only: the switch is drawn under `laptop` in DashboardView, and the root sets data-filters
-   * only off full screen, where the whole bar is hidden anyway.
+   * summary cards but hide the province and Hazards button", then "move the button for hazard and
+   * province up ... so we will have more space for map"). The fold switch sits up on the head row,
+   * so folded the whole hazard bar is gone - not shrunk to a switch line - and the map row (the
+   * 1fr below) takes the line back. The summary strip is always shown. Laptop only: the switch is
+   * drawn under `laptop` in DashboardView, and the root sets data-filters only off full screen,
+   * where the whole bar is hidden anyway.
    */
-  [data-map-console][data-filters="shut"] [data-hazard-fields] {
+  [data-map-console][data-filters="shut"] [data-console-area="hazard"] {
     display: none;
   }
   [data-console-area="detail"] {

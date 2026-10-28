@@ -389,15 +389,14 @@ describe("the console's arrangement", () => {
 
   /*
    * The owner, 28 Oct 2026: "Always show the summary cards but hide the province and Hazards
-   * button". The hazard-and-province pickers fold away on a laptop; folded, they are hidden and
-   * the hazard bar shrinks to the one line of the fold switch, so the map row - the 1fr - takes
-   * the height back. The summary strip keeps its own row and is always shown.
+   * button", then "move the button for hazard and province up ... so we will have more space for
+   * map". The fold switch sits on the head row, so folded the whole hazard bar is hidden and the
+   * map row - the 1fr - takes the line back. The summary strip keeps its own row and always shows.
    */
-  it("folds the hazard and province pickers away, and keeps the summary strip", () => {
-    // Folded, only the pickers are hidden - the fold switch is a sibling of the wrapper, so it
-    // stays on the bar as the way back.
+  it("folds the whole hazard bar away, and keeps the summary strip", () => {
+    // Folded, the hazard bar (the hazard buttons and the province) is hidden as one block.
     expect(css).toMatch(
-      /\[data-map-console\]\[data-filters="shut"\] \[data-hazard-fields\] \{\s*display: none/,
+      /\[data-map-console\]\[data-filters="shut"\] \[data-console-area="hazard"\] \{\s*display: none/,
     );
     // The summary strip is never the thing that folds: no rule hides it by a fold flag.
     expect(css).not.toContain('[data-tiles="shut"]');

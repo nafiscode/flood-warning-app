@@ -1790,6 +1790,28 @@ export function DashboardView(props: DashboardViewProps) {
               : t("savedOld")}
           </p>
         )}
+        {/*
+         * The switch that folds the hazard buttons and the province away, lifted up onto the head
+         * row (the owner, 28 Oct 2026, with a picture: "move the button for hazard and province
+         * up ... so we will have more space for map"). Up here, folded the whole hazard bar is
+         * gone and the map keeps its line; the summary strip is always shown. A laptop only
+         * (`laptop` keeps it out of the phone and tablet DOM), and `ms-auto` sets it at the right
+         * by the weather. It toggles data-filters on the console root (app/globals.css hides the
+         * bar), and is drawn whatever the hazard, so a folded coming-soon hazard has its way back.
+         */}
+        {laptop && (
+          <button
+            type="button"
+            data-filters-toggle={filtersOpen ? "open" : "shut"}
+            aria-expanded={filtersOpen}
+            aria-controls="map-filters"
+            onClick={() => writeStored("map.filters.open", !filtersOpen)}
+            className={`${chipQuiet} ${chipOff} ms-auto`}
+          >
+            {t(filtersOpen ? "console.filtersHide" : "console.filtersShow")}
+            <ChevronDown open={filtersOpen} />
+          </button>
+        )}
         {/* The weather in words, in the empty half of this line (the owner, 16 Oct). */}
         {consoleOn && <ConsoleWeather />}
       </div>
@@ -1861,15 +1883,14 @@ export function DashboardView(props: DashboardViewProps) {
             </button>
           </div>
 
-          <div className="flex flex-col gap-1" data-console-area="hazard">
+          <div className="flex flex-col gap-1" data-console-area="hazard" id="map-filters">
             {/*
-             * The hazard buttons and the province, folded away on a laptop (the owner, 28 Oct
-             * 2026): always show the summary cards, hide these two. `contents` leaves the phone
-             * and tablet layout exactly as it was - the wrapper is no box there, so its children
-             * are the hazard bar's own items; app/globals.css hides it while the root carries
-             * data-filters="shut".
+             * The hazard buttons and the province. On a laptop the whole bar folds away (the
+             * owner, 28 Oct 2026: "Always show the summary cards but hide the province and Hazards
+             * button"), and its switch lives up on the head row, so folded this bar leaves the map
+             * its whole line. app/globals.css hides it while the root carries data-filters="shut";
+             * a phone and a tablet keep it.
              */}
-            <div data-hazard-fields="true" id="map-filters" className="contents">
             <p className="font-medium" id="hazard-label">
               {t("hazard.label")}
             </p>
@@ -1965,29 +1986,6 @@ export function DashboardView(props: DashboardViewProps) {
                   )
                 )}
               </div>
-            )}
-            </div>
-            {/*
-             * The switch that folds the hazard buttons and the province away (the owner, 28 Oct
-             * 2026: "Always show the summary cards but hide the province and Hazards button"). It
-             * rides at the end of this control bar; folded, only the switch stays and the two
-             * pickers give their height to the map, while the summary strip is always shown. A
-             * laptop only: `laptop` keeps it out of the phone and tablet DOM, where the pickers
-             * stay put, and `ms-auto` sets it at the far end of the bar. It is drawn whatever the
-             * hazard, so a folded coming-soon hazard still has its switch back to the pickers.
-             */}
-            {laptop && (
-              <button
-                type="button"
-                data-filters-toggle={filtersOpen ? "open" : "shut"}
-                aria-expanded={filtersOpen}
-                aria-controls="map-filters"
-                onClick={() => writeStored("map.filters.open", !filtersOpen)}
-                className={`${chipQuiet} ${chipOff} ms-auto`}
-              >
-                {t(filtersOpen ? "console.filtersHide" : "console.filtersShow")}
-                <ChevronDown open={filtersOpen} />
-              </button>
             )}
           </div>
 
