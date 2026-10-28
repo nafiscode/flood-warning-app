@@ -388,19 +388,21 @@ describe("the console's arrangement", () => {
   });
 
   /*
-   * The owner, 28 Oct 2026: "make this part collapsed so will have more height for the map". The
-   * readout strip folds away on a laptop; folded, it is hidden and the map row - the 1fr - takes
-   * back its height. The fold line has its own grid row above the strip so neither the map nor
-   * the strip moves under the pointer.
+   * The owner, 28 Oct 2026: "Always show the summary cards but hide the province and Hazards
+   * button". The hazard-and-province pickers fold away on a laptop; folded, they are hidden and
+   * the hazard bar shrinks to the one line of the fold switch, so the map row - the 1fr - takes
+   * the height back. The summary strip keeps its own row and is always shown.
    */
-  it("folds the readout strip away and hands its whole height to the map", () => {
-    // Folded, the strip is gone: its auto row collapses and the 1fr map row grows into it. The
-    // switch rides on the control bar above, so folding costs the map no line of its own.
+  it("folds the hazard and province pickers away, and keeps the summary strip", () => {
+    // Folded, only the pickers are hidden - the fold switch is a sibling of the wrapper, so it
+    // stays on the bar as the way back.
     expect(css).toMatch(
-      /\[data-map-console\]\[data-tiles="shut"\] \[data-console-tiles\] \{\s*display: none/,
+      /\[data-map-console\]\[data-filters="shut"\] \[data-hazard-fields\] \{\s*display: none/,
     );
-    // No extra grid row was added for the fold switch: the strip's own row is the only one that
-    // moves, so the map gets the full strip height back rather than trading it for a toggle bar.
+    // The summary strip is never the thing that folds: no rule hides it by a fold flag.
+    expect(css).not.toContain('[data-tiles="shut"]');
+    expect(css).not.toMatch(/data-filters="shut"\] \[data-console-tiles\]/);
+    // The hazard bar still sits above the strip, which sits above the map rail.
     const areas = css.slice(
       css.indexOf("grid-template-areas:", css.indexOf("[data-map-console] {")),
     );

@@ -810,8 +810,8 @@
       "unpin": "Nyahsemat kad ini",
       "panelHide": "Sembunyikan panel sebelah kanan",
       "panelShow": "Tunjukkan panel sebelah kanan",
-      "readoutsHide": "Sembunyikan kad ringkasan",
-      "readoutsShow": "Tunjukkan kad ringkasan"
+      "filtersHide": "Sembunyikan bahaya & wilayah",
+      "filtersShow": "Tunjukkan bahaya & wilayah"
     },
     "full": {
       "open": "Skrin penuh",

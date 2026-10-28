@@ -810,8 +810,8 @@
       "unpin": "Let this card close again",
       "panelHide": "Hide the side panel",
       "panelShow": "Show the side panel",
-      "readoutsHide": "Hide summary cards",
-      "readoutsShow": "Show summary cards"
+      "filtersHide": "Hide hazard & province",
+      "filtersShow": "Show hazard & province"
     },
     "full": {
       "open": "Full screen",

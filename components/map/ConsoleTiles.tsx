@@ -474,7 +474,6 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
 
   return (
     <ul
-      id="console-readouts"
       data-console-tiles="true"
       data-console-readout="true"
       className="hidden console:grid console:grid-cols-2 console:gap-3"

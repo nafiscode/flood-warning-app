@@ -412,14 +412,14 @@
     grid-area: tiles;
   }
   /*
-   * Folding the readout strip away (the owner, 28 Oct 2026: "make this part collapsed so will
-   * have more height for the map ... to fill the screen"). The fold switch rides on the control
-   * bar above the map, so folded the whole strip is gone and its row collapses to nothing - the
-   * map row (the 1fr below) takes back every pixel, with no new line of its own to pay for.
-   * Laptop only: the switch is drawn under `laptop` in DashboardView, and in full screen the
-   * readouts float on the map instead, so the root sets data-tiles only off full screen.
+   * Folding the hazard buttons and the province away (the owner, 28 Oct 2026: "Always show the
+   * summary cards but hide the province and Hazards button"). The fold switch rides on the control
+   * bar; folded, the two pickers are gone and the bar shrinks to the one line of the switch, so
+   * the map row (the 1fr below) takes the height back. The summary strip is always shown. Laptop
+   * only: the switch is drawn under `laptop` in DashboardView, and the root sets data-filters
+   * only off full screen, where the whole bar is hidden anyway.
    */
-  [data-map-console][data-tiles="shut"] [data-console-tiles] {
+  [data-map-console][data-filters="shut"] [data-hazard-fields] {
     display: none;
   }
   [data-console-area="detail"] {

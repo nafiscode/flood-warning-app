@@ -1055,11 +1055,12 @@ export function DashboardView(props: DashboardViewProps) {
   const [damChoice, setDamChoice] = useState(false);
   const metersPinned = useStored<boolean>("map.meters.pinned") === true;
   /*
-   * Whether the laptop readout strip is open (the owner, 28 Oct 2026: fold it away for more map).
-   * Unset means folded, so a laptop opens on the most map; the choice is kept per browser and the
-   * strip is drawn and floated unchanged everywhere else (full screen, tablet, phone).
+   * Whether the laptop hazard-and-province pickers are open (the owner, 28 Oct 2026: "Always show
+   * the summary cards but hide the province and Hazards button"). Unset means folded, so a laptop
+   * opens with the two pickers away and the map larger; the summary strip is always shown, and the
+   * pickers stay put everywhere else (full screen, tablet, phone). The choice is kept per browser.
    */
-  const readoutsOpen = useStored<boolean>("map.tiles.open") === true;
+  const filtersOpen = useStored<boolean>("map.filters.open") === true;
   const leaveFull = () => {
     setFull(false);
     setMetersOpen(false);
@@ -1739,10 +1740,11 @@ export function DashboardView(props: DashboardViewProps) {
       // that puts its reset button under the floating readouts, so they step down below the bar
       // (the owner, 28 Oct 2026). app/globals.css does the moving.
       data-map-tour={consoleOn && tourIndex !== null ? "on" : undefined}
-      // The readout strip folds away on a laptop so the map fills the screen (the owner,
-      // 28 Oct 2026). Only here: a phone has no strip, and in full screen the readouts float
-      // on the map instead. app/globals.css hides the strip and lets the map row grow.
-      data-tiles={consoleOn && laptop && !full ? (readoutsOpen ? "open" : "shut") : undefined}
+      // The hazard and province pickers fold away on a laptop so the map is larger, while the
+      // summary strip is always shown (the owner, 28 Oct 2026). Only here: a phone and a tablet
+      // keep the pickers, and in full screen the whole bar is hidden. app/globals.css hides the
+      // pickers and lets the map row grow.
+      data-filters={consoleOn && laptop && !full ? (filtersOpen ? "open" : "shut") : undefined}
       data-meters={consoleOn && full && laptop && (metersOpen || metersPinned) ? "on" : undefined}
       data-side={consoleOn ? (sideOpen ? "open" : "closed") : undefined}
       data-side-peek={consoleOn && !sideOpen ? (sidePeek ? "on" : "off") : undefined}
@@ -1860,6 +1862,14 @@ export function DashboardView(props: DashboardViewProps) {
           </div>
 
           <div className="flex flex-col gap-1" data-console-area="hazard">
+            {/*
+             * The hazard buttons and the province, folded away on a laptop (the owner, 28 Oct
+             * 2026): always show the summary cards, hide these two. `contents` leaves the phone
+             * and tablet layout exactly as it was - the wrapper is no box there, so its children
+             * are the hazard bar's own items; app/globals.css hides it while the root carries
+             * data-filters="shut".
+             */}
+            <div data-hazard-fields="true" id="map-filters" className="contents">
             <p className="font-medium" id="hazard-label">
               {t("hazard.label")}
             </p>
@@ -1956,25 +1966,27 @@ export function DashboardView(props: DashboardViewProps) {
                 )}
               </div>
             )}
+            </div>
             {/*
-             * The switch that folds the readout strip away for more map (the owner, 28 Oct 2026).
-             * It rides at the end of this control bar rather than taking a line of its own, so
-             * folded the strip's whole height goes to the map. A laptop only: `laptop` keeps it
-             * out of the DOM on a phone and a tablet (where the strip is left as it was), and
-             * `ms-auto` sets it at the far end of the bar. app/globals.css hides the strip while
-             * the root carries data-tiles="shut".
+             * The switch that folds the hazard buttons and the province away (the owner, 28 Oct
+             * 2026: "Always show the summary cards but hide the province and Hazards button"). It
+             * rides at the end of this control bar; folded, only the switch stays and the two
+             * pickers give their height to the map, while the summary strip is always shown. A
+             * laptop only: `laptop` keeps it out of the phone and tablet DOM, where the pickers
+             * stay put, and `ms-auto` sets it at the far end of the bar. It is drawn whatever the
+             * hazard, so a folded coming-soon hazard still has its switch back to the pickers.
              */}
-            {laptop && hazard.status === "active" && (
+            {laptop && (
               <button
                 type="button"
-                data-tiles-toggle={readoutsOpen ? "open" : "shut"}
-                aria-expanded={readoutsOpen}
-                aria-controls="console-readouts"
-                onClick={() => writeStored("map.tiles.open", !readoutsOpen)}
+                data-filters-toggle={filtersOpen ? "open" : "shut"}
+                aria-expanded={filtersOpen}
+                aria-controls="map-filters"
+                onClick={() => writeStored("map.filters.open", !filtersOpen)}
                 className={`${chipQuiet} ${chipOff} ms-auto`}
               >
-                {t(readoutsOpen ? "console.readoutsHide" : "console.readoutsShow")}
-                <ChevronDown open={readoutsOpen} />
+                {t(filtersOpen ? "console.filtersHide" : "console.filtersShow")}
+                <ChevronDown open={filtersOpen} />
               </button>
             )}
           </div>
