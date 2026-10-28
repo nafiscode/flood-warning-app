@@ -229,9 +229,9 @@ describe("the My places button", () => {
     const c = dashboard({ me, area: BANA });
     const button = c.querySelector("[data-zoom-mine]") as HTMLButtonElement;
     expect(button.textContent).toBe(en.map.zoomMine);
-    // Their pins were switched off; the button switches them back on.
-    fireEvent.click(c.querySelector("[data-mine-toggle] input")!);
-    expect(c.querySelector("[data-map]")!.getAttribute("data-show-mine")).toBe("0");
+    // The pins are always on now (the owner, 28 Oct 2026: "cannot turn off"); the button starts
+    // the tour, and they stay shown throughout.
+    expect(c.querySelector("[data-map]")!.getAttribute("data-show-mine")).toBe("1");
     fireEvent.click(button);
     expect(c.querySelector("[data-map]")!.getAttribute("data-show-mine")).toBe("1");
     // Home first, in a close box around it (since the tour of 15 Oct, 6b1cdfa).

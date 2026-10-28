@@ -475,7 +475,10 @@ export function DashboardView(props: DashboardViewProps) {
     // Something was asked about: the answer is in the right panel, so bring it back and leave it.
     if (next) setSideOpen(true);
   };
-  const [showMine, setShowMine] = useState(true);
+  // The reader's own pins - home and the watch places - are always drawn and cannot be switched
+  // off (the owner, 28 Oct 2026: "turned on by default, cannot turn off"). There is no toggle for
+  // them any more, so this is a constant rather than state.
+  const showMine = true;
   /*
    * The right panel folded away, so the map has the room (the owner, 18 Oct 2026). Open when the
    * page opens: what the panel holds is what a tap on the map answers with, and someone who has
@@ -1248,7 +1251,6 @@ export function DashboardView(props: DashboardViewProps) {
     const at = ((index % count) + count) % count;
     const place = mine[at]!;
     setTourAt(at);
-    setShowMine(true);
     setSelection({ kind: "mine", id: place.id });
     setFocus((was) => ({
       box: [
@@ -1377,7 +1379,6 @@ export function DashboardView(props: DashboardViewProps) {
     setShowDam(true);
     setShowDamZone(true);
     setShowSea(true);
-    setShowMine(true);
     setShowPlaces(false);
     setScene(false);
     setBasemapPicked(null);
@@ -2089,25 +2090,10 @@ export function DashboardView(props: DashboardViewProps) {
                   </Link>
                 </div>
                 {/*
-                 * The reader's own pins, first in the rail (the owner, 23 Oct 2026: "bring the
-                 * Show my places on the map to the left side as well, make it at the top in the
-                 * left panel"). It was in the right-hand panel with the safe places.
-                 *
-                 * First after the way out, not before it: that block is `display: none` until the
-                 * map fills the screen, so this is the first thing on the page either way, and in
-                 * full screen the way back still comes before the switches.
+                 * The reader's own pins - home and the watch places - are always drawn now (the
+                 * owner, 28 Oct 2026: "turned on by default, cannot turn off"), so the switch that
+                 * used to stand first in the rail is gone. Their legend is in the right-hand panel.
                  */}
-                {mine.length > 0 && (
-                  <label className={checkRow} data-mine-toggle="true">
-                    <input
-                      type="checkbox"
-                      className={checkBox}
-                      checked={showMine}
-                      onChange={(event) => setShowMine(event.target.checked)}
-                    />
-                    <span>{t("mine.toggle", { count: mine.length })}</span>
-                  </label>
-                )}
                 {/* The sea's own report, for fishermen, right under the chips while the sea is
                     shown (the owner, 15 Oct: the switches under the map are gone, the chips do
                     that). */}
@@ -2451,7 +2437,6 @@ export function DashboardView(props: DashboardViewProps) {
                               tourTo(0);
                               return;
                             }
-                            setShowMine(true);
                             setFocus((was) => ({ box: myBox, key: (was?.key ?? 0) + 1 }));
                           }}
                           className={mapButton}
@@ -2497,11 +2482,15 @@ export function DashboardView(props: DashboardViewProps) {
                     </div>
                   )}
                   {/*
-                   * The basemap, picked on the map itself while it fills the screen (the owner,
-                   * 18 Oct, "similar to google map when switching the basemap"). The panel in the
-                   * rail is the way to it everywhere else, and the buttons are the same ones.
+                   * The basemap, picked on the map itself (the owner, 18 Oct, "similar to google
+                   * map when switching the basemap"; and 28 Oct, "bring the buttons of the basemap
+                   * ... inside the map itself" on the laptop too, not only full screen). The button
+                   * opens the options over the map; it is the same ground full screen uses, so the
+                   * side rail no longer carries a copy on the console - app/globals.css hides it and
+                   * the "what's on the map" panel rises to fill the gap. The phone keeps its own, so
+                   * this renders on the console only (`onConsole`), not hidden in the phone's DOM.
                    */}
-                  {full && (
+                  {onConsole && (
                     <div
                       data-map-basemap-picker={basemapOpen ? "open" : "shut"}
                       className="absolute bottom-16 start-2 z-10 hidden flex-col items-start gap-2 console:flex"
@@ -2513,6 +2502,22 @@ export function DashboardView(props: DashboardViewProps) {
                         >
                           <p className="font-medium">{t("basemap.title")}</p>
                           {basemapButtons}
+                          {/* The 3D and satellite notes travel with the buttons, so moving the
+                              picker onto the map does not drop the caveats (safety rule 8). */}
+                          {scene && (
+                            <p className={hint} data-scene-note="true">
+                              {t("scene.note", { times: SCENE_EXAGGERATION })}
+                            </p>
+                          )}
+                          {isPhotoBasemap(basemap) && (
+                            <p className={hint} data-satellite-note={satellite}>
+                              {t(
+                                satellite === "esri"
+                                  ? "basemap.satelliteNoteEsri"
+                                  : "basemap.satelliteNote",
+                              )}
+                            </p>
+                          )}
                         </div>
                       )}
                       <button
@@ -2649,7 +2654,11 @@ export function DashboardView(props: DashboardViewProps) {
                     </button>
                   </div>
                 </span>
-                <fieldset className="flex flex-col gap-1" data-basemap={basemap}>
+                <fieldset
+                  className="flex flex-col gap-1"
+                  data-basemap={basemap}
+                  data-basemap-panel="true"
+                >
                   <legend className="font-medium">{t("basemap.title")}</legend>
                   {basemapButtons}
                   {scene && (

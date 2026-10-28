@@ -667,20 +667,21 @@ describe("the places I watch, on the map", () => {
     expect(c.querySelector('[data-layer="mine"]')).toBeNull();
   });
 
-  it("a signed-in person sees their own places, with a switch and a legend row", () => {
+  it("a signed-in person sees their own places drawn, with a legend row", () => {
     const c = dashboard({ me: EXAMPLE_ME });
     const map = c.querySelector("[data-map]")!;
     // Both watched places of the example; a place pinned outside the covered tambons is left out.
     expect(map.getAttribute("data-mine")).toBe("w1,w2");
-    expect(c.querySelector("[data-mine-toggle]")?.textContent).toContain("2");
     expect(c.querySelector('[data-layer="mine"]')?.textContent).toContain(th.map.layers.mine);
   });
 
-  it("the switch takes them off the map again", () => {
+  it("always draws them - there is no switch to turn the reader's own places off", () => {
+    // The owner, 28 Oct 2026: "turned on by default, cannot turn off". No toggle is rendered,
+    // and the places are on the map from the first paint.
     const c = dashboard({ me: EXAMPLE_ME });
-    fireEvent.click(c.querySelector("[data-mine-toggle] input")!);
-    expect(c.querySelector("[data-map]")?.getAttribute("data-mine")).toBe("");
-    expect(c.querySelector('[data-layer="mine"]')).toBeNull();
+    expect(c.querySelector("[data-mine-toggle]")).toBeNull();
+    expect(c.querySelector("[data-map]")?.getAttribute("data-mine")).toBe("w1,w2");
+    expect(c.querySelector('[data-layer="mine"]')?.textContent).toContain(th.map.layers.mine);
   });
 
   it("a home saved in the account is one of them", () => {
