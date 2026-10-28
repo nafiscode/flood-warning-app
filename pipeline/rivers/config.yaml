@@ -1,0 +1,28 @@
+# A river-body polygon layer for the public map: where water normally sits (rivers, canals,
+# reservoirs, lakes), drawn from OpenStreetMap. A context/cartography layer only, never a flood
+# extent and never an all-clear (safety rule 10). It wears the map's water colour, which by rule
+# shows no status. Data (c) OpenStreetMap contributors, ODbL.
+
+output_dir: out/rivers
+user_agent: "jaga-pipeline/0.1 (+https://github.com/nafiscode/flood-warning-app; {contact})"
+# Public Overpass servers, asked in turn: any one of them is often busy. All free, no account.
+overpass_url:
+  - https://overpass-api.de/api/interpreter
+  - https://overpass.private.coffee/api/interpreter
+  - https://maps.mail.ru/osm/tools/overpass/api/interpreter
+tile_deg: 0.25                     # one Overpass request per quarter-degree tile touching the provinces
+
+# Half-widths (metres) for the waterway centrelines OSM maps only as a line, so narrow channels
+# still show. A line is drawn at twice these across. Areas (riverbanks, reservoirs, lakes) are used
+# as digitised and not widened.
+line_half_width_m:
+  river: 8.0
+  canal: 4.0
+  stream: 2.5
+min_part_m2: 200.0                 # drop water pieces smaller than this (speckle, tiny ponds)
+
+# Vector tiles (pure Python, like hazard/tiles.py)
+layer: river
+min_zoom: 6
+max_zoom: 13
+simplify_px: 0.4                   # tile-unit tolerance; takes the step out of an outline without parting neighbours
