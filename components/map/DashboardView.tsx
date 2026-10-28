@@ -1830,13 +1830,14 @@ export function DashboardView(props: DashboardViewProps) {
           </p>
         )}
         {/*
-         * The fold switch on the head row, by the weather - for every language but Malay, whose
-         * wider text pushes it to the hazard bar instead (below). It top-aligns (`self-start`) to
-         * line up with the team pill, which does too; the head row is baseline-aligned otherwise
-         * and sat the two pills at different heights (the owner, 28 Oct 2026). `ms-auto` sets it at
-         * the right. Folded, the whole hazard bar is hidden, so the map keeps its line.
+         * The fold switch on the head row, right next to the team pill (the owner, 28 Oct 2026:
+         * "make the 2 buttons next to each other, no ... space in between"). No `ms-auto`, so it
+         * sits beside the pill rather than away by the weather; `self-start` top-aligns it with the
+         * pill, which the baseline-aligned head row would otherwise drop. For every language but
+         * Malay, whose wider text pushes it to the hazard bar instead (below). Folded, the whole
+         * hazard bar is hidden, so the map keeps its line.
          */}
-        {locale !== "ms" && renderFoldSwitch("ms-auto self-start")}
+        {locale !== "ms" && renderFoldSwitch("self-start")}
         {/* The weather in words, in the empty half of this line (the owner, 16 Oct). */}
         {consoleOn && <ConsoleWeather />}
       </div>
