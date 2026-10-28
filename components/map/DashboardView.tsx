@@ -2688,6 +2688,7 @@ export function DashboardView(props: DashboardViewProps) {
                   {placesOnOffer && (
                     <label
                       data-places-toggle="true"
+                      data-side-first="true"
                       className={`${checkRow} items-center rounded-xl border-2 border-jaga-edge bg-jaga-surface px-3 font-bold`}
                     >
                       <input
@@ -2719,7 +2720,9 @@ export function DashboardView(props: DashboardViewProps) {
                  */}
                 <MapJoin />
                 <InstallCard place="home" />
-                <p className={hint}>{t("tapHint")}</p>
+                <p className={hint} data-side-first="true">
+                  {t("tapHint")}
+                </p>
                 {props.dataState === "unavailable" && (
                   <p role="status" className={notice}>
                     {t("dataFailed")}

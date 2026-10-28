@@ -630,7 +630,9 @@
      wrappers that hold the phone's own arrangement together, and a display of our own here
      would take that apart. Hidden this way they keep their shape, cannot be tabbed into, and
      come back exactly as they were. */
-  [data-side="closed"]:not([data-map-full]) [data-console-area="side"] > *:not([data-side-bar]) {
+  [data-side="closed"]:not([data-map-full])
+    [data-console-area="side"]
+    > *:not([data-side-bar]):not(:has([data-side-bar])) {
     visibility: hidden;
   }
   /* The peek is armed only once the pointer has left the folded strip (data-side-peek), or
@@ -659,6 +661,39 @@
     display: flex;
     flex: none;
     justify-content: flex-end;
+  }
+  /*
+   * Open, the fold button sits in the top-right corner of the panel rather than on a row of its
+   * own (the owner, 28 Oct 2026: "the toggle button can be at the same level of the first text
+   * row ... right now it kept empty space row just for the toggle button"). Lifted out of the
+   * flow, the panel's own content starts at the top and fills the space; the content clears the
+   * button below. Only while open: folded it is the strip the panel collapses to, handled above.
+   */
+  [data-map-console][data-side="open"]:not([data-map-full]) [data-console-area="side"] {
+    position: relative;
+  }
+  [data-map-console][data-side="open"]:not([data-map-full]) [data-side-bar] {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    z-index: 2;
+  }
+  /* The first thing in the panel keeps clear of the button in that corner - a heading or a card
+     that would otherwise run under it is held short of it; the rest have the full width. Every
+     thing that can come first is named (the join and install cards, the tap hint, the safe-places
+     switch), and the sibling reset leaves the padding on the first one only, so nothing below it
+     narrows. A short line that never reaches the button is padded too, with nothing to show for
+     it. */
+  [data-map-console][data-side="open"]:not([data-map-full])
+    [data-console-area="side"]
+    :is([data-map-join], [data-install], [data-side-first]) {
+    padding-inline-end: 3.25rem;
+  }
+  [data-map-console][data-side="open"]:not([data-map-full])
+    [data-console-area="side"]
+    :is([data-map-join], [data-install], [data-side-first])
+    ~ :is([data-map-join], [data-install], [data-side-first]) {
+    padding-inline-end: 0;
   }
 
   [data-console-area="rail"] {
