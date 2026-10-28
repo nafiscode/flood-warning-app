@@ -752,7 +752,7 @@
     "savedAt": "Tiada sambungan. Peta ini menunjukkan maklumat yang disimpan dalam telefon pada {time}.",
     "savedOld": "Tiada sambungan. Peta ini menunjukkan maklumat yang disimpan dalam telefon.",
     "console": {
-      "note": "Data awam, jawapan yang sama seperti di telefon, diringkaskan pada peringkat mukim. Tiada lokasi tepat dan tiada maklumat peribadi.",
+      "note": "Data awam peringkat mukim — tiada lokasi tepat atau maklumat peribadi.",
       "unknown": "Tidak diketahui",
       "newest": "Terbaharu {time}",
       "age": "{minutes} minit lalu",

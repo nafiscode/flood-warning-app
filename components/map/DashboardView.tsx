@@ -1061,6 +1061,27 @@ export function DashboardView(props: DashboardViewProps) {
    * pickers stay put everywhere else (full screen, tablet, phone). The choice is kept per browser.
    */
   const filtersOpen = useStored<boolean>("map.filters.open") === true;
+  /*
+   * The hazard-and-province fold switch, written once and placed by language (the owner, 28 Oct
+   * 2026). In most languages it sits up on the head row, by the weather; in Malay the head is too
+   * wide for it, so it sits at the left of the hazard bar and the pickers open to its right on the
+   * same row ("for Malay ... bring the button to the left and when clicked, the hidden buttons
+   * appear on the same row"). Laptop only; `extra` carries the placement classes.
+   */
+  const renderFoldSwitch = (extra: string) =>
+    laptop ? (
+      <button
+        type="button"
+        data-filters-toggle={filtersOpen ? "open" : "shut"}
+        aria-expanded={filtersOpen}
+        aria-controls="map-filters"
+        onClick={() => writeStored("map.filters.open", !filtersOpen)}
+        className={`${chipQuiet} ${chipOff} ${extra}`}
+      >
+        {t(filtersOpen ? "console.filtersHide" : "console.filtersShow")}
+        <ChevronDown open={filtersOpen} />
+      </button>
+    ) : null;
   const leaveFull = () => {
     setFull(false);
     setMetersOpen(false);
@@ -1791,27 +1812,13 @@ export function DashboardView(props: DashboardViewProps) {
           </p>
         )}
         {/*
-         * The switch that folds the hazard buttons and the province away, lifted up onto the head
-         * row (the owner, 28 Oct 2026, with a picture: "move the button for hazard and province
-         * up ... so we will have more space for map"). Up here, folded the whole hazard bar is
-         * gone and the map keeps its line; the summary strip is always shown. A laptop only
-         * (`laptop` keeps it out of the phone and tablet DOM), and `ms-auto` sets it at the right
-         * by the weather. It toggles data-filters on the console root (app/globals.css hides the
-         * bar), and is drawn whatever the hazard, so a folded coming-soon hazard has its way back.
+         * The fold switch on the head row, by the weather - for every language but Malay, whose
+         * wider text pushes it to the hazard bar instead (below). It top-aligns (`self-start`) to
+         * line up with the team pill, which does too; the head row is baseline-aligned otherwise
+         * and sat the two pills at different heights (the owner, 28 Oct 2026). `ms-auto` sets it at
+         * the right. Folded, the whole hazard bar is hidden, so the map keeps its line.
          */}
-        {laptop && (
-          <button
-            type="button"
-            data-filters-toggle={filtersOpen ? "open" : "shut"}
-            aria-expanded={filtersOpen}
-            aria-controls="map-filters"
-            onClick={() => writeStored("map.filters.open", !filtersOpen)}
-            className={`${chipQuiet} ${chipOff} ms-auto`}
-          >
-            {t(filtersOpen ? "console.filtersHide" : "console.filtersShow")}
-            <ChevronDown open={filtersOpen} />
-          </button>
-        )}
+        {locale !== "ms" && renderFoldSwitch("ms-auto self-start")}
         {/* The weather in words, in the empty half of this line (the owner, 16 Oct). */}
         {consoleOn && <ConsoleWeather />}
       </div>
@@ -1883,14 +1890,20 @@ export function DashboardView(props: DashboardViewProps) {
             </button>
           </div>
 
-          <div className="flex flex-col gap-1" data-console-area="hazard" id="map-filters">
+          <div className="flex flex-col gap-1" data-console-area="hazard">
             {/*
-             * The hazard buttons and the province. On a laptop the whole bar folds away (the
-             * owner, 28 Oct 2026: "Always show the summary cards but hide the province and Hazards
-             * button"), and its switch lives up on the head row, so folded this bar leaves the map
-             * its whole line. app/globals.css hides it while the root carries data-filters="shut";
-             * a phone and a tablet keep it.
+             * In Malay the fold switch sits here, at the left of the bar, because the head row is
+             * too wide to hold it; the pickers open to its right on the same row (the owner, 28 Oct
+             * 2026). In every other language the switch is up on the head row and the whole bar
+             * folds away. A phone and a tablet keep the bar laid out as before either way.
              */}
+            {locale === "ms" && renderFoldSwitch("")}
+            {/*
+             * The hazard buttons and the province, wrapped so the fold can hide just them in Malay,
+             * where the switch stays in this bar. `contents` leaves the phone and tablet layout
+             * exactly as it was; app/globals.css folds this (whole bar elsewhere, this alone in ms).
+             */}
+            <div data-hazard-fields="true" id="map-filters" className="contents">
             <p className="font-medium" id="hazard-label">
               {t("hazard.label")}
             </p>
@@ -1987,6 +2000,7 @@ export function DashboardView(props: DashboardViewProps) {
                 )}
               </div>
             )}
+            </div>
           </div>
 
           {hazard.status !== "active" ? (

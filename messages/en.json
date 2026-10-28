@@ -752,7 +752,7 @@
     "savedAt": "No connection. This map shows what was saved on this phone at {time}.",
     "savedOld": "No connection. This map shows what was saved on this phone.",
     "console": {
-      "note": "Public data, the same answers a phone gets, summarised by subdistrict. No exact locations and no personal details.",
+      "note": "Public data by subdistrict — no exact locations or personal details.",
       "unknown": "Unknown",
       "newest": "Newest {time}",
       "age": "{minutes} min ago",

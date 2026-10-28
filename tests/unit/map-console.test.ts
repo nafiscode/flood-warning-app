@@ -394,9 +394,9 @@ describe("the console's arrangement", () => {
    * map row - the 1fr - takes the line back. The summary strip keeps its own row and always shows.
    */
   it("folds the whole hazard bar away, and keeps the summary strip", () => {
-    // Folded, the hazard bar (the hazard buttons and the province) is hidden as one block.
+    // Folded, outside Malay the hazard bar (the switch is up on the head row) is hidden whole.
     expect(css).toMatch(
-      /\[data-map-console\]\[data-filters="shut"\] \[data-console-area="hazard"\] \{\s*display: none/,
+      /\[data-map-console\]:not\(:lang\(ms\)\)\[data-filters="shut"\] \[data-console-area="hazard"\] \{\s*display: none/,
     );
     // The summary strip is never the thing that folds: no rule hides it by a fold flag.
     expect(css).not.toContain('[data-tiles="shut"]');
@@ -409,6 +409,20 @@ describe("the console's arrangement", () => {
     expect(list).not.toContain("tilesbar");
     expect(list.indexOf('"hazard')).toBeLessThan(list.indexOf('"tiles'));
     expect(list.indexOf('"tiles')).toBeLessThan(list.indexOf('"rail'));
+  });
+
+  /*
+   * The owner, 28 Oct 2026: "for Malay language bring the button to the left and when clicked, the
+   * hidden buttons appear on the same row, so no space reduced for the Map". Malay runs wider than
+   * the head row can hold, so its fold switch sits at the left of the hazard bar; folded, only the
+   * pickers hide and the bar stays holding the switch, so unfolding opens them on the same row.
+   */
+  it("in Malay keeps the hazard bar for the switch and folds only the pickers", () => {
+    expect(css).toMatch(
+      /\[data-map-console\]:lang\(ms\)\[data-filters="shut"\] \[data-hazard-fields\] \{\s*display: none/,
+    );
+    // The whole-bar fold is held off Malay, so Malay's switch (which lives in the bar) survives.
+    expect(css).toContain(':not(:lang(ms))[data-filters="shut"] [data-console-area="hazard"]');
   });
 
   /*
