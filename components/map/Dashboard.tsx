@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { hazardSourceUrl, tilesBase, type TileManifest } from "@/lib/hazard-layer";
+import { riverSourceUrl } from "@/lib/river-layer";
 import type { Area, AreaDirectory } from "@/lib/area";
 import { DAM_URL, DAM_ZONE_URL, type DamData, type DamZoneData } from "@/lib/dam";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
@@ -113,6 +114,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       dataState={data.state}
       dams={damsWithZones}
       hazardTiles={hazardSourceUrl(tiles, manifest.data)}
+      riverTiles={riverSourceUrl(tiles, manifest.data)}
       coverage={coverage.data?.rows ?? null}
       satelliteDays={satelliteDays}
       onSatelliteDays={setSatelliteDays}

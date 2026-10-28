@@ -43,6 +43,12 @@ import {
   HAZARD_SOURCE_LAYER,
   hazardFillColor,
 } from "@/lib/hazard-layer";
+import {
+  RIVER_OPACITY,
+  RIVER_OPACITY_NIGHT,
+  RIVER_SOURCE_LAYER,
+  riverColor,
+} from "@/lib/river-layer";
 import { SEA_IMAGE_RATIO, SEA_RANK, seaImage, seaImageName, seaPaint } from "@/lib/sea-marks";
 import type { SeaGrade } from "@/lib/sea";
 import {
@@ -177,6 +183,8 @@ type Props = {
   showDamZone?: boolean;
   /** The `pmtiles://` address of the flood-hazard classes; null until the manifest names one. */
   hazardUrl?: string | null;
+  /** The `pmtiles://` address of the river body (pipeline/rivers); null until the manifest names one. */
+  riverUrl?: string | null;
   /**
    * The responsibility map (spec 2, 9), drawn as on the authority console's own map: the tambons a
    * rescue team covers, the gaps (no rescue team), and the viewer's own tambons. Readable only by
@@ -295,6 +303,8 @@ const REPORTS_LINE = "jaga-reports-line";
 const PLACES = "jaga-places";
 const HAZARD = "jaga-hazard";
 const HAZARD_FILL = "jaga-hazard-fill";
+const RIVER = "jaga-river";
+const RIVER_FILL = "jaga-river-fill";
 const SATELLITE = "jaga-satellite";
 const SATELLITE_LINE = "jaga-satellite-line";
 const SEA = "jaga-sea";
@@ -478,6 +488,7 @@ export function MapView({
   cooperative = false,
   gestureText,
   hazardUrl = null,
+  riverUrl = null,
   coverageCovered = [],
   coverageGaps = [],
   coverageMine = [],
@@ -899,6 +910,36 @@ export function MapView({
           held.current.set(id, value);
         }
         const above = m.getLayer(TAMBON_LINE_LAYER) ? TAMBON_LINE_LAYER : undefined;
+        /*
+         * The river body (pipeline/rivers): where water normally sits, the lowest of our layers so
+         * everything else sits on it. The map's water colour by day and by night, never an alert
+         * colour (lib/river-layer.ts). A context layer, not a flood extent (safety rule 10). Added
+         * before the hazard classes so it stays beneath them.
+         */
+        if (riverUrl && !m.getSource(RIVER)) {
+          m.addSource(RIVER, { type: "vector", url: riverUrl });
+        }
+        if (m.getSource(RIVER) && !m.getLayer(RIVER_FILL)) {
+          m.addLayer(
+            {
+              id: RIVER_FILL,
+              type: "fill",
+              source: RIVER,
+              "source-layer": RIVER_SOURCE_LAYER,
+              paint: { "fill-color": riverColor(false), "fill-opacity": RIVER_OPACITY },
+            },
+            above,
+          );
+        }
+        if (m.getLayer(RIVER_FILL)) {
+          m.setLayoutProperty(RIVER_FILL, "visibility", show("river"));
+          m.setPaintProperty(RIVER_FILL, "fill-color", riverColor(mapIsDark()));
+          m.setPaintProperty(
+            RIVER_FILL,
+            "fill-opacity",
+            mapIsDark() ? RIVER_OPACITY_NIGHT : RIVER_OPACITY,
+          );
+        }
         /*
          * The hazard classes, under everything else of ours: they are the ground the other layers
          * sit on. Their colours are the same by day and by night (lib/hazard-layer.ts).
@@ -1651,6 +1692,7 @@ export function MapView({
     outletLabel,
     damLocale,
     hazardUrl,
+    riverUrl,
     coverageCovered,
     coverageGaps,
     coverageMine,

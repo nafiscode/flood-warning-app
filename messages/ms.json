@@ -583,6 +583,7 @@
       "title": "Apa yang ditunjukkan pada peta",
       "alerts": "Tahap amaran setiap tambon",
       "hazard": "Kawasan berisiko banjir",
+      "river": "Sungai dan badan air",
       "places": "Tempat selamat",
       "reports": "Laporan banjir daripada orang ramai (72 jam)",
       "gauges": "Stesen paras air",
@@ -590,6 +591,7 @@
     },
     "pending": {
       "hazard": "Peta kawasan berisiko sedang disediakan dan belum ditunjukkan. Ini tidak bermakna tiada risiko.",
+      "river": "Lapisan sungai sedang disediakan dan belum ditunjukkan. Ia menunjukkan tempat air biasanya berada, bukan tempat banjir akan berlaku.",
       "places": "Belum ada senarai tempat selamat dalam aplikasi.",
       "reports": "Belum ada laporan dalam aplikasi. Ini tidak bermakna tiada banjir.",
       "gauges": "Belum ada data stesen paras air dalam aplikasi.",
@@ -4434,6 +4436,11 @@
       "name": "Laut dan pantai",
       "note": "Ombak, angin dan pasang surut, dengan nota untuk nelayan",
       "short": "Laut"
+    },
+    "river": {
+      "name": "Sungai dan air",
+      "note": "Tempat air biasanya berada — sungai, terusan, takungan dan tasik, daripada OpenStreetMap",
+      "short": "Sungai"
     }
   },
   "mapMethod": {
@@ -4480,6 +4487,10 @@
     "sea": {
       "lead": "Laut, daripada model ombak dan cuaca",
       "text": "Tujuh tempat di luar pantai dari Songkhla hingga Tak Bai, dibaca daripada model ombak dan model cuaca Open-Meteo setiap setengah jam. Ombak 1 m, angin 30 km/j atau ribut petir dikira bergelora; ombak 2 m, angin 40 km/j atau tiupan 60 km/j bermakna bot kecil patut tidak keluar, mengikut kata-kata TMD. Ia tidak pernah berkata laut selamat, dan ketinggian pasang surut tidak ditunjukkan kerana model berbeza kira-kira 0.7 m daripada stesen air."
+    },
+    "rivers": {
+      "lead": "Tempat air biasanya berada",
+      "text": "Sungai, terusan, takungan dan tasik yang dilukis orang dalam OpenStreetMap, diisi dengan warna air peta. Alur sempit yang dipetakan sebagai garisan sahaja dilebarkan menjadi jalur nipis supaya sungai utama sentiasa kelihatan. Ia menunjukkan tempat air biasanya berada, bukan tempat banjir akan sampai, dan tidak pernah berkata mana-mana tempat selamat; ia lukisan, bukan ukuran."
     },
     "gate": {
       "lead": "Laut di sebelah sungai",

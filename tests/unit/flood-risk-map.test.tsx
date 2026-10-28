@@ -106,9 +106,9 @@ describe("the header's last link", () => {
   });
 });
 
-describe("the six features", () => {
+describe("the map's features", () => {
   it("are read from the address and nothing else", () => {
-    expect(MAP_FOCUSES).toEqual(["risk", "places", "damzone", "gauges", "dam", "sea"]);
+    expect(MAP_FOCUSES).toEqual(["risk", "places", "damzone", "gauges", "dam", "sea", "river"]);
     expect(readFocus("gauges")).toBe("gauges");
     expect(readFocus("hazard")).toBeNull();
     expect(readFocus(null)).toBeNull();
@@ -135,31 +135,30 @@ describe("the six features", () => {
 
   it("are switches above the map, in the owner's order, each saying whether it is on", () => {
     const toggled: string[] = [];
-    const on = { risk: true, gauges: false, sea: true, dam: true, damzone: false, places: false };
+    const on = {
+      risk: true,
+      river: false,
+      gauges: false,
+      sea: true,
+      dam: true,
+      damzone: false,
+      places: false,
+    };
     const c = renderWithIntl(
       <MapFeatureChips on={on} onToggle={(f) => toggled.push(f)} />,
     ).container;
     const chips = [...c.querySelectorAll<HTMLButtonElement>("[data-map-chip]")];
     expect(chips.map((b) => b.getAttribute("data-map-chip"))).toEqual([...CHIP_ORDER]);
-    expect(chips.map((b) => b.getAttribute("aria-pressed"))).toEqual([
-      "true",
-      "false",
-      "true",
-      "true",
-      "false",
-      "false",
-    ]);
-    // On is shown by a tick as well as the fill, and the heading says they are choices.
-    expect(chips.map((b) => !!b.querySelector("[data-chip-tick]"))).toEqual([
-      true,
-      false,
-      true,
-      true,
-      false,
-      false,
-    ]);
+    // Each chip says whether it is on, in the owner's order, by both its pressed state...
+    expect(chips.map((b) => b.getAttribute("aria-pressed") === "true")).toEqual(
+      CHIP_ORDER.map((f) => on[f]),
+    );
+    // ...and a tick, so "on" is never shown by the dark fill alone.
+    expect(chips.map((b) => !!b.querySelector("[data-chip-tick]"))).toEqual(
+      CHIP_ORDER.map((f) => on[f]),
+    );
     expect(c.querySelector("#map-chips-title")?.textContent).toBe(th.mapFeatures.mapTitle);
-    chips[4]!.click();
+    chips[CHIP_ORDER.indexOf("damzone")]!.click();
     expect(toggled).toEqual(["damzone"]);
   });
 
@@ -171,7 +170,15 @@ describe("the six features", () => {
     expect(chipsFloat(-20, 155, 200, 64)).toBe(false);
     expect(chipsFloat(200, 155, 600, 64)).toBe(false);
     expect(chipsFloat(-20, 155, null, 64)).toBe(true);
-    const on = { risk: true, gauges: true, sea: true, dam: true, damzone: true, places: false };
+    const on = {
+      risk: true,
+      river: false,
+      gauges: true,
+      sea: true,
+      dam: true,
+      damzone: true,
+      places: false,
+    };
     const toggled: string[] = [];
     const rect = vi
       .spyOn(HTMLElement.prototype, "getBoundingClientRect")
@@ -196,7 +203,7 @@ describe("the six features", () => {
     expect(chips[0]!.querySelector(".max-sm\\:sr-only")?.textContent).toBe(
       th.mapFeatures.risk.short,
     );
-    chips[5]!.click();
+    chips[CHIP_ORDER.indexOf("places")]!.click();
     expect(toggled).toEqual(["places"]);
     // The fishermen's button rides along from tablet width up, not on a phone.
     expect(float.querySelector("[data-open-sea]")?.parentElement?.className).toContain(

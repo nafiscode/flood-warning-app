@@ -11,6 +11,7 @@ import { heroStatusFor, NORMAL_NEEDS_CHECK_WITHIN_MS } from "@/components/home/H
 import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { HAZARD_CLASSES, hazardColor, hazardKey } from "@/lib/hazard-layer";
+import { riverColor } from "@/lib/river-layer";
 import {
   BASEMAPS,
   isPhotoBasemap,
@@ -181,6 +182,8 @@ export type DashboardViewProps = {
   dams?: Dam[] | null;
   /** The `pmtiles://` address of the flood-hazard classes; null while there is none to draw. */
   hazardTiles?: string | null;
+  /** The `pmtiles://` address of the river body (pipeline/rivers); null while there is none. */
+  riverTiles?: string | null;
   /**
    * The responsibility map (spec 2, 9): per-tambon team coverage, the same rows the authority
    * console reads. Given only when the viewer is a verified authority or admin (safety rule 5);
@@ -509,6 +512,10 @@ export function DashboardView(props: DashboardViewProps) {
   // the terrain from 13 Oct): the real ground people recognise, and where the hills are, which
   // says most about where water goes.
   const [showHazard, setShowHazard] = useState(true);
+  // The river body (pipeline/rivers) starts off: it is context, "where water normally sits", and
+  // the map should open calm. The owner can turn it on from its chip, and a home tile that opens
+  // "?focus=river" turns it on. Offered only once the tiles are published (riverOnOffer).
+  const [showRiver, setShowRiver] = useState(props.openFocus === "river");
   // The sea's waves along the coast start on (the owner, 15 Oct 2026), and can be switched off.
   const [showSea, setShowSea] = useState(true);
   /*
@@ -719,6 +726,9 @@ export function DashboardView(props: DashboardViewProps) {
   ];
   const placesOnOffer = layers.includes("places") && !!data && data.places.length > 0;
   const hazardOnOffer = layers.includes("hazard") && !!props.hazardTiles;
+  // The river body is a context layer on its own chip, not tied to the view's layers: it is on
+  // offer whenever its tiles are published, and the chip is hidden until then.
+  const riverOnOffer = !!props.riverTiles;
   // The map is dark at night except on the satellite picture; the legend shows the shades in use.
   const nightMap = dark && !isPhotoBasemap(basemap);
   // The newest gauge reading, for the legend's "live" line.
@@ -726,12 +736,17 @@ export function DashboardView(props: DashboardViewProps) {
     (best, g) => (g.observedAt && (!best || g.observedAt > best) ? g.observedAt : best),
     null,
   );
-  const mapLayers = layers.filter(
-    (l) =>
-      (l !== "places" || showPlaces) &&
-      (l !== "gauges" || showGauges) &&
-      (l !== "hazard" || showHazard || !hazardOnOffer),
-  );
+  const mapLayers: MapLayer[] = [
+    ...layers.filter(
+      (l) =>
+        (l !== "places" || showPlaces) &&
+        (l !== "gauges" || showGauges) &&
+        (l !== "hazard" || showHazard || !hazardOnOffer),
+    ),
+    // The river body rides on its own chip, the same in either view, so it is added here rather
+    // than coming from layersFor.
+    ...(showRiver && riverOnOffer ? (["river"] as const) : []),
+  ];
   const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
 
   /*
@@ -1382,6 +1397,7 @@ export function DashboardView(props: DashboardViewProps) {
    */
   const featuresOn: Record<MapFocus, boolean> = {
     risk: showHazard,
+    river: showRiver,
     gauges: showGauges,
     sea: showSea,
     dam: showDam,
@@ -1394,6 +1410,8 @@ export function DashboardView(props: DashboardViewProps) {
       // The flood-risk areas are drawn in the risk view: switching them on goes there.
       if (next) setChosenMode("risk");
       setShowHazard(next);
+    } else if (f === "river") {
+      setShowRiver(next);
     } else if (f === "gauges") {
       setShowGauges(next);
     } else if (f === "sea") {
@@ -2095,6 +2113,7 @@ export function DashboardView(props: DashboardViewProps) {
                 <MapFeatureChips
                   on={featuresOn}
                   onToggle={toggleFeature}
+                  omit={riverOnOffer ? undefined : ["river"]}
                   after={
                     (onConsole && dams.length > 0) || showSea ? (
                       <>
@@ -2563,6 +2582,7 @@ export function DashboardView(props: DashboardViewProps) {
                     showMine={showMine}
                     dams={dams}
                     hazardUrl={props.hazardTiles ?? null}
+                    riverUrl={props.riverTiles ?? null}
                     coverageCovered={coverageCovered}
                     coverageGaps={coverageGaps}
                     coverageMine={coverageMine}
@@ -2835,6 +2855,13 @@ export function DashboardView(props: DashboardViewProps) {
                           <li key={layer} className="flex items-center gap-2" data-layer={layer}>
                             {layer === "places" ? (
                               <PlaceMark size={18} />
+                            ) : layer === "river" ? (
+                              <span
+                                aria-hidden="true"
+                                className="size-4 shrink-0 rounded-[3px] border border-jaga-edge"
+                                style={{ backgroundColor: riverColor(nightMap) }}
+                                data-river-swatch="true"
+                              />
                             ) : (
                               <span
                                 aria-hidden="true"

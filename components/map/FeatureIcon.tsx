@@ -3,9 +3,9 @@ import type { MapFocus } from "@/lib/map-focus";
 import styles from "./FeatureIcon.module.css";
 
 /**
- * A small picture of each of the map's six features, drawn the way the map draws it: the risk
+ * A small picture of each of the map's features, drawn the way the map draws it: the risk
  * pinks, the safe-place square, the hatched land below the dam, a river gauge's glass of water,
- * the dam's wall and the sea's crests. Decorative; the words beside it say what it is. Light
+ * the dam's wall, the sea's crests and a river winding down. Decorative; the words beside it say what it is. Light
  * enough for the home screen (no map library). The risk pinks are never the alert colours (lib/hazard-layer.ts).
  */
 export function FeatureIcon({ feature, size = 32 }: { feature: MapFocus; size?: number }) {
@@ -87,6 +87,19 @@ export function FeatureIcon({ feature, size = 32 }: { feature: MapFocus; size?: 
           <path d="M14 5 L20 5 L24 29 L14 29 Z" className="fill-jaga-ink" />
           <path d="M24 22 Q27 20 30 22 V29 H24 Z" className={styles.water} opacity="0.6" />
           <circle cx="27" cy="6" r="3.2" className={`${styles.water} ${styles.live}`} />
+        </>
+      )}
+      {feature === "river" && (
+        <>
+          <rect x="3" y="3" width="26" height="26" rx="6" className={styles.seaGround} />
+          {/* A river winding down the tile, in the map's water colour (never an alert colour). */}
+          <path
+            d="M10 2 C10 9 20 10 20 16 C20 22 11 23 11 30"
+            fill="none"
+            className={styles.waterLine}
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
         </>
       )}
       {feature === "sea" && (

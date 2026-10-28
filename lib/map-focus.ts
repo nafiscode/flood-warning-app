@@ -3,11 +3,11 @@ import { boundsAround } from "@/lib/map";
 import { satelliteFrame, type SatelliteCell } from "@/lib/satellite-flood";
 
 /**
- * The six things the Flood Risk Map is for (the owner, 15 Oct: people should find them without
- * hunting through the legend; the sea and coast added the same day). The home screen's tiles open the map on one with `?focus=`, and the
+ * The things the Flood Risk Map is for (the owner, 15 Oct: people should find them without
+ * hunting through the legend; the sea and coast added the same day, the river body on 28 Oct). The home screen's tiles open the map on one with `?focus=`, and the
  * row of chips above the map goes to one in place. Pure, so both can be tested without a map.
  */
-export const MAP_FOCUSES = ["risk", "places", "damzone", "gauges", "dam", "sea"] as const;
+export const MAP_FOCUSES = ["risk", "places", "damzone", "gauges", "dam", "sea", "river"] as const;
 export type MapFocus = (typeof MAP_FOCUSES)[number];
 
 /**
@@ -17,6 +17,7 @@ export type MapFocus = (typeof MAP_FOCUSES)[number];
  */
 export const CHIP_ORDER: readonly MapFocus[] = [
   "risk",
+  "river",
   "gauges",
   "sea",
   "dam",

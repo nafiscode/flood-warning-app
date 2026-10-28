@@ -583,6 +583,7 @@
       "title": "What the map shows",
       "alerts": "Alert level per tambon",
       "hazard": "Flood-risk areas",
+      "river": "Rivers and water bodies",
       "places": "Safe places",
       "reports": "Flood reports from residents (72 hours)",
       "gauges": "River gauges",
@@ -590,6 +591,7 @@
     },
     "pending": {
       "hazard": "The flood-risk map is being prepared and isn't shown yet. This does not mean there is no risk.",
+      "river": "The river layer is being prepared and isn't shown yet. It shows where water usually is, not where flooding will be.",
       "places": "No safe places are listed in the app yet.",
       "reports": "No reports in the app yet. This does not mean there is no flooding.",
       "gauges": "No river-gauge data in the app yet.",
@@ -4434,6 +4436,11 @@
       "name": "Sea and coast",
       "note": "Waves, wind and tide, with a note for fishermen",
       "short": "Sea"
+    },
+    "river": {
+      "name": "Rivers and water",
+      "note": "Where water normally sits — rivers, canals, reservoirs and lakes, from OpenStreetMap",
+      "short": "Rivers"
     }
   },
   "mapMethod": {
@@ -4480,6 +4487,10 @@
     "sea": {
       "lead": "The sea, from wave and weather models",
       "text": "Seven points off the coast from Songkhla to Tak Bai, read from Open-Meteo's wave and weather models every half hour. Waves from 1 m, wind from 30 km/h or thunderstorms count as rough; waves from 2 m, wind from 40 km/h or gusts from 60 km/h mean small boats should stay in port, in TMD's own words. It never says the sea is safe, and tide heights are not shown because the model differs from the tide gauges by about 0.7 m."
+    },
+    "rivers": {
+      "lead": "Where the water normally sits",
+      "text": "The rivers, canals, reservoirs and lakes that people have drawn in OpenStreetMap, filled in the map's water colour. A narrow channel mapped only as a line is widened to a thin ribbon so the main rivers always show. It says where the water usually is, not where a flood will reach, and never that anywhere is safe; it is drawn, not measured."
     },
     "gate": {
       "lead": "The sea beside the river",

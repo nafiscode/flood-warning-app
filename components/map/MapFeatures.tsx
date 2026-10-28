@@ -29,8 +29,8 @@ function LiveTag() {
 }
 
 /**
- * The home screen's way into the map (the owner, 15 Oct: the science should not go unseen). Six
- * tiles, one per feature, each opening the map on it; the flood-risk one first and wide. Plain
+ * The home screen's way into the map (the owner, 15 Oct: the science should not go unseen). One
+ * tile per feature, each opening the map on it; the flood-risk one first and wide. Plain
  * links with words and a small drawing: no map is loaded here, so the home screen stays light on
  * a slow connection (CLAUDE.md).
  */
@@ -230,7 +230,7 @@ function Chip({
 }
 
 /**
- * The same six on the map page itself, as a row of switches above the map (the owner, 15 Oct):
+ * The same set on the map page itself, as a row of switches above the map (the owner, 15 Oct):
  * each shows or hides its layer, several can be on at once, and none moves the map - except the
  * dam, which also brings its report into view below the map.
  *
@@ -244,14 +244,18 @@ export function MapFeatureChips({
   on,
   onToggle,
   after,
+  omit,
 }: {
   on: Record<MapFocus, boolean>;
   onToggle: (focus: MapFocus) => void;
   after?: ReactNode;
+  /** Chips not to show yet, e.g. a layer whose tiles are not published (the river body). */
+  omit?: readonly MapFocus[];
 }) {
   const t = useTranslations("mapFeatures");
   const ref = useRef<HTMLElement>(null);
   const { float, top } = useFloating(ref);
+  const chips = CHIP_ORDER.filter((f) => !omit?.includes(f));
   return (
     <>
       <section
@@ -264,7 +268,7 @@ export function MapFeatureChips({
           {t("mapTitle")}
         </p>
         <ul className="flex flex-wrap gap-2 console:flex-col console:flex-nowrap">
-          {CHIP_ORDER.map((f) => (
+          {chips.map((f) => (
             <li key={f} className="console:w-full">
               <Chip focus={f} on={on[f]} onToggle={onToggle} />
             </li>
@@ -282,7 +286,7 @@ export function MapFeatureChips({
         >
           <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2 px-4 py-2 lg:max-w-6xl lg:px-6">
             <ul className="flex justify-between gap-1 sm:flex-wrap sm:justify-start sm:gap-2">
-              {CHIP_ORDER.map((f) => (
+              {chips.map((f) => (
                 <li key={f}>
                   <Chip focus={f} on={on[f]} onToggle={onToggle} floating />
                 </li>
