@@ -584,6 +584,7 @@
       "alerts": "Alert level per tambon",
       "hazard": "Flood-risk areas",
       "river": "Rivers and water bodies",
+      "tambon": "Sub-district boundaries",
       "places": "Safe places",
       "reports": "Flood reports from residents (72 hours)",
       "gauges": "River gauges",
@@ -4441,6 +4442,11 @@
       "name": "Rivers and water",
       "note": "Where water normally sits — rivers, canals, reservoirs and lakes, from OpenStreetMap",
       "short": "Rivers"
+    },
+    "tambon": {
+      "name": "Sub-district boundaries",
+      "note": "The outline of each tambon — off in the risk view, on in the live view",
+      "short": "Boundaries"
     }
   },
   "mapMethod": {
@@ -4500,6 +4506,10 @@
     "names": {
       "lead": "District and tambon names appear as you zoom in",
       "text": "With all four provinces in view the map writes only the province names. Zoom in and the districts are named; zoom in further, to about the extent of your own place, and the tambons are. The names come from the Royal Thai Survey Department's administrative boundaries (via OCHA), and say nothing about the water."
+    },
+    "tambon": {
+      "lead": "Sub-district (tambon) outlines you can switch on",
+      "text": "The thin boundary lines of the 377 tambons, from the same official administrative boundaries (Royal Thai Survey Department, via OCHA). They are off in the risk view, so the risk colours read clearly, and on in the live view, where it helps to see which tambon an alert or report falls in; a switch on the map turns them on or off either way. They are reference lines only, never a status."
     }
   },
   "tambonRisk": {

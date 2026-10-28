@@ -10,7 +10,15 @@ import {
 } from "@/components/map/MapFeatures";
 import type { Dam } from "@/lib/dam";
 import { EXAMPLE_NOW, EXAMPLE_PLACES, homeExample, type HomeScenario } from "@/lib/dev-examples";
-import { CHIP_ORDER, focusHref, mainDam, MAP_FOCUSES, readFocus, zoneFrame } from "@/lib/map-focus";
+import {
+  CHIP_ORDER,
+  focusHref,
+  mainDam,
+  MAP_FOCUSES,
+  readFocus,
+  TILE_FOCUSES,
+  zoneFrame,
+} from "@/lib/map-focus";
 import { COAST_POINTS, withCoast } from "@/lib/sea";
 import { lineSignInHref, signInHref } from "@/lib/sign-in-link";
 import { riskHeadline, roundShare, toTambonRisk } from "@/lib/tambon-risk";
@@ -108,7 +116,16 @@ describe("the header's last link", () => {
 
 describe("the map's features", () => {
   it("are read from the address and nothing else", () => {
-    expect(MAP_FOCUSES).toEqual(["risk", "places", "damzone", "gauges", "dam", "sea", "river"]);
+    expect(MAP_FOCUSES).toEqual([
+      "risk",
+      "places",
+      "damzone",
+      "gauges",
+      "dam",
+      "sea",
+      "river",
+      "tambon",
+    ]);
     expect(readFocus("gauges")).toBe("gauges");
     expect(readFocus("hazard")).toBeNull();
     expect(readFocus(null)).toBeNull();
@@ -118,7 +135,9 @@ describe("the map's features", () => {
   it("are tiles on the home screen, each opening the map on itself, then the map button", () => {
     const c = renderWithIntl(<MapFeatureTiles />).container;
     const tiles = [...c.querySelectorAll("[data-map-feature]")];
-    expect(tiles.map((t) => t.getAttribute("data-map-feature"))).toEqual([...MAP_FOCUSES]);
+    // The home screen shows every focus except the tambon outlines (a base reference layer).
+    expect(tiles.map((t) => t.getAttribute("data-map-feature"))).toEqual([...TILE_FOCUSES]);
+    expect(TILE_FOCUSES).not.toContain("tambon");
     for (const tile of tiles) {
       expect(tile.getAttribute("href")).toContain(`focus=${tile.getAttribute("data-map-feature")}`);
     }
@@ -143,6 +162,7 @@ describe("the map's features", () => {
       dam: true,
       damzone: false,
       places: false,
+      tambon: false,
     };
     const c = renderWithIntl(
       <MapFeatureChips on={on} onToggle={(f) => toggled.push(f)} />,
@@ -178,6 +198,7 @@ describe("the map's features", () => {
       dam: true,
       damzone: true,
       places: false,
+      tambon: true,
     };
     const toggled: string[] = [];
     const rect = vi

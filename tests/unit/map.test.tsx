@@ -49,6 +49,7 @@ vi.mock("@/components/map/MapView", () => ({
     basemap = "streets",
     showDam = true,
     showDamZone = true,
+    tambonLines = false,
     satellite = null,
     flashSatellite = 0,
     flashDam = null,
@@ -61,6 +62,7 @@ vi.mock("@/components/map/MapView", () => ({
     basemap?: string;
     showDam?: boolean;
     showDamZone?: boolean;
+    tambonLines?: boolean;
     onSelect?: (s: { kind: "mine"; id: string }) => void;
     bounds?: [number, number, number, number];
     layers: string[];
@@ -85,6 +87,7 @@ vi.mock("@/components/map/MapView", () => ({
       data-bounds={bounds ? bounds.map((n) => n.toFixed(2)).join(",") : ""}
       data-show-dam={showDam ? "1" : "0"}
       data-show-zone={showDamZone ? "1" : "0"}
+      data-show-tambon={tambonLines ? "1" : "0"}
       data-satellite-cells={satellite ? satellite.length : 0}
       data-flash-satellite={flashSatellite}
       data-flash-kind={flashDam?.kind ?? ""}
@@ -1023,8 +1026,11 @@ describe("the chips above the map (owner, 15 Oct)", () => {
     const order = [...c.querySelectorAll("[data-map-chip]")].map((b) =>
       b.getAttribute("data-map-chip"),
     );
-    expect(order).toEqual(["risk", "gauges", "sea", "dam", "damzone", "places"]);
-    // What the map draws today starts on; the thousands of safe places start off.
+    // The river chip is hidden until its tiles are published; the tambon outlines are always
+    // offered, last, as the base reference layer.
+    expect(order).toEqual(["risk", "gauges", "sea", "dam", "damzone", "places", "tambon"]);
+    // What the map draws today starts on; the thousands of safe places start off. This example
+    // has a warning in force, so the map opens on the live view, where the tambon outlines are on.
     const on = (f: string) => chip(c, f).getAttribute("aria-pressed");
     expect(["risk", "gauges", "sea", "dam", "damzone"].map(on)).toEqual([
       "true",
@@ -1034,6 +1040,7 @@ describe("the chips above the map (owner, 15 Oct)", () => {
       "true",
     ]);
     expect(on("places")).toBe("false");
+    expect(on("tambon")).toBe("true");
     const before = bounds(c);
     fireEvent.click(chip(c, "places"));
     fireEvent.click(chip(c, "gauges"));
@@ -1047,6 +1054,27 @@ describe("the chips above the map (owner, 15 Oct)", () => {
     expect(map.getAttribute("data-show-zone")).toBe("0");
     expect(map.getAttribute("data-show-dam")).toBe("1");
     expect(bounds(c)).toBe(before);
+  });
+
+  it("the tambon outlines are off in the risk view, on in the live view, until the reader says", () => {
+    const show = (c: HTMLElement) =>
+      c.querySelector("[data-map]")!.getAttribute("data-show-tambon");
+    const pressed = (c: HTMLElement) => chip(c, "tambon").getAttribute("aria-pressed");
+    // No alert in force: the map opens on the risk view, and the outlines start off.
+    const risk = dashboard({ status: exampleStatus([]), area: BANA });
+    expect(pressed(risk)).toBe("false");
+    expect(show(risk)).toBe("0");
+    // A warning in force: the map opens on the live view, and the outlines start on.
+    const live = dashboard({
+      status: exampleStatus([exampleAlert("warning", [BANA.code])]),
+      area: BANA,
+    });
+    expect(pressed(live)).toBe("true");
+    expect(show(live)).toBe("1");
+    // The reader's own choice then holds: switching them on in the risk view keeps them on.
+    fireEvent.click(chip(risk, "tambon"));
+    expect(pressed(risk)).toBe("true");
+    expect(show(risk)).toBe("1");
   });
 
   it("the dam's chip, switched on, opens the dam's report as before; off, hides the dam", () => {

@@ -7,13 +7,30 @@ import { satelliteFrame, type SatelliteCell } from "@/lib/satellite-flood";
  * hunting through the legend; the sea and coast added the same day, the river body on 28 Oct). The home screen's tiles open the map on one with `?focus=`, and the
  * row of chips above the map goes to one in place. Pure, so both can be tested without a map.
  */
-export const MAP_FOCUSES = ["risk", "places", "damzone", "gauges", "dam", "sea", "river"] as const;
+export const MAP_FOCUSES = [
+  "risk",
+  "places",
+  "damzone",
+  "gauges",
+  "dam",
+  "sea",
+  "river",
+  "tambon",
+] as const;
 export type MapFocus = (typeof MAP_FOCUSES)[number];
 
 /**
+ * The home screen's feature tiles: every focus except the sub-district ("tambon") outlines, which
+ * are a base reference layer, not a flood feature someone comes to the map for (the owner, 29 Oct).
+ * The map panel offers them; the home screen does not.
+ */
+export const TILE_FOCUSES: readonly MapFocus[] = MAP_FOCUSES.filter((f) => f !== "tambon");
+
+/**
  * The order of the chips above the map (the owner, 15 Oct): the flood-risk areas first, then what
- * changes while someone looks, then the dam's land, and the thousands of safe places last. The
- * home screen's tiles keep MAP_FOCUSES.
+ * changes while someone looks, then the dam's land, and the thousands of safe places; the
+ * sub-district outlines last, as the base reference layer (the owner, 29 Oct). The home screen's
+ * tiles keep TILE_FOCUSES.
  */
 export const CHIP_ORDER: readonly MapFocus[] = [
   "risk",
@@ -23,6 +40,7 @@ export const CHIP_ORDER: readonly MapFocus[] = [
   "dam",
   "damzone",
   "places",
+  "tambon",
 ];
 
 export function readFocus(value: string | null | undefined): MapFocus | null {

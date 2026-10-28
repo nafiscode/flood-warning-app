@@ -522,6 +522,11 @@ export function DashboardView(props: DashboardViewProps) {
   const [showRiver, setShowRiver] = useState(true);
   // The sea's waves along the coast start on (the owner, 15 Oct 2026), and can be switched off.
   const [showSea, setShowSea] = useState(true);
+  // The sub-district (tambon) outlines (the owner, 29 Oct 2026): off by default in the risk view,
+  // on by default in the live view. `null` means "follow the view"; once the reader uses the
+  // switch their choice sticks across a change of view, the way a picked map mode does. The
+  // derived `showTambon` is below, where the view (`mode`) is known.
+  const [tambonChoice, setTambonChoice] = useState<boolean | null>(null);
   /*
    * The background follows the time of day (the owner, 15 Oct): Satellite + terrain by day,
    * Terrain at night. A background the person picks stays until day turns to night or back; the
@@ -689,6 +694,8 @@ export function DashboardView(props: DashboardViewProps) {
   const hazard = hazards.find((h) => h.code === hazardCode) ?? hazards[0]!;
   // Pre-season the risk view opens first; with any alert in force, the live view (spec 4.2).
   const mode: MapMode = chosenMode ?? (hasActiveAlerts(status) ? "live" : "risk");
+  // Off in the risk view, on in the live view, until the reader says otherwise (the owner, 29 Oct).
+  const showTambon = tambonChoice ?? mode === "live";
   const layers = layersFor(hazard, mode);
   const fresh = checkedAt !== null && now - checkedAt < NORMAL_NEEDS_CHECK_WITHIN_MS;
   const kept = [checkedAt, props.dataServedAt ?? null].filter((x): x is number => x !== null);
@@ -750,6 +757,8 @@ export function DashboardView(props: DashboardViewProps) {
     // The river body rides on its own chip, the same in either view, so it is added here rather
     // than coming from layersFor.
     ...(showRiver && riverOnOffer ? (["river"] as const) : []),
+    // The sub-district outlines likewise ride on their own switch, with a view-dependent default.
+    ...(showTambon ? (["tambon"] as const) : []),
   ];
   const drawn = mapLayers.filter((l) => l !== "alerts" && !pending.includes(l));
 
@@ -1425,6 +1434,7 @@ export function DashboardView(props: DashboardViewProps) {
     dam: showDam,
     damzone: showDamZone,
     places: showPlaces,
+    tambon: showTambon,
   };
   const toggleFeature = (f: MapFocus) => {
     const next = !featuresOn[f];
@@ -1443,6 +1453,9 @@ export function DashboardView(props: DashboardViewProps) {
       setShowDamZone(next);
     } else if (f === "places") {
       setShowPlaces(next);
+    } else if (f === "tambon") {
+      // From now on the reader's choice holds, in either view.
+      setTambonChoice(next);
     } else {
       setShowDam(next);
       const dam = mainDam(dams);
@@ -2610,6 +2623,7 @@ export function DashboardView(props: DashboardViewProps) {
                     dams={dams}
                     hazardUrl={props.hazardTiles ?? null}
                     riverUrl={props.riverTiles ?? null}
+                    tambonLines={showTambon}
                     coverageCovered={coverageCovered}
                     coverageGaps={coverageGaps}
                     coverageMine={coverageMine}
@@ -2896,6 +2910,12 @@ export function DashboardView(props: DashboardViewProps) {
                                 className="size-4 shrink-0 rounded-[3px] border border-jaga-edge"
                                 style={{ backgroundColor: riverColor(nightMap) }}
                                 data-river-swatch="true"
+                              />
+                            ) : layer === "tambon" ? (
+                              <span
+                                aria-hidden="true"
+                                className="size-4 shrink-0 rounded-[3px] border-2 border-jaga-ink bg-transparent"
+                                data-tambon-swatch="true"
                               />
                             ) : (
                               <span

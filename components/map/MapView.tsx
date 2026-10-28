@@ -186,6 +186,12 @@ type Props = {
   /** The `pmtiles://` address of the river body (pipeline/rivers); null until the manifest names one. */
   riverUrl?: string | null;
   /**
+   * Whether the sub-district (tambon) outlines are shown. Left out (undefined), they keep the
+   * base map's own behaviour - always drawn - for every other caller; the public dashboard passes
+   * a boolean so its "Tambon" switch can hide or show them (the owner, 29 Oct).
+   */
+  tambonLines?: boolean;
+  /**
    * The responsibility map (spec 2, 9), drawn as on the authority console's own map: the tambons a
    * rescue team covers, the gaps (no rescue team), and the viewer's own tambons. Readable only by
    * verified authorities and admins (safety rule 5), so for everyone else the caller passes empty
@@ -489,6 +495,7 @@ export function MapView({
   gestureText,
   hazardUrl = null,
   riverUrl = null,
+  tambonLines,
   coverageCovered = [],
   coverageGaps = [],
   coverageMine = [],
@@ -910,6 +917,16 @@ export function MapView({
           held.current.set(id, value);
         }
         const above = m.getLayer(TAMBON_LINE_LAYER) ? TAMBON_LINE_LAYER : undefined;
+        /*
+         * The sub-district outlines are on their own switch on the public dashboard (the owner,
+         * 29 Oct): off in the risk view, on in the live view. The layer stays in the style either
+         * way - it is still the anchor the fills are inserted before - so hiding it is a change of
+         * visibility, not a removal. Left undefined by every other caller, it keeps its always-on
+         * base behaviour (the zoom range from quietOverview still governs when it is visible).
+         */
+        if (tambonLines !== undefined && m.getLayer(TAMBON_LINE_LAYER)) {
+          m.setLayoutProperty(TAMBON_LINE_LAYER, "visibility", tambonLines ? "visible" : "none");
+        }
         /*
          * The hazard classes, under everything else of ours: they are the ground the other layers
          * sit on. Their colours are the same by day and by night (lib/hazard-layer.ts).
@@ -1694,6 +1711,7 @@ export function MapView({
     damLocale,
     hazardUrl,
     riverUrl,
+    tambonLines,
     coverageCovered,
     coverageGaps,
     coverageMine,

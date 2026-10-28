@@ -584,6 +584,7 @@
       "alerts": "Tahap amaran setiap tambon",
       "hazard": "Kawasan berisiko banjir",
       "river": "Sungai dan badan air",
+      "tambon": "Sempadan mukim",
       "places": "Tempat selamat",
       "reports": "Laporan banjir daripada orang ramai (72 jam)",
       "gauges": "Stesen paras air",
@@ -4441,6 +4442,11 @@
       "name": "Sungai dan air",
       "note": "Tempat air biasanya berada — sungai, terusan, takungan dan tasik, daripada OpenStreetMap",
       "short": "Sungai"
+    },
+    "tambon": {
+      "name": "Sempadan mukim",
+      "note": "Garis sempadan setiap mukim — tutup dalam paparan risiko, buka dalam paparan keadaan terkini",
+      "short": "Sempadan"
     }
   },
   "mapMethod": {
@@ -4500,6 +4506,10 @@
     "names": {
       "lead": "Nama daerah dan mukim muncul apabila peta dizum",
       "text": "Dengan keempat-empat wilayah dalam paparan, peta hanya menulis nama wilayah. Zum masuk dan nama daerah muncul; zum lagi sehingga seluas tempat anda sendiri dan nama mukim muncul. Nama itu daripada sempadan pentadbiran Jabatan Ukur Diraja Thai (melalui OCHA), dan tidak menyatakan apa-apa tentang air."
+    },
+    "tambon": {
+      "lead": "Garis sempadan mukim yang boleh dibuka",
+      "text": "Garis sempadan nipis bagi 377 mukim, daripada sempadan pentadbiran rasmi yang sama (Jabatan Ukur Diraja Thai, melalui OCHA). Ia ditutup dalam paparan risiko supaya warna risiko mudah dibaca, dan dibuka dalam paparan keadaan terkini, yang membantu melihat mukim mana sesuatu amaran atau laporan berada; satu suis pada peta membuka atau menutupnya dalam kedua-dua paparan. Ia garis rujukan sahaja, bukan status."
     }
   },
   "tambonRisk": {

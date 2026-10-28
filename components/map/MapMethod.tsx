@@ -17,6 +17,7 @@ const POINTS = [
   "gate",
   "weather",
   "names",
+  "tambon",
 ] as const;
 
 /**

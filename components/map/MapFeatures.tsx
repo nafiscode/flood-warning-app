@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { CHIP_ORDER, focusHref, MAP_FOCUSES, type MapFocus } from "@/lib/map-focus";
+import { CHIP_ORDER, focusHref, TILE_FOCUSES, type MapFocus } from "@/lib/map-focus";
 import { FeatureIcon } from "./FeatureIcon";
 import styles from "./FeatureIcon.module.css";
 
@@ -13,8 +13,8 @@ const LIVE: ReadonlySet<MapFocus> = new Set(["gauges", "dam", "sea"]);
 /**
  * The flood-risk tile is wide; so is the last one when it would otherwise sit alone on its row.
  */
-const wide = (i: number) =>
-  i === 0 || (i === MAP_FOCUSES.length - 1 && (MAP_FOCUSES.length - 1) % 2 === 1);
+const wide = (i: number, count: number) =>
+  i === 0 || (i === count - 1 && (count - 1) % 2 === 1);
 
 function LiveTag() {
   const t = useTranslations("mapFeatures");
@@ -49,8 +49,8 @@ export function MapFeatureTiles() {
         </h2>
       </div>
       <ul className="grid grid-cols-2 gap-2">
-        {MAP_FOCUSES.map((f, i) => (
-          <li key={f} className={wide(i) ? "col-span-2" : undefined}>
+        {TILE_FOCUSES.map((f, i) => (
+          <li key={f} className={wide(i, TILE_FOCUSES.length) ? "col-span-2" : undefined}>
             <Link
               href={focusHref(f)}
               prefetch={false}

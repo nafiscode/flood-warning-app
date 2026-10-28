@@ -102,6 +102,28 @@ export function FeatureIcon({ feature, size = 32 }: { feature: MapFocus; size?: 
           />
         </>
       )}
+      {feature === "tambon" && (
+        <>
+          {/* The sub-district outlines: a parcel split into areas by boundary lines, in a quiet
+              neutral that reads in both themes — a reference layer, never a status. */}
+          <rect
+            x="3"
+            y="3"
+            width="26"
+            height="26"
+            rx="4"
+            className="fill-none stroke-jaga-ink"
+            strokeWidth="2.2"
+          />
+          <path
+            d="M3 13 H14 M14 3 V22 M14 22 H29 M20 22 V29"
+            fill="none"
+            className="stroke-jaga-ink"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </>
+      )}
       {feature === "sea" && (
         <>
           <rect x="3" y="3" width="26" height="26" rx="6" className={styles.seaGround} />
