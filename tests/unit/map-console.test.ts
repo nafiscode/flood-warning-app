@@ -367,6 +367,27 @@ describe("the console's arrangement", () => {
   });
 
   /*
+   * The owner, 28 Oct 2026: a place tour's control bar runs the full width of the map, so in full
+   * screen its reset button sits under the floating readouts. While the tour is open the readouts
+   * step down below the bar so the reset button is reachable.
+   */
+  it("drops the full-screen readouts below the tour bar while a tour is open", () => {
+    const at = css.lastIndexOf("@media (min-width: 1280px) and (pointer: fine) {");
+    const block = css.slice(at, css.indexOf("\n@media", at + 1));
+    const rule = block.slice(
+      block.indexOf('[data-map-full][data-map-tour="on"] [data-console-tiles] {'),
+    );
+    const body = rule.slice(0, rule.indexOf("}"));
+    expect(body).toBeTruthy();
+    // Below the tour bar (a 3rem row 0.5rem from the top), clear of its reset button at the right.
+    expect(body).toContain("inset-block-start: 4.75rem");
+    // Still stops above the hotline bar, so its own close/scroll never runs under the numbers.
+    expect(body).toContain("var(--jaga-hotlines");
+    // Only while touring: the plain readout column stays at the top otherwise.
+    expect(block).toContain("inset-block-start: 1.25rem");
+  });
+
+  /*
    * The owner, 23 Oct 2026: "the card background is having transparency but not losing the text
    * reading ability". The share is the thing being tested, not the look: a card floating over a
    * basemap can have anything behind it, so the arithmetic is done against the two extremes.

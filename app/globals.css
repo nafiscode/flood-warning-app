@@ -876,6 +876,18 @@
     backdrop-filter: blur(10px) saturate(1.15);
     box-shadow: 0 8px 24px rgb(29 59 83 / 0.28);
   }
+  /*
+   * A place tour's control bar runs the full width of the map (inset-x-2), so its reset button
+   * sits at the far right - under the readout column, which could not then be reached (the owner,
+   * 28 Oct 2026: "the reset map location is behind the situation card on the right side, move the
+   * situation cards down"). While the tour is open the readouts step down below the bar, which is
+   * a 3 rem row 0.5 rem from the top; they already scroll inside themselves, so they give up
+   * height, not content.
+   */
+  [data-map-full][data-map-tour="on"] [data-console-tiles] {
+    inset-block-start: 4.75rem;
+    max-height: calc(100dvh - var(--jaga-hotlines, 4.5rem) - 4.75rem - 1.25rem);
+  }
   @supports not (backdrop-filter: blur(2px)) {
     [data-map-full] [data-console-tile] [data-tile-card] {
       background: var(--jaga-surface);

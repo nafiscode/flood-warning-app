@@ -583,9 +583,13 @@ describe("map dashboard (spec 4.2)", () => {
     // The list names each place with its number.
     const options = [...c.querySelectorAll("[data-tour-pick] option")].map((o) => o.textContent);
     expect(options[0]).toBe(`${places[0]!.label} (1/${places.length})`);
+    // While a tour is open the console is flagged, so the full-screen readouts step down below
+    // the tour bar and its reset button is reachable (the owner, 28 Oct 2026).
+    expect(c.querySelector("[data-map-console]")?.getAttribute("data-map-tour")).toBe("on");
     // Reset: the first view again, no card, and the two buttons are back.
     fireEvent.click(c.querySelector("[data-tour-reset]")!);
     expect(c.querySelector("[data-tour]")).toBeNull();
+    expect(c.querySelector("[data-map-console]")?.getAttribute("data-map-tour")).toBeNull();
     expect(bounds()).toBe(opening === "" ? "99.95,5.55,102.25,8.00" : opening);
     expect(c.querySelector('[data-selected="mine"]')).toBeNull();
     expect(c.querySelector("[data-zoom-all]")).not.toBeNull();

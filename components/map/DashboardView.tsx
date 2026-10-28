@@ -1729,6 +1729,10 @@ export function DashboardView(props: DashboardViewProps) {
       data-map-phone={consoleOn ? "true" : undefined}
       data-phone-panel={phonePanel ?? undefined}
       data-map-full={consoleOn && full ? "true" : undefined}
+      // While a place tour is open its control bar runs the full width of the map; in full screen
+      // that puts its reset button under the floating readouts, so they step down below the bar
+      // (the owner, 28 Oct 2026). app/globals.css does the moving.
+      data-map-tour={consoleOn && tourIndex !== null ? "on" : undefined}
       data-meters={consoleOn && full && laptop && (metersOpen || metersPinned) ? "on" : undefined}
       data-side={consoleOn ? (sideOpen ? "open" : "closed") : undefined}
       data-side-peek={consoleOn && !sideOpen ? (sidePeek ? "on" : "off") : undefined}
