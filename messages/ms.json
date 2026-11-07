@@ -871,6 +871,23 @@
     "body": "Talian kecemasan di bawah masih boleh dihubungi. Aplikasi akan dimuat semula apabila kembali online.",
     "retry": "Cuba lagi"
   },
+  "status": {
+    "title": "Status Jaga",
+    "intro": "Halaman ini memberitahu sama ada aplikasi Jaga berfungsi. Ia bukan tentang keadaan banjir di kawasan anda.",
+    "ok": {
+      "title": "Jaga berfungsi seperti biasa",
+      "body": "Jika sesuatu halaman tidak dimuat, semak sambungan internet anda. Talian kecemasan di bawah sentiasa boleh dihubungi."
+    },
+    "degraded": {
+      "title": "Sebahagian Jaga perlahan atau tidak berfungsi"
+    },
+    "down": {
+      "title": "Jaga tidak berfungsi buat sementara"
+    },
+    "posted": "Dihantar {time}",
+    "emergency": "Jika kecemasan, jangan tunggu aplikasi. Telefon 1784 (bencana) atau 1669 (perubatan).",
+    "home": "Ke halaman utama"
+  },
   "language": {
     "label": "Bahasa",
     "th": "ภาษาไทย",

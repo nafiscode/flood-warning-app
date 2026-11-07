@@ -871,6 +871,23 @@
     "body": "The hotlines below still work. The app reloads when you're back online.",
     "retry": "Try again"
   },
+  "status": {
+    "title": "Jaga status",
+    "intro": "This page says whether the Jaga app itself is working. It is not about flood conditions in your area.",
+    "ok": {
+      "title": "Jaga is running normally",
+      "body": "If a page won't load, check your internet connection. The hotlines below always work."
+    },
+    "degraded": {
+      "title": "Some parts of Jaga are slow or not working"
+    },
+    "down": {
+      "title": "Jaga is temporarily down"
+    },
+    "posted": "Posted {time}",
+    "emergency": "In an emergency, don't wait for the app. Call 1784 (disasters) or 1669 (medical).",
+    "home": "Go to the home screen"
+  },
   "language": {
     "label": "Language",
     "th": "ภาษาไทย",
