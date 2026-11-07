@@ -2883,11 +2883,11 @@
       "spillwayNotMapped": "Saluran pelepasan dari alur limpah belum ada dalam data peta, jadi ia ditunjukkan sebagai titik bukan garis.",
       "credit": "Laluan sungai dan takungan daripada OpenStreetMap. Kawasan berlorek ialah tanah yang pernah dicapai paras sungai, dianggar daripada model ketinggian 30 m dan stesen paras air; garis putus-putus ialah satu meter lebih tinggi. Ini bukan peta banjir dan bukan ramalan.",
       "notMapped": "Tiada saluran di hilir takungan ini dalam pangkalan data peta, jadi Jaga belum boleh menunjukkan ke mana air yang dilepaskan mengalir.",
-      "creditSpill": "Garisan di bawah takungan ialah laluan air daripada model ketinggian 30 m, bukan alur yang dipetakan, dan berhenti di tempat air bertemu alur sepuluh kali lebih besar. Kawasan berteduh ialah tanah yang boleh ditakungi oleh satu hari limpahan dari takungan yang penuh; garisan putus-putus ialah hari yang lebih lembap dengan tambahan setengah meter. Hujan daripada GSMaP, ketinggian daripada FABDEM. Ini bukan peta banjir dan bukan ramalan.",
+      "creditSpill": "Garisan di bawah takungan ialah laluan air daripada model ketinggian 30 m, bukan alur yang dipetakan, dan berhenti di tempat air bertemu alur sepuluh kali lebih besar. Kawasan berlorek ialah tanah yang boleh ditakungi oleh satu hari limpahan dari takungan yang penuh; garisan putus-putus ialah hari yang lebih lembap dengan tambahan setengah meter. Hujan daripada GSMaP, ketinggian daripada FABDEM. Ini bukan peta banjir dan bukan ramalan.",
       "arrivalAssumed": "Tiada tolok air di bawah takungan ini, jadi masa itu dikira daripada kelajuan alur yang dianggap 0.5 hingga 2 m/s, bukan diukur."
     },
     "legend": {
-      "open": "Lihat data {dam} dan carta 14 hari",
+      "open": "Lihat data {dam} dan carta terdahulu",
       "reservoir": "Takungan {dam}",
       "river": "{river} di hilir empangan",
       "tributary": "Tanah yang boleh dicapai air sungai apabila parasnya tinggi (garis putus-putus: satu meter lebih tinggi). Bukan peta banjir.",
@@ -3557,7 +3557,7 @@
         "s3": "Mod “Fokus” dan “Tidur”: tambah Jaga sebagai pengecualian, mengikut langkah di atas."
       },
       "cannot": "Bunyi amaran Jaga sendiri hanya dimainkan ketika aplikasi dibuka, kerana aplikasi web membuat bunyinya di dalam halaman yang terbuka. Ketika Jaga ditutup, telefon memainkan bunyi pemberitahuannya sendiri — dan mengetik pemberitahuan itu membuka Jaga, yang terus berbunyi.",
-      "repeat": "Pemberitahuan “berpindah” mengetuk dua kali lagi dalam masa 20 saat, dan “amaran” sekali lagi. Ia berhenti sebaik sahaja anda menolaknya atau membuka Jaga."
+      "repeat": "Pemberitahuan “Pindah” mengetuk dua kali lagi dalam masa 20 saat, dan “Amaran” sekali lagi. Ia berhenti sebaik sahaja anda menolaknya atau membuka Jaga."
     }
   },
   "journey": {
@@ -3585,7 +3585,7 @@
         "dismissed": "Permintaan ini ditutup"
       },
       "wait": {
-        "accepted": "Sedang mencari pasukan. Permintaan anda sudah sampai kepada pasukan penyelamat; sila tunggu jawapan mereka. Jika nyawa terancam, hubungi 1669 atau 1784.",
+        "accepted": "Sedang mencari pasukan. Pasukan penyelamat boleh melihat permintaan anda; sila tunggu jawapan mereka. Jika nyawa terancam, hubungi 1669 atau 1784.",
         "en_route": "Pasukan telah menerima dan sedang bersiap untuk bertolak.",
         "on_site": "Pasukan sedang dalam perjalanan ke tempat anda.",
         "finished": "Pasukan sudah bersama anda.",
@@ -4754,7 +4754,7 @@
       },
       "supplies": {
         "title": "Minta makanan dan air",
-        "text": "Selamat tetapi terkepung? Beritahu pasukan berhampiran apa yang isi rumah anda perlukan.",
+        "text": "Selamat tetapi tidak boleh keluar? Beritahu pasukan berhampiran apa yang isi rumah anda perlukan.",
         "where": "Utama › Minta makanan dan air"
       },
       "places": {
@@ -4932,7 +4932,7 @@
       "lead": "Peta banjir Jaga bukan pendapat tentang tempat mana yang bahaya. Ia hasil pengukuran: radar satelit sembilan musim hujan, model ketinggian tanah sebenar, rekod sungai dan empangan yang menjangkau lima belas tahun dan empat puluh lima tahun data hujan, disatukan untuk Pattani, Yala, Narathiwat dan Songkhla. Halaman ini menerangkan setiap bahagiannya, apa yang boleh dan tidak boleh diberitahunya, dan bagaimana ia diuji.",
       "audience": "Ditulis untuk pembaca yang mahu menilai kerja ini: penyelidik, agensi, pelajar, dan sesiapa yang perlu memutuskan sama ada sebuah peta boleh dipercayai. Setiap set data di sebaliknya adalah data terbuka; tiada apa-apa yang dibeli.",
       "stats": {
-        "seasons": "Radar numbor sembilan musim hujan, 2017-2025",
+        "seasons": "Radar sembilan musim hujan, 2017-2025",
         "passes": "Kira-kira 400 lintasan satelit diproses",
         "land": "18,772 km² dikelaskan",
         "buildings": "2.26 juta bangunan dikira",
@@ -5266,12 +5266,12 @@
       },
       "gauge": {
         "title": "Sebuah sungai berbanding parasnya sendiri",
-        "alt": "Paras sungai yang naik melepasi garis awas, amaran dan pindah",
+        "alt": "Paras sungai yang naik melepasi garis berjaga-jaga, amaran dan pindah",
         "step1": "Sungai naik. Garis pertama yang dilepasinya ialah garis yang berkata: mula bersiap.",
         "step2": "Jam antara lintasan garis itu dengan ketibaan air ialah masa amaran. Stesen di hulu melepasinya lebih awal, dan di situlah datangnya sebahagian besarnya.",
         "step3": "Seorang manusia membaca ini, dengan data hujan dan ramalan di sebelahnya, lalu memutuskan sama ada hendak mengeluarkan amaran. Paras ini mencadangkan; ia tidak menghantar.",
         "legend": {
-          "watch": "Awas",
+          "watch": "Berjaga-jaga",
           "warning": "Amaran",
           "evacuate": "Pindah"
         },
@@ -5352,7 +5352,7 @@
           },
           "gauges": {
             "method": "Setiap musim sejak 2017 dimainkan semula untuk mencari paras yang paling kerap diikuti sungai melimpah tebing, dan masa amaran yang diberinya",
-            "product": "Awas, Amaran dan Pindah di 46 stesen, serta tempoh penurunan yang lalu",
+            "product": "Berjaga-jaga, Amaran dan Pindah di 46 stesen, serta tempoh penurunan yang lalu",
             "app": "Skrin isyarat pentadbir, loceng automatik, tempoh pulang"
           },
           "dam": {
@@ -5646,7 +5646,7 @@
       "title": "Tahap amaran bagi setiap mukim",
       "none": "Tiada amaran berkuat kuasa di {place} sekarang.",
       "normalNote": "Mukim yang tidak disenaraikan ialah mukim yang belum ada amaran. Ia bukan pengesahan bahawa tempat itu selamat.",
-      "notInService": "Jaga belum memulakan perkhidmatan amaran di kawasan ini. Ikuti JPBM dan hubungi 1784 atau 1669 jika anda perlukan bantuan.",
+      "notInService": "Jaga belum memulakan perkhidmatan amaran di kawasan ini. Ikuti DDPM dan hubungi 1784 atau 1669 jika anda perlukan bantuan.",
       "tambons": "{count} daripada {total} mukim"
     },
     "gauges": {
