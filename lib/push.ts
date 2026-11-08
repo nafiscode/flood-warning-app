@@ -69,8 +69,16 @@ export const CASE_KINDS = [
   "rescued",
   // Not about a case, but the same shape: a title, words, and a page of this app to open.
   "announcement",
-  // To the admins: a gauge set to automatic crossed its threshold and a draft is waiting.
+  // To the admins: a gauge set to automatic crossed its threshold and a draft is waiting. Since
+  // 9 Nov 2026 a draft waits only when its reading could not be believed; the ordinary crossing
+  // publishes at once and sends `auto_alarm_sent` instead.
   "auto_alarm",
+  // To every admin: the automated alarm has already published an alert (the owner, 9 Nov 2026:
+  // "notify admin via notification bell when the alarm sent already ... notify to all Admins if
+  // there are more than one"). It carries the alert's level so the phone shakes with that
+  // level's pattern rather than the quiet notice one - an alert is in force by the time this
+  // arrives - but it never repeats its knock: nobody has to act on it.
+  "auto_alarm_sent",
   // Severe weather forecast for a tambon this phone follows. Advice, never an alert: the
   // ordinary notice vibration, no repeat knocks, and words that name Open-Meteo and its time
   // (safety rules 2, 8 and 10; lib/weather-advisory.ts).
@@ -85,6 +93,11 @@ export type CasePayload = {
   tag: string;
   /** Stays on the screen until dealt with: an offer runs against a clock. */
   sticky: boolean;
+  /**
+   * Only `auto_alarm_sent` carries one: the level of the alert that has just gone out, so the
+   * phone shakes the way that level shakes (app/sw.ts `vibrationFor`).
+   */
+  level?: PushLevel;
 };
 export type AnyPayload = PushPayload | CasePayload;
 
@@ -143,6 +156,7 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
     !kind ||
     kind === "announcement" ||
     kind === "auto_alarm" ||
+    kind === "auto_alarm_sent" ||
     kind === "weather" ||
     !/^[0-9a-f-]{36}$/i.test(row.sos_id)
   )

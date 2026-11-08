@@ -312,7 +312,17 @@ async function knockAgain(
  * words on the screen are the whole of it (the owner, 21 Oct: the laptop rang, the phone did not).
  */
 function vibrationFor(payload: AnyPayload): number[] {
-  const name = payload.kind === "alert" ? soundForAlertLevel(payload.level) : "notice";
+  // An alert shakes with its level's pattern. So does the word to the admins that the automated
+  // alarm has just published one (the owner, 9 Nov 2026): by the time it arrives the alert is in
+  // force, so it should not feel like an ordinary notice. It still knocks only once - knocksFor
+  // stays alert-only - because there is nothing the admin must do to stop it.
+  const level =
+    payload.kind === "alert"
+      ? payload.level
+      : payload.kind === "auto_alarm_sent"
+        ? payload.level
+        : null;
+  const name = level ? soundForAlertLevel(level) : "notice";
   return name ? SOUNDS[name].vibrate : SOUNDS.notice.vibrate;
 }
 

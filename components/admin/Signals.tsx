@@ -230,6 +230,7 @@ function GaugeBlock({
   locale,
   t,
   autoAction,
+  clearSuspectAction,
 }: {
   gauge: Gauge;
   role: "key" | "upstream";
@@ -238,6 +239,7 @@ function GaugeBlock({
   locale: string;
   t: T;
   autoAction?: (form: FormData) => void;
+  clearSuspectAction?: (form: FormData) => void;
 }) {
   const state = gaugeNow(gauge, now);
   const refs: Ref[] = [];
@@ -303,7 +305,9 @@ function GaugeBlock({
       {gauge.series.length > 0 && gauge.series.length < 3 ? (
         <p className={hint}>{t("gauge.few", { count: gauge.series.length })}</p>
       ) : null}
-      {gauge.id ? <AutoTick gauge={gauge} t={t} action={autoAction} /> : null}
+      {gauge.id ? (
+        <AutoTick gauge={gauge} t={t} action={autoAction} clearAction={clearSuspectAction} />
+      ) : null}
     </section>
   );
 }
@@ -370,6 +374,7 @@ function ZoneCard({
   t,
   action,
   autoAction,
+  clearSuspectAction,
   levelsAction,
   saved,
 }: {
@@ -380,6 +385,7 @@ function ZoneCard({
   t: T;
   action?: (form: FormData) => void;
   autoAction?: (form: FormData) => void;
+  clearSuspectAction?: (form: FormData) => void;
   levelsAction?: (form: FormData) => void;
   saved: boolean;
 }) {
@@ -452,6 +458,7 @@ function ZoneCard({
           locale={locale}
           t={t}
           autoAction={autoAction}
+          clearSuspectAction={clearSuspectAction}
         />
       ) : (
         <p className={hint}>{t("gauge.noKey")}</p>
@@ -465,6 +472,7 @@ function ZoneCard({
           locale={locale}
           t={t}
           autoAction={autoAction}
+          clearSuspectAction={clearSuspectAction}
         />
       ) : null}
       {zone.others.length > 0 && (
@@ -881,24 +889,72 @@ function GaugeLevelsBox({
   );
 }
 
-function AutoTick({ gauge, t, action }: { gauge: Gauge; t: T; action?: (form: FormData) => void }) {
+function AutoTick({
+  gauge,
+  t,
+  action,
+  clearAction,
+}: {
+  gauge: Gauge;
+  t: T;
+  action?: (form: FormData) => void;
+  clearAction?: (form: FormData) => void;
+}) {
   return (
-    <form
-      action={action}
-      className="flex flex-wrap items-center gap-3 rounded-xl border border-jaga-line p-2"
-      data-signal-auto={gauge.code}
-    >
-      <input type="hidden" name="station" value={gauge.id} />
-      <label className="flex min-h-tap items-center gap-2">
-        <input type="checkbox" name="enabled" defaultChecked={gauge.auto} className="h-6 w-6" />
-        <span className="font-medium">{t("auto.gauge")}</span>
-      </label>
-      {action ? (
-        <button type="submit" className={`${buttonSecondary} w-auto px-4`}>
-          {t("auto.save")}
-        </button>
+    <div className="grid gap-2">
+      <form
+        action={action}
+        className="flex flex-wrap items-center gap-3 rounded-xl border border-jaga-line p-2"
+        data-signal-auto={gauge.code}
+      >
+        <input type="hidden" name="station" value={gauge.id} />
+        <label className="flex min-h-tap items-center gap-2">
+          <input type="checkbox" name="enabled" defaultChecked={gauge.auto} className="h-6 w-6" />
+          <span className="font-medium">{t("auto.gauge")}</span>
+        </label>
+        {action ? (
+          <button type="submit" className={`${buttonSecondary} w-auto px-4`}>
+            {t("auto.save")}
+          </button>
+        ) : null}
+      </form>
+      {/*
+       * A gauge the alarm could not believe (9 Nov 2026). It is said in words as well as by the
+       * border, never by colour alone, and it carries the way to clear it: until an admin does,
+       * every crossing here waits the grace time instead of publishing at once.
+       */}
+      {gauge.suspectSince ? (
+        <div
+          className="grid gap-2 rounded-xl border-2 border-jaga-edge p-2"
+          data-signal-suspect={gauge.code}
+        >
+          <p className="font-medium text-jaga-ink">
+            {t("suspect.badge")}
+            {" · "}
+            <span className="font-normal text-jaga-text-2">
+              {t("suspect.since", {
+                time: new Date(gauge.suspectSince).toLocaleString("en-GB", {
+                  timeZone: "Asia/Bangkok",
+                  day: "2-digit",
+                  month: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              })}
+            </span>
+          </p>
+          {gauge.suspectNote ? <p className={hint}>{gauge.suspectNote}</p> : null}
+          {clearAction ? (
+            <form action={clearAction}>
+              <input type="hidden" name="station" value={gauge.id} />
+              <button type="submit" className={`${buttonSecondary} w-auto px-4`}>
+                {t("suspect.clear")}
+              </button>
+            </form>
+          ) : null}
+        </div>
       ) : null}
-    </form>
+    </div>
   );
 }
 
@@ -1087,6 +1143,7 @@ export function SignalsView({
   savedZone,
   view = "cards",
   autoAction,
+  clearSuspectAction,
   allAction,
   modeAction,
   dismissAction,
@@ -1104,6 +1161,7 @@ export function SignalsView({
   savedZone?: string | null;
   view?: "cards" | "map";
   autoAction?: (form: FormData) => void;
+  clearSuspectAction?: (form: FormData) => void;
   allAction?: (form: FormData) => void;
   modeAction?: (form: FormData) => void;
   dismissAction?: (form: FormData) => void;
@@ -1248,6 +1306,7 @@ export function SignalsView({
           t={t}
           action={action}
           autoAction={autoAction}
+          clearSuspectAction={clearSuspectAction}
           levelsAction={levelsAction}
           saved={savedZone === zone.id}
         />

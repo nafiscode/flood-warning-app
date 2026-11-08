@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hint } from "@/lib/ui";
 import {
   dismissAutoAlarm,
+  clearGaugeSuspect,
   setAutoAlarm,
   setAutoAlarmDam,
   setAutoMode,
@@ -94,6 +95,7 @@ export default async function SignalsPage({
       savedZone={saved}
       view={query.view === "map" ? "map" : "cards"}
       autoAction={setAutoAlarm.bind(null, locale)}
+      clearSuspectAction={clearGaugeSuspect.bind(null, locale)}
       allAction={setAutoAlarm.bind(null, locale)}
       modeAction={setAutoMode.bind(null, locale)}
       dismissAction={dismissAutoAlarm.bind(null, locale)}

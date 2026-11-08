@@ -150,24 +150,39 @@ LINE's free plan allows 500 messages a month, and a message to 300 people counts
 - Do not send LINE broadcasts for anything but an outage while the quota is low.
 - After a top-up or a plan change, nothing needs restarting; the next send uses it.
 
-## The automated alarm rings
+## The automated alarm has sent an alert
 
-Every admin's phone rings with a draft alert when a ticked gauge's two latest readings reach its
-threshold. That threshold is the gauge's own **Warning** level, the same one the public map grades
-it on (`/admin/signals` shows all three); a zone's key gauge can also reach Evacuate, any other
-gauge never says more than Warning on its own. Since 8 Nov 2026 a gauge other than the key one
-rings at its Warning rather than at its bank, so alarms come earlier than they used to. Within 20
-minutes (`system_settings.auto_alarm`):
+**Since 9 Nov 2026 the alarm does not wait for you.** When a ticked gauge's two latest readings
+reach its threshold, Jaga publishes the alert in that tick and *then* tells every admin: the bell,
+and a notification that shakes the way that level shakes. The alert is already in force when your
+phone buzzes. The threshold is the gauge's own **Warning** level, the same one the public map
+grades it on (`/admin/signals` shows all three); a zone's key gauge can also reach Evacuate, any
+other gauge never says more than Warning on its own.
 
-1. Open the draft from the notification or `/admin/alerts#auto-alarms`.
-2. Check the gauge on `/admin/signals`: is the reading plausible (no sudden jump of metres, the gauges
-   upstream agree)?
-3. **Send** it (edit the next-update time if needed) or **dismiss** it with a reason. If nobody does
-   either, Jaga publishes it itself from the reviewed template, marked "not reviewed", and writes it to
-   the audit log. Whether that is a drill or a real alert is the switch on `/admin/alerts`; keep it on
-   drill until launch day.
-4. A dismissed alarm is logged. That zone then stays quiet for 12 hours (`quiet_hours`) at that level or
-   lower; a higher level rings again at once.
+What to do when one arrives:
+
+1. Open it from the notification or `/admin/alerts#auto-alarms`.
+2. Check the gauge on `/admin/signals`: do the gauges upstream agree, and is the rise real?
+3. If it is right, leave it and set the next-update time as you would for your own alert. If it is
+   wrong, **cancel** it with a reason, or **replace** it with the right level - never delete it.
+4. That zone then stays quiet for 12 hours (`quiet_hours`) at that level or lower; a higher level
+   publishes again at once.
+
+### A draft that is waiting for you
+
+One case still waits, and only this one: the reading moved faster than a river can
+(`system_settings.auto_alarm.sanity`, 2 m an hour by default). Then nothing is published, every
+admin's phone rings with a deadline, and the gauge is marked **"Reading looks wrong"** on
+`/admin/signals`. Within the grace time (20 minutes):
+
+1. Open the draft from the notification or `/admin/signals`.
+2. Decide whether the gauge is broken or the river really did that.
+3. **Send** it or **dismiss** it with a reason. If nobody does either, Jaga publishes it anyway at
+   the end of the grace time - a broken sensor delays an alert, it never cancels one. If the river
+   has gone back below by then, nothing is published.
+4. Clear the suspect mark on `/admin/signals` once you trust the gauge again ("Believe this gauge
+   again"). Until you do, every crossing on that gauge waits the grace time instead of going out
+   at once.
 
 ## An alert went out wrong
 

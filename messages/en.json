@@ -1001,7 +1001,11 @@
       "act": "Go to signals",
       "see": "See the history",
       "pendingReservoir": "A {level} draft for {zone} is waiting for an admin (reservoir {percent}% of capacity). If nobody sends or dismisses it, Jaga publishes it by itself at {time}.",
-      "pendingClear": "A “safe to return” draft for {zone} is waiting for an admin. The water is back down below the threshold. If nobody sends or dismisses it, Jaga publishes it by itself at {time}."
+      "pendingClear": "A “safe to return” draft for {zone} is waiting for an admin. The water is back down below the threshold. If nobody sends or dismisses it, Jaga publishes it by itself at {time}.",
+      "sentAtOnce": "Jaga has sent the {level} alert for {zone} by itself ({gauge} {value} m). It was not reviewed. Open it to check, change or cancel it.",
+      "sentAtOnceReservoir": "Jaga has sent the {level} alert for {zone} by itself (reservoir {percent}% of capacity). It was not reviewed. Open it to check, change or cancel it.",
+      "sentAtOnceClear": "Jaga has sent the “safe to return” notice for {zone} by itself. The water stayed down below the threshold. Open it to check or cancel it.",
+      "heldWhy": "The reading looks implausible, so Jaga held it for a person to check instead of publishing at once."
     },
     "queue": {
       "act": "Go and deal with it",
@@ -3955,7 +3959,7 @@
     },
     "auto": {
       "title": "Automated alarm",
-      "rule": "For a gauge with the box ticked: when its last two readings, both less than {age} hours old, reach its threshold, every admin's device rings with a draft alert. If no admin sends or dismisses it within {grace} minutes, it is published by itself and marked as not reviewed. If the river has gone back below by then, nothing is published.",
+      "rule": "For a gauge with the box ticked: when its last two readings, both less than {age} hours old, reach its threshold, Jaga publishes the alert at once and tells every admin that it has gone out. Nobody is waited for. If the reading looks impossible — a jump no real river makes — the draft is held instead, every admin's device rings, and it is published {grace} minutes later unless someone acts; if the river has gone back below by then, nothing is published.",
       "modeDrill": "Before launch it publishes drills only: nobody outside the admins sees them.",
       "modeReal": "It publishes real alerts to the residents of the zone's tambons.",
       "toReal": "Publish real alerts",
@@ -3966,8 +3970,8 @@
       "gauge": "Automated alarm for this gauge",
       "gaugeHint": "Applies only to gauges inside a warning zone; a gauge outside every zone has no tambons to alert.",
       "save": "Save",
-      "pending": "Waiting for an admin",
-      "pendingLine": "{level} for {zone}: gauge {gauge} {value} m (threshold {threshold} m). Sent by itself at {time} unless someone acts.",
+      "pending": "Held for an admin",
+      "pendingLine": "{level} for {zone}: gauge {gauge} {value} m (threshold {threshold} m). The reading looked wrong, so it is waiting. Sent by itself at {time} unless someone acts.",
       "openDraft": "Open the draft",
       "dismiss": "Dismiss",
       "dismissNote": "Why (for the log)",
@@ -4131,6 +4135,25 @@
     },
     "operators": {
       "rid": "Royal Irrigation Department (RID)"
+    },
+    "pushSent": {
+      "title": "Jaga · {level} sent: {zone}",
+      "body": "Gauge {gauge} reads {value} m. Jaga has already sent this alert by itself. Open it to check, change or cancel it."
+    },
+    "pushSentReservoir": {
+      "title": "Alert sent: {zone} reservoir is nearly full",
+      "body": "The reservoir is at {percent}% of capacity. Jaga has already sent this alert by itself. Open it to check, change or cancel it."
+    },
+    "pushSentClear": {
+      "title": "“Safe to return” sent: {zone}",
+      "body": "The water has stayed down. Jaga has already sent the all-clear by itself. Open it to check or cancel it."
+    },
+    "pushHeld": "The reading looks implausible, so Jaga is waiting for a person.",
+    "suspect": {
+      "badge": "Reading looks wrong",
+      "clear": "Believe this gauge again",
+      "cleared": "Cleared",
+      "since": "since {time}"
     }
   },
   "lineQuota": {

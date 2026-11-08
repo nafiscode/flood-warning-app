@@ -32,6 +32,14 @@ export type Gauge = {
   id?: string;
   /** Set to the automated alarm (the owner's decision of 14 Oct 2026). */
   auto?: boolean;
+  /**
+   * When this gauge's readings stopped being believed (9 Nov 2026): the alarm found a jump no
+   * river makes, held its draft for an admin rather than publishing at once, and marked the
+   * gauge. It stays marked until an admin clears it.
+   */
+  suspectSince?: string | null;
+  /** What the alarm saw, in its own words. */
+  suspectNote?: string | null;
   code: string;
   thaiwaterId: number | null;
   name: Record<string, string | null>;
@@ -254,6 +262,8 @@ function toGauge(row: Row): Gauge {
   return {
     id: typeof row.id === "string" ? row.id : undefined,
     auto: row.auto === true,
+    suspectSince: typeof row.suspectSince === "string" ? row.suspectSince : null,
+    suspectNote: typeof row.suspectNote === "string" ? row.suspectNote : null,
     code: String(row.code ?? ""),
     thaiwaterId: numberOrNull(row.thaiwaterId),
     name: (row.name ?? {}) as Gauge["name"],

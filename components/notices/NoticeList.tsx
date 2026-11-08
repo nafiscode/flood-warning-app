@@ -135,13 +135,25 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
              * Once it has been decided, one line covers all three.
              */}
             {t(
-              item.status !== "pending"
-                ? `auto.${item.status}`
-                : item.subject === "clear"
-                  ? "auto.pendingClear"
+              /*
+               * Published in the tick that found it, with nobody waited for (the owner, 9 Nov
+               * 2026): said in the terms of what crossed, and in the past tense, because there
+               * is nothing left to stop. `auto_published` keeps its old words for a draft that
+               * was held back and then went out at the end of its wait.
+               */
+              item.status === "auto_published" && item.atOnce
+                ? item.subject === "clear"
+                  ? "auto.sentAtOnceClear"
                   : item.subject === "reservoir"
-                    ? "auto.pendingReservoir"
-                    : "auto.pending",
+                    ? "auto.sentAtOnceReservoir"
+                    : "auto.sentAtOnce"
+                : item.status !== "pending"
+                  ? `auto.${item.status}`
+                  : item.subject === "clear"
+                    ? "auto.pendingClear"
+                    : item.subject === "reservoir"
+                      ? "auto.pendingReservoir"
+                      : "auto.pending",
               {
               level: tLevel(item.level),
               zone: item.names ? localName(item.names, locale) : item.zone,
@@ -156,6 +168,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
               },
             )}
           </p>
+          {/* A draft waits only when its reading could not be believed: say so, or the wait
+              looks like the old behaviour (9 Nov 2026). */}
+          {item.status === "pending" && item.heldReason && (
+            <p className="text-small text-jaga-text-2">{t("auto.heldWhy")}</p>
+          )}
           {item.drill && <p className="text-small text-jaga-text-2">{t("auto.drill")}</p>}
         </>
       )}

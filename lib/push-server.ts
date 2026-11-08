@@ -291,6 +291,36 @@ const AUTO_WORDS: Record<string, Record<string, { title: string; body: string }>
 };
 
 /**
+ * The same three, for an alert the alarm has already published (the owner, 9 Nov 2026). They say
+ * what has gone out and offer the way to check, change or cancel it - never a deadline, because
+ * nothing is waiting any more.
+ */
+const AUTO_SENT_WORDS: Record<string, Record<string, { title: string; body: string }>> = {
+  th: {
+    gauge: th.signals.pushSent,
+    reservoir: th.signals.pushSentReservoir,
+    clear: th.signals.pushSentClear,
+  },
+  ms: {
+    gauge: ms.signals.pushSent,
+    reservoir: ms.signals.pushSentReservoir,
+    clear: ms.signals.pushSentClear,
+  },
+  en: {
+    gauge: en.signals.pushSent,
+    reservoir: en.signals.pushSentReservoir,
+    clear: en.signals.pushSentClear,
+  },
+};
+
+/** Why a draft is waiting rather than already sent: its reading could not be believed. */
+const AUTO_HELD: Record<string, string> = {
+  th: th.signals.pushHeld,
+  ms: ms.signals.pushHeld,
+  en: en.signals.pushHeld,
+};
+
+/**
  * The automated alarm's pushes (the owner's decision of 14 Oct 2026): to every admin, a gauge set
  * to automatic has crossed its threshold and a draft is waiting, with the time it will be sent by
  * itself; and, once a draft has been published because nobody acted, the alert to the phones that
@@ -340,10 +370,43 @@ async function autoAlarmTick(
       payload = {
         kind: "auto_alarm",
         title: fill(words.title),
-        body: fill(words.body),
+        // A draft only waits when its reading looked wrong, so the admin is told that much here
+        // rather than having to open the console to find out (9 Nov 2026).
+        body: d.held
+          ? `${fill(words.body)} ${AUTO_HELD[row.locale] ?? AUTO_HELD.th!}`
+          : fill(words.body),
         url: row.locale === "th" ? "/admin/signals" : `/${row.locale}/admin/signals`,
         tag: `auto-${String(d.event)}`,
         sticky: true,
+      };
+    } else if (row.kind === "auto_alarm_sent") {
+      // The alarm has already published. Every admin is told, and the phone shakes with the
+      // level's own pattern (app/sw.ts), because an alert is in force by now.
+      const d = row.data;
+      const which = d.clear === true ? "clear" : d.dam ? "reservoir" : "gauge";
+      const set = AUTO_SENT_WORDS[row.locale] ?? AUTO_SENT_WORDS.th!;
+      const words = set[which] ?? set.gauge!;
+      const zone =
+        ((d.zone ?? {}) as Record<string, string>)[row.locale] ??
+        (d.zone as Record<string, string>)?.th ??
+        "";
+      const level = levelName(d.level as PushLevel, row.locale);
+      const fill = (text: string) =>
+        text
+          .replace("{level}", level)
+          .replace("{zone}", zone)
+          .replace("{gauge}", String(d.gauge ?? ""))
+          .replace("{percent}", String(d.percent ?? ""))
+          .replace("{value}", String(d.value ?? ""));
+      payload = {
+        kind: "auto_alarm_sent",
+        title: fill(words.title),
+        body: fill(words.body),
+        url: row.locale === "th" ? "/admin/alerts" : `/${row.locale}/admin/alerts`,
+        tag: `auto-sent-${String(d.event)}`,
+        sticky: true,
+        // 'return' is a level of its own for the alert sounds; the type covers it.
+        level: d.level as PushLevel,
       };
     } else if (row.kind === "alert") {
       payload = alertPayload(

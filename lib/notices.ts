@@ -177,6 +177,14 @@ export type AutoAlarm = {
   alertId: string | null;
   /** Whether what it published was a drill; null when it published nothing. */
   drill: boolean | null;
+  /**
+   * Published in the very tick that found it, with no admin waited for (the owner, 9 Nov 2026).
+   * False on a draft that was held back because its reading could not be believed, on one an
+   * admin sent, and on everything from before that day.
+   */
+  atOnce: boolean;
+  /** Why it was held rather than published at once. Null when nothing was wrong. */
+  heldReason: string | null;
 };
 
 /** One row of admin_auto_alarms() as an AutoAlarm, or null when it is not one. */
@@ -215,6 +223,8 @@ export function toAutoAlarm(row: Record<string, unknown>): AutoAlarm | null {
     note: text(row.note),
     alertId: text(row.alertId),
     drill: typeof row.drill === "boolean" ? row.drill : null,
+    atOnce: row.atOnce === true,
+    heldReason: text(row.heldReason),
   };
 }
 
@@ -527,8 +537,10 @@ export function buildNotices(input: {
     items.push({ kind: "field", id: news.id, at: news.at, places: [], event: news.event });
   }
 
-  // An automatic alarm is news each time its state changes: raised, then sent, dismissed,
-  // published by itself or let go because the river fell back.
+  // An automatic alarm is news each time its state changes: raised and published at once (the
+  // ordinary way since 9 Nov 2026), held back for an admin because its reading could not be
+  // believed, then sent, dismissed, published at the end of that wait, or let go because the
+  // river fell back.
   for (const alarm of autoAlarms) {
     const at = alarm.status === "pending" ? alarm.createdAt : (alarm.decidedAt ?? alarm.createdAt);
     if (!within(at)) continue;
@@ -552,6 +564,8 @@ export function buildNotices(input: {
       note: alarm.note,
       alertId: alarm.alertId,
       drill: alarm.drill,
+      atOnce: alarm.atOnce,
+      heldReason: alarm.heldReason,
     });
   }
 

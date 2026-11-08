@@ -1001,7 +1001,11 @@
       "act": "Pergi ke isyarat",
       "see": "Lihat sejarah",
       "pendingReservoir": "Draf amaran {level} untuk {zone} sedang menunggu pentadbir (takungan {percent}% daripada kapasiti). Jika tiada siapa menghantar atau membatalkannya, Jaga menerbitkannya sendiri pada {time}.",
-      "pendingClear": "Draf “boleh balik rumah” untuk {zone} sedang menunggu pentadbir. Air sudah turun di bawah ambang. Jika tiada siapa menghantar atau membatalkannya, Jaga menerbitkannya sendiri pada {time}."
+      "pendingClear": "Draf “boleh balik rumah” untuk {zone} sedang menunggu pentadbir. Air sudah turun di bawah ambang. Jika tiada siapa menghantar atau membatalkannya, Jaga menerbitkannya sendiri pada {time}.",
+      "sentAtOnce": "Jaga telah menghantar amaran {level} untuk {zone} dengan sendiri ({gauge} {value} m). Ia tidak disemak. Buka untuk semak, ubah atau batalkan.",
+      "sentAtOnceReservoir": "Jaga telah menghantar amaran {level} untuk {zone} dengan sendiri (takungan {percent}% daripada kapasiti). Ia tidak disemak. Buka untuk semak, ubah atau batalkan.",
+      "sentAtOnceClear": "Jaga telah menghantar notis “boleh balik rumah” untuk {zone} dengan sendiri. Air kekal turun di bawah paras. Buka untuk semak atau batalkan.",
+      "heldWhy": "Bacaan nampak tidak munasabah, jadi Jaga menahannya untuk disemak orang dan tidak menghantarnya terus."
     },
     "queue": {
       "act": "Pergi uruskan",
@@ -3955,7 +3959,7 @@
     },
     "auto": {
       "title": "Penggera automatik",
-      "rule": "Bagi stesen yang ditanda: apabila dua bacaan terakhirnya, kedua-duanya kurang daripada {age} jam, mencapai had, peranti setiap pentadbir berbunyi dengan draf amaran. Jika tiada pentadbir menghantar atau menolaknya dalam {grace} minit, ia diterbitkan sendiri dan ditanda sebagai belum disemak. Jika paras sungai sudah turun semula ketika itu, tiada apa-apa diterbitkan.",
+      "rule": "Untuk stesen yang ditanda: apabila dua bacaan terakhirnya, kedua-duanya kurang daripada {age} jam, mencapai parasnya, Jaga menghantar amaran serta-merta dan memberitahu semua pentadbir bahawa ia telah dihantar. Tiada sesiapa ditunggu. Jika bacaan itu nampak mustahil — lonjakan yang tidak mungkin berlaku pada sungai sebenar — draf ditahan, peranti setiap pentadbir berbunyi, dan ia dihantar {grace} minit kemudian melainkan ada yang bertindak; jika air sudah turun semula menjelang itu, tiada apa-apa dihantar.",
       "modeDrill": "Sebelum pelancaran ia hanya menerbitkan latihan: tiada sesiapa selain pentadbir melihatnya.",
       "modeReal": "Ia menerbitkan amaran sebenar kepada penduduk mukim dalam zon itu.",
       "toReal": "Terbitkan amaran sebenar",
@@ -3966,8 +3970,8 @@
       "gauge": "Penggera automatik bagi stesen ini",
       "gaugeHint": "Hanya bagi stesen dalam zon amaran; stesen di luar semua zon tiada mukim untuk diberi amaran.",
       "save": "Simpan",
-      "pending": "Menunggu pentadbir",
-      "pendingLine": "{level} bagi {zone}: stesen {gauge} {value} m (had {threshold} m). Dihantar sendiri pada {time} jika tiada siapa bertindak.",
+      "pending": "Ditahan untuk pentadbir",
+      "pendingLine": "{level} untuk {zone}: stesen {gauge} {value} m (paras {threshold} m). Bacaan nampak salah, jadi ia menunggu. Dihantar sendiri pada {time} melainkan ada yang bertindak.",
       "openDraft": "Buka draf",
       "dismiss": "Tolak",
       "dismissNote": "Sebab (untuk log)",
@@ -4131,6 +4135,25 @@
     },
     "operators": {
       "rid": "Jabatan Pengairan Diraja (RID)"
+    },
+    "pushSent": {
+      "title": "Jaga · {level} dihantar: {zone}",
+      "body": "Stesen {gauge} mencatat {value} m. Jaga telah menghantar amaran ini sendiri. Buka untuk semak, ubah atau batalkan."
+    },
+    "pushSentReservoir": {
+      "title": "Amaran dihantar: takungan {zone} hampir penuh",
+      "body": "Takungan pada {percent}% daripada kapasiti. Jaga telah menghantar amaran ini sendiri. Buka untuk semak, ubah atau batalkan."
+    },
+    "pushSentClear": {
+      "title": "“Boleh balik rumah” dihantar: {zone}",
+      "body": "Air kekal turun. Jaga telah menghantar notis boleh balik sendiri. Buka untuk semak atau batalkan."
+    },
+    "pushHeld": "Bacaan nampak tidak munasabah, jadi Jaga menunggu orang.",
+    "suspect": {
+      "badge": "Bacaan nampak salah",
+      "clear": "Percayai stesen ini semula",
+      "cleared": "Dibersihkan",
+      "since": "sejak {time}"
     }
   },
   "lineQuota": {

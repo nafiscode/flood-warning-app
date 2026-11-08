@@ -59,6 +59,24 @@ export async function setAutoAlarm(locale: string, form: FormData) {
   redirect(`${back}${back.includes("?") ? "&" : "?"}${error ? "error=auto" : "autosaved=1"}`);
 }
 
+/**
+ * An admin says a gauge may be believed again (9 Nov 2026). While a gauge is marked, every
+ * crossing on it is held for the grace time instead of publishing at once, so clearing the mark
+ * is what puts it back on the fast path. The database checks the caller is an admin and logs it.
+ */
+export async function clearGaugeSuspect(locale: string, form: FormData) {
+  const station = String(form.get("station") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(station))
+    redirect(`${localePath(locale, "/admin/signals")}?error=auto`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_clear_gauge_suspect", {
+    p_station: station,
+    p_note: null,
+  });
+  const back = backTo(locale, form);
+  redirect(`${back}${back.includes("?") ? "&" : "?"}${error ? "error=auto" : "autosaved=1"}`);
+}
+
 /** Drill or real for what the automated alarm publishes. */
 export async function setAutoMode(locale: string, form: FormData) {
   const mode = form.get("mode") === "real" ? "real" : "drill";
