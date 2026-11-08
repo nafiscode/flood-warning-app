@@ -9,7 +9,14 @@ import { useNow } from "@/lib/use-public";
 import { useWeather, useWeatherPlace } from "@/lib/use-weather";
 import { isStale, weatherGroup } from "@/lib/weather";
 import { consoleVeil } from "@/lib/map-console";
-import { isDaylight, SCENE_LOOKS, sceneFor, type Scene } from "@/lib/weather-scene";
+import {
+  isDaylight,
+  SCENE_LOOKS,
+  SCRIM_ALPHA,
+  SCRIM_COLOR,
+  sceneFor,
+  type Scene,
+} from "@/lib/weather-scene";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { WeatherScene } from "@/components/weather/WeatherScene";
 
@@ -63,16 +70,39 @@ function useConsoleWeather() {
   };
 }
 
+/** A hex colour (#rrggbb) as the "r g b" triplet an `rgb(... / a)` custom property wants. */
+function rgbTriplet(hex: string): string {
+  return [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)).join(" ");
+}
+
 /**
  * The moving sky itself, behind everything on the console (or, with `bar`, behind the header of
  * the team's war room - the owner, 24 Oct 2026: "on the laptop view, add on the header the weather
  * animation like the main map page"). It goes in as the first child of the
  * console, and the rest of the console is lifted above it in app/globals.css.
+ *
+ * Two veils, one picture. The war room's header carries the theme's ink, so its sky keeps the
+ * theme veil - the lightest one that still holds that ink at 4.5:1 (lib/map-console.ts). The map
+ * console now wears the home screen's weather-card treatment instead (the owner, 9 Nov 2026: on a
+ * laptop in the light theme the strip's sky "is not clear ... while the weather card ... appear
+ * good"). The reason it was muddy: to carry dark ink the light theme bleached every sky toward
+ * white. The card never does that - it veils the sky by the *scene*, not the theme, and writes on
+ * it in the sky's own ink (white on a rainy sky, dark slate on a bright one). So the map sky now
+ * hands the scene's scrim and ink down to app/globals.css, and a rainy sky stays deep and a clear
+ * one stays blue, exactly as the card. None of this is a status: a sky is a sky (safety rule 8).
  */
 export function ConsoleSky({ bar = false }: { bar?: boolean } = {}) {
   const sky = useConsoleWeather();
   if (!sky) return null;
-  const veil = consoleVeil(SCENE_LOOKS[sky.scene].sky);
+  const look = SCENE_LOOKS[sky.scene];
+  const veil = consoleVeil(look.sky);
+  // The war room keeps the theme veil; the map console takes the card's scene scrim and ink.
+  const skin: Record<string, string | number> = bar
+    ? { "--veil-day": veil.light, "--veil-night": veil.dark }
+    : {
+        "--sky-scrim": rgbTriplet(SCRIM_COLOR[look.ink]),
+        "--sky-scrim-alpha": SCRIM_ALPHA,
+      };
   return (
     /*
      * Nothing of this exists below the console's own breakpoint: `hidden` is display:none, so on
@@ -80,21 +110,17 @@ export function ConsoleSky({ bar = false }: { bar?: boolean } = {}) {
      */
     <div
       data-console-sky={sky.scene}
+      // Which way the writing on the map sky goes, read by app/globals.css to pick white or dark
+      // ink for the title, the note and the weather - the same choice the card makes per scene.
+      data-console-sky-ink={bar ? undefined : look.ink}
       aria-hidden="true"
       className={bar ? undefined : "hidden console:block"}
       // On the team's war room the sky is a bar behind its header, placed by its own wrapper
       // (app/globals.css, [data-sky-bar]) and not by the map console's grid.
       data-sky-bar={bar ? "true" : undefined}
-      /*
-       * How much of this sky may show: the lightest veil that still leaves the console's weakest
-       * text at 4.5:1 on it (lib/map-console.ts). A clear day comes through as a blue sky; a
-       * thunderstorm is held further back, because its sky is dark enough to swallow grey text.
-       * Both are given, and the stylesheet takes the one for the theme the clock has set.
-       */
       style={
         {
-          "--veil-day": veil.light,
-          "--veil-night": veil.dark,
+          ...skin,
           /*
            * The sun and the moon are moved out of the top right, where the temperature is
            * written (the owner, 16 Oct: the moon sat behind the number). They go to the foot of

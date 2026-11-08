@@ -426,6 +426,30 @@ describe("the console's arrangement", () => {
   });
 
   /*
+   * The owner, 9 Nov 2026: in the light theme the map strip's sky "is not clear ... while the
+   * weather card ... appear good". The strip now wears the card's recipe - the sky veiled by the
+   * scene's scrim (not bleached toward the theme ink) and the loose text in the sky's own ink. So
+   * the map sky's veil must read --sky-scrim, and both ink directions must be set, keyed on the
+   * ink the scene carries. The war room's bar (data-sky-bar) keeps the theme veil and is excluded.
+   */
+  it("gives the map sky the weather card's scene scrim and ink", () => {
+    const veil = css.slice(
+      css.indexOf('[data-map-console] [data-console-sky]:not([data-sky-bar]) [data-console-veil]'),
+    );
+    expect(veil.slice(0, veil.indexOf("}"))).toContain("var(--sky-scrim");
+
+    // White ink on the dark skies, dark slate on the bright ones, each on its own sky-ink value.
+    expect(css).toContain('[data-console-sky][data-console-sky-ink="light"]');
+    expect(css).toContain('[data-console-sky][data-console-sky-ink="dark"]');
+    expect(css).toMatch(
+      /\[data-console-sky-ink="light"\]\)\s*:is\([^)]*\[data-console-weather\][^)]*\)\s*\{\s*color: #ffffff/,
+    );
+    expect(css).toMatch(
+      /\[data-console-sky-ink="dark"\]\)\s*:is\([^)]*\[data-console-weather\][^)]*\)\s*\{\s*color: #13293a/,
+    );
+  });
+
+  /*
    * The owner, 23 Oct 2026: "the card background is having transparency but not losing the text
    * reading ability". The share is the thing being tested, not the look: a card floating over a
    * basemap can have anything behind it, so the arithmetic is done against the two extremes.

@@ -197,6 +197,43 @@
   :root[data-theme="dark"] [data-console-veil] {
     background: rgb(var(--console-veil-color) / var(--veil-night, 0.8));
   }
+  /*
+   * The map console's own sky (not the war room's `[data-sky-bar]`) is veiled by the weather, not
+   * the theme: the scene's scrim and strength come down from ConsoleSky as --sky-scrim, so a rainy
+   * sky stays deep and a clear one stays bright in either theme - the home weather card's recipe,
+   * which the light theme's wash-to-white veil was losing (the owner, 9 Nov 2026). More specific
+   * than the two rules above, and placed after them, so it wins in both themes.
+   */
+  [data-map-console] [data-console-sky]:not([data-sky-bar]) [data-console-veil] {
+    background: rgb(var(--sky-scrim, 9 20 30) / var(--sky-scrim-alpha, 0.5));
+  }
+  /*
+   * ...and the writing on that sky is the sky's own ink, as on the card: white on the scenes whose
+   * sky is dark (rain, night), dark slate on the bright ones. Only the loose text - the title, the
+   * note, the hazard label and the weather in words; every pill and the province picker carry a
+   * solid background of their own, so they are left in their usual colours. The scene's scrim
+   * guarantees this ink at 4.5:1 on every sky (tests/unit/weather-scene), so contrast holds.
+   */
+  [data-map-console]:has([data-console-sky][data-console-sky-ink="light"])
+    :is(
+      [data-console-area="head"] h1,
+      [data-console-note],
+      #hazard-label,
+      [data-console-weather],
+      [data-console-weather] span
+    ) {
+    color: #ffffff;
+  }
+  [data-map-console]:has([data-console-sky][data-console-sky-ink="dark"])
+    :is(
+      [data-console-area="head"] h1,
+      [data-console-note],
+      #hazard-label,
+      [data-console-weather],
+      [data-console-weather] span
+    ) {
+    color: #13293a;
+  }
   [data-console-area],
   [data-console-tiles] {
     position: relative;
