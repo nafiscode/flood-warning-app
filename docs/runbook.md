@@ -153,7 +153,11 @@ LINE's free plan allows 500 messages a month, and a message to 300 people counts
 ## The automated alarm rings
 
 Every admin's phone rings with a draft alert when a ticked gauge's two latest readings reach its
-zone's threshold. Within 20 minutes (`system_settings.auto_alarm`):
+threshold. That threshold is the gauge's own **Warning** level, the same one the public map grades
+it on (`/admin/signals` shows all three); a zone's key gauge can also reach Evacuate, any other
+gauge never says more than Warning on its own. Since 8 Nov 2026 a gauge other than the key one
+rings at its Warning rather than at its bank, so alarms come earlier than they used to. Within 20
+minutes (`system_settings.auto_alarm`):
 
 1. Open the draft from the notification or `/admin/alerts#auto-alarms`.
 2. Check the gauge on `/admin/signals`: is the reading plausible (no sudden jump of metres, the gauges

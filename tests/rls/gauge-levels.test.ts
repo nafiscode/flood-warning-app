@@ -132,24 +132,34 @@ describe("gauge levels", () => {
     expect((await read())!.levels.warning).toBe(38);
   });
 
-  it("the automated alarm raises Warning at another gauge's own Evacuate level", async () => {
+  it("the automated alarm raises Warning at another gauge's own Warning level", async () => {
     await as(db, { uid: w.admin });
     await set(other, 37, 38, 39);
     await asOwner(db);
     await db.query("delete from public.observations where station_id = $1", [other]);
-    for (const mins of [40, 10]) {
-      await db.query(
-        `insert into public.observations (station_id, ts, variable, value)
-         values ($1, now() - make_interval(mins => $2::integer), 'water_level_msl', 39.2)`,
-        [other, mins],
-      );
-    }
-    const [r] = await rows<{ level: string; threshold: number }>(
-      db,
-      "select level, threshold from public.auto_alarm_reading($1)",
-      [other],
-    );
-    // 39.2 is below X.77's bank (39.7) but over the Evacuate level set for it.
-    expect(r).toMatchObject({ level: "warning", threshold: 39 });
+    const reading = async (value: number) => {
+      await db.query("delete from public.observations where station_id = $1", [other]);
+      for (const mins of [40, 10]) {
+        await db.query(
+          `insert into public.observations (station_id, ts, variable, value)
+           values ($1, now() - make_interval(mins => $2::integer), 'water_level_msl', $3)`,
+          [other, mins, value],
+        );
+      }
+      return (
+        await rows<{ level: string; threshold: number }>(
+          db,
+          "select level, threshold from public.auto_alarm_reading($1)",
+          [other],
+        )
+      )[0];
+    };
+    // 38.2 is a long way below X.77's bank (39.7) and below the Evacuate set for it, but over its
+    // own Warning: the alarm reads the same level the public map shows.
+    expect(await reading(38.2)).toMatchObject({ level: "warning", threshold: 38 });
+    // Over its Evacuate, a gauge that is not its zone's key gauge still says no more than Warning.
+    expect(await reading(39.2)).toMatchObject({ level: "warning", threshold: 38 });
+    // Below its Warning, it says nothing at all.
+    expect(await reading(37.5)).toBeUndefined();
   });
 });
