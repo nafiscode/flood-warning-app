@@ -219,6 +219,8 @@
       [data-console-area="head"] h1,
       [data-console-note],
       #hazard-label,
+      [data-console-province] label,
+      [data-console-province] [data-not-covered-note],
       [data-console-weather],
       [data-console-weather] span
     ) {
@@ -229,6 +231,8 @@
       [data-console-area="head"] h1,
       [data-console-note],
       #hazard-label,
+      [data-console-province] label,
+      [data-console-province] [data-not-covered-note],
       [data-console-weather],
       [data-console-weather] span
     ) {
