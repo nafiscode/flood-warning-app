@@ -41,10 +41,17 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       // the one line of it that comes from a weather model.
       "monitoring",
       "attribution",
+      // Today's weather card (A16, 8 Nov): the day, the hours rain is expected, the source.
+      "brief",
     ]),
     // The weather widget's words for what is falling, so the monitoring section says it the same
-    // way the header's chip does. Four lines, not the whole weather page.
-    weather: { codes: (all.weather as Messages).codes! },
+    // way the header's chip does. Four lines, not the whole weather page. "notAnAlert" and "old"
+    // go with them because the weather card carries both under the sky it paints.
+    weather: {
+      codes: (all.weather as Messages).codes!,
+      notAnAlert: (all.weather as Messages).notAnAlert!,
+      old: (all.weather as Messages).old!,
+    },
     // The area chooser's province list.
     map: { province: all.map!.province! },
     // "New to Jaga?": the way into What Jaga can do for a first-time visitor (A17, 16 Oct).

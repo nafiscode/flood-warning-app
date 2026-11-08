@@ -4,6 +4,10 @@ import { morningBrief } from "@/lib/morning-brief";
 import { HOUR_MM } from "@/lib/weather-advisory";
 import type { Weather, WeatherHour } from "@/lib/weather";
 import { SCENE_LOOKS } from "@/lib/weather-scene";
+import { render } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import th from "@/messages/th.json";
+import { homeMessages } from "@/lib/messages";
 import { renderWithIntl } from "./render";
 
 /** 2026-11-08 in Bangkok (UTC+7). */
@@ -107,5 +111,37 @@ describe("the morning weather card", () => {
     // Four hours after the model time: past the three hours lib/weather calls stale.
     const { getByText } = card([hour(14, 6)], Date.parse(day(10)));
     expect(getByText(/more than 3 hours old/)).toBeTruthy();
+  });
+});
+
+/**
+ * The home page sends the browser only the texts it needs (lib/messages.ts, slow-3G budget), so
+ * a card whose words are not in that list renders its key names instead of Thai. This renders
+ * the card with exactly what the home page sends, and nothing else.
+ */
+describe("the card's words reach the home screen", () => {
+  it("says Thai, not key names, with only the home page's messages", () => {
+    const w = weather([hour(14, 6)]);
+    const now = Date.parse(day(10)); // past the three hours that make a reading old
+    const { container } = render(
+      <NextIntlClientProvider
+        locale="th"
+        messages={homeMessages(th)}
+        timeZone="Asia/Bangkok"
+      >
+        <MorningBriefView
+          placeName="ตันหยงลุโละ"
+          brief={morningBrief(w, now)!}
+          hours={w.hours}
+          lat={w.lat}
+          lon={w.lon}
+          modelIsDay={w.isDay}
+          now={now}
+        />
+      </NextIntlClientProvider>,
+    );
+    const said = container.textContent ?? "";
+    expect(said).not.toMatch(/(brief|weather)\.[a-zA-Z]/);
+    expect(said).toContain("ตันหยงลุโละ");
   });
 });
