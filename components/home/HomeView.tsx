@@ -35,6 +35,7 @@ import { AreaChooser } from "./AreaChooser";
 import { Checklist } from "./Checklist";
 import { TeamEntryCard } from "@/components/authority/TeamEntry";
 import { HomeFirst } from "./HomeFirst";
+import { MorningBrief } from "./MorningBrief";
 import { OtherHelp } from "./OtherHelp";
 import { SetupSteps } from "./SetupSteps";
 import { SuppliesLink } from "./SuppliesLink";
@@ -409,6 +410,14 @@ export function HomeView(props: HomeViewProps) {
          * down the page (measured, 19 Oct) - the three columns stack and it is in the last one.
          */}
         {!loading && !choosing && !tense && props.installLine}
+
+        {/*
+         * Today's weather, on an ordinary day only (the owner, 8 Nov 2026): a reason to open Jaga
+         * when nothing is wrong, so the app is familiar on the day something is. It is weather and
+         * says so - no level, no alert colour - and at Warning or Evacuate it is not drawn at all,
+         * because then the screen belongs to the alert (safety rules 3, 8 and 10).
+         */}
+        {!loading && !choosing && !tense && <MorningBrief />}
 
         {/*
          * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays

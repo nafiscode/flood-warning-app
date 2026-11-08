@@ -71,6 +71,10 @@ export const CASE_KINDS = [
   "announcement",
   // To the admins: a gauge set to automatic crossed its threshold and a draft is waiting.
   "auto_alarm",
+  // Severe weather forecast for a tambon this phone follows. Advice, never an alert: the
+  // ordinary notice vibration, no repeat knocks, and words that name Open-Meteo and its time
+  // (safety rules 2, 8 and 10; lib/weather-advisory.ts).
+  "weather",
 ] as const;
 export type CaseKind = (typeof CASE_KINDS)[number];
 export type CasePayload = {
@@ -139,6 +143,7 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
     !kind ||
     kind === "announcement" ||
     kind === "auto_alarm" ||
+    kind === "weather" ||
     !/^[0-9a-f-]{36}$/i.test(row.sos_id)
   )
     return null;
@@ -186,6 +191,65 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
     // One notification per case and audience: the next step replaces the last.
     tag: `${forSender ? "case" : kind}-${row.sos_id}`,
     sticky: kind === "offer",
+  };
+}
+
+/** One row of `weather_push_due()`: one advisory, for one phone, in that phone's language. */
+export type WeatherDueRow = {
+  advisory_id: string;
+  kind: string;
+  locale: string;
+  tambon_th: string | null;
+  tambon_en: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  peak: number | null;
+  total_mm: number | null;
+  issued_at: string;
+};
+
+/**
+ * The notification for severe weather that is forecast, in the phone's language.
+ *
+ * Every one of these says three things before anything else: what is expected and when, that it
+ * comes from Open-Meteo's model and the hour that model data is from, and that it is weather and
+ * not a flood alert. The words come from `push.weather` in messages/*.json - reviewed copy,
+ * never translated at runtime (CLAUDE.md, UI text) - and only the numbers are filled in here.
+ */
+export function weatherPayload(
+  row: WeatherDueRow,
+  words: Record<string, string>,
+  /** Clock in the place's own zone, for printing the hours (Asia/Bangkok for the whole service area). */
+  clock: Intl.DateTimeFormat = CLOCK,
+): CasePayload | null {
+  const name = { heavy_rain: "heavyRain", thunder: "thunder", wind: "wind" }[row.kind];
+  if (!name) return null;
+  const title = words[`${name}Title`];
+  const body = words[`${name}Body`];
+  if (!title || !body) return null;
+  const at = (iso: string | null): string => {
+    const ms = iso ? Date.parse(iso) : Number.NaN;
+    return Number.isFinite(ms) ? clock.format(new Date(ms)) : "";
+  };
+  const values = {
+    place: (row.locale === "th" ? row.tambon_th : row.tambon_en) || row.tambon_th || "",
+    from: at(row.starts_at),
+    until: at(row.ends_at),
+    issued: at(row.issued_at),
+    mm: row.peak === null ? "" : String(Math.round(row.peak)),
+    total: row.total_mm === null ? "" : String(Math.round(row.total_mm)),
+    kmh: row.peak === null ? "" : String(Math.round(row.peak)),
+    chance: row.peak === null ? "" : String(Math.round(row.peak)),
+  };
+  return {
+    kind: "weather",
+    title: fill(title, values),
+    body: clip(fill(body, values)),
+    // The weather page, not the home screen: this is weather, and that is where the hours are.
+    url: row.locale === "th" ? "/weather" : `/${row.locale}/weather`,
+    // One advisory, one notification; a later one for the same place replaces it.
+    tag: `weather-${row.advisory_id}`,
+    sticky: false,
   };
 }
 

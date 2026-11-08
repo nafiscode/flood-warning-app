@@ -1,0 +1,64 @@
+/*
+ * The brief's own movement, on top of the sky that WeatherScene already animates.
+ *
+ * It is one entrance: the card rises a few pixels and its three lines follow, a tenth of a
+ * second apart, and then everything is still. Nothing in a safety app should keep moving once
+ * it has been read - and a card that pulses or slides on a loop costs battery on exactly the
+ * cheap phones Jaga is built for (CLAUDE.md, mobile-first).
+ *
+ * Plain CSS, no library, and all of it stops under "reduced motion".
+ */
+.card {
+  animation: brief-rise 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.line {
+  animation: brief-rise 380ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.d1 {
+  animation-delay: 90ms;
+}
+.d2 {
+  animation-delay: 180ms;
+}
+.d3 {
+  animation-delay: 270ms;
+}
+
+/* The temperature arrives a touch later and a touch bigger: it is the number people came for. */
+.temp {
+  animation: brief-temp 520ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: 60ms;
+}
+
+@keyframes brief-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes brief-temp {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Someone who has asked their phone for less movement gets the card, finished, at once. */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .line,
+  .temp {
+    animation: none;
+  }
+}

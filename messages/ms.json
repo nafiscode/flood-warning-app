@@ -2613,6 +2613,24 @@
       "impassable": "Tidak boleh dilalui"
     }
   },
+  "brief": {
+    "headMorning": "Cuaca hari ini di {place}",
+    "headAfternoon": "Baki hari ini di {place}",
+    "headEvening": "Malam ini di {place}",
+    "range": "{min}–{max}°",
+    "dry": "Tiada hujan dijangka untuk baki hari ini",
+    "rainOne": "Hujan dijangka {from}–{until}",
+    "rainTwo": "Hujan dijangka {from}–{until} dan {from2}–{until2}",
+    "rainMore": "Mungkin ada hujan lagi selepas itu",
+    "total": "Kira-kira {mm} mm hujan hari ini",
+    "chance": "Peluang hujan sehingga {percent}%",
+    "peak": "Kira-kira {mm} mm pada jam paling hujan",
+    "heavyRain": "Hujan lebat dijangka di sini",
+    "thunder": "Hujan petir dijangka",
+    "source": "Ramalan daripada Open-Meteo, data model jam {time}",
+    "open": "Lihat 48 jam seterusnya",
+    "summary": "{head}: {condition}, {min} hingga {max} darjah. {rain}"
+  },
   "weather": {
     "title": "Cuaca",
     "backHome": "Balik ke laman utama",
@@ -3575,6 +3593,14 @@
       },
       "cannot": "Bunyi amaran Jaga sendiri hanya dimainkan ketika aplikasi dibuka, kerana aplikasi web membuat bunyinya di dalam halaman yang terbuka. Ketika Jaga ditutup, telefon memainkan bunyi pemberitahuannya sendiri — dan mengetik pemberitahuan itu membuka Jaga, yang terus berbunyi.",
       "repeat": "Pemberitahuan “Pindah” mengetuk dua kali lagi dalam masa 20 saat, dan “Amaran” sekali lagi. Ia berhenti sebaik sahaja anda menolaknya atau membuka Jaga."
+    },
+    "weather": {
+      "heavyRainTitle": "Hujan lebat di {place}",
+      "heavyRainBody": "Hujan lebat dijangka {from}–{until}, kira-kira {mm} mm pada jam paling hujan dan {total} mm keseluruhannya · Ramalan Open-Meteo, data model jam {issued}. Ini pemberitahuan cuaca, bukan amaran banjir.",
+      "thunderTitle": "Hujan petir di {place}",
+      "thunderBody": "Hujan petir dijangka sekitar {from} · Ramalan Open-Meteo, data model jam {issued}. Ini pemberitahuan cuaca, bukan amaran banjir.",
+      "windTitle": "Angin kuat di {place}",
+      "windBody": "Tiupan angin sehingga {kmh} km/j dijangka {from}–{until} · Ramalan Open-Meteo, data model jam {issued}. Ini pemberitahuan cuaca, bukan amaran banjir."
     }
   },
   "journey": {

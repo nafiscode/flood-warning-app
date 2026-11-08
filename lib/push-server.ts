@@ -45,7 +45,9 @@ const drillTag = (locale: string) => DRILL_TAG[locale] ?? DRILL_TAG.th!;
 
 export type PushOutcome = { sent: number; failed: number; gone: number } | { skipped: string };
 
-function configured(): boolean {
+/** Whether this server holds the keys to send at all; also sets them on web-push. Shared with
+ * the severe-weather run (lib/weather-advisory-server.ts). */
+export function configured(): boolean {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const privateKey = process.env.VAPID_PRIVATE_KEY ?? "";
   if (!publicKey || !privateKey) return false;

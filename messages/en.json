@@ -2613,6 +2613,24 @@
       "impassable": "Not passable"
     }
   },
+  "brief": {
+    "headMorning": "Today's weather in {place}",
+    "headAfternoon": "The rest of today in {place}",
+    "headEvening": "Tonight in {place}",
+    "range": "{min}–{max}°",
+    "dry": "No rain expected for the rest of today",
+    "rainOne": "Rain expected {from}–{until}",
+    "rainTwo": "Rain expected {from}–{until} and {from2}–{until2}",
+    "rainMore": "More rain may follow after that",
+    "total": "About {mm} mm of rain today",
+    "chance": "Chance of rain up to {percent}%",
+    "peak": "About {mm} mm in the wettest hour",
+    "heavyRain": "Heavy rain is forecast here",
+    "thunder": "A thunderstorm is forecast",
+    "source": "Forecast by Open-Meteo, model data for {time}",
+    "open": "See the next 48 hours",
+    "summary": "{head}: {condition}, {min} to {max} degrees. {rain}"
+  },
   "weather": {
     "title": "Weather",
     "backHome": "Back to the home screen",
@@ -3575,6 +3593,14 @@
       },
       "cannot": "Jaga's own alert sound plays only while the app is open, because a web app makes its sound inside the open page. With Jaga closed the phone plays its own notification sound — and tapping that notification opens Jaga, which rings straight away.",
       "repeat": "An “evacuate” notification knocks twice more within 20 seconds, and a “warning” once more. It stops the moment you dismiss it or open Jaga."
+    },
+    "weather": {
+      "heavyRainTitle": "Heavy rain in {place}",
+      "heavyRainBody": "Heavy rain is forecast {from}–{until}, about {mm} mm in the wettest hour and {total} mm in all · Open-Meteo forecast, model data for {issued}. This is a weather notification, not a flood alert.",
+      "thunderTitle": "Thunderstorm in {place}",
+      "thunderBody": "A thunderstorm is forecast around {from} · Open-Meteo forecast, model data for {issued}. This is a weather notification, not a flood alert.",
+      "windTitle": "Strong wind in {place}",
+      "windBody": "Gusts up to {kmh} km/h are forecast {from}–{until} · Open-Meteo forecast, model data for {issued}. This is a weather notification, not a flood alert."
     }
   },
   "journey": {
