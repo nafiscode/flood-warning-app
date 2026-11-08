@@ -2625,8 +2625,11 @@
     "total": "About {mm} mm of rain today",
     "chance": "Chance of rain up to {percent}%",
     "peak": "About {mm} mm in the wettest hour",
-    "heavyRain": "Heavy rain is forecast here",
-    "thunder": "A thunderstorm is forecast",
+    "heavyRain": "Heavy rain is forecast {from}–{until}",
+    "thunder": "A thunderstorm is forecast around {from}–{until}",
+    "takeUmbrella": "If you have to go out, take an umbrella or a raincoat",
+    "heavyAdvice": "If you have to go out, allow extra time and avoid the heaviest hours",
+    "thunderAdvice": "During the storm, keep away from open ground and tall trees",
     "source": "Forecast by Open-Meteo, model data for {time}",
     "open": "See the next 48 hours",
     "summary": "{head}: {condition}, {min} to {max} degrees. {rain}"

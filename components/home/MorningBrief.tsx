@@ -113,12 +113,29 @@ export function MorningBriefView({
    * the wind gust is asked for by the hourly severe-weather run and is not in this payload.
    */
   const severe = pickAdvisory(advisoriesFor(aheadOf(hours, now)));
+  // Heavy rain and a thunderstorm are said with the hours they are expected, like the rain line:
+  // "this afternoon" is no use to someone deciding whether to set off now.
   const severeLine =
-    severe?.kind === "heavy_rain"
-      ? t("heavyRain")
-      : severe?.kind === "thunder"
-        ? t("thunder")
-        : null;
+    severe && (severe.kind === "heavy_rain" || severe.kind === "thunder")
+      ? t(severe.kind === "heavy_rain" ? "heavyRain" : "thunder", {
+          from: clock(severe.startsAt),
+          until: clock(severe.endsAt),
+        })
+      : null;
+  /*
+   * One plain, friendly line about the day (the owner, 9 Nov 2026). It is about getting wet, not
+   * about danger: advice for a flood is the alert's, and this card never carries a level. Said
+   * only when there is rain to be ready for - a dry day needs no advice, and an empty reassurance
+   * on a flood app is worse than silence (safety rule 10).
+   */
+  const advice =
+    severe?.kind === "thunder"
+      ? t("thunderAdvice")
+      : severe?.kind === "heavy_rain"
+        ? t("heavyAdvice")
+        : !brief.dry && brief.windows.length > 0
+          ? t("takeUmbrella")
+          : null;
   const degrees = (value: number | null) => (value === null ? "–" : String(Math.round(value)));
 
   return (
@@ -165,6 +182,11 @@ export function MorningBriefView({
               {brief.chance === null
                 ? ""
                 : ` · ${t("chance", { percent: Math.round(brief.chance) })}`}
+            </p>
+          )}
+          {advice && (
+            <p className={`${styles.line} ${styles.d3}`} data-brief-advice="true">
+              {advice}
             </p>
           )}
         </div>

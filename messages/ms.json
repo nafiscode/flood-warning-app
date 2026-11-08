@@ -2625,8 +2625,11 @@
     "total": "Kira-kira {mm} mm hujan hari ini",
     "chance": "Peluang hujan sehingga {percent}%",
     "peak": "Kira-kira {mm} mm pada jam paling hujan",
-    "heavyRain": "Hujan lebat dijangka di sini",
-    "thunder": "Hujan petir dijangka",
+    "heavyRain": "Hujan lebat dijangka {from}–{until}",
+    "thunder": "Hujan petir dijangka sekitar {from}–{until}",
+    "takeUmbrella": "Jika terpaksa keluar, bawa payung atau baju hujan",
+    "heavyAdvice": "Jika terpaksa keluar, beri masa lebih dan elakkan waktu paling lebat",
+    "thunderAdvice": "Semasa petir, jauhi kawasan lapang dan pokok besar",
     "source": "Ramalan daripada Open-Meteo, data model jam {time}",
     "open": "Lihat 48 jam seterusnya",
     "summary": "{head}: {condition}, {min} hingga {max} darjah. {rain}"

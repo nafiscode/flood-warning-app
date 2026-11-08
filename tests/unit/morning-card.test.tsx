@@ -78,9 +78,10 @@ describe("the morning weather card", () => {
     expect(getByText(/It is not a Jaga flood alert\./)).toBeTruthy();
   });
 
-  it("says heavy rain in words, with no level and no alert colour", () => {
+  it("says heavy rain in words, with the hours, no level and no alert colour", () => {
     const { container, getByText } = card([hour(14, HOUR_MM + 3)]);
-    expect(getByText("Heavy rain is forecast here")).toBeTruthy();
+    expect(getByText("Heavy rain is forecast 14:00–15:00")).toBeTruthy();
+    expect(getByText(/allow extra time and avoid the heaviest hours/)).toBeTruthy();
     expect(container.querySelector("[data-brief-severe='heavy_rain']")).toBeTruthy();
     // An alert level is shown by icon + text + colour; this card carries none of the three.
     expect(container.textContent).not.toMatch(/watch|warning|evacuate/i);
@@ -99,6 +100,13 @@ describe("the morning weather card", () => {
     // morning: the card is about the day, not about this minute.
     const look = SCENE_LOOKS[scene as keyof typeof SCENE_LOOKS];
     expect(look.drops ?? look.glass).toBeTruthy();
+  });
+
+  it("suggests an umbrella on an ordinary wet day, and nothing on a dry one", () => {
+    const wet = card([hour(14, 4), hour(15, 3)]);
+    expect(wet.getByText(/take an umbrella or a raincoat/)).toBeTruthy();
+    const dry = card([hour(9, 0), hour(10, 0)], Date.parse(day(6, 30)), 0);
+    expect(dry.container.querySelector("[data-brief-advice]")).toBeNull();
   });
 
   it("offers the full forecast, one tap away", () => {
