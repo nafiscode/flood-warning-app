@@ -21,8 +21,28 @@ import {
   type WeatherHour,
 } from "@/lib/weather";
 
-/** An hour counts as wet from here up: below it a model's trace of rain is not rain (lib/weather). */
-export const WINDOW_MM = DRY_MM;
+/**
+ * An hour counts as a spell of rain from here up. Not DRY_MM (0.1 mm, the model's trace): in a
+ * monsoon month almost every hour holds a trace, and a spell built on it runs from breakfast to
+ * midnight and tells nobody anything. One millimetre in an hour is rain you would want a coat
+ * for; anything under it is said as light rain without hours (the owner, 9 Nov 2026).
+ */
+export const WINDOW_MM = 1;
+
+/** Below this, in the hours ahead, the day is called dry: the model's own trace (lib/weather). */
+export const TRACE_MM = DRY_MM;
+
+/** The heaviest stretch is named to the hour, over at most this many hours. */
+export const HEAVY_HOURS = 3;
+
+/** A heaviest stretch worth naming holds at least this much rain. */
+export const HEAVY_MIN_MM = 2;
+
+/**
+ * From here up, the rain is spread over too much of the day to be given as times: the card says
+ * it rains on and off, and names the heaviest stretch instead.
+ */
+export const SPREAD_HOURS = 6;
 
 /** Two wet spells this close together are one spell, not two: nobody plans around a 60 min gap. */
 export const MERGE_GAP_HOURS = 1;
@@ -59,8 +79,17 @@ export type MorningBrief = {
   rainMm: number;
   /** The day's highest hourly chance of rain, percent, when the model gives one. */
   chance: number | null;
-  /** The spells of rain still ahead today; empty means none is expected. */
+  /** The spells of rain still ahead today, in time order; the two wettest when there are more. */
   windows: RainWindow[];
+  /**
+   * The heaviest stretch of the day, at most HEAVY_HOURS long: the hours to plan around. Null
+   * when the rain is too light or too even for one stretch to be worth naming.
+   */
+  heaviest: RainWindow | null;
+  /** The rain covers so much of the day that naming its hours says nothing (SPREAD_HOURS). */
+  spread: boolean;
+  /** Rain is expected, but all of it too light for a spell: said as light rain, without hours. */
+  trace: boolean;
   /** True when more spells were found than are named. */
   more: boolean;
   /** No rain expected in the hours still ahead. */
@@ -157,6 +186,47 @@ export function rainWindows(hours: WeatherHour[]): RainWindow[] {
   return spells;
 }
 
+/** The hours a run of spells covers in all, in hours. */
+export function spanHours(windows: RainWindow[]): number {
+  return windows.reduce((sum, w) => sum + (Date.parse(w.to) - Date.parse(w.from)) / 3_600_000, 0);
+}
+
+/**
+ * The wettest stretch of at most `maxHours` consecutive hours: where the rain is concentrated,
+ * which is what someone deciding when to go out actually needs. Hours must be next to each other
+ * in time, so a gap in the forecast cannot be read across. Null when the heaviest stretch there
+ * is holds less than HEAVY_MIN_MM: then there is no "heaviest", only rain.
+ */
+export function heaviestWindow(hours: WeatherHour[], maxHours = HEAVY_HOURS): RainWindow | null {
+  let best: WeatherHour[] = [];
+  let bestMm = 0;
+  for (let start = 0; start < hours.length; start += 1) {
+    const run: WeatherHour[] = [];
+    let total = 0;
+    for (let i = start; i < hours.length && run.length < maxHours; i += 1) {
+      const hour = hours[i]!;
+      const previous = run[run.length - 1];
+      if (previous && Date.parse(hour.at) - Date.parse(previous.at) !== 3_600_000) break;
+      run.push(hour);
+      total = Math.round((total + hour.rainMm) * 10) / 10;
+      if (total > bestMm) {
+        bestMm = total;
+        best = [...run];
+      }
+    }
+  }
+  const first = best[0];
+  const last = best[best.length - 1];
+  if (!first || !last || bestMm < HEAVY_MIN_MM) return null;
+  return {
+    from: first.at,
+    to: hourAfter(last.at),
+    peakMm: Math.max(...best.map((h) => h.rainMm)),
+    totalMm: bestMm,
+    group: best.map((h) => weatherGroup(h.code)).reduce(worseGroup),
+  };
+}
+
 /**
  * Today's brief for one place, from the forecast the app already holds.
  *
@@ -176,6 +246,15 @@ export function morningBrief(weather: Weather | null, now: number): MorningBrief
   });
   const day: WeatherDay | undefined = weather.days.find((d) => d.date === today) ?? weather.days[0];
   const spells = rainWindows(ahead);
+  // The two wettest spells, not the first two: on a day with a shower at breakfast and a
+  // downpour at four, the downpour is the one that must be named. Shown in time order.
+  const named = [...spells]
+    .sort((a, b) => b.totalMm - a.totalMm)
+    .slice(0, MAX_WINDOWS)
+    .sort((a, b) => Date.parse(a.from) - Date.parse(b.from));
+  const heaviest = heaviestWindow(ahead);
+  const spread = spanHours(spells) >= SPREAD_HOURS;
+  const wetAhead = ahead.some((hour) => hour.rainMm >= TRACE_MM);
   const wettest = ahead.reduce<WeatherGroup | null>((worst, hour) => {
     const group = weatherGroup(hour.code);
     if (!isWet(group)) return worst;
@@ -191,9 +270,16 @@ export function morningBrief(weather: Weather | null, now: number): MorningBrief
     minC: day?.minC ?? null,
     rainMm: Math.round((day?.rainMm ?? 0) * 10) / 10,
     chance: day?.chance ?? null,
-    windows: spells.slice(0, MAX_WINDOWS),
+    windows: named,
+    heaviest:
+      // Only where it adds something: a single short spell has already been named to the hour.
+      heaviest && (spread || spells.length > MAX_WINDOWS || spanHours(named) > HEAVY_HOURS + 1)
+        ? heaviest
+        : null,
+    spread,
+    trace: spells.length === 0 && wetAhead,
     more: spells.length > MAX_WINDOWS,
-    dry: spells.length === 0,
+    dry: !wetAhead,
     issuedAt: weather.at,
     timezone,
   };

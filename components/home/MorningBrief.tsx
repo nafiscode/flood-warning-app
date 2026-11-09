@@ -168,6 +168,16 @@ export function MorningBriefView({
             </div>
           </div>
           <p className={`${styles.line} ${styles.d2} font-medium`}>{rain}</p>
+          {/* Where the rain is concentrated, when the spell itself is too long to plan around.
+              Not drawn when the severe line below already names heavier hours. */}
+          {brief.heaviest && !severeLine && (
+            <p className={`${styles.line} ${styles.d2} font-medium`} data-brief-heaviest="true">
+              {t("rainMost", {
+                from: clock(brief.heaviest.from),
+                until: clock(brief.heaviest.to),
+              })}
+            </p>
+          )}
           {/* Severe weather is said in words here, never by colour: the alert palette means a
               level, and this card never carries one (safety rules 8 and 10). */}
           {severeLine && (
@@ -226,6 +236,11 @@ function rainLine(
   clock: (iso: string) => string,
 ): string {
   if (brief.dry) return t("dry");
+  // Rain, but all of it too light for an hour to be worth naming.
+  if (brief.trace) return t("rainTrace");
+  // Rain over most of the day: hours like "06:00-00:00" are true and useless. The heaviest
+  // stretch is named on its own line instead.
+  if (brief.spread) return t("rainSpread");
   const [first, second] = brief.windows;
   if (!first) return t("dry");
   const line =

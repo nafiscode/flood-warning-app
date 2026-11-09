@@ -109,6 +109,19 @@ describe("the morning weather card", () => {
     expect(dry.container.querySelector("[data-brief-advice]")).toBeNull();
   });
 
+  it("on a day of rain, says it rains on and off and names the heaviest hours", () => {
+    const allDay = [
+      ...[6, 7, 8, 9, 10, 11, 12, 13].map((h) => hour(h, 2)),
+      hour(14, 8),
+      hour(15, 9),
+      ...[16, 17, 18, 19, 20].map((h) => hour(h, 2)),
+    ];
+    const { container, getByText } = card(allDay, Date.parse(day(6, 30)), 40);
+    expect(getByText("Rain on and off for most of the day")).toBeTruthy();
+    expect(getByText("Heaviest around 13:00–16:00")).toBeTruthy();
+    expect(container.querySelector("[data-brief-heaviest]")).toBeTruthy();
+  });
+
   it("offers the full forecast, one tap away", () => {
     const { container } = card([hour(14, 6)]);
     const link = container.querySelector("[data-brief-open]")!;

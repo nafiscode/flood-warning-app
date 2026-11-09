@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { knocksFor, readPayload, weatherPayload, type WeatherDueRow } from "@/lib/push";
-import { dayPart, morningBrief, rainWindows, worseGroup } from "@/lib/morning-brief";
+import {
+  dayPart,
+  heaviestWindow,
+  morningBrief,
+  rainWindows,
+  SPREAD_HOURS,
+  worseGroup,
+} from "@/lib/morning-brief";
 import {
   advisoriesFor,
   aheadOf,
@@ -256,5 +263,89 @@ describe("the severe-weather notification", () => {
 
   it("is nothing for a kind of weather Jaga does not send", () => {
     expect(weatherPayload({ ...row, kind: "fog" }, words("th"))).toBeNull();
+  });
+});
+
+/**
+ * A monsoon day is wet from breakfast to midnight, and "rain 06:00-00:00" is true and useless
+ * (the owner, 9 Nov 2026). What the card must find is where the rain is concentrated.
+ */
+describe("a day of rain, and the hours that matter in it", () => {
+  /** Light rain all day with a downpour in the late afternoon. */
+  const monsoon = [
+    ...[6, 7, 8, 9, 10, 11, 12, 13].map((h) => hour(h, 0.4)),
+    hour(14, 1.2),
+    hour(15, 1.8),
+    hour(16, 7),
+    hour(17, 9),
+    hour(18, 6),
+    ...[19, 20, 21, 22, 23].map((h) => hour(h, 0.3)),
+  ];
+
+  it("does not stitch a day of traces into one long spell", () => {
+    const spells = rainWindows(monsoon);
+    // Only the hours with real rain in them count, not the model's 0.3-0.4 mm trace.
+    expect(spells).toHaveLength(1);
+    expect(spells[0]!.from).toBe(day(14));
+    expect(spells[0]!.to).toBe(day(19));
+  });
+
+  it("names the heaviest three hours inside a long wet afternoon", () => {
+    const brief = morningBrief(weather(monsoon), Date.parse(day(6, 30)))!;
+    expect(brief.dry).toBe(false);
+    // Five wet hours: the card still gives them, and says where the rain is concentrated.
+    expect(brief.windows).toHaveLength(1);
+    expect(brief.heaviest).toBeTruthy();
+    expect(brief.heaviest!.from).toBe(day(16));
+    expect(brief.heaviest!.to).toBe(day(19));
+    expect(brief.heaviest!.totalMm).toBe(22);
+  });
+
+  it("calls a spell of traces light rain, never a dry day", () => {
+    const brief = morningBrief(
+      weather([6, 7, 8, 9, 10].map((h) => hour(h, 0.3))),
+      Date.parse(day(6, 30)),
+    )!;
+    expect(brief.dry).toBe(false);
+    expect(brief.trace).toBe(true);
+    expect(brief.windows).toEqual([]);
+  });
+
+  it("names the two wettest spells, not the first two it meets", () => {
+    const brief = morningBrief(
+      weather([hour(7, 2), hour(10, 1.5), hour(13, 4), hour(16, 12)]),
+      Date.parse(day(6, 30)),
+    )!;
+    expect(brief.windows).toHaveLength(2);
+    // The 12 mm downpour at four and the 4 mm at one, in the order of the clock.
+    expect(brief.windows.map((w) => w.from)).toEqual([day(13), day(16)]);
+    expect(brief.more).toBe(true);
+  });
+
+  it("names no heaviest stretch when one short spell already says the hours", () => {
+    const brief = morningBrief(weather([hour(14, 3), hour(15, 4)]), Date.parse(day(6, 30)))!;
+    expect(brief.spread).toBe(false);
+    expect(brief.heaviest).toBeNull();
+    expect(brief.windows).toHaveLength(1);
+  });
+
+  it("reads no heaviest stretch across a gap in the forecast", () => {
+    // 14:00 and 16:00 are both wet, 15:00 is missing: the window may not span the hole.
+    const found = heaviestWindow([hour(14, 6), hour(16, 7)]);
+    expect(found!.from).toBe(day(16));
+    expect(found!.to).toBe(day(17));
+  });
+
+  it("calls a day spread only once the rain covers enough of it", () => {
+    const short = morningBrief(
+      weather([hour(13, 2), hour(14, 2), hour(15, 2)]),
+      Date.parse(day(6, 30)),
+    )!;
+    expect(short.spread).toBe(false);
+    const long = morningBrief(
+      weather(Array.from({ length: SPREAD_HOURS }, (_, i) => hour(12 + i, 2))),
+      Date.parse(day(6, 30)),
+    )!;
+    expect(long.spread).toBe(true);
   });
 });
