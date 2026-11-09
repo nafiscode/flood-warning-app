@@ -518,7 +518,12 @@ today makes none, because nothing is pushed.
 
 Both parts send the **dam release sound** of spec 4.8 and docs/brand.md: its own repeating sound, used for nothing else, to everyone in the zone — the tambons along the river below the dam and the lower reaches of the streams joining it.
 
-Part 2, after someone at the dam has agreed to use it: the dam operator role and its one screen (spec section 15). RLS tests for the role: it can send a dam release notice to the fixed zone and nothing else.
+Part 2, built ahead of the contact at the dam so it can be demonstrated to them (the owner,
+9 Nov 2026): the dam operator role and its one screen (spec section 15). `/authority/dam`, the
+`dam` capability, the admin's tie from a verified unit to a named dam, "the release has ended" at
+the same level, withdrawing one it sent itself, and a drill switch on both screens. RLS tests for
+the role in `tests/rls/dam-operator.test.ts`: it can send a dam release notice to the fixed zone
+and nothing else - including, deliberately, none of a rescue team's reads.
 
 ### A13: Impact record and public transparency (after launch)
 ```text

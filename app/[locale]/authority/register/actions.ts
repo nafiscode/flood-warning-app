@@ -8,7 +8,7 @@ import { pushUnitWaiting } from "@/lib/push-server";
 import { createClient } from "@/lib/supabase/server";
 
 const ORG_TYPES = ["government", "private", "nonprofit", "volunteer"];
-const CAPABILITIES = ["coordination", "rescue", "supplies", "planning", "support"];
+const CAPABILITIES = ["coordination", "rescue", "supplies", "planning", "support", "dam"];
 
 function field(form: FormData, name: string): string {
   const v = form.get(name);

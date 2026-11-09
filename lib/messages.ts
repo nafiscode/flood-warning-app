@@ -313,3 +313,20 @@ export function damReleaseMessages(messages: AbstractIntlMessages): AbstractIntl
     capabilities: { link: (all.capabilities as Messages).link! },
   };
 }
+
+/**
+ * The dam operator's own screen (A12 part 2). The same form as the admins', so it carries the
+ * admins' labels, plus the operator's own words and the "gates have closed" template.
+ */
+export function damOperatorMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  const all = messages as Messages;
+  const admin = all.admin as Messages;
+  const dam = all.dam as Messages;
+  return {
+    admin: { damRelease: admin.damRelease! },
+    damOperator: all.damOperator!,
+    dam: { release: dam.release!, end: dam.end!, operators: dam.operators! },
+    alert: { level: (all.alert as Messages).level! },
+    capabilities: { link: (all.capabilities as Messages).link! },
+  };
+}

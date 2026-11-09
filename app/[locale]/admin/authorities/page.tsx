@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DualTime } from "@/components/admin/DualTime";
 import { Link } from "@/i18n/navigation";
+import { localName } from "@/lib/places";
 import { createClient } from "@/lib/supabase/server";
 import {
   buttonPrimary,
@@ -14,7 +15,7 @@ import {
   input,
   label,
 } from "@/lib/ui";
-import { rejectUnit, suspendUnit, verifyUnit } from "./actions";
+import { linkDamOperator, rejectUnit, suspendUnit, verifyUnit } from "./actions";
 
 type Unit = {
   id: string;
@@ -79,6 +80,23 @@ export default async function AdminAuthorities({
       if (reason && !notes.has(entry.entity_id)) notes.set(entry.entity_id, reason);
     }
   }
+
+  /*
+   * A12 part 2: the dams, and which unit is tied to which. Only a unit that registered as a dam
+   * operator is offered the control, and only once it is verified - the database refuses the rest.
+   */
+  const [damRows, linkRows] = await Promise.all([
+    supabase.rpc("dam_map"),
+    supabase.from("dam_operator_units").select("dam_code, unit_id"),
+  ]);
+  const dams = ((damRows.data ?? []) as { code: string; name: Record<string, string> }[]).map(
+    (d) => ({ code: d.code, name: localName(d.name ?? {}, locale) }),
+  );
+  const damsOfUnit = new Map<string, string[]>();
+  for (const row of (linkRows.data ?? []) as { dam_code: string; unit_id: string }[]) {
+    damsOfUnit.set(row.unit_id, [...(damsOfUnit.get(row.unit_id) ?? []), row.dam_code]);
+  }
+  const damName = (code: string) => dams.find((d) => d.code === code)?.name ?? code;
 
   let contact: { poc_name: string; poc_phone: string } | null = null;
   if (units.some((u) => u.id === reveal)) {
@@ -170,7 +188,7 @@ export default async function AdminAuthorities({
         {unit.capabilities
           .map((c) =>
             tRegister(
-              `capability.${c as "coordination" | "rescue" | "supplies" | "planning" | "support"}.name`,
+              `capability.${c as "coordination" | "rescue" | "supplies" | "planning" | "support" | "dam"}.name`,
             ),
           )
           .join(", ")}
@@ -235,6 +253,56 @@ export default async function AdminAuthorities({
       </Link>
     );
 
+  /*
+   * The dam link (A12 part 2, 9 Nov 2026). An admin presses this after confirming with the dam
+   * that these are its people. Until it is pressed the unit can send nothing at all, which is
+   * what the "tied to no dam" line says; a wrong tie is undone with the same control.
+   */
+  const damBlock = (unit: Unit) => {
+    const tied = damsOfUnit.get(unit.id) ?? [];
+    return (
+      <div className="flex flex-col gap-2 border-t border-jaga-line pt-3" data-dam-operator-link>
+        <p className={label}>{t("authorities.damOperator")}</p>
+        <p className={hint}>{t("authorities.damOperatorHint")}</p>
+        <p>
+          {tied.length === 0
+            ? t("authorities.damOperatorNone")
+            : t("authorities.damOperatorLinked", { dams: tied.map(damName).join(", ") })}
+        </p>
+        {tied.map((code) => (
+          <form key={code} action={linkDamOperator} className="flex items-center gap-2">
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="unit" value={unit.id} />
+            <input type="hidden" name="dam" value={code} />
+            <input type="hidden" name="untie" value="yes" />
+            <button type="submit" className={buttonSecondary} data-untie={code}>
+              {t("authorities.damOperatorUnlink")} · {damName(code)}
+            </button>
+          </form>
+        ))}
+        <form action={linkDamOperator} className="flex flex-col gap-2">
+          <input type="hidden" name="locale" value={locale} />
+          <input type="hidden" name="unit" value={unit.id} />
+          <label className="sr-only" htmlFor={`dam-${unit.id}`}>
+            {t("authorities.damOperator")}
+          </label>
+          <select id={`dam-${unit.id}`} name="dam" className={input}>
+            {dams
+              .filter((d) => !tied.includes(d.code))
+              .map((d) => (
+                <option key={d.code} value={d.code}>
+                  {d.name}
+                </option>
+              ))}
+          </select>
+          <button type="submit" className={`${buttonSecondary} self-start`} data-tie={unit.id}>
+            {t("authorities.damOperatorLink")}
+          </button>
+        </form>
+      </div>
+    );
+  };
+
   // Turning a registration down. The team is told the reason, so the form says so.
   const rejectBlock = (unit: Unit) => (
     <details open={query.reject === unit.id}>
@@ -282,6 +350,11 @@ export default async function AdminAuthorities({
           {t("authorities.error.reason")}
         </p>
       )}
+      {query.done === "damLinked" && (
+        <p role="status" className={errorNotice}>
+          {t("authorities.damOperatorDone")}
+        </p>
+      )}
       {(query.done === "verified" || query.done === "rejected" || query.done === "suspended") && (
         <p role="status" className={errorNotice}>
           {t(`authorities.done.${query.done}`)}
@@ -319,6 +392,7 @@ export default async function AdminAuthorities({
               </details>
             </>
           )}
+          {unit.status === "verified" && unit.capabilities.includes("dam") && damBlock(unit)}
           {unit.status === "verified" && (
             <details>
               <summary className="min-h-tap cursor-pointer py-2 underline">

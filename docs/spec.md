@@ -795,7 +795,7 @@ whose own area, or one of the places they watch, is on that reservoir's own path
 province is not being in the water's way. Where two reservoirs can reach the same place, the home
 screen carries the larger one, and every reservoir is one tap away in the map's legend.
 
-- **Role.** A dam operator is an authority unit of its own kind, verified by an admin like any other unit. It has one power the other units lack: it can send a dam release notice.
+- **Role.** A dam operator is an authority unit of its own kind, verified by an admin like any other unit. It has one power the other units lack: it can send a dam release notice. Registering as one grants nothing by itself - the power exists only once an admin has tied the verified unit to a named dam, after confirming with the dam that these are its people. An admin unties it in one tap. And it is only that one power: a unit that *only* operates a dam is not a team in the field, so its coverage area opens none of the sensitive reads a rescue team has - no request for help, no requester's phone, no vulnerable household, no case board (safety rule 5, data minimisation). A unit that runs boats as well as a dam keeps everything a team has.
 - **The notice.** The operator enters when the gates open (or opened), the release in cubic metres per second, and optionally when it is expected to end. Nothing else is free text: the message comes from a reviewed template in Thai, Malay and English.
 - **Where it goes.** To a fixed zone (from S7): the tambons along the river below the dam, **and the lower reaches of the streams that join it**, where a rising main stem backs water up into the tributary instead of letting it drain. The operator cannot widen it. Everyone whose home or watched place is in the zone is notified at once, each with the arrival range for their own tambon; reminders follow as that time comes closer.
 - **Sound.** The notice carries the dam release sound of 4.8, its own and used for nothing else, with its own vibration pattern. It repeats, unlike every other alert sound: this is water released upstream minutes or hours before it arrives, and the first notification is the warning.
@@ -804,9 +804,10 @@ screen carries the larger one, and every reservoir is one tap away in the map's 
 - **Until an operator has joined**, admins send the same notice from the same template.
 - **Safety rules.** A person publishes every notice (rule 2). The estimate is always a range with its source and time (rule 8). The notice never replaces an alert level; the level for the zone is set by the template and can be raised by an admin.
 
-### Built so far (10 Oct 2026)
+### Built so far (9 Nov 2026)
 
-The map, the figures and the two tiers are built; the notice the operator sends is not.
+All of it: the map, the figures, the two tiers, the admins' screen (part 1, 13 Oct) and the dam
+operator's own screen (part 2, 9 Nov). What is left is not code - it is the contact at the dam.
 
 - **On the public map, always.** The dam, its main spillway and its outlet are marked and
   labelled, the reservoir is drawn faintly enough to read the tambon alert colours through, the
@@ -915,7 +916,28 @@ The map, the figures and the two tiers are built; the notice the operator sends 
 - **The feed lags by hours.** It is a record that trails reality, not a real-time warning, which
   is why the operator's own screen below matters.
 
-Open: who at the dam will use it (the owner makes the contact); whether the operator may also send the "release has ended" message; which geometry to keep once S7 steps 2–3 can be compared with OpenStreetMap's (the owner decided on 10 Oct that OSM's stays until then, and that both are to be shown side by side before anything is replaced).
+- **The operator's own screen** (added 9 Nov 2026, phase A12 part 2 complete). `/authority/dam`:
+  the same form as the admins' with their own dam filled in, the same reviewed template, the same
+  fixed zone, and the same three levels starting at warning (the owner, 9 Nov). The last line of
+  the notice names the dam rather than a Jaga admin, because safety rule 3 puts the issuer on
+  every alert. `operator_send_dam_release` checks that the caller holds that dam through the
+  admin's tie and is the unit's owner or an active dispatcher - a field member sends nothing - and
+  writes the send to `audit_log` under their own account. Jaga's admins are told at the same
+  moment: a queue in the bell and one push per notice.
+  - **"The release has ended"** (the owner's choice, 9 Nov). The dam is the only one who knows the
+    gates are shut, so it may say so - but closing them is **not** an all-clear. The water already
+    released is still travelling, and the furthest tambon is most of a day away, so the end
+    message supersedes the notice **at the same level**, keeps its zone and its arrival window,
+    and says in its own words that the level stands. Standing a level down remains an admin's act.
+    The operator may end a notice an admin sent for their dam; only an admin may withdraw one.
+  - **Withdrawing.** The operator can withdraw a notice it sent itself, while it is in force,
+    logged like the sending. It cannot withdraw one of Jaga's own.
+  - **A drill switch**, on this screen and (new) on the admins'. `is_drill` with the audience
+    `admins`: the real function, the real zone, the real template, and nobody outside Jaga's
+    admins sees or hears it. It is how the screen is demonstrated in a control room, and how the
+    admins' own path can finally be rehearsed. A sent drill never carries the template's words.
+
+Open: who at the dam will use it (the owner makes the contact); which geometry to keep once S7 steps 2–3 can be compared with OpenStreetMap's (the owner decided on 10 Oct that OSM's stays until then, and that both are to be shown side by side before anything is replaced).
 
 ## 16. Impact record and public transparency
 

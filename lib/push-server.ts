@@ -560,3 +560,86 @@ export async function pushUnitWaiting(unitId: string): Promise<PushOutcome> {
     return { skipped: "error" };
   }
 }
+
+const DAM_RELEASE_WORDS: Record<
+  string,
+  { title: string; body: string; ended: string; drill: string }
+> = {
+  th: th.adminTools.damRelease.push,
+  ms: ms.adminTools.damRelease.push,
+  en: en.adminTools.damRelease.push,
+};
+
+/**
+ * Tell the admins' phones that a dam's own operator has sent a release notice (A12 part 2,
+ * spec 15: "Admins. Told at the same moment").
+ *
+ * This one is different from the queues in the bell, which deliberately make no sound: this has
+ * already gone out to the public, by the owner's design of 9 Nov, and the admins are the people
+ * who can extend, supersede or cancel it. So it reaches a phone in a pocket, at high priority,
+ * once per notice - the database hands the addresses out once (dam_release_admin_push) and only
+ * for a notice the operator sent, never for an admin's own.
+ *
+ * A drill is pushed too, with words that say it was one: a drill nobody is told about proves
+ * nothing about this road, which is the whole reason the drill switch exists.
+ *
+ * It never throws. The notice is published whatever happens here, and it is in the bell.
+ */
+export async function pushDamReleaseAdmins(alertId: string): Promise<PushOutcome> {
+  try {
+    const token = gateToken();
+    if (!token || !configured()) return { skipped: "no_keys" };
+    const supabase = createPublicClient();
+    const { data, error } = await supabase.rpc("push_dam_release_admins", {
+      p_token: token,
+      p_alert: alertId,
+    });
+    if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
+    type Row = Target & {
+      dam_name: Record<string, string> | null;
+      level: string;
+      unit_name: string | null;
+      drill: boolean;
+      ended: boolean;
+    };
+    const gone: string[] = [];
+    let sent = 0;
+    let failed = 0;
+    await Promise.all(
+      (data as Row[]).map(async (row) => {
+        const words = DAM_RELEASE_WORDS[row.locale] ?? DAM_RELEASE_WORDS.th!;
+        const dam = row.dam_name?.[row.locale] ?? row.dam_name?.th ?? "";
+        const unit = row.unit_name ?? "";
+        const level = levelName(row.level as PushLevel, row.locale);
+        const body = (row.drill ? words.drill : row.ended ? words.ended : words.body)
+          .replace("{unit}", unit)
+          .replace("{dam}", dam)
+          .replace("{level}", level);
+        const payload = {
+          kind: "announcement",
+          title: words.title,
+          body,
+          url: `${row.locale === "th" ? "" : `/${row.locale}`}/admin/alerts`,
+          tag: `dam-release-${alertId}`,
+          sticky: false,
+        };
+        try {
+          await webpush.sendNotification(
+            { endpoint: row.endpoint, keys: row.keys },
+            JSON.stringify(payload),
+            { TTL: 6 * 3600, urgency: "high" },
+          );
+          sent++;
+        } catch (e) {
+          const status = (e as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) gone.push(row.endpoint);
+          else failed++;
+        }
+      }),
+    );
+    if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
+    return { sent, failed, gone: gone.length };
+  } catch {
+    return { skipped: "error" };
+  }
+}

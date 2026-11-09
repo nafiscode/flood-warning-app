@@ -69,3 +69,25 @@ export async function suspendUnit(form: FormData) {
   after(runPushTick);
   back(form, { done: "suspended" });
 }
+
+/**
+ * Tie a verified dam operator to the dam it may send release notices for, or untie it
+ * (A12 part 2, spec 15).
+ *
+ * This is the only thing that grants the one power no other unit has, and it is here rather than
+ * on the unit's own screen on purpose: a unit says at registration that it operates a dam, and an
+ * admin confirms with the dam itself before this is pressed. The database refuses a unit that is
+ * not verified, or did not register as a dam operator, and logs both the tying and the untying.
+ */
+export async function linkDamOperator(form: FormData) {
+  const unit = field(form, "unit");
+  const dam = field(form, "dam");
+  if (!UUID.test(unit) || dam === "") back(form, { error: "save" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc(
+    field(form, "untie") === "yes" ? "admin_unlink_dam_operator" : "admin_link_dam_operator",
+    { p_unit: unit, p_dam: dam },
+  );
+  if (error) back(form, { error: "save" });
+  back(form, { done: "damLinked" });
+}

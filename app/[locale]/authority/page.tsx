@@ -48,6 +48,29 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
       </section>
     );
   }
+  /*
+   * A dam operator and nothing else (A12 part 2, 9 Nov 2026). Their unit is verified like any
+   * other, but it is not a team in the field: it holds no case, is never offered one, and since
+   * this phase it is turned away from the case board in the database as well. So the console it
+   * opens is its own one screen, not an empty war room.
+   */
+  const damOnly = units.every((u) => u.capabilities.every((c) => c === "dam"));
+  const tDam = await getTranslations("damOperator");
+  if (damOnly) {
+    return (
+      <div className="flex flex-col gap-5">
+        <section className={card} data-dam-operator-console="true">
+          <h1 className="text-h3 font-bold text-jaga-ink">{tDam("title")}</h1>
+          <p>{tDam("lead")}</p>
+          <Link href="/authority/dam" className={buttonSecondary} data-dam-release-link="true">
+            {tDam("link")}
+          </Link>
+        </section>
+        <BackLink label={(await getTranslations("nav"))("backHome")} />
+      </div>
+    );
+  }
+
   const board = await readAuthorityBoard(session.userId);
   const tField = await getTranslations("fieldRescue");
   const tChecks = await getTranslations("placeChecks");
@@ -70,6 +93,12 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
       <Link href="/authority/places" className={buttonSecondary} data-place-checks-link="true">
         {tChecks("link")}
       </Link>
+      {/* A team that also operates a dam (an irrigation office that runs boats as well). */}
+      {units.some((u) => u.capabilities.includes("dam")) && (
+        <Link href="/authority/dam" className={buttonSecondary} data-dam-release-link="true">
+          {tDam("link")}
+        </Link>
+      )}
       {isOwner && (
         <Link href="/authority/team" className={buttonSecondary} data-team-link="true">
           {waiting > 0 ? tTeam("linkWaiting", { count: waiting }) : tTeam("link")}

@@ -1036,6 +1036,10 @@
       "staleAlerts": {
         "title": "Amaran melepasi masa kemas kini",
         "body": "{count, plural, other {# amaran masih berkuat kuasa telah melepasi masa kemas kini seterusnya. Orang ramai sudah nampak tandanya; anda boleh lanjutkan, ganti atau batalkan}}"
+      },
+      "operatorRelease": {
+        "title": "Pengendali empangan menghantar notis pelepasan",
+        "body": "{count, plural, one {# notis dihantar oleh pengendali empangan sendiri dan sudah disiarkan. Anda boleh melanjutkan, menggantikan atau membatalkannya} other {# notis dihantar oleh pengendali empangan sendiri dan sudah disiarkan. Anda boleh melanjutkan, menggantikan atau membatalkannya}}"
       }
     }
   },
@@ -1348,6 +1352,10 @@
       "supplies": {
         "name": "Agihan makanan dan air",
         "hint": "Menghantar makanan, air minuman dan barang keperluan kepada orang yang terkepung air, dan menerima permintaan mereka"
+      },
+      "dam": {
+        "name": "Pengendali empangan atau takungan",
+        "hint": "Mengawal pelepasan air empangan atau takungan dan mahu memberi amaran kepada kawasan hilir apabila pintu dibuka. Pentadbir Jaga akan memastikannya dengan empangan sebelum kuasa ini diberi"
       }
     },
     "coverage": {
@@ -1803,7 +1811,14 @@
         "verified": "Unit sudah diluluskan.",
         "rejected": "Pendaftaran ditolak. Pasukan sudah diberitahu.",
         "suspended": "Unit sudah digantung."
-      }
+      },
+      "damOperator": "Empangan yang dikendalikan",
+      "damOperatorHint": "Unit ini mendaftar sebagai pengendali empangan. Pilih empangan yang boleh dihantar notis pelepasannya. Unit yang tidak diikat kepada empangan tidak boleh menghantar apa-apa",
+      "damOperatorLink": "Ikat kepada empangan ini",
+      "damOperatorUnlink": "Buka ikatan",
+      "damOperatorNone": "Tidak diikat kepada mana-mana empangan, jadi tidak boleh menghantar apa-apa",
+      "damOperatorLinked": "Diikat kepada: {dams}",
+      "damOperatorDone": "Ikatan empangan telah disimpan"
     },
     "invitations": {
       "title": "Pentadbir dan jemputan",
@@ -1898,7 +1913,10 @@
       "cancelHint": "Gunakan jika ia dihantar tersilap. Notis hilang daripada aplikasi serta-merta.",
       "failed": "Notis tidak dapat dihantar. Sila semak angka dan masa sekali lagi.",
       "cancelFailed": "Notis tidak dapat dibatalkan.",
-      "noDam": "Tiada empangan dalam pangkalan data lagi."
+      "noDam": "Tiada empangan dalam pangkalan data lagi.",
+      "drill": "Latihan: hantar kepada pentadbir Jaga sahaja",
+      "drillHint": "Orang ramai tidak melihat dan tidak diberitahu apa-apa. Jalan dan templat yang sebenar digunakan; perkataan latihan diganti dengan teks latihan yang telah disemak",
+      "drillBadge": "Latihan"
     },
     "alerts": {
       "title": "Amaran",
@@ -2968,7 +2986,8 @@
       "act": "Angkat barang dan dokumen penting ke tempat tinggi, sediakan beg kecemasan dan telefon, alihkan kenderaan ke tempat tinggi, dan ikuti pengumuman. Jika anda perlukan bantuan, hubungi 1784 atau tekan butang bantuan dalam aplikasi.",
       "estimate": "Julat masa ini ialah anggaran daripada stesen paras air, bukan ramalan.",
       "issuer": "Dikeluarkan oleh pentadbir Jaga daripada angka pelepasan {operator}.",
-      "reason": "{dam} melepaskan {cms} m³/s sejak {time}"
+      "reason": "{dam} melepaskan {cms} m³/s sejak {time}",
+      "issuerOperator": "Dikeluarkan terus oleh {operator}, pengendali empangan itu, dan disiarkan melalui Jaga."
     },
     "readout": {
       "title": "Bacaan terkini yang diterbitkan",
@@ -3002,6 +3021,15 @@
     },
     "operators": {
       "rid": "Jabatan Pengairan Diraja (RID)"
+    },
+    "end": {
+      "title": "{dam} telah menutup pintu pelepasan",
+      "body": "{dam} berhenti melepaskan air pada {time}. Tiada lagi air masuk ke {river} dari empangan.",
+      "still": "Notis ini masih berkuat kuasa pada tahap yang sama. Air yang sudah dilepaskan masih bergerak turun sungai, dan paras air di hilir empangan masih boleh naik.",
+      "window": "Julat masa air dijangka tiba tidak berubah: {from} hingga {to}.",
+      "act": "Jangan turunkan barang semula dahulu. Ikut pengumuman sampai pentadbir Jaga mengatakan keadaan sudah kembali biasa. Jika perlu bantuan, telefon 1784 atau tekan minta bantuan dalam aplikasi.",
+      "estimate": "Julat masa ini ialah anggaran daripada stesen paras air, bukan ramalan.",
+      "reason": "{dam} menutup pintu pelepasan pada {time}; tahap amaran masih berkuat kuasa"
     }
   },
   "alertConsole": {
@@ -3476,6 +3504,14 @@
       "push": {
         "title": "Jaga: sebuah pasukan menunggu pengesahan",
         "body": "{unit} telah mendaftar. Ia menunggu anda mengesahkannya."
+      }
+    },
+    "damRelease": {
+      "push": {
+        "title": "Jaga: pengendali empangan menghantar notis pelepasan",
+        "body": "{unit} menghantar notis {level} untuk {dam}. Notis itu sudah disiarkan.",
+        "ended": "{unit} memberitahu {dam} telah menutup pintu pelepasan. Tahap itu masih berkuat kuasa.",
+        "drill": "Latihan: {unit} berlatih menghantar notis untuk {dam}. Orang ramai tidak menerima apa-apa."
       }
     }
   },
@@ -4197,7 +4233,7 @@
     "operator": {
       "note": "Skrin yang akan digunakan oleh pengendali empangan untuk memberi notis pelepasan air.",
       "lead": "Pengendali mengisi bila pintu air dibuka, berapa banyak air dilepaskan, dan bila dijangka tamat; ayatnya datang daripada templat yang telah disemak. Notis dihantar serta-merta kepada semua orang dalam zon hilir empangan, dan pentadbir Jaga dimaklumkan pada masa yang sama serta boleh melanjutkan atau membatalkannya.",
-      "notYet": "Belum ada sesiapa boleh mendaftar sebagai pengendali empangan sehingga wakil di empangan bersetuju.",
+      "notYet": "Pengendali empangan boleh mendaftar sekarang. Skrin sebenar ada di /authority/dam dan hanya terbuka untuk unit yang disahkan dan diikat kepada sebuah empangan; ini pratonton dan butangnya tidak menghantar apa-apa.",
       "send": "Hantar notis pelepasan air",
       "sent": "Pratonton: tiada apa-apa dihantar. Pada skrin sebenar, notis ini akan dikeluarkan untuk zon itu serta-merta, dan pentadbir akan melihatnya pada masa yang sama."
     },
@@ -6401,5 +6437,40 @@
     "error": {
       "save": "Tidak dapat disimpan. Cuba lagi."
     }
+  },
+  "damOperator": {
+    "title": "Hantar notis pelepasan",
+    "lead": "Notis ini terus sampai kepada semua orang di laluan air di hilir empangan. Perkataannya datang daripada templat yang telah disemak dalam tiga bahasa; anda mengisi angka dan masa sahaja, kemudian membaca notis itu sebelum menghantarnya.",
+    "unit": "Unit: {unit}",
+    "notLinked": {
+      "title": "Akaun ini tidak diikat kepada mana-mana empangan",
+      "body": "Skrin ini untuk pengendali empangan yang unitnya telah disahkan dan diikat kepada sebuah empangan oleh pentadbir Jaga. Jika anda mengendalikan empangan, daftarkan unit anda dan pilih “Pengendali empangan atau takungan”.",
+      "register": "Daftarkan unit"
+    },
+    "noZone": "Empangan yang diikat kepada anda belum mempunyai laluan air dalam sistem. Sila hubungi pentadbir Jaga.",
+    "send": "Hantar notis ke kawasan hilir empangan",
+    "sendDrill": "Hantar sebagai latihan (pentadbir Jaga sahaja)",
+    "sent": "Dihantar pada {time}. Pentadbir Jaga diberitahu pada saat yang sama.",
+    "sentDrill": "Latihan dihantar pada {time}. Orang ramai tidak menerima apa-apa.",
+    "failed": "Notis tidak dihantar. Periksa angka dan masa, kemudian cuba lagi.",
+    "inForce": "Notis yang berkuat kuasa",
+    "inForceNone": "Tiada notis pelepasan yang berkuat kuasa",
+    "inForceRow": "{level} · {cms} m³/s sejak {time} · {tambons} mukim",
+    "endedRow": "Pintu ditutup pada {time} · tahap {level} masih berkuat kuasa · {tambons} mukim",
+    "byAdmin": "Dihantar oleh pentadbir Jaga; tidak boleh diubah dari skrin ini",
+    "issuedAt": "Dihantar pada {time}",
+    "end": "Beritahu pintu pelepasan telah ditutup",
+    "endAt": "Pintu ditutup pada",
+    "endHint": "Notis kekal berkuat kuasa pada tahap yang sama, kerana air yang sudah dilepaskan masih dalam perjalanan. Mengatakan keadaan sudah kembali biasa ialah tugas pentadbir Jaga.",
+    "ended": "Penutupan diumumkan pada {time}",
+    "endFailed": "Penutupan tidak diumumkan",
+    "withdraw": "Tarik balik notis ini",
+    "withdrawHint": "Gunakan ini jika notis dihantar secara tersilap. Notis akan hilang dari aplikasi semua orang serta-merta.",
+    "withdrawn": "Notis ditarik balik pada {time}",
+    "withdrawFailed": "Notis tidak ditarik balik",
+    "cancelledAt": "Ditarik balik pada {time}",
+    "drillBadge": "Latihan",
+    "adminsTold": "Pentadbir Jaga diberitahu sebaik sahaja anda menghantar, dan boleh melanjutkan, menggantikan atau membatalkan notis itu.",
+    "link": "Notis pelepasan"
   }
 }

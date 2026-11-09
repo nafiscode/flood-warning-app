@@ -15,7 +15,7 @@ import {
 } from "@/lib/dam-release";
 import { localName } from "@/lib/places";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
-import { buttonPrimary, card, hint, input, label } from "@/lib/ui";
+import { buttonPrimary, card, checkBox, checkRow, hint, input, label } from "@/lib/ui";
 
 export type DamForRelease = {
   code: string;
@@ -47,16 +47,24 @@ export function DamReleaseForm({
   nowValue,
   nextUpdateValue,
   operatorSend,
+  operatorSendDrill,
+  variant = "admin",
 }: {
   dams: DamForRelease[];
   send: (form: FormData) => void;
   /**
-   * The dam operator's own screen (spec 15; previewed for admins on 14 Oct): their one dam, and
-   * only what an operator enters - when the gates open, how much, until when. The level is the one
-   * decided for every release (Warning, 13 Oct) and the next update is set for them. The words
-   * are this button's label.
+   * The dam operator's own screen (spec 15, built 9 Nov 2026 as A12 part 2). The same four
+   * figures and the same three levels an admin has - the owner chose that on 9 Nov, so there is
+   * one rule to teach - with their own dam filled in and the issuer line that says the dam sent
+   * it. These two are the button's labels, the second for when the drill switch is on.
    */
   operatorSend?: string;
+  operatorSendDrill?: string;
+  /**
+   * Who is at the keyboard. It changes three things and nothing else: which dams the select
+   * offers (the server has already narrowed them), the last line of the notice, and the button.
+   */
+  variant?: "admin" | "operator";
   /** Bangkok wall-clock defaults, computed on the server so the first paint matches. */
   nowValue: string;
   nextUpdateValue: string;
@@ -72,6 +80,14 @@ export function DamReleaseForm({
   const [cms, setCms] = useState(dam?.outflowCms ? String(Math.round(dam.outflowCms)) : "");
   const [end, setEnd] = useState("");
   const [level, setLevel] = useState<ReleaseLevel>(DEFAULT_RELEASE_LEVEL);
+  /**
+   * The drill switch (the owner, 9 Nov 2026). Off every time the screen is opened: a switch that
+   * remembered it was on is a way to rehearse a real release by accident, which is the one
+   * mistake this whole screen is built to make impossible.
+   */
+  const [drill, setDrill] = useState(false);
+  const operator = variant === "operator";
+  const onlyDam = dams.length === 1;
 
   if (!dam) return <p className={hint}>{t("damRelease.noDam")}</p>;
 
@@ -89,6 +105,7 @@ export function DamReleaseForm({
           releaseCms,
           expectedEndAt: bangkokInput(end),
           onset: zoneWindow(dam.arrivals, gatesAt),
+          byOperator: operator,
         })
       : null;
 
@@ -97,35 +114,40 @@ export function DamReleaseForm({
       action={send}
       className="flex flex-col gap-4"
       data-dam-release-form
-      data-operator={operatorSend ? "true" : undefined}
+      data-operator={operator ? "true" : undefined}
     >
       <input type="hidden" name="notice" value={dam.noticeId ?? ""} />
-      {operatorSend && (
+      {/*
+       * One dam: its name, not a chooser with a single entry. A control room holding one
+       * structure should not have to pick it, and most do hold exactly one. Two or more (the
+       * irrigation office holds four of the six reservoirs) and the chooser comes back, offering
+       * only the dams the server already narrowed to this account.
+       */}
+      {onlyDam ? (
         <>
           <input type="hidden" name="dam" value={dam.code} />
-          <input type="hidden" name="level" value={DEFAULT_RELEASE_LEVEL} />
-          <input type="hidden" name="nextUpdate" value={nextUpdateValue} />
           <p className="font-bold text-jaga-ink">{localName(dam.name, locale)}</p>
         </>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <label className={label} htmlFor="dam">
+            {t("damRelease.dam")}
+          </label>
+          <select
+            id="dam"
+            name="dam"
+            className={input}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          >
+            {dams.map((d) => (
+              <option key={d.code} value={d.code}>
+                {localName(d.name, locale)}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
-      <div className={`flex flex-col gap-1 ${operatorSend ? "hidden" : ""}`}>
-        <label className={label} htmlFor="dam">
-          {t("damRelease.dam")}
-        </label>
-        <select
-          id="dam"
-          name={operatorSend ? undefined : "dam"}
-          className={input}
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-        >
-          {dams.map((d) => (
-            <option key={d.code} value={d.code}>
-              {localName(d.name, locale)}
-            </option>
-          ))}
-        </select>
-      </div>
 
       <div className="flex flex-col gap-1">
         <label className={label} htmlFor="gatesOpenAt">
@@ -176,13 +198,13 @@ export function DamReleaseForm({
         />
       </div>
 
-      <fieldset className={`flex flex-col gap-2 ${operatorSend ? "hidden" : ""}`}>
+      <fieldset className="flex flex-col gap-2">
         <legend className={label}>{t("damRelease.level")}</legend>
         {RELEASE_LEVELS.map((l) => (
           <label key={l} className="flex min-h-tap items-center gap-3">
             <input
               type="radio"
-              name={operatorSend ? undefined : "level"}
+              name="level"
               value={l}
               checked={level === l}
               onChange={() => setLevel(l)}
@@ -194,15 +216,15 @@ export function DamReleaseForm({
         <p className={hint}>{t("damRelease.levelHint")}</p>
       </fieldset>
 
-      <div className={`flex flex-col gap-1 ${operatorSend ? "hidden" : ""}`}>
+      <div className="flex flex-col gap-1">
         <label className={label} htmlFor="nextUpdate">
           {t("damRelease.nextUpdate")}
         </label>
         <input
           id="nextUpdate"
-          name={operatorSend ? undefined : "nextUpdate"}
+          name="nextUpdate"
           type="datetime-local"
-          required={!operatorSend}
+          required
           className={input}
           defaultValue={nextUpdateValue}
         />
@@ -228,6 +250,27 @@ export function DamReleaseForm({
         )}
       </div>
 
+      {/*
+       * The drill switch (the owner, 9 Nov 2026). Everything about this send is real except who
+       * hears it: the same function, the same zone, the same template, and the admins alone at
+       * the far end. It is how the people at the dam can press this button in their control room
+       * in front of somebody, and how the admins' own screen can finally be rehearsed.
+       */}
+      <label className={checkRow} data-dam-release-drill>
+        <input
+          type="checkbox"
+          name="drill"
+          value="yes"
+          checked={drill}
+          onChange={(e) => setDrill(e.target.checked)}
+          className={checkBox}
+        />
+        <span>
+          {t("damRelease.drill")}
+          <span className={`block ${hint}`}>{t("damRelease.drillHint")}</span>
+        </span>
+      </label>
+
       <div className="flex flex-col gap-2">
         <p className={label}>{t("damRelease.preview")}</p>
         <p className={hint}>{t("damRelease.previewHint")}</p>
@@ -240,7 +283,9 @@ export function DamReleaseForm({
       </div>
 
       <button type="submit" className={`${buttonPrimary} self-start`} disabled={!preview}>
-        {operatorSend ?? t("damRelease.send")}
+        {operator
+          ? ((drill ? operatorSendDrill : operatorSend) ?? t("damRelease.send"))
+          : t("damRelease.send")}
       </button>
     </form>
   );

@@ -1036,6 +1036,10 @@
       "staleAlerts": {
         "title": "An alert is past its update time",
         "body": "{count, plural, one {# alert still in force is past its next-update time. People already see the marker; you can extend, replace or cancel it} other {# alerts still in force are past their next-update time. People already see the marker; you can extend, replace or cancel them}}"
+      },
+      "operatorRelease": {
+        "title": "A dam operator has sent a release notice",
+        "body": "{count, plural, one {# notice was sent by the dam's own operator and is already published. You can extend, replace or cancel it} other {# notices were sent by the dams' own operators and are already published. You can extend, replace or cancel them}}"
       }
     }
   },
@@ -1348,6 +1352,10 @@
       "supplies": {
         "name": "Food and water distribution",
         "hint": "Brings food, drinking water and essentials to people cut off by the water, and receives their requests"
+      },
+      "dam": {
+        "name": "Dam or reservoir operator",
+        "hint": "Controls the release from a dam or reservoir and wants to warn the area downstream when the gates open. A Jaga admin confirms this with the dam before the power is granted"
       }
     },
     "coverage": {
@@ -1803,7 +1811,14 @@
         "verified": "Unit approved.",
         "rejected": "Registration turned down. The team has been told.",
         "suspended": "Unit suspended."
-      }
+      },
+      "damOperator": "Dams it operates",
+      "damOperatorHint": "This unit registered as a dam operator. Choose the dam it may send release notices for. A unit tied to no dam can send nothing",
+      "damOperatorLink": "Tie it to this dam",
+      "damOperatorUnlink": "Untie",
+      "damOperatorNone": "Tied to no dam, so it can send nothing",
+      "damOperatorLinked": "Tied to: {dams}",
+      "damOperatorDone": "The dam link was saved"
     },
     "invitations": {
       "title": "Admins and invitations",
@@ -1898,7 +1913,10 @@
       "cancelHint": "Use this if it went out in error. It leaves the app at once.",
       "failed": "The notice could not be sent. Check the figures and times.",
       "cancelFailed": "The notice could not be withdrawn.",
-      "noDam": "There is no dam in the database yet."
+      "noDam": "There is no dam in the database yet.",
+      "drill": "Drill: send to Jaga admins only",
+      "drillHint": "The public sees nothing and is told nothing. The real road and the real template are used; a drill's words are replaced by the reviewed drill wording",
+      "drillBadge": "Drill"
     },
     "alerts": {
       "title": "Alerts",
@@ -2968,7 +2986,8 @@
       "act": "Move valuables and documents up high, get your go-bag and phone ready, move vehicles to higher ground, and follow the announcements. If you need help, call 1784 or press for help in the app.",
       "estimate": "The times are estimates from the river gauges, not a forecast.",
       "issuer": "Issued by a Jaga admin from the release figures of {operator}.",
-      "reason": "{dam} releasing {cms} m³/s since {time}"
+      "reason": "{dam} releasing {cms} m³/s since {time}",
+      "issuerOperator": "Issued directly by {operator}, which operates the dam, and published through Jaga."
     },
     "readout": {
       "title": "Latest figures published",
@@ -3002,6 +3021,15 @@
     },
     "operators": {
       "rid": "Royal Irrigation Department (RID)"
+    },
+    "end": {
+      "title": "{dam} has closed its gates",
+      "body": "{dam} stopped releasing water at {time}. No more water is entering the {river} from the dam.",
+      "still": "This notice still stands at the same level. The water already released is still travelling down the river, and the level below the dam can still rise.",
+      "window": "The expected arrival window is unchanged: {from} to {to}.",
+      "act": "Do not move things back down yet. Follow the announcements until a Jaga admin says it is back to normal. If you need help, call 1784 or press for help in the app.",
+      "estimate": "The times are estimates from the river gauges, not a forecast.",
+      "reason": "{dam} closed its gates at {time}; the alert level still stands"
     }
   },
   "alertConsole": {
@@ -3476,6 +3504,14 @@
       "push": {
         "title": "Jaga: a team is waiting to be verified",
         "body": "{unit} has registered. It is waiting for you to verify it."
+      }
+    },
+    "damRelease": {
+      "push": {
+        "title": "Jaga: a dam operator has sent a release notice",
+        "body": "{unit} sent a {level} notice for {dam}. It is already published.",
+        "ended": "{unit} says {dam} has closed its gates. The level still stands.",
+        "drill": "Drill: {unit} rehearsed a notice for {dam}. The public got nothing."
       }
     }
   },
@@ -4197,7 +4233,7 @@
     "operator": {
       "note": "The screen a dam operator would use to announce a release.",
       "lead": "The operator enters when the gates open, how much water is released and when it is expected to end; the words come from the reviewed template. The notice goes out at once to everyone in the zone below the dam, and Jaga's admins are told at the same moment and can extend or cancel it.",
-      "notYet": "Nobody can register as a dam operator yet: this waits for a contact at the dam to agree.",
+      "notYet": "A dam operator can register now. The real screen is at /authority/dam and opens only for a unit that is verified and tied to a dam; this is a preview and the button sends nothing.",
       "send": "Send the release notice",
       "sent": "Preview: nothing was sent. On the real screen this notice would be published for the zone at once, and the admins would see it at the same time."
     },
@@ -6401,5 +6437,40 @@
     "error": {
       "save": "It could not be saved. Try again."
     }
+  },
+  "damOperator": {
+    "title": "Send the release notice",
+    "lead": "This notice reaches everyone in the water's path below the dam at once. The words come from a reviewed template in all three languages; you enter only the figures and the times, then read the notice before sending it.",
+    "unit": "Unit: {unit}",
+    "notLinked": {
+      "title": "This account is not tied to a dam",
+      "body": "This screen is for a dam's operator whose unit a Jaga admin has verified and tied to a dam. If you operate a dam, register your unit and choose “Dam or reservoir operator”.",
+      "register": "Register a unit"
+    },
+    "noZone": "The dam you are tied to has no water path in the system yet. Please contact a Jaga admin.",
+    "send": "Send the notice to the area below the dam",
+    "sendDrill": "Send as a drill (Jaga admins only)",
+    "sent": "Sent at {time}. Jaga's admins were told at the same moment.",
+    "sentDrill": "The drill was sent at {time}. The public got nothing.",
+    "failed": "It was not sent. Check the figures and the times, and try again.",
+    "inForce": "Notices in force",
+    "inForceNone": "No release notice is in force",
+    "inForceRow": "{level} · {cms} m³/s since {time} · {tambons} tambons",
+    "endedRow": "Gates closed at {time} · the {level} level still stands · {tambons} tambons",
+    "byAdmin": "Sent by a Jaga admin; it cannot be changed from this screen",
+    "issuedAt": "Sent at {time}",
+    "end": "Say the gates have closed",
+    "endAt": "The gates closed at",
+    "endHint": "The notice stays in force at the same level, because the water already released is still on its way. Saying it is back to normal is a Jaga admin's job.",
+    "ended": "The closing was announced at {time}",
+    "endFailed": "The closing was not announced",
+    "withdraw": "Withdraw this notice",
+    "withdrawHint": "Use this if it was sent in error. It leaves everyone's app at once.",
+    "withdrawn": "The notice was withdrawn at {time}",
+    "withdrawFailed": "It was not withdrawn",
+    "cancelledAt": "Withdrawn at {time}",
+    "drillBadge": "Drill",
+    "adminsTold": "Jaga's admins are told the moment you send, and can extend, replace or cancel the notice.",
+    "link": "Release notice"
   }
 }

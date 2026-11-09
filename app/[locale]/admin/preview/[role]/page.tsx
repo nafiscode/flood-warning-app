@@ -210,7 +210,9 @@ export default async function RolePreview({
       );
     }
     // The dam operator: the real dams and figures, the reviewed template, a button that sends
-    // nothing. Bang Lang first, the dam the operator's screen was planned for.
+    // nothing. Bang Lang first, the dam the operator's screen was planned for. The real screen
+    // exists since 9 Nov (A12 part 2, /authority/dam); this stays as it was, because an admin
+    // cannot open the operator's own screen - that needs a verified unit tied to a dam.
     const dams = await readDamsForRelease(await createClient());
     const dam = dams.find((d) => d.code === "bang_lang") ?? dams[0];
     const at = new Date(now);
@@ -230,7 +232,9 @@ export default async function RolePreview({
               send={previewOperatorSend.bind(null, locale)}
               nowValue={bangkokValue(at)}
               nextUpdateValue={bangkokValue(new Date(now + 6 * 3_600_000))}
+              variant="operator"
               operatorSend={t("operator.send")}
+              operatorSendDrill={t("operator.send")}
             />
           </NextIntlClientProvider>
         </section>

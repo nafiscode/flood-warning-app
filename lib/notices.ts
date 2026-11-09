@@ -101,6 +101,7 @@ export const ADMIN_QUEUES = [
   "duplicates",
   "unconfirmed",
   "staleAlerts",
+  "operatorRelease",
 ] as const;
 export type AdminQueue = (typeof ADMIN_QUEUES)[number];
 
@@ -113,6 +114,9 @@ export const ADMIN_QUEUE_HREF: Record<AdminQueue, string> = {
   duplicates: "/admin/duplicates",
   unconfirmed: "/admin/war-room",
   staleAlerts: "/admin/alerts",
+  // Already sent, by the dam's own operator: the admin reads it, and extends, supersedes or
+  // cancels it from the alert console (A12 part 2, 9 Nov).
+  operatorRelease: "/admin/alerts",
 };
 
 /** One queue, as admin_attention() gives it: how many wait, and the newest of them. */

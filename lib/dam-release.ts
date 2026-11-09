@@ -23,6 +23,21 @@ export type ReleaseInput = {
   expectedEndAt: Date | null;
   /** When the water is expected to start rising, nearest place to furthest. */
   onset: { from: Date; to: Date } | null;
+  /**
+   * Who is sending it (A12 part 2). Safety rule 3 puts the issuer on every alert, so the last
+   * line of the notice has to be true: a notice the dam sent itself does not say a Jaga admin
+   * issued it.
+   */
+  byOperator?: boolean;
+};
+
+/** The end message's figures. The window is the one the notice it replaces already carried. */
+export type ReleaseEndInput = {
+  damName: string;
+  river: string;
+  operator: string;
+  gatesClosedAt: Date;
+  onset: { from: Date; to: Date } | null;
 };
 
 /** What `createTranslator` gives, narrowed to what this file needs. */
@@ -53,8 +68,42 @@ export function releaseText(say: Say, time: SayTime, input: ReleaseInput): strin
   parts.push(say("release.act"));
   parts.push(say("release.estimate"));
   // The agency in full, in the language this copy of the notice is being written in.
-  parts.push(say("release.issuer", { operator: operatorName(input.operator, say) }));
+  parts.push(
+    say(input.byOperator ? "release.issuerOperator" : "release.issuer", {
+      operator: operatorName(input.operator, say),
+    }),
+  );
   return parts.join("\n\n");
+}
+
+/**
+ * "The gates are shut" (A12 part 2, the owner's choice of 9 Nov 2026).
+ *
+ * The one message in Jaga that most needs reading twice before it is written, because the easy
+ * version of it is wrong. Closing the gates is not an all-clear: the water that left while they
+ * were open is still coming down the river, and the furthest tambon in Bang Lang's zone is most
+ * of a day away. So these words say what happened at the dam and then say, plainly, that the
+ * level has not changed and the water is still on its way. The level itself is carried over by
+ * the database, which is where that rule is enforced (safety rule 3).
+ */
+export function releaseEndText(say: Say, time: SayTime, input: ReleaseEndInput): string {
+  const parts = [
+    say("end.title", { dam: input.damName }),
+    say("end.body", { dam: input.damName, time: time(input.gatesClosedAt), river: input.river }),
+    say("end.still"),
+  ];
+  if (input.onset) {
+    parts.push(say("end.window", { from: time(input.onset.from), to: time(input.onset.to) }));
+  }
+  parts.push(say("end.act"));
+  parts.push(say("end.estimate"));
+  // Only the dam's own operator can send this one, so the issuer line is never the admins'.
+  parts.push(say("release.issuerOperator", { operator: operatorName(input.operator, say) }));
+  return parts.join("\n\n");
+}
+
+export function releaseEndReason(say: Say, time: SayTime, input: ReleaseEndInput): string {
+  return say("end.reason", { dam: input.damName, time: time(input.gatesClosedAt) });
 }
 
 /** The one line that goes in the alert's `reason`, which safety rule 3 puts on every screen. */

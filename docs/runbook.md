@@ -40,7 +40,7 @@ feed stopped, and the automated alarm never fires on old readings (it needs two 
 | Source | What breaks | What the admin does |
 | --- | --- | --- |
 | ThaiWater gauges (`jaga-gauge-readings`) | Gauge figures go grey ("no recent data"); the automated alarm stays quiet for those gauges. RID's gauges are often 6–9 h behind on a normal day; that alone is not an outage. | Check thaiwater.net in a browser. If gauges in your zone are stale during rain, watch the river by other means (RID and DDPM provincial pages, the local network) and issue alerts by hand. Post an announcement only if people are asking. Tell the owner if it lasts over 2 h. |
-| Bang Lang dam feed (`jaga-dam-readings`) | The dam card shows its last reading and its age; past 12 h it is marked stale. | Ask EGAT / the dam directly if a release is suspected. A release notice can still be sent from `/admin/dam-release` with figures typed in. |
+| Bang Lang dam feed (`jaga-dam-readings`) | The dam card shows its last reading and its age; past 12 h it is marked stale. | Ask EGAT / the dam directly if a release is suspected. A release notice can still be sent from `/admin/dam-release` with figures typed in, and the dam's own operator can send it from `/authority/dam` without the feed at all. |
 | Open-Meteo (rain forecast, GloFAS, tide) | The signal dashboard's forecast boxes go stale; weather pages and the sea card say the data is old. | Use TMD (tmd.go.th, 1182) for rain and sea. Forecasts are advice only; nothing is auto-published from them. |
 | GISTDA satellite flood layer | The satellite switch on the map says the layer is not available. | Nothing urgent. Tell the owner if it lasts a day. |
 | Map tiles (OpenFreeMap, Esri, Jaga's own tiles) | The map's background or flood-risk colours do not draw. The home screen, alerts, safe places and SOS do not need the map. | Nothing for the admin. The owner checks tiles.jagaapp.org and Cloudflare. Esri falls back to the free satellite by itself. |
@@ -183,6 +183,33 @@ admin's phone rings with a deadline, and the gauge is marked **"Reading looks wr
 4. Clear the suspect mark on `/admin/signals` once you trust the gauge again ("Believe this gauge
    again"). Until you do, every crossing on that gauge waits the grace time instead of going out
    at once.
+
+## A dam operator has sent a release notice
+
+The dam's own people can send the release notice themselves since 9 Nov 2026 (A12 part 2,
+spec 15). It is **already published** when you hear about it - there is nothing to approve.
+
+What you get: a line in the bell (`A dam operator has sent a release notice`) and one
+notification per notice. Both take you to `/admin/alerts`.
+
+What to do:
+
+1. Read it. The notice names the dam, the release in m3/s, the time the gates opened and the
+   expected arrival window, and its last line names the dam as the issuer, not you.
+2. Decide whether it is enough. You can **extend** it (a new next-update time), **replace** it
+   with a different level, or **cancel** it, all from `/admin/alerts` as with any alert. The level
+   the dam chose is theirs; raising it is yours.
+3. If the notice is marked **Drill**, nobody outside the admins saw or heard it. That is the dam
+   rehearsing, and nothing is required of you.
+4. If the dam says the gates have shut, a second alert supersedes the first **at the same level**
+   and says the water is still on its way. That is correct and deliberate: closing the gates is
+   not an all-clear. **Standing the level down is yours alone** - the operator cannot do it.
+
+Giving a dam this power, or taking it away: `/admin/authorities`, on a verified unit that
+registered as a dam operator, under "Dams it operates". Confirm with the dam by telephone that
+these are its people before you tie it. Untying it takes effect at once. A unit that only operates
+a dam deliberately gets none of a rescue team's reads - no request for help, no phone number, no
+household data, no case board.
 
 ## An alert went out wrong
 

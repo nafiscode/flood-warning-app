@@ -30,7 +30,18 @@ const ERRORS = [
   "save",
 ] as const;
 const ORG_TYPES = ["government", "private", "nonprofit", "volunteer"] as const;
-const CAPABILITIES = ["coordination", "rescue", "supplies", "planning", "support"] as const;
+// "dam" is last on purpose (A12 part 2, 9 Nov 2026): it is the rarest of them - six reservoirs
+// in the whole service area - and it is the one that grants nothing by itself. Ticking it only
+// tells an admin what to confirm with the dam; the power to send a release notice arrives when
+// they tie the verified unit to a named dam.
+const CAPABILITIES = [
+  "coordination",
+  "rescue",
+  "supplies",
+  "planning",
+  "support",
+  "dam",
+] as const;
 
 type Area = { code: string; name_th: string; name_en: string };
 type District = Area & { province_code: string };
