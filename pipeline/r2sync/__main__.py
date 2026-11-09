@@ -7,6 +7,8 @@
                                           list objects
   manifest LAYER KEY [--dry-run]          point jaga-tiles/manifest.json's LAYER at KEY (public bucket)
   manifest --show                         print the current manifest
+  robots [FILE] [--dry-run]               write jaga-tiles/robots.txt (keeps crawlers off the
+                                          tiles; defaults to r2sync/robots-jaga-tiles.txt)
 
 Settings come from the environment or .env.local (R2_*; see .env.example). Nothing here prints key values.
 """
@@ -18,7 +20,11 @@ import json
 import sys
 from pathlib import Path
 
-from .core import R2Config, R2Error, list_keys, make_client, push, read_manifest, set_layer
+from .core import (R2Config, R2Error, list_keys, make_client, push, put_robots, read_manifest,
+                   set_layer)
+
+
+DEFAULT_ROBOTS = Path(__file__).parent / "robots-jaga-tiles.txt"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -34,6 +40,9 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("ls")
     p.add_argument("--bucket", choices=["public", "private"], default="public")
     p.add_argument("--prefix", default="")
+    p = sub.add_parser("robots")
+    p.add_argument("file", nargs="?", type=Path, default=DEFAULT_ROBOTS)
+    p.add_argument("--dry-run", action="store_true")
     p = sub.add_parser("manifest")
     p.add_argument("layer", nargs="?")
     p.add_argument("key", nargs="?")
@@ -50,6 +59,8 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{which:7} {name}: reachable, {n} objects")
         elif args.command == "push":
             print(push(client, cfg, args.file, args.bucket, args.key, args.dry_run))
+        elif args.command == "robots":
+            print(put_robots(client, cfg, args.file, args.dry_run))
         elif args.command == "ls":
             for key, size in list_keys(client, cfg.buckets[args.bucket], args.prefix):
                 print(f"{size / 1e6:10.1f} MB  {key}")

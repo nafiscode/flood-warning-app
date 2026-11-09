@@ -10,6 +10,9 @@ import { siteUrl } from "@/lib/site";
  * (safety rules 5 and 6), what only makes sense to a signed-in person, and the API. The paths are
  * written out per language because `/admin`, `/ms/admin` and `/en/admin` are three addresses.
  *
+ * A page that is merely pointless to a reader arriving from a search is *not* closed here: it
+ * carries `noindex` instead, which is the tag that removes it. See the note under the list.
+ *
  * This is not a security measure and is not treated as one: everything behind these paths is held
  * by row-level security in the database, which a crawler cannot ask nicely to step around.
  */
@@ -18,12 +21,23 @@ const CLOSED = [
   "/authority",
   "/account",
   "/requests",
-  "/sign-in",
-  "/offline",
   "/dev",
   // A case page is somebody's emergency. `/sos` itself stays open: that is the page to arrive on.
   "/sos/",
 ];
+
+/*
+ * `/sign-in` and `/offline` were in the list above until 9 Nov and are deliberately not any more.
+ * Both already answer `noindex` in their own page metadata (PRIVATE_PAGE, lib/seo.ts), and a
+ * crawler cannot read a tag on a page it has been told not to fetch: Search Console was holding
+ * `/ms/sign-in?next=/ms/map` as "duplicate without user-selected canonical" for exactly that
+ * reason - found through a link, unfetchable, so neither the noindex nor a canonical could be
+ * seen. Letting the fetch through is what takes such a page back out of the index.
+ *
+ * Nothing is given away by the fetch: both pages are the same for everyone and hold no data. The
+ * paths above are different - they lead to somebody's data (safety rules 5 and 6), so there the
+ * crawl budget and the closed door are worth more than a tag a crawler would read once.
+ */
 
 /*
  * There is no exception any more. `/authority/register` was allowed back through here on the

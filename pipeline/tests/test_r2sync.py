@@ -6,7 +6,8 @@ import json
 import pytest
 from botocore.exceptions import ClientError
 
-from r2sync.core import IMMUTABLE, MANIFEST_CACHE, R2Config, R2Error, check_key, object_headers, push, read_manifest, set_layer
+from r2sync.core import (IMMUTABLE, MANIFEST_CACHE, ROBOTS_CACHE, R2Config, R2Error, check_key,
+                        object_headers, push, put_robots, read_manifest, set_layer)
 
 CFG = R2Config(endpoint="https://acct.r2.cloudflarestorage.com", access_key_id="id", secret_access_key="secret",
                buckets={"public": "jaga-tiles", "private": "jaga-rasters"})
@@ -44,6 +45,7 @@ def pmtiles(tmp_path):
     ("public", "/hazard/x.pmtiles"),         # absolute
     ("public", "hazard/../dem/x.tif"),       # escapes its prefix
     ("public", "manifest.json"),             # only via set_layer
+    ("public", "robots.txt"),                # only via the robots command
     ("private", "assets/sprite.png"),        # assets/ is public-only
     ("both", "hazard/x.pmtiles"),            # unknown bucket
 ])
@@ -109,3 +111,32 @@ def test_endpoint_is_derived_from_account_id(monkeypatch):
     cfg = R2Config.from_env()
     assert cfg.endpoint == "https://abc123.r2.cloudflarestorage.com"
     assert cfg.buckets == {"public": "jaga-tiles", "private": "jaga-rasters"}
+
+
+def test_robots_is_written_as_plain_text_and_may_be_replaced(tmp_path):
+    """
+    The crawl rules are the one other key that is not write-once. A dated tile file is a fact and
+    never changes; what Jaga asks of crawlers does change, and a rule that could only ever be set
+    once would mean reaching for the Cloudflare dashboard to fix a typo in it.
+    """
+    s3, f = FakeS3(), tmp_path / "robots.txt"
+    f.write_text("User-agent: *\nDisallow: /\n", encoding="utf-8")
+
+    assert "would write" in put_robots(s3, CFG, f, dry_run=True)
+    assert ("jaga-tiles", "robots.txt") not in s3.objects
+
+    put_robots(s3, CFG, f)
+    stored = s3.objects[("jaga-tiles", "robots.txt")]
+    assert b"Disallow: /" in stored["body"]
+    assert stored["ContentType"].startswith("text/plain")
+    # Not IMMUTABLE: a year-long cache on a crawl rule outlives the reason for it.
+    assert stored["CacheControl"] == ROBOTS_CACHE
+
+    f.write_text("User-agent: *\nDisallow: /dem/\n", encoding="utf-8")
+    put_robots(s3, CFG, f)
+    assert b"Disallow: /dem/" in s3.objects[("jaga-tiles", "robots.txt")]["body"]
+
+
+def test_robots_refuses_a_file_that_is_not_there(tmp_path):
+    with pytest.raises(R2Error):
+        put_robots(FakeS3(), CFG, tmp_path / "nope.txt")

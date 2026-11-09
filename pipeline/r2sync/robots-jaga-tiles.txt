@@ -1,0 +1,15 @@
+# tiles.jagaapp.org is Jaga's map data, not a website: PMTiles files, the DEM-derived
+# rasters' public products and manifest.json, all read by MapLibre in a reader's browser.
+# There is no page here for a search result, and the bucket root answers 404 by design.
+#
+# Every fetch is an R2 class-B read against the free tier (10M a month), so a crawler
+# walking the bucket spends Jaga's budget on files no person will ever be shown.
+#
+# Cloudflare serves its own managed robots.txt on this hostname when the bucket has none,
+# and that file carries content signals but no Disallow - which left the whole bucket open
+# and put tiles.jagaapp.org/ into Search Console as a 404 (9 Nov 2026).
+#
+# The app's own crawl rules are at https://jagaapp.org/robots.txt (app/robots.ts).
+
+User-agent: *
+Disallow: /

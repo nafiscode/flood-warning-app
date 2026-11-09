@@ -23,8 +23,12 @@ PREFIXES = {
     "private": ("dem/", "sar/", "hazard/", "extents/", "stage/"),
 }
 MANIFEST_KEY = "manifest.json"
+# The crawl rules for tiles.jagaapp.org. Like the manifest, this one key is rewritable:
+# it is a statement about the bucket, not a dated data file, so it is not write-once.
+ROBOTS_KEY = "robots.txt"
 IMMUTABLE = "public, max-age=31536000, immutable"
 MANIFEST_CACHE = "public, max-age=300"
+ROBOTS_CACHE = "public, max-age=3600"
 CONTENT_TYPES = {
     ".pmtiles": "application/vnd.pmtiles",
     ".tif": "image/tiff",
@@ -94,6 +98,8 @@ def check_key(bucket: str, key: str) -> str:
         raise R2Error(f"Invalid key '{key}': use a relative path like hazard/<layer>/<date>.pmtiles.")
     if key == MANIFEST_KEY:
         raise R2Error("manifest.json is only written by the 'manifest' command.")
+    if key == ROBOTS_KEY:
+        raise R2Error("robots.txt is only written by the 'robots' command.")
     if not key.startswith(PREFIXES[bucket]):
         raise R2Error(f"Key '{key}' is not under an allowed prefix for the {bucket} bucket: "
                       + ", ".join(PREFIXES[bucket]))
@@ -176,3 +182,25 @@ def set_layer(client, cfg: R2Config, layer: str, key: str, dry_run: bool = False
                           Body=json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8"),
                           ContentType="application/json", CacheControl=MANIFEST_CACHE)
     return manifest
+
+
+def put_robots(client, cfg: R2Config, path: Path, dry_run: bool = False) -> str:
+    """
+    Write robots.txt at the public bucket's root.
+
+    Cloudflare serves a managed robots.txt on tiles.jagaapp.org whenever the bucket has none, and
+    that file is content signals and comments with no Disallow in it - so the whole tile bucket
+    was open to crawlers, and Search Console was reporting tiles.jagaapp.org/ as a 404 (9 Nov
+    2026). Nothing here is a page for a reader; every crawled file is an R2 read off the free
+    tier. Overwriting is allowed on purpose: crawl rules get revised, dated data files do not.
+    """
+    if not path.is_file():
+        raise R2Error(f"File not found: {path}")
+    name = cfg.buckets["public"]
+    body = path.read_bytes()
+    summary = f"{name}/{ROBOTS_KEY} ({len(body)} bytes) from {path}"
+    if dry_run:
+        return "dry run, would write " + summary
+    client.put_object(Bucket=name, Key=ROBOTS_KEY, Body=body,
+                      ContentType="text/plain; charset=utf-8", CacheControl=ROBOTS_CACHE)
+    return "wrote " + summary

@@ -39,12 +39,28 @@ describe("robots.txt", () => {
   it("closes the admin and team consoles, the account pages and a case page, in every language", () => {
     for (const locale of routing.locales) {
       const at = (path: string) => (locale === routing.defaultLocale ? path : `/${locale}${path}`);
-      for (const closed of ["/admin", "/authority", "/account", "/requests", "/sign-in", "/dev"]) {
+      for (const closed of ["/admin", "/authority", "/account", "/requests", "/dev"]) {
         expect(disallow).toContain(at(closed));
       }
       // Somebody's own emergency, never a search result - but /sos itself stays open.
       expect(disallow).toContain(at("/sos/"));
       expect(disallow).not.toContain(at("/sos"));
+    }
+  });
+
+  /*
+   * The other half of the rule, and the reason it is a test. `/sign-in` and `/offline` are closed
+   * to the *index* by their own `noindex` metadata, and a crawler only reads that tag on a page
+   * it is allowed to fetch. Closing them here as well made `/ms/sign-in?next=/ms/map` unremovable
+   * - Search Console held it as "duplicate without user-selected canonical" (9 Nov), unable to
+   * see either the noindex or a canonical. Blocking the fetch of a noindex page keeps it in.
+   */
+  it("lets a crawler fetch the pages whose own metadata says noindex", () => {
+    for (const locale of routing.locales) {
+      const at = (path: string) => (locale === routing.defaultLocale ? path : `/${locale}${path}`);
+      for (const open of ["/sign-in", "/offline"]) {
+        expect(disallow, `${at(open)} says noindex: a crawler must be able to read that`).not.toContain(at(open));
+      }
     }
   });
 
