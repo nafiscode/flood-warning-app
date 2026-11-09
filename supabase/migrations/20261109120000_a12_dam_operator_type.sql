@@ -1,0 +1,11 @@
+-- A12 part 2 (1/2): the dam operator's capability - the new enum value on its own.
+--
+-- A new enum value cannot be used in the transaction that adds it, so it stands in a file of its
+-- own, as the supply teams' did (20261013040000) and the dispatch types before them.
+--
+-- 'dam' is a unit that operates a dam or reservoir: Bang Lang's control room, or an irrigation
+-- office holding one of the other five. It is the one capability that carries a power no other
+-- unit has - sending the dam release notice - so ticking it at registration grants nothing by
+-- itself. The power arrives only when an admin ties the verified unit to a named dam
+-- (dam_operator_units, in the next migration): a self-declared dam operator can do nothing.
+alter type public.authority_capability add value if not exists 'dam';
