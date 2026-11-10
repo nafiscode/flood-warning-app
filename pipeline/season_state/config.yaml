@@ -1,0 +1,63 @@
+# Module 11 of docs/science-plan.md: season state. How wet each catchment already is, and whether
+# its river has been rising for a week. For the admins' signal dashboard and for one soft notice
+# that asks a person to look. Nothing here publishes anything or sets a level (safety rule 2).
+
+output_dir: out/season_state
+
+# The gauges' levels as loaded (seed 47) and the zones (which gauge is key, which is upstream)
+# from the thresholds config, so this module and Module 3 never disagree about a gauge.
+levels_sql: ../supabase/seed/47_gauge_levels.sql
+zones_config: thresholds/config.yaml
+# The live rain points per zone, exactly as the database asks Open-Meteo for them, read back out of
+# the seed so the bias check compares like with like.
+feed_seed: ../supabase/seed/46_zones_gauges_thresholds.sql
+# Nine seasons of hourly basin-mean GSMaP rain, already cached by `thresholds rain`.
+rain_cache: out/thresholds
+
+gauge:
+  # The same quality control as Module 5: a reading this far above the bank is a broken sensor, and
+  # gaps of up to bridge_h hours are bridged by a straight line.
+  max_above_bank_m: 4.0
+  bridge_h: 3
+  # A gauge needs this many days of floor in the flood-season months before it gets a reference.
+  min_days: 120
+
+tide:
+  # Where the sea reaches a gauge, the daily minimum is the low tide and not the catchment: those
+  # gauges are left out. The test is a harmonic fit (see METHODS.md), not a variance ratio - a ratio
+  # kept every gauge Module 5 lists by hand as tidal and threw out X.77, where the 1.6 m wobble is
+  # Bang Lang opening its turbines once a day, not the moon.
+  # The sea's three constituents together, in metres, above which a gauge is the sea's gauge. Set
+  # on 10 Nov 2026 at the figure that reproduces the tidal list Module 5 arrived at by hand
+  # (X.10A, BLGTD05, X.275, ONE038, ONE037, SLA005), and no key or upstream gauge with it.
+  max_tide_m: 0.05
+  # The exactly-24-hour line, in metres: a hydropower or other human cycle. It moves the floor for
+  # reasons the catchment knows nothing about, so such a gauge is left out too, and said to be.
+  max_pulse_m: 0.20
+  # Telling the 24.0-hour line from the moon's 23.93-hour one needs more than a year of record,
+  # because the two beat against each other over about a year. Below this, no judgement is made.
+  min_hours: 9600
+
+reference:
+  # Below this many seasons in a month, that month gets no terciles at all rather than a figure
+  # resting on one or two years. The RID key gauges start in February 2020, so six seasons is the
+  # most any of them can have.
+  min_seasons: 3
+  months: [10, 11, 12, 1]
+  season_start_month: 10
+  # The rain windows kept, in days, plus the running total from 1 October.
+  rain_windows: [15, 30]
+
+rule:
+  # The soft notice: the floor rose on at least this many of the last seven days AND the fifteen-day
+  # basin rain is in the top third of that basin's own record for the month. Both legs, or nothing.
+  rose_days_min: 5
+  rose_window: 7
+  rain_window_days: 15
+
+bias:
+  # `season_state bias` only. The Open-Meteo archive, asked at the zone's own live rain points, to
+  # measure how its daily rain compares with the GSMaP the terciles are built from.
+  url: https://archive-api.open-meteo.com/v1/archive
+  seasons: [2024, 2025]
+  timeout_s: 60
