@@ -254,6 +254,12 @@ shown as context and is **not** part of the rule: in November 2025 the floor at 
 bottom third of its own record until two days before the river left its bank. Do not read a
 below-normal floor as reassurance.
 
+**The public map says it too** (10 Nov 2026). The laptop console's rivers card counts the rivers
+that rose on five of the last seven days - the same rule, read per gauge from `station_status()` -
+and a press on it opens those rivers first. It is the same measurement you are reading, so if you
+dismiss a notice the card still shows the rise: the card reports, it does not judge. Only the
+stations Module 11 keeps are counted there, and the card says how many of them it could judge.
+
 The figures behind it are rebuilt after the season with `cd pipeline; uv run python -m season_state
 run`, which writes `supabase/seed/61_season_state.sql`. The thresholds of the rule itself live in
 `system_settings.season_state` and an admin can change them without a migration.

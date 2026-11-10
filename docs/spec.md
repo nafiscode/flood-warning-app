@@ -127,6 +127,7 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 - safe places with status
 - aggregated reports (hex bins) plus moderated photos
 - river gauges with status (normal / above watch / above warning), last reading time, and a small chart
+- **the week each river has had** (the owner, 10 Nov 2026; science plan Module 11): on how many of the last seven whole days the river's daily low rose, and the metres it has moved over eight days. The laptop console's rivers readout counts the rivers that rose on five of the seven - the same rule, and the same `rose_days_min` setting, as the admins' own season notice - and a press on it opens those rivers first, their own before a distant one, with a bank reached still coming before all of them. Only the stations Module 11 keeps are judged (a tidal gauge's daily low follows the moon), and a station with a gap, with the tide in it, or silent for 36 hours shows **no figure and says why**: it is never counted as a steady week (safety rule 10). A measurement, never a level and never a forecast (safety rules 2 and 8).
 - the sea off the coast (added 15 Oct 2026, see "Sea and coast" below)
 
 **Sea and coast** (the owner, 15 Oct 2026; one of the map's six features, `?focus=sea`):
