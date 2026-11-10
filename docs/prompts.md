@@ -643,6 +643,94 @@ Read docs/spec.md sections 1, 9 and 16, docs/brand.md, docs/attributions.md, NOT
 Acceptance: a visitor learns in a minute what Jaga is, who runs it, what it covers and how to reach it; every link on it opens; no personal detail and no donation prompt appears; the owner has read the Thai.
 ```
 
+### A21: Reports for the offices, and a public map of the water paths (after launch; not started)
+
+Added 10 Nov 2026 (owner's request, the evening A19 went live): *"I wanna generate document reports for the authority on these potential blocks of water paths by the roads worth JAGA's level with professional standard. Also together with it a dashboard that available for everyone can use to reference easily, Map centric."*
+
+Two halves, and they are deliberately written as one phase because the second changes a decision the first does not.
+
+**Half 1, the report.** A19 gives a provincial highway or irrigation office a page it can read and a CSV it can take into its own GIS. What it does not give it is something it can file, attach to a memo, or put in front of its own director — which is how a decision to build a culvert actually gets made in a Thai government office. So: a generated document per province (and per stretch for the top ones), to a standard Jaga is willing to put its name on. The owner's words are "worth JAGA's level with professional standard", and that is the acceptance bar: a provincial engineer should be able to pass it upwards without rewriting it.
+
+**Half 2, the public map.** A19's rows are deliberately not public — that was the owner's own choice of 16 Oct 2026 ("a page of their own in the authority console, not a document pack and never in the public app"). This asks for the opposite for a map-centric view, and **that reversal is the owner's to make explicitly, with the reasons below on the table.** It is not a thing to slide in because a later request implied it.
+
+```text
+Read docs/prompts.md A19 and A18, docs/science-plan.md Module 8, pipeline/highway_paths/METHODS.md,
+docs/spec.md 5.7 and 16, docs/brand.md, docs/attributions.md, and CLAUDE.md safety rules 5, 6, 8
+and 10. Propose before building: this phase has a decision in it that is not mine to take.
+
+HALF 1 - THE REPORT FOR THE OFFICES
+
+1. One document per province, generated from the same rows the page reads, in Thai (English
+   alongside for the record). Not a PDF stapled to a CSV: a document with a title page naming the
+   province, the radar run and the date; a page of method in plain terms (what the radar is, what
+   nine seasons means, what "upstream" means) written at the level of A18's science page, never the
+   parameters; a ranked list of the stretches with a map figure each, the figures in a table, and
+   the office's own note if it has written one; and the four limits in full, as prominently as the
+   list. The limits are not an appendix - a document travels further than the page it came from
+   and is read by people who never saw the screen.
+2. Per-stretch one-pagers for the look-first class: one place, one page, one map, what was seen,
+   what to check on the ground, and a blank for what they found. That is the sheet an engineer
+   carries to site.
+3. Who may generate one: the same gate as the page (`planning` for its own province, or an admin).
+   Generated on request, not kept lying around; each generation in `audit_log` with the province
+   and the format, as the CSV download already is.
+4. Professional standard, concretely, because "professional" has to be testable:
+   - Thai typography that holds up in print: the brand's IBM Plex Sans Thai, 18 px equivalent or
+     more for body, no orphan lines in the Thai, correct Thai word-breaking;
+   - every figure sourced on the page it appears on, every map with a scale bar, a north arrow and
+     its data credits (OpenStreetMap ODbL, Copernicus Sentinel-1, FABDEM), per docs/attributions.md;
+   - page numbers, a document id, the generation date and "ฉบับร่างเพื่อตรวจสอบ" or the agreed
+     wording, so a copy in circulation can always be dated and traced back to a radar run;
+   - no alert colours anywhere in it (A19's violet classes, docs/brand.md), and no sentence that
+     says a road blocks the flood.
+5. How it is built is an open question to settle in the proposal, not here: HTML to PDF in the app
+   (one code path with the page, print CSS, no new dependency) against a generator in
+   `pipeline/highway_paths` (better figures, reproducible from the archive, but a second set of
+   wording to keep reviewed). The first is likely right for 2026 - the wording must not fork.
+
+HALF 2 - THE MAP EVERYONE CAN USE
+
+6. The owner's ask: a map-centric dashboard, open to anyone, easy to reference. Before any of it
+   is built, the owner decides this, knowing:
+   - it reverses their own 16 Oct choice that this stays out of the public app;
+   - nothing in the rows is personal data, so safety rule 5 does not forbid it. Rule 6 is about
+     SOS points, team positions and reporters, none of which are here;
+   - the real risk is not privacy, it is READING. "This highway may be holding water back" is,
+     in public, a statement about a named government department's structure, drawn from radar and
+     checked by nobody. Published badly it is an accusation; published well it is a question. The
+     offices Jaga wants as partners are the same offices it would be publishing about, and A19
+     exists because the owner wanted them as partners;
+   - and safety rule 8: a public reader will not hold "extent, not depth" in their head the way an
+     engineer will. If it is published, the limits are part of the map furniture, not a footnote.
+7. If the owner says yes, the shape to propose: a map page of its own (never a layer on the flood
+   map, which carries alert levels and must not gain a layer that looks like one), the four
+   provinces, the sections in A19's violet classes, a tap giving the plain-words reasons and the
+   figures, and the limits always on screen rather than behind a tab. Wording reviewed as safety
+   copy even though it is not an alert, because it names places and roads. No comparison between
+   provinces or districts, no league table, nothing a headline can be made of.
+8. If the owner says no, or not yet, the half that stands on its own: the same map inside the
+   authority console for every verified unit rather than only `planning` ones - a rescue team
+   planning a route in a flood has a plain use for "water tends to stand on this side of road 42" -
+   and a link from A18's science page describing that the work exists and who may see it.
+9. Either way: tiles and layers from the rows already in the database for a few hundred sections a
+   province (A19's map does this), never a new R2 product, and no paid map service (budget).
+
+TESTS AND DOCS, BOTH HALVES
+
+10. The forbidden-phrase test of A19 extended to every word of the report and the map, in all
+    three languages; a test that the limits appear in the document and on the map, not only on
+    the page; a test that no alert colour is in either; RLS for who may generate a report; and for
+    a public map, a test that it carries no personal data and no exact SOS, report or team point.
+11. A decision entry for the public/not-public call with the owner's reason, docs/spec.md 5.7
+    extended, docs/attributions.md checked for the print credits, and the runbook told how to
+    regenerate after a radar rerun.
+
+Acceptance: a provincial highway engineer can hand Jaga's provincial report to their director
+without rewriting it, and a site one-pager to a crew going out; the owner has decided in writing
+whether any of it is public, and if it is, a resident reading the public map comes away knowing
+that it shows where water has stood and not where a road is at fault.
+```
+
 ## Later (2027+): template for activating a new hazard
 ```text
 Read docs/spec.md section 13 and docs/science-plan.md section 6.
