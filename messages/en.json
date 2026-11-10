@@ -42,8 +42,9 @@
     "nameThai": "จากา",
     "tagline": "Watch over each other",
     "pwaName": "Jaga – Flood warning and help requests",
-    "description": "Flood alerts and emergency help for Pattani, Yala, Narathiwat and Songkhla",
-    "skipToContent": "Skip to content"
+    "description": "A free, non-profit flood warning and emergency-help app for the three southern border provinces — Pattani, Yala, Narathiwat — and Songkhla.",
+    "skipToContent": "Skip to content",
+    "seoTitle": "Jaga – flood warning app for Pattani, Yala, Narathiwat and Songkhla"
   },
   "home": {
     "title": "Jaga: alert status for your area",
@@ -6540,5 +6541,43 @@
     "drillBadge": "Drill",
     "adminsTold": "Jaga's admins are told the moment you send, and can extend, replace or cancel the notice.",
     "link": "Release notice"
+  },
+  "floodHub": {
+    "title": "Flood warning app for the three southern border provinces and Songkhla",
+    "lead": "Jaga is a free, non-profit flood warning and emergency-help app. It opens in a browser — there is nothing to install.",
+    "description": "A free, non-profit flood warning and emergency-help app for the three southern border provinces — Pattani, Yala, Narathiwat — and Songkhla. Alert levels by tambon, river gauges and safe places.",
+    "what": {
+      "title": "What Jaga does",
+      "alert": "An alert level for your tambon, with its reason, who issued it, when, and when it will next be updated",
+      "sos": "Ask for help straight away — no account, no sign-in",
+      "map": "A map of flood hazard, river gauges and the reservoir level",
+      "places": "Safe places near you, with the distance and the way there",
+      "offline": "The home screen, your alert level, safe places and the hotlines all work with no signal"
+    },
+    "where": {
+      "title": "Where Jaga covers",
+      "provinces": "Provinces",
+      "districts": "Districts people search by name"
+    },
+    "faq": {
+      "title": "Common questions",
+      "installQ": "Do I have to install it from the App Store or Play Store?",
+      "installA": "No. Jaga opens in a browser, and you can add it to your phone home screen like any other app.",
+      "freeQ": "Is it free?",
+      "freeA": "Entirely. Jaga is non-profit, carries no advertising, and collects no money or goods for flood-affected people.",
+      "areaQ": "How many provinces does Jaga cover?",
+      "areaA": "Four: the three southern border provinces — Pattani, Yala and Narathiwat — and Songkhla. If you are anywhere else, call 1784 or 1669.",
+      "whoQ": "Who issues the alerts?",
+      "whoA": "People do. There is one exception: for a river gauge or reservoir an admin has ticked, when the water reaches its threshold Jaga publishes at once from a reviewed template and tells every admin afterwards.",
+      "forecastQ": "How certain is the forecast?",
+      "forecastA": "A forecast is an estimate, never a certainty. Every page shows ranges, the time of the data and where it came from."
+    },
+    "act": {
+      "title": "Start here",
+      "sos": "Ask for help",
+      "home": "See your own area",
+      "map": "Open the map",
+      "how": "How Jaga works"
+    }
   }
 }

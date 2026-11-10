@@ -48,7 +48,15 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "app" });
   return {
-    title: { default: t("pwaName"), template: "%s · Jaga" },
+    /*
+     * The home page's own title is `seoTitle`, not `pwaName`: the two have different jobs and
+     * pulled against each other (10 Nov 2026). `pwaName` is what sits under the icon once Jaga is
+     * installed, so it stays short; a title is what a person reads in a list of search results,
+     * and until now it said neither what kind of thing Jaga is (แอป) nor where it covers, so a
+     * search for a flood app for these provinces had nothing to match. `%s · Jaga` still carries
+     * the brand onto every other page.
+     */
+    title: { default: t("seoTitle"), template: "%s · Jaga" },
     description: t("description"),
     applicationName: "Jaga",
     /*

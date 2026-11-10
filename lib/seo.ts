@@ -27,6 +27,10 @@ import { PLACE_PATHS } from "@/lib/flood-places";
  */
 export const INDEXED_PATHS = [
   "/",
+  // The hub above the place pages: what Jaga is, for a search for a flood app rather than for a
+  // place (10 Nov 2026). It is what "แอปน้ำท่วม" or "น้ำท่วม 3 จังหวัด" can land on; the home screen
+  // is for somebody already in a flood, not for somebody deciding whether this covers them.
+  "/flood",
   // A page per covered province and per district people search by name: the pages a local flood
   // search can actually land on (A10, lib/flood-places.ts).
   ...PLACE_PATHS,

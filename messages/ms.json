@@ -42,8 +42,9 @@
     "nameThai": "จากา",
     "tagline": "Jaga satu sama lain",
     "pwaName": "Jaga – Amaran banjir dan minta bantuan",
-    "description": "Amaran banjir dan minta bantuan untuk Patani, Yala, Narathiwat dan Songkhla",
-    "skipToContent": "Langkau ke kandungan"
+    "description": "Aplikasi amaran banjir dan permintaan bantuan, percuma dan bukan untuk keuntungan, untuk tiga wilayah sempadan selatan — Patani, Yala, Narathiwat — dan Songkhla.",
+    "skipToContent": "Langkau ke kandungan",
+    "seoTitle": "Jaga – aplikasi amaran banjir untuk Patani, Yala, Narathiwat dan Songkhla"
   },
   "home": {
     "title": "Jaga: status amaran di kawasan anda",
@@ -6540,5 +6541,43 @@
     "drillBadge": "Latihan",
     "adminsTold": "Pentadbir Jaga diberitahu sebaik sahaja anda menghantar, dan boleh melanjutkan, menggantikan atau membatalkan notis itu.",
     "link": "Notis pelepasan"
+  },
+  "floodHub": {
+    "title": "Aplikasi amaran banjir untuk tiga wilayah sempadan selatan dan Songkhla",
+    "lead": "Jaga ialah aplikasi amaran banjir dan permintaan bantuan yang percuma dan bukan untuk keuntungan. Ia dibuka dalam pelayar — tiada apa-apa untuk dipasang.",
+    "description": "Aplikasi amaran banjir dan permintaan bantuan, percuma dan bukan untuk keuntungan, untuk tiga wilayah sempadan selatan — Patani, Yala, Narathiwat — dan Songkhla. Aras amaran mengikut mukim, tolok sungai dan tempat selamat.",
+    "what": {
+      "title": "Apa yang Jaga lakukan",
+      "alert": "Aras amaran untuk mukim anda, dengan sebabnya, siapa yang mengeluarkannya, bila, dan bila ia akan dikemas kini",
+      "sos": "Minta bantuan terus — tanpa akaun, tanpa log masuk",
+      "map": "Peta bahaya banjir, tolok sungai dan aras air empangan",
+      "places": "Tempat selamat berdekatan, dengan jarak dan jalan ke sana",
+      "offline": "Skrin utama, aras amaran anda, tempat selamat dan talian kecemasan berfungsi tanpa isyarat"
+    },
+    "where": {
+      "title": "Kawasan yang dilindungi Jaga",
+      "provinces": "Wilayah",
+      "districts": "Daerah yang kerap dicari"
+    },
+    "faq": {
+      "title": "Soalan lazim",
+      "installQ": "Perlukah saya memasangnya dari App Store atau Play Store?",
+      "installA": "Tidak. Jaga dibuka dalam pelayar, dan anda boleh menambahkannya ke skrin utama telefon seperti aplikasi lain.",
+      "freeQ": "Adakah ia percuma?",
+      "freeA": "Sepenuhnya. Jaga bukan untuk keuntungan, tiada iklan, dan tidak mengumpul wang atau barang untuk mangsa banjir.",
+      "areaQ": "Berapa wilayah yang dilindungi Jaga?",
+      "areaA": "Empat: tiga wilayah sempadan selatan — Patani, Yala dan Narathiwat — dan Songkhla. Jika anda di tempat lain, hubungi 1784 atau 1669.",
+      "whoQ": "Siapa yang mengeluarkan amaran?",
+      "whoA": "Orang yang mengeluarkannya. Ada satu pengecualian: bagi tolok sungai atau empangan yang ditanda pentadbir, apabila air mencapai arasnya Jaga menyiarkan terus daripada teks yang telah disemak, dan memberitahu setiap pentadbir selepas itu.",
+      "forecastQ": "Sejauh mana ramalan itu pasti?",
+      "forecastA": "Ramalan ialah anggaran, bukan kepastian. Setiap halaman menunjukkan julat, masa data dan dari mana ia datang."
+    },
+    "act": {
+      "title": "Mula di sini",
+      "sos": "Minta bantuan",
+      "home": "Lihat kawasan anda sendiri",
+      "map": "Buka peta",
+      "how": "Bagaimana Jaga berfungsi"
+    }
   }
 }
