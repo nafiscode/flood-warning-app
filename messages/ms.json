@@ -1040,6 +1040,10 @@
       "operatorRelease": {
         "title": "Pengendali empangan menghantar notis pelepasan",
         "body": "{count, plural, one {# notis dihantar oleh pengendali empangan sendiri dan sudah disiarkan. Anda boleh melanjutkan, menggantikan atau membatalkannya} other {# notis dihantar oleh pengendali empangan sendiri dan sudah disiarkan. Anda boleh melanjutkan, menggantikan atau membatalkannya}}"
+      },
+      "seasonNotice": {
+        "title": "Ada sungai yang naik seminggu berterusan",
+        "body": "{count, plural, one {# zon naik selama seminggu dengan hujan di belakangnya. Tiada apa-apa dihantar kepada sesiapa; ia menunggu anda membaca angka dan membuat keputusan} other {# zon naik selama seminggu dengan hujan di belakangnya. Tiada apa-apa dihantar kepada sesiapa; ia menunggu anda membaca angka dan membuat keputusan}}"
       }
     }
   },
@@ -4062,6 +4066,70 @@
         "error": "Paras tidak disimpan. Pastikan ia nombor yang naik daripada Berjaga-jaga ke Amaran ke Pindah, dan anda masih log masuk sebagai pentadbir.",
         "none": "Belum ada paras ditetapkan bagi stesen ini: ia diukur berbanding tebingnya."
       }
+    },
+    "season": {
+      "title": "Sejauh mana lembangan ini sudah basah",
+      "intro": "Paras air terendah setiap hari dan hujan yang sudah turun, masing-masing dibandingkan dengan rekod stesen dan lembangan ini sendiri pada bulan yang sama. Ini rekod, bukan ramalan, dan tidak boleh dibandingkan dengan stesen lain.",
+      "grade": {
+        "quiet": "Belum ada tanda terkumpul: kedua-dua syarat tidak dipenuhi.",
+        "rising": "Paras terendah sedang naik, tetapi hujan dua minggu belum berada dalam satu pertiga tertinggi.",
+        "wet": "Hujan dua minggu dalam satu pertiga tertinggi, tetapi paras terendah tidak naik.",
+        "rising_wet": "Naik selama seminggu, dengan dua minggu hujan di belakangnya."
+      },
+      "band": {
+        "low": "satu pertiga terendah rekodnya sendiri",
+        "middle": "satu pertiga tengah",
+        "high": "satu pertiga tertinggi",
+        "unknown": "rekod tidak cukup untuk menilainya"
+      },
+      "floor": "{gauge} paras terendah {value}, naik pada {rose} daripada {window} hari terakhir ({change} dalam seminggu)",
+      "floorNone": "Stesen utama bagi zon ini belum ditetapkan, jadi paras terendah tidak dibaca.",
+      "vsNormal": "{value} berbanding nilai tengahnya {median} untuk bulan ini, daripada {seasons} musim. Baca sebagai latar, jangan bergantung padanya: pada November 2025 paras terendah di Yala berada dalam satu pertiga terendah sehingga dua hari sebelum sungai melimpah.",
+      "rain15": "Hujan 15 hari: {value}",
+      "rain30": "Hujan 30 hari: {value}",
+      "sinceOctober": "Sejak 1 Oktober: {value}",
+      "blind": "Belum dapat dinilai: {reasons}",
+      "why": {
+        "gaugeDays": "lapan hari terakhir tidak lengkap",
+        "noKeyGauge": "tiada stesen utama",
+        "rainDays": "lima belas hari hujan terakhir tidak lengkap",
+        "noFloorReference": "stesen ini tiada rekod untuk bulan ini",
+        "noRainReference": "lembangan ini tiada rekod untuk bulan ini"
+      },
+      "stale": "Bacaan terbaharu stesen lebih lama daripada satu setengah hari, jadi minggu itu tidak dapat dibaca.",
+      "rainAt": "Angka hujan pada {time}.",
+      "caveat": "Ini bukan amaran awal. Ia memberitahu bahawa tanah sudah basah, bukan bahawa banjir akan datang: baca bersama hujan 72 jam, iaitu isyarat yang memberi masa. Bahagian ini tidak boleh menaikkan aras dan tidak menghantar apa-apa sendiri.",
+      "reason": {
+        "rising_week": "paras terendah naik lima daripada tujuh hari",
+        "wet_fortnight": "hujan dua minggu dalam satu pertiga tertinggi"
+      },
+      "notice": {
+        "title": "Zon ini ditanda kerana air naik seminggu berterusan",
+        "raised": "Dibangkitkan {time}: {reasons}.",
+        "yours": "Tiada apa-apa dihantar kepada sesiapa. Jika anda bersetuju dengan angka ini, hantar aras Perhatian daripada templat; angka di atas akan dibawa sebagai nota.",
+        "draft": "Mulakan draf Perhatian",
+        "note": "Nota (pilihan)",
+        "markSent": "Saya sudah uruskan",
+        "dismiss": "Tolak"
+      },
+      "months": {
+        "title": "Bulan demi bulan",
+        "intro": "Apa yang biasa berlaku di stesen dan lembangan ini pada setiap bulan musim banjir: satu pertiga bawah, nilai tengah dan satu pertiga atas.",
+        "floor": "{month}: paras terendah {low} / {median} / {high}, {seasons} musim",
+        "rain": "{month}: hujan 15 hari {low} / {median} / {high}, {seasons} musim"
+      },
+      "month": {
+        "1": "Januari",
+        "10": "Oktober",
+        "11": "November",
+        "12": "Disember"
+      },
+      "saved": "Sudah dicatat.",
+      "error": "Gagal disimpan. Cuba lagi."
+    },
+    "seasonPush": {
+      "title": "Jaga · {zone}: air naik seminggu berterusan",
+      "body": "Paras air terendah sungai naik pada {days} daripada tujuh hari terakhir dan {mm} mm hujan turun dalam dua minggu. Tiada apa-apa disiarkan. Buka papan isyarat untuk membaca angka dan membuat keputusan."
     },
     "recession": {
       "title": "Berapa cepat air surut dalam banjir lalu",

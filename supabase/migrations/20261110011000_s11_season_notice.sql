@@ -372,7 +372,7 @@ grant select on public.season_pushed to authenticated;
 
 create function public.push_season_due(p_token text)
 returns table (notice_id uuid, endpoint text, keys jsonb, locale text, basin text,
-               rose_days integer, rain_15d_mm double precision, floor_band text)
+               zone_name jsonb, rose_days integer, rain_15d_mm double precision, floor_band text)
 language plpgsql security definer set search_path = '' as $$
 -- The out parameters share their names with the columns below, as in push_dam_release_admins().
 #variable_conflict use_column
@@ -383,7 +383,7 @@ begin
 
   return query
   with owed as (
-    select n.id, n.figures, z.basin, ps.endpoint, ps.keys, ps.locale
+    select n.id, n.figures, z.basin, z.name, ps.endpoint, ps.keys, ps.locale
       from public.season_notices n
       join public.warning_zones z on z.id = n.zone_id
       join public.profiles p on p.role in ('admin', 'super_admin')
@@ -396,7 +396,7 @@ begin
     on conflict do nothing
     returning notice_id, endpoint
   )
-  select o.id, o.endpoint, o.keys, o.locale, o.basin,
+  select o.id, o.endpoint, o.keys, o.locale, o.basin, o.name,
          (o.figures -> 'floor' ->> 'roseDays')::integer,
          (o.figures -> 'rain' ->> 'd15Mm')::double precision,
          o.figures -> 'floor' ->> 'band'

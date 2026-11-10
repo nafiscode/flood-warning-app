@@ -177,3 +177,24 @@ export async function setGaugeLevels(locale: string, form: FormData) {
   const again = /^[0-9a-f-]{36}$/i.test(zone) ? `&saved=${zone}` : "";
   redirect(`${back}${join}${error ? "error=levels" : `levels=1${again}`}`);
 }
+
+/**
+ * What an admin decided about a season notice (science plan Module 11, 10 Nov 2026): marked as
+ * acted on, or dismissed. It records the judgement and nothing else - sending a Watch is the alert
+ * console's job, from a reviewed template, by a person (safety rule 2).
+ */
+export async function reviewSeasonNotice(locale: string, form: FormData) {
+  const notice = String(form.get("notice") ?? "");
+  const status = form.get("status") === "sent" ? "sent" : "dismissed";
+  const note = String(form.get("note") ?? "").slice(0, 300) || null;
+  const back = backTo(locale, form);
+  const join = back.includes("?") ? "&" : "?";
+  if (!/^[0-9a-f-]{36}$/i.test(notice)) redirect(`${back}${join}error=season`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_season_notice_review", {
+    p_notice: notice,
+    p_status: status,
+    p_note: note,
+  });
+  redirect(`${back}${join}${error ? "error=season" : "season=1"}`);
+}

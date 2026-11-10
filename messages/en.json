@@ -1040,6 +1040,10 @@
       "operatorRelease": {
         "title": "A dam operator has sent a release notice",
         "body": "{count, plural, one {# notice was sent by the dam's own operator and is already published. You can extend, replace or cancel it} other {# notices were sent by the dams' own operators and are already published. You can extend, replace or cancel them}}"
+      },
+      "seasonNotice": {
+        "title": "A river has been rising for a week",
+        "body": "{count, plural, one {# zone has been rising for a week with the rain behind it. Nothing has gone to anybody; it is waiting for you to read the figures and decide} other {# zones have been rising for a week with the rain behind them. Nothing has gone to anybody; they are waiting for you to read the figures and decide}}"
       }
     }
   },
@@ -4062,6 +4066,70 @@
         "error": "The levels were not saved. Check they are numbers rising from Watch to Warning to Evacuate, and that you are still signed in as an admin.",
         "none": "No levels set for this gauge yet: it is measured against its bank."
       }
+    },
+    "season": {
+      "title": "How wet this catchment already is",
+      "intro": "The river's floor and the rain already fallen, each against this gauge's or this basin's own record for the same month. A record, not a forecast, and not comparable with another gauge.",
+      "grade": {
+        "quiet": "Nothing building: neither leg of the rule holds.",
+        "rising": "The floor has been rising, but the fortnight's rain is not in the top third.",
+        "wet": "A wet fortnight, but the floor has not been rising.",
+        "rising_wet": "Rising for a week, with a wet fortnight behind it."
+      },
+      "band": {
+        "low": "bottom third of its own record",
+        "middle": "middle third",
+        "high": "top third",
+        "unknown": "not enough record to place it"
+      },
+      "floor": "{gauge} floor {value}, up on {rose} of the last {window} days ({change} over the week)",
+      "floorNone": "No key gauge is set for this zone, so the floor is not read.",
+      "vsNormal": "{value} against its median of {median} for this month, over {seasons} seasons. Read it, do not rely on it: in November 2025 the floor at Yala sat in the bottom third until two days before the river left its bank.",
+      "rain15": "Rain over 15 days: {value}",
+      "rain30": "Over 30 days: {value}",
+      "sinceOctober": "Since 1 October: {value}",
+      "blind": "Cannot be judged: {reasons}",
+      "why": {
+        "gaugeDays": "the last eight days are not all there",
+        "noKeyGauge": "no key gauge",
+        "rainDays": "the last fifteen days of rain are not all there",
+        "noFloorReference": "this gauge has no record for the month",
+        "noRainReference": "this basin has no record for the month"
+      },
+      "stale": "The gauge's newest reading is more than a day and a half old, so the week cannot be read.",
+      "rainAt": "Rain figures from {time}.",
+      "caveat": "This is not early warning. It says the ground is already wet, not that a flood is coming: read it beside the 72-hour rain, which is the signal with lead time. It can never raise a level or send anything.",
+      "reason": {
+        "rising_week": "the floor rose on five of seven days",
+        "wet_fortnight": "the fortnight's rain is in the top third"
+      },
+      "notice": {
+        "title": "This zone has been flagged for a week of rising water",
+        "raised": "Raised {time}: {reasons}.",
+        "yours": "Nothing has gone to anybody. If you agree with the figures, send a Watch from the template; these figures come with it as the note.",
+        "draft": "Start a Watch draft",
+        "note": "Note (optional)",
+        "markSent": "I have acted on it",
+        "dismiss": "Dismiss"
+      },
+      "months": {
+        "title": "Month by month",
+        "intro": "What this gauge and this basin usually do in each month of the flood season: the lower third, the median and the upper third.",
+        "floor": "{month}: floor {low} / {median} / {high}, {seasons} seasons",
+        "rain": "{month}: rain over 15 days {low} / {median} / {high}, {seasons} seasons"
+      },
+      "month": {
+        "1": "January",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+      },
+      "saved": "Noted.",
+      "error": "That could not be saved. Try again."
+    },
+    "seasonPush": {
+      "title": "Jaga · {zone}: a week of rising water",
+      "body": "The river's floor has risen on {days} of the last seven days and {mm} mm of rain has fallen in a fortnight. Nothing has been published. Open the signal dashboard to read the figures and decide."
     },
     "recession": {
       "title": "How fast the water fell back in past floods",

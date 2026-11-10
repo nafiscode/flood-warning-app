@@ -5,12 +5,18 @@ import { SignalsView } from "@/components/admin/Signals";
 import { isAdminHere } from "@/lib/admin-guard";
 import { toReferences } from "@/lib/coastal-gate";
 import { toDamLevelsList } from "@/lib/dam-levels";
+import {
+  toSeasonNotices,
+  toSeasonReferences,
+  toSeasonStates,
+} from "@/lib/season-state";
 import { toSignals, withGaugeLevels, withRecession, withWettest } from "@/lib/signals";
 import { createClient } from "@/lib/supabase/server";
 import { hint } from "@/lib/ui";
 import {
   dismissAutoAlarm,
   clearGaugeSuspect,
+  reviewSeasonNotice,
   setAutoAlarm,
   setAutoAlarmDam,
   setAutoMode,
@@ -48,16 +54,24 @@ export default async function SignalsPage({
   if (!(await isAdminHere())) return null;
   const t = await getTranslations("signals");
   const supabase = await createClient();
-  const [{ data, error }, levels, wettest, recession, gates, dams] = await Promise.all([
-    supabase.rpc("admin_signals"),
-    supabase.rpc("admin_gauge_levels"),
-    supabase.rpc("admin_signal_wettest"),
-    // Missing until the migration is applied: then `data` is null and the block is simply not drawn.
-    supabase.rpc("admin_gauge_recession"),
-    supabase.rpc("admin_coastal_gate"),
-    // The reservoirs, with their two shares and the alarm's tick (27 Oct 2026).
-    supabase.rpc("admin_dam_levels"),
-  ]);
+  const [{ data, error }, levels, wettest, recession, gates, dams, season, seasonRef, notices] =
+    await Promise.all([
+      supabase.rpc("admin_signals"),
+      supabase.rpc("admin_gauge_levels"),
+      supabase.rpc("admin_signal_wettest"),
+      // Missing until the migration is applied: then `data` is null and the block is simply not
+      // drawn.
+      supabase.rpc("admin_gauge_recession"),
+      supabase.rpc("admin_coastal_gate"),
+      // The reservoirs, with their two shares and the alarm's tick (27 Oct 2026).
+      supabase.rpc("admin_dam_levels"),
+      // Season state (Module 11, 10 Nov 2026): the live grade per zone, the monthly reference
+      // behind it, and the episodes raised for an admin. All three missing until the migrations
+      // are applied, and each mapper then returns nothing rather than throwing.
+      supabase.rpc("admin_season_signals"),
+      supabase.rpc("admin_season_state"),
+      supabase.rpc("admin_season_notices", { p_days: 60 }),
+    ]);
   if (error) return <p className={hint}>{t("noZones")}</p>;
   const saved = typeof query.saved === "string" ? query.saved : null;
   const autoNotice =
@@ -77,7 +91,11 @@ export default async function SignalsPage({
                   ? t("reservoirs.autoSaved")
                   : query.error === "damAuto"
                     ? t("reservoirs.autoError")
-                    : null;
+                    : query.season === "1"
+                      ? t("season.saved")
+                      : query.error === "season"
+                        ? t("season.error")
+                        : null;
   const notice =
     autoNotice ??
     (saved ? t("thresholds.saved") : query.error === "threshold" ? t("thresholds.error") : null);
@@ -88,6 +106,10 @@ export default async function SignalsPage({
         recession.data,
       )}
       gates={toReferences(gates.data)}
+      seasons={toSeasonStates(season.data)}
+      seasonReferences={toSeasonReferences(seasonRef.data)}
+      seasonNotices={toSeasonNotices(notices.data)}
+      seasonReviewAction={reviewSeasonNotice.bind(null, locale)}
       locale={locale}
       t={(key, values) => t(key as never, values as never)}
       action={setThreshold.bind(null, locale)}

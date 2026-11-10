@@ -5,9 +5,17 @@ import { ReservoirLevels } from "@/components/admin/ReservoirLevels";
 import { SignalsView } from "@/components/admin/Signals";
 import { devPagesEnabled } from "@/lib/dev-pages";
 import {
+  toSeasonNotices,
+  toSeasonReferences,
+  toSeasonStates,
+} from "@/lib/season-state";
+import {
   EXAMPLE_COASTAL_GATE,
   EXAMPLE_DAM_LEVELS,
   EXAMPLE_GAUGE_LEVELS,
+  EXAMPLE_SEASON_NOTICES,
+  EXAMPLE_SEASON_SIGNALS,
+  EXAMPLE_SEASON_STATE,
   EXAMPLE_SIGNALS,
 } from "@/lib/signals-examples";
 import { toReferences } from "@/lib/coastal-gate";
@@ -40,6 +48,9 @@ export default async function SignalsExamplePage({
       <SignalsView
         data={withGaugeLevels(EXAMPLE_SIGNALS, EXAMPLE_GAUGE_LEVELS)}
         gates={toReferences(EXAMPLE_COASTAL_GATE)}
+        seasons={toSeasonStates(EXAMPLE_SEASON_SIGNALS)}
+        seasonReferences={toSeasonReferences(EXAMPLE_SEASON_STATE)}
+        seasonNotices={toSeasonNotices(EXAMPLE_SEASON_NOTICES)}
         view={query.view === "map" ? "map" : "cards"}
         locale={locale}
         t={(key, values) => t(key as never, values as never)}

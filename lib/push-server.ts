@@ -270,9 +270,14 @@ export async function runPushTick(): Promise<PushOutcome> {
     };
     await Promise.all(Array.from({ length: 8 }, worker));
     const auto = await autoAlarmTick(supabase, token, gone);
+    const season = await seasonTick(supabase, token, gone);
     if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
     await line;
-    return { sent: sent + auto.sent, failed: failed + auto.failed, gone: gone.length };
+    return {
+      sent: sent + auto.sent + season.sent,
+      failed: failed + auto.failed + season.failed,
+      gone: gone.length,
+    };
   } catch {
     return { skipped: "error" };
   }
@@ -326,6 +331,73 @@ const AUTO_HELD: Record<string, string> = {
  * itself; and, once a draft has been published because nobody acted, the alert to the phones that
  * follow its tambons. The database decides what is owed and hands each out once.
  */
+/**
+ * One quiet push per season-state episode (science plan Module 11, 10 Nov 2026): this river has
+ * been rising for a week and the rain behind it is in the top third.
+ *
+ * It is **not an alert**, and it is built so it cannot be taken for one: the payload carries no
+ * level, so app/sw.ts gives it the ordinary notice buzz and `knocksFor` stays alert-only. It opens
+ * the signal dashboard, where the figures are, and the body says in so many words that nothing has
+ * been published. One per episode: the database claims the row, so a second tick owes nothing.
+ */
+const SEASON_WORDS: Record<string, { title: string; body: string }> = {
+  th: th.signals.seasonPush,
+  ms: ms.signals.seasonPush,
+  en: en.signals.seasonPush,
+};
+
+async function seasonTick(
+  supabase: ReturnType<typeof createPublicClient>,
+  token: string,
+  gone: string[],
+): Promise<{ sent: number; failed: number }> {
+  const { data, error } = await supabase.rpc("push_season_due", { p_token: token });
+  if (error || !Array.isArray(data)) return { sent: 0, failed: 0 };
+  let sent = 0;
+  let failed = 0;
+  for (const row of data as {
+    notice_id: string;
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+    locale: string;
+    basin: string;
+    zone_name: Record<string, string> | null;
+    rose_days: number | null;
+    rain_15d_mm: number | null;
+  }[]) {
+    const words = SEASON_WORDS[row.locale] ?? SEASON_WORDS.th!;
+    const zone = row.zone_name?.[row.locale] ?? row.zone_name?.th ?? row.basin;
+    const fill = (text: string) =>
+      text
+        .replace("{zone}", zone)
+        .replace("{days}", String(row.rose_days ?? ""))
+        .replace("{mm}", row.rain_15d_mm === null ? "" : String(Math.round(row.rain_15d_mm)));
+    const payload = {
+      // The service worker's plain kind: a title, words, and a page of this app to open.
+      kind: "announcement" as const,
+      title: fill(words.title),
+      body: fill(words.body),
+      url: row.locale === "th" ? "/admin/signals" : `/${row.locale}/admin/signals`,
+      tag: `season-${row.notice_id}`,
+      sticky: false,
+    };
+    try {
+      await webpush.sendNotification(
+        { endpoint: row.endpoint, keys: row.keys },
+        JSON.stringify(payload),
+        // Speed, never a ring: it is a week-long signal, not an emergency.
+        { TTL: 12 * 3600, urgency: "normal" },
+      );
+      sent++;
+    } catch (e) {
+      const status = (e as { statusCode?: number }).statusCode;
+      if (status === 404 || status === 410) gone.push(row.endpoint);
+      else failed++;
+    }
+  }
+  return { sent, failed };
+}
+
 async function autoAlarmTick(
   supabase: ReturnType<typeof createPublicClient>,
   token: string,

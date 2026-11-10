@@ -219,6 +219,170 @@ export const EXAMPLE_GAUGE_LEVELS = [
  * the real ones (seed 49), including a mouth with no warning zone, so the example shows both the
  * gate panel and the line that names a mouth Jaga has no live feed for.
  */
+/**
+ * Season state (Module 11), as `admin_season_signals()`, `admin_season_state()` and
+ * `admin_season_notices()` answer. Three zones in three states on purpose: Pattani rising with a
+ * wet fortnight behind it (the one that raises a notice), Kolok wet but not rising, and U-Taphao
+ * with a gap in its readings, so the example page shows what "we cannot say" looks like.
+ */
+export const EXAMPLE_SEASON_SIGNALS = {
+  now: new Date(EXAMPLE_SIGNALS_NOW).toISOString(),
+  zones: [
+    {
+      zoneId: "00000000-0000-4000-8000-000000000001",
+      basin: "pattani_river",
+      grade: "rising_wet",
+      reasons: ["rising_week", "wet_fortnight"],
+      stale: false,
+      figures: {
+        basin: "pattani_river",
+        gauge: "X.40A",
+        month: 11,
+        at: new Date(EXAMPLE_SIGNALS_NOW).toISOString(),
+        floor: {
+          m: 13.62,
+          at: new Date(EXAMPLE_SIGNALS_NOW - 9 * 3_600_000).toISOString(),
+          roseDays: 6,
+          change7dM: 0.41,
+          band: "high",
+          vsNormalM: 0.62,
+          reference: { p33: 12.82, p50: 13.0, p67: 13.48, seasons: 7 },
+        },
+        rain: {
+          d15Mm: 268,
+          d15Band: "high",
+          d30Mm: 402,
+          seasonMm: 611,
+          seasonBand: "high",
+          at: new Date(EXAMPLE_SIGNALS_NOW - 3_600_000).toISOString(),
+          reference: { d15: { p33: 131.5, p50: 178.1, p67: 225.3 }, seasons: 9 },
+        },
+        stale: false,
+        blind: [],
+        grade: "rising_wet",
+        reasons: ["rising_week", "wet_fortnight"],
+      },
+    },
+    {
+      zoneId: "00000000-0000-4000-8000-000000000002",
+      basin: "kolok",
+      grade: "wet",
+      reasons: ["wet_fortnight"],
+      stale: false,
+      figures: {
+        basin: "kolok",
+        gauge: "X.119A",
+        month: 11,
+        at: new Date(EXAMPLE_SIGNALS_NOW).toISOString(),
+        floor: {
+          m: 4.9,
+          at: new Date(EXAMPLE_SIGNALS_NOW - 2 * 3_600_000).toISOString(),
+          roseDays: 2,
+          change7dM: -0.12,
+          band: "low",
+          vsNormalM: -0.4,
+          reference: { p33: 4.89, p50: 5.3, p67: 6.31, seasons: 7 },
+        },
+        rain: {
+          d15Mm: 301,
+          d15Band: "high",
+          d30Mm: 470,
+          seasonMm: 702,
+          seasonBand: "high",
+          at: new Date(EXAMPLE_SIGNALS_NOW - 3_600_000).toISOString(),
+          reference: { d15: { p33: 139.9, p50: 205.7, p67: 283.8 }, seasons: 9 },
+        },
+        stale: false,
+        blind: [],
+        grade: "wet",
+        reasons: ["wet_fortnight"],
+      },
+    },
+    {
+      zoneId: "00000000-0000-4000-8000-000000000003",
+      basin: "u_taphao",
+      grade: "quiet",
+      reasons: [],
+      stale: true,
+      figures: {
+        basin: "u_taphao",
+        gauge: "X.44",
+        month: 11,
+        at: new Date(EXAMPLE_SIGNALS_NOW).toISOString(),
+        floor: {
+          m: null,
+          at: new Date(EXAMPLE_SIGNALS_NOW - 50 * 3_600_000).toISOString(),
+          roseDays: null,
+          change7dM: null,
+          band: "unknown",
+          vsNormalM: null,
+          reference: { p33: 0.91, p50: 1.13, p67: 1.62, seasons: 7 },
+        },
+        rain: {
+          d15Mm: 120,
+          d15Band: "low",
+          d30Mm: 260,
+          seasonMm: 430,
+          seasonBand: "middle",
+          at: new Date(EXAMPLE_SIGNALS_NOW - 3_600_000).toISOString(),
+          reference: { d15: { p33: 138.7, p50: 160.3, p67: 189.4 }, seasons: 9 },
+        },
+        stale: true,
+        blind: ["gaugeDays"],
+        grade: "quiet",
+        reasons: [],
+      },
+    },
+  ],
+};
+
+export const EXAMPLE_SEASON_STATE = {
+  now: new Date(EXAMPLE_SIGNALS_NOW).toISOString(),
+  gauges: [10, 11, 12, 1].map((month) => ({
+    stationId: "example-X.40A",
+    thaiwaterId: 2583,
+    code: "X.40A",
+    month,
+    floor: { p33: 12.59, p50: 12.75, p67: 13.07 },
+    rise: { p33: -0.06, p50: 0.05, p67: 0.13 },
+    seasons: 7,
+    days: 217,
+    seaM: 0.018,
+    pulseM: 0.118,
+    method: { source: "example" },
+    updatedAt: "2026-11-10T00:00:00Z",
+  })),
+  zones: [10, 11, 12, 1].map((month) => ({
+    zoneId: "00000000-0000-4000-8000-000000000001",
+    basin: "pattani_river",
+    month,
+    d15: { p33: 131.5, p50: 178.1, p67: 225.3 },
+    d30: { p33: 266.3, p50: 318.3, p67: 358.0 },
+    std: { p33: 365.1, p50: 432.7, p67: 531.5 },
+    seasons: 9,
+    days: 183,
+    method: { source: "example" },
+    updatedAt: "2026-11-10T00:00:00Z",
+  })),
+};
+
+export const EXAMPLE_SEASON_NOTICES = [
+  {
+    id: "cccccccc-0000-4000-8000-00000000000c",
+    zone_id: "00000000-0000-4000-8000-000000000001",
+    basin: "pattani_river",
+    raised_at: new Date(EXAMPLE_SIGNALS_NOW - 4 * 3_600_000).toISOString(),
+    observed_at: new Date(EXAMPLE_SIGNALS_NOW - 9 * 3_600_000).toISOString(),
+    grade: "rising_wet",
+    reasons: ["rising_week", "wet_fortnight"],
+    figures: EXAMPLE_SEASON_SIGNALS.zones[0]!.figures,
+    status: "open",
+    reviewed_at: null,
+    review_note: null,
+    ended_at: null,
+  },
+];
+
 export const EXAMPLE_COASTAL_GATE = [
   {
     id: "pattani_river",

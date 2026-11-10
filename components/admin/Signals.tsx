@@ -31,6 +31,15 @@ import {
   type Signals,
   type Zone,
 } from "@/lib/signals";
+import {
+  monthsFor,
+  openNoticeFor,
+  seasonNote,
+  type Band,
+  type SeasonNotice,
+  type SeasonReference,
+  type SeasonState,
+} from "@/lib/season-state";
 import { buttonPrimary, buttonSecondary, card, hint, input, label } from "@/lib/ui";
 
 /**
@@ -369,6 +378,10 @@ export function draftNote(zone: Zone, now: number, locale: string): string {
 function ZoneCard({
   zone,
   gate,
+  season,
+  seasonNotice,
+  seasonReferences,
+  seasonReviewAction,
   now,
   locale,
   t,
@@ -380,6 +393,10 @@ function ZoneCard({
 }: {
   zone: Zone;
   gate: Gate | null;
+  season: SeasonState | null;
+  seasonNotice: SeasonNotice | null;
+  seasonReferences: SeasonReference[];
+  seasonReviewAction?: (form: FormData) => void;
   now: number;
   locale: string;
   t: T;
@@ -577,6 +594,16 @@ function ZoneCard({
       ) : null}
 
       <RecessionBlock zone={zone} gate={gate} t={t} />
+
+      <SeasonPanel
+        zone={zone}
+        state={season}
+        notice={seasonNotice}
+        references={seasonReferences}
+        locale={locale}
+        t={t}
+        reviewAction={seasonReviewAction}
+      />
 
       <details
         className="rounded-xl border border-jaga-line p-3"
@@ -819,6 +846,195 @@ function RecessionBlock({ zone, gate, t }: { zone: Zone; gate: Gate | null; t: T
         </ul>
       </div>
     </details>
+  );
+}
+
+/**
+ * How wet this catchment already is, and whether its river has been rising for a week (science
+ * plan Module 11; the owner asked for it on 9 November 2026).
+ *
+ * Written out in words beside the rest of the zone, never as a level and never in an alert colour:
+ * it cannot raise anything and it cannot publish (safety rule 2). Every state is shown, the quiet
+ * one included, and a figure the rule cannot judge says so rather than reading as calm (safety
+ * rule 10). It is a record, not a forecast, and it is not early: in November 2025 at X.40A the
+ * rule's days were the 23rd to the 27th and the bank was crossed on the 24th. The copy says that.
+ */
+function SeasonPanel({
+  zone,
+  state,
+  notice,
+  references,
+  locale,
+  t,
+  reviewAction,
+}: {
+  zone: Zone;
+  state: SeasonState | null;
+  notice: SeasonNotice | null;
+  references: SeasonReference[];
+  locale: string;
+  t: T;
+  reviewAction?: (form: FormData) => void;
+}) {
+  if (!state) return null;
+  const f = state.figures;
+  const months = monthsFor(references, "gauge", f?.gauge ?? "");
+  const rainMonths = monthsFor(references, "zone", zone.basin);
+  const third = (b: Band) => t(`season.band.${b}`);
+  const mm = (v: number | null) => (v === null ? t("unknown") : t("mm", { value: fix(v, 0) }));
+  const metres = (v: number | null) => (v === null ? t("unknown") : `${fix(v)} m`);
+  const signed = (v: number | null) =>
+    v === null ? t("unknown") : `${v >= 0 ? "+" : ""}${fix(v)} m`;
+
+  return (
+    <div
+      className="flex flex-col gap-2 rounded-xl border border-jaga-line p-3"
+      data-signal-season={state.grade}
+      data-signal-season-zone={zone.id}
+    >
+      <h4 className="font-bold text-jaga-ink">{t("season.title")}</h4>
+      <p className="font-bold" data-season-grade>
+        {t(`season.grade.${state.grade}`)}
+      </p>
+      <p className={hint}>{t("season.intro")}</p>
+
+      {f ? (
+        <ul className="flex flex-col gap-1">
+          <li data-season="floor">
+            {f.gauge ? (
+              <>
+                {t("season.floor", {
+                  gauge: f.gauge,
+                  value: metres(f.floor.m),
+                  rose: f.floor.roseDays ?? t("unknown"),
+                  window: 7,
+                  change: signed(f.floor.change7dM),
+                })}{" "}
+                <span className={hint}>{third(f.floor.band)}</span>
+              </>
+            ) : (
+              t("season.floorNone")
+            )}
+          </li>
+          {/*
+           * Below or above the month's median. Context, deliberately not a condition: at X.40A the
+           * floor sat in the bottom third of its November record through 5-22 November 2025 and the
+           * river went over its bank on the 24th (owner's decision, 10 November 2026).
+           */}
+          {f.floor.vsNormalM !== null && f.floor.reference ? (
+            <li className={hint} data-season="normal">
+              {t("season.vsNormal", {
+                value: signed(f.floor.vsNormalM),
+                median: metres(f.floor.reference.p50),
+                seasons: f.floor.reference.seasons ?? 0,
+              })}
+            </li>
+          ) : null}
+          <li data-season="rain15">
+            {t("season.rain15", { value: mm(f.rain.d15Mm) })}{" "}
+            <span className={hint}>{third(f.rain.d15Band)}</span>
+          </li>
+          <li className={hint} data-season="rain30">
+            {t("season.rain30", { value: mm(f.rain.d30Mm) })}
+          </li>
+          <li data-season="season">
+            {t("season.sinceOctober", { value: mm(f.rain.seasonMm) })}{" "}
+            <span className={hint}>{third(f.rain.seasonBand)}</span>
+          </li>
+        </ul>
+      ) : null}
+
+      {f && f.blind.length > 0 ? (
+        <p className={hint} data-season-blind={f.blind.join(" ")}>
+          {t("season.blind", { reasons: f.blind.map((b) => t(`season.why.${b}`)).join("; ") })}
+        </p>
+      ) : null}
+      {state.stale ? (
+        <p className={hint} data-season-stale>
+          {t("season.stale")}
+        </p>
+      ) : null}
+      {f?.rain.at ? (
+        <p className={hint}>{t("season.rainAt", { time: when(locale, f.rain.at) })}</p>
+      ) : null}
+      <p className={hint}>{t("season.caveat")}</p>
+
+      {notice ? (
+        <div
+          className="flex flex-col gap-2 rounded-xl border-2 border-jaga-edge p-2"
+          data-season-notice={notice.id}
+        >
+          <p className="font-bold">{t("season.notice.title")}</p>
+          <p className={hint}>
+            {t("season.notice.raised", {
+              time: notice.raisedAt === null ? t("unknown") : when(locale, notice.raisedAt),
+              reasons: notice.reasons.map((r) => t(`season.reason.${r}`)).join("; "),
+            })}
+          </p>
+          <p className={hint}>{t("season.notice.yours")}</p>
+          <p>
+            <Link
+              href={{
+                pathname: "/admin/alerts/new",
+                query: { zone: zone.id, level: "watch", note: seasonNote(state) },
+              }}
+              className={`${buttonPrimary} inline-flex`}
+              data-season-draft
+            >
+              {t("season.notice.draft")}
+            </Link>
+          </p>
+          {reviewAction ? (
+            <form action={reviewAction} className="flex flex-wrap items-end gap-2">
+              <input type="hidden" name="notice" value={notice.id} />
+              <label className="flex flex-1 flex-col gap-1">
+                <span className={label}>{t("season.notice.note")}</span>
+                <input name="note" className={input} maxLength={300} />
+              </label>
+              <button name="status" value="sent" className={buttonSecondary} type="submit">
+                {t("season.notice.markSent")}
+              </button>
+              <button name="status" value="dismissed" className={buttonSecondary} type="submit">
+                {t("season.notice.dismiss")}
+              </button>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
+
+      {months.length > 0 || rainMonths.length > 0 ? (
+        <details data-season-months>
+          <summary className="min-h-tap cursor-pointer font-bold text-jaga-ink">
+            {t("season.months.title")}
+          </summary>
+          <div className="flex flex-col gap-2 pt-2">
+            <p className={hint}>{t("season.months.intro")}</p>
+            {months.map((m) => (
+              <p key={`g${m.month}`} className={hint} data-season-month={m.month}>
+                {t("season.months.floor", {
+                  month: t(`season.month.${m.month}`),
+                  low: metres(m.floor?.p33 ?? null),
+                  median: metres(m.floor?.p50 ?? null),
+                  high: metres(m.floor?.p67 ?? null),
+                  seasons: m.seasons,
+                })}
+              </p>
+            ))}
+            {rainMonths.map((m) => (
+              <p key={`z${m.month}`} className={hint} data-season-rain-month={m.month}>
+                {t("season.months.rain", {
+                  month: t(`season.month.${m.month}`),
+                  low: mm(m.d15?.p33 ?? null),
+                  median: mm(m.d15?.p50 ?? null),
+                  high: mm(m.d15?.p67 ?? null),
+                  seasons: m.seasons,
+                })}
+              </p>
+            ))}
+          </div>
+        </details>
+      ) : null}
+    </div>
   );
 }
 
@@ -1136,6 +1352,10 @@ function mapPoints(data: Signals, locale: string): MapPoint[] {
 export function SignalsView({
   data,
   gates = [],
+  seasons = {},
+  seasonNotices = [],
+  seasonReferences = [],
+  seasonReviewAction,
   locale,
   t,
   action,
@@ -1154,6 +1374,14 @@ export function SignalsView({
   data: Signals;
   /** One row per river mouth (`coastal_gate_reference`); empty until the migration is applied. */
   gates?: GateReference[];
+  /**
+   * Season state (Module 11), all three empty until the migrations are applied: the live grade per
+   * zone, the episodes raised for an admin, and the monthly reference behind both.
+   */
+  seasons?: Record<string, SeasonState>;
+  seasonNotices?: SeasonNotice[];
+  seasonReferences?: SeasonReference[];
+  seasonReviewAction?: (form: FormData) => void;
   locale: string;
   t: T;
   action?: (form: FormData) => void;
@@ -1301,6 +1529,10 @@ export function SignalsView({
           key={zone.id}
           zone={zone}
           gate={gateFor(gates, zone, data.now)}
+          season={seasons[zone.id] ?? null}
+          seasonNotice={openNoticeFor(seasonNotices, zone.id)}
+          seasonReferences={seasonReferences}
+          seasonReviewAction={seasonReviewAction}
           now={data.now}
           locale={locale}
           t={t}
