@@ -339,11 +339,18 @@ describe("telling the admins", () => {
       "select * from public.push_season_due($1)",
       [token],
     );
-    expect(due).toHaveLength(1);
-    expect(due[0]!.endpoint).toBe("https://fcm.googleapis.com/admin-phone");
-    expect(due[0]!.rose_days).toBe(7);
-    // Owed once: a second tick tells nobody twice.
-    expect(await rows(db, "select * from public.push_season_due($1)", [token])).toHaveLength(0);
+    // Every admin's phone is owed it, so count only the one this test added: on jaga-dev the real
+    // admins have phones of their own and the count would move under the test.
+    const mine = due.filter((d) => d.endpoint === "https://fcm.googleapis.com/admin-phone");
+    expect(mine).toHaveLength(1);
+    expect(mine[0]!.rose_days).toBe(7);
+    // Owed once: a second call tells the same phone nothing.
+    const again = await rows<{ endpoint: string }>(
+      db,
+      "select * from public.push_season_due($1)",
+      [token],
+    );
+    expect(again.map((d) => d.endpoint)).not.toContain("https://fcm.googleapis.com/admin-phone");
 
     for (const who of [null, w.requester, w.admin]) {
       await as(db, who ? { uid: who } : "anon");
