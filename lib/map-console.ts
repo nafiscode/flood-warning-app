@@ -74,6 +74,60 @@ export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
 }
 
 /**
+ * How many of the last seven days' daily lows must be higher than the day before for a river to
+ * count as rising for the week. Five, which is the figure the admins' own notice uses
+ * (`system_settings.season_state.season.rose_days_min`, science plan Module 11): the public card
+ * and the admin notice must never be able to say different things about the same river. An admin
+ * who changes that setting has to change this with it.
+ */
+export const ROSE_DAYS_MIN = 5;
+
+/**
+ * What ordering a station needs: where it is and how it reads, an id, and its week where the
+ * database could judge one. `roseDays` is optional because the home screen's smaller gauge feed
+ * does not carry it - and a station without it is never counted as steady, only as unjudged.
+ */
+export type GaugeInRun = GaugeReading & { id: string; roseDays?: number | null };
+
+export type WeekRise = {
+  /** Rivers whose daily low rose on `ROSE_DAYS_MIN` of the last seven days. */
+  rising: number;
+  /** Stations the week could be read for at all. */
+  judged: number;
+  /**
+   * Stations it could not: the tide or a dam moves them, the eight days have a gap, or they have
+   * been silent. Counted and said, never folded into "none rising" (safety rule 10).
+   */
+  unjudged: number;
+};
+
+/**
+ * How many rivers have been rising for a week (the owner, 10 Nov 2026: the card "should also say
+ * how many of the rivers level has risen for the past weeks consistantly").
+ *
+ * It counts what the database judged and nothing else. `station_status()` leaves `roseDays` null
+ * for a station the tide or a dam's turbines move, and for one whose eight days are incomplete;
+ * those are the `unjudged`, and a card that counted them as calm would be claiming a measurement
+ * nobody made. This is a count of days, not a forecast and not a level (safety rules 2 and 8).
+ */
+export function weekRise(
+  gauges: readonly { roseDays?: number | null }[],
+  min: number = ROSE_DAYS_MIN,
+): WeekRise {
+  const judged = gauges.filter((g) => typeof g.roseDays === "number");
+  return {
+    rising: judged.filter((g) => (g.roseDays as number) >= min).length,
+    judged: judged.length,
+    unjudged: gauges.length - judged.length,
+  };
+}
+
+/** Whether this station is one of the rivers that has been rising for a week. */
+export function isRisingWeek(g: { roseDays?: number | null }, min: number = ROSE_DAYS_MIN): boolean {
+  return typeof g.roseDays === "number" && g.roseDays >= min;
+}
+
+/**
  * The run of river gauges a press on the rivers' readout walks through, and where it starts.
  *
  * Two rules, in this order, and the second was overruled by the first on 20 Oct 2026:
@@ -82,6 +136,11 @@ export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
  *     case that there are 3 gauges that says 'near the bank', when clicked it should show the
  *     worst 3 first, regardless they are near or not". The readout is counting all four
  *     provinces, so what it counts is what it opens.
+ *   * **Then a river that has been rising for a week**, wherever it is (the owner, 10 Nov 2026:
+ *     a press should "open the rivergauge details that their level has risen first then later on
+ *     sort with which river is related to the location first"). So the week's rise sets the tier
+ *     and the distance sorts within it, exactly as a bank reached already did - which puts their
+ *     own rising river at the front of that tier.
  *   * **Otherwise their own rivers**: the stations within `GAUGES_NEAR_KM` of their area or of
  *     any place they watch - the same distance, and for the same reason, as the live monitoring
  *     uses (lib/monitoring.ts: the gauge feed carries a point and no province, and the
@@ -90,11 +149,11 @@ export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
  * Distance never decides the pool now; it breaks a tie between two stations reading the same,
  * which is how the riskiest of several of their own places is still the one that opens.
  *
- * The order is total and never random: how it reads, then distance, then the newest reading,
- * then the id. The same readings always give the same run, so a second press cannot land
- * elsewhere and Next cannot wander.
+ * The order is total and never random: how it reads, then distance, then the longer rise, then
+ * the newest reading, then the id. The same readings always give the same run, so a second press
+ * cannot land elsewhere and Next cannot wander.
  */
-export function gaugeRun<T extends GaugeReading & { id: string }>(
+export function gaugeRun<T extends GaugeInRun>(
   gauges: readonly T[],
   /** The person's own area and the places they watch. Empty for a visitor who has saved none. */
   places: readonly { lat: number; lon: number }[] = [],
@@ -107,9 +166,11 @@ export function gaugeRun<T extends GaugeReading & { id: string }>(
       : Math.min(...places.map((p) => Math.hypot(g.lat - p.lat, (g.lon - p.lon) * SCALE(p.lat))));
   return [...gauges].sort(
     (a, b) =>
-      gaugeRank(gaugeLook(a.status), mine.has(a.id)) -
-        gaugeRank(gaugeLook(b.status), mine.has(b.id)) ||
+      gaugeRank(gaugeLook(a.status), mine.has(a.id), isRisingWeek(a)) -
+        gaugeRank(gaugeLook(b.status), mine.has(b.id), isRisingWeek(b)) ||
       km(a) - km(b) ||
+      // Equally placed and reading the same: the river that has risen on more days opens.
+      (b.roseDays ?? -1) - (a.roseDays ?? -1) ||
       (b.observedAt ?? "").localeCompare(a.observedAt ?? "") ||
       a.id.localeCompare(b.id),
   );
@@ -117,17 +178,20 @@ export function gaugeRun<T extends GaugeReading & { id: string }>(
 
 /**
  * Where a station stands in the run. A bank reached or neared is the whole four provinces'
- * business; below that, their own rivers are read before everybody else's.
+ * business, and so is a week of rising; below those, their own rivers are read before everybody
+ * else's. The tiers are spaced so that one can be added between two of them without the ranks
+ * of the others changing meaning.
  */
-function gaugeRank(look: GaugeLook, mine: boolean): number {
+function gaugeRank(look: GaugeLook, mine: boolean, rising = false): number {
   if (look === "over") return 0;
-  if (look === "near") return 1;
+  if (look === "near") return 10;
+  if (rising) return 20;
   const rest = { high: 0, normal: 1, nolevels: 2, quiet: 3 }[look] ?? 3;
-  return (mine ? 2 : 6) + rest;
+  return (mine ? 30 : 60) + rest;
 }
 
 /** Which station the rivers' readout opens: the first of the run. */
-export function gaugeOfInterest<T extends GaugeReading & { id: string }>(
+export function gaugeOfInterest<T extends GaugeInRun>(
   gauges: readonly T[],
   places: readonly { lat: number; lon: number }[] = [],
 ): T | null {
@@ -147,12 +211,19 @@ export const LIT_MAX = 3;
  * where no river is near its bank, the one station the card opens on, so the press always points
  * at something.
  */
-export function gaugesLit<T extends GaugeReading & { id: string }>(run: readonly T[]): T[] {
+export function gaugesLit<T extends GaugeInRun>(run: readonly T[]): T[] {
   const concern = run.filter((g) => {
     const look = gaugeLook(g.status);
     return look === "over" || look === "near";
   });
-  return (concern.length > 0 ? concern : run.slice(0, 1)).slice(0, LIT_MAX);
+  /*
+   * Where no river is near its bank, the rivers that have been rising for a week are what the
+   * card is now reporting, so those are what it lights (the owner, 10 Nov 2026). They are already
+   * at the front of the run, so this only decides how many of them light at once.
+   */
+  const rising = concern.length > 0 ? [] : run.filter((g) => isRisingWeek(g));
+  const pick = concern.length > 0 ? concern : rising.length > 0 ? rising : run.slice(0, 1);
+  return pick.slice(0, LIT_MAX);
 }
 
 /** Longitudes shrink towards the poles; at this latitude the small-angle form is exact enough. */

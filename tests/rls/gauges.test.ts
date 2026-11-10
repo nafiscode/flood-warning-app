@@ -183,3 +183,93 @@ describe("the gauges", () => {
     expect(row.code).toBe("T.1");
   });
 });
+
+/*
+ * The week behind each river (the owner, 10 Nov 2026; science plan Module 11). `station_status()`
+ * now also says on how many of the last seven whole Bangkok days this river's daily low rose.
+ * What matters here is what it refuses to say: a station the tide moves, or one with a gap, gets
+ * no figure at all rather than a figure that reads as a steady week.
+ */
+describe("the week each river has had", () => {
+  /** Readings for `days` whole Bangkok days back from yesterday, each `step` m above the last. */
+  const giveDays = async (days: number, step: number, from = 1) => {
+    await asOwner(db);
+    for (let d = days; d >= 1; d -= 1) {
+      const level = 5 + (days - d) * step;
+      for (const hour of [2, 11, 20]) {
+        await db.query(
+          `insert into public.observations (station_id, ts, variable, value)
+           values ($1, (((now() at time zone 'Asia/Bangkok')::date - $2::integer)::timestamp
+                        + make_interval(hours => $3::integer)) at time zone 'Asia/Bangkok',
+                   'water_level_msl', $4)
+           on conflict do nothing`,
+          [station, d + from - 1, hour, level + hour / 1000],
+        );
+      }
+    }
+  };
+  /** Module 11 keeps this station: a reference row is what says the catchment moves it. */
+  const keepStation = async () => {
+    await asOwner(db);
+    await db.query(
+      `insert into public.season_baseflow (station_id, month, seasons, days, method)
+       values ($1, 11, 6, 500, '{"test": true}'::jsonb)
+       on conflict (station_id, month) do nothing`,
+      [station],
+    );
+  };
+  const week = async () =>
+    (
+      await rows<{ rose_days: number | null; week_change_m: number | null }>(
+        db,
+        "select rose_days, week_change_m from public.station_status() where id = $1",
+        [station],
+      )
+    )[0]!;
+
+  it("counts the days a kept river's daily low rose, and a visitor may read them", async () => {
+    await giveDays(9, 0.1);
+    await keepStation();
+    await as(db, "anon");
+    const w = await week();
+    // Eight whole days, every one above the last: seven comparisons, all rising.
+    expect(w.rose_days).toBe(7);
+    expect(w.week_change_m).toBeCloseTo(0.7, 2);
+  });
+
+  it("says nothing at all about a station Module 11 does not keep", async () => {
+    // The same readings, but no reference row: this is a gauge the tide or a dam moves, whose
+    // daily low is not a measure of the catchment. No figure, rather than a wrong one.
+    await giveDays(9, 0.1);
+    await as(db, "anon");
+    const w = await week();
+    expect(w.rose_days).toBeNull();
+    expect(w.week_change_m).toBeNull();
+  });
+
+  it("says nothing when the eight days have a gap", async () => {
+    await keepStation();
+    // Seven of the eight days, so the run is incomplete: a missing day must never be able to
+    // look like a day the river did not rise.
+    await giveDays(7, 0.1);
+    await as(db, "anon");
+    expect((await week()).rose_days).toBeNull();
+  });
+
+  it("says nothing when the river has been silent for a day and a half", async () => {
+    await keepStation();
+    // The eight days are there, but they end two days ago.
+    await giveDays(9, 0.1, 3);
+    await as(db, "anon");
+    expect((await week()).rose_days).toBeNull();
+  });
+
+  it("still lets nobody read the reference table it asks", async () => {
+    await keepStation();
+    await as(db, "anon");
+    await expectDenied(db, "select count(*) from public.season_baseflow");
+    await as(db, { uid: w.requester });
+    // A signed-in resident has the grant and is shown nothing by the policy.
+    expect(await rows(db, "select * from public.season_baseflow")).toHaveLength(0);
+  });
+});

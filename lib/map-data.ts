@@ -39,6 +39,17 @@ export type Gauge = {
   rise3h?: number | null;
   /** The bank level, m MSL. */
   bank?: number | null;
+  /**
+   * On how many of the last seven whole Bangkok days this river's daily low was higher than the day
+   * before (0..7), and the metres the daily low has moved over the eight days behind that
+   * (`station_status()`, 10 Nov 2026; science plan Module 11).
+   *
+   * `null` means **not judged**, never "it did not rise": a station the tide or a dam's turbines
+   * move is left out of this measure altogether, as is one with a gap in the eight days or one
+   * silent for 36 hours. A reader is told which (safety rule 10).
+   */
+  roseDays?: number | null;
+  weekChange?: number | null;
   /** Only on a gauge the tide reaches, and only when the forecast could be read; see `SeaGate`. */
   sea?: SeaGate;
 };
@@ -119,6 +130,9 @@ export function toGauge(row: Record<string, unknown>): Gauge {
       : "no_recent_data",
     rise3h: num(row.rise_3h),
     bank: num(row.bank_m),
+    roseDays:
+      typeof row.rose_days === "number" && Number.isInteger(row.rose_days) ? row.rose_days : null,
+    weekChange: num(row.week_change_m),
   };
 }
 

@@ -23,8 +23,11 @@ import {
   gaugeOfInterest,
   gaugeRun,
   gaugesLit,
+  isRisingWeek,
   LIT_MAX,
   reportsAlarm,
+  ROSE_DAYS_MIN,
+  weekRise,
 } from "@/lib/map-console";
 import { bandFor, CONSOLE_QUERY, LAPTOP_QUERY, TABLET_QUERY } from "@/lib/console-view";
 import { contrastRatio } from "@/lib/brand/contrast";
@@ -906,5 +909,78 @@ describe("the tablet's rail and map height", () => {
     expect(declaration).toContain("var(--jaga-hotlines");
     // Not the old figure that fitted the whole map into the first screen.
     expect(sheet).not.toContain("height: calc(100dvh - 29rem)");
+  });
+
+  /*
+   * The owner, 10 Nov 2026: the rivers' card should say how many rivers have been rising for a
+   * week, and a press should open those first. The whole point of these is that an unmeasured
+   * week is never counted as a steady one.
+   */
+  describe("the week behind the rivers", () => {
+    it("counts only the rivers the week was measured for", () => {
+      const w = weekRise([
+        gauge({ id: "a", roseDays: 6 }),
+        gauge({ id: "b", roseDays: ROSE_DAYS_MIN }),
+        gauge({ id: "c", roseDays: 4 }),
+        gauge({ id: "d", roseDays: 0 }),
+        // Tidal, or a gap in the eight days: the database judged nothing, and nor do we.
+        gauge({ id: "e", roseDays: null }),
+        gauge({ id: "f" }),
+      ]);
+      expect(w.rising).toBe(2);
+      expect(w.judged).toBe(4);
+      expect(w.unjudged).toBe(2);
+    });
+
+    it("says nothing was judged rather than nothing was rising", () => {
+      const w = weekRise([gauge({ id: "a" }), gauge({ id: "b", roseDays: null })]);
+      expect(w.judged).toBe(0);
+      expect(w.rising).toBe(0);
+      // The card reads these two apart: 0 of 0 judged is not "every river is steady".
+      expect(w.unjudged).toBe(2);
+    });
+
+    it("needs the whole rule, not most of it", () => {
+      expect(isRisingWeek(gauge({ roseDays: ROSE_DAYS_MIN }))).toBe(true);
+      expect(isRisingWeek(gauge({ roseDays: ROSE_DAYS_MIN - 1 }))).toBe(false);
+      expect(isRisingWeek(gauge({ roseDays: null }))).toBe(false);
+      expect(isRisingWeek(gauge({}))).toBe(false);
+    });
+
+    it("opens a river that has been rising before anybody's quiet one", () => {
+      const rising = gauge({ id: "rising", status: "normal", roseDays: 6 });
+      const mineNormal = gauge({ id: "mine", status: "normal", lat: 6.8, lon: 101.2 });
+      const far = gauge({ id: "far", status: "normal", lat: 9.5, lon: 99.5, roseDays: 6 });
+      // Their own place is right beside `mine`, and the rising river is 300 km away.
+      const here = [{ lat: 6.8, lon: 101.2 }];
+      expect(gaugeOfInterest([mineNormal, far], here)!.id).toBe("far");
+      // Among the risen ones, their own comes first - that is the owner's second rule.
+      expect(gaugeRun([far, rising], here).map((g) => g.id)).toEqual(["rising", "far"]);
+    });
+
+    it("never lets a week of rising outrank a bank", () => {
+      const over = gauge({ id: "over", status: "above_evacuate" });
+      const near = gauge({ id: "near", status: "above_warning" });
+      const rising = gauge({ id: "rising", status: "normal", roseDays: 7 });
+      expect(gaugeRun([rising, near, over]).map((g) => g.id)).toEqual(["over", "near", "rising"]);
+    });
+
+    it("lights the rising rivers when no river is near its bank", () => {
+      const rising = [1, 2, 3, 4].map((n) =>
+        gauge({ id: `r${n}`, status: "normal", roseDays: 7, lon: 101 + n / 10 }),
+      );
+      const calm = gauge({ id: "calm", status: "normal", roseDays: 1 });
+      const lit = gaugesLit(gaugeRun([...rising, calm]));
+      expect(lit).toHaveLength(LIT_MAX);
+      expect(lit.every((g) => g.id.startsWith("r"))).toBe(true);
+      // A bank still wins: then the rising ones are not what a press frames.
+      const near = gauge({ id: "near", status: "above_warning" });
+      expect(gaugesLit(gaugeRun([...rising, near])).map((g) => g.id)).toEqual(["near"]);
+    });
+
+    it("still lights one station when there is nothing to report at all", () => {
+      const calm = gauge({ id: "calm", status: "normal", roseDays: 0 });
+      expect(gaugesLit(gaugeRun([calm])).map((g) => g.id)).toEqual(["calm"]);
+    });
   });
 });
