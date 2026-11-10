@@ -6,8 +6,16 @@
  * - watch: what is happening now
  * - warn: everything that reaches the public
  * - review: things that wait for an admin's decision, each with a count of what is waiting
- * - records: people's details, points, notes between shifts, exports, the access log, the admins
+ * - records: people's details, points, notes between shifts, exports, the access log, the admins,
+ *   and the standing lists Jaga keeps from the science pipeline
  * - preview: each role's own screens with made-up data (the owner, 14 Oct; lib/role-preview.ts)
+ *
+ * Nearly every item is a page under `app/[locale]/admin`, and a test holds the list to exactly
+ * that directory. One is not: A19's highway paths live at `/authority/highway-paths`, because
+ * they were built for a provincial highway office and an admin reads the same page. It is marked
+ * `outside` so the test knows it has no directory of its own, and so that nothing assumes an
+ * admin link stays inside the console. The owner asked for it on 10 Nov 2026 for a plain reason:
+ * the app installed on a laptop has no address bar, so a page with no button is unreachable.
  */
 
 export const ADMIN_GROUPS = ["watch", "warn", "review", "records", "preview"] as const;
@@ -28,6 +36,8 @@ export type AdminItem = {
    * (the super admin and a deputy super admin). Absent means every admin.
    */
   only?: "super" | "manage";
+  /** True for a page that is not under `/admin`: it has no directory in the admin console. */
+  outside?: true;
 };
 
 /** What this session is allowed, as the menu needs to know it. */
@@ -52,6 +62,8 @@ export const ADMIN_ITEMS: readonly AdminItem[] = [
   { key: "handover", href: "/admin/handover", group: "records" },
   { key: "exports", href: "/admin/exports", group: "records" },
   { key: "log", href: "/admin/log", group: "records" },
+  // A19: the authority console's page, which an admin may open for all four provinces.
+  { key: "highwayPaths", href: "/authority/highway-paths", group: "records", outside: true },
   { key: "members", href: "/admin/members", group: "records", only: "manage" },
   { key: "invitations", href: "/admin/invitations", group: "records", only: "super" },
   { key: "preview.visitor", href: "/admin/preview/visitor", group: "preview" },

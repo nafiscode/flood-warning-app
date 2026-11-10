@@ -1764,6 +1764,7 @@
       "handover": "Handover",
       "exports": "Exports",
       "log": "Access log",
+      "highwayPaths": "Roads that may hold water back",
       "fieldRescues": "Field rescues",
       "signals": "Signals",
       "preview": {
@@ -1959,7 +1960,7 @@
         },
         "records": {
           "title": "Records and team",
-          "note": "Household details, points, shift notes, exports and the access log. Every look at personal details is logged."
+          "note": "Household details, points, shift notes, exports, the access log, and the roads that may be holding water back. Every look at personal details is logged."
         },
         "preview": {
           "title": "View as another role",

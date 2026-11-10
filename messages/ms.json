@@ -1764,6 +1764,7 @@
       "handover": "Nota serah tugas",
       "exports": "Eksport",
       "log": "Log akses",
+      "highwayPaths": "Jalan yang mungkin menahan air",
       "fieldRescues": "Penyelamatan ditemui sendiri",
       "signals": "Isyarat",
       "preview": {
@@ -1959,7 +1960,7 @@
         },
         "records": {
           "title": "Rekod dan pasukan",
-          "note": "Maklumat isi rumah, mata, catatan serah tugas, eksport dan log akses. Setiap kali maklumat peribadi dibuka, ia direkodkan."
+          "note": "Maklumat isi rumah, mata, catatan serah tugas, eksport, log akses, dan jalan yang mungkin menahan air. Setiap kali maklumat peribadi dibuka, ia direkodkan."
         },
         "preview": {
           "title": "Lihat sebagai peranan lain",

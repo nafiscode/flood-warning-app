@@ -50,8 +50,26 @@ describe("the admin pages, in groups", () => {
     const previews = existsSync(join(ADMIN_DIR, "preview", "[role]", "page.tsx"))
       ? PREVIEW_ROLES.map((r) => `/admin/preview/${r}`)
       : [];
-    expect(ADMIN_ITEMS.map((i) => i.href).sort()).toEqual([...pages, ...previews].sort());
+    const inside = ADMIN_ITEMS.filter((i) => !i.outside);
+    expect(inside.map((i) => i.href).sort()).toEqual([...pages, ...previews].sort());
     expect(new Set(ADMIN_ITEMS.map((i) => i.key)).size).toBe(ADMIN_ITEMS.length);
+  });
+
+  it("marks the one page that is not under /admin, and that page exists where it says", () => {
+    const outside = ADMIN_ITEMS.filter((i) => i.outside);
+    // A19's highway paths, and nothing else: an admin reads the authority console's own page
+    // rather than a second copy of it (lib/admin-menu.ts).
+    expect(outside.map((i) => i.href)).toEqual(["/authority/highway-paths"]);
+    for (const item of outside) {
+      expect(item.href.startsWith("/admin/")).toBe(false);
+      expect(
+        existsSync(join(process.cwd(), "app", "[locale]", ...item.href.slice(1).split("/"), "page.tsx")),
+      ).toBe(true);
+    }
+    // Every item that is NOT marked lives under /admin, so the flag cannot be forgotten.
+    for (const item of ADMIN_ITEMS.filter((i) => !i.outside)) {
+      expect(item.href.startsWith("/admin"), item.key).toBe(true);
+    }
   });
 
   it("keeps what waits for an admin under review, and the public's alerts under warn", () => {
