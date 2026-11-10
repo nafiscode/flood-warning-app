@@ -649,6 +649,13 @@
       "overBank": "{value} m over the bank",
       "code": "Station {code}",
       "notAlert": "A measurement, not an alert. Alerts come only from Jaga's admins.",
+      "week": {
+        "days": "The daily low rose on {count} of the last 7 days",
+        "changeUp": "Over 8 days the daily low is {value} m higher",
+        "changeDown": "Over 8 days the daily low is {value} m lower",
+        "caveat": "A measurement, not a forecast and not an alert level. Read it beside the rain still to come",
+        "none": "The week's trend cannot be read at this station: the sea or a dam's releases move its readings, or the 8 days are incomplete"
+      },
       "live": "Live",
       "updated": "Newest reading {time} · checked again every 5 minutes",
       "legendTrend": "Chevron: risen or fallen in the last 3 hours",
@@ -778,7 +785,10 @@
         "none": "No reading yet",
         "over": "{count} at or over the bank",
         "near": "{count} near the bank",
-        "open": "See the river gauges on the map"
+        "open": "See the river gauges on the map",
+        "risingWeek": "{count} rising for about a week",
+        "weekJudged": "week's trend read for {judged} of {total} stations",
+        "weekNone": "the week's trend cannot be read yet"
       },
       "dam": {
         "label": "Dam",

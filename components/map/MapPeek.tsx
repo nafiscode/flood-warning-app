@@ -72,6 +72,12 @@ export function GaugePeek({
           {t(`rise.${trendOf(gauge.rise3h, look)}`, { value: Math.abs(gauge.rise3h).toFixed(2) })}
         </p>
       )}
+      {/* The week, where it was measured: days, not a direction of travel (Module 11). */}
+      {gauge.roseDays != null && (
+        <p className="text-small" data-gauge-week={gauge.roseDays}>
+          {t("week.days", { count: gauge.roseDays })}
+        </p>
+      )}
       {gauge.observedAt && <p className={hint}>{t("at", { time: time(gauge.observedAt) })}</p>}
       <p className={hint}>{t("notAlertShort")}</p>
       <MoreButton onMore={onMore} />

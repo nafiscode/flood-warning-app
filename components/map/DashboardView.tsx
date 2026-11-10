@@ -1663,6 +1663,30 @@ export function DashboardView(props: DashboardViewProps) {
             })}
           </p>
         )}
+        {/*
+         * The week this river has had (the owner, 10 Nov 2026; science plan Module 11). Its own
+         * block, because it answers a different question from the three hours above it: not how
+         * fast the water is moving now, but whether the ground under this catchment has been
+         * filling. Said in days and metres, with what it does not mean written under it - it is a
+         * measurement, it is not a level, and it is not a forecast (safety rules 2 and 8).
+         */}
+        {gauge.roseDays != null ? (
+          <div data-gauge-week={gauge.roseDays}>
+            <p className="font-medium">{t("gauge.week.days", { count: gauge.roseDays })}</p>
+            {gauge.weekChange != null && (
+              <p className={hint}>
+                {t(
+                  gauge.weekChange >= 0 ? "gauge.week.changeUp" : "gauge.week.changeDown",
+                  { value: Math.abs(gauge.weekChange).toFixed(2) },
+                )}
+              </p>
+            )}
+            <p className={hint}>{t("gauge.week.caveat")}</p>
+          </div>
+        ) : (
+          /* Why there is no figure, rather than silence that reads as a quiet week. */
+          <p className={hint}>{t("gauge.week.none")}</p>
+        )}
         {gauge.observedAt && (
           <p className={hint}>{t("gauge.at", { time: time(gauge.observedAt) })}</p>
         )}

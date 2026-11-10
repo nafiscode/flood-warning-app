@@ -1644,4 +1644,87 @@ describe("what the rivers' and the reservoirs' readouts open (20 Oct)", () => {
     fireEvent.click(steps.querySelector('[data-card-step="next"]')!);
     expect(flash(c)).toBe(EXAMPLE_DAM.code);
   });
+  /*
+   * The owner, 10 Nov 2026: "instead of just saying 'All below their banks' it should also say
+   * how many of the rivers level has risen for the past weeks consistantly. And when clicked at
+   * the card, should open the rivergauge details that their level has risen first then later on
+   * sort with which river is related to the location first."
+   */
+  describe("the week behind the rivers (10 Nov)", () => {
+    // Nothing near a bank. Two rivers climbing, one of them next door; one station unjudgeable.
+    const WEEK = [
+      riverGauge({ id: "far", lat: 7.1, lon: 100.4, status: "normal" as const, roseDays: 6 }),
+      riverGauge({ id: "mine", lat: 6.84, lon: 101.26, status: "normal" as const, roseDays: 5 }),
+      riverGauge({ id: "steady", lat: 6.6, lon: 101.8, status: "normal" as const, roseDays: 1 }),
+      riverGauge({ id: "tidal", lat: 6.2, lon: 101.1, status: "normal" as const, roseDays: null }),
+    ];
+    const brief = (c: Element) =>
+      c.querySelector('[data-console-tile="gauges"] [data-tile-brief]')!.textContent!;
+
+    it("says how many rivers have been rising, beside the banks", () => {
+      const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: WEEK } });
+      // The bank is still the figure; the week is the line under it.
+      expect(brief(c)).toContain("ทุกสถานีต่ำกว่าตลิ่ง");
+      expect(
+        c.querySelector('[data-console-tile="gauges"] [data-gauge-week]')!.getAttribute(
+          "data-gauge-week",
+        ),
+      ).toBe("2");
+      expect(brief(c)).toContain("น้ำสูงขึ้นต่อเนื่องราว 1 สัปดาห์ 2 สถานี");
+    });
+
+    it("counts no river as steady when its week could not be read", () => {
+      const none = WEEK.map((g) => ({ ...g, roseDays: null }));
+      const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: none } });
+      // No count at all, and the card says why rather than implying a quiet week.
+      expect(c.querySelector('[data-console-tile="gauges"] [data-gauge-week]')).toBeNull();
+      const card = c.querySelector('[data-console-tile="gauges"] [data-tile-card]')!;
+      expect(card.textContent).toContain("ยังดูแนวโน้ม 1 สัปดาห์ไม่ได้");
+    });
+
+    it("says how many stations the week covers when it cannot cover them all", () => {
+      const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: WEEK } });
+      const card = c.querySelector('[data-console-tile="gauges"] [data-tile-card]')!;
+      expect(card.textContent).toContain("ดูแนวโน้ม 1 สัปดาห์ได้ 3 จาก 4 สถานี");
+    });
+
+    it("opens the rising rivers first, their own before the far one, and lights them", () => {
+      const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: WEEK } });
+      openGauges(c);
+      /*
+       * Both are rising, and this reader has saved no place, so there is no location to sort by:
+       * the longer rise opens. With a place saved it is their own river that opens first - the
+       * owner's second rule - and `tests/unit/map-console.test.ts` holds that case.
+       */
+      expect(flash(c)).toBe("far,mine");
+      const steps = c.querySelector("[data-selected='gauge'] [data-card-steps]")!;
+      expect(steps.textContent).toBeTruthy();
+      // The card that opened is one of the risen ones, and it says so in days.
+      const open = c.querySelector("[data-selected='gauge'] [data-gauge-week]")!;
+      expect(open.getAttribute("data-gauge-week")).toBe("6");
+      expect(open.textContent).toContain("ระดับต่ำสุดของวันสูงขึ้น 6 จาก 7 วันที่ผ่านมา");
+      expect(open.textContent).toContain("เป็นค่าที่วัดได้ ไม่ใช่การพยากรณ์ และไม่ใช่ระดับการเตือนภัย ดูคู่กับฝนที่กำลังจะตก");
+    });
+
+    it("a bank still comes before a week of rising", () => {
+      const withBank = [
+        ...WEEK,
+        riverGauge({ id: "bank", lat: 6.3, lon: 101.4, status: "above_warning" as const }),
+      ];
+      const c = dashboard({ data: { ...EXAMPLE_MAP, gauges: withBank } });
+      openGauges(c);
+      expect(flash(c)).toBe("bank");
+    });
+
+    it("tells a reader why one station has no week at all", () => {
+      const c = dashboard({
+        data: { ...EXAMPLE_MAP, gauges: [WEEK[3]!] },
+      });
+      openGauges(c);
+      const panel = c.querySelector("[data-selected='gauge']")!;
+      expect(panel.querySelector("[data-gauge-week]")).toBeNull();
+      expect(panel.textContent).toContain("สถานีนี้ยังบอกแนวโน้ม 1 สัปดาห์ไม่ได้ เพราะน้ำทะเลหรือการระบายน้ำจากเขื่อนมีผลต่อค่าที่วัด หรือข้อมูลยังไม่ครบ 8 วัน");
+    });
+  });
+
 });

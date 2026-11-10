@@ -265,6 +265,23 @@ export const EXAMPLE_MAP: MapData = {
       value: 3.42,
       observedAt: ago(40),
       status: "above_watch",
+      // A river that has been climbing all week (science plan Module 11), so the /dev pages show
+      // the rivers' card counting one.
+      roseDays: 6,
+      weekChange: 0.41,
+    },
+    {
+      id: "g2",
+      name: { th: "สถานีปากแม่น้ำตัวอย่าง", en: "Example river-mouth gauge" },
+      lat: 6.889,
+      lon: 101.291,
+      value: 1.12,
+      observedAt: ago(35),
+      status: "normal",
+      // The tide moves this one, so Module 11 judges no week for it: the card says so rather
+      // than counting it as steady.
+      roseDays: null,
+      weekChange: null,
     },
   ],
 };

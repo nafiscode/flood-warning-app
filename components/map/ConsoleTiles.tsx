@@ -16,6 +16,7 @@ import {
   levelTally,
   reportsAlarm,
   reportTally,
+  weekRise,
   type TileAlarm,
 } from "@/lib/map-console";
 import type { DamContext, DamsTally } from "@/lib/map-console";
@@ -332,19 +333,34 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
       return { brief: <Figure>{t("gauges.none")}</Figure>, more: <Foot>{t("scope.all")}</Foot> };
     }
     const g = gaugeTally(gauges);
+    const week = weekRise(gauges);
     const age = ageMinutes(g.newestAt, now);
     return {
       brief: (
-        <LiveFigure live={g.reporting > 0}>
-          {/* Only what is actually happening: "0 over the bank" is noise on a quiet day. */}
-          {g.over > 0 && g.near > 0
-            ? t("gauges.high", { over: g.over, near: g.near })
-            : g.over > 0
-              ? t("gauges.over", { count: g.over })
-              : g.near > 0
-                ? t("gauges.near", { count: g.near })
-                : t("gauges.allBelow")}
-        </LiveFigure>
+        <>
+          <LiveFigure live={g.reporting > 0}>
+            {/* Only what is actually happening: "0 over the bank" is noise on a quiet day. */}
+            {g.over > 0 && g.near > 0
+              ? t("gauges.high", { over: g.over, near: g.near })
+              : g.over > 0
+                ? t("gauges.over", { count: g.over })
+                : g.near > 0
+                  ? t("gauges.near", { count: g.near })
+                  : t("gauges.allBelow")}
+          </LiveFigure>
+          {/*
+           * The week behind the figure (the owner, 10 Nov 2026): where a river stands is now and
+           * says nothing about which way it has been going, and a card that only ever said "all
+           * below their banks" hid a fortnight of climbing. It is a second line and not the
+           * figure, because the bank is still the thing a glance is for - and it is the same
+           * count of days the admins' own notice uses, never a level and never a forecast.
+           */}
+          {week.rising > 0 && (
+            <p className="text-small text-jaga-text-2" data-gauge-week={week.rising}>
+              {t("gauges.risingWeek", { count: week.rising })}
+            </p>
+          )}
+        </>
       ),
       more: (
         <Foot>
@@ -353,6 +369,14 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
               {[
                 t("gauges.reporting", { count: g.reporting, total: g.total }),
                 g.silent > 0 ? t("gauges.silent", { count: g.silent }) : null,
+                /*
+                 * What the week's figure covers. Said whenever it is not the whole list, so the
+                 * count above can never be read as "and the rest are steady" (safety rule 10).
+                 */
+                week.judged > 0 && week.unjudged > 0
+                  ? t("gauges.weekJudged", { judged: week.judged, total: g.total })
+                  : null,
+                week.judged === 0 ? t("gauges.weekNone") : null,
                 g.newestAt ? t("newest", { time: time(g.newestAt) }) : null,
                 age !== null && age >= OLD_ENOUGH_MIN ? t("age", { minutes: age }) : null,
                 t("scope.all"),

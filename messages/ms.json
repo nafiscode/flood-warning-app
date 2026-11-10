@@ -649,6 +649,13 @@
       "overBank": "{value} m melebihi tebing",
       "code": "Stesen {code}",
       "notAlert": "Ini ukuran, bukan amaran. Amaran hanya dikeluarkan oleh pentadbir Jaga.",
+      "week": {
+        "days": "Paras terendah harian naik pada {count} daripada 7 hari lalu",
+        "changeUp": "Dalam 8 hari paras terendah harian naik {value} m",
+        "changeDown": "Dalam 8 hari paras terendah harian turun {value} m",
+        "caveat": "Ini ukuran, bukan ramalan dan bukan tahap amaran. Baca bersama hujan yang akan datang",
+        "none": "Arah 1 minggu belum dapat dibaca di stesen ini: air laut atau pelepasan empangan mempengaruhi bacaannya, atau 8 hari itu tidak lengkap"
+      },
       "live": "Langsung",
       "updated": "Bacaan terbaru {time} · disemak semula setiap 5 minit",
       "legendTrend": "Anak panah: naik atau turun dalam 3 jam lepas",
@@ -778,7 +785,10 @@
         "none": "Belum ada bacaan",
         "over": "{count} stesen mencapai tebing",
         "near": "{count} stesen hampir tebing",
-        "open": "Lihat stesen paras sungai di peta"
+        "open": "Lihat stesen paras sungai di peta",
+        "risingWeek": "{count} stesen naik berterusan kira-kira 1 minggu",
+        "weekJudged": "arah 1 minggu dapat dibaca bagi {judged} daripada {total} stesen",
+        "weekNone": "arah 1 minggu belum dapat dibaca"
       },
       "dam": {
         "label": "Empangan",
