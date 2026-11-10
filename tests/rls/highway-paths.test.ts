@@ -234,27 +234,39 @@ describe("the highway rows: who may read them", () => {
     expect(await expectDenied(db, "select highway_sections_export($1)", ["95"])).toBe("42501");
   });
 
+  /*
+   * These assert the PROPERTY (every row this caller can see is their province's, and their own
+   * fixtures are among them) rather than a row count. On a fresh database the count would be the
+   * fixtures alone; on jaga-dev, where `highway_paths load` has put the real 4,366 sections in,
+   * it is those plus the fixtures. A test that can only pass on an empty table is a test nobody
+   * can run against the database the live site reads.
+   */
   it("are open to the planning office of that province, and to that province alone", async () => {
     await as(db, { uid: w.yalaPlanning.user });
     const seen = await rows<{ id: string; province_code: string }>(
       db,
       "select id, province_code from highway_sections order by id",
     );
-    expect(seen.map((r) => r.id)).toEqual(["S00001", "S00002"]);
-    const [provinces] = await rows<{ province_code: string }>(
+    expect(seen.every((r) => r.province_code === "95")).toBe(true);
+    expect(seen.map((r) => r.id)).toContain("S00001");
+    expect(seen.map((r) => r.id)).toContain("S00002");
+    expect(seen.map((r) => r.id)).not.toContain("S00003");
+    const provinces = await rows<{ province_code: string }>(
       db,
       "select * from my_planning_provinces()",
     );
-    expect(provinces!.province_code).toBe("95");
-    expect(await rows(db, "select * from my_planning_provinces()")).toHaveLength(1);
+    expect(provinces.map((p) => p.province_code)).toEqual(["95"]);
   });
 
   it("are open to an admin, for all four provinces", async () => {
     await as(db, { uid: w.admin });
-    expect(await rows(db, "select id from highway_sections")).toHaveLength(3);
-    expect((await rows(db, "select * from my_planning_provinces()")).length).toBeGreaterThanOrEqual(
-      4,
-    );
+    const seen = await rows<{ id: string }>(db, "select id from highway_sections");
+    const ids = seen.map((r) => r.id);
+    for (const id of ["S00001", "S00002", "S00003"]) expect(ids).toContain(id);
+    const provinces = (await rows<{ province_code: string }>(db, "select * from my_planning_provinces()"))
+      .map((p) => p.province_code);
+    // The four Jaga serves, and not the other 73 that exist for the "not covered yet" answer.
+    expect(provinces).toEqual(["90", "94", "95", "96"]);
   });
 
   it("give the office its province's flagged stretches with the figures behind them", async () => {
@@ -262,23 +274,29 @@ describe("the highway rows: who may read them", () => {
     const board = await rows<Record<string, unknown>>(db, "select * from highway_stretch_board($1)", [
       "95",
     ]);
-    expect(board).toHaveLength(1);
-    expect(board[0]!.stretch_id).toBe("R00001");
-    expect(board[0]!.section_id).toBe("S00001");
-    expect(board[0]!.upstream_side).toBe("left");
-    expect(Number(board[0]!.crossing_km2)).toBe(54.74);
-    expect(board[0]!.crossing_opening).toBe("waterway");
+    const mine = board.find((r) => r.stretch_id === "R00001");
+    expect(mine).toBeDefined();
+    expect(mine!.section_id).toBe("S00001");
+    expect(mine!.upstream_side).toBe("left");
+    expect(Number(mine!.crossing_km2)).toBe(54.74);
+    expect(mine!.crossing_opening).toBe("waterway");
+    // Only flagged stretches, and only this province's.
+    expect(board.every((r) => r.stretch_class === "look_first" || r.stretch_class === "worth_a_look")).toBe(true);
+    expect(board.map((r) => r.stretch_id)).not.toContain("R00003");
   });
 
   it("hand the map one province as a FeatureCollection", async () => {
     await as(db, { uid: w.yalaPlanning.user });
-    const [got] = await rows<{ j: { type: string; features: unknown[] } }>(
+    const [got] = await rows<{ j: { type: string; features: { id: string }[] } }>(
       db,
       "select highway_sections_map($1) j",
       ["95"],
     );
     expect(got!.j.type).toBe("FeatureCollection");
-    expect(got!.j.features).toHaveLength(2);
+    const ids = got!.j.features.map((f) => f.id);
+    expect(ids).toContain("S00001");
+    expect(ids).toContain("S00002");
+    expect(ids).not.toContain("S00003");
   });
 
   it("hand the download one province, with names and geometry and no pipeline prose", async () => {
@@ -288,7 +306,8 @@ describe("the highway rows: who may read them", () => {
       "select highway_sections_export($1) j",
       ["95"],
     );
-    expect(got!.j).toHaveLength(2);
+    expect(got!.j.every((r) => r.province_code === "95")).toBe(true);
+    expect(got!.j.map((r) => r.id)).not.toContain("S00003");
     const first = got!.j.find((r) => r.id === "S00001")!;
     expect(first.province).toBe("Yala");
     expect(typeof first.tambon_th).toBe("string");
