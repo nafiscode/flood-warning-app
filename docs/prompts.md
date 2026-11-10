@@ -610,9 +610,9 @@ Read docs/science-plan.md, the pipeline METHODS.md files, docs/spec.md and docs/
 Acceptance: an academic reader understands what each layer means, where its data come from and how far to trust it, without being given a method to copy; no vendor name appears on the system page (a test checks the words); the owner has approved both pages.
 ```
 
-### A19: Highway paths in the authority console (after launch)
+### A19: Highway paths in the authority console (built 10 November 2026, `/authority/highway-paths`)
 
-Added 16 Oct 2026 (owner's choice): Module 8 part 2 is built (`pipeline/highway_paths`, 15 Oct) but its lists only sit on the laptop. The offices get them as a page of their own in the authority console, not as a document pack and never in the public app.
+Added 16 Oct 2026 (owner's choice): Module 8 part 2 is built (`pipeline/highway_paths`, 15 Oct) but its lists only sit on the laptop. The offices get them as a page of their own in the authority console, not as a document pack and never in the public app. **Built 10 Nov 2026**: migrations `..a19_planning_not_a_field_team` and `..a19_highway_paths`, the loader `highway_paths load`, spec 5.7, and the decision entry of that day. Item 6 turned out to be real work rather than a check — a `planning`-only unit was a verified authority with everything that carries, so it was closed first (spec 3, safety rule 5). Still open: the two migrations are written and verified but **not applied** (jaga-dev is the live database; they sit behind A12's two), the loader has not been run against it, the Thai wants the owner's reviewer and the Malay a Patani Malay reader, and nobody has been approached at แขวงทางหลวง or โครงการชลประทาน yet.
 ```text
 Read docs/science-plan.md Module 8, pipeline/highway_paths/METHODS.md, docs/spec.md sections 3, 5 and 8, and CLAUDE.md safety rules 5, 6, 8 and 10.
 

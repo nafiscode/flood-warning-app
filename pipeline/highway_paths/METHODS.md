@@ -8,7 +8,7 @@ list is `report.md` beside this file and `pipeline/out/highway_paths/`.
 way through. This module points the provincial highway and irrigation offices at the stretches where
 the radar record looks like that, and at the drainage crossings with no mapped bridge or culvert.
 **It is advice for those offices, to be checked on the ground. It is never a public alert**, it feeds
-no alert level and nothing in the app reads it.
+no alert level, and the one screen in the app that reads it is the offices' own (A19, see Rerun).
 
 ## Inputs
 
@@ -168,5 +168,18 @@ section. None of them has been looked at on imagery or on the ground.
 cd pipeline
 uv run python -m highway_paths fetch      # Overpass extras; resumable, skips cached tiles
 uv run python -m highway_paths run        # about 3 minutes on this laptop
-uv run pytest tests/test_highway_paths.py
+uv run python -m highway_paths load       # names the project and prints what it would write
+uv run python -m highway_paths load --yes # into the database, for the authority console's page
+uv run pytest tests/test_highway_paths.py tests/test_highway_paths_load.py
 ```
+
+`load` is A19 (10 Nov 2026): `highway_sections` and `highway_stretches` behind
+`/authority/highway-paths`, which a provincial highway or irrigation office opens for its own
+province. It replaces the previous run's rows in **one transaction** - nobody can open the page
+onto half a load - and it never touches `highway_stretch_notes`, the offices' own record of what
+they found when they went to look, which is keyed on the stretch id with no foreign key so that it
+outlives these rows. It prints how many notes it left alone; that number should not change. The
+checklist for a reload after a season's radar rerun is in `docs/runbook.md`.
+
+Nothing in the app reads these tables but that one page: no alert level, no suggestion, no
+notification (safety rule 2), and no part of it is public (rule 6).

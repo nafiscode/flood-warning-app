@@ -291,6 +291,47 @@ The admin coming on reads the last note, opens `/admin/alerts` and `/admin/war-r
 one-line note of their own ("taken over, read the note of 06:00"). During Warning or Evacuate somewhere, there must always be one admin awake; arrange
 the order in the admins' group chat before the season.
 
+## Reloading the highway paths after a radar rerun (A19)
+
+`/authority/highway-paths` reads two tables that the science pipeline fills. They hold nine flood
+seasons of radar, so they change once a season at most — after `sar_floods` has a new season and
+`highway_paths run` has been rerun on it. Nothing about this is urgent and nothing about it is
+automatic: there is no cron, because a list of culverts to look at does not go stale in a week.
+
+From `pipeline/`, in this order:
+
+```
+uv run python -m highway_paths fetch      # only if the OpenStreetMap cache is old
+uv run python -m highway_paths run        # about 3 minutes
+uv run python -m highway_paths load       # prints what it would write; writes nothing
+uv run python -m highway_paths load --yes # replaces the previous run in one transaction
+```
+
+What to check before `--yes`:
+
+- the project it names is the one you meant (it prints the Supabase ref and host);
+- the section and class counts look like the run you just made (`out/highway_paths/summary.json`);
+- the stretch count is in the usual range — 197 in the October 2026 run, of which 143 listed.
+
+What `--yes` does and does not do:
+
+- it replaces **every** row of `highway_sections` and `highway_stretches` in one transaction, so
+  nobody can open the page onto half a load. If it fails anywhere, the old rows are still there;
+- it **never touches `highway_stretch_notes`**. The offices' own notes are keyed on the stretch id
+  with no foreign key precisely so that they outlive the pipeline's rows, and the loader prints how
+  many it left alone. Check that number: it should not change;
+- it writes nothing else. No alert, no notification, no suggestion (safety rule 2).
+
+A stretch id can disappear in a rerun (its sections may no longer be flagged). The note written
+against it stays readable and is simply no longer shown beside a stretch. If an office asks where
+their note went, that is the answer — nothing was deleted.
+
+If an office reports seeing nothing at all: check that their unit is `verified`, that it holds the
+`planning` capability, and that its coverage includes at least one tambon of the province they are
+asking about. The page shows the provinces their coverage reaches and no others; an admin sees all
+four. If they see an empty list but the counts in the header, the run has no flagged stretch in
+that province, which is a real answer.
+
 ## After any incident
 
 Within a day: what happened, when, who noticed, what was done, what to change. A short entry in

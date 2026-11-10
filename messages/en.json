@@ -6589,5 +6589,127 @@
       "map": "Open the map",
       "how": "How Jaga works"
     }
+  },
+  "highwayPaths": {
+    "title": "Where a road may be holding water back",
+    "lead": "The stretches of main highway in your province where nine flood seasons of satellite radar look as if water stood on the side it came from, and where natural drainage crosses the road with no opening mapped.",
+    "notAlert": "This is working information for your office to check. It is not an alert, it sends no notifications, and it does not appear in the public app.",
+    "notAllowed": {
+      "title": "This page is for an office that plans and builds",
+      "body": "A provincial highway office or irrigation project office can open this page: register your unit, choose the “planning and analysis” capability, and choose a whole province as your area. Once an admin has verified it, this page shows your province alone.",
+      "register": "Register a unit"
+    },
+    "province": "Province",
+    "provincePick": "Choose a province",
+    "run": "Radar set {runId}, processed {date}",
+    "counts": "{lookFirst} to look at first · {worthALook} worth a look · {km} km of main road",
+    "empty": "This province has no rows loaded yet.",
+    "emptyNone": "No stretch in this province met the thresholds.",
+    "klass": {
+      "look_first": {
+        "name": "Look here first",
+        "lead": "The clearest sign in the radar record. Check these first."
+      },
+      "worth_a_look": {
+        "name": "Worth a look",
+        "lead": "Some sign in the record. Check when you have the chance."
+      },
+      "no_sign": {
+        "name": "No sign",
+        "lead": "The radar does not show one side wetter than the other."
+      },
+      "not_seen": {
+        "name": "The radar has not seen it",
+        "lead": "In towns and steep land the radar cannot read both sides of the road."
+      }
+    },
+    "stretch": {
+      "road": "Highway {ref}",
+      "roadNoRef": "Main road (no number in the map data)",
+      "where": "{tambon}, {district}",
+      "length": "{km} km ({sections, plural, one {# section} other {# sections}})",
+      "code": "Stretch {id}",
+      "openMap": "Open in a map",
+      "figures": "The figures behind it",
+      "reasonsTitle": "What was found"
+    },
+    "reason": {
+      "asymmetry": "The side the water comes from (the {side} side) was flooded on {points} percentage points more of its land than the other, averaged over {seasons} seasons",
+      "seasons": "The upstream side was clearly wetter in {wetter} of {seasons} seasons",
+      "passes": "Water was seen on the upstream side in {up} radar passes and on the other in {down}, of {seen} that saw both sides",
+      "crossing": "Natural drainage from {km2} km² crosses the road in this stretch",
+      "noOpeningAtAll": "No bridge, culvert or mapped watercourse was found within a kilometre of that point in OpenStreetMap",
+      "openingFar": "The nearest mapped opening (a {opening, select, bridge {bridge} culvert {culvert} other {watercourse drawn across the road}}) is {metres} m away",
+      "openingNear": "There is a mapped opening near that point (a {opening, select, bridge {bridge} culvert {culvert} other {watercourse drawn across the road}}) {metres} m away, but its size is unknown",
+      "sideBy_d8": "The water comes from the {side} side, by the flow directions over the elevation model",
+      "sideBy_dem": "The water comes from the {side} side, because that side is higher on average",
+      "sideBy_crossing": "The water comes from the {side} side, by the drainage crossing the road here",
+      "sideUnclear": "Which side the water comes from cannot be told: on flat land the elevation model does not decide it",
+      "sideDisagree": "The flow directions and the ground heights point to different sides. Check this on imagery",
+      "sideNote": "Left and right are as seen travelling in the direction the road is drawn in the map data."
+    },
+    "figure": {
+      "score": "Score",
+      "asymmetry": "Difference between the two sides, averaged over the seasons",
+      "seasons": "Seasons the upstream side was clearly wetter",
+      "seasonsDown": "Seasons the other side was clearly wetter",
+      "persistence": "Difference in the share of passes that saw water",
+      "passes": "Passes that saw both sides",
+      "crossingKm2": "Land draining through the crossing",
+      "opening": "Nearest mapped opening",
+      "openingNone": "None within a kilometre",
+      "sideDecided": "How the upstream side was decided",
+      "km2": "{v} km²",
+      "metres": "{v} m",
+      "points": "{v} points",
+      "seasonsOf": "{v} of {of}"
+    },
+    "limits": {
+      "title": "What this cannot tell you",
+      "extentNotDepth": "The radar sees the extent of water, not its depth. A field 20 cm deep and a pond 2 m deep look the same.",
+      "couldBeNatural": "A wetter side can be a paddy, a fish pond or a natural low that would be wet with no road at all.",
+      "notMapped": "Most culverts are not in OpenStreetMap, so “no mapped opening” usually means nobody has mapped one, not that none exists. The question for your office is whether the opening that is there is big enough.",
+      "checkIt": "Nothing here has been checked on the ground. This list says only where to look first; check it on imagery and in the field."
+    },
+    "map": {
+      "show": "Show the map",
+      "hide": "Hide the map",
+      "title": "The stretches on the map",
+      "legend": "Legend",
+      "legendNote": "These colours show the order to check in. They are not alert levels.",
+      "under": "The pink underneath is the flood-hazard layer built from the flood history.",
+      "loading": "Loading the map",
+      "failed": "The map could not be shown. The list below and the downloads still work.",
+      "tapped": "Stretch {id} · {klass}"
+    },
+    "download": {
+      "title": "Downloads for your own GIS",
+      "hint": "Your province only, every section with every figure. Coordinates are WGS 84.",
+      "csv": "Download CSV",
+      "geojson": "Download GeoJSON",
+      "credit": "Roads and openings from OpenStreetMap (ODbL). Flood record from Sentinel-1 radar."
+    },
+    "note": {
+      "title": "Your office's note",
+      "hint": "Only your own unit in this province and Jaga's admins can see this note. It is never public.",
+      "statusLabel": "Status",
+      "noteLabel": "Note",
+      "placeholder": "What you found, what has been done, or what is planned",
+      "save": "Save",
+      "saved": "Saved",
+      "failed": "That did not save. Try again.",
+      "by": "{unit} · {time}",
+      "none": "No note yet",
+      "status": {
+        "not_looked": "Not looked at",
+        "checked_imagery": "Checked on imagery",
+        "checked_ground": "Checked on the ground",
+        "opening_exists": "An opening exists",
+        "work_planned": "Work planned",
+        "done": "Done"
+      }
+    },
+    "link": "Where a road may be holding water back",
+    "contact": "An office or a researcher who would like to check this with us: {email}"
   }
 }

@@ -6589,5 +6589,127 @@
       "map": "Buka peta",
       "how": "Bagaimana Jaga berfungsi"
     }
+  },
+  "highwayPaths": {
+    "title": "Tempat jalan mungkin menahan air",
+    "lead": "Bahagian jalan utama di wilayah anda yang rekod radar satelit sembilan musim banjir menunjukkan air pernah bertakung di sebelah tempat air datang, dan tempat aliran air semula jadi memotong jalan tanpa laluan air dalam peta.",
+    "notAlert": "Ini maklumat kerja untuk pejabat anda memeriksa. Ia bukan amaran, tidak menghantar pemberitahuan, dan tidak dipaparkan dalam aplikasi untuk penduduk.",
+    "notAllowed": {
+      "title": "Halaman ini untuk pejabat yang merancang dan membina",
+      "body": "Pejabat jalan raya wilayah atau pejabat projek pengairan boleh membuka halaman ini: daftarkan unit anda, pilih keupayaan “perancangan dan analisis”, dan pilih seluruh wilayah sebagai kawasan anda. Setelah pentadbir mengesahkannya, halaman ini memaparkan wilayah anda sahaja.",
+      "register": "Daftar unit"
+    },
+    "province": "Wilayah",
+    "provincePick": "Pilih wilayah",
+    "run": "Set radar {runId}, diproses {date}",
+    "counts": "{lookFirst} perlu dilihat dahulu · {worthALook} berbaloi dilihat · {km} km jalan utama",
+    "empty": "Wilayah ini belum ada data dalam sistem.",
+    "emptyNone": "Tiada bahagian jalan di wilayah ini mencapai ambang.",
+    "klass": {
+      "look_first": {
+        "name": "Lihat di sini dahulu",
+        "lead": "Petunjuk paling jelas dalam rekod radar. Periksa ini dahulu."
+      },
+      "worth_a_look": {
+        "name": "Berbaloi dilihat",
+        "lead": "Ada sedikit petunjuk dalam rekod. Periksa apabila ada peluang."
+      },
+      "no_sign": {
+        "name": "Tiada petunjuk",
+        "lead": "Radar tidak menunjukkan satu sebelah lebih basah daripada sebelah lain."
+      },
+      "not_seen": {
+        "name": "Radar tidak melihatnya",
+        "lead": "Di bandar dan tanah curam radar tidak dapat membaca kedua-dua tepi jalan."
+      }
+    },
+    "stretch": {
+      "road": "Jalan {ref}",
+      "roadNoRef": "Jalan utama (tiada nombor dalam data peta)",
+      "where": "{tambon}, {district}",
+      "length": "{km} km ({sections, plural, other {# bahagian}})",
+      "code": "Bahagian {id}",
+      "openMap": "Buka dalam peta",
+      "figures": "Angka di sebaliknya",
+      "reasonsTitle": "Apa yang ditemui"
+    },
+    "reason": {
+      "asymmetry": "Sebelah tempat air datang (sebelah {side, select, left {kiri} other {kanan}}) dibanjiri pada {points} mata peratusan lebih banyak tanahnya daripada sebelah lain, secara purata sepanjang {seasons} musim",
+      "seasons": "Sebelah hulu jelas lebih basah dalam {wetter} daripada {seasons} musim",
+      "passes": "Air dilihat di sebelah hulu dalam {up} lintasan radar dan di sebelah lain dalam {down}, daripada {seen} yang melihat kedua-dua sebelah",
+      "crossing": "Aliran air semula jadi dari {km2} km² memotong jalan di bahagian ini",
+      "noOpeningAtAll": "Tiada jambatan, pembetung atau alur air berpeta ditemui dalam satu kilometer dari titik itu dalam OpenStreetMap",
+      "openingFar": "Laluan air berpeta yang terdekat ({opening, select, bridge {jambatan} culvert {pembetung} other {alur air yang dilukis melintasi jalan}}) berada {metres} m jauhnya",
+      "openingNear": "Ada laluan air berpeta dekat titik itu ({opening, select, bridge {jambatan} culvert {pembetung} other {alur air yang dilukis melintasi jalan}}) {metres} m jauhnya, tetapi saiznya tidak diketahui",
+      "sideBy_d8": "Air datang dari sebelah {side, select, left {kiri} other {kanan}}, menurut arah aliran pada model ketinggian",
+      "sideBy_dem": "Air datang dari sebelah {side, select, left {kiri} other {kanan}}, kerana sebelah itu lebih tinggi secara purata",
+      "sideBy_crossing": "Air datang dari sebelah {side, select, left {kiri} other {kanan}}, menurut aliran yang memotong jalan di sini",
+      "sideUnclear": "Sebelah mana air datang tidak dapat ditentukan: di tanah rata model ketinggian tidak memutuskannya",
+      "sideDisagree": "Arah aliran dan ketinggian tanah menunjuk ke sebelah yang berbeza. Periksa ini pada imej",
+      "sideNote": "Kiri dan kanan adalah seperti dilihat semasa bergerak mengikut arah jalan dilukis dalam data peta."
+    },
+    "figure": {
+      "score": "Skor",
+      "asymmetry": "Perbezaan antara kedua-dua sebelah, purata sepanjang musim",
+      "seasons": "Musim sebelah hulu jelas lebih basah",
+      "seasonsDown": "Musim sebelah lain jelas lebih basah",
+      "persistence": "Perbezaan bahagian lintasan yang melihat air",
+      "passes": "Lintasan yang melihat kedua-dua sebelah",
+      "crossingKm2": "Tanah yang mengalir melalui lintasan itu",
+      "opening": "Laluan air berpeta terdekat",
+      "openingNone": "Tiada dalam satu kilometer",
+      "sideDecided": "Bagaimana sebelah hulu ditentukan",
+      "km2": "{v} km²",
+      "metres": "{v} m",
+      "points": "{v} mata",
+      "seasonsOf": "{v} daripada {of}"
+    },
+    "limits": {
+      "title": "Apa yang ini tidak dapat beritahu",
+      "extentNotDepth": "Radar melihat luas air, bukan kedalamannya. Sawah sedalam 20 cm dan kolam sedalam 2 m kelihatan sama.",
+      "couldBeNatural": "Sebelah yang lebih basah boleh jadi sawah, kolam ikan atau tanah rendah semula jadi yang memang basah walaupun tiada jalan.",
+      "notMapped": "Kebanyakan pembetung tiada dalam OpenStreetMap, jadi “tiada laluan air berpeta” biasanya bermaksud belum ada sesiapa memetakannya, bukan bermakna tiada. Soalan untuk pejabat anda ialah sama ada laluan yang ada cukup besar.",
+      "checkIt": "Tiada apa-apa di sini telah diperiksa di lapangan. Senarai ini hanya menyatakan tempat untuk dilihat dahulu; periksa pada imej dan di lapangan."
+    },
+    "map": {
+      "show": "Tunjukkan peta",
+      "hide": "Sembunyikan peta",
+      "title": "Bahagian jalan pada peta",
+      "legend": "Legenda",
+      "legendNote": "Warna ini menunjukkan susunan untuk diperiksa. Ia bukan tahap amaran.",
+      "under": "Warna merah jambu di bawahnya ialah lapisan bahaya banjir daripada rekod banjir.",
+      "loading": "Memuatkan peta",
+      "failed": "Peta tidak dapat dipaparkan. Senarai di bawah dan muat turun masih berfungsi.",
+      "tapped": "Bahagian {id} · {klass}"
+    },
+    "download": {
+      "title": "Muat turun untuk GIS pejabat anda",
+      "hint": "Wilayah anda sahaja, setiap bahagian dengan setiap angka. Koordinat ialah WGS 84.",
+      "csv": "Muat turun CSV",
+      "geojson": "Muat turun GeoJSON",
+      "credit": "Jalan dan laluan air daripada OpenStreetMap (ODbL). Rekod banjir daripada radar Sentinel-1."
+    },
+    "note": {
+      "title": "Nota pejabat anda",
+      "hint": "Hanya unit anda sendiri di wilayah ini dan pentadbir Jaga dapat melihat nota ini. Ia tidak pernah menjadi umum.",
+      "statusLabel": "Status",
+      "noteLabel": "Nota",
+      "placeholder": "Apa yang anda temui, apa yang telah dibuat, atau apa yang dirancang",
+      "save": "Simpan",
+      "saved": "Disimpan",
+      "failed": "Itu tidak disimpan. Cuba lagi.",
+      "by": "{unit} · {time}",
+      "none": "Belum ada nota",
+      "status": {
+        "not_looked": "Belum dilihat",
+        "checked_imagery": "Diperiksa pada imej",
+        "checked_ground": "Diperiksa di lapangan",
+        "opening_exists": "Laluan air sudah ada",
+        "work_planned": "Kerja dirancang",
+        "done": "Selesai"
+      }
+    },
+    "link": "Tempat jalan mungkin menahan air",
+    "contact": "Pejabat atau penyelidik yang ingin memeriksa ini bersama kami: {email}"
   }
 }

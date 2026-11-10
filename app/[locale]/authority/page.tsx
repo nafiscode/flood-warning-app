@@ -49,23 +49,44 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
     );
   }
   /*
-   * A dam operator and nothing else (A12 part 2, 9 Nov 2026). Their unit is verified like any
-   * other, but it is not a team in the field: it holds no case, is never offered one, and since
-   * this phase it is turned away from the case board in the database as well. So the console it
-   * opens is its own one screen, not an empty war room.
+   * An office and nothing else: a dam operator (A12 part 2, 9 Nov 2026) or a planning office
+   * (A19, 10 Nov 2026). Their unit is verified like any other, but it is not a team in the field:
+   * it holds no case, is never offered one, and the database turns it away from the case board
+   * (`unit_is_office_only`). So the console it opens is its own screen or screens, not an empty
+   * war room. A unit that is both - an irrigation office that also runs boats - falls through to
+   * the board below with the extra links in its tools.
    */
-  const damOnly = units.every((u) => u.capabilities.every((c) => c === "dam"));
+  const OFFICE = ["dam", "planning"];
+  const officeOnly = units.every((u) => u.capabilities.every((c) => OFFICE.includes(c)));
+  const hasDam = units.some((u) => u.capabilities.includes("dam"));
+  const hasPlanning = units.some((u) => u.capabilities.includes("planning"));
   const tDam = await getTranslations("damOperator");
-  if (damOnly) {
+  const tPaths = await getTranslations("highwayPaths");
+  if (officeOnly) {
     return (
       <div className="flex flex-col gap-5">
-        <section className={card} data-dam-operator-console="true">
-          <h1 className="text-h3 font-bold text-jaga-ink">{tDam("title")}</h1>
-          <p>{tDam("lead")}</p>
-          <Link href="/authority/dam" className={buttonSecondary} data-dam-release-link="true">
-            {tDam("link")}
-          </Link>
-        </section>
+        {hasDam && (
+          <section className={card} data-dam-operator-console="true">
+            <h1 className="text-h3 font-bold text-jaga-ink">{tDam("title")}</h1>
+            <p>{tDam("lead")}</p>
+            <Link href="/authority/dam" className={buttonSecondary} data-dam-release-link="true">
+              {tDam("link")}
+            </Link>
+          </section>
+        )}
+        {hasPlanning && (
+          <section className={card} data-planning-console="true">
+            <h1 className="text-h3 font-bold text-jaga-ink">{tPaths("title")}</h1>
+            <p>{tPaths("lead")}</p>
+            <Link
+              href="/authority/highway-paths"
+              className={buttonSecondary}
+              data-highway-paths-link="true"
+            >
+              {tPaths("link")}
+            </Link>
+          </section>
+        )}
         <BackLink label={(await getTranslations("nav"))("backHome")} />
       </div>
     );
@@ -94,9 +115,19 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
         {tChecks("link")}
       </Link>
       {/* A team that also operates a dam (an irrigation office that runs boats as well). */}
-      {units.some((u) => u.capabilities.includes("dam")) && (
+      {hasDam && (
         <Link href="/authority/dam" className={buttonSecondary} data-dam-release-link="true">
           {tDam("link")}
+        </Link>
+      )}
+      {/* A team that also does the planning work: an irrigation office that runs boats (A19). */}
+      {hasPlanning && (
+        <Link
+          href="/authority/highway-paths"
+          className={buttonSecondary}
+          data-highway-paths-link="true"
+        >
+          {tPaths("link")}
         </Link>
       )}
       {isOwner && (

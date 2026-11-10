@@ -10,6 +10,14 @@ Commands
                  openings, the score and the class -> <output_dir>/sections.geojson, sections_<province>.csv,
                  summary.json, figures/ and highway_paths/report.md.
 
+  load [--yes] [--run-date YYYY-MM-DD] [--db-url URL]
+                 put the finished run into the database for the authority console's page
+                 (/authority/highway-paths, A19): `highway_sections` and `highway_stretches`,
+                 replacing the previous run's rows in one transaction. The offices' own notes on
+                 the stretches are keyed on the stretch id and are never touched. Reads
+                 <output_dir>/sections.geojson and summary.json; writes to SUPABASE_DB_URL (or
+                 --db-url), names the project first and does nothing without --yes.
+
 Needs the road cache of `safe_places fetch`, the hazard module's D8 pointer, accumulation and DEM, and
 the radar products of the hash in config.yaml. No Earth Engine, nothing paid. Settings:
 highway_paths/config.yaml; method and limits: highway_paths/METHODS.md; docs/science-plan.md
@@ -768,16 +776,76 @@ def report(rows: list[dict], found: list[dict], summary: dict, cfg: dict, figure
     return "\n".join(out)
 
 
+def cmd_load(cfg: dict, args: argparse.Namespace) -> int:
+    """`highway_paths load`: this run's sections and stretches into the database, for A19's page in
+    the authority console. Nothing here computes anything - the figures are the run's, unchanged -
+    and nothing here touches the offices' notes."""
+    from ingest_thaiwater.settings import env_value
+
+    from . import load as loader
+
+    url = args.db_url or env_value("SUPABASE_DB_URL")
+    if not url:
+        raise SystemExit("No SUPABASE_DB_URL in the environment or .env.local; see SETUP.md.")
+    try:
+        import psycopg
+    except ModuleNotFoundError:  # pragma: no cover - the dependency is in pyproject.toml
+        raise SystemExit("psycopg is not installed: run `uv sync` in pipeline/.") from None
+
+    out = output_dir(cfg)
+    rows = loader.read_sections(out)
+    run_id, run_date = loader.run_stamp(out, args.run_date)
+    found = stretches(rows)          # sets row["stretch"], exactly as the run itself did
+    ranked = ranked_stretches(found)
+    sections = [loader.section_values(r, run_id, run_date) for r in rows]
+    stretch_rows = loader.stretch_values(found, ranked, run_id, run_date)
+
+    # Name the project before writing a row, the way replay and scripts/db.mjs do: the ref is
+    # public, the password never appears.
+    from replay.core import parse_target
+
+    print(f"Project:   {parse_target(url).label()}")
+    print(f"Run:       {run_id}, {run_date}")
+    print(f"Sections:  {len(sections):,} in four provinces")
+    by_class: dict[str, int] = {}
+    for r in rows:
+        by_class[r["class"]] = by_class.get(r["class"], 0) + 1
+    print("           " + ", ".join(f"{k} {v}" for k, v in sorted(by_class.items())))
+    print(f"Stretches: {len(stretch_rows)}, of which {sum(1 for s in stretch_rows if s[10])} listed")
+    if not args.yes:
+        print()
+        print("Nothing written. Run it again with --yes to replace the previous run's rows.")
+        return 0
+
+    with psycopg.connect(url, autocommit=False, connect_timeout=15) as conn:
+        done = loader.write(conn, sections, stretch_rows)
+        conn.commit()
+    print()
+    print(f"Loaded {done['sections']:,} sections and {done['stretches']} stretches "
+          f"(replacing {done['removed_sections']:,} and {done['removed_stretches']}).")
+    print(f"{done['notes_kept']} note(s) the offices had written were left untouched.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="highway_paths", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("fetch")
     sub.add_parser("run").add_argument("--figures", type=int, default=None)
+    p_load = sub.add_parser("load")
+    p_load.add_argument("--yes", action="store_true", help="write the rows (without it, nothing is written)")
+    p_load.add_argument("--run-date", dest="run_date", default=None,
+                        help="the day the run was made, YYYY-MM-DD (default: when sections.geojson was written)")
+    p_load.add_argument("--db-url", dest="db_url", default=None, help="override SUPABASE_DB_URL (advanced)")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     cfg = load_config()
-    return cmd_fetch(cfg) if args.command == "fetch" else cmd_run(cfg, args.figures)
+    if args.command == "fetch":
+        return cmd_fetch(cfg)
+    if args.command == "load":
+        return cmd_load(cfg, args)
+    return cmd_run(cfg, args.figures)
 
 
 if __name__ == "__main__":
