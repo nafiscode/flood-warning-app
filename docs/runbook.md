@@ -211,6 +211,53 @@ these are its people before you tie it. Untying it takes effect at once. A unit 
 a dam deliberately gets none of a rescue team's reads - no request for help, no phone number, no
 household data, no case board.
 
+## A river has been rising for a week
+
+Since 10 Nov 2026 (science plan Module 11) Jaga watches something slower than the alert thresholds:
+how wet each catchment already is. When a zone's key gauge has risen on **five of the last seven
+days** and the **fifteen-day** basin rain is in the **top third** of that basin's own record for the
+month, one row is raised for you.
+
+**Nothing has been published and nothing is waiting on a clock.** This is not the automated alarm.
+There is no deadline, no draft that sends itself, and the level of every alert in force is
+unchanged.
+
+What you get: a silent line in the bell (`A river has been rising for a week`) and one notification
+per episode, with the ordinary notice buzz - no alarm pattern, no repeated knock. Both take you to
+`/admin/signals`.
+
+What to do:
+
+1. Read the figures in the zone's **"How wet this catchment already is"** block: the floor and how
+   many of the last seven days it rose, the rain over 15 and 30 days and since 1 October, and where
+   each of those sits in this gauge's or this basin's own record for the month. Open **Month by
+   month** for the longer record.
+2. **Read it beside the 72-hour rain, not instead of it.** This signal is not early: in November
+   2025 at X.40A it would have spoken on the 23rd to the 27th and the river went over its bank on
+   the 24th. What it tells you is that the ground has no storage left, so the next burst will do
+   more than the same burst would in October.
+3. If you agree, press **Start a Watch draft**. That opens the alert console with the zone's tambons
+   ticked, the Watch template chosen and these figures as the note. You review the words and press
+   send, as with any alert. Nothing is sent until you do.
+4. Either way, write down what you decided: **I have acted on it** or **Dismiss**, with a note. That
+   closes the line in the bell and is logged under your account. It does not publish anything.
+5. The row closes itself when the zone goes quiet, so one spell of weather is one line, not one a
+   day.
+
+**When it says it cannot judge.** The block says so in words: a gap in the last eight days of
+readings, fewer than fifteen whole days of rain, a gauge whose newest reading is over a day and a
+half old, or a month with too little record. That is not "all clear" - it means this particular
+signal is blind, and the gauges, the thresholds and the alarm are unaffected.
+
+**What it deliberately does not do.** Whether the floor is above or below normal for the date is
+shown as context and is **not** part of the rule: in November 2025 the floor at Yala sat in the
+bottom third of its own record until two days before the river left its bank. Do not read a
+below-normal floor as reassurance.
+
+The figures behind it are rebuilt after the season with `cd pipeline; uv run python -m season_state
+run`, which writes `supabase/seed/61_season_state.sql`. The thresholds of the rule itself live in
+`system_settings.season_state` and an admin can change them without a migration.
+
 ## An alert went out wrong
 
 Never delete. Open it on `/admin/alerts` and either **replace** it (the new alert supersedes the old,
