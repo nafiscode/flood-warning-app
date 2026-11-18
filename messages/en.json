@@ -3050,7 +3050,7 @@
   },
   "alertConsole": {
     "title": "Alerts",
-    "intro": "Alerts are published by admins, with one exception: the automatic alarm. For a gauge an admin has ticked, if nobody sends or dismisses its draft within the grace time, the system publishes it itself, marked as not reviewed. Everything done on this page is logged.",
+    "intro": "Alerts are published by admins, with one exception: the automatic alarm. For a gauge or reservoir an admin has ticked, it publishes at once when the level is reached, marked as not reviewed, and then tells every admin; only a reading that looks impossible is held for the grace time first. Everything done on this page is logged.",
     "new": "New alert",
     "drillMode": "The service is not switched on yet: at the review step you choose between a drill (the public does not see it) and a real alert (everyone in the area sees it). It starts on drill.",
     "drillTag": "Drill",
@@ -4015,7 +4015,7 @@
     "auto": {
       "title": "Automated alarm",
       "rule": "For a gauge with the box ticked: when its last two readings, both less than {age} hours old, reach its threshold, Jaga publishes the alert at once and tells every admin that it has gone out. Nobody is waited for. If the reading looks impossible — a jump no real river makes — the draft is held instead, every admin's device rings, and it is published {grace} minutes later unless someone acts; if the river has gone back below by then, nothing is published.",
-      "modeDrill": "Before launch it publishes drills only: nobody outside the admins sees them.",
+      "modeDrill": "In drill mode it publishes drills only: nobody outside the admins sees them.",
       "modeReal": "It publishes real alerts to the residents of the zone's tambons.",
       "toReal": "Publish real alerts",
       "toDrill": "Publish drills only",
@@ -4223,7 +4223,7 @@
       "saved": "The reservoir's thresholds are saved",
       "error": "Could not save. Each figure must be between 1 and 150, and Watchful cannot be higher than the share that drafts an alert.",
       "auto": "Let Jaga draft an alert by itself for this reservoir",
-      "autoHint": "At the threshold, and still filling, a draft goes to every admin's phone. If nobody sends or dismisses it within the grace time, Jaga publishes it itself, marked as issued without review. The level is Warning only — nothing here ever tells an area to evacuate on its own.",
+      "autoHint": "At the threshold, and still filling, Jaga publishes the alert at once, marked as issued without review, and then rings every admin's phone. A jump faster than the lake can fill is held for the grace time first. The level is Warning only — nothing here ever tells an area to evacuate on its own.",
       "autoSince": "Armed by {who} on",
       "autoBySeed": "the initial setting",
       "saveAuto": "Save the switch",
@@ -5011,8 +5011,8 @@
         "where": "Admin › Signals"
       },
       "autoAlarm": {
-        "title": "One automated alarm, people first",
-        "text": "When a river gauge an admin has chosen reaches its level, every admin's phone rings with a draft. If nobody sends or dismisses it within 20 minutes, Jaga publishes it, marked as not reviewed.",
+        "title": "One automated alarm, and only one",
+        "text": "When a river gauge or reservoir an admin has chosen reaches its level, Jaga publishes at once, marked as not reviewed, then rings every admin. A reading that looks impossible is held for 20 minutes for a person to check first.",
         "where": "Admin › Alerts"
       },
       "warRoom": {
@@ -5168,10 +5168,10 @@
         },
         "alarm": {
           "title": "The one thing that can publish by itself",
-          "concept": "The rule is that people publish alerts and the system only computes signals and suggests a level. There is exactly one exception, chosen deliberately, because at three in the morning there may be nobody awake. For a river gauge an admin has ticked, when the two latest readings both reach the zone's level, every admin's phone rings with a draft alert already written from a reviewed template. If no admin sends or dismisses it within a grace time, Jaga publishes that draft itself, marked as not reviewed by a person and written to the audit log. If the river has fallen back below the level by then, nothing is published.",
+          "concept": "The rule is that people publish alerts and the system only computes signals and suggests a level. There is exactly one exception, chosen deliberately, because at three in the morning there may be nobody awake. For a river gauge or reservoir an admin has ticked, when the two latest readings both reach its level, Jaga publishes an alert at once, written from a reviewed template, marked as not reviewed by a person and written to the audit log. Every admin is told straight afterwards by a notification that rings. Nobody is waited for.",
           "can": "It closes the gap between a river reaching a level and a human being reaching their phone, without anyone ever having to write a warning in a hurry.",
           "cannot": "Nothing else in Jaga publishes anything at all. Rain, rainfall forecasts, the dam's figures, the seasonal outlook and every computed suggestion are advisory, and they stay on the admins' screens until a person decides.",
-          "checked": "Two readings and not one, so a single bad reading cannot ring the alarm; both must be recent, so a stale feed cannot; and the draft is built from reviewed wording, never translated by machine at the moment of sending. Until the service opens, the alarm publishes drills only."
+          "checked": "Two readings and not one, so a single bad reading cannot ring the alarm; both must be recent, so a stale feed cannot; and the alert is built from reviewed wording, never translated by machine at the moment of sending. A reading that jumps faster than a real river can rise is held instead: every admin's phone rings, and unless someone acts it is published 20 minutes later. If the river has fallen back below the level by then, nothing is published. A faulty sensor can delay an alert by those 20 minutes; it cannot stop one. What this cannot catch is a sensor stuck at a high reading."
         },
         "dam": {
           "title": "Below the dam: which land, and how long",
@@ -5384,7 +5384,7 @@
             "1": "Every alert states its level, its area, who issued it, when, why, and when the next update is due. Once that time passes it keeps its level and gains a grey marker saying it has not been updated since: stale is a marker, never a lower level.",
             "2": "Alert wording comes only from templates reviewed in all three languages. Nothing in a warning is machine-translated at the moment of sending.",
             "3": "The computed signals, rain, river levels, forecasts, the dam and the seasonal outlook, suggest a level and show their reasons. They never publish.",
-            "4": "The one exception is the automatic alarm on a river gauge an admin has ticked: two recent readings at the level ring every admin's phone with a draft, and if nobody sends or dismisses it within a grace time the draft publishes itself, marked as not reviewed by a person and recorded in the audit log."
+            "4": "The one exception is the automatic alarm on a river gauge or reservoir an admin has ticked: when two recent readings reach the level, Jaga publishes at once from a reviewed template, marked as not reviewed by a person and recorded in the audit log, and then tells every admin. A reading that jumps impossibly fast is held for 20 minutes first, while every admin's phone rings."
           }
         },
         "fails": {

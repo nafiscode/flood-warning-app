@@ -3050,7 +3050,7 @@
   },
   "alertConsole": {
     "title": "Amaran",
-    "intro": "Amaran dikeluarkan oleh pentadbir, kecuali penggera automatik: bagi stesen yang ditanda oleh pentadbir, jika tiada sesiapa menghantar atau menolak drafnya dalam masa yang ditetapkan, sistem akan mengeluarkannya sendiri dan menandanya sebagai belum disemak. Setiap tindakan di halaman ini direkodkan.",
+    "intro": "Amaran dikeluarkan oleh pentadbir, kecuali penggera automatik: bagi stesen atau takungan yang ditanda oleh pentadbir, ia dikeluarkan serta-merta apabila paras dicapai, ditanda belum disemak, kemudian setiap pentadbir diberitahu; hanya bacaan yang kelihatan mustahil ditahan dahulu selama masa tenggang. Setiap tindakan di halaman ini direkodkan.",
     "new": "Keluarkan amaran baharu",
     "drillMode": "Perkhidmatan belum dibuka: pada langkah semakan anda memilih sama ada menyimpan sebagai “latihan” (orang awam tidak nampak) atau mengeluarkan “amaran sebenar” (semua orang di kawasan itu nampak). Pilihan asal ialah latihan.",
     "drillTag": "Latihan",
@@ -4015,7 +4015,7 @@
     "auto": {
       "title": "Penggera automatik",
       "rule": "Untuk stesen yang ditanda: apabila dua bacaan terakhirnya, kedua-duanya kurang daripada {age} jam, mencapai parasnya, Jaga menghantar amaran serta-merta dan memberitahu semua pentadbir bahawa ia telah dihantar. Tiada sesiapa ditunggu. Jika bacaan itu nampak mustahil — lonjakan yang tidak mungkin berlaku pada sungai sebenar — draf ditahan, peranti setiap pentadbir berbunyi, dan ia dihantar {grace} minit kemudian melainkan ada yang bertindak; jika air sudah turun semula menjelang itu, tiada apa-apa dihantar.",
-      "modeDrill": "Sebelum pelancaran ia hanya menerbitkan latihan: tiada sesiapa selain pentadbir melihatnya.",
+      "modeDrill": "Dalam mod latihan ia hanya menerbitkan latihan: tiada sesiapa selain pentadbir melihatnya.",
       "modeReal": "Ia menerbitkan amaran sebenar kepada penduduk mukim dalam zon itu.",
       "toReal": "Terbitkan amaran sebenar",
       "toDrill": "Terbitkan latihan sahaja",
@@ -4223,7 +4223,7 @@
       "saved": "Ambang takungan disimpan",
       "error": "Tidak dapat disimpan. Pastikan angka antara 1 dan 150, dan ambang berjaga-jaga tidak lebih tinggi daripada ambang draf.",
       "auto": "Benarkan draf amaran automatik bagi takungan ini",
-      "autoHint": "Apabila ambang dicapai dan air masih bertambah, draf dihantar ke telefon setiap pentadbir. Jika tiada siapa menghantar atau membatalkannya dalam masa yang diberi, sistem menerbitkannya sendiri, ditanda belum disemak. Tahapnya ialah Amaran sahaja — tiada arahan berpindah secara automatik.",
+      "autoHint": "Apabila ambang dicapai dan air masih bertambah, Jaga menerbitkan amaran serta-merta, ditanda belum disemak, kemudian membunyikan telefon setiap pentadbir. Lonjakan yang lebih pantas daripada kadar takungan boleh terisi ditahan dahulu selama masa tenggang. Tahapnya ialah Amaran sahaja — tiada arahan berpindah secara automatik.",
       "autoSince": "Dibuka oleh {who} pada",
       "autoBySeed": "tetapan awal",
       "saveAuto": "Simpan suis",
@@ -5011,8 +5011,8 @@
         "where": "Pentadbir › Isyarat"
       },
       "autoAlarm": {
-        "title": "Satu penggera automatik, manusia didahulukan",
-        "text": "Apabila stesen paras air yang dipilih pentadbir mencapai tahapnya, telefon setiap pentadbir berbunyi dengan draf amaran. Jika tiada siapa menghantar atau menolaknya dalam 20 minit, Jaga menyiarkannya sendiri, ditanda belum disemak.",
+        "title": "Satu penggera automatik, dan hanya satu",
+        "text": "Apabila stesen paras air atau takungan yang dipilih pentadbir mencapai tahapnya, Jaga menyiarkannya serta-merta, ditanda belum disemak, kemudian membunyikan telefon setiap pentadbir. Bacaan yang kelihatan mustahil ditahan 20 minit dahulu supaya manusia dapat menyemaknya.",
         "where": "Pentadbir › Amaran"
       },
       "warRoom": {
@@ -5168,10 +5168,10 @@
         },
         "alarm": {
           "title": "Satu-satunya perkara yang boleh menghantar sendiri",
-          "concept": "Peraturannya ialah manusia yang mengeluarkan amaran dan sistem hanya mengira isyarat dan mencadangkan paras. Ada satu pengecualian sahaja, dipilih dengan sengaja, kerana pada pukul tiga pagi mungkin tiada sesiapa yang berjaga. Bagi stesen paras sungai yang ditanda oleh pentadbir, apabila dua bacaan terakhir kedua-duanya mencapai paras zon itu, telefon setiap pentadbir berbunyi dengan draf amaran yang sudah ditulis daripada templat yang telah disemak. Jika tiada pentadbir menghantar atau menolaknya dalam masa tenggang, Jaga menerbitkan draf itu sendiri, bertanda belum disemak oleh manusia dan dicatat dalam log audit. Jika sungai sudah turun di bawah paras itu ketika itu, tiada apa-apa diterbitkan.",
+          "concept": "Peraturannya ialah manusia yang mengeluarkan amaran dan sistem hanya mengira isyarat dan mencadangkan paras. Ada satu pengecualian sahaja, dipilih dengan sengaja, kerana pada pukul tiga pagi mungkin tiada sesiapa yang berjaga. Bagi stesen paras sungai atau takungan yang ditanda oleh pentadbir, apabila dua bacaan terakhir kedua-duanya mencapai parasnya, Jaga menerbitkan amaran serta-merta, ditulis daripada templat yang telah disemak, bertanda belum disemak oleh manusia dan dicatat dalam log audit. Setiap pentadbir diberitahu sejurus selepas itu melalui pemberitahuan yang berbunyi. Tiada sesiapa yang ditunggu.",
           "can": "Ia menutup jurang antara masa sungai mencapai satu paras dan masa seorang manusia sampai ke telefonnya, tanpa sesiapa perlu menulis amaran dalam keadaan tergesa-gesa.",
           "cannot": "Tiada apa-apa lain dalam Jaga yang menerbitkan apa-apa. Hujan, ramalan hujan, angka empangan, tinjauan musim dan setiap cadangan yang dikira adalah maklumat sokongan, dan kekal di skrin pentadbir sampai seorang manusia membuat keputusan.",
-          "checked": "Dua bacaan dan bukan satu, supaya satu bacaan rosak tidak boleh membunyikan loceng; kedua-duanya mesti bacaan baharu, supaya suapan yang terhenti tidak boleh; dan draf itu dibina daripada ayat yang telah disemak, tidak pernah diterjemah mesin ketika hantar. Sebelum perkhidmatan dibuka, loceng ini hanya menerbitkan latihan."
+          "checked": "Dua bacaan dan bukan satu, supaya satu bacaan rosak tidak boleh membunyikan loceng; kedua-duanya mesti bacaan baharu, supaya suapan yang terhenti tidak boleh; dan amaran itu dibina daripada ayat yang telah disemak, tidak pernah diterjemah mesin ketika hantar. Bacaan yang melonjak lebih pantas daripada kenaikan sungai sebenar ditahan dahulu: telefon setiap pentadbir berbunyi, dan jika tiada sesiapa bertindak ia diterbitkan 20 minit kemudian. Jika sungai sudah turun di bawah paras itu ketika itu, tiada apa-apa diterbitkan. Sensor yang rosak boleh melambatkan amaran selama 20 minit itu; ia tidak boleh menghalangnya. Yang tidak dapat dikesan ialah sensor yang tersekat pada bacaan tinggi."
         },
         "dam": {
           "title": "Di bawah empangan: tanah mana, dan berapa lama",
@@ -5384,7 +5384,7 @@
             "1": "Setiap amaran menyatakan parasnya, kawasannya, siapa yang mengeluarkannya, bila, mengapa, dan bila kemas kini berikutnya dijangka. Selepas masa itu berlalu, ia mengekalkan parasnya dan mendapat satu tanda kelabu yang berkata ia belum dikemas kini sejak bila: lapuk ialah satu tanda, bukan paras yang lebih rendah.",
             "2": "Ayat amaran hanya datang daripada templat yang disemak dalam ketiga-tiga bahasa. Tiada bahagian satu amaran diterjemah mesin pada saat hantar.",
             "3": "Isyarat yang dikira, iaitu hujan, paras sungai, ramalan, empangan dan tinjauan musim, hanya mencadangkan satu paras dan menunjukkan sebabnya. Ia tidak pernah mengeluarkan amaran.",
-            "4": "Satu pengecualian itu ialah loceng automatik pada stesen paras sungai yang ditanda pentadbir: dua bacaan baharu pada paras itu membuat telefon setiap pentadbir berbunyi dengan satu draf, dan jika tiada sesiapa menghantar atau menolaknya dalam masa tenggang, draf itu terbit sendiri, bertanda belum disemak oleh manusia dan dicatat dalam log audit."
+            "4": "Satu pengecualian itu ialah loceng automatik pada stesen paras sungai atau takungan yang ditanda pentadbir: apabila dua bacaan baharu mencapai paras itu, Jaga menerbitkan amaran serta-merta daripada templat yang telah disemak, bertanda belum disemak oleh manusia dan dicatat dalam log audit, kemudian memberitahu setiap pentadbir. Bacaan yang melonjak terlalu pantas ditahan 20 minit dahulu, sambil telefon setiap pentadbir berbunyi."
           }
         },
         "fails": {
