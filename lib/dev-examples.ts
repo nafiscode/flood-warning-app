@@ -852,6 +852,10 @@ export function exampleMonitoring(which: MonitoringExample, dam: Dam | null): Mo
         group: busy ? "rainHeavy" : "partlyCloudy",
         rainMm: busy ? 12 : 0,
         at: ago(20),
+        /* The busy example also has the model's rain in the hours just ahead, to show that line. */
+        soon: busy
+          ? { mm: 24.4, group: "rainHeavy", chance: 80, hours: 3, wet: true, heavy: true }
+          : { mm: 0, group: "partlyCloudy", chance: 10, hours: 3, wet: false, heavy: false },
       },
     },
   });

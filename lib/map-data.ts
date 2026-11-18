@@ -97,11 +97,20 @@ export function withSea(gauges: Gauge[], rows: unknown): Gauge[] {
 export type GaugeData = { gauges: Gauge[] };
 
 /**
- * The least of a station the counting needs: where it is, what it reads and when it last spoke.
- * The home screen asks for this alone (`/api/public/gauges/summary`), because a phone on slow 3G
- * should not download every station's name and bank level to be told how its own rivers stand.
+ * The least of a station the counting needs: where it is, what it reads, when it last spoke, and
+ * which way it is going. The home screen asks for this alone (`/api/public/gauges/summary`),
+ * because a phone on slow 3G should not download every station's name and bank level to be told
+ * how its own rivers stand.
+ *
+ * The two trends joined it on 18 Nov 2026 (the owner: "Water at the nearest station is rising").
+ * Until then the home screen could say a river was near its bank but never that one was climbing,
+ * which is the earlier and more useful of the two sentences - and it was already being measured
+ * for the map. Two numbers a station, from the same database read, is a few hundred bytes.
  */
-export type GaugeReading = Pick<Gauge, "lat" | "lon" | "status" | "observedAt">;
+export type GaugeReading = Pick<
+  Gauge,
+  "lat" | "lon" | "status" | "observedAt" | "rise3h" | "roseDays"
+>;
 
 /** Answer of /api/public/gauges/summary. */
 export type GaugeSummary = { generatedAt: string; gauges: GaugeReading[] };
@@ -109,8 +118,8 @@ export type GaugeSummary = { generatedAt: string; gauges: GaugeReading[] };
 export const GAUGES_SUMMARY_URL = "/api/public/gauges/summary";
 
 export function toGaugeReading(row: Record<string, unknown>): GaugeReading {
-  const { lat, lon, status, observedAt } = toGauge(row);
-  return { lat, lon, status, observedAt };
+  const { lat, lon, status, observedAt, rise3h, roseDays } = toGauge(row);
+  return { lat, lon, status, observedAt, rise3h, roseDays };
 }
 
 /** One row of `station_status()` as the map draws it. */

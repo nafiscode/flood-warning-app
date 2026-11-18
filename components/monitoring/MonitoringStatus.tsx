@@ -63,9 +63,15 @@ function leadWord(status: MonitoringStatus, t: ReturnType<typeof useTranslations
   const note = status.lead;
   if (!note) return "";
   if (note.kind === "gauges") {
-    return note.over > 0
-      ? t("lead.riversOver", { count: note.over })
-      : t("lead.riversNear", { count: note.near });
+    /*
+     * A bank reached outranks a bank approached, and both outrank a river on its way up - but a
+     * river on its way up is said plainly when it is all there is (the owner, 18 Nov 2026). It
+     * is counted across the reader's own areas, the way the two bank lines above it already are,
+     * so the three sentences can be read against each other without changing scope.
+     */
+    if (note.over > 0) return t("lead.riversOver", { count: note.over });
+    if (note.near > 0) return t("lead.riversNear", { count: note.near });
+    return t("lead.riversRising", { count: note.rising });
   }
   if (note.kind === "dam") {
     return note.attention === "releasing" || (note.spilledCms ?? 0) > 0
@@ -73,6 +79,18 @@ function leadWord(status: MonitoringStatus, t: ReturnType<typeof useTranslations
       : t("lead.damWatch");
   }
   if (note.kind === "reports") return t("lead.reports", { count: note.reports });
+  /*
+   * The sky, and the one place in the monitoring that looks forward. Rain to come is said before
+   * rain falling, because it is the half a reader can still act on; "heavy" is the model's own
+   * word for those hours and never a figure of ours (`isHeavy`). The hours are in the words, so
+   * the line cannot be read as a claim about the rest of the day (safety rule 8).
+   */
+  if (note.soon?.wet) {
+    return t(note.soon.heavy ? "lead.rainSoonHeavy" : "lead.rainSoon", {
+      hours: note.soon.hours,
+      mm: note.soon.mm,
+    });
+  }
   return t("lead.rain");
 }
 

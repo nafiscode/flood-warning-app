@@ -172,6 +172,74 @@ describe("what the monitoring shows now: the rivers", () => {
     expect(note.at).toBe("2026-11-20T06:00:00.000Z");
     expect(note.ageMin).toBe(60);
   });
+
+  /*
+   * A river climbing while still below its bank (the owner, 18 Nov 2026). This is the earliest
+   * thing the card can honestly say, and until now it said nothing: a reader whose river had
+   * come up half a metre since lunch was shown "all readings within their normal range".
+   */
+  it("speaks for a river that is rising although it is nowhere near its bank", () => {
+    const note = noteOf(
+      monitoring(input({ gauges: ok([gauge({ rise3h: 0.3 }), gauge({ rise3h: 0 })]) })).notes,
+      "gauges",
+    );
+    expect(note.say).toBe("active");
+    expect(note.kind === "gauges" && note.rising).toBe(1);
+    expect(note.kind === "gauges" && note.over).toBe(0);
+    expect(note.kind === "gauges" && note.near).toBe(0);
+  });
+
+  it("keeps a rise below a bank reached and a bank approached", () => {
+    const over = noteOf(
+      monitoring(input({ gauges: ok([gauge({ status: "above_evacuate", rise3h: 0.3 })]) })).notes,
+      "gauges",
+    );
+    expect(over.weight).toBe(2);
+    const near = noteOf(
+      monitoring(input({ gauges: ok([gauge({ status: "above_warning", rise3h: 0.3 })]) })).notes,
+      "gauges",
+    );
+    expect(near.weight).toBe(1);
+  });
+
+  it("is still quiet for a steady river, and a rise is never a level", () => {
+    const note = noteOf(
+      monitoring(input({ gauges: ok([gauge({ rise3h: 0.01 })]) })).notes,
+      "gauges",
+    );
+    expect(note.say).toBe("quiet");
+    expect(note.kind === "gauges" && note.rising).toBe(0);
+  });
+
+  /*
+   * The week is counted beside the three hours, never folded into it: a station the tide or a
+   * dam's turbines move is left unjudged, and an unjudged station is not a steady one (rule 10).
+   */
+  it("counts the week apart, and says how many stations it could not be read for", () => {
+    const note = noteOf(
+      monitoring(
+        input({
+          gauges: ok([
+            gauge({ roseDays: 6 }),
+            gauge({ roseDays: 1 }),
+            gauge({ roseDays: null }),
+          ]),
+        }),
+      ).notes,
+      "gauges",
+    );
+    expect(note.kind === "gauges" && note.risingWeek).toBe(1);
+    expect(note.kind === "gauges" && note.weekJudged).toBe(2);
+    expect(note.kind === "gauges" && note.weekUnjudged).toBe(1);
+  });
+
+  it("does not let the week alone make the card speak: it is the season, not an event", () => {
+    const note = noteOf(
+      monitoring(input({ gauges: ok([gauge({ roseDays: 7, rise3h: 0 })]) })).notes,
+      "gauges",
+    );
+    expect(note.say).toBe("quiet");
+  });
 });
 
 describe("which rivers are the person's own", () => {
@@ -354,8 +422,20 @@ describe("what the monitoring shows now: residents' reports", () => {
 });
 
 describe("what the monitoring shows now: the rain", () => {
+  /** What the model puts in the next few hours. Dry and light unless a test says otherwise. */
+  const soon = (over: Partial<NonNullable<RainReading["soon"]>> = {}) => ({
+    mm: 2,
+    group: "rainLight" as const,
+    chance: 60,
+    hours: 3,
+    wet: true,
+    heavy: false,
+    ...over,
+  });
+
   const reading = (over: Partial<RainReading> = {}): RainReading => ({
     group: "clear",
+    soon: null,
     rainMm: 0,
     at: "2026-11-20T06:30:00.000Z",
     ...over,
@@ -399,6 +479,52 @@ describe("what the monitoring shows now: the rain", () => {
     expect(note.kind === "rain" && note.stale).toBe(true);
     expect(note.kind === "rain" && note.rainMm).toBe(3);
   });
+
+  /*
+   * Rain to come (the owner, 18 Nov 2026). The case that matters is the dry hour with a wet
+   * night in the model: before this, the card told that reader there was no rain, which is the
+   * gap that costs Jaga its credibility when the television is talking about the storm.
+   */
+  it("speaks in a dry hour when the model has rain in the hours just ahead", () => {
+    const note = noteOf(
+      monitoring(input({ rain: ok(reading({ soon: soon({ mm: 18 }) })) })).notes,
+      "rain",
+    );
+    expect(note.say).toBe("active");
+    expect(note.weight).toBe(1);
+  });
+
+  it("puts heavy rain to come at the top weight, in a dry hour", () => {
+    const note = noteOf(
+      monitoring(
+        input({ rain: ok(reading({ soon: soon({ mm: 40, group: "rainHeavy", heavy: true }) })) }),
+      ).notes,
+      "rain",
+    );
+    expect(note.weight).toBe(2);
+  });
+
+  it("stays quiet when the hours ahead are dry, and says so of those hours only", () => {
+    const note = noteOf(
+      monitoring(input({ rain: ok(reading({ soon: soon({ mm: 0, wet: false }) })) })).notes,
+      "rain",
+    );
+    expect(note.say).toBe("quiet");
+  });
+
+  it("never turns an unread forecast into a dry one", () => {
+    const note = noteOf(monitoring(input({ rain: ok(reading()) })).notes, "rain");
+    expect(note.say).toBe("quiet");
+    expect(note.kind === "rain" && note.soon).toBeNull();
+  });
+
+  it("carries the forecast's own hours, so no sentence can outrun what was read", () => {
+    const note = noteOf(
+      monitoring(input({ rain: ok(reading({ soon: soon({ mm: 9, hours: 2 }) })) })).notes,
+      "rain",
+    );
+    expect(note.kind === "rain" && note.soon?.hours).toBe(2);
+  });
 });
 
 const notesSaying = (notes: Note[], say: Note["say"]) =>
@@ -411,7 +537,7 @@ describe("how the notes are read together", () => {
         gauges: ok([gauge({ status: "above_warning" })]),
         dam: failed(),
         reports: ok([]),
-        rain: ok({ group: "rain", rainMm: 2, at: "2026-11-20T06:45:00.000Z" }),
+        rain: ok({ group: "rain", rainMm: 2, at: "2026-11-20T06:45:00.000Z", soon: null }),
       }),
     );
     expect(summary.notes.map((n) => n.say)).toEqual(["active", "active", "unknown", "quiet"]);

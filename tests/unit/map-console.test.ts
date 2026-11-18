@@ -196,6 +196,24 @@ describe("the laptop console's readout strip", () => {
     expect(gaugeTally([]).total).toBe(0);
   });
 
+  /*
+   * The count behind "the river near you is rising" (18 Nov 2026). It reads the same 5 cm the map
+   * draws a chevron for, so a reader who opens the map cannot be shown arrows that disagree with
+   * the sentence that sent them there.
+   */
+  it("counts a river as rising on the same 5 cm the map draws an arrow for", () => {
+    expect(gaugeTally([gauge({ rise3h: 0.05 }), gauge({ rise3h: 0.3 })]).rising).toBe(2);
+    expect(gaugeTally([gauge({ rise3h: 0.04 })]).rising).toBe(0);
+  });
+
+  it("never counts a falling, a steady, an unmeasured or a silent river as rising", () => {
+    expect(gaugeTally([gauge({ rise3h: -0.4 })]).rising).toBe(0);
+    expect(gaugeTally([gauge({ rise3h: 0 })]).rising).toBe(0);
+    expect(gaugeTally([gauge({ rise3h: null })]).rising).toBe(0);
+    // Six hours silent: whatever its last trend was, it is not a statement about now.
+    expect(gaugeTally([gauge({ status: "no_recent_data", rise3h: 0.9 })]).rising).toBe(0);
+  });
+
   it("adds up the standing reports and the tambons they come from", () => {
     const r = reportTally([
       tambon({ reports: 3, people: 2, confirmed: true }),

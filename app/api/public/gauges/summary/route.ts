@@ -7,8 +7,10 @@ import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/publi
  * when it last spoke (the owner, 17 Oct 2026, for "what the monitoring shows now" on the home
  * screen).
  *
- * The home screen must stay usable on slow 3G, so it does not download every station's name,
- * bank level and three-hour trend to be told how its own rivers stand - the map asks for that.
+ * The home screen must stay usable on slow 3G, so it does not download every station's name or
+ * bank level to be told how its own rivers stand - the map asks for that. It does now carry each
+ * station's two trends (18 Nov 2026), because "the river near you is rising" is the earliest
+ * sentence this app can honestly say and two numbers a station is a few hundred bytes.
  * Same database read as `/api/public/gauges`, same 60 s at the edge, so the two share the cost.
  *
  * A failure is an error, never an empty list or a set of zeros: "Jaga could not read the rivers"

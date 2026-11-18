@@ -49,7 +49,7 @@ export function HomeMonitoring(props: HomeMonitoringProps) {
   const tMonitoring = useTranslations("monitoring");
   const [open, setOpen] = useState(false);
   const gauges = useFetched<GaugeSummary>(GAUGES_SUMMARY_URL, { afterIdle: true });
-  const rain = useKeptRain();
+  const rain = useKeptRain(props.now);
 
   const summary = monitoring({
     now: props.now,

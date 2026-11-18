@@ -5,12 +5,13 @@ import {
   damTally,
   gaugeTally,
   reportTally,
+  weekRise,
   type DamTally,
   type GaugeTally,
 } from "@/lib/map-console";
 import type { GaugeReading } from "@/lib/map-data";
 import type { LoadState } from "@/lib/use-public";
-import { DRY_MM, isStale, isWet, type WeatherGroup } from "@/lib/weather";
+import { DRY_MM, isHeavy, isStale, isWet, type RainSoon, type WeatherGroup } from "@/lib/weather";
 
 /**
  * "What the monitoring shows now" (the owner, 17 Oct 2026): the live measurements behind the one
@@ -66,6 +67,21 @@ export type GaugeNote = Base & {
   kind: "gauges";
   over: number;
   near: number;
+  /**
+   * Reporting stations that have risen at least 5 cm in three hours (`gaugeTally`). The earliest
+   * thing this card can honestly say: a river climbing while still well below its bank was
+   * invisible here until 18 Nov 2026, and it is the sentence a reader can act on soonest.
+   */
+  rising: number;
+  /**
+   * And the slow one behind it: stations whose daily low has risen on five of the last seven days
+   * (`weekRise`), with the stations that measure could not be taken on. `judged` plus `unjudged`
+   * is every station in scope; a river the tide or a dam moves is never counted as steady, only
+   * as unjudged, and the reader is told how many (safety rule 10).
+   */
+  risingWeek: number;
+  weekJudged: number;
+  weekUnjudged: number;
   reporting: number;
   silent: number;
   total: number;
@@ -113,6 +129,15 @@ export type RainNote = Base & {
   rainMm: number | null;
   wet: boolean;
   stale: boolean;
+  /**
+   * What the model puts in the next few hours, where the device holds enough of them
+   * (`rainSoon`). Null is "no hour ahead could be read", which is never "it will be dry".
+   *
+   * This is the only forward-looking figure anywhere in the monitoring, and it is a forecast:
+   * every sentence built from it names the model and carries its hours, and none of them is
+   * allowed to sound certain (safety rule 8). It raises nothing and publishes nothing.
+   */
+  soon: RainSoon | null;
 };
 
 export type Note = GaugeNote | DamNote | ReportNote | RainNote;
@@ -127,8 +152,17 @@ export type Monitoring = {
   newestAt: string | null;
 };
 
-/** One reading of the forecast model, as the device already keeps it for the header's pill. */
-export type RainReading = { group: WeatherGroup; rainMm: number; at: string };
+/**
+ * One reading of the forecast model, as the device already keeps it for the header's pill: the
+ * hour it is in, and what the model puts in the few hours after it (`soon`, null where the kept
+ * hours do not reach that far).
+ */
+export type RainReading = {
+  group: WeatherGroup;
+  rainMm: number;
+  at: string;
+  soon: RainSoon | null;
+};
 
 /** A point to measure distance from: the person's own area. */
 export type Point = { lat: number; lon: number };
@@ -209,6 +243,14 @@ function gaugeSay(tally: GaugeTally, state: LoadState): Said {
   if (tally.reporting === 0) return unknownSaid;
   if (tally.over > 0) return activeSaid(2);
   if (tally.near > 0) return activeSaid(1);
+  /*
+   * A river climbing while still below its bank is something happening (the owner, 18 Nov 2026).
+   * Before this, such a river left the card reading "all readings within their normal range",
+   * which is true of the levels and useless to a reader whose river has come up half a metre
+   * since lunch. It is still not a level and still suggests none: it moves the card from quiet
+   * to "here is what is moving", and only an admin ever publishes anything (safety rule 2).
+   */
+  if (tally.rising > 0) return activeSaid(1);
   return quietSaid;
 }
 
@@ -250,6 +292,7 @@ export function monitoring(input: MonitoringInput): Monitoring {
   const all = input.gauges.data ?? [];
   const mine = myPoint ? gaugesNear(all, myPoint) : all;
   const gTally = gaugeTally(mine);
+  const week = weekRise(mine);
   notes.push({
     kind: "gauges",
     ...gaugeSay(gTally, input.gauges.state),
@@ -258,6 +301,10 @@ export function monitoring(input: MonitoringInput): Monitoring {
     ageMin: ageOf(gTally.newestAt, now),
     over: gTally.over,
     near: gTally.near,
+    rising: gTally.rising,
+    risingWeek: week.rising,
+    weekJudged: week.judged,
+    weekUnjudged: week.unjudged,
     reporting: gTally.reporting,
     silent: gTally.silent,
     total: gTally.total,
@@ -322,16 +369,18 @@ export function monitoring(input: MonitoringInput): Monitoring {
   if (input.rain) {
     const reading = input.rain.data;
     const wet = reading ? isWet(reading.group) || reading.rainMm >= DRY_MM : false;
-    const heavy =
-      reading?.group === "rainHeavy" ||
-      reading?.group === "showersHeavy" ||
-      reading?.group === "thunder" ||
-      reading?.group === "thunderHail";
+    const heavy = reading ? isHeavy(reading.group) : false;
+    /*
+     * Rain to come counts as much as rain falling (the owner, 18 Nov 2026). A reader looking at
+     * their phone in a dry hour, with 40 mm in the model for tonight, was told "no rain" - which
+     * is the gap that costs Jaga its credibility when the television is talking about the storm.
+     */
+    const soon = reading?.soon ?? null;
     const wSaid: Said =
       input.rain.state !== "ok" || !reading
         ? unknownSaid
-        : wet
-          ? activeSaid(heavy ? 2 : 1)
+        : wet || soon?.wet
+          ? activeSaid(heavy || soon?.heavy ? 2 : 1)
           : quietSaid;
     notes.push({
       kind: "rain",
@@ -343,6 +392,7 @@ export function monitoring(input: MonitoringInput): Monitoring {
       rainMm: reading?.rainMm ?? null,
       wet,
       stale: reading ? isStale(reading.at, now) : false,
+      soon,
     });
   }
 

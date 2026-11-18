@@ -88,6 +88,20 @@ export function weatherGroup(code: number | null | undefined): WeatherGroup {
 }
 
 /** True for the groups that mean rain is falling, which the chip and the day rows highlight. */
+/**
+ * The groups the model itself calls heavy. Used wherever the app says "heavy" about a forecast,
+ * so that word always comes from Open-Meteo's own code and never from a millimetre threshold of
+ * our own invention: inventing one would be Jaga asserting a severity nobody measured.
+ */
+export function isHeavy(group: WeatherGroup): boolean {
+  return (
+    group === "rainHeavy" ||
+    group === "showersHeavy" ||
+    group === "thunder" ||
+    group === "thunderHail"
+  );
+}
+
 export function isWet(group: WeatherGroup): boolean {
   return (
     group === "drizzle" ||
@@ -296,6 +310,70 @@ export function toPlaces(raw: { results?: RawPlace[] } | null): WeatherPlace[] {
 /** "Pattani, Thailand": the place under the name, without repeating the name itself. */
 export function placeDetail(place: WeatherPlace): string {
   return [place.area, place.country].filter((part) => part && part !== place.name).join(", ");
+}
+
+/**
+ * How far ahead "soon" looks on the home screen. Three hours, which is the owner's own figure
+ * (18 Nov 2026) and about as far as an hourly forecast is worth saying out loud to a resident.
+ */
+export const SOON_HOURS = 3;
+
+/** What the model puts in the hours just ahead. Null where no hour ahead could be read. */
+export type RainSoon = {
+  /** Rain summed over the hours read, mm, to one decimal. */
+  mm: number;
+  /** The wettest condition among them: the words come from this, not from `mm`. */
+  group: WeatherGroup;
+  /** The highest hourly chance across them, percent, where the model gives one. */
+  chance: number | null;
+  /** Hours actually read. Fewer than `span` at the end of the model's run. */
+  hours: number;
+  /** The model says rain in at least one of them. */
+  wet: boolean;
+  /** The model calls at least one of them heavy (`isHeavy`), never a figure of ours. */
+  heavy: boolean;
+};
+
+/**
+ * The rain the forecast puts in the next few hours, for the one forward-looking line on the home
+ * screen (the owner, 18 Nov 2026: "Heavy rain is expected in your area in the next 3 hours").
+ *
+ * It reads the hours the device is already holding and asks for nothing. Every figure it returns
+ * is the model's, including the word "heavy" (`isHeavy`): this function never decides that an
+ * amount of rain is a lot, because that is a judgement and not a measurement (safety rule 8).
+ *
+ * Hours strictly after `now` only. The hour in progress is already the reading on the chip, and
+ * counting it again would let rain that has fallen be announced as rain to come.
+ */
+export function rainSoon(
+  hours: readonly WeatherHour[],
+  now: number,
+  span = SOON_HOURS,
+): RainSoon | null {
+  const ahead = hours.filter((hour) => {
+    const at = Date.parse(hour.at);
+    return Number.isFinite(at) && at > now && at <= now + span * 3_600_000;
+  });
+  if (ahead.length === 0) return null;
+  const groups = ahead.map((hour) => weatherGroup(hour.code));
+  const chances = ahead.map((hour) => hour.chance).filter((c): c is number => c !== null);
+  /*
+   * The total is rounded for the words, but `wet` is decided on the unrounded sum: rounding to
+   * one decimal first would let 0.05 mm become 0.1 mm and so cross DRY_MM, which would be the
+   * display deciding whether rain is forecast at all.
+   */
+  const total = ahead.reduce((sum, hour) => sum + hour.rainMm, 0);
+  const mm = Math.round(total * 10) / 10;
+  /* The wettest hour names the whole stretch: a thunderstorm in the third hour is the forecast. */
+  const worst = groups.find(isHeavy) ?? groups.find(isWet) ?? groups[0]!;
+  return {
+    mm,
+    group: worst,
+    chance: chances.length > 0 ? Math.max(...chances) : null,
+    hours: ahead.length,
+    wet: groups.some(isWet) || total >= DRY_MM,
+    heavy: groups.some(isHeavy),
+  };
 }
 
 /** The highest rain in an hour, for scaling the bars; at least 1 mm so a dry week looks flat. */

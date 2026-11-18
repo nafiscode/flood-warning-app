@@ -5699,11 +5699,13 @@
       "who": "Measured by the station operators, read through ThaiWater",
       "over": "{count} of {total} river gauges read at or over their bank · {scope}",
       "near": "{count} river gauges read near their bank · {scope}",
+      "rising": "{count} river gauges have risen over the last three hours · {scope}",
       "overNear": "{over} river gauges at or over their bank, {near} near it · {scope}",
       "quiet": "{reporting} of {total} river gauges are reporting, and all of them read below their bank · {scope}",
       "noneReporting": "No river gauge is reporting, so the rivers in {scope} are not being measured right now",
       "unknown": "Jaga could not read the river gauges",
-      "silent": "{count} gauges have sent nothing for six hours or more"
+      "silent": "{count} gauges have sent nothing for six hours or more",
+      "risingWeek": "{count} of the {judged} gauges whose week could be read have been rising for about a week"
     },
     "dam": {
       "who": "The dam's own figures, not an alert",
@@ -5729,6 +5731,7 @@
     "rain": {
       "who": "From a forecast model, not a measurement at your house",
       "now": "{what} at {place} in the model",
+      "soon": "{what} expected at {place} in the next {hours} hours, {mm} mm in all, in the model",
       "dry": "The model has no rain at {place} in this hour",
       "unknown": "No weather reading is kept on this device yet",
       "stale": "the reading is more than three hours old"
@@ -5749,7 +5752,10 @@
         "damReleasing": "The dam is releasing water",
         "damWatch": "The dam published figures worth watching",
         "reports": "{count} standing reports from residents",
-        "rain": "Rain falling in the model"
+        "rain": "Rain falling in the model",
+        "riversRising": "Water rising at {count} river gauges",
+        "rainSoon": "Rain expected in the next {hours} hours",
+        "rainSoonHeavy": "Heavy rain expected in the next {hours} hours"
       }
     },
     "detail": {

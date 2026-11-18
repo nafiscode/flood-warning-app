@@ -2,7 +2,7 @@ import { contrastRatio } from "@/lib/brand/contrast";
 import { ALERT_LEVELS, brand, darkBrand, type AlertLevel } from "@/lib/brand/tokens";
 import type { Dam, DamGrade } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
-import { gaugeLook, type GaugeLook } from "@/lib/gauge-marks";
+import { gaugeLook, trendOf, type GaugeLook } from "@/lib/gauge-marks";
 import { gaugesNear } from "@/lib/monitoring";
 import type { GaugeReading } from "@/lib/map-data";
 import type { PublicAlert } from "@/lib/public-status";
@@ -50,6 +50,14 @@ export type GaugeTally = {
   near: number;
   /** Reporting, whatever they read. */
   reporting: number;
+  /**
+   * Reporting stations that have risen over the last three hours by at least `TREND_MIN_M` - the
+   * same 5 cm the map draws a chevron for, so the count and the arrows can never disagree.
+   *
+   * It is a measurement of the hours behind, not a statement about the hours ahead: a river that
+   * has risen 30 cm may rise 30 more or stop, and nothing here says which (safety rule 8).
+   */
+  rising: number;
   /** Silent for six hours or more: counted, never drawn as if it were current. */
   silent: number;
   total: number;
@@ -64,6 +72,7 @@ export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
     over: count("over"),
     near: count("near"),
     reporting: gauges.length - count("quiet"),
+    rising: gauges.filter((g, i) => trendOf(g.rise3h ?? null, looks[i]!) === "up").length,
     silent: count("quiet"),
     total: gauges.length,
     newestAt: gauges.reduce<string | null>(

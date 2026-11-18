@@ -685,7 +685,7 @@ export function DashboardView(props: DashboardViewProps) {
    * The forecast model's rain for the summary's monitoring section, from the reading this
    * device already keeps for the header's chip: nothing is asked for here (lib/use-rain).
    */
-  const rain = useKeptRain();
+  const rain = useKeptRain(now);
   /*
    * Whether the monitoring detail is open. One state for both places it can be drawn: the
    * band under the console, and the card under the legend on a phone and a tablet.

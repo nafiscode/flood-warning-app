@@ -5699,11 +5699,13 @@
       "who": "Diukur oleh pengendali stesen, dibaca melalui ThaiWater",
       "over": "{count} daripada {total} tolok sungai mencecah atau melepasi tebing · {scope}",
       "near": "{count} tolok sungai hampir dengan tebing · {scope}",
+      "rising": "{count} tolok sungai naik dalam tiga jam lepas · {scope}",
       "overNear": "{over} tolok sungai mencecah atau melepasi tebing, {near} hampir dengannya · {scope}",
       "quiet": "{reporting} daripada {total} tolok sungai menghantar bacaan, dan semuanya di bawah tebing · {scope}",
       "noneReporting": "Tiada tolok sungai menghantar bacaan, jadi sungai di {scope} tidak diukur sekarang",
       "unknown": "Jaga tidak dapat membaca tolok sungai",
-      "silent": "{count} tolok tidak menghantar apa-apa selama enam jam atau lebih"
+      "silent": "{count} tolok tidak menghantar apa-apa selama enam jam atau lebih",
+      "risingWeek": "{count} daripada {judged} tolok yang arahnya dapat dibaca telah naik berterusan kira-kira 1 minggu"
     },
     "dam": {
       "who": "Angka empangan sendiri, bukan amaran",
@@ -5729,6 +5731,7 @@
     "rain": {
       "who": "Daripada model ramalan, bukan ukuran di rumah anda",
       "now": "{what} di {place} dalam model",
+      "soon": "{what} dijangka di {place} dalam {hours} jam akan datang, {mm} mm keseluruhan, dalam model",
       "dry": "Model tidak menunjukkan hujan di {place} pada jam ini",
       "unknown": "Belum ada bacaan cuaca disimpan pada peranti ini",
       "stale": "bacaan ini lebih tiga jam lama"
@@ -5749,7 +5752,10 @@
         "damReleasing": "Empangan sedang melepaskan air",
         "damWatch": "Empangan menerbitkan angka yang perlu diperhatikan",
         "reports": "{count} laporan penduduk masih berkuat kuasa",
-        "rain": "Hujan turun dalam model"
+        "rain": "Hujan turun dalam model",
+        "riversRising": "Air naik di {count} tolok sungai",
+        "rainSoon": "Hujan dijangka dalam {hours} jam akan datang",
+        "rainSoonHeavy": "Hujan lebat dijangka dalam {hours} jam akan datang"
       }
     },
     "detail": {

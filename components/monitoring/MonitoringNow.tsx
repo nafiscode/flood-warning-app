@@ -77,11 +77,13 @@ export function MonitoringNow(props: MonitoringNowProps) {
         : t("gauges.unknown");
     }
     if (n.say === "active") {
-      return n.over > 0 && n.near > 0
-        ? t("gauges.overNear", { over: n.over, near: n.near, scope: scope(n.scope) })
-        : n.over > 0
-          ? t("gauges.over", { count: n.over, total: n.total, scope: scope(n.scope) })
-          : t("gauges.near", { count: n.near, scope: scope(n.scope) });
+      if (n.over > 0 && n.near > 0)
+        return t("gauges.overNear", { over: n.over, near: n.near, scope: scope(n.scope) });
+      if (n.over > 0)
+        return t("gauges.over", { count: n.over, total: n.total, scope: scope(n.scope) });
+      if (n.near > 0) return t("gauges.near", { count: n.near, scope: scope(n.scope) });
+      /* Nothing at a bank, and a river still climbing: said as the hours it has been measured. */
+      return t("gauges.rising", { count: n.rising, scope: scope(n.scope) });
     }
     return t("gauges.quiet", { reporting: n.reporting, total: n.total, scope: scope(n.scope) });
   };
@@ -118,9 +120,25 @@ export function MonitoringNow(props: MonitoringNowProps) {
   const rain = (n: RainNote): ReactNode => {
     const where = rainPlace ?? t("scope.myPlace");
     if (n.say === "unknown") return t("rain.unknown");
-    return n.say === "active"
+    if (n.say !== "active") return t("rain.dry", { place: where });
+    /*
+     * Two halves, and the forecast half is named as a forecast every time it is said (safety
+     * rule 8): what the sky is doing now, and what the model puts in the hours just ahead. Where
+     * it is dry now and wet soon, only the second half is said - a sentence beginning "no rain"
+     * would be the very thing that costs this screen its credibility.
+     */
+    const now = n.wet
       ? t("rain.now", { what: tWeather(`codes.${n.group ?? "overcast"}`), place: where })
-      : t("rain.dry", { place: where });
+      : null;
+    const soon = n.soon?.wet
+      ? t("rain.soon", {
+          what: tWeather(`codes.${n.soon.group}`),
+          hours: n.soon.hours,
+          mm: n.soon.mm,
+          place: where,
+        })
+      : null;
+    return [now, soon].filter(Boolean).join(" ") || t("rain.dry", { place: where });
   };
 
   const sentence = (n: Note): ReactNode =>
@@ -139,6 +157,13 @@ export function MonitoringNow(props: MonitoringNowProps) {
     if (n.kind === "rain" && n.stale) parts.push(t("rain.stale"));
     if (n.kind === "gauges" && n.say !== "unknown" && n.silent > 0)
       parts.push(t("gauges.silent", { count: n.silent }));
+    /*
+     * How many rivers have been climbing for a week, where that could be measured at all. An
+     * aside and not a sentence of its own: it is the season's background, and the stations it
+     * could not be judged for are counted with it rather than passed off as steady (rule 10).
+     */
+    if (n.kind === "gauges" && n.say !== "unknown" && n.risingWeek > 0)
+      parts.push(t("gauges.risingWeek", { count: n.risingWeek, judged: n.weekJudged }));
     if (n.kind === "reports" && n.say === "active" && n.confirmed > 0)
       parts.push(t("reports.confirmed", { count: n.confirmed }));
     if (n.kind === "dam" && n.onMyRiver && damTambon)

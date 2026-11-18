@@ -3,7 +3,7 @@
 import { useLocale } from "next-intl";
 import { useMyPlaces } from "@/lib/use-public";
 import { useWeather, useWeatherPlace } from "@/lib/use-weather";
-import { weatherGroup, type Weather, type WeatherPlace } from "@/lib/weather";
+import { rainSoon, weatherGroup, type Weather, type WeatherPlace } from "@/lib/weather";
 import type { Feed, RainReading } from "@/lib/monitoring";
 
 /**
@@ -17,7 +17,7 @@ import type { Feed, RainReading } from "@/lib/monitoring";
  * Before the chip has ever answered there is simply no reading, and the section says so rather
  * than saying it is dry (safety rule 10).
  */
-export function useKeptRain(): Feed<RainReading> & {
+export function useKeptRain(now: number): Feed<RainReading> & {
   place: WeatherPlace | null;
   /** The whole kept reading, for the hour-by-hour rain chart in the opened detail. */
   weather: Weather | null;
@@ -30,7 +30,18 @@ export function useKeptRain(): Feed<RainReading> & {
   if (weather) {
     return {
       state: "ok",
-      data: { group: weatherGroup(weather.code), rainMm: weather.rainMm, at: weather.at },
+      data: {
+        group: weatherGroup(weather.code),
+        rainMm: weather.rainMm,
+        at: weather.at,
+        /*
+         * The hours ahead come out of the same kept reading, so the one forward-looking sentence
+         * on the home screen still costs nothing. Null where the kept hours stop short of the
+         * next three, and the card then says nothing about what is coming rather than implying
+         * it will be dry (safety rule 10).
+         */
+        soon: rainSoon(weather.hours, now),
+      },
       place,
       weather,
     };
