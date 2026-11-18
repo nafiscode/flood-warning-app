@@ -6712,5 +6712,15 @@
     },
     "link": "Tempat jalan mungkin menahan air",
     "contact": "Pejabat atau penyelidik yang ingin memeriksa ini bersama kami: {email}"
+  },
+  "tmd": {
+    "title": "Amaran daripada Jabatan Meteorologi Thailand",
+    "notAnAlert": "Ini pengumuman Jabatan Meteorologi Thailand, bukan amaran Jaga.",
+    "announced": "Diumumkan {time}",
+    "covers": "Berkuat kuasa {from} hingga {until}",
+    "thaiOnly": "Jabatan Meteorologi Thailand mengumumkan dalam bahasa Thai sahaja. Teks di atas dipetik sebagaimana diumumkan.",
+    "readPdf": "Baca pengumuman penuh (PDF, bahasa Thai)",
+    "source": "Sumber: Jabatan Meteorologi Thailand",
+    "phone": "Telefon 1182"
   }
 }

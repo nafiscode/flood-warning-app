@@ -34,6 +34,7 @@ import { AlertHero, type HeroStatus } from "./AlertHero";
 import { AreaChooser } from "./AreaChooser";
 import { Checklist } from "./Checklist";
 import { TeamEntryCard } from "@/components/authority/TeamEntry";
+import { TmdWarnings } from "@/components/weather/TmdWarnings";
 import { HomeFirst } from "./HomeFirst";
 import { MorningBrief } from "./MorningBrief";
 import { OtherHelp } from "./OtherHelp";
@@ -418,6 +419,16 @@ export function HomeView(props: HomeViewProps) {
          * because then the screen belongs to the alert (safety rules 3, 8 and 10).
          */}
         {!loading && !choosing && !tense && <MorningBrief />}
+
+        {/*
+         * The Thai Meteorological Department's own warning for the South, when one is running
+         * (the owner, 18 Nov 2026). It is the national forecaster speaking, quoted with its name,
+         * its time and a link to its PDF - never a Jaga level and never an alert colour. Drawn in
+         * the same places as the weather card and under the same condition: at Warning or Evacuate
+         * the screen belongs to Jaga's own alert, and a second warning voice beside it would only
+         * raise the question of which one to follow (safety rules 3 and 10).
+         */}
+        {!loading && !choosing && !tense && <TmdWarnings />}
 
         {/*
          * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays

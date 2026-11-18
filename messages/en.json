@@ -6712,5 +6712,15 @@
     },
     "link": "Where a road may be holding water back",
     "contact": "An office or a researcher who would like to check this with us: {email}"
+  },
+  "tmd": {
+    "title": "Thai Meteorological Department warning",
+    "notAnAlert": "This is the national forecaster's announcement, not a Jaga alert.",
+    "announced": "Announced {time}",
+    "covers": "In effect {from} to {until}",
+    "thaiOnly": "TMD announces in Thai only. The notice above is quoted as it was issued.",
+    "readPdf": "Read the full announcement (PDF, in Thai)",
+    "source": "Source: Thai Meteorological Department",
+    "phone": "Call 1182"
   }
 }

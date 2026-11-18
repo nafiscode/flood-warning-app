@@ -49,6 +49,13 @@ export type WeatherViewProps = {
   onRetry: () => void;
   /** The weather maps, put in by the live screen; the examples and tests pass their own. */
   maps?: ReactNode;
+  /**
+   * The Thai Meteorological Department's own warning for the South, when one is running (18 Nov
+   * 2026). Put in by the live screen like the maps. It sits above the forecast on purpose: an
+   * official warning outranks a model, and it is drawn even when Open-Meteo cannot be reached, so
+   * a reader whose forecast failed still gets the national notice (safety rule 7).
+   */
+  warnings?: ReactNode;
 };
 
 /**
@@ -101,6 +108,8 @@ export function WeatherView(props: WeatherViewProps) {
           />
         </section>
       )}
+
+      {props.warnings}
 
       {place && !weather && (
         <p className={ready && failed ? errorNotice : notice} role={failed ? "alert" : undefined}>

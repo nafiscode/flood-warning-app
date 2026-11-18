@@ -347,10 +347,14 @@ export const CREDITS: Credit[] = [
     logo: "tmd.webp",
     name: "Thai Meteorological Department",
     short: "TMD",
-    dataset: "Sea and weather warnings",
+    // Since 18 Nov 2026 Jaga reads TMD's warning feed (data.tmd.go.th) and quotes the notice
+    // itself on the home screen and the weather page, so the credit names the data, not just the
+    // agency behind the sea advice.
+    dataset: "Severe-weather warnings, and the sea advice they inform",
     group: "agencies",
     href: "https://www.tmd.go.th/",
-    licence: "Public warnings",
+    licence: "Open data API, free",
+    credit: "ข้อมูลประกาศเตือนจากกรมอุตุนิยมวิทยา (TMD)",
   },
   {
     id: "rtsd",

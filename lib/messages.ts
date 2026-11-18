@@ -43,6 +43,8 @@ export function homeMessages(messages: AbstractIntlMessages): AbstractIntlMessag
       "attribution",
       // Today's weather card (A16, 8 Nov): the day, the hours rain is expected, the source.
       "brief",
+      // The Thai Meteorological Department's own warning, quoted under the weather card (18 Nov).
+      "tmd",
     ]),
     // The weather widget's words for what is falling, so the monitoring section says it the same
     // way the header's chip does. Four lines, not the whole weather page. "notAnAlert" and "old"
@@ -184,7 +186,8 @@ export function fieldCrewMessages(messages: AbstractIntlMessages): AbstractIntlM
 
 /** The weather page: its own text, plus the attribution line Open-Meteo requires. */
 export function weatherMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
-  return pick(messages, ["weather", "attribution"]);
+  // "tmd": the Thai Meteorological Department's own warnings, quoted on the page (18 Nov 2026).
+  return pick(messages, ["weather", "attribution", "tmd"]);
 }
 
 /**
