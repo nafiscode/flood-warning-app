@@ -105,6 +105,26 @@ type Options = {
   weatherFails?: boolean;
   tmdWarning?: boolean;
   tmdStations?: boolean;
+  tmdModel?: boolean;
+};
+
+/**
+ * TMD's model answering with much more rain than the stubbed Open-Meteo forecast, which gives
+ * 1.5 mm in every fifth hour - about 7 mm over 24 h against TMD's 60 mm, a gap the card must name.
+ */
+const tmdModelForecast = () => {
+  const start = Math.floor(Date.now() / HOUR) * HOUR;
+  return {
+    lat: 6.88,
+    lon: 101.27,
+    hours: Array.from({ length: 24 }, (_, i) => ({
+      at: new Date(start + i * HOUR).toISOString(),
+      rainMm: 2.5,
+      tempC: 26,
+      group: "rain",
+    })),
+    rainMm: 60,
+  };
 };
 
 /** A TMD warning in the shape /api/public/tmd/warnings returns. */
@@ -182,6 +202,13 @@ async function serve(page: Page, options: Options = {}) {
     options.tmdWarning
       ? route.fulfill({ json: { warnings: [TMD_WARNING], fetchedAt: new Date().toISOString() } })
       : route.fulfill({ json: { warnings: [], fetchedAt: new Date().toISOString() } }),
+  );
+  // TMD's own forecast model, which needs a token the live site may not have: 503 unless a test
+  // asks for it, which is exactly how the page behaves before the owner registers.
+  await page.route("**/api/public/tmd/forecast**", (route) =>
+    options.tmdModel
+      ? route.fulfill({ json: tmdModelForecast() })
+      : route.fulfill({ status: 503, json: { error: "unavailable" } }),
   );
   await page.route("**/api/public/tmd/stations", (route) =>
     options.tmdStations
@@ -467,5 +494,31 @@ test.describe("weather", () => {
     await expect(page.locator('[data-weather-now="true"]')).toContainText("27°C");
     await expect(page.locator("[data-tmd-warnings]")).toHaveCount(0);
     await expect(page.locator("[data-tmd-rain]")).toHaveCount(0);
+  });
+
+  test("the two models are shown side by side, and the gap between them is named", async ({
+    page,
+  }) => {
+    await serve(page, { area: true, tmdModel: true });
+    await page.goto("/weather");
+    const card = page.locator("[data-two-forecasts]");
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(th.twoForecasts.title);
+    // Both figures, each against its own model's name.
+    await expect(card.locator('[data-model="tmd"]')).toContainText("60");
+    await expect(card.locator('[data-model="openMeteo"]')).toBeVisible();
+    // 7 mm against 60 mm: far apart, and the card must point at the higher number.
+    await expect(card.locator("[data-verdict]")).toHaveAttribute("data-verdict", "farApart");
+    await expect(card.locator("[data-verdict]")).toContainText("60");
+    await noSidewaysScroll(page);
+  });
+
+  test("without TMD's model the page is exactly as it was", async ({ page }) => {
+    // This is the live site's state until the owner registers for a token.
+    await serve(page, { area: true });
+    await page.goto("/weather");
+    await expect(page.locator('[data-weather-now="true"]')).toContainText("27°C");
+    await expect(page.locator('[data-weather-days="true"] li')).toHaveCount(7);
+    await expect(page.locator("[data-two-forecasts]")).toHaveCount(0);
   });
 });

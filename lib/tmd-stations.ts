@@ -186,11 +186,16 @@ export function stationName(station: TmdStation, locale: string): string {
 }
 
 function titleCase(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/(^|[\s(/-])([a-z])/g, (_, before: string, letter: string) => before + letter.toUpperCase())
-    // TMD's own abbreviation for an agrometeorological station.
-    .replace(/\bAgromet\.?/gi, "Agromet.");
+  return (
+    text
+      .toLowerCase()
+      .replace(
+        /(^|[\s(/-])([a-z])/g,
+        (_, before: string, letter: string) => before + letter.toUpperCase(),
+      )
+      // TMD's own abbreviation for an agrometeorological station.
+      .replace(/\bAgromet\.?/gi, "Agromet.")
+  );
 }
 
 export function stationsUrl(): string {

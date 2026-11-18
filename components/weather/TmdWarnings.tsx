@@ -96,7 +96,9 @@ export function TmdWarningsView({ warnings, openAll = false }: TmdWarningsViewPr
               {/* When TMD said it, and the period it is about: the two things that decide whether
                   a notice still applies to the reader's afternoon. */}
               {announced && <p className={hint}>{t("announced", { time: announced })}</p>}
-              {starts && ends && <p className={hint}>{t("covers", { from: starts, until: ends })}</p>}
+              {starts && ends && (
+                <p className={hint}>{t("covers", { from: starts, until: ends })}</p>
+              )}
               {locale !== "th" && <p className={hint}>{t("thaiOnly")}</p>}
               {warning.pdfUrl && (
                 <a

@@ -6830,5 +6830,20 @@
     },
     "link": "Situation report",
     "linkHint": "Your area's figures for a period, to print or send on"
+  },
+  "twoForecasts": {
+    "title": "Expected rain, from two models",
+    "body": "The total for the next {hours} hours from two models calculated separately. A forecast is never certain.",
+    "openMeteo": {
+      "name": "Open-Meteo (global model)"
+    },
+    "tmd": {
+      "name": "TMD (3 km)"
+    },
+    "mm": "mm",
+    "agree": "The two models broadly agree.",
+    "differ": "The two models disagree. Plan for {mm} mm.",
+    "farApart": "The two models are far apart. Plan for {mm} mm and check again later.",
+    "source": "Sources: Open-Meteo and the Thai Meteorological Department. A forecast, not a Jaga alert."
   }
 }

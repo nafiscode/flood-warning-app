@@ -187,7 +187,7 @@ export function fieldCrewMessages(messages: AbstractIntlMessages): AbstractIntlM
 /** The weather page: its own text, plus the attribution line Open-Meteo requires. */
 export function weatherMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   // "tmd": the Thai Meteorological Department's own warnings, quoted on the page (18 Nov 2026).
-  return pick(messages, ["weather", "attribution", "tmd", "tmdRain"]);
+  return pick(messages, ["weather", "attribution", "tmd", "tmdRain", "twoForecasts"]);
 }
 
 /**

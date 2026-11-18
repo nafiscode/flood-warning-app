@@ -6830,5 +6830,20 @@
     },
     "link": "Laporan keadaan",
     "linkHint": "Angka bagi kawasan anda untuk satu tempoh, untuk dicetak atau dihantar"
+  },
+  "twoForecasts": {
+    "title": "Hujan yang dijangka, daripada dua model",
+    "body": "Jumlah untuk {hours} jam akan datang daripada dua model yang dikira secara berasingan. Ramalan tidak pernah pasti.",
+    "openMeteo": {
+      "name": "Open-Meteo (model global)"
+    },
+    "tmd": {
+      "name": "TMD (3 km)"
+    },
+    "mm": "mm",
+    "agree": "Kedua-dua model lebih kurang sama.",
+    "differ": "Kedua-dua model berbeza. Bersiap untuk {mm} mm.",
+    "farApart": "Kedua-dua model jauh berbeza. Bersiap untuk {mm} mm dan periksa semula nanti.",
+    "source": "Sumber: Open-Meteo dan Jabatan Meteorologi Thailand. Ini ramalan, bukan amaran Jaga."
   }
 }

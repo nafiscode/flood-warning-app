@@ -49,14 +49,7 @@ export const MAX_AGE_MS = 3 * 24 * 60 * 60_000;
  * way to be wrong here; a resident who reads a warning for the next province along has lost
  * nothing, and the text itself always names the area it is about.
  */
-export const SOUTH_WORDS = [
-  "ภาคใต้",
-  "อ่าวไทย",
-  "ปัตตานี",
-  "ยะลา",
-  "นราธิวาส",
-  "สงขลา",
-] as const;
+export const SOUTH_WORDS = ["ภาคใต้", "อ่าวไทย", "ปัตตานี", "ยะลา", "นราธิวาส", "สงขลา"] as const;
 
 /**
  * Words that make a notice nationwide: a tropical storm or a depression is announced for the
@@ -203,11 +196,7 @@ export function isCurrent(warning: TmdWarning, now: number): boolean {
  * `limit` of them - on a bad week TMD runs several episodes at once, and a wall of Thai prose on a
  * phone is read by nobody.
  */
-export function currentWarnings(
-  warnings: TmdWarning[],
-  now: number,
-  limit = 2,
-): TmdWarning[] {
+export function currentWarnings(warnings: TmdWarning[], now: number, limit = 2): TmdWarning[] {
   return warnings
     .filter((w) => isForServiceArea(w) && isCurrent(w, now))
     .sort((a, b) => order(b) - order(a))

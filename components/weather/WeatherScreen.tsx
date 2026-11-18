@@ -9,6 +9,7 @@ import { useNow } from "@/lib/use-public";
 import { areaPlaceDetail, useWeather, useWeatherPlace, weatherPins } from "@/lib/use-weather";
 import { TmdRain } from "./TmdRain";
 import { TmdWarnings } from "./TmdWarnings";
+import { TwoForecasts } from "./TwoForecasts";
 import { WeatherMaps } from "./WeatherMaps";
 import type { WeatherPlace } from "@/lib/weather";
 import { WeatherView } from "./WeatherView";
@@ -51,6 +52,7 @@ export function WeatherScreen() {
       onRetry={refresh}
       warnings={<TmdWarnings />}
       measured={<TmdRain place={place} />}
+      twoModels={<TwoForecasts place={place} weather={weather} />}
       maps={
         <WeatherMaps
           place={place}

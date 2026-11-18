@@ -64,9 +64,21 @@ export const SCIENCE_PARTS: SciencePart[] = [
     sources: ["fabdem", "sentinel1", "gistda", "openBuildings", "osm"],
     checked: true,
   },
-  { key: "gauges", icon: "gauge", figure: "gauge", sources: ["thaiwater", "rid", "gsmap"], checked: true },
+  {
+    key: "gauges",
+    icon: "gauge",
+    figure: "gauge",
+    sources: ["thaiwater", "rid", "gsmap"],
+    checked: true,
+  },
   { key: "alarm", icon: "bell", sources: ["thaiwater"], checked: true },
-  { key: "dam", icon: "drop", figure: "river", sources: ["thaiwater", "egat", "fabdem", "osm"], checked: true },
+  {
+    key: "dam",
+    icon: "drop",
+    figure: "river",
+    sources: ["thaiwater", "egat", "fabdem", "osm"],
+    checked: true,
+  },
   {
     key: "places",
     icon: "house",
@@ -171,7 +183,12 @@ export type WorkflowRow = {
 export const WORKFLOW: WorkflowRow[] = [
   { key: "radar", sources: ["sentinel1", "jrcwater", "meritHydro"], part: "radar" },
   { key: "hand", sources: ["fabdem", "osm"], part: "classes" },
-  { key: "classes", sources: ["openBuildings", "gistda"], feeds: ["radar", "hand"], part: "classes" },
+  {
+    key: "classes",
+    sources: ["openBuildings", "gistda"],
+    feeds: ["radar", "hand"],
+    part: "classes",
+  },
   { key: "gauges", sources: ["thaiwater", "rid", "gsmap"], part: "gauges" },
   { key: "dam", sources: ["egat", "thaiwater"], feeds: ["hand"], part: "dam" },
   { key: "places", sources: ["osm", "openBuildings"], feeds: ["radar", "hand"], part: "places" },
@@ -308,8 +325,7 @@ export const CREDITS: Credit[] = [
     group: "agencies",
     href: "https://www.thaiwater.net/",
     licence: "Public API",
-    credit:
-      "ข้อมูลจากคลังข้อมูลน้ำแห่งชาติ (ThaiWater) สถาบันสารสนเทศทรัพยากรน้ำ (สสน.)",
+    credit: "ข้อมูลจากคลังข้อมูลน้ำแห่งชาติ (ThaiWater) สถาบันสารสนเทศทรัพยากรน้ำ (สสน.)",
   },
   {
     id: "rid",
@@ -339,8 +355,7 @@ export const CREDITS: Credit[] = [
     group: "agencies",
     href: "https://www.gistda.or.th/",
     licence: "Open data, free key",
-    credit:
-      "ข้อมูลพื้นที่น้ำท่ามจากสำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ (GISTDA)",
+    credit: "ข้อมูลพื้นที่น้ำท่ามจากสำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ (GISTDA)",
   },
   {
     id: "tmd",
@@ -350,7 +365,8 @@ export const CREDITS: Credit[] = [
     // Since 18 Nov 2026 Jaga reads TMD's warning feed (data.tmd.go.th) and quotes the notice
     // itself on the home screen and the weather page, so the credit names the data, not just the
     // agency behind the sea advice.
-    dataset: "Severe-weather warnings, rain measured at its stations, and the sea advice they inform",
+    dataset:
+      "Severe-weather warnings, rain measured at its stations, its own 3 km forecast model, and the sea advice they inform",
     group: "agencies",
     href: "https://www.tmd.go.th/",
     licence: "Open data API, free",
@@ -456,7 +472,8 @@ export const CREDITS: Credit[] = [
     group: "maps",
     href: "https://www.esri.com/",
     licence: "Free allowance, no pay-as-you-go",
-    credit: "Powered by Esri; Esri, Maxar, Earthstar Geographics, TomTom, Garmin, FAO, NOAA, USGS and the GIS User Community",
+    credit:
+      "Powered by Esri; Esri, Maxar, Earthstar Geographics, TomTom, Garmin, FAO, NOAA, USGS and the GIS User Community",
   },
   {
     id: "earthEngine",

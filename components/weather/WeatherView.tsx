@@ -62,6 +62,11 @@ export type WeatherViewProps = {
    * check on it - the one block on the page that is a reading and not a model.
    */
   measured?: ReactNode;
+  /**
+   * The same rain as forecast by two models, Open-Meteo and TMD's own (18 Nov 2026). Drawn only
+   * when TMD's model answers, so the page is unchanged where it does not.
+   */
+  twoModels?: ReactNode;
 };
 
 /**
@@ -148,6 +153,9 @@ export function WeatherView(props: WeatherViewProps) {
             <div className="lg:col-span-2">{props.maps}</div>
             <Hours weather={weather} />
             <Days weather={weather} />
+            {/* The two-model comparison sits beside the measured rain: the forecast's own
+                uncertainty, and then the reading that will settle it. */}
+            <div className="lg:col-span-2">{props.twoModels}</div>
             <div className="lg:col-span-2">{props.measured}</div>
           </div>
           <section className="flex flex-col gap-2">
