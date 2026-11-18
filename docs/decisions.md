@@ -739,3 +739,57 @@ On a laptop the map console's weather sky in the **light theme** came out as a w
   Nothing here publishes, raises a level or feeds the automated alarm, which reads gauges and not forecasts.
 
   Verified: 28 new unit tests (12 on the forecast helper, 6 on the rising count, 10 on what the card says), lint, typecheck and `npm run build` clean, and the six new message lines formatted in all three languages. **The unit runner itself is broken on this laptop** - vitest 5.0.2 fails to start a suite ("Vitest failed to find the current suite") on every file, including ones untouched by this work, so these tests were verified by compiling the same assertions with esbuild and running them under node, and CI is the real check.
+
+## 2026-11-18 - The home page on a laptop reads like a website, not three columns
+
+**Decision.** The owner, looking at the laptop home screen: "rearrange the home page elements to
+be more like a website, instead of 3 vertical columns like the current one." Offered three shapes,
+they chose the banded one, and chose a single narrow column at Warning or Evacuate over keeping
+the bands.
+
+**Why the three columns of 16 Oct had to go.** Three even columns of stacked cards is what an app
+looks like, not a page. The alert - the one thing the screen exists for - was a third of the width
+with nothing above it, and the three stacks ended at wildly different heights.
+
+**What it is now, at 1,280 px and wider (and on a tablet held sideways):**
+
+1. the alert for their own tambon, two thirds of the width, with the rail beside it carrying
+   everything that is theirs - SOS, a flood report, food and water, what they have sent, and the
+   places they watch;
+2. under the alert, in the same wide stack, what is happening: the weather, TMD's warning, the
+   neighbours, the rivers, the long-term risk, the reservoir;
+3. the way into the map, full width, as a row of seven tiles rather than a narrow two-abreast
+   stack;
+4. a foot of two: the safe places, and "share Jaga".
+
+**At Warning or Evacuate it is one column, capped at 46rem and centred** (safety rule 3: nothing
+sits beside an alert). That column is the phone's own approved order with one difference the owner
+asked for - **SOS directly under the alert, not after the checklist.** On a phone the whole screen
+is one thumb's reach; a laptop window is not, and measured at 1,440 px the button had been a
+thousand pixels down. The reservoir's drawing, which a laptop writes in the wide stack (16 Oct),
+is pushed to the end there for the same reason: it had put nearly 900 px between the checklist and
+SOS.
+
+**How, without touching what a phone reads.** The three columns of 8 Oct are still what is
+written. Inside them the blocks are grouped into named bands (`data-home-band` in
+components/home/HomeView.tsx) which are `display: contents` everywhere except the console, so a
+phone, a tablet held upright and a narrow window still read the page as the one run of blocks they
+always did. The one block that moved in the markup is the person's own places, from the top of the
+third column to the foot of the rail - it still reads with the places group, because the phone's
+`order` rules now name the bands rather than the columns, and because the rail is written
+immediately before that column the two-column layout at 1,024-1,280 px portrait is unchanged as
+well.
+
+**One thing tried and rejected:** cutting both columns into bands by grid row, so that the alert
+and the SOS button shared row 1. A grid row is as tall as the tallest thing in it, so a short
+alert beside a tall rail left 650 px of white under the alert (measured at 1,440 px). Two whole
+stacks have no row to share.
+
+Verified in a real browser at five widths and three states (360 phone, 1,024 portrait, 1,100
+landscape, 1,440 laptop normal and at Warning): the order of blocks is unchanged everywhere except
+the laptop, and no screen scrolls sideways. Unit tests for the arrangement in
+tests/unit/phone-map.test.tsx; lint, typecheck and the touched suites clean.
+
+**Also found:** vitest is not broken on this laptop - it fails only when run from Git Bash
+("Vitest failed to find the current suite" on every file, including untouched ones). The same
+command from PowerShell runs the whole suite. Noted in CLAUDE.local.md.

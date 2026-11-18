@@ -211,18 +211,104 @@ describe("the home screen's arrangement on a phone, in app/globals.css", () => {
 
   it("brings the things to do up between the alert and the long-term risk", () => {
     const b = block();
-    // The columns stop being boxes, so their blocks can be put in order one by one.
+    // Neither the columns nor the bands inside them are boxes here, so their blocks can be put
+    // in order one by one.
     expect(b).toMatch(/\[data-console-page="home"\] > \[data-home-col\] \{[^}]*display: contents/);
+    expect(b).toMatch(
+      /\[data-console-page="home"\] > \[data-home-col\] > \[data-home-band\] \{[^}]*display: contents/,
+    );
     // What to do comes after the alert (which keeps the default order) and before the tail.
-    expect(b).toMatch(/\[data-home-col="act"\] > \* \{\s*order: 1/);
-    expect(b).toMatch(/\[data-home-col="now"\] > \[data-home-tail\] > \* \{\s*order: 2/);
-    expect(b).toMatch(/\[data-home-col="places"\] > \* \{\s*order: 3/);
+    // The bands are named rather than the columns: "my places" moved into the rail on 18 Nov
+    // and is still read with the rest of the places group.
+    expect(b).toMatch(/\[data-home-band="act"\] > \* \{\s*order: 1/);
+    expect(b).toMatch(/\[data-home-band="main"\] > \[data-home-tail\] > \* \{\s*order: 2/);
+    for (const band of ["side", "tiles", "side2", "foot"]) {
+      expect(b).toContain(`[data-home-band="${band}"] > *`);
+    }
+    expect(b).toMatch(/\[data-home-band="foot"\] > \* \{\s*order: 3/);
   });
 
   it("is the exact complement of the two columns, so no laptop is touched", () => {
     // Tailwind's lg: is min-width 1024px; this is everything below it, and nothing else.
-    expect(css).toContain("@media (max-width: 1023.98px) {");
+    expect(css).toContain("\media (max-width: 1023.98px) {");
     expect(block()).not.toContain("pointer:");
+  });
+});
+
+/**
+ * The owner, 18 Nov 2026: the laptop should read like a website rather than three stacked
+ * columns. The bands are CSS over markup a phone already had, so what is worth holding still
+ * here is the grid they are placed on, and that a band is nothing at all off the console.
+ */
+describe("the home screen's bands on a laptop, in app/globals.css", () => {
+  const css = readFileSync("app/globals.css", "utf8");
+  const rule = (selector: string) => {
+    const at = css.indexOf(`${selector} {`);
+    expect(at, selector).toBeGreaterThan(-1);
+    return css.slice(at, css.indexOf("}", at));
+  };
+
+  it("is nothing at all in the page until the console lays it out", () => {
+    // The base rule, outside every media query: a band does not exist for a phone.
+    expect(css).toContain("\n[data-home-band] {\n  display: contents;\n}");
+  });
+
+  it("lays the page out as two stacks, then bands across the page under them", () => {
+    expect(rule('[data-console-page="home"]')).toContain(
+      "grid-template-columns: repeat(12, minmax(0, 1fr))",
+    );
+    /*
+     * The two stacks are the page's own first two columns, kept whole. Cutting them into bands
+     * by row was tried first and does not work: a grid row is as tall as the tallest thing in
+     * it, so a short alert beside a tall column of buttons left 650 px of white under the alert.
+     */
+    const now = rule('[data-console-page="home"] > [data-home-col="now"]');
+    expect(now).toContain("grid-column: 1 / 9");
+    expect(now).toContain("grid-row: 1");
+    const act = rule('[data-console-page="home"] > [data-home-col="act"]');
+    expect(act).toContain("grid-column: 9 / 13");
+    expect(act).toContain("grid-row: 1");
+    // The third column is not a column here: its bands are placed one by one under the stacks.
+    expect(rule('[data-console-page="home"] > [data-home-col="places"]')).toContain(
+      "display: contents",
+    );
+    // The way into the map runs the full width...
+    expect(rule('[data-home-band="tiles"]')).toContain("grid-column: 1 / 13");
+    expect(rule('[data-home-band="tiles"]')).toContain("grid-row: 2");
+    // ...and the foot keeps the same two widths as the stacks above it, so there is one grid.
+    expect(rule('[data-home-band="side2"]')).toContain("grid-column: 1 / 9");
+    expect(rule('[data-home-band="foot"]')).toContain("grid-column: 9 / 13");
+  });
+
+  /** The owner chose this over keeping the bands: nothing sits beside an alert (safety rule 3). */
+  it("drops to one capped, centred column at Warning or Evacuate", () => {
+    const tense = rule('[data-console-page="home"][data-home-tense]');
+    expect(tense).toContain("display: flex");
+    expect(tense).toContain("flex-direction: column");
+    expect(tense).toContain("max-width: 46rem");
+    expect(tense).toContain("margin-inline: auto");
+    // The columns and the bands step out of the page, and `order` does the arranging.
+    expect(
+      rule(
+        '[data-console-page="home"][data-home-tense] > [data-home-col],\n  [data-console-page="home"][data-home-tense] > [data-home-col] > [data-home-band]',
+      ),
+    ).toContain("display: contents");
+    expect(rule('[data-home-tense] [data-home-band="main"] > *')).toContain("order: 2");
+    expect(rule('[data-home-tense] [data-home-band="act"] > *')).toContain("order: 3");
+    // SOS directly under the alert, wherever the page happens to have written the button.
+    expect(rule('[data-home-tense] [data-tour="sos"]')).toContain("order: 1");
+    expect(rule('[data-home-tense] [data-home-band="main"] > [data-home-tail] > *')).toContain(
+      "order: 4",
+    );
+    expect(rule('[data-home-tense] [data-home-band="foot"] > *')).toContain("order: 5");
+    /*
+     * The reservoir's drawing is written in the wide stack on a laptop (the owner, 16 Oct). In
+     * one column it would sit between the checklist and SOS - measured at nearly a thousand
+     * pixels - so it waits with the background (safety rule 1).
+     */
+    expect(rule('[data-home-tense] [data-home-band="main"] [data-dam-figure-card]')).toContain(
+      "order: 6",
+    );
   });
 });
 

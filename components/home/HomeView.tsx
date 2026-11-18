@@ -316,229 +316,280 @@ export function HomeView(props: HomeViewProps) {
 
   return (
     /*
-     * One column on a phone, two on a laptop (the owner asked for the window to be used, 8 Oct).
+     * One column on a phone, two in a narrow window (the owner asked for the window to be used,
+     * 8 Oct), and on a laptop the bands of 18 Nov - the alert and the things to do across the
+     * top, then what is happening beside the person's own places, then the map, then the foot.
+     * The three columns below are what is written, and the `data-home-band` wrappers inside them
+     * are what the laptop lays out; app/globals.css holds both arrangements.
+     *
      * The order on a phone is exactly as before, because the left column is written first and
      * the columns stack: what is happening on the left, what to do on the right. At Evacuate the
-     * SOS button stays directly under the hero (decision 2026-09-29), in the left column.
+     * SOS button stays directly under the hero (decision 2026-09-29), in the left column. While
+     * a place of theirs is at Warning or Evacuate the laptop drops to that same single column,
+     * capped and centred, so nothing sits beside the alert (`data-home-tense`).
      */
     <div
       data-console-page="home"
+      data-home-tense={tense ? "true" : undefined}
       className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start lg:gap-x-8 lg:gap-y-5"
     >
       <h1 className="sr-only">{t("title")}</h1>
 
       <div data-home-col="now" className="flex flex-col gap-5 lg:col-start-1 lg:row-span-2">
-        {worse.map((item) => (
-          <WorseBanner key={item.place.id} item={item} now={now} />
-        ))}
-
         {/*
-         * The quiet dam notice, for someone whose own area or watched place is on the river
-         * below the dam (spec section 15). It is not an alert and carries no alert colour: the
-         * hero below it is still what says what level their tambon is at.
+         * The top band of the page on a laptop (the owner, 18 Nov 2026): the level of their own
+         * tambon, full width, with the things to do beside it rather than under it. Below the
+         * console the wrapper is `display: contents` and the page is the single run of blocks it
+         * has always been - see app/globals.css, `[data-home-band]`.
          */}
-        {damsOnMyPath.map(({ dam, hit }) => (
-          <DamNotice
-            key={dam.code}
-            dam={dam}
-            via={hit.via}
-            tambonCode={hit.code}
-            tambonName={areaNameOf(hit.code)}
-            now={now}
-            gatesOpenAt={damReleaseAt(props.status, dam.code, hit.code)}
-          />
-        ))}
-
-        {loading ? (
-          <section data-hero="loading" className={card}>
-            <p>{t("loading")}</p>
-          </section>
-        ) : !home || choosing ? (
-          <section data-hero="choose" className={card}>
-            <h2 className="text-h3 font-bold text-jaga-ink">{t("area.chooseTitle")}</h2>
-            <p>{t("area.chooseBody")}</p>
-            <AreaChooser
-              onChoose={(area) => {
-                setChoosing(false);
-                props.onChooseArea(area);
-              }}
-              onCancel={home ? () => setChoosing(false) : undefined}
-            />
-          </section>
-        ) : (
-          hero && (
-            <AlertHero
-              status={hero}
-              area={areaLine}
-              areaName={home ? tambonName(locale, home) : undefined}
-              now={now}
-              onRetry={props.onRetry}
-            />
-          )
-        )}
-
-        {/*
-         * The risk map, offered inside the status as a way on (the owner, 23 Oct): on a laptop,
-         * once there is an area and nothing is at Warning or Evacuate. It names the place, so it
-         * reads as the reward for choosing one rather than another card to weigh up.
-         */}
-        {wide && stage !== "tense" && !loading && !choosing && home && (
-          <Link
-            href="/map"
-            prefetch={false}
-            data-map-cta="true"
-            className={`${buttonPrimary} gap-2`}
-          >
-            {tFlow("mapCta", { place: tambonName(locale, home) })}
-            <ForwardIcon size={20} className="rtl:-scale-x-100" />
-          </Link>
-        )}
-
-        {/*
-         * Under the hero and nowhere else (the owner, 18 Oct): what the tambon's level is stays
-         * the first thing on the screen, and how to join Jaga is the second. It is in the static
-         * HTML on purpose - the people it is for arrive from a link, often on a slow phone - and
-         * it goes once a place of theirs is at Warning or Evacuate. On a laptop the setup card
-         * (components/home/SetupSteps.tsx) does this inviting, one step at a time (23 Oct).
-         */}
-        {!tense && !wide && props.joinJaga}
-        {/* An approved team's way back to its board stays, even while a warning is in force:
-            it is when the board is needed most (24 Oct). Nothing is drawn for anyone else. */}
-        {tense && !wide && <TeamEntryCard />}
-
-        {/*
-         * And one line saying Jaga can be installed, because on a phone the card itself is 56%
-         * down the page (measured, 19 Oct) - the three columns stack and it is in the last one.
-         */}
-        {!loading && !choosing && !tense && props.installLine}
-
-        {/*
-         * Today's weather, on an ordinary day only (the owner, 8 Nov 2026): a reason to open Jaga
-         * when nothing is wrong, so the app is familiar on the day something is. It is weather and
-         * says so - no level, no alert colour - and at Warning or Evacuate it is not drawn at all,
-         * because then the screen belongs to the alert (safety rules 3, 8 and 10).
-         */}
-        {!loading && !choosing && !tense && <MorningBrief />}
-
-        {/*
-         * The Thai Meteorological Department's own warning for the South, when one is running
-         * (the owner, 18 Nov 2026). It is the national forecaster speaking, quoted with its name,
-         * its time and a link to its PDF - never a Jaga level and never an alert colour. Drawn in
-         * the same places as the weather card and under the same condition: at Warning or Evacuate
-         * the screen belongs to Jaga's own alert, and a second warning voice beside it would only
-         * raise the question of which one to follow (safety rules 3 and 10).
-         */}
-        {!loading && !choosing && !tense && <TmdWarnings />}
-
-        {/*
-         * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays
-         * the one place that says what level the tambon is at: this is neighbours speaking, not
-         * Jaga, and it says so.
-         */}
-        {!loading && !choosing && props.reports && (
-          <ReportsNear near={reportsNearMe(props.reports, myCodes)} />
-        )}
-
-        {notInServiceNote}
-
-        {checkedAt !== null && !loading && (
-          <p
-            className={failed ? notice : hint}
-            role={failed ? "status" : undefined}
-            data-checked={failed ? "old" : "ok"}
-          >
-            {t(failed ? "status.offline" : "status.checked", {
-              time: format.dateTime(new Date(checkedAt), BANGKOK_DATE_TIME),
-            })}
-          </p>
-        )}
-
-        {/*
-         * The long-term risk and the live measurements are marked as the tail of this column
-         * (the owner, 21 Oct): on a phone and a tablet the things to do - SOS, a flood report,
-         * asking for food and water, and following what you have sent - are brought up above
-         * them, so the screen reads what is happening, then what you can do, then the
-         * background. Nothing moves on a laptop, where the two are side by side already.
-         *
-         * The wrapper is `display: contents`, so it is nothing at all in the page: what it does
-         * is give app/globals.css something to name (the phone block, `data-home-tail`).
-         */}
-        <div className="contents" data-home-tail="true">
-          {!tense && riskCard}
-
-          {/* An ordinary day: the measurements sit under the hero and its reports. */}
-          {!tense && monitoring}
-        </div>
-
-        {evacuate && sos}
-        {!choosing && checklist}
-
-        <div className="contents" data-home-tail="true">
-          {tense && riskCard}
+        <div data-home-band="hero">
+          {worse.map((item) => (
+            <WorseBanner key={item.place.id} item={item} now={now} />
+          ))}
 
           {/*
-           * At Warning or Evacuate the same section waits until after the checklist (and after
-           * the SOS button, which moves up at Evacuate): what to do comes before what the
-           * rivers read.
+           * The quiet dam notice, for someone whose own area or watched place is on the river
+           * below the dam (spec section 15). It is not an alert and carries no alert colour: the
+           * hero below it is still what says what level their tambon is at.
            */}
-          {tense && monitoring}
+          {damsOnMyPath.map(({ dam, hit }) => (
+            <DamNotice
+              key={dam.code}
+              dam={dam}
+              via={hit.via}
+              tambonCode={hit.code}
+              tambonName={areaNameOf(hit.code)}
+              now={now}
+              gatesOpenAt={damReleaseAt(props.status, dam.code, hit.code)}
+            />
+          ))}
+
+          {loading ? (
+            <section data-hero="loading" className={card}>
+              <p>{t("loading")}</p>
+            </section>
+          ) : !home || choosing ? (
+            <section data-hero="choose" className={card}>
+              <h2 className="text-h3 font-bold text-jaga-ink">{t("area.chooseTitle")}</h2>
+              <p>{t("area.chooseBody")}</p>
+              <AreaChooser
+                onChoose={(area) => {
+                  setChoosing(false);
+                  props.onChooseArea(area);
+                }}
+                onCancel={home ? () => setChoosing(false) : undefined}
+              />
+            </section>
+          ) : (
+            hero && (
+              <AlertHero
+                status={hero}
+                area={areaLine}
+                areaName={home ? tambonName(locale, home) : undefined}
+                now={now}
+                onRetry={props.onRetry}
+              />
+            )
+          )}
+
+          {/*
+           * The risk map, offered inside the status as a way on (the owner, 23 Oct): on a laptop,
+           * once there is an area and nothing is at Warning or Evacuate. It names the place, so it
+           * reads as the reward for choosing one rather than another card to weigh up.
+           */}
+          {wide && stage !== "tense" && !loading && !choosing && home && (
+            <Link
+              href="/map"
+              prefetch={false}
+              data-map-cta="true"
+              className={`${buttonPrimary} gap-2`}
+            >
+              {tFlow("mapCta", { place: tambonName(locale, home) })}
+              <ForwardIcon size={20} className="rtl:-scale-x-100" />
+            </Link>
+          )}
+
+          {/*
+           * Under the hero and nowhere else (the owner, 18 Oct): what the tambon's level is stays
+           * the first thing on the screen, and how to join Jaga is the second. It is in the static
+           * HTML on purpose - the people it is for arrive from a link, often on a slow phone - and
+           * it goes once a place of theirs is at Warning or Evacuate. On a laptop the setup card
+           * (components/home/SetupSteps.tsx) does this inviting, one step at a time (23 Oct).
+           */}
+          {!tense && !wide && props.joinJaga}
+          {/* An approved team's way back to its board stays, even while a warning is in force:
+            it is when the board is needed most (24 Oct). Nothing is drawn for anyone else. */}
+          {tense && !wide && <TeamEntryCard />}
+
+          {/*
+           * And one line saying Jaga can be installed, because on a phone the card itself is 56%
+           * down the page (measured, 19 Oct) - the three columns stack and it is in the last one.
+           */}
+          {!loading && !choosing && !tense && props.installLine}
         </div>
 
-        {/* Laptop only: under the flood-risk summary (the owner, 16 Oct). */}
-        <div className="hidden console:contents">{damCards}</div>
+        {/* The band under it: what is happening, in the wide column. */}
+        <div data-home-band="main">
+          {/*
+           * Today's weather, on an ordinary day only (the owner, 8 Nov 2026): a reason to open Jaga
+           * when nothing is wrong, so the app is familiar on the day something is. It is weather and
+           * says so - no level, no alert colour - and at Warning or Evacuate it is not drawn at all,
+           * because then the screen belongs to the alert (safety rules 3, 8 and 10).
+           */}
+          {!loading && !choosing && !tense && <MorningBrief />}
+
+          {/*
+           * The Thai Meteorological Department's own warning for the South, when one is running
+           * (the owner, 18 Nov 2026). It is the national forecaster speaking, quoted with its name,
+           * its time and a link to its PDF - never a Jaga level and never an alert colour. Drawn in
+           * the same places as the weather card and under the same condition: at Warning or Evacuate
+           * the screen belongs to Jaga's own alert, and a second warning voice beside it would only
+           * raise the question of which one to follow (safety rules 3 and 10).
+           */}
+          {!loading && !choosing && !tense && <TmdWarnings />}
+
+          {/*
+           * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays
+           * the one place that says what level the tambon is at: this is neighbours speaking, not
+           * Jaga, and it says so.
+           */}
+          {!loading && !choosing && props.reports && (
+            <ReportsNear near={reportsNearMe(props.reports, myCodes)} />
+          )}
+
+          {notInServiceNote}
+
+          {checkedAt !== null && !loading && (
+            <p
+              className={failed ? notice : hint}
+              role={failed ? "status" : undefined}
+              data-checked={failed ? "old" : "ok"}
+            >
+              {t(failed ? "status.offline" : "status.checked", {
+                time: format.dateTime(new Date(checkedAt), BANGKOK_DATE_TIME),
+              })}
+            </p>
+          )}
+
+          {/*
+           * The long-term risk and the live measurements are marked as the tail of this column
+           * (the owner, 21 Oct): on a phone and a tablet the things to do - SOS, a flood report,
+           * asking for food and water, and following what you have sent - are brought up above
+           * them, so the screen reads what is happening, then what you can do, then the
+           * background. Nothing moves on a laptop, where the two are side by side already.
+           *
+           * The wrapper is `display: contents`, so it is nothing at all in the page: what it does
+           * is give app/globals.css something to name (the phone block, `data-home-tail`).
+           */}
+          <div className="contents" data-home-tail="true">
+            {!tense && riskCard}
+
+            {/* An ordinary day: the measurements sit under the hero and its reports. */}
+            {!tense && monitoring}
+          </div>
+
+          {evacuate && sos}
+          {!choosing && checklist}
+
+          <div className="contents" data-home-tail="true">
+            {tense && riskCard}
+
+            {/*
+             * At Warning or Evacuate the same section waits until after the checklist (and after
+             * the SOS button, which moves up at Evacuate): what to do comes before what the
+             * rivers read.
+             */}
+            {tense && monitoring}
+          </div>
+
+          {/* Laptop only: under the flood-risk summary (the owner, 16 Oct). */}
+          <div className="hidden console:contents">{damCards}</div>
+        </div>
       </div>
 
       <div data-home-col="act" className="flex flex-col gap-5 lg:col-start-2 lg:row-start-1">
-        {!evacuate && sos}
+        <div data-home-band="act">
+          {!evacuate && sos}
 
-        {/* One setup card on a laptop, asking for one thing at a time (the owner, 23 Oct). */}
-        {stage === "area" && !loading && !choosing && home && (
-          <SetupSteps
-            steps={setupSteps({ hasHome: true, signedIn, installPending })}
-            place={tambonName(locale, home)}
-            install={props.install}
-          />
-        )}
-        {visitorFocus && !loading && <OtherHelp projectLine={props.projectLine} />}
+          {/* One setup card on a laptop, asking for one thing at a time (the owner, 23 Oct). */}
+          {stage === "area" && !loading && !choosing && home && (
+            <SetupSteps
+              steps={setupSteps({ hasHome: true, signedIn, installPending })}
+              place={tambonName(locale, home)}
+              install={props.install}
+            />
+          )}
+          {visitorFocus && !loading && <OtherHelp projectLine={props.projectLine} />}
 
-        {/* For someone who has just found Jaga: what it can do, one tap away (owner, 16 Oct). */}
-        {!loading && !tense && !wide && props.welcome}
+          {/* For someone who has just found Jaga: what it can do, one tap away (owner, 16 Oct). */}
+          {!loading && !tense && !wide && props.welcome}
 
-        {/* On a laptop, "Report flood" appears once someone has signed in (the owner, 23 Oct). */}
-        {!visitorFocus && (
-          <>
+          {/* On a laptop, "Report flood" appears once someone has signed in (the owner, 23 Oct). */}
+          {!visitorFocus && (
+            <>
+              <Link
+                href="/report"
+                prefetch={false}
+                className={`${buttonSecondary} min-h-16 gap-3 text-h3 font-bold`}
+              >
+                <WaveIcon size={30} />
+                {t("report")}
+              </Link>
+              {/* Reporting needs an account; a visitor is told so before tapping (the owner, 15 Oct). */}
+              {ready && !me?.signedIn && <SignInHint what="report" />}
+
+              {/* For someone safe but cut off (spec 4.10). Quieter than SOS and never in its way. */}
+              <SuppliesLink />
+            </>
+          )}
+
+          {props.myReports}
+
+          {/* Laptop only: the unit's way in, under "Follow my requests" (the owner, 20 Oct). */}
+          {!tense && props.unitCard}
+          {tense && (
+            <div className="hidden console:block">
+              <TeamEntryCard />
+            </div>
+          )}
+
+          {props.projectLine && !visitorFocus && (
+            <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>
+              <PhoneIcon size={22} />
+              {t("projectLine")} {props.projectLine}
+            </a>
+          )}
+        </div>
+
+        {/*
+         * The person's own places. They belong to the rail rather than to the wide column (the
+         * owner, 18 Nov 2026): on a laptop the rail is the one stack of things that are theirs -
+         * SOS, a report, food and water, what they have sent, and then the places they watch.
+         * They are still read with the rest of the places group everywhere else, which is what
+         * the `order` rules in app/globals.css are for.
+         *
+         * "Put Jaga on your home screen" used to be the last thing on the page, and nobody found
+         * it (the owner, 19 Oct). It is the first thing of that group: on a laptop the top of
+         * the places in the rail, and on a phone straight after SOS and reporting,
+         * above the map and the safe places. It is still kept away while a place of theirs is at
+         * Warning or Evacuate, and it still goes for three weeks on "Not now".
+         */}
+        <div data-home-band="side">
+          {!loading && !choosing && !tense && !wide && props.install}
+
+          <WatchedPlaces items={watched} now={now} />
+          {me?.signedIn && (
             <Link
-              href="/report"
+              href="/account/places"
               prefetch={false}
-              className={`${buttonSecondary} min-h-16 gap-3 text-h3 font-bold`}
+              data-manage-places="true"
+              className="inline-flex min-h-tap items-center gap-1.5 underline"
             >
-              <WaveIcon size={30} />
-              {t("report")}
+              {watched.length > 0 ? <PinIcon size={20} /> : <AddSquareIcon size={20} />}
+              {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
             </Link>
-            {/* Reporting needs an account; a visitor is told so before tapping (the owner, 15 Oct). */}
-            {ready && !me?.signedIn && <SignInHint what="report" />}
-
-            {/* For someone safe but cut off (spec 4.10). Quieter than SOS and never in its way. */}
-            <SuppliesLink />
-          </>
-        )}
-
-        {props.myReports}
-
-        {/* Laptop only: the unit's way in, under "Follow my requests" (the owner, 20 Oct). */}
-        {!tense && props.unitCard}
-        {tense && (
-          <div className="hidden console:block">
-            <TeamEntryCard />
-          </div>
-        )}
-
-        {props.projectLine && !visitorFocus && (
-          <a href={`tel:${props.projectLine}`} className={`${buttonSecondary} gap-2`}>
-            <PhoneIcon size={22} />
-            {t("projectLine")} {props.projectLine}
-          </a>
-        )}
+          )}
+        </div>
       </div>
 
       {/*
@@ -548,45 +599,28 @@ export function HomeView(props: HomeViewProps) {
        * becomes a column where there is room for three.
        */}
       <div data-home-col="places" className="flex flex-col gap-5 lg:col-start-2 lg:row-start-2">
-        {/*
-         * "Put Jaga on your home screen" used to be the last thing on the page, and nobody found
-         * it (the owner, 19 Oct). It is the first thing in this column now: on a laptop that is
-         * the top of the third column, and on a phone it comes straight after SOS and reporting,
-         * above the map and the safe places. It is still kept away while a place of theirs is at
-         * Warning or Evacuate, and it still goes for three weeks on "Not now".
-         */}
-        {!loading && !choosing && !tense && !wide && props.install}
-
-        <WatchedPlaces items={watched} now={now} />
-        {me?.signedIn && (
-          <Link
-            href="/account/places"
-            prefetch={false}
-            data-manage-places="true"
-            className="inline-flex min-h-tap items-center gap-1.5 underline"
-          >
-            {watched.length > 0 ? <PinIcon size={20} /> : <AddSquareIcon size={20} />}
-            {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
-          </Link>
-        )}
-
         {/* The map comes straight after the person's own places, and the safe places after it,
             folded under their own button (owner, 12 Oct). Since 15 Oct the way in is the map's five
             features as tiles, each opening the map on itself (the owner: the science should be seen). */}
-        <MapFeatureTiles />
+        {/* The way into the map runs the full width of the page on a laptop, as a row of tiles. */}
+        <div data-home-band="tiles">
+          <MapFeatureTiles />
+        </div>
 
-        {home && !loading && (
-          <SafePlaces
-            places={places}
-            state={placesState}
-            userAgent={props.userAgent}
-            fromPhone={props.placesFromPhone}
-            savedAt={props.placesSavedAt}
-          />
-        )}
+        <div data-home-band="side2">
+          {home && !loading && (
+            <SafePlaces
+              places={places}
+              state={placesState}
+              userAgent={props.userAgent}
+              fromPhone={props.placesFromPhone}
+              savedAt={props.placesSavedAt}
+            />
+          )}
 
-        {/* Notifications are offered at any level: a warning is when they matter most. */}
-        {!loading && !choosing && props.push}
+          {/* Notifications are offered at any level: a warning is when they matter most. */}
+          {!loading && !choosing && props.push}
+        </div>
 
         {/*
          * The same dam, for everyone the notice does not reach: the drawing and what it means,
@@ -595,9 +629,11 @@ export function HomeView(props: HomeViewProps) {
          * button). The notice at the top of the left column still speaks when the dam has
          * something to say to someone on its river.
          */}
-        {damCards}
+        <div data-home-band="foot">
+          {damCards}
 
-        {!loading && !choosing && !tense && props.share}
+          {!loading && !choosing && !tense && props.share}
+        </div>
       </div>
     </div>
   );

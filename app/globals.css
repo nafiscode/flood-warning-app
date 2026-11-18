@@ -149,6 +149,16 @@
  * The floor was 1024 px until 21 Oct. A tablet with a keyboard reports a fine pointer, passed
  * that test, and was handed a 216-369 px map; measured, not guessed (.claude/local/q-tablet.mjs).
  */
+/*
+ * The home screen's bands (components/home/HomeView.tsx, `data-home-band`). They group the
+ * blocks of the three columns of 8 Oct into the bands the console lays out below, and everywhere
+ * else they are not in the page at all: the columns keep their own blocks as their own children,
+ * so a phone, a tablet held upright and a narrow window read exactly what they read before.
+ */
+[data-home-band] {
+  display: contents;
+}
+
 @media (min-width: 1280px) and (pointer: fine),
   (min-width: 1024px) and (max-width: 1279.98px) and (orientation: landscape),
   (min-width: 1280px) and (orientation: landscape) and (pointer: coarse) {
@@ -324,28 +334,172 @@
   }
 
   /*
-   * The home screen on a laptop (the owner, 16 Oct: "extend the screen full for laptop like the
-   * Risk & Live Map, re-arrange layout to make it symmetric"). Three even columns rather than a
-   * wide one and a narrow one: what is happening, what to do now, and the person's own places
-   * and the way into the map.
+   * The home screen on a laptop (the owner, 18 Nov 2026: "rearrange the home page elements to be
+   * more like a website, instead of 3 vertical columns"). It was three even columns from 16 Oct;
+   * three columns of stacked cards is what an app looks like, not a page, and the alert - the one
+   * thing the screen is for - was a third of the width with nothing above it.
    *
-   * The three are the page's own blocks in their own order, cut in two places - so a phone still
-   * reads them in one run, and a tablet still gets the two columns it has had since 8 Oct, with
-   * the second and third stacked in the right-hand one (the `lg:` classes in HomeView do that).
+   * So it is bands now, on a grid of twelve:
+   *
+   *   1. the alert for their own tambon, two thirds wide, with SOS and the other things to do
+   *      beside it on the right, both at the top of the page;
+   *   2. what is happening - the weather, the national forecaster, the neighbours, the rivers,
+   *      the long-term risk - in the wide column, with the person's own places beside it;
+   *   3. the way into the map, full width, as a row of tiles rather than a narrow stack;
+   *   4. the rest - the safe places and notifications on one side, the reservoir and "share
+   *      Jaga" on the other.
+   *
+   * The page's own blocks are untouched. The three columns of 8 Oct are still written, and are
+   * still what a phone and a narrow window read in one run; inside each of them the blocks are
+   * grouped into the bands above (`data-home-band` in components/home/HomeView.tsx), and here
+   * the columns step out of the way (`display: contents`) so the bands are what the grid places.
+   * Reading order still agrees with the eye: the hero and the actions, then the wide column and
+   * the rail, then the map, then the foot.
    */
   [data-console-page="home"] {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: 2rem;
-    row-gap: 1.25rem;
+    row-gap: 1.75rem;
   }
-  [data-console-page="home"] > [data-home-col] {
-    grid-area: auto;
+  /*
+   * Two stacks across the top, each as long as its own contents: the wide one is what is
+   * happening - the alert, then the weather, the forecaster, the neighbours, the rivers, the
+   * long-term risk - and the rail beside it is everything that is theirs: SOS, a flood report,
+   * food and water, what they have sent, and the places they watch.
+   *
+   * They are the page's own first two columns, kept whole rather than cut into bands by row.
+   * Cutting them was the first thing tried and it does not work: a grid row is as tall as the
+   * tallest thing in it, so a short alert beside a tall column of buttons left 650 px of white
+   * under the alert (measured at 1,440 px). Two stacks have no row to share.
+   */
+  [data-console-page="home"] > [data-home-col="now"] {
+    grid-column: 1 / 9;
+    grid-row: 1;
+    align-self: start;
+  }
+  [data-console-page="home"] > [data-home-col="act"] {
+    grid-column: 9 / 13;
+    grid-row: 1;
+    align-self: start;
+  }
+  /*
+   * The third column is not a column here: its bands run across the page under the two stacks -
+   * the way into the map full width as a row of tiles, then the safe places and what is
+   * background. A phone and a narrow window still read all of it as one run of blocks.
+   */
+  [data-console-page="home"] > [data-home-col="places"] {
+    display: contents;
+  }
+  [data-console-page="home"] > [data-home-col="places"] > [data-home-band] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-self: start;
+    min-width: 0;
+  }
+  [data-home-band="tiles"] {
+    grid-column: 1 / 13;
+    grid-row: 2;
+  }
+  /* The foot keeps the same two widths as the stacks above it, so the page has one grid. */
+  [data-home-band="side2"] {
+    grid-column: 1 / 9;
+    grid-row: 3;
+  }
+  [data-home-band="foot"] {
+    grid-column: 9 / 13;
+    grid-row: 3;
+  }
+  /*
+   * The map's tiles, which a narrow column draws two abreast, run across the band instead: the
+   * heading and the button that opens the map share a line, and the seven tiles fill the row
+   * below it. `auto-fill` rather than a count, so a 1,280 px laptop and a wide monitor both get
+   * whole tiles; the wide first tile goes back to one cell, because there is no column to span.
+   */
+  [data-home-band="tiles"] [data-map-features="home"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 1.5rem;
+    row-gap: 0.75rem;
+  }
+  [data-home-band="tiles"] [data-map-features="home"] > ul {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  }
+  [data-home-band="tiles"] [data-map-features="home"] > ul > li {
+    grid-column: auto;
+  }
+  [data-home-band="tiles"] [data-map-features="home"] > [data-map-link] {
+    grid-column: 2;
+    grid-row: 1;
   }
   /* The dam's card is written twice - at the foot of the page, where a phone has had it since
      15 Oct, and under the flood-risk summary, where the owner wants it on a laptop (16 Oct).
      Here the one at the foot gives way. */
-  [data-home-col="places"] > [data-dam-figure-card] {
+  [data-home-band="foot"] > [data-dam-figure-card] {
     display: none;
+  }
+
+  /*
+   * ...and none of that while a place of theirs is at Warning or Evacuate (the owner, 18 Nov
+   * 2026, choosing it over keeping the bands): the page becomes one column, capped at a
+   * readable width and centred - the alert, SOS, what to do, and nothing beside any of it
+   * competing for the eye (safety rule 3).
+   *
+   * It is the phone's own arrangement, reused rather than written again: the columns step out of
+   * the page and the same three `order` rules as the phone block below put the things to do
+   * between the alert and the background. Keep the two in step.
+   */
+  [data-console-page="home"][data-home-tense] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+  [data-console-page="home"][data-home-tense] > [data-home-col],
+  [data-console-page="home"][data-home-tense] > [data-home-col] > [data-home-band] {
+    display: contents;
+  }
+  /*
+   * The order in that one column, which is the phone's with one difference the owner asked for:
+   * SOS directly under the alert, not after the checklist. On a phone the whole screen is one
+   * thumb's reach; a laptop window is not, and at Warning the button was a thousand pixels down.
+   *
+   *   0  the alert itself, and anything that outranks it (a watched place that is worse, the
+   *      dam's notice)
+   *   1  SOS - written in the rail at Warning and in the wide stack at Evacuate, caught by the
+   *      button's own mark either way
+   *   2  what the alert means: the neighbours, when this was last checked, the checklist
+   *   3  the rest of what to do: a flood report, food and water, what they have sent
+   *   4  the long-term risk and the live measurements - background, not news
+   *   5  their own places, the map, the safe places
+   *   6  the reservoir's drawing, which is written in the wide stack on a laptop (the owner,
+   *      16 Oct) and would otherwise sit between the checklist and SOS: nothing is ever put in
+   *      front of asking for help (safety rule 1)
+   */
+  [data-home-tense] [data-home-band="main"] > * {
+    order: 2;
+  }
+  [data-home-tense] [data-home-band="act"] > * {
+    order: 3;
+  }
+  [data-home-tense] [data-tour="sos"] {
+    order: 1;
+  }
+  [data-home-tense] [data-home-band="main"] > [data-home-tail] > * {
+    order: 4;
+  }
+  [data-home-tense] [data-home-band="side"] > *,
+  [data-home-tense] [data-home-band="tiles"] > *,
+  [data-home-tense] [data-home-band="side2"] > *,
+  [data-home-tense] [data-home-band="foot"] > * {
+    order: 5;
+  }
+  [data-home-tense] [data-home-band="main"] [data-dam-figure-card] {
+    order: 6;
   }
 
   /*
@@ -1496,24 +1650,33 @@
  * measurements. What stays first is still the alert: the level of the reader's own tambon is
  * the first thing on the screen and nothing is allowed above it.
  *
- * Done by order, not by writing anything twice: the columns become `display: contents` so that
- * their blocks are items of the page itself, and three rules put them in the order the reader
- * wants. The query is the exact complement of Tailwind's `lg:`, where the two columns begin.
+ * Done by order, not by writing anything twice: the columns and the bands inside them become
+ * `display: contents` so that their blocks are items of the page itself, and three rules put
+ * them in the order the reader wants. The query is the exact complement of Tailwind's `lg:`,
+ * where the two columns begin. The console's own tense arrangement reuses these same three
+ * rules, so a change here is a change there: keep them in step.
  */
 @media (max-width: 1023.98px) {
   [data-console-page="home"] > [data-home-col] {
     display: contents;
   }
+  [data-console-page="home"] > [data-home-col] > [data-home-band] {
+    display: contents;
+  }
   /* What to do, straight after the alert and the checklist. */
-  [data-console-page="home"] > [data-home-col="act"] > * {
+  [data-home-band="act"] > * {
     order: 1;
   }
   /* Then the long-term risk and the live measurements, which are background, not news. */
-  [data-console-page="home"] > [data-home-col="now"] > [data-home-tail] > * {
+  [data-home-band="main"] > [data-home-tail] > * {
     order: 2;
   }
-  /* Then the reader's own places, the map, the safe places and the reservoir. */
-  [data-console-page="home"] > [data-home-col="places"] > * {
+  /* Then the reader's own places, the map, the safe places and the reservoir. The places band
+     sits in the rail since 18 Nov, so the bands are named here rather than the columns. */
+  [data-home-band="side"] > *,
+  [data-home-band="tiles"] > *,
+  [data-home-band="side2"] > *,
+  [data-home-band="foot"] > * {
     order: 3;
   }
 }
