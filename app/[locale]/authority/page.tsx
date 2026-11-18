@@ -97,6 +97,7 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
   const tChecks = await getTranslations("placeChecks");
   // Only the registrant has the team's people to manage; a dispatcher is not shown the link.
   const tTeam = await getTranslations("unitTeam");
+  const tSitrep = await getTranslations("sitrep");
   const isOwner = units.some((u) => u.isOwner);
   const waiting = isOwner ? await countWaiting(session.userId) : 0;
   // The team's other tools: stacked above the board on a phone, one menu in the war room (24 Oct).
@@ -130,6 +131,10 @@ export default async function AuthorityPage({ params }: PageProps<"/[locale]/aut
           {tPaths("link")}
         </Link>
       )}
+      {/* The figures for a period, to print or hand on at a meeting (owner, 18 Nov). */}
+      <Link href="/authority/sitrep" className={buttonSecondary} data-sitrep-link="true">
+        {tSitrep("link")}
+      </Link>
       {isOwner && (
         <Link href="/authority/team" className={buttonSecondary} data-team-link="true">
           {waiting > 0 ? tTeam("linkWaiting", { count: waiting }) : tTeam("link")}

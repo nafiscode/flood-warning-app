@@ -1986,3 +1986,64 @@ body {
 [data-map-intro="wait"] .maplibregl-canvas-container {
   visibility: hidden;
 }
+
+/*
+ * The SITREP (lib/sitrep.ts, 18 Nov 2026): the one page in Jaga whose real output is a sheet of
+ * A4 on somebody's desk. `Save as PDF` in the browser's own print dialogue is how a unit makes
+ * the PDF, so these rules are the whole PDF design - there is no second renderer to keep in step.
+ *
+ * What they do: drop the app's chrome and the page's own controls, put the document on white with
+ * black text whatever theme the screen was in, keep the table's heading row on every page, and
+ * never break a section's heading away from what it introduces.
+ */
+@media print {
+  /* The app shell: header, bottom bar, install prompts, anything marked print:hidden. */
+  body:has([data-sitrep]) > *:not(main),
+  body:has([data-sitrep]) main > *:not(:has([data-sitrep])):not([data-sitrep]) {
+    display: none !important;
+  }
+  [data-sitrep] {
+    /* Black on white: an alert level is a word in this document, never a colour (rule: icon +
+       text + colour on screen; in print, text). */
+    --jaga-ink: #000000;
+    --jaga-text: #000000;
+    --jaga-text-2: #333333;
+    --jaga-line: #999999;
+    --jaga-surface: #ffffff;
+    --jaga-ground: #ffffff;
+    background: #ffffff;
+    color: #000000;
+    font-size: 11pt;
+  }
+  [data-sitrep] h1 {
+    font-size: 18pt;
+  }
+  [data-sitrep] h2 {
+    font-size: 13pt;
+  }
+  [data-sitrep] section,
+  [data-sitrep] header {
+    break-inside: avoid-page;
+  }
+  [data-sitrep] h2 {
+    break-after: avoid-page;
+  }
+  [data-sitrep] table {
+    width: 100%;
+    font-size: 9pt;
+  }
+  [data-sitrep] thead {
+    display: table-header-group;
+  }
+  [data-sitrep] tr {
+    break-inside: avoid;
+  }
+  /* The limits travel with the figures: they may start a page, never be orphaned on their own. */
+  [data-sitrep-limits] {
+    break-before: avoid-page;
+  }
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+}

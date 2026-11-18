@@ -874,6 +874,25 @@
       "asDetails": "Show full details"
     }
   },
+  "tmd": {
+    "title": "Thai Meteorological Department warning",
+    "notAnAlert": "This is the national forecaster's announcement, not a Jaga alert.",
+    "announced": "Announced {time}",
+    "covers": "In effect {from} to {until}",
+    "thaiOnly": "TMD announces in Thai only. The notice above is quoted as it was issued.",
+    "readPdf": "Read the full announcement (PDF, in Thai)",
+    "source": "Source: Thai Meteorological Department",
+    "phone": "Call 1182"
+  },
+  "tmdRain": {
+    "title": "Rain measured at TMD stations",
+    "body": "The 24-hour total at the nearest stations. Rain can differ greatly within a few kilometres: this is the station's figure, not your village's.",
+    "bodyNoPlace": "The 24-hour total at stations in the four provinces. Choose a place to see the nearest ones.",
+    "away": "about {km} km away",
+    "at": "read at {time}",
+    "mm": "mm",
+    "source": "Source: Thai Meteorological Department, measured at a weather station. Not a forecast."
+  },
   "attribution": {
     "openMeteo": "Weather data by Open-Meteo.com (CC BY 4.0)"
   },
@@ -6713,14 +6732,103 @@
     "link": "Where a road may be holding water back",
     "contact": "An office or a researcher who would like to check this with us: {email}"
   },
-  "tmd": {
-    "title": "Thai Meteorological Department warning",
-    "notAnAlert": "This is the national forecaster's announcement, not a Jaga alert.",
-    "announced": "Announced {time}",
-    "covers": "In effect {from} to {until}",
-    "thaiOnly": "TMD announces in Thai only. The notice above is quoted as it was issued.",
-    "readPdf": "Read the full announcement (PDF, in Thai)",
-    "source": "Source: Thai Meteorological Department",
-    "phone": "Call 1182"
+  "sitrep": {
+    "title": "Situation report",
+    "kicker": "Jaga · flood early warning",
+    "lead": "Your area's figures for a period, to read, print, save as PDF, or download for your own records. Counts only: nothing in it names or locates a person, so it can be forwarded.",
+    "notAlert": "This is a report, not an alert. It records the alerts a person published and what the rivers read; it raises no level and notifies nobody.",
+    "unitPick": "Which of your units",
+    "periodHelp": "The period defaults to the 24 hours up to the last 06:00 or 18:00 cut-off, so that two units reporting the same flood report the same hours. Up to {days} days. Times are Bangkok time.",
+    "fromLabel": "From",
+    "toLabel": "To",
+    "apply": "Show this period",
+    "resetPeriod": "Back to the last cut-off",
+    "printHint": "To make a PDF, print this page and choose 'Save as PDF'. The controls above are not printed.",
+    "downloadDocx": "Download as Word",
+    "downloadCsv": "Download the table as CSV",
+    "period": "Period: {from} to {to} (Bangkok time)",
+    "customPeriod": "a period chosen by hand, not a cut-off",
+    "areaLine": "{tambons} tambons in {districts} districts · {provinces}",
+    "docLine": "Document {id} · generated {generated}",
+    "docFooter": "Jaga situation report {id}",
+    "unknownTime": "time not recorded",
+    "notAllowed": {
+      "title": "No situation report for this account",
+      "body": "A situation report covers a verified team's own area, and is open to the team's registrant and its dispatchers. An office that only operates a dam or only does planning work has no report, because it holds no cases."
+    },
+    "unavailable": {
+      "title": "The report could not be built",
+      "body": "Try again in a moment. If it keeps failing, the figures are still on your board; nothing has been lost."
+    },
+    "alerts": {
+      "title": "Alerts in force",
+      "none": "No alert is in force in this area. That is not a confirmation that it is safe.",
+      "headline": "Highest level in force in this area: {level}",
+      "times": "Issued {issued} · next update due {next}",
+      "noNext": "not stated",
+      "automatic": "published by the automatic alarm, not reviewed by a person",
+      "stale": "Not updated since {time}. The level still stands.",
+      "issuedInPeriod": "Published during this period: {list}"
+    },
+    "figures": {
+      "title": "The period's figures",
+      "newCases": "New requests",
+      "newPeople": "People in them",
+      "openNow": "Open at the cut-off",
+      "waitingNow": "Waiting for a team",
+      "closedRescued": "Closed as reached",
+      "fieldPeople": "People the team found itself",
+      "reports": "Resident reports",
+      "roadsCut": "Reports of an impassable road",
+      "breakdown": "Of the new requests: {rescue} for rescue, {supplies} for supplies, {vulnerable} with someone vulnerable named. {merged} repeat requests were merged into an existing case.",
+      "flagged": "{count} new cases are flagged for an admin to look at. They were delivered to the teams all the same."
+    },
+    "byTambon": {
+      "title": "By tambon",
+      "none": "Nothing was recorded anywhere in this area during the period.",
+      "tambon": "Tambon",
+      "district": "District",
+      "level": "Level",
+      "newCases": "New",
+      "people": "People",
+      "open": "Open",
+      "waiting": "Waiting",
+      "rescued": "Reached",
+      "reports": "Reports",
+      "roadsCut": "Roads cut",
+      "worstDepth": "Deepest reported"
+    },
+    "places": {
+      "title": "Safe places",
+      "counts": "{open} open · {full} full · {closed} closed · {unknown} not known",
+      "unnamed": "Unnamed place",
+      "capacity": "room for about {count}",
+      "checked": "checked {time}",
+      "notChecked": "not checked yet",
+      "status": {
+        "open": "open",
+        "full": "full",
+        "closed": "closed",
+        "unknown": "not known"
+      }
+    },
+    "gauges": {
+      "title": "River gauges in these provinces",
+      "reading": "{value} m, bank at {bank} m",
+      "noReading": "no reading",
+      "noBank": "not recorded",
+      "observed": "read at {time}"
+    },
+    "limits": {
+      "title": "What this report does and does not show",
+      "counts": "It is counts, for this area and this period only. It holds no phone number, no address, no exact location and nothing anyone wrote, so it can be passed on as it stands.",
+      "reportsAreWhatPeopleSaid": "Resident reports are what people said where they were standing. They are not a survey, and a tambon with no report is not a tambon with no water.",
+      "gaugeTime": "Every river reading carries the time it was read. A gauge can fail during a flood, and readings can arrive late.",
+      "notAnAlert": "Nothing here is a forecast or an alert. Alerts come only from Jaga's alert screens, and the levels in this report are the ones in force at the cut-off.",
+      "hotlines": "In an emergency: 1784 disaster prevention · 1669 medical · 191 police · 199 fire.",
+      "credit": "River levels from the Thai agencies' telemetry via ThaiWater; weather from Open-Meteo. Built by Jaga, a non-profit flood early-warning service."
+    },
+    "link": "Situation report",
+    "linkHint": "Your area's figures for a period, to print or send on"
   }
 }

@@ -874,6 +874,25 @@
       "asDetails": "Tunjukkan semua butiran"
     }
   },
+  "tmd": {
+    "title": "Amaran daripada Jabatan Meteorologi Thailand",
+    "notAnAlert": "Ini pengumuman Jabatan Meteorologi Thailand, bukan amaran Jaga.",
+    "announced": "Diumumkan {time}",
+    "covers": "Berkuat kuasa {from} hingga {until}",
+    "thaiOnly": "Jabatan Meteorologi Thailand mengumumkan dalam bahasa Thai sahaja. Teks di atas dipetik sebagaimana diumumkan.",
+    "readPdf": "Baca pengumuman penuh (PDF, bahasa Thai)",
+    "source": "Sumber: Jabatan Meteorologi Thailand",
+    "phone": "Telefon 1182"
+  },
+  "tmdRain": {
+    "title": "Hujan yang diukur di stesen TMD",
+    "body": "Jumlah 24 jam di stesen yang paling dekat. Hujan boleh berbeza banyak dalam beberapa kilometer sahaja: ini angka stesen itu, bukan angka kampung anda.",
+    "bodyNoPlace": "Jumlah 24 jam di stesen dalam empat wilayah. Pilih tempat untuk melihat stesen yang paling dekat.",
+    "away": "kira-kira {km} km jauhnya",
+    "at": "dibaca pada {time}",
+    "mm": "mm",
+    "source": "Sumber: Jabatan Meteorologi Thailand, diukur di stesen cuaca. Bukan ramalan."
+  },
   "attribution": {
     "openMeteo": "Data cuaca daripada Open-Meteo.com (CC BY 4.0)"
   },
@@ -6713,14 +6732,103 @@
     "link": "Tempat jalan mungkin menahan air",
     "contact": "Pejabat atau penyelidik yang ingin memeriksa ini bersama kami: {email}"
   },
-  "tmd": {
-    "title": "Amaran daripada Jabatan Meteorologi Thailand",
-    "notAnAlert": "Ini pengumuman Jabatan Meteorologi Thailand, bukan amaran Jaga.",
-    "announced": "Diumumkan {time}",
-    "covers": "Berkuat kuasa {from} hingga {until}",
-    "thaiOnly": "Jabatan Meteorologi Thailand mengumumkan dalam bahasa Thai sahaja. Teks di atas dipetik sebagaimana diumumkan.",
-    "readPdf": "Baca pengumuman penuh (PDF, bahasa Thai)",
-    "source": "Sumber: Jabatan Meteorologi Thailand",
-    "phone": "Telefon 1182"
+  "sitrep": {
+    "title": "Laporan keadaan",
+    "kicker": "Jaga · amaran awal banjir",
+    "lead": "Angka bagi kawasan anda untuk satu tempoh, untuk dibaca, dicetak, disimpan sebagai PDF atau dimuat turun untuk rekod anda. Kiraan sahaja: tiada apa-apa di dalamnya menamakan atau menunjukkan lokasi sesiapa, jadi ia boleh dihantar kepada orang lain.",
+    "notAlert": "Ini laporan, bukan amaran. Ia merekodkan amaran yang telah dikeluarkan oleh manusia dan bacaan sungai; ia tidak menaikkan sebarang tahap dan tidak memberitahu sesiapa.",
+    "unitPick": "Unit anda yang mana",
+    "periodHelp": "Tempoh lalai ialah 24 jam sehingga waktu potong 06:00 atau 18:00 yang terakhir, supaya dua unit yang melaporkan banjir yang sama melaporkan jam yang sama. Sehingga {days} hari. Semua waktu ialah waktu Bangkok.",
+    "fromLabel": "Dari",
+    "toLabel": "Hingga",
+    "apply": "Tunjuk tempoh ini",
+    "resetPeriod": "Balik ke waktu potong terakhir",
+    "printHint": "Untuk membuat PDF, cetak halaman ini dan pilih “Simpan sebagai PDF”. Bahagian kawalan di atas tidak dicetak.",
+    "downloadDocx": "Muat turun sebagai Word",
+    "downloadCsv": "Muat turun jadual sebagai CSV",
+    "period": "Tempoh: {from} hingga {to} (waktu Bangkok)",
+    "customPeriod": "tempoh yang dipilih sendiri, bukan waktu potong",
+    "areaLine": "{tambons} mukim dalam {districts} daerah · {provinces}",
+    "docLine": "Dokumen {id} · dijana {generated}",
+    "docFooter": "Laporan keadaan Jaga {id}",
+    "unknownTime": "waktu tidak direkodkan",
+    "notAllowed": {
+      "title": "Tiada laporan keadaan untuk akaun ini",
+      "body": "Laporan keadaan meliputi kawasan pasukan yang telah disemak, dan terbuka kepada pendaftar pasukan serta penyelarasnya. Pejabat yang hanya mengendalikan empangan atau hanya membuat kerja perancangan tiada laporan, kerana ia tidak memegang kes."
+    },
+    "unavailable": {
+      "title": "Laporan tidak dapat dibina",
+      "body": "Cuba lagi sebentar nanti. Jika ia terus gagal, angka itu masih ada di papan anda; tiada apa-apa yang hilang."
+    },
+    "alerts": {
+      "title": "Amaran yang berkuat kuasa",
+      "none": "Tiada amaran berkuat kuasa di kawasan ini. Itu bukan pengesahan bahawa ia selamat.",
+      "headline": "Tahap tertinggi yang berkuat kuasa di kawasan ini: {level}",
+      "times": "Dikeluarkan {issued} · kemas kini seterusnya {next}",
+      "noNext": "tidak dinyatakan",
+      "automatic": "diterbitkan oleh penggera automatik, belum disemak oleh manusia",
+      "stale": "Belum dikemas kini sejak {time}. Tahapnya masih berkuat kuasa.",
+      "issuedInPeriod": "Diterbitkan dalam tempoh ini: {list}"
+    },
+    "figures": {
+      "title": "Angka bagi tempoh ini",
+      "newCases": "Permintaan baharu",
+      "newPeople": "Orang di dalamnya",
+      "openNow": "Terbuka pada waktu potong",
+      "waitingNow": "Menunggu pasukan",
+      "closedRescued": "Ditutup kerana sudah dicapai",
+      "fieldPeople": "Orang yang ditemui sendiri oleh pasukan",
+      "reports": "Laporan penduduk",
+      "roadsCut": "Laporan jalan tidak boleh dilalui",
+      "breakdown": "Daripada permintaan baharu: {rescue} untuk penyelamatan, {supplies} untuk bekalan, {vulnerable} menamakan seseorang yang memerlukan jagaan khas. {merged} permintaan berulang digabungkan ke dalam kes yang ada.",
+      "flagged": "{count} kes baharu ditanda untuk disemak oleh pentadbir. Kesemuanya tetap dihantar kepada pasukan."
+    },
+    "byTambon": {
+      "title": "Mengikut mukim",
+      "none": "Tiada apa-apa direkodkan di mana-mana dalam kawasan ini sepanjang tempoh itu.",
+      "tambon": "Mukim",
+      "district": "Daerah",
+      "level": "Tahap",
+      "newCases": "Baharu",
+      "people": "Orang",
+      "open": "Terbuka",
+      "waiting": "Menunggu",
+      "rescued": "Dicapai",
+      "reports": "Laporan",
+      "roadsCut": "Jalan terputus",
+      "worstDepth": "Paling dalam dilaporkan"
+    },
+    "places": {
+      "title": "Tempat selamat",
+      "counts": "{open} terbuka · {full} penuh · {closed} tutup · {unknown} tidak diketahui",
+      "unnamed": "Tempat tanpa nama",
+      "capacity": "ruang untuk kira-kira {count}",
+      "checked": "disemak {time}",
+      "notChecked": "belum disemak",
+      "status": {
+        "open": "terbuka",
+        "full": "penuh",
+        "closed": "tutup",
+        "unknown": "tidak diketahui"
+      }
+    },
+    "gauges": {
+      "title": "Stesen paras sungai di wilayah ini",
+      "reading": "{value} m, tebing pada {bank} m",
+      "noReading": "tiada bacaan",
+      "noBank": "tidak direkodkan",
+      "observed": "dibaca pada {time}"
+    },
+    "limits": {
+      "title": "Apa yang laporan ini tunjukkan dan tidak tunjukkan",
+      "counts": "Ia kiraan, untuk kawasan ini dan tempoh ini sahaja. Ia tidak mengandungi nombor telefon, alamat, lokasi tepat atau apa-apa yang ditulis oleh sesiapa, jadi ia boleh dihantar seperti adanya.",
+      "reportsAreWhatPeopleSaid": "Laporan penduduk ialah apa yang orang katakan dari tempat mereka berdiri. Ia bukan kaji selidik, dan mukim tanpa laporan bukan bermakna mukim tanpa air.",
+      "gaugeTime": "Setiap bacaan sungai membawa waktu ia dibaca. Stesen boleh rosak semasa banjir, dan bacaan boleh tiba lewat.",
+      "notAnAlert": "Tiada apa-apa di sini merupakan ramalan atau amaran. Amaran datang hanya daripada skrin amaran Jaga, dan tahap dalam laporan ini ialah tahap yang berkuat kuasa pada waktu potong.",
+      "hotlines": "Dalam kecemasan: 1784 pencegahan bencana · 1669 perubatan · 191 polis · 199 bomba.",
+      "credit": "Paras sungai daripada telemetri agensi Thai melalui ThaiWater; cuaca daripada Open-Meteo. Dibina oleh Jaga, perkhidmatan amaran awal banjir bukan untung."
+    },
+    "link": "Laporan keadaan",
+    "linkHint": "Angka bagi kawasan anda untuk satu tempoh, untuk dicetak atau dihantar"
   }
 }
