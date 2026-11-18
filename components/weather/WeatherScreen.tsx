@@ -7,6 +7,7 @@ import { useOnPhone, useStored } from "@/lib/phone-store";
 import { nightNow } from "@/lib/map";
 import { useNow } from "@/lib/use-public";
 import { areaPlaceDetail, useWeather, useWeatherPlace, weatherPins } from "@/lib/use-weather";
+import { TmdRain } from "./TmdRain";
 import { TmdWarnings } from "./TmdWarnings";
 import { WeatherMaps } from "./WeatherMaps";
 import type { WeatherPlace } from "@/lib/weather";
@@ -49,6 +50,7 @@ export function WeatherScreen() {
       onCancelPick={() => setPicking(false)}
       onRetry={refresh}
       warnings={<TmdWarnings />}
+      measured={<TmdRain place={place} />}
       maps={
         <WeatherMaps
           place={place}

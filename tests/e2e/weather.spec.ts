@@ -99,7 +99,52 @@ const KUALA = {
   from: "search",
 };
 
-type Options = { area?: boolean; stored?: boolean; weatherFails?: boolean };
+type Options = {
+  area?: boolean;
+  stored?: boolean;
+  weatherFails?: boolean;
+  tmdWarning?: boolean;
+  tmdStations?: boolean;
+};
+
+/** A TMD warning in the shape /api/public/tmd/warnings returns. */
+const TMD_WARNING = {
+  issueNo: "8",
+  announcedAt: new Date(Date.now() - 2 * HOUR).toISOString(),
+  startsAt: new Date(Date.now() - HOUR).toISOString(),
+  endsAt: new Date(Date.now() + 12 * HOUR).toISOString(),
+  titleTh: "ฝนตกหนักถึงหนักมากบริเวณภาคใต้ ฉบับที่ 8",
+  headlineTh: "บริเวณภาคใต้ตอนล่างจะมีฝนตกเพิ่มขึ้น และมีฝนตกหนักถึงหนักมากบางแห่ง",
+  pdfUrl: "https://tmd.go.th/media/forecast/warning_th.pdf",
+};
+
+/** Two stations near Bana, read within the hour. */
+const tmdStations = () => [
+  {
+    id: "48580",
+    nameTh: "ปัตตานี",
+    nameEn: "PATTANI AIRPORT",
+    provinceTh: "ปัตตานี",
+    lat: 6.78333,
+    lon: 101.15,
+    observedAt: new Date(Date.now() - HOUR).toISOString(),
+    rain24hMm: 42.6,
+    tempC: 25.2,
+    humidity: 95,
+  },
+  {
+    id: "48581",
+    nameTh: "ยะลา สกษ.",
+    nameEn: "YALA AGROMET.",
+    provinceTh: "ยะลา",
+    lat: 6.51667,
+    lon: 101.28333,
+    observedAt: new Date(Date.now() - HOUR).toISOString(),
+    rain24hMm: 0,
+    tempC: 25.1,
+    humidity: 96,
+  },
+];
 
 /** Everything the public endpoints would answer, so no test ever reaches the internet. */
 async function serve(page: Page, options: Options = {}) {
@@ -131,6 +176,18 @@ async function serve(page: Page, options: Options = {}) {
     route.fulfill({ json: { places: [], reports: [], gauges: [] } }),
   );
   await page.route("**/api/public/hazards", (route) => route.fulfill({ json: { hazards: [] } }));
+  // TMD's two feeds (18 Nov 2026). Off unless a test asks for them, so the other tests see the
+  // page exactly as it looks on a quiet day - which is the common case.
+  await page.route("**/api/public/tmd/warnings", (route) =>
+    options.tmdWarning
+      ? route.fulfill({ json: { warnings: [TMD_WARNING], fetchedAt: new Date().toISOString() } })
+      : route.fulfill({ json: { warnings: [], fetchedAt: new Date().toISOString() } }),
+  );
+  await page.route("**/api/public/tmd/stations", (route) =>
+    options.tmdStations
+      ? route.fulfill({ json: { stations: tmdStations(), fetchedAt: new Date().toISOString() } })
+      : route.fulfill({ status: 503, json: { error: "unavailable" } }),
+  );
   if (options.area) {
     await page.addInitScript(
       (area) => window.localStorage.setItem("jaga.area", JSON.stringify(area)),
@@ -352,5 +409,63 @@ test.describe("weather", () => {
     await expect(
       page.locator('header [data-weather-slot="row"][data-weather-chip="empty"]'),
     ).toBeVisible();
+  });
+
+  test("TMD's warning is shown as TMD's, not as a Jaga alert", async ({ page }) => {
+    await serve(page, { area: true, tmdWarning: true });
+    await page.goto("/weather");
+    const card = page.locator("[data-tmd-warnings]");
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(th.tmd.title);
+    await expect(card).toContainText(th.tmd.notAnAlert);
+    // TMD's own Thai, quoted and marked as Thai.
+    await expect(card.locator('[lang="th"]').first()).toContainText(TMD_WARNING.titleTh);
+    // Its own PDF, and TMD's weather line - not one of the emergency hotlines.
+    await expect(card.locator("[data-tmd-pdf]")).toHaveAttribute("href", TMD_WARNING.pdfUrl);
+    await expect(card.locator("[data-tmd-phone]")).toHaveAttribute("href", "tel:1182");
+    await noSidewaysScroll(page);
+  });
+
+  test("the TMD card is above the forecast and carries no level badge", async ({ page }) => {
+    await serve(page, { area: true, tmdWarning: true });
+    await page.goto("/weather");
+    const warning = (await page.locator("[data-tmd-warnings]").boundingBox())!;
+    const now = (await page.locator('[data-weather-now="true"]').boundingBox())!;
+    // An official warning outranks a model's forecast on the page.
+    expect(warning.y).toBeLessThan(now.y);
+    // Nothing on it may look like one of Jaga's four levels.
+    await expect(page.locator("[data-tmd-warnings] [data-level]")).toHaveCount(0);
+  });
+
+  test("on a quiet day there is no TMD card at all", async ({ page }) => {
+    await serve(page, { area: true });
+    await page.goto("/weather");
+    await expect(page.locator('[data-weather-now="true"]')).toBeVisible();
+    await expect(page.locator("[data-tmd-warnings]")).toHaveCount(0);
+  });
+
+  test("the measured rain names the station, its distance and its hour", async ({ page }) => {
+    await serve(page, { area: true, tmdStations: true });
+    await page.goto("/weather");
+    const card = page.locator("[data-tmd-rain]");
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(th.tmdRain.title);
+    // 42.6 mm at Pattani airport, about 13 km from Bana; and Yala's measured zero, shown as zero.
+    await expect(card.locator('[data-tmd-station="48580"]')).toContainText("42.6");
+    await expect(card.locator('[data-tmd-station="48580"]')).toContainText("กม.");
+    await expect(card.locator('[data-tmd-station="48581"]')).toContainText("0");
+    await noSidewaysScroll(page);
+  });
+
+  test("the forecast still works when TMD cannot be reached", async ({ page }) => {
+    // TMD down must look like a quiet day and touch nothing else (safety rule 7).
+    await serve(page, { area: true });
+    await page.route("**/api/public/tmd/**", (route) =>
+      route.fulfill({ status: 503, json: { error: "unavailable" } }),
+    );
+    await page.goto("/weather");
+    await expect(page.locator('[data-weather-now="true"]')).toContainText("27°C");
+    await expect(page.locator("[data-tmd-warnings]")).toHaveCount(0);
+    await expect(page.locator("[data-tmd-rain]")).toHaveCount(0);
   });
 });

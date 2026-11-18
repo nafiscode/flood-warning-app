@@ -56,6 +56,12 @@ export type WeatherViewProps = {
    * a reader whose forecast failed still gets the national notice (safety rule 7).
    */
   warnings?: ReactNode;
+  /**
+   * Rain measured at TMD's own stations (18 Nov 2026), put in by the live screen. It sits under
+   * the forecast rather than above it: the forecast is what most people came for, and this is the
+   * check on it - the one block on the page that is a reading and not a model.
+   */
+  measured?: ReactNode;
 };
 
 /**
@@ -142,6 +148,7 @@ export function WeatherView(props: WeatherViewProps) {
             <div className="lg:col-span-2">{props.maps}</div>
             <Hours weather={weather} />
             <Days weather={weather} />
+            <div className="lg:col-span-2">{props.measured}</div>
           </div>
           <section className="flex flex-col gap-2">
             <p className="inline-flex items-center gap-2 text-small text-jaga-text-2">

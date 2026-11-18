@@ -350,7 +350,7 @@ export const CREDITS: Credit[] = [
     // Since 18 Nov 2026 Jaga reads TMD's warning feed (data.tmd.go.th) and quotes the notice
     // itself on the home screen and the weather page, so the credit names the data, not just the
     // agency behind the sea advice.
-    dataset: "Severe-weather warnings, and the sea advice they inform",
+    dataset: "Severe-weather warnings, rain measured at its stations, and the sea advice they inform",
     group: "agencies",
     href: "https://www.tmd.go.th/",
     licence: "Open data API, free",
