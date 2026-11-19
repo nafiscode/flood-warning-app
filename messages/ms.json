@@ -5927,6 +5927,7 @@
       "count": "{count} mukim"
     },
     "inProvince": "Daerah lain di {province} yang mempunyai halaman sendiri",
+    "districtsHere": "Daerah di {province} yang mempunyai halaman sendiri",
     "others": "Wilayah lain yang dijaga Jaga",
     "coverage": "Jaga menjaga empat wilayah: Patani, Yala, Narathiwat dan Songkhla. Jika anda di wilayah lain, hubungi 1784 atau 1669.",
     "live": {

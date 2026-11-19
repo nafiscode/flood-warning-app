@@ -35,7 +35,15 @@ const view = (gauges: PlaceGauge[]): PlaceView => ({
 });
 
 const page = (gauges: PlaceGauge[]) =>
-  renderWithIntl(<FloodPlace view={view(gauges)} name="จ.ปัตตานี" province={null} siblings={[]} />);
+  renderWithIntl(
+    <FloodPlace
+      view={view(gauges)}
+      name="จ.ปัตตานี"
+      province={null}
+      siblings={[]}
+      districts={[]}
+    />,
+  );
 
 describe("the place page's gauges", () => {
   it("pulse on each current reading and on no silent one", () => {
@@ -80,5 +88,45 @@ describe("the place page's gauges", () => {
     const { container } = page([gauge("a")]);
     expect(container.querySelector("[data-place-more] a[href$='/map']")).not.toBeNull();
     expect(container.querySelector("a[href$='/sos']")).not.toBeNull();
+  });
+});
+
+/**
+ * The link graph, held in both directions (19 Nov 2026).
+ *
+ * Until now it ran one way: a district pointed up at its province, and a province pointed only
+ * sideways at the other three. /flood/sadao was therefore reachable from the hub and one sibling
+ * district and from nowhere else, and Search Console's validation for "crawled, currently not
+ * indexed" failed on it. A province that does not name its own districts is the kind of gap no
+ * one notices by reading the page, so it is a test.
+ */
+describe("a province page reaches the districts inside it", () => {
+  const districts = [
+    { slug: "hat-yai", name: "อ.หาดใหญ่" },
+    { slug: "sadao", name: "อ.สะเดา" },
+  ];
+
+  it("links every district it was given", () => {
+    const { container } = renderWithIntl(
+      <FloodPlace
+        view={view([])}
+        name="จ.สงขลา"
+        province={null}
+        siblings={[]}
+        districts={districts}
+      />,
+    );
+    const hrefs = [...container.querySelectorAll("a")].map((a) => a.getAttribute("href") ?? "");
+    for (const { slug } of districts) {
+      expect(hrefs.some((h) => h.endsWith(`/flood/${slug}`)), slug).toBe(true);
+    }
+  });
+
+  it("says nothing at all when a place has no districts under it", () => {
+    const { container } = renderWithIntl(
+      <FloodPlace view={view([])} name="จ.สงขลา" province={null} siblings={[]} districts={[]} />,
+    );
+    const hrefs = [...container.querySelectorAll("a")].map((a) => a.getAttribute("href") ?? "");
+    expect(hrefs.some((h) => h.includes("/flood/"))).toBe(false);
   });
 });

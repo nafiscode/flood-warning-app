@@ -5927,6 +5927,7 @@
       "count": "{count} tambons"
     },
     "inProvince": "Other districts in {province} with a page of their own",
+    "districtsHere": "Districts in {province} with a page of their own",
     "others": "The other provinces Jaga covers",
     "coverage": "Jaga covers four provinces: Pattani, Yala, Narathiwat and Songkhla. If you are in another province, call 1784 or 1669.",
     "live": {

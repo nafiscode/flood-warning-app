@@ -232,9 +232,20 @@ type Props = {
   province: { name: string; slug: string } | null;
   /** The other pages to offer at the foot: slug and name, already in the reader's language. */
   siblings: { slug: string; name: string }[];
+  /**
+   * On a province page, the districts inside it that have a page of their own; empty elsewhere.
+   *
+   * Until 19 Nov the links ran one way only: a district pointed up at its province and sideways at
+   * its neighbours, and a province pointed sideways at the other three and nowhere down. So
+   * /flood/songkhla named none of Hat Yai, Sadao or Mueang Songkhla, and the only way into a
+   * district page was the hub or another district. Search Console had /flood/sadao as "crawled,
+   * currently not indexed" and its validation failed on 14 Nov. A page reached by one link from
+   * one place looks to a crawler exactly like what it was: an afterthought.
+   */
+  districts: { slug: string; name: string }[];
 };
 
-export function FloodPlace({ view, name, province, siblings }: Props) {
+export function FloodPlace({ view, name, province, siblings, districts }: Props) {
   const t = useTranslations("province");
   const tHome = useTranslations("home");
   const format = useFormatter();
@@ -452,6 +463,31 @@ export function FloodPlace({ view, name, province, siblings }: Props) {
           {t("act.map")}
         </Link>
       </section>
+
+      {/*
+        A province's own districts, pointing down. A reader who lands on จ.สงขลา is usually after
+        one part of it, and the name they would search for is in this list.
+      */}
+      {kind === "province" && districts.length > 0 ? (
+        <section className="flex flex-col gap-2">
+          <h2 className="text-h3 font-bold text-jaga-ink">
+            {t("districtsHere", { province: name })}
+          </h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2">
+            {districts.map((district) => (
+              <li key={district.slug}>
+                <Link
+                  href={`/flood/${district.slug}`}
+                  prefetch={false}
+                  className="inline-flex min-h-tap items-center underline"
+                >
+                  {district.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="flex flex-col gap-2">
         <h2 className="text-h3 font-bold text-jaga-ink">

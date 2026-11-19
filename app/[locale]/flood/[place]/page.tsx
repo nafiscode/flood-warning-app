@@ -47,12 +47,24 @@ async function label(locale: string, slug: string) {
   const provinceName = provinceSlug ? provinces[provinceSlug]! : "";
 
   if (place.kind === "province") {
+    // The districts of this province that have a page, named in one read rather than one each.
+    const ownSlugs = PLACE_SLUGS.filter(
+      (other) => PLACES[other]!.kind === "district" && PLACES[other]!.code.startsWith(place.code),
+    );
+    const ownNames = await districtNames(
+      ownSlugs.map((other) => PLACES[other]!.code),
+      locale,
+    );
     return {
       name: t("province", { name: provinceName }),
       province: null,
       siblings: PROVINCE_SLUGS.filter((other) => other !== slug).map((other) => ({
         slug: other,
         name: t("province", { name: provinces[other]! }),
+      })),
+      districts: ownSlugs.map((other) => ({
+        slug: other,
+        name: ownNames[PLACES[other]!.code] ?? other,
       })),
     };
   }
@@ -80,6 +92,8 @@ async function label(locale: string, slug: string) {
       ? { slug: provinceSlug, name: t("province", { name: provinceName }) }
       : null,
     siblings: neighbours,
+    // A district has no districts under it; the downward list belongs to a province.
+    districts: [],
   };
 }
 
@@ -120,6 +134,7 @@ export default async function FloodPlacePage({ params }: PageProps<"/[locale]/fl
       name={named.name}
       province={named.province}
       siblings={named.siblings}
+      districts={named.districts}
     />
   );
 }
