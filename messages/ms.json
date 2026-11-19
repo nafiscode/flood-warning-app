@@ -687,7 +687,8 @@
         "noLevels": "Stesen ini belum mempunyai paras rujukan, jadi tiada garisan dilukis",
         "levelsUnavailable": "Paras rujukan stesen ini belum dapat ditunjukkan di sini",
         "drawing": "Bentuk alur dan dasar sungai ialah lukisan, bukan ukur. Hanya paras air dan paras rujukan yang diukur",
-        "provisional": "Paras sementara, dipilih daripada banjir lalu di stesen ini. Pentadbir boleh mengubah mana-mana daripadanya"
+        "provisional": "Paras sementara, dipilih daripada banjir lalu di stesen ini. Pentadbir boleh mengubah mana-mana daripadanya",
+        "bankIsEvacuate": "sama dengan paras Pindah"
       }
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",
@@ -5725,9 +5726,9 @@
       "unknown": "Jaga tidak dapat membaca tolok sungai",
       "silent": "{count} tolok tidak menghantar apa-apa selama enam jam atau lebih",
       "risingWeek": "{count} daripada {judged} tolok yang arahnya dapat dibaca telah naik berterusan kira-kira 1 minggu",
-        "risingNames": "Yang naik: {names}",
-        "risingMore": "{names} dan {count} lagi",
-        "seeOnMap": "Lihat stesen ini di peta"
+      "risingNames": "Yang naik: {names}",
+      "risingMore": "{names} dan {count} lagi",
+      "seeOnMap": "Lihat stesen ini di peta"
     },
     "dam": {
       "who": "Angka empangan sendiri, bukan amaran",

@@ -174,16 +174,38 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
           </g>
         ))}
 
-        {/* The bank, where it is a level of its own rather than Evacuate again. */}
-        {ownBank && (
-          <path
-            d={`M4 ${bankY} L ${SECTION_W - 4} ${bankY}`}
-            stroke="var(--jaga-text-2)"
-            strokeWidth="1.5"
-            strokeDasharray="3 4"
-            fill="none"
-            data-section-line="bank"
-          />
+        {/*
+         * The bank, with its height on it (the owner, 19 Nov 2026: "the river bank level number
+         * should be at the bank in the illustration"). Its own dashed line only where it is a
+         * level of its own; where the bank IS the Evacuate level, which is the usual case, the
+         * alert line already runs at that height and a second line over it would only blur it.
+         * The figure is drawn either way, at the left, so the top of the ground always carries
+         * the height it stands at.
+         */}
+        {bankMetres !== null && (
+          <g data-section-bank={bankMetres.toFixed(2)}>
+            {ownBank && (
+              <path
+                d={`M4 ${bankY} L ${SECTION_W - 4} ${bankY}`}
+                stroke="var(--jaga-text-2)"
+                strokeWidth="1.5"
+                strokeDasharray="3 4"
+                fill="none"
+                data-section-line="bank"
+              />
+            )}
+            <rect x="4" y={bankY - 8.5} width="52" height="17" rx="3.5" fill="var(--jaga-slate)" />
+            <text
+              x="30"
+              y={bankY + 5}
+              textAnchor="middle"
+              fontSize="12"
+              fontWeight="700"
+              fill="#ffffff"
+            >
+              {bankMetres.toFixed(2)}
+            </text>
+          </g>
         )}
 
         {/* Where the water stands now, as a figure on the surface itself. */}
@@ -255,14 +277,20 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
             </li>
           );
         })}
-        {ownBank && bankMetres !== null && (
+        {bankMetres !== null && (
           <li className="flex items-start gap-2" data-section-level="bank">
             <span
               aria-hidden="true"
-              className="mt-3 inline-block h-1 w-6 shrink-0 rounded-full bg-jaga-text-2"
+              className="mt-2.5 inline-block size-6 shrink-0 rounded-sm bg-jaga-slate"
             />
             <span className="min-w-0 flex-1">
               <span className="font-medium">{t("level.bank")}</span> {metres(bankMetres)}
+              {!ownBank && (
+                <>
+                  {" "}
+                  <span className={hint}>{t("bankIsEvacuate")}</span>
+                </>
+              )}
             </span>
           </li>
         )}

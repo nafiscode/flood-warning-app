@@ -1067,3 +1067,21 @@ one. Both suites 51/51.
 exist` - migration `20261110170000_s11_gauge_week_trend` is another session's in-flight work and is
 not mine to apply. The 9 `weather-advisory` failures are the same thing for
 `20261108090000_a16_weather_advisory`. Both are tracked as pending in the handoff notes.
+
+**The bank carries its own height on the drawing** (the owner, same day: "the river bank level
+number should be at the bank in the illustration"). The top of the ground now has the bank level
+written on it, at the left, whether or not the bank is a level of its own; where the bank IS the
+Evacuate level - which is the usual case - the alert line already runs at that height, so no second
+line is drawn over it and the words beneath say that the two are the same. The reading's own figure
+moved clear of it.
+
+**What is still not real is the shape**, and that is deliberate. The owner asked whether the bed
+and bank widths could make the section realistic. Jaga has no surveyed cross-sections; the only
+elevation data in reach is FABDEM at 30 m, which cannot resolve a channel 20-50 m wide and carries
+a vertical error of 1 to several metres - the same size as the whole Watch-to-Evacuate band it
+would be drawn against. A section cut from it would contradict the gauge's own levels while looking
+authoritative, which is worse than an honest schematic. The one real figure within reach is the
+river's **width** at each station, from the OSM river-body layer the map already draws
+(`pipeline/rivers`); setting the drawn channel's width from it would make a wide river look wide
+and a canal narrow, with the vertical still carried entirely by measured levels. Offered to the
+owner, not built.

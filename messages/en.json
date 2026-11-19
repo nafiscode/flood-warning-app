@@ -687,7 +687,8 @@
         "noLevels": "This station has no reference levels yet, so no lines are drawn",
         "levelsUnavailable": "The levels for this station cannot be shown here just now",
         "drawing": "The shape of the channel and the bed are a drawing, not a survey. Only the water level and the levels are measured",
-        "provisional": "Provisional levels, chosen from past floods at this station. An admin can change any of them"
+        "provisional": "Provisional levels, chosen from past floods at this station. An admin can change any of them",
+        "bankIsEvacuate": "the same as the Evacuate level"
       }
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
@@ -5725,9 +5726,9 @@
       "unknown": "Jaga could not read the river gauges",
       "silent": "{count} gauges have sent nothing for six hours or more",
       "risingWeek": "{count} of the {judged} gauges whose week could be read have been rising for about a week",
-        "risingNames": "Rising: {names}",
-        "risingMore": "{names} and {count} more",
-        "seeOnMap": "See these stations on the map"
+      "risingNames": "Rising: {names}",
+      "risingMore": "{names} and {count} more",
+      "seeOnMap": "See these stations on the map"
     },
     "dam": {
       "who": "The dam's own figures, not an alert",

@@ -147,11 +147,18 @@ describe("the details card", () => {
       "warning",
       "evacuate",
     ]);
+    // The bank is named last, and on this station it is the Evacuate level under another name.
     expect(find(container as HTMLElement, "data-section-level")).toEqual([
       "evacuate",
       "warning",
       "watch",
+      "bank",
     ]);
+    expect(container.textContent).toContain("the same as the Evacuate level");
+    // Its height is on the drawing too, at the top of the ground (the owner, 19 Nov).
+    expect(container.querySelector("[data-section-bank]")?.getAttribute("data-section-bank")).toBe(
+      "4.80",
+    );
     getByText("Watch");
     getByText("Warning");
     getByText("Evacuate");
