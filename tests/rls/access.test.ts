@@ -67,7 +67,17 @@ describe("visitor (anon)", () => {
 
   it("sees an organization only if it opted in to a public contact", async () => {
     const orgs = await rows<{ id: string }>(db, "select id from organizations");
-    expect(orgs.map((o) => o.id)).toEqual([w.publicOrg]);
+    // The claim is the policy, not the size of the table: jaga-dev carries real organizations of
+    // its own, one of which opted in on 22 Oct 2026, so the visitor's list is matched against
+    // every opted-in row there is rather than against the fixture alone.
+    expect(orgs.map((o) => o.id)).toContain(w.publicOrg);
+    await asOwner(db);
+    const optedIn = await rows<{ id: string }>(
+      db,
+      "select id from organizations where public_contact_opt_in",
+    );
+    expect(new Set(orgs.map((o) => o.id))).toEqual(new Set(optedIn.map((o) => o.id)));
+    await as(db, "anon");
   });
 
   it("cannot write anything directly", async () => {
@@ -284,7 +294,15 @@ describe("admin", () => {
   beforeEach(async () => as(db, { uid: w.admin }));
 
   it("reads all SOS and the audit log; phone reveals are logged", async () => {
-    expect(await count("select 1 from sos_requests")).toBe(2);
+    // "All" is measured against what is there, not against the two the fixture made: jaga-dev
+    // holds real SOS rows, and an admin is meant to see every one of them.
+    await asOwner(db);
+    const everySos = await count("select 1 from sos_requests");
+    await as(db, { uid: w.admin });
+    expect(await count("select 1 from sos_requests")).toBe(everySos);
+    expect(
+      await count("select 1 from sos_requests where id = any($1)", [[w.yalaSos, w.songkhlaSos]]),
+    ).toBe(2);
     await rows(db, "select reveal_sos_phone($1)", [w.songkhlaSos]);
     await rows(db, "select reveal_profile_phone($1)", [w.requester]);
     expect(await auditCount("reveal_phone", w.songkhlaSos)).toBe(1);

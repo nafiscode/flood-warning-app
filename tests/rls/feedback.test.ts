@@ -252,11 +252,10 @@ describe("the table itself", () => {
   it("shows a verified team no more than any other signed-in person", async () => {
     await as(db, { uid: w.requester });
     await send({ likedNote: "one" });
-    const teamOwner = await one<{ user_id: string }>(
-      "select user_id from authority_units where id = $1",
-      [w.yalaRescue],
-    );
-    await as(db, { uid: teamOwner.user_id });
+    // The unit's owner comes from the fixture, not from a select: the session here is a normal
+    // user, who cannot see authority_units at all, so the query found nothing and the uid came
+    // out undefined.
+    await as(db, { uid: w.yalaRescue.user });
     expect(await count("select 1 from feedback")).toBe(0);
   });
 });

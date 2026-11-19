@@ -38,7 +38,18 @@ describe("auto_alarm_dams", () => {
        on conflict (dam_code) do update set enabled = true`,
     );
     await as(db, { uid: w.admin });
-    expect(await rows(db, "select dam_code from public.auto_alarm_dams")).toHaveLength(1);
+    // Every armed reservoir, not one: jaga-dev has five armed by seed 44 and Bang Lang armed by
+    // an admin on 27 Oct, so the claim is "an admin sees all of them" measured against what is
+    // there, plus the one this test armed.
+    await asOwner(db);
+    const armed = (await rows(db, "select dam_code from public.auto_alarm_dams")).length;
+    await as(db, { uid: w.admin });
+    const seen = await rows<{ dam_code: string }>(
+      db,
+      "select dam_code from public.auto_alarm_dams",
+    );
+    expect(seen).toHaveLength(armed);
+    expect(seen.map((d) => d.dam_code)).toContain("khlong_chamrai");
     // A visitor and an ordinary user see nothing: which reservoirs publish by themselves is an
     // operational detail, not public information.
     await as(db, "anon");
@@ -113,10 +124,14 @@ describe("the drafts the alarm raises", () => {
     // A warning cannot carry the alert it would replace: only the all-clear answers one.
     const alert = await rows<{ id: string }>(
       db,
-      `insert into public.alerts (hazard_type, level, reason, messages, next_update_at)
+      // issued_by has been NOT NULL since 20260929120500_alerts_monitoring_admin - every alert
+      // names its issuer (safety rule 3) - so it is given here. Without it the insert raised
+      // before this test could reach what it is about.
+      `insert into public.alerts (hazard_type, level, reason, messages, next_update_at, issued_by)
          values ('flood', 'warning', 'test', '{"th":"x","ms":"x","en":"x"}'::jsonb,
-                 now() + interval '3 hours')
+                 now() + interval '3 hours', $1)
        returning id`,
+      [w.admin],
     );
     await expectDenied(
       db,
@@ -231,9 +246,7 @@ describe("the reservoir's own rules", () => {
       `insert into public.auto_alarm_dams (dam_code, enabled) values ('khlong_chamrai', true)
        on conflict (dam_code) do update set enabled = true`,
     );
-    await db.query(
-      `delete from public.dam_tambons where dam_code = 'khlong_chamrai'`,
-    );
+    await db.query(`delete from public.dam_tambons where dam_code = 'khlong_chamrai'`);
     await db.query(
       `update public.dams set grades = coalesce(grades, '{}'::jsonb)
          || '{"full_pct": 95, "min_consecutive_h": 1}'::jsonb where code = 'khlong_chamrai'`,

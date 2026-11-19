@@ -22,15 +22,23 @@ const TOKEN = "test-gate-token-0123456789abcdef0123456789";
 const HOME = `U${"a".repeat(32)}`;
 const WATCHER = `U${"b".repeat(32)}`;
 
-async function alertFor(tambons: string[], drill = false): Promise<string> {
+/**
+ * `channels` is given here on purpose. Since 20261022205300_a10_line_off_by_default an alert
+ * carries `{push}` unless an admin ticks LINE, because LINE bills per person - so an alert made
+ * with the column's default reaches nobody through LINE, which is the right answer and not what
+ * these tests are about. `linePicked = false` leaves it at the default, for the one test below
+ * that checks exactly that.
+ */
+async function alertFor(tambons: string[], drill = false, linePicked = true): Promise<string> {
   await asOwner(db);
   const id = (
     await rows<{ id: string }>(
       db,
-      `insert into alerts (level, reason, messages, issued_by, next_update_at, is_drill)
-       values ('warning', 'River rising', '{"th": "น้ำกำลังขึ้น"}'::jsonb, $1, now() + interval '6 hours', $2)
+      `insert into alerts (level, reason, messages, issued_by, next_update_at, is_drill, channels)
+       values ('warning', 'River rising', '{"th": "น้ำกำลังขึ้น"}'::jsonb, $1, now() + interval '6 hours', $2,
+               case when $3 then array['push', 'line']::text[] else array['push']::text[] end)
        returning id`,
-      [w.admin, drill],
+      [w.admin, drill, linePicked],
     )
   )[0]!.id;
   for (const t of tambons) {
@@ -94,6 +102,11 @@ describe("who an alert reaches through LINE", () => {
   it("the people whose home or watched place is in its area, and nobody elsewhere", async () => {
     expect(await targets(await alertFor([w.yala1]))).toEqual([HOME, WATCHER]);
     expect(await targets(await alertFor([w.songkhla]))).toEqual([]);
+  });
+
+  it("nobody at all when the admin did not tick LINE", async () => {
+    // The 22 Oct 2026 decision: LINE is off unless it is chosen, because it bills per person.
+    expect(await targets(await alertFor([w.yala1], false, false))).toEqual([]);
   });
 
   it("not a watched place with notifications off, and not someone who blocked the account", async () => {

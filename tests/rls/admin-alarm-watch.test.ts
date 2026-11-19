@@ -72,9 +72,14 @@ describe("the automatic alarms and the admin's bell", () => {
   it("an admin sees every automatic alarm with what became of it", async () => {
     const zone = (await rows<{ id: string }>(db, "select id from warning_zones limit 1"))[0]!.id;
     await db.query(
-      `insert into auto_alarm_events (zone_id, level, value, threshold, observed_at, deadline, status)
-       values ($1, 'warning', 16.2, 16.0, now(), now() + interval '20 minutes', 'pending'),
-              ($1, 'evacuate', 16.8, 16.5, now() - interval '2 days', now() - interval '2 days', 'lapsed')`,
+      // created_at is set here, not left to its default: admin_auto_alarms() orders by it, and two
+      // rows inserted in one statement share the same now(), so the order of the answer was a tie
+      // the test happened to win or lose run by run. With the two apart, newest-first is tested.
+      `insert into auto_alarm_events (zone_id, level, value, threshold, observed_at, deadline,
+                                      status, created_at)
+       values ($1, 'warning', 16.2, 16.0, now(), now() + interval '20 minutes', 'pending', now()),
+              ($1, 'evacuate', 16.8, 16.5, now() - interval '2 days', now() - interval '2 days',
+               'lapsed', now() - interval '2 days')`,
       [zone],
     );
     await as(db, { uid: w.admin });

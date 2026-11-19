@@ -29,6 +29,22 @@ afterEach(async () => {
 const one = async <T = Record<string, unknown>>(sql: string, params: unknown[] = []) =>
   (await rows<T>(db, sql, params))[0]!;
 
+/**
+ * Rows this test added, not rows the database holds: jaga-dev carries the owner's real console
+ * history (139 `read_sos_board` rows when this was written), so an absolute count can only be
+ * right on an empty database. Scoped to one actor as well, because audit_log is read at READ
+ * COMMITTED and another session's writes can land mid-transaction.
+ */
+const auditCountBy = async (action: string, actor: string) => {
+  await asOwner(db);
+  const r = await rows<{ n: string }>(
+    db,
+    "select count(*) as n from audit_log where action = $1 and actor = $2",
+    [action, actor],
+  );
+  return Number(r[0]!.n);
+};
+
 const auditCount = async (action: string, entityId: string | null = null) => {
   await asOwner(db);
   const sql = entityId
@@ -176,14 +192,16 @@ describe("the case board", () => {
   });
 
   it("marks the watch in the audit log, once per ten minutes and not once per poll", async () => {
+    const before = await auditCountBy("read_sos_board", w.admin);
     await as(db, { uid: w.admin });
     for (let i = 0; i < 4; i++) await rows(db, "select * from admin_sos_board(72)");
-    expect(await auditCount("read_sos_board")).toBe(1);
+    expect((await auditCountBy("read_sos_board", w.admin)) - before).toBe(1);
   });
 });
 
 describe("the people list", () => {
   it("shows the home area and the counts, and no phone number", async () => {
+    const readsBefore = await auditCountBy("read_people", w.admin);
     await asOwner(db);
     await db.query(
       "update profiles set home_tambon = $2, home_point = extensions.st_geomfromtext($3, 4326) where user_id = $1",
@@ -201,7 +219,7 @@ describe("the people list", () => {
     expect(person.home_tambon).toBe(w.yala1);
     expect(Number(person.sos_sent)).toBe(1);
     expect(JSON.stringify(person)).not.toContain("66811111111");
-    expect(await auditCount("read_people")).toBe(1);
+    expect((await auditCountBy("read_people", w.admin)) - readsBefore).toBe(1);
   });
 
   it("finds a person by name", async () => {
