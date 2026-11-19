@@ -134,9 +134,9 @@ describe("the dam's figure on the home screen", () => {
       share: <div data-share-slot="true" />,
     });
     /*
-     * The card is written twice since 16 Oct - once at the foot of the page and once under the
-     * flood-risk summary, where a laptop shows it instead. This is the one at the foot, which a
-     * phone and a tablet see; the laptop's copy is checked below.
+     * The card is written twice since 16 Oct - once at the foot of the page and once in the
+     * rail, where a laptop shows it instead (19 Nov; it was in the wide column before). This is
+     * the one at the foot, which a phone and a tablet held upright see; the other is below.
      */
     const card = c.querySelector('[data-home-col="places"] [data-dam-figure-card]')!;
     expect(card).not.toBeNull();
@@ -155,8 +155,12 @@ describe("the dam's figure on the home screen", () => {
     expect(links[0]!.textContent).toContain(th.dam.legend.open.replace("{dam}", DAM.name.th!));
   });
 
-  /** The owner, 16 Oct: on a laptop the dam belongs under the flood-risk summary instead. */
-  it("is written a second time in the left-hand column, hidden until the screen is a laptop", () => {
+  /**
+   * The owner, 19 Nov: on a laptop the dam is the last thing in the rail, which otherwise ran
+   * out around 800 px while the wide column ran on to 2,800. It was in the wide column, under
+   * the flood-risk summary, from 16 Oct until then.
+   */
+  it("is written a second time at the foot of the rail, hidden until the screen is a laptop", () => {
     const c = home("normal", {
       dams: [{ ...DAM, signal: exampleDamSignal("quiet") }],
       area: BANA,
@@ -164,8 +168,14 @@ describe("the dam's figure on the home screen", () => {
     });
     const cards = c.querySelectorAll("[data-dam-figure-card]");
     expect(cards.length).toBe(2);
-    const laptop = c.querySelector('[data-home-col="now"] [data-dam-figure-card]')!;
+    const laptop = c.querySelector(
+      '[data-home-col="act"] [data-home-band="side"] [data-dam-figure-card]',
+    )!;
     expect(laptop).not.toBeNull();
+    // Nothing of the wide column's: that is where it used to be.
+    expect(c.querySelector('[data-home-col="now"] [data-dam-figure-card]')).toBeNull();
+    // The last thing in the rail, under the places they watch.
+    expect(laptop.parentElement!.nextElementSibling).toBeNull();
     // Out of the page entirely - for a screen reader too - until the console's own breakpoint.
     const wrapper = laptop.parentElement!;
     expect(wrapper.className).toContain("hidden");

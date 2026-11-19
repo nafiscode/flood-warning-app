@@ -302,13 +302,12 @@ describe("the home screen's bands on a laptop, in app/globals.css", () => {
     );
     expect(rule('[data-home-tense] [data-home-band="foot"] > *')).toContain("order: 5");
     /*
-     * The reservoir's drawing is written in the wide stack on a laptop (the owner, 16 Oct). In
-     * one column it would sit between the checklist and SOS - measured at nearly a thousand
-     * pixels - so it waits with the background (safety rule 1).
+     * The reservoir's drawing is written in the rail on a laptop (the owner, 19 Nov). In one
+     * column it would sit among the things to do - nearly a thousand pixels of it - so it waits
+     * with the background (safety rule 1). The rule names the card's own mark, not the band it
+     * is in, so moving it again cannot put it in front of SOS.
      */
-    expect(rule('[data-home-tense] [data-home-band="main"] [data-dam-figure-card]')).toContain(
-      "order: 6",
-    );
+    expect(rule("[data-home-tense] [data-dam-figure-card]")).toContain("order: 6");
   });
 });
 

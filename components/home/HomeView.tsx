@@ -237,8 +237,10 @@ export function HomeView(props: HomeViewProps) {
     );
   }
   /*
-   * The dam's drawing and figures. On a laptop the owner wants it in the left-hand column, under
-   * the flood-risk summary (16 Oct); on a phone it stays at the foot of the page, which is where
+   * The dam's drawing and figures. On a laptop it is the last thing in the rail, under the places
+   * they watch (the owner, 19 Nov 2026: the rail ran out around 800 px while the wide column ran
+   * on to 2,800, and this is what fills it). It was under the flood-risk summary in the wide
+   * column from 16 Oct until then. On a phone it stays at the foot of the page, which is where
    * the owner put it on 15 Oct because it is background, not news.
    *
    * The two places are in different columns of the grid, and a grid cannot move an item from one
@@ -501,9 +503,6 @@ export function HomeView(props: HomeViewProps) {
              */}
             {tense && monitoring}
           </div>
-
-          {/* Laptop only: under the flood-risk summary (the owner, 16 Oct). */}
-          <div className="hidden console:contents">{damCards}</div>
         </div>
       </div>
 
@@ -589,6 +588,13 @@ export function HomeView(props: HomeViewProps) {
               {t(watched.length > 0 ? "watched.manage" : "watched.addFirst")}
             </Link>
           )}
+
+          {/*
+           * Laptop and tablet only: the last thing in the rail, under the places they watch (the
+           * owner, 19 Nov). The copy at the foot of the page is the one a phone reads, and
+           * app/globals.css hides whichever of the two the width does not want.
+           */}
+          <div className="hidden console:contents">{damCards}</div>
         </div>
       </div>
 

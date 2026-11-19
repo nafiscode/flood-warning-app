@@ -346,8 +346,11 @@
    *   2. what is happening - the weather, the national forecaster, the neighbours, the rivers,
    *      the long-term risk - in the wide column, with the person's own places beside it;
    *   3. the way into the map, full width, as a row of tiles rather than a narrow stack;
-   *   4. the rest - the safe places and notifications on one side, the reservoir and "share
-   *      Jaga" on the other.
+   *   4. the rest - the safe places and notifications on one side, "share Jaga" on the other.
+   *
+   * The reservoir's drawing is the last thing in the rail rather than part of band 2 (the owner,
+   * 19 Nov): the rail ran out around 800 px while the wide column ran on to 2,800, and this is
+   * what fills it.
    *
    * The page's own blocks are untouched. The three columns of 8 Oct are still written, and are
    * still what a phone and a narrow window read in one run; inside each of them the blocks are
@@ -436,8 +439,9 @@
     grid-row: 1;
   }
   /* The dam's card is written twice - at the foot of the page, where a phone has had it since
-     15 Oct, and under the flood-risk summary, where the owner wants it on a laptop (16 Oct).
-     Here the one at the foot gives way. */
+     15 Oct, and at the foot of the rail, under the places they watch, where the owner wants it
+     on a laptop (19 Nov; it was in the wide column from 16 Oct). Here the one at the foot of the
+     page gives way. */
   [data-home-band="foot"] > [data-dam-figure-card] {
     display: none;
   }
@@ -476,9 +480,10 @@
    *   3  the rest of what to do: a flood report, food and water, what they have sent
    *   4  the long-term risk and the live measurements - background, not news
    *   5  their own places, the map, the safe places
-   *   6  the reservoir's drawing, which is written in the wide stack on a laptop (the owner,
-   *      16 Oct) and would otherwise sit between the checklist and SOS: nothing is ever put in
-   *      front of asking for help (safety rule 1)
+   *   6  the reservoir's drawing, which is written in the rail on a laptop (the owner, 19 Nov)
+   *      and would otherwise sit among the things to do: nothing is ever put in front of asking
+   *      for help (safety rule 1). Named on its own mark, not on the band it happens to be in,
+   *      so moving it again cannot leave it in front of SOS.
    */
   [data-home-tense] [data-home-band="main"] > * {
     order: 2;
@@ -498,7 +503,7 @@
   [data-home-tense] [data-home-band="foot"] > * {
     order: 5;
   }
-  [data-home-tense] [data-home-band="main"] [data-dam-figure-card] {
+  [data-home-tense] [data-dam-figure-card] {
     order: 6;
   }
 

@@ -834,3 +834,47 @@ per-file on this laptop by timing out while spawning a worker for each file, and
 reuses one worker and runs the whole suite - 2,032 tests in 72 s. That is now the way to run it
 here, and is how this bug surfaced. The lesson is the plain one: a test suite believed broken is a
 test suite not running, and the cost lands on whatever shipped meanwhile.
+
+## 2026-11-19 - The reservoir's drawing moves into the rail, and four stale unit tests
+
+**The owner, seeing the new laptop home page:** "I want it filled the empty place with reservoir
+card as you suggest." On an ordinary day the rail (SOS, a flood report, food and water, what they
+have sent, the places they watch) ran out around 800 px while the wide column beside it ran on to
+about 2,800, so the lower right of the page was empty. The reservoir's drawing is the one block
+long enough to fill it and quiet enough to belong there - it is background, not news.
+
+So on a laptop and on a tablet held sideways the drawing is the last thing in the rail, under the
+places they watch. It was under the flood-risk summary in the wide column from 16 Oct. Measured
+afterwards at 1,440 px: the two stacks now end 1,757 px and 1,891 px down, within 8% of each
+other, where the rail had been less than half the height of the column beside it.
+
+The card is still written twice - once at the foot of the page, which is what a phone and a tablet
+held upright read, and once in the rail - and `app/globals.css` hides whichever copy the width does
+not want, so nobody meets it twice. **The phone is provably untouched by this:** the only change to
+the page a phone builds is where a `display: none` wrapper sits in it, which no layout and no
+screen reader can see. Confirmed in a browser at 360 px, 1,024 portrait, 1,180 landscape, 1,440 and
+1,920, in both the ordinary and the Warning state, with no sideways scroll anywhere.
+
+One rule changed with it. At Warning or Evacuate the single column pushes the drawing to the end,
+so that nothing is ever put between the alert and SOS (safety rule 1); that rule now names the
+card's own mark rather than the band it happens to sit in, so moving it again cannot leave it in
+front of the button.
+
+**Four unit tests were failing on `main` and are now fixed.** None of them was a bug in the app;
+all four were tests left behind by work that had landed since, which is what happens while the
+runner is believed broken (see the 18 Nov entry above).
+
+- The dam-release form was checked against the API it had on 9 Nov. An operator is no longer told
+  which level to send - the owner chose on 9 Nov that they get the same three an admin has - and
+  the dam chooser now appears for whoever holds more than one reservoir rather than for an admin.
+  Rewritten against what the form does, with a second reservoir added so the chooser is tested on
+  both screens.
+- The map's "my places" button was checked against its behaviour before 25 Oct. Since then the
+  place chosen on this device has a pin of its own, so somebody with nothing saved still has one
+  place of theirs and the button takes the same tour, with that one stop, rather than framing a
+  wide box around the point.
+- The scan that keeps the app from ever labelling a time "Thailand time" (the owner, 13 Oct) now
+  lifts for `.sitrep`, as it already did for `.about`. A situation report is printed, filed and
+  forwarded (A18), so it carries a stated period, and a period on a document that leaves the app
+  with no zone on it is a real ambiguity rather than noise. The rule is about the app's own clock
+  and its time labels, which is everywhere else.

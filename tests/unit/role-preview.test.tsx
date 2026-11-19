@@ -163,30 +163,45 @@ describe("the dam operator's screen", () => {
     outflowCms: 120,
     noticeId: null,
   };
-  const draw = (operatorSend?: string) =>
+  /*
+   * A second reservoir, for the one thing a count of dams changes: the chooser. The irrigation
+   * office holds four of the six, so the chooser is not only an admin's control.
+   */
+  const second: DamForRelease = {
+    ...dam,
+    code: "pattani_weir",
+    name: { th: "ฝายปัตตานี", en: "Pattani Weir" },
+    noticeId: null,
+  };
+  const draw = (
+    more: { variant?: "admin" | "operator"; operatorSend?: string; dams?: DamForRelease[] } = {},
+  ) =>
     renderWithIntl(
       <DamReleaseForm
-        dams={[dam]}
+        dams={more.dams ?? [dam]}
         send={() => {}}
         nowValue="2026-11-20T08:00"
         nextUpdateValue="2026-11-20T14:00"
-        operatorSend={operatorSend}
+        variant={more.variant}
+        operatorSend={more.operatorSend}
       />,
       "en",
     ).container;
 
-  it("asks an operator only for the gates, the release and the end, and keeps the template", () => {
-    const c = draw("Send the release notice");
+  /*
+   * The owner chose on 9 Nov that an operator gets the same four figures and the same three
+   * levels an admin has, so that there is one rule to teach. What their screen changes is the
+   * last line of the notice, the button, and the dams the chooser offers.
+   */
+  it("asks an operator for the figures and the level, and keeps the template", () => {
+    const c = draw({ variant: "operator", operatorSend: "Send the release notice" });
     expect(c.querySelector("[data-dam-release-form]")!.getAttribute("data-operator")).toBe("true");
-    // Their own dam, the decided level and the next update travel without a control to change.
+    // One dam is named, not offered in a chooser with a single entry; it travels as it is.
     expect((c.querySelector('input[type=hidden][name="dam"]') as HTMLInputElement).value).toBe(
       "bang_lang",
     );
-    expect((c.querySelector('input[type=hidden][name="level"]') as HTMLInputElement).value).toBe(
-      "warning",
-    );
-    expect(c.querySelectorAll('[name="level"]')).toHaveLength(1);
-    expect(c.querySelectorAll('[name="dam"]')).toHaveLength(1);
+    expect(c.querySelector('select[name="dam"]')).toBeNull();
+    expect(c.querySelectorAll('input[type=radio][name="level"]')).toHaveLength(3);
     expect(c.querySelectorAll('[name="nextUpdate"]')).toHaveLength(1);
     expect(c.querySelector("#gatesOpenAt")).not.toBeNull();
     expect(c.querySelector("#releaseCms")).not.toBeNull();
@@ -196,11 +211,24 @@ describe("the dam operator's screen", () => {
     expect(c.querySelector('button[type="submit"]')!.textContent).toBe("Send the release notice");
   });
 
+  it("offers the chooser to whoever holds more than one reservoir", () => {
+    const one = draw({ dams: [dam] });
+    expect(one.querySelector('select[name="dam"]')).toBeNull();
+    for (const variant of ["admin", "operator"] as const) {
+      const c = draw({ variant, dams: [dam, second] });
+      const select = c.querySelector('select[name="dam"]')!;
+      expect(select).not.toBeNull();
+      expect([...select.querySelectorAll("option")].map((o) => o.getAttribute("value"))).toEqual([
+        "bang_lang",
+        "pattani_weir",
+      ]);
+    }
+  });
+
   it("is unchanged for an admin", () => {
     const c = draw();
     expect(c.querySelector("[data-dam-release-form]")!.hasAttribute("data-operator")).toBe(false);
     expect(c.querySelectorAll('input[type=radio][name="level"]').length).toBe(3);
-    expect(c.querySelector('select[name="dam"]')).not.toBeNull();
     expect(c.querySelector('button[type="submit"]')!.textContent).toBe(en.admin.damRelease.send);
   });
 });

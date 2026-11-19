@@ -18,7 +18,6 @@ import {
   exampleStatus,
 } from "@/lib/dev-examples";
 import type { Dam } from "@/lib/dam";
-import { boundsAround } from "@/lib/map";
 import en from "@/messages/en.json";
 import th from "@/messages/th.json";
 import { renderWithIntl } from "./render";
@@ -253,11 +252,17 @@ describe("the My places button", () => {
     expect((s2 + n2) / 2).toBeCloseTo(first.lat, 2);
   });
 
-  it("frames the chosen area for someone with no saved places", () => {
+  /*
+   * Since 25 Oct the place chosen on this device has a pin of its own, so somebody with nothing
+   * saved still has one place of theirs: the button takes the same tour, with that one stop.
+   * Written against the older behaviour (a wide box around the point) until 19 Nov.
+   */
+  it("takes someone with no saved places to the one place they have: the chosen area", () => {
     const c = dashboard({ area: BANA, me: null });
     fireEvent.click(c.querySelector("[data-zoom-mine]")!);
+    const half = { lon: 0.025, lat: 0.02 };
     expect(bounds(c)).toBe(
-      boundsAround([{ lon: BANA.lon, lat: BANA.lat }])!
+      [BANA.lon - half.lon, BANA.lat - half.lat, BANA.lon + half.lon, BANA.lat + half.lat]
         .map((n) => n.toFixed(3))
         .join(","),
     );

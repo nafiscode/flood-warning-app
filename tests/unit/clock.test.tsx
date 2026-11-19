@@ -32,8 +32,14 @@ describe("Thailand's time in the header (owner, 13 Oct)", () => {
        * what makes a Thai reader trust the page. It carries no clock and no time label, so the
        * blunt city-name scan is lifted there and nowhere else.
        */
+      /*
+       * A situation report is the other: a unit prints it, files it and forwards it (A18), so it
+       * carries a stated period, and a period on a document that leaves the app with no zone on
+       * it is a real ambiguity rather than noise. The rule the owner asked for on 13 Oct is
+       * about the app's own clock and its time labels, which is everywhere else.
+       */
       const walk = (node: unknown, path: string) => {
-        if (path === ".about") return;
+        if (path === ".about" || path === ".sitrep") return;
         if (typeof node === "string") {
           if (named.test(node)) found.push(path);
         } else if (node && typeof node === "object") {
