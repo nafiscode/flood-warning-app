@@ -919,3 +919,36 @@ surface, with a light sheen and a glint along the crest; the body rises into pla
 card opens. Both lengths divide the drawing's width, so each loop ends where it began and no seam
 shows. Nothing moves under `prefers-reduced-motion`, and the whole thing is CSS on one SVG - no
 canvas, no animation frame, nothing per gauge on the map.
+
+## 2026-11-19 - The map's tiles join the reservoir in the rail, and the rail runs the page's length
+
+**The owner, pointing at the row of seven map tiles:** "In the home page, bring these boxes, to
+fill the right side, for laptop view, under manage your watch places." So on a laptop and on a
+tablet held sideways the way into the map is now the first thing under the places they watch, with
+the reservoir's drawing after it. The tiles ran the full width of the page for exactly one day,
+between 18 and 19 Nov. They go back to two abreast, which is how they are drawn everywhere else.
+
+The tiles and the reservoir are each written twice - once in the rail and once in the run of
+blocks a phone reads - and the CSS hides whichever copy the width does not want. **It cannot be
+done by placing the band in the grid instead.** A grid row is as tall as its tallest item, so a
+band placed under the rail starts where the long column beside it ends, which is the very gap this
+was meant to close. This is the second time that rule has decided the shape of this page.
+
+**And it bit again, one step further down.** With the tiles and the reservoir in it, the rail
+became the taller of the two stacks - so the safe places, which sat in the grid row underneath,
+waited for it, and the page grew a 600 px hole in the middle of its left-hand side. The emptiness
+had simply moved from one side to the other. The fix is that the rail now spans both rows
+(`grid-row: 1 / span 2`): the wide column and the safe places under it are one continuous read,
+the rail runs down beside both, and "share Jaga" is the last line across the whole page. Spanning
+costs nothing, because a spanning item only stretches its rows when it is taller than all of them
+together, which the rail is not. The page lost 400 px of height in the bargain.
+
+What is left is the ordinary shape of a page with a sidebar: the rail ends while the safe places
+carry on. That emptiness is at the foot of the page and beside a list, not a hole in the middle of
+the reading.
+
+**Two things worth writing down.** The tiles' heading had a fixed `id`, which two copies on one
+page would have duplicated; it is made with `useId` now. And the reservoir's drawing has carried
+five duplicated SVG ids since 16 Oct, for the same reason - checked in a browser on 19 Nov, and
+every gradient and clip still resolves from the hidden copy, so nothing is broken. The same was
+confirmed for the tiles' one clip path.

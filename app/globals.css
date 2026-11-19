@@ -345,12 +345,13 @@
    *      beside it on the right, both at the top of the page;
    *   2. what is happening - the weather, the national forecaster, the neighbours, the rivers,
    *      the long-term risk - in the wide column, with the person's own places beside it;
-   *   3. the way into the map, full width, as a row of tiles rather than a narrow stack;
-   *   4. the rest - the safe places and notifications on one side, "share Jaga" on the other.
+   *   3. the safe places and notifications carrying on under the wide column, with the rail
+   *      still running beside them, and "share Jaga" across the foot of the page.
    *
-   * The reservoir's drawing is the last thing in the rail rather than part of band 2 (the owner,
-   * 19 Nov): the rail ran out around 800 px while the wide column ran on to 2,800, and this is
-   * what fills it.
+   * The way into the map and the reservoir's drawing are the last two things in the rail rather
+   * than bands of their own (the owner, 19 Nov): the rail ran out around 800 px while the wide
+   * column ran on to 2,800, and these are what fill it. The tiles ran the full width of the page
+   * for one day, between 18 and 19 Nov.
    *
    * The page's own blocks are untouched. The three columns of 8 Oct are still written, and are
    * still what a phone and a narrow window read in one run; inside each of them the blocks are
@@ -382,7 +383,15 @@
   }
   [data-console-page="home"] > [data-home-col="act"] {
     grid-column: 9 / 13;
-    grid-row: 1;
+    /*
+     * The rail runs beside both of the wide column's bands, not only the first. Without the
+     * span, what comes under the wide column has to wait for the rail to finish, and once the
+     * map's tiles and the reservoir moved into the rail that left a 600 px hole in the middle of
+     * the page - the same emptiness as before, moved to the other side (seen in a browser,
+     * 19 Nov). Spanning costs nothing: a spanning item only stretches its rows when it is taller
+     * than all of them together, which the rail is not.
+     */
+    grid-row: 1 / span 2;
     align-self: start;
   }
   /*
@@ -400,43 +409,28 @@
     align-self: start;
     min-width: 0;
   }
-  [data-home-band="tiles"] {
-    grid-column: 1 / 13;
-    grid-row: 2;
+  /*
+   * The way into the map is written twice since 19 Nov (the owner: "bring these boxes, to fill
+   * the right side ... under manage your watch places"). The copy in the rail is the one a
+   * laptop shows; this one, in the run of blocks a phone reads, gives way. It ran the full width
+   * of the page for one day, between 18 and 19 Nov.
+   *
+   * It cannot be done by placing this band in the grid instead: the rail is a stack of its own
+   * and a grid row is as tall as its tallest item, so a band under it would start where the long
+   * column beside it ends, leaving the very gap this is meant to close.
+   */
+  [data-console-page="home"] > [data-home-col="places"] > [data-home-band="tiles"] {
+    display: none;
   }
-  /* The foot keeps the same two widths as the stacks above it, so the page has one grid. */
+  /* The safe places carry straight on under the wide column, with no row to wait for... */
   [data-home-band="side2"] {
     grid-column: 1 / 9;
-    grid-row: 3;
-  }
-  [data-home-band="foot"] {
-    grid-column: 9 / 13;
-    grid-row: 3;
-  }
-  /*
-   * The map's tiles, which a narrow column draws two abreast, run across the band instead: the
-   * heading and the button that opens the map share a line, and the seven tiles fill the row
-   * below it. `auto-fill` rather than a count, so a 1,280 px laptop and a wide monitor both get
-   * whole tiles; the wide first tile goes back to one cell, because there is no column to span.
-   */
-  [data-home-band="tiles"] [data-map-features="home"] {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    column-gap: 1.5rem;
-    row-gap: 0.75rem;
-  }
-  [data-home-band="tiles"] [data-map-features="home"] > ul {
-    grid-column: 1 / -1;
     grid-row: 2;
-    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   }
-  [data-home-band="tiles"] [data-map-features="home"] > ul > li {
-    grid-column: auto;
-  }
-  [data-home-band="tiles"] [data-map-features="home"] > [data-map-link] {
-    grid-column: 2;
-    grid-row: 1;
+  /* ...and "share Jaga" is the last line of the page, across the whole of it. */
+  [data-home-band="foot"] {
+    grid-column: 1 / 13;
+    grid-row: 3;
   }
   /* The dam's card is written twice - at the foot of the page, where a phone has had it since
      15 Oct, and at the foot of the rail, under the places they watch, where the owner wants it
@@ -467,6 +461,11 @@
   [data-console-page="home"][data-home-tense] > [data-home-col] > [data-home-band] {
     display: contents;
   }
+  /* ...except the copy of the map's tiles a laptop does not use: the rule above is stronger than
+     the one that hides it, and without this both copies would be on the page at Warning. */
+  [data-console-page="home"][data-home-tense] > [data-home-col="places"] > [data-home-band="tiles"] {
+    display: none;
+  }
   /*
    * The order in that one column, which is the phone's with one difference the owner asked for:
    * SOS directly under the alert, not after the checklist. On a phone the whole screen is one
@@ -479,7 +478,7 @@
    *   2  what the alert means: the neighbours, when this was last checked, the checklist
    *   3  the rest of what to do: a flood report, food and water, what they have sent
    *   4  the long-term risk and the live measurements - background, not news
-   *   5  their own places, the map, the safe places
+   *   5  their own places, the map's tiles, the safe places
    *   6  the reservoir's drawing, which is written in the rail on a laptop (the owner, 19 Nov)
    *      and would otherwise sit among the things to do: nothing is ever put in front of asking
    *      for help (safety rule 1). Named on its own mark, not on the band it happens to be in,
@@ -501,6 +500,9 @@
   [data-home-tense] [data-home-band="tiles"] > *,
   [data-home-tense] [data-home-band="side2"] > *,
   [data-home-tense] [data-home-band="foot"] > * {
+    order: 5;
+  }
+  [data-home-tense] [data-map-features="home"] {
     order: 5;
   }
   [data-home-tense] [data-dam-figure-card] {

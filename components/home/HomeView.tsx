@@ -590,10 +590,15 @@ export function HomeView(props: HomeViewProps) {
           )}
 
           {/*
-           * Laptop and tablet only: the last thing in the rail, under the places they watch (the
-           * owner, 19 Nov). The copy at the foot of the page is the one a phone reads, and
-           * app/globals.css hides whichever of the two the width does not want.
+           * Laptop and tablet only, both of these: the way into the map and then the reservoir's
+           * drawing, directly under the places they watch (the owner, 19 Nov - "bring these
+           * boxes, to fill the right side ... under manage your watch places"). Each is written
+           * twice, here and in the run of blocks a phone reads below; app/globals.css hides
+           * whichever copy the width does not want, so nobody meets either twice.
            */}
+          <div className="hidden console:contents">
+            <MapFeatureTiles />
+          </div>
           <div className="hidden console:contents">{damCards}</div>
         </div>
       </div>
@@ -608,7 +613,8 @@ export function HomeView(props: HomeViewProps) {
         {/* The map comes straight after the person's own places, and the safe places after it,
             folded under their own button (owner, 12 Oct). Since 15 Oct the way in is the map's five
             features as tiles, each opening the map on itself (the owner: the science should be seen). */}
-        {/* The way into the map runs the full width of the page on a laptop, as a row of tiles. */}
+        {/* This copy is the one a phone and a tablet held upright read; a laptop shows the one in
+            the rail instead (19 Nov). It ran the full width of the page between 18 and 19 Nov. */}
         <div data-home-band="tiles">
           <MapFeatureTiles />
         </div>

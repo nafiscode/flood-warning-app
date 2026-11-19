@@ -267,17 +267,29 @@ describe("the home screen's bands on a laptop, in app/globals.css", () => {
     expect(now).toContain("grid-row: 1");
     const act = rule('[data-console-page="home"] > [data-home-col="act"]');
     expect(act).toContain("grid-column: 9 / 13");
-    expect(act).toContain("grid-row: 1");
     // The third column is not a column here: its bands are placed one by one under the stacks.
     expect(rule('[data-console-page="home"] > [data-home-col="places"]')).toContain(
       "display: contents",
     );
-    // The way into the map runs the full width...
-    expect(rule('[data-home-band="tiles"]')).toContain("grid-column: 1 / 13");
-    expect(rule('[data-home-band="tiles"]')).toContain("grid-row: 2");
-    // ...and the foot keeps the same two widths as the stacks above it, so there is one grid.
+    /*
+     * The way into the map is written twice since 19 Nov - in the rail, which a laptop shows,
+     * and in the run of blocks a phone reads, which gives way here. It cannot be a band placed
+     * under the rail: a grid row is as tall as its tallest item, so it would start where the
+     * long column beside it ends, leaving the gap it is meant to close.
+     */
+    expect(
+      rule('[data-console-page="home"] > [data-home-col="places"] > [data-home-band="tiles"]'),
+    ).toContain("display: none");
+    /*
+     * The safe places carry straight on under the wide column, and the rail runs beside both -
+     * without the span, what comes under the wide column waits for the rail to finish and the
+     * page gets a hole in its middle. "Share Jaga" is the last line, across the whole page.
+     */
+    expect(act).toContain("grid-row: 1 / span 2");
     expect(rule('[data-home-band="side2"]')).toContain("grid-column: 1 / 9");
-    expect(rule('[data-home-band="foot"]')).toContain("grid-column: 9 / 13");
+    expect(rule('[data-home-band="side2"]')).toContain("grid-row: 2");
+    expect(rule('[data-home-band="foot"]')).toContain("grid-column: 1 / 13");
+    expect(rule('[data-home-band="foot"]')).toContain("grid-row: 3");
   });
 
   /** The owner chose this over keeping the bands: nothing sits beside an alert (safety rule 3). */
@@ -307,6 +319,14 @@ describe("the home screen's bands on a laptop, in app/globals.css", () => {
      * with the background (safety rule 1). The rule names the card's own mark, not the band it
      * is in, so moving it again cannot put it in front of SOS.
      */
+    // The same for the map's tiles, which are in the rail too: with the background, not in front
+    // of SOS. Both copies would otherwise be on the page here, so the spare one is hidden again.
+    expect(rule('[data-home-tense] [data-map-features="home"]')).toContain("order: 5");
+    expect(
+      rule(
+        '[data-console-page="home"][data-home-tense] > [data-home-col="places"] > [data-home-band="tiles"]',
+      ),
+    ).toContain("display: none");
     expect(rule("[data-home-tense] [data-dam-figure-card]")).toContain("order: 6");
   });
 });

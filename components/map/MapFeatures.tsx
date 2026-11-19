@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CHIP_ORDER, focusHref, TILE_FOCUSES, type MapFocus } from "@/lib/map-focus";
@@ -37,14 +37,17 @@ function LiveTag() {
 export function MapFeatureTiles() {
   const t = useTranslations("mapFeatures");
   const tHome = useTranslations("home");
+  /*
+   * The heading's id is made rather than written, because the home screen writes these tiles
+   * twice since 19 Nov 2026 - once in the rail, which a laptop shows, and once in the run of
+   * blocks a phone reads - and two elements with the same id is invalid HTML whatever the width
+   * hides. See components/home/HomeView.tsx.
+   */
+  const titleId = useId();
   return (
-    <section
-      aria-labelledby="map-features-title"
-      className="flex flex-col gap-3"
-      data-map-features="home"
-    >
+    <section aria-labelledby={titleId} className="flex flex-col gap-3" data-map-features="home">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id="map-features-title" className="text-body font-bold text-jaga-ink">
+        <h2 id={titleId} className="text-body font-bold text-jaga-ink">
           {t("homeTitle")}
         </h2>
       </div>
