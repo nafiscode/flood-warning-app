@@ -1253,3 +1253,36 @@ and `sitrep` (5) wants `unit_sitrep()` - three other sessions' migrations, none 
 apply. A version clash was also caught by jaga-bd and settled: `20261119113000` was already applied
 under the a15 name, so the gauge-channel file took `20261119115000` rather than rewriting an applied
 row.
+
+## 2026-11-19 - Correction: X.73A's bank is 26.80 m, and there was never a discrepancy
+
+The entry above, "Three things the owner found on the live map and home screen", says X.73A has
+"bank 28.51". That is wrong, and the 1.7 m disagreement I reported from it does not exist. Recorded
+here rather than edited there, as this log is append-only.
+
+The table in `pipeline/thresholds/gauge_levels.md` runs:
+
+    | Zone | Gauge | Watch | Warning | Evacuate (bank) | Highest recorded | Floods | Years | How |
+
+So for X.73A the bank is **26.80 m** - the Evacuate column, which the header labels as the bank -
+and **28.51 m is the highest level ever recorded** at that station, the next column along. I read
+the record flood as the bank. A river's record standing 1.71 m above its bank is unremarkable at a
+station that has flooded twice.
+
+Checked against jaga-dev rather than argued: `gauge_levels.evacuate_m` equals `stations.warning_m`
+for **46 of 46 rows** to within 5 mm. Evacuate is the bank by design, and the levels did not
+inherit a stale column, which was the thing worth being sure of. There is nothing for the owner to
+decide and nothing in either seed to change.
+
+Two further notes, because the error travelled before it was caught:
+
+**It was put to the owner as settled evidence, which is the part that mattered.** A wrong bank
+figure handed to a hydrologist reads as a safety finding. It was retracted to the owner and to the
+session doing the cross-section work; a third session was sent the retraction without ever having
+been told the claim, which it rightly pointed out.
+
+**Two agents agreeing is not evidence.** The cross-section session independently "confirmed" a bank
+of 28.50/28.51 from its own output - those were the neighbouring station X.73's figures, not
+X.73A's - and so reached the same wrong conclusion from the other direction. Both of us were
+reading a number near 28.5 and neither read the column it sat under. The check that settled it was
+the header and a count over all 46 rows.
