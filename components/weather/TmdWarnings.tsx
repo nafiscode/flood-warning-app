@@ -28,23 +28,43 @@ import { card, hint } from "@/lib/ui";
  * runtime (CLAUDE.md "UI text"); a Malay or English reader gets our own words around a Thai quote,
  * which is honest, plus TMD's phone number for anyone who needs it explained.
  */
-export function TmdWarnings({ enabled = true }: { enabled?: boolean }) {
+export function TmdWarnings({
+  enabled = true,
+  compact = false,
+}: {
+  enabled?: boolean;
+  compact?: boolean;
+}) {
   const { warnings } = useTmdWarnings(enabled);
   if (warnings.length === 0) return null;
-  return <TmdWarningsView warnings={warnings} />;
+  return <TmdWarningsView warnings={warnings} compact={compact} />;
 }
 
 export type TmdWarningsViewProps = {
   warnings: TmdWarning[];
   /** The first notice is open; the rest are folded. A test can open them all. */
   openAll?: boolean;
+  /**
+   * The home page's form (the owner, 19 Nov 2026: "Long TMD text on the home page"). TMD writes a
+   * paragraph, and open on the home screen it pushed everything a resident came for - the alert,
+   * SOS, the hotlines - down the page. Folded, every notice shows its title, the period it covers
+   * and as much of TMD's own first lines as two lines of the box hold, with the rest a tap away.
+   *
+   * Nothing is summarised or shortened in the text itself: the words are TMD's, the box decides
+   * where they stop, and the whole notice is in the page for a screen reader either way.
+   */
+  compact?: boolean;
 };
 
 /**
  * The card itself, with the notices handed in, so a test can fix a warning and read what the card
  * says about it without a network (tests/unit/tmd-card).
  */
-export function TmdWarningsView({ warnings, openAll = false }: TmdWarningsViewProps) {
+export function TmdWarningsView({
+  warnings,
+  openAll = false,
+  compact = false,
+}: TmdWarningsViewProps) {
   const t = useTranslations("tmd");
   const locale = useLocale();
   const format = useFormatter();
@@ -81,13 +101,45 @@ export function TmdWarningsView({ warnings, openAll = false }: TmdWarningsViewPr
         return (
           <details
             key={`${warning.issueNo ?? index}-${warning.announcedAt ?? index}`}
-            open={openAll || index === 0}
-            className="rounded-xl border border-jaga-line bg-jaga-ground px-4 py-3"
+            open={openAll || (!compact && index === 0)}
+            className="group rounded-xl border border-jaga-line bg-jaga-ground px-4 py-3"
             data-tmd-warning={warning.issueNo ?? "0"}
+            data-tmd-compact={compact ? "true" : undefined}
           >
-            <summary className="flex min-h-tap cursor-pointer list-none items-center font-medium text-jaga-ink">
+            <summary className="flex min-h-tap cursor-pointer list-none flex-col justify-center gap-1 font-medium text-jaga-ink">
               {/* TMD's own title, in Thai, whatever the reader's language. */}
               <span lang="th">{warning.titleTh}</span>
+              {compact && (
+                <>
+                  {/* Folded, the card still carries the one thing that decides whether the notice
+                      is about the reader's afternoon: the period TMD gives it. */}
+                  {starts && ends && (
+                    <span className={`${hint} font-normal group-open:hidden`}>
+                      {t("covers", { from: starts, until: ends })}
+                    </span>
+                  )}
+                  {/*
+                   * TMD's own opening lines, cut off by the box and not by us: `line-clamp` ends
+                   * them after two lines without taking a word out of the page, so nothing is
+                   * quoted out of context and a screen reader still reads the notice whole.
+                   * Writing a summary of an authority's warning in our own words is the one thing
+                   * this card must never do (CLAUDE.md, "UI text").
+                   */}
+                  <span
+                    lang="th"
+                    className="line-clamp-2 font-normal text-jaga-ink group-open:hidden"
+                    data-tmd-lead="true"
+                  >
+                    {warning.headlineTh}
+                  </span>
+                  <span
+                    className="font-medium text-jaga-teal-ink underline group-open:hidden"
+                    data-tmd-more="true"
+                  >
+                    {t("readMore")}
+                  </span>
+                </>
+              )}
             </summary>
             <div className="mt-2 flex flex-col gap-2">
               <p lang="th" className="whitespace-pre-line text-jaga-ink">

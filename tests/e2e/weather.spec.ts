@@ -464,6 +464,35 @@ test.describe("weather", () => {
     await expect(page.locator("[data-tmd-warnings] [data-level]")).toHaveCount(0);
   });
 
+  test("on the home screen TMD's paragraph waits behind a tap", async ({ page }) => {
+    /*
+     * The owner, 19 Nov 2026: "Long TMD text on the home page. Show the headline, affected period
+     * and one summary line, and put the full paragraph behind 'อ่านเพิ่ม'." Open, TMD writes enough
+     * to push the alert, SOS and the hotlines down the page - on the one screen where those three
+     * are the whole point of the page.
+     *
+     * Folded is not shortened: what the reader sees is TMD's own title, the period TMD gave it and
+     * TMD's own opening lines ended by the box. The weather screen, where someone has gone looking
+     * for exactly this, still opens it - the test above.
+     */
+    await serve(page, { area: true, tmdWarning: true });
+    await page.goto("/");
+    const box = page.locator("[data-tmd-warnings] details[data-tmd-compact]").first();
+    await expect(box).toBeVisible();
+    await expect(box).toContainText(TMD_WARNING.titleTh);
+    await expect(box.locator("[data-tmd-more]")).toContainText(th.tmd.readMore);
+    const lead = box.locator("[data-tmd-lead]");
+    await expect(lead).toBeVisible();
+    const folded = (await box.boundingBox())!;
+    // The whole notice, and its PDF, one tap away.
+    await box.locator("summary").click();
+    await expect(box.locator("[data-tmd-pdf]")).toBeVisible();
+    // Opened, the clamped copy gets out of the way rather than saying it all twice.
+    await expect(lead).toBeHidden();
+    expect((await box.boundingBox())!.height).toBeGreaterThan(folded.height);
+    await noSidewaysScroll(page);
+  });
+
   test("on a quiet day there is no TMD card at all", async ({ page }) => {
     await serve(page, { area: true });
     await page.goto("/weather");

@@ -448,7 +448,13 @@ export function HomeView(props: HomeViewProps) {
            * the screen belongs to Jaga's own alert, and a second warning voice beside it would only
            * raise the question of which one to follow (safety rules 3 and 10).
            */}
-          {!loading && !choosing && !tense && <TmdWarnings />}
+          {/*
+           * Folded here (the owner, 19 Nov 2026): TMD writes a paragraph, and open on the home
+           * screen it pushed the alert, SOS and the hotlines down the page. Title, period and
+           * TMD's first two lines, with the rest a tap away; the weather screen, where a reader
+           * has gone looking for exactly this, still opens it.
+           */}
+          {!loading && !choosing && !tense && <TmdWarnings compact />}
 
           {/*
            * What residents nearby have reported (the owner, 13 Oct). Under the hero, which stays
