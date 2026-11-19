@@ -1085,3 +1085,55 @@ river's **width** at each station, from the OSM river-body layer the map already
 (`pipeline/rivers`); setting the drawn channel's width from it would make a wide river look wide
 and a canal narrow, with the vertical still carried entirely by measured levels. Offered to the
 owner, not built.
+
+## 2026-11-19 - Three things the owner found on the live map and home screen
+
+The owner walked the live site and wrote up five findings. Two were not what they looked like, and
+are recorded here with the other three so the next session does not re-diagnose them.
+
+**1. A rain cloud took the tap meant for the gauge under it.** "My first click opened the reservoir
+rainfall popup instead of the gauge, and on a phone this will be worse." The clouds are HTML markers
+held over the canvas, so the map cannot weigh them against its own marks the way it weighs those
+against each other - the cloud simply gets the event first. Worse, the marker's box is 46x58 and the
+cloud fills only the top 46x28 of it; the rest is the air its rain falls through, and while it took
+taps it was a transparent lid over whatever the map had drawn beneath.
+
+Decided: the cloud's body alone answers the pointer, and a gauge, safe place or dam mark exactly
+under the point keeps its own tap - the handler answers `false` and the event is left alone to reach
+the map. Rejected the owner's first suggestion, hiding the weather icons whenever the gauge layer is
+on: the cloud over a person's own place is worth having, and the bug was the tap order, not the
+cloud. Also left the gauge icon's size alone - see point 5.
+
+**2. A tap said everything twice.** "The popup stays open over the map while the side panel shows the
+same values." A tap pins the pop-up and opens the card both. Decided by where the card lands: on a
+console it is the rail beside the map and over a full-screen map it is a dialog on top of it, so
+there the pop-up only repeated the card and covered the map to do it, and the tap now closes it. On
+a phone the card opens below the map and nothing scrolls to it (option C, 20 Oct 2026), so there the
+pop-up is the tap's only answer in sight and stays pinned. A pointer's hover pop-up is untouched: on
+a laptop that is how a mark says what it is before anyone commits a click to it.
+
+**3. TMD's paragraph is folded on the home screen.** "Show the headline, affected period and one
+summary line, and put the full paragraph behind 'อ่านเพิ่ม'." Done, with one refusal: no summary line
+of our own. TMD's words are quoted verbatim precisely because trimming an authority's warning can
+change what it says, so the box ends the quote and we never do - `line-clamp` leaves every word in
+the page, and a screen reader reads the notice whole whether it is folded or not (CLAUDE.md, "UI
+text"). The card carries TMD's own title, the period TMD gave it, and TMD's opening lines. The
+weather screen still opens the newest notice.
+
+**4. The cross-section's missing threshold lines are an unapplied migration, not a data gap.** The
+station the owner opened (X.73A, บ้านบองอ) showed "ยังแสดงเส้นระดับเกณฑ์ของสถานีนี้ไม่ได้", and it is
+not that station: `20261119093000_a10_gauge_levels_public` is what lets `watch_m`, `warning_m` and
+`evacuate_m` out of `station_status()`, and it is not applied on jaga-dev, so *every* station says
+so. X.73A has levels of its own - 26.20 / 26.50 / 26.80, bank 28.51
+(`pipeline/thresholds/gauge_levels.md`) - and the three lines will draw the moment it is applied,
+with no code change and nothing asked of RID. It must go on after `20261110170000_s11_gauge_week_trend`.
+Waiting on the owner.
+
+**5. Still open: a hydrograph, and the gauge icon's size.** `station_status()` returns one latest
+value and `rise_3h`, so there is no series for the 24-hour sparkline the owner wants; it needs a new
+public read of `observations` per station, held to the same discipline as the levels above. Left for
+after the cross-section work. On the icon: the glass is 21 px across at full size and 10.5 px at
+zoom 7, under the 48 px target - but `icon-allow-overlap` is on and 32 gauges are in view at that
+zoom, so enlarging it there trades a hard tap for a pile of overlapping glasses. `TAP_SLACK` (12 px,
+measured over 665 taps on 20 Oct) is the lever, and moving it deserves the same measurement rather
+than a guess. Neither changed; both are the owner's call.
