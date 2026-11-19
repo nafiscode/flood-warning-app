@@ -920,6 +920,21 @@ card opens. Both lengths divide the drawing's width, so each loop ends where it 
 shows. Nothing moves under `prefers-reduced-motion`, and the whole thing is CSS on one SVG - no
 canvas, no animation frame, nothing per gauge on the map.
 
+**The frame is the station's levels, not its reading** (added the same day, after the owner stepped
+through the stations: "the animated cross sections looks the same just numbering under it
+changes"). The first scale took the reading into its own span, so every station's water came out at
+much the same height and only the figures moved - the picture carried no information at all. The
+frame is now set by that station's Watch, Warning, Evacuate and bank, which lands the three lines
+in about the same place at every station and leaves the water free to sit where the river really
+stands against them: low at a river well under its Watch, near the top at one close to its bank.
+Two stations can therefore be compared by eye, which is the whole point of stepping through them. A
+reading outside the levels still stretches the frame to hold it - a figure that fell off the
+drawing would read as "not reached" - but only by as much as that takes. The drawn bed sits well
+below the lowest level for a related reason: drawn any shallower, a river simply sitting at its
+ordinary level came out as a sliver and read as a dry bed. And the water's height is a CSS
+transition, so stepping to the next station slides the surface up or down to its new level instead
+of cutting to it.
+
 ## 2026-11-19 - The map's tiles join the reservoir in the rail, and the rail runs the page's length
 
 **The owner, pointing at the row of seven map tiles:** "In the home page, bring these boxes, to
@@ -1007,17 +1022,48 @@ to do with it. Nothing here computes or suggests a level (safety rule 2).
 the home screen. Lint, typecheck and build clean. The map's own press is covered by unit tests on
 its pure parts only; `[data-map-lit]` e2e in this repo is timing-flaky and was not added to.
 
-**The frame is the station's levels, not its reading** (added the same day, after the owner stepped
-through the stations: "the animated cross sections looks the same just numbering under it
-changes"). The first scale took the reading into its own span, so every station's water came out at
-much the same height and only the figures moved - the picture carried no information at all. The
-frame is now set by that station's Watch, Warning, Evacuate and bank, which lands the three lines
-in about the same place at every station and leaves the water free to sit where the river really
-stands against them: low at a river well under its Watch, near the top at one close to its bank.
-Two stations can therefore be compared by eye, which is the whole point of stepping through them. A
-reading outside the levels still stretches the frame to hold it - a figure that fell off the
-drawing would read as "not reached" - but only by as much as that takes. The drawn bed sits well
-below the lowest level for a related reason: drawn any shallower, a river simply sitting at its
-ordinary level came out as a sliver and read as a dry bed. And the water's height is a CSS
-transition, so stepping to the next station slides the surface up or down to its new level instead
-of cutting to it.
+## 2026-11-19 - The bell's season queue restored on jaga-dev, and two dam tests that had gone stale
+
+**The policy suite was run against jaga-dev** (646 passed, 46 failed, 19 files, 3 h 47 m; the suite
+is serial by config). Most failures were already known or environmental. Three were not, and all
+three are fixed or explained here.
+
+**1. jaga-dev had silently lost the bell's `seasonNotice` queue.**
+`20261110011000_s11_season_notice` rebuilt `admin_attention()` whole to add that queue, because the
+function returns a set and there is no way to add one from outside. `20261109120100_a12_dam_operator`
+carries the EARLIER timestamp and redefines the same function without the queue - and it was applied
+to jaga-dev by hand AFTER S11 on 10 Nov, so its `create or replace` reverted it. Module 11 kept
+writing `season_notices` rows; no admin's bell ever counted them. Caught by
+`tests/rls/season-state.test.ts` ("stands in the bell as a silent queue") and confirmed against the
+live function definition before anything was changed.
+
+Fixed by a new migration, `20261119101500_s11_season_notice_restore`, whose body is S11's block
+copied word for word and whose timestamp puts it after every migration that touches that function.
+The migrations were always in the right order, so a rebuild from scratch was never wrong and this
+file is a no-op there. Applied to jaga-dev; `season-state.test.ts` is 17/17 again.
+
+**Why a migration and not a hand-run `create or replace`.** The same drift would come back the next
+time anything re-applied A12, and nothing in the repo would record that jaga-dev had ever differed
+from its own ledger. An applied migration is never edited (conventions), so the repair is a new one.
+
+**2. `dam.test.ts` "storage above normal high is watchful, not a release".** Not a fault. An admin
+gave Bang Lang a full share of its own on 27 Oct through the dam-levels console (`dam_levels_set` in
+`audit_log`, 85% / 80%, from none). 85% of 1,589.8 Mm3 is 1,351, which is below its normal high of
+1,454.4, so with that share set every storage above normal high is also "full and rising" and grades
+as a release - correctly, by the S7 rule. The test, written 15 Oct, assumed the dam had no such
+share. It now takes the two keys off inside its own rolled-back transaction, so it tests the
+normal-high rule alone and reads the same on a fresh database and on jaga-dev.
+
+**3. `dam-reservoirs.test.ts` "gives a visitor every dam, with how often each reports".** Also not a
+fault. The test (15 Oct) expected Khlong Sadao to report more than 10 tambons, its OSM channel
+through Hat Yai. Seed 43 (27 Oct) gave the five gauge-less reservoirs an overflow zone and switched
+`dams.geometry_source` to `spill`, where Khlong Sadao covers 2 - the 17 OSM rows still sit in
+`dam_tambons` beside them. `dam_map()` counts only the rows at the dam's own source, which is right.
+The fixed figures are replaced by the contract: every dam's count equals its rows at its own
+`geometry_source` and never borrows another source's, and a reservoir with a zone reports at least
+one. Both suites 51/51.
+
+**Left open, deliberately.** The four `gauges.test.ts` failures are `column "rose_days" does not
+exist` - migration `20261110170000_s11_gauge_week_trend` is another session's in-flight work and is
+not mine to apply. The 9 `weather-advisory` failures are the same thing for
+`20261108090000_a16_weather_advisory`. Both are tracked as pending in the handoff notes.
