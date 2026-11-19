@@ -934,6 +934,23 @@ below the lowest level for a related reason: drawn any shallower, a river simply
 ordinary level came out as a sliver and read as a dry bed. And the water's height is a CSS
 transition, so stepping to the next station slides the surface up or down to its new level instead
 of cutting to it.
+**The bank carries its own height on the drawing** (the owner, same day: "the river bank level
+number should be at the bank in the illustration"). The top of the ground now has the bank level
+written on it, at the left, whether or not the bank is a level of its own; where the bank IS the
+Evacuate level - which is the usual case - the alert line already runs at that height, so no second
+line is drawn over it and the words beneath say that the two are the same. The reading's own figure
+moved clear of it.
+
+**What is still not real is the shape**, and that is deliberate. The owner asked whether the bed
+and bank widths could make the section realistic. Jaga has no surveyed cross-sections; the only
+elevation data in reach is FABDEM at 30 m, which cannot resolve a channel 20-50 m wide and carries
+a vertical error of 1 to several metres - the same size as the whole Watch-to-Evacuate band it
+would be drawn against. A section cut from it would contradict the gauge's own levels while looking
+authoritative, which is worse than an honest schematic. The one real figure within reach is the
+river's **width** at each station, from the OSM river-body layer the map already draws
+(`pipeline/rivers`); setting the drawn channel's width from it would make a wide river look wide
+and a canal narrow, with the vertical still carried entirely by measured levels. Offered to the
+owner, not built.
 
 ## 2026-11-19 - The map's tiles join the reservoir in the rail, and the rail runs the page's length
 
@@ -1068,24 +1085,6 @@ exist` - migration `20261110170000_s11_gauge_week_trend` is another session's in
 not mine to apply. The 9 `weather-advisory` failures are the same thing for
 `20261108090000_a16_weather_advisory`. Both are tracked as pending in the handoff notes.
 
-**The bank carries its own height on the drawing** (the owner, same day: "the river bank level
-number should be at the bank in the illustration"). The top of the ground now has the bank level
-written on it, at the left, whether or not the bank is a level of its own; where the bank IS the
-Evacuate level - which is the usual case - the alert line already runs at that height, so no second
-line is drawn over it and the words beneath say that the two are the same. The reading's own figure
-moved clear of it.
-
-**What is still not real is the shape**, and that is deliberate. The owner asked whether the bed
-and bank widths could make the section realistic. Jaga has no surveyed cross-sections; the only
-elevation data in reach is FABDEM at 30 m, which cannot resolve a channel 20-50 m wide and carries
-a vertical error of 1 to several metres - the same size as the whole Watch-to-Evacuate band it
-would be drawn against. A section cut from it would contradict the gauge's own levels while looking
-authoritative, which is worse than an honest schematic. The one real figure within reach is the
-river's **width** at each station, from the OSM river-body layer the map already draws
-(`pipeline/rivers`); setting the drawn channel's width from it would make a wide river look wide
-and a canal narrow, with the vertical still carried entirely by measured levels. Offered to the
-owner, not built.
-
 ## 2026-11-19 - Three things the owner found on the live map and home screen
 
 The owner walked the live site and wrote up five findings. Two were not what they looked like, and
@@ -1177,3 +1176,80 @@ are drawn as they are.
 field that was simply never passed and said nothing. Both channels were still drawn at the default
 middling size and the picture looked plausible. The input field is named `channelWidth` now, and a
 test asserts a narrow river is drawn narrower than a wide one.
+
+## 2026-11-19 - The rest of the policy suite, run in batches: three gates had quietly lost a clause
+
+The remaining 44 RLS files were run against jaga-dev in six batches (the whole suite is serial by
+config and takes 3 h 47 m; batches of eight are minutes each). Everything below came out of that.
+
+**Three repairs applied, all the same shape as the morning's `admin_attention()` one**: a function
+rewritten whole by a later migration, from a copy that predated a clause, dropping it silently while
+the ledger said all was well.
+
+**1. A pending unit's POC phone was readable again** (`20261119121500_a19_poc_phone_target_verified`).
+20261015135100_a10_security_fixes required both halves - the target unit verified AND the caller a
+verified unit in shared coverage. 20261109120100_a12_dam_operator rewrote the function for the
+dam-only exclusion keeping only the caller's half, and A19 carried it forward. From 9 Nov a verified
+rescue unit could reveal the POC phone of a unit that had merely registered. Narrow - the caller had
+to be a verified team and every reveal is logged - but a personal number the security pass had
+deliberately closed. The clause is back on top of A19's body.
+
+**2. A team's dispatchers had lost every read the team has**
+(`20261119124500_a19_team_people_read_again`), and this was the worst of the day.
+20261024090000_t1_unit_members put the 24 Oct decision - a verified team's people count as the team
+- into `is_verified_authority()`, `covers_tambon()` and `my_unit_for_sos()` by replacing
+`u.user_id = auth.uid()` with `unit_access(u.id, auth.uid())`. A12 rewrote all three from their
+pre-24-October bodies and A19 rewrote them again; both kept `user_id = auth.uid()`. So from 10 Nov
+only the account that registered a unit could act for it: a dispatcher asking for the case board got
+"Verified authorities only", a case they were sent was "not in your coverage", and a requester's
+phone would not open for them. During a flood that is a team's people locked out while the owner's
+phone is the only way in. `unit_access()` is back in all three, with A19's office-only and A12's
+dam-only lockdowns untouched - the A19 gate check still passes 34/34. `reveal_poc_phone()` was
+deliberately NOT widened, because 20261024090000 did not widen it either.
+
+**3. The admins' feedback trends screen could not be opened at all**
+(`20261119113000_a15_feedback_trends_note`): `max(o.note)` over `feedback_outcomes.note`, which is
+jsonb, so the statement never parsed and every call raised. `feedback_outcomes.code` is its primary
+key, so the aggregate was only ever there for the group by; two correlated subqueries read that one
+row instead. Dead since 27 Oct.
+
+**4. Also tightened** (`20261119114000_a15_feedback_no_direct_update`): `feedback` granted insert and
+update to anon and authenticated with no policy for either, so `update feedback set rating = 1`
+changed nothing and reported success. Nothing could be altered and nothing leaked, but a refused
+write should say so. Both grants revoked; select and delete keep their policies. Every write the app
+makes goes through a definer function.
+
+**One finding left for the owner, not applied** (`20261119131500_a14_weak_merge_keeps_needs`, in the
+repo and ready). `submit_sos()` merges a repeat two ways: a STRONG match (same account or case
+token) updates the needs, a WEAK one (same phone or device only) keeps the case's position on
+purpose - a shared phone may be a different household, and a pin that moved could send a boat to the
+wrong house - and never touched the needs at all. So a family that sent a rescue SOS and then asked
+from the same phone for medicine had that request reduced to one line in the event log: the case's
+needs stayed empty. Safety rule 1 says such a repeat merges into the case as an update, and an
+update that drops what was asked for is not one, so the migration adds the needs to the case's list
+(never replacing it, note and "what we have left" only filling a gap). It is left unapplied because
+it is the SOS path and the judgement is the owner's: on a shared phone one household's needs can
+join another's open case, against the request vanishing. `tests/rls/supplies.test.ts` stays red until
+that is decided, which is the honest state.
+
+**Tests corrected where the test was the thing that was wrong** (seven cases, six files). None was a
+policy fault: `access` expected the organizations table to hold only its fixture and every SOS to be
+its own two; `war-room` counted every `read_sos_board` and `read_people` row jaga-dev has ever held
+(139 and 60) instead of the ones it adds; `reservoir-alarm` expected one armed reservoir where seed
+44 arms five and an admin armed Bang Lang, and inserted an alert with no `issued_by`, which has been
+NOT NULL since 29 Sep and so never could have passed; `feedback` passed a fixture object where a
+uuid belonged and read `authority_units` as a user who cannot see it; `line` built its alerts with
+the `channels` default, which stopped including LINE on 22 Oct when LINE became opt-in per alert, so
+the reach came back empty - a case pinning that rule was added; `admin-alarm-watch` compared two rows
+whose `created_at` came from the same `now()`, a tie it won or lost run by run.
+
+**Why so many absolute counts.** Every one of these reads a table jaga-dev also holds real rows in.
+On a fresh CI database they pass, which is why they were not noticed; on the database the live site
+reads they cannot. They now measure what the test itself changed.
+
+**Left failing, and deliberately not touched.** `gauges` (4) wants `rose_days` from
+`20261110170000_s11_gauge_week_trend`, `weather-advisory` (9) wants `20261108090000_a16_weather_advisory`
+and `sitrep` (5) wants `unit_sitrep()` - three other sessions' migrations, none of them mine to
+apply. A version clash was also caught by jaga-bd and settled: `20261119113000` was already applied
+under the a15 name, so the gauge-channel file took `20261119115000` rather than rewriting an applied
+row.
