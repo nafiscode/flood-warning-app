@@ -276,6 +276,13 @@ export const EXAMPLE_MAP: MapData = {
       evacuate: 4.8,
       bank: 4.8,
       provisionalLevels: true,
+      // Its channel (pipeline/gauge_section): the bed and both banks from the station record, the
+      // width measured across OpenStreetMap's water. The right bank stands higher, as at half the
+      // real stations, so the drawing shows which side the river leaves first.
+      bed: 1.9,
+      leftBank: 4.8,
+      rightBank: 5.62,
+      channelWidth: 55,
     },
     {
       id: "g2",
@@ -291,6 +298,11 @@ export const EXAMPLE_MAP: MapData = {
       evacuate: 2.4,
       bank: 2.65,
       provisionalLevels: true,
+      // A river mouth: its bed is below mean sea level, which is ordinary near the coast.
+      bed: -0.42,
+      leftBank: 2.65,
+      rightBank: 2.9,
+      channelWidth: 26,
       // The tide moves this one, so Module 11 judges no week for it: the card says so rather
       // than counting it as steady.
       roseDays: null,

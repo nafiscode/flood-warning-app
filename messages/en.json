@@ -678,7 +678,11 @@
           "watch": "Watch",
           "warning": "Warning",
           "evacuate": "Evacuate",
-          "bank": "Bank level"
+          "bank": "Bank level",
+          "leftBank": "Left bank",
+          "rightBank": "Right bank",
+          "bed": "River bed",
+          "width": "Width"
         },
         "reached": "reached",
         "toGo": "{value} m to go",
@@ -688,7 +692,11 @@
         "levelsUnavailable": "The levels for this station cannot be shown here just now",
         "drawing": "The shape of the channel and the bed are a drawing, not a survey. Only the water level and the levels are measured",
         "provisional": "Provisional levels, chosen from past floods at this station. An admin can change any of them",
-        "bankIsEvacuate": "the same as the Evacuate level"
+        "bankIsEvacuate": "the same as the Evacuate level",
+        "deep": "{value} m below the bank",
+        "wide": "about {value} m",
+        "bedDeeper": "The bed is deeper than the drawing shows, so the drawing is cut",
+        "measured": "The bank and bed levels are from ThaiWater's station record and the width is measured across the water OpenStreetMap has mapped. The shape of the sides is a drawing, not a survey"
       }
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",

@@ -120,6 +120,97 @@ describe("the picture says where the river stands, and stations can be compared"
   });
 });
 
+describe("the channel, where the station's own figures give one", () => {
+  /*
+   * The owner, 19 Nov 2026: "if we have the river bed and bank width would be nice to make the
+   * illustration of the cross section more realistic". The bed and the two bank heights are
+   * ThaiWater's own record and the width is measured across OpenStreetMap's water
+   * (pipeline/gauge_section). What is drawn must follow them, and what is missing must stay
+   * missing rather than being filled in with something plausible.
+   */
+  const REAL = { ...GAUGE, bed: 1.9, leftBank: 4.8, rightBank: 5.62, channelWidth: 55 };
+
+  it("puts the bed where the station says it is, and measures the depth from the lower bank", () => {
+    const s = riverSection(REAL);
+    expect(s.bed).not.toBeNull();
+    expect(s.bed!.metres).toBe(1.9);
+    expect(s.bed!.cut).toBe(false);
+    expect(s.depth).toBe(2.9);
+    // The bed is the bottom of the drawing, and the water stands above it.
+    expect(s.surfaceY).toBeLessThan(s.bed!.y);
+  });
+
+  it("stands each bank at its own height, so the lower one is the one the river leaves first", () => {
+    const s = riverSection(REAL);
+    expect(s.leftY).toBeGreaterThan(s.rightY);
+    expect(s.bankMetres).toBe(4.8);
+    // The ground is drawn with two different tops: it starts at the left bank's height and ends
+    // at the right's. Water may then stand over the lower side while the higher one still holds,
+    // which is why the clip has three shapes - the channel and one side each.
+    expect(s.groundPath.startsWith(`M0 ${s.leftY}`)).toBe(true);
+    expect(s.groundPath).toContain(`L ${SECTION_W} ${s.rightY}`);
+    expect(s.channelPath.split("M").length - 1).toBe(3);
+  });
+
+  it("draws a narrow river narrow and a wide one wide", () => {
+    const narrow = riverSection({ ...REAL, channelWidth: 12 });
+    const wide = riverSection({ ...REAL, channelWidth: 220 });
+    expect(wide.channel.bankR - wide.channel.bankL).toBeGreaterThan(
+      narrow.channel.bankR - narrow.channel.bankL + 40,
+    );
+    // Without a measured width the channel keeps its middling default, never a guess.
+    const unknown = riverSection({ ...REAL, channelWidth: null });
+    expect(unknown.width).toBeNull();
+    expect(unknown.channel.bankR - unknown.channel.bankL).toBe(248);
+  });
+
+  it("cuts the drawing rather than squeezing the levels when the channel is very deep", () => {
+    // X.90 on jaga-dev: a bed 12 m below a bank whose three levels sit within a metre of it.
+    const deep = riverSection({ ...REAL, bed: -8.5 });
+    expect(deep.bed!.cut).toBe(true);
+    expect(deep.bed!.metres).toBe(-8.5);
+    // The three lines keep their room: Watch is still well inside the drawing.
+    expect(deep.lines[0]!.y).toBeLessThan(SECTION_H * 0.75);
+    expect(riverSection(REAL).bed!.cut).toBe(false);
+  });
+
+  it("says nothing about a channel it has no figures for", () => {
+    const s = riverSection(GAUGE);
+    expect(s.bed).toBeNull();
+    expect(s.depth).toBeNull();
+    expect(s.width).toBeNull();
+    expect(s.leftMetres).toBeNull();
+    expect(s.rightMetres).toBeNull();
+  });
+
+  it("names the channel's figures, and says where they came from", () => {
+    const { container } = renderWithIntl(<GaugeSection gauge={REAL} />, "en");
+    expect(container.textContent).toContain("Left bank");
+    expect(container.textContent).toContain("Right bank");
+    expect(container.textContent).toContain("River bed");
+    expect(container.textContent).toContain("1.90 m MSL");
+    expect(container.textContent).toContain("2.90 m below the bank");
+    expect(container.textContent).toContain("about 55 m");
+    // The measured channel says where its figures came from; it is not called a survey.
+    expect(container.textContent).toMatch(/ThaiWater's station record/);
+    expect(container.textContent).toMatch(/OpenStreetMap/);
+    expect(container.textContent).toMatch(/not a survey/);
+    // Both banks are marked on the drawing, each on its own side.
+    expect(container.querySelectorAll("[data-section-bank-mark]").length).toBe(2);
+    expect(container.querySelector("[data-section-bed]")?.getAttribute("data-section-bed")).toBe(
+      "1.90",
+    );
+  });
+
+  it("keeps the plain 'this shape is a drawing' for a station with no channel figures", () => {
+    const { container } = renderWithIntl(<GaugeSection gauge={GAUGE} />, "en");
+    expect(container.textContent).toMatch(/not a survey/);
+    expect(container.textContent).not.toMatch(/ThaiWater's station record/);
+    expect(container.querySelectorAll("[data-section-bank-mark]").length).toBe(1);
+    expect(container.querySelector("[data-section-bed]")).toBeNull();
+  });
+});
+
 describe("the water surface", () => {
   it("runs wider than the drawing and closes, so the drift shows no seam", () => {
     const d = wavePath(170, 2.6);

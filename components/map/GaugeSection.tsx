@@ -2,6 +2,7 @@ import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { LEVEL_ICON } from "@/components/alerts/AlertBadge";
 import {
+  bedBreak,
   riverSection,
   SECTION_H,
   SECTION_W,
@@ -31,11 +32,71 @@ import styles from "./GaugeSection.module.css";
  * station that has gone quiet is drawn as an empty channel with its last reading as a grey dashed
  * line, never as water still standing there (safety rule 3's habit).
  */
+/** A bank's height, written on the bank itself. */
+function BankMark({
+  x,
+  y,
+  metres,
+  side = "left",
+}: {
+  x: number;
+  y: number;
+  metres: number;
+  side?: "left" | "right";
+}) {
+  return (
+    <g data-section-bank-mark={side}>
+      {/* Kept inside the drawing: the highest bank sits at the very top of the frame. */}
+      <rect
+        x={x}
+        y={Math.max(y, 11) - 8.5}
+        width="52"
+        height="17"
+        rx="3.5"
+        fill="var(--jaga-slate)"
+      />
+      <text x={x + 26} y={y + 5} textAnchor="middle" fontSize="12" fontWeight="700" fill="#ffffff">
+        {metres.toFixed(2)}
+      </text>
+    </g>
+  );
+}
+
+/** One line of the words under the drawing: a slate mark, a name, a figure, and what it means. */
+function Row({
+  name,
+  value,
+  id,
+  children,
+}: {
+  name: string;
+  value: string;
+  id: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <li className="flex items-start gap-2" data-section-level={id}>
+      <span
+        aria-hidden="true"
+        className="mt-2.5 inline-block size-6 shrink-0 rounded-sm bg-jaga-slate"
+      />
+      <span className="min-w-0 flex-1">
+        <span className="font-medium">{name}</span> {value}
+        {children ? <> {children}</> : null}
+      </span>
+    </li>
+  );
+}
+
 export function GaugeSection({ gauge }: { gauge: Gauge }) {
   const t = useTranslations("map.gauge.section");
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const section = riverSection(gauge);
-  const { surfaceY, bankY, bankMetres, lines, overBank } = section;
+  const { surfaceY, bankY, bankMetres, lines, overBank, bed, leftY, rightY } = section;
+  const { leftMetres, rightMetres, width, depth, channel } = section;
+  // Two banks of different heights are drawn and named separately; one height, one mark.
+  const twoBanks =
+    leftMetres !== null && rightMetres !== null && Math.abs(leftMetres - rightMetres) >= 0.05;
   const live = gauge.status !== "no_recent_data" && gauge.value !== null;
   const value = typeof gauge.value === "number" ? gauge.value : null;
   // The bank is drawn as a line of its own only where it is not the Evacuate level under another
@@ -184,7 +245,7 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
          */}
         {bankMetres !== null && (
           <g data-section-bank={bankMetres.toFixed(2)}>
-            {ownBank && (
+            {ownBank && !twoBanks && (
               <path
                 d={`M4 ${bankY} L ${SECTION_W - 4} ${bankY}`}
                 stroke="var(--jaga-text-2)"
@@ -194,16 +255,43 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
                 data-section-line="bank"
               />
             )}
-            <rect x="4" y={bankY - 8.5} width="52" height="17" rx="3.5" fill="var(--jaga-slate)" />
+            {/* Each bank on its own side, at its own height: at half of these stations the two
+                differ, and the lower one is the bank the river leaves first. */}
+            <BankMark
+              x={4}
+              y={twoBanks ? leftY : bankY}
+              metres={twoBanks ? leftMetres! : bankMetres}
+            />
+            {twoBanks && (
+              <BankMark x={SECTION_W - 112} y={rightY} metres={rightMetres!} side="right" />
+            )}
+          </g>
+        )}
+
+        {/* The bed, where the station's record gives one, with a break when it is deeper than
+            the drawing can hold at this scale. */}
+        {bed && (
+          <g data-section-bed={bed.metres.toFixed(2)} data-section-bed-cut={bed.cut ? "1" : "0"}>
+            {bed.cut && (
+              <path
+                d={bedBreak(bed.y - 3, channel.bedL - 6, channel.bedR + 6)}
+                stroke="var(--jaga-surface)"
+                strokeWidth="3"
+                fill="none"
+                strokeLinejoin="round"
+                opacity="0.9"
+              />
+            )}
+            <rect x="4" y={bed.y - 20} width="52" height="16" rx="3.5" fill="var(--jaga-slate)" />
             <text
               x="30"
-              y={bankY + 5}
+              y={bed.y - 8.5}
               textAnchor="middle"
-              fontSize="12"
+              fontSize="11.5"
               fontWeight="700"
               fill="#ffffff"
             >
-              {bankMetres.toFixed(2)}
+              {bed.metres.toFixed(2)}
             </text>
           </g>
         )}
@@ -277,22 +365,27 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
             </li>
           );
         })}
-        {bankMetres !== null && (
-          <li className="flex items-start gap-2" data-section-level="bank">
-            <span
-              aria-hidden="true"
-              className="mt-2.5 inline-block size-6 shrink-0 rounded-sm bg-jaga-slate"
-            />
-            <span className="min-w-0 flex-1">
-              <span className="font-medium">{t("level.bank")}</span> {metres(bankMetres)}
-              {!ownBank && (
-                <>
-                  {" "}
-                  <span className={hint}>{t("bankIsEvacuate")}</span>
-                </>
-              )}
-            </span>
-          </li>
+        {bankMetres !== null && !twoBanks && (
+          <Row name={t("level.bank")} value={metres(bankMetres)} key="bank" id="bank">
+            {!ownBank && <span className={hint}>{t("bankIsEvacuate")}</span>}
+          </Row>
+        )}
+        {twoBanks && (
+          <>
+            <Row name={t("level.leftBank")} value={metres(leftMetres!)} id="leftBank" />
+            <Row name={t("level.rightBank")} value={metres(rightMetres!)} id="rightBank" />
+          </>
+        )}
+        {bed && (
+          <Row name={t("level.bed")} value={metres(bed.metres)} id="bed">
+            {depth !== null && (
+              <span className={hint}>{t("deep", { value: depth.toFixed(2) })}</span>
+            )}
+            {bed.cut && <span className={hint}>{t("bedDeeper")}</span>}
+          </Row>
+        )}
+        {width !== null && (
+          <Row name={t("level.width")} value={t("wide", { value: Math.round(width) })} id="width" />
         )}
       </ul>
 
@@ -307,8 +400,9 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
       )}
       {overBank && <p className="font-medium">{t("overBank")}</p>}
       {!live && value !== null && <p className={hint}>{t("lastReading")}</p>}
-      {/* What the picture is, and what it is not. */}
-      <p className={hint}>{t("drawing")}</p>
+      {/* What the picture is, and what it is not. A station whose channel was measured says where
+          those figures came from; one without keeps the plain "this shape is a drawing". */}
+      <p className={hint}>{t(bed !== null || width !== null ? "measured" : "drawing")}</p>
       {lines.length > 0 && gauge.provisionalLevels !== false && (
         <p className={hint}>{t("provisional")}</p>
       )}

@@ -678,7 +678,11 @@
           "watch": "Berjaga-jaga",
           "warning": "Amaran",
           "evacuate": "Pindah",
-          "bank": "Paras tebing"
+          "bank": "Paras tebing",
+          "leftBank": "Tebing kiri",
+          "rightBank": "Tebing kanan",
+          "bed": "Dasar sungai",
+          "width": "Lebar"
         },
         "reached": "sudah dicapai",
         "toGo": "lagi {value} m",
@@ -688,7 +692,11 @@
         "levelsUnavailable": "Paras rujukan stesen ini belum dapat ditunjukkan di sini",
         "drawing": "Bentuk alur dan dasar sungai ialah lukisan, bukan ukur. Hanya paras air dan paras rujukan yang diukur",
         "provisional": "Paras sementara, dipilih daripada banjir lalu di stesen ini. Pentadbir boleh mengubah mana-mana daripadanya",
-        "bankIsEvacuate": "sama dengan paras Pindah"
+        "bankIsEvacuate": "sama dengan paras Pindah",
+        "deep": "{value} m di bawah tebing",
+        "wide": "kira-kira {value} m",
+        "bedDeeper": "Dasar sungai lebih dalam daripada yang dilukis, jadi lukisan ini dipotong",
+        "measured": "Paras tebing dan dasar daripada rekod stesen ThaiWater, dan lebar diukur merentasi air yang dipetakan OpenStreetMap. Bentuk tebingnya ialah lukisan, bukan ukur"
       }
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",

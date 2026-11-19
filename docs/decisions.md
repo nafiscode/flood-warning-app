@@ -1137,3 +1137,43 @@ zoom 7, under the 48 px target - but `icon-allow-overlap` is on and 32 gauges ar
 zoom, so enlarging it there trades a hard tap for a pile of overlapping glasses. `TAP_SLACK` (12 px,
 measured over 665 taps on 20 Oct) is the lever, and moving it deserves the same measurement rather
 than a guess. Neither changed; both are the owner's call.
+
+## 2026-11-19 - The cross-section shows the real channel: its bed, its two banks and its width
+
+The owner, after the first drawing: "if we have the river bed and bank width would be nice to make
+the illustration of the cross section more realistic" - and then "build it, as much as we can, of
+course no need to wait for the surveyed data."
+
+**What turned out to be within reach, without a survey.** ThaiWater's own station record already
+carries three heights Jaga had never read: `left_bank_m`, `right_bank_m` and `ground_level_m`. That
+is a real bed level at 39 of the 52 gauges and two real bank heights at 50 - and the two banks
+differ at half of them, sometimes by metres, which decides which side the river leaves first. The
+width comes from the river-body layer's own OpenStreetMap cache, measured across the water its
+mappers digitised: a transect perpendicular to the channel's centreline, five of them 40 m apart,
+median. New pipeline module `pipeline/gauge_section`, new table `public.gauge_channel`, seed 62,
+and four more columns out of `station_status()`.
+
+**What is deliberately missing.** A station whose river OSM maps only as a centreline gets **no
+width at all** - the river-body layer buffers those lines by a made-up half-width so narrow
+channels still show on the map, and publishing that as a measurement would be a figure nobody took.
+That is why only 17 of the 52 have one. A bed that is not below its bank is dropped. Every missing
+figure stays missing, and a station with none keeps the schematic channel and the old words.
+
+**Still not a survey, and the card still says so.** What is measured is now the depth, the two bank
+heights and the width; the *shape of the sides* between bed and bank is still a drawing. A station
+with figures says where they came from - the station record and OpenStreetMap - instead of the
+blanket "this shape is a drawing".
+
+**Two honesty problems the real figures created, and how they are answered.** A channel can be far
+deeper than the band its levels sit in: nineteen metres at one gauge against a level span of one,
+which drawn to scale would squeeze Watch, Warning and Evacuate into the top tenth of the picture -
+the part a reader has to read. So a bed deeper than the frame can hold is **cut**: the drawing
+shows the channel going down past a break and the words give the bed's real height. And a bed below
+mean sea level is normal here, not an error - thirteen of the gauges have one - so negative heights
+are drawn as they are.
+
+**A bug worth recording.** The width reached the database and the card's words but not the drawing:
+`riverSection` took `width` while a gauge carries `channelWidth`, so TypeScript saw an optional
+field that was simply never passed and said nothing. Both channels were still drawn at the default
+middling size and the picture looked plausible. The input field is named `channelWidth` now, and a
+test asserts a narrow river is drawn narrower than a wide one.

@@ -51,6 +51,17 @@ export type Gauge = {
   evacuate?: number | null;
   provisionalLevels?: boolean;
   /**
+   * The channel at this station, where it is known (`public.gauge_channel`, 19 Nov 2026): the bed
+   * and the two bank heights from ThaiWater's own record, and the width of the water measured
+   * across OpenStreetMap's digitised rivers (pipeline/gauge_section). They are what lets the
+   * cross-section be this river's shape rather than one schematic drawn for all of them. Any of
+   * them may be missing, and missing is drawn as missing.
+   */
+  bed?: number | null;
+  leftBank?: number | null;
+  rightBank?: number | null;
+  channelWidth?: number | null;
+  /**
    * On how many of the last seven whole Bangkok days this river's daily low was higher than the day
    * before (0..7), and the metres the daily low has moved over the eight days behind that
    * (`station_status()`, 10 Nov 2026; science plan Module 11).
@@ -175,6 +186,10 @@ export function toGauge(row: Record<string, unknown>): Gauge {
     // Absent (an older `station_status()` still on the database) is read as provisional, never as
     // reviewed: a figure is never dressed up as more settled than it is.
     provisionalLevels: row.levels_provisional !== false,
+    bed: num(row.bed_m),
+    leftBank: num(row.left_bank_m),
+    rightBank: num(row.right_bank_m),
+    channelWidth: num(row.channel_width_m),
   };
 }
 
