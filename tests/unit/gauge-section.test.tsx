@@ -233,10 +233,11 @@ describe("the details card", () => {
 
   it("draws the three levels, names each one and prints its metres", () => {
     const { container, getByText } = renderWithIntl(<GaugeSection gauge={GAUGE} />, "en");
+    // Drawn highest first, which is also the order their figures are laid out in.
     expect(find(container as HTMLElement, "data-section-line")).toEqual([
-      "watch",
-      "warning",
       "evacuate",
+      "warning",
+      "watch",
     ]);
     // The bank is named last, and on this station it is the Evacuate level under another name.
     expect(find(container as HTMLElement, "data-section-level")).toEqual([

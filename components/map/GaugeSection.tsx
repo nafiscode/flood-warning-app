@@ -10,6 +10,7 @@ import {
   waveLine,
   wavePath,
   type SectionLevelKey,
+  type SectionLine,
 } from "@/lib/gauge-section";
 import type { Gauge } from "@/lib/map-data";
 import { hint } from "@/lib/ui";
@@ -105,6 +106,18 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
   const ownBank =
     bankMetres !== null && (evacuate === null || Math.abs(bankMetres - evacuate) >= 0.05);
   const metres = (m: number) => t("metres", { value: m.toFixed(2) });
+  /*
+   * Where each level's figure goes. Highest first, and a figure whose line is within a pill's
+   * height of the one above steps one pill to the left instead of sitting on top of it.
+   */
+  const labelled: (SectionLine & { x: number })[] = [];
+  let lastY = -99;
+  let step = 0;
+  for (const line of [...lines].reverse()) {
+    step = line.y - lastY < 18 ? step + 1 : 0;
+    labelled.push({ ...line, x: SECTION_W - 50 - step * 52 });
+    lastY = line.y;
+  }
   // The glint follows the front band, so the light sits on the wave a reader can see.
   const glint = WAVE_BANDS[0] ?? { length: 170, amplitude: 2.6 };
 
@@ -204,8 +217,16 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
           </g>
         )}
 
-        {/* The three levels. Each line is named, with its icon, in the list below. */}
-        {lines.map(({ key, metres: m, y }) => (
+        {/*
+         * The three levels. Each line is named, with its icon, in the list below.
+         *
+         * The figures step sideways where the lines are too close to carry them one above the
+         * other - at a station in a deep channel, Watch to Evacuate can be 60 cm of a 4.5 m
+         * drawing, and three figures at the same height would be three unreadable figures. The
+         * lines themselves never move: where the river's three levels really are inside half a
+         * metre of each other, that is worth seeing.
+         */}
+        {labelled.map(({ key, metres: m, y, x }) => (
           <g key={key} data-section-line={key}>
             <path
               d={`M4 ${y} L ${SECTION_W - 4} ${y}`}
@@ -214,16 +235,9 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
               strokeDasharray="7 5"
               fill="none"
             />
-            <rect
-              x={SECTION_W - 50}
-              y={y - 8.5}
-              width="46"
-              height="17"
-              rx="3.5"
-              fill={`var(--alert-${key})`}
-            />
+            <rect x={x} y={y - 8.5} width="46" height="17" rx="3.5" fill={`var(--alert-${key})`} />
             <text
-              x={SECTION_W - 27}
+              x={x + 23}
               y={y + 5.5}
               textAnchor="middle"
               fontSize="12"

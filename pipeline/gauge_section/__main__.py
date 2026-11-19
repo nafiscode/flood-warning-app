@@ -151,7 +151,9 @@ def cmd_run(args) -> int:
     (Path(__file__).with_name("report.md")).write_text(report(found), encoding="utf-8")
     seed = PIPELINE_DIR.parent / "supabase" / "seed" / "62_gauge_channel.sql"
     seed.write_text(seed_mod.sql(found), encoding="utf-8")
-    kept = [r for r in found if r["bed_m"] is not None or r["width_m"] is not None]
+    # The same rows the seed keeps: anything with a figure of any kind on it.
+    kept = [r for r in found if any(r[k] is not None
+                                    for k in ("bed_m", "width_m", "left_bank_m", "right_bank_m"))]
     print(f"{len(found)} gauges, {len([r for r in found if r['bed_m'] is not None])} with a bed level, "
           f"{len([r for r in found if r['width_m'] is not None])} with a measured width")
     print(f"seed: {seed} ({len(kept)} rows)")
