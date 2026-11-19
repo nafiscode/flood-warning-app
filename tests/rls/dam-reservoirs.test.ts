@@ -185,9 +185,23 @@ describe("what the public may read of all six", () => {
     expect(new Set(all.map((d) => d.feed))).toEqual(new Set(["hourly", "daily"]));
     // The largest first, so a screen that shows one shows the one that can do the most.
     expect(all[0]!.code).toBe("bang_lang");
-    // Khlong Sadao's path runs through Hat Yai; a reservoir with no mapped channel has none.
-    expect(Number(all.find((d) => d.code === "khlong_sadao")!.tambons)).toBeGreaterThan(10);
-    expect(Number(all.find((d) => d.code === "ban_baik")!.tambons)).toBe(0);
+    // Every count is of the dam's OWN geometry. This was a fixed figure until the overflow zones
+    // went in on 27 Oct 2026 (seed 43): the five reservoirs now show their spill zone, where
+    // Khlong Sadao covers 2 tambons, not the 17 of the OSM channel still in the table beside it.
+    // So the contract is what gets tested - dam_map() counts the rows at `dams.geometry_source`
+    // and never borrows another source's - and a reservoir with a zone reports at least one.
+    const own = await rows<{ dam_code: string; n: string }>(
+      db,
+      `select t.dam_code, count(*) as n
+         from public.dam_tambons t
+         join public.dams d on d.code = t.dam_code and d.geometry_source = t.source
+        group by 1`,
+    );
+    for (const d of all) {
+      const mine = own.find((o) => o.dam_code === d.code);
+      expect(Number(d.tambons)).toBe(Number(mine?.n ?? 0));
+    }
+    expect(Number(all.find((d) => d.code === "khlong_sadao")!.tambons)).toBeGreaterThan(0);
   });
 
   it("keeps the grade rules out of the public answer", async () => {

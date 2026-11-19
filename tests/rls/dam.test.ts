@@ -173,6 +173,15 @@ describe("the grade names the rule that fired", () => {
   });
 
   it("storage above normal high is watchful, not a release", async () => {
+    // An admin gave Bang Lang a full share of its own on 27 Oct 2026 (`dam_levels_set` in
+    // audit_log), after this test was written. 85% of its 1,589.8 Mm3 is 1,351 Mm3, which sits
+    // *below* its normal high of 1,454.4, so with that share set every storage above normal high
+    // is also "full and rising" and grades as a release - correctly. This test is about the
+    // normal-high rule on its own, so take the share off for the length of the transaction.
+    await asOwner(db);
+    await db.query(
+      "update dams set grades = grades - 'full_pct' - 'near_full_pct' where code = 'bang_lang'",
+    );
     await readings([quiet, { ...quiet, storage: 1460 }, { ...quiet, storage: 1461 }]);
     const s = await signal();
     expect(s.grade).toBe("watchful");
