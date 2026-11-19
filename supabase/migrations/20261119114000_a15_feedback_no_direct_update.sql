@@ -1,0 +1,16 @@
+-- A signed-in person could run 'update feedback set rating = 1' and be told it worked.
+--
+-- 20261027120000_a15_feedback granted select, insert, update and delete on public.feedback to anon
+-- and authenticated, but wrote policies for select ("own or admin reads") and delete ("own delete")
+-- only. With no policy for update, no row is visible to update, so the statement changes nothing
+-- and returns success. Nothing could be altered and nothing leaked - but a write that is refused
+-- should say so, as tests/rls/dam.test.ts puts it: "the privilege is revoked, not merely
+-- unpolicied: without that, an update with no policy passes silently against nought rows instead
+-- of being refused." Found 19 Nov 2026 by tests/rls/feedback.test.ts.
+--
+-- Every write the app makes goes through a security-definer function (submit_feedback,
+-- admin_feedback_triage, admin_feedback_publish, admin_feedback_outcome, line_feedback,
+-- feedback_retention), none of which needs these table grants, so both can go. Select stays: the
+-- read policy is what limits it to the person's own rows and the admins. Delete stays: its own
+-- policy is deliberate, so that a person can withdraw what they sent.
+revoke insert, update on public.feedback from anon, authenticated;
