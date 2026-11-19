@@ -136,6 +136,22 @@ describe("the cloud on the map", () => {
     expect(drizzle.querySelectorAll("[data-drop]")).toHaveLength(CLOUD_LOOKS.drizzle.drops);
   });
 
+  it("offers the pointer its body alone, not the air its rain falls through", () => {
+    /*
+     * The marker's box is 46x58 and the cloud itself fills only the top 46x28 of it: the rest is
+     * the air the drops fall through. Given the pointer whole, as it was until 19 Nov 2026, that
+     * air was a transparent lid over whatever the map had drawn beneath - and the owner's first
+     * tap on a river gauge opened the reservoir's rain instead. `PlaceRain` hands the pointer to
+     * this one element, so the part of the box that is air goes on taking nothing.
+     */
+    const storm = cloudElement(cloud("heavy"));
+    expect(storm.style.pointerEvents).toBe("none");
+    const bodies = storm.querySelectorAll("[data-cloud-body]");
+    expect(bodies).toHaveLength(1);
+    // The body, and not the bolt or a drop, which are drawn further down the box.
+    expect(bodies[0]!.getAttribute("viewBox")).toBe("0 0 46 28");
+  });
+
   it("lets the sun peek behind a shower by day, and the moon at night", () => {
     expect(
       cloudElement(cloud("showers", true)).querySelector("[data-peek]")?.getAttribute("data-peek"),

@@ -294,6 +294,16 @@ type Props = {
    * the figures and the words). Without it only the person's own places have a pop-up.
    */
   peek?: (target: PeekTarget) => ReactNode;
+  /**
+   * Is the card a tap opens already in sight - the rail beside the map on a console, or the dialog
+   * that covers a full-screen map? Then the tap does not pin the pop-up as well (the owner, 19 Nov
+   * 2026: "the popup stays open over the map while the side panel shows the same values"): it
+   * would only repeat the card's own figures, over the map it is hiding to do it.
+   *
+   * Left false where the card opens under the map and nothing scrolls to it - a phone with the map
+   * in the page - because there the pop-up is the only answer the tap has in sight.
+   */
+  cardInSight?: boolean;
 };
 
 /*
@@ -511,6 +521,7 @@ export function MapView({
   onView,
   gaugeWords = { near: "", over: "" },
   peek,
+  cardInSight = false,
 }: Props) {
   const { near: nearWord, over: overWord, seaShut: seaShutWord } = gaugeWords;
   // One object for as long as the sea's marks are the same.
@@ -841,7 +852,11 @@ export function MapView({
    * them under the pointer: they open their pop-up through these, and while the pointer is on a
    * cloud the map's own "nothing here" does not close it.
    */
-  const peekCloud = useRef<(cloud: RainCloud, how: "hover" | "leave" | "tap") => void>(() => {});
+  const peekCloud = useRef<
+    (cloud: RainCloud, how: "hover" | "leave" | "tap", at?: { x: number; y: number }) => boolean
+  >(() => false);
+  /** `cardInSight`, read by the handlers below without rebuilding the map when it changes. */
+  const cardSeen = useRef(cardInSight);
 
   useEffect(() => {
     select.current = onSelect;
@@ -854,6 +869,10 @@ export function MapView({
   useEffect(() => {
     hasPeek.current = !!peek;
   }, [peek]);
+
+  useEffect(() => {
+    cardSeen.current = cardInSight;
+  }, [cardInSight]);
 
   // A pop-up for something no longer drawn would point at nothing.
   const drawnKey = `${layers.join(",")}|${showMine}`;
@@ -1918,12 +1937,23 @@ export function MapView({
           const id = String(p.id);
           return { key: `${kind}:${id}`, lngLat: [lon, lat], target: { kind, id }, own: null };
         };
-        peekCloud.current = (cloud, how) => {
-          if (!hasPeek.current) return;
+        peekCloud.current = (cloud, how, at) => {
+          if (!hasPeek.current) return false;
           if (how === "leave") {
             overCloud = false;
             closeSoon();
-            return;
+            return true;
+          }
+          /*
+           * A gauge, a safe place or a dam mark exactly under this point keeps its own tap (the
+           * owner, 19 Nov 2026). The clouds are HTML held over the canvas, so the map cannot weigh
+           * them against its own marks the way it weighs those against each other: without this,
+           * the cloud drawn over a gauge takes every tap meant for it. Answering `false` hands the
+           * event back and the map opens the mark.
+           */
+          if (at) {
+            const frame = created.getContainer().getBoundingClientRect();
+            if (hitAt([at.x - frame.left, at.y - frame.top])) return false;
           }
           overCloud = how === "hover" || overCloud;
           show(
@@ -1937,6 +1967,7 @@ export function MapView({
             },
             how === "tap",
           );
+          return true;
         };
         created.on("mousemove", (event) => {
           const hit = hitAt(event.point);
@@ -1963,7 +1994,15 @@ export function MapView({
           // The mark under the finger first; the thumb-sized box only when nothing is exactly
           // there, so in a cluster the tap opens the mark it landed on, not its neighbour.
           const tapped = hitAt(at) ?? hitAt(near);
-          if (tapped) show(tapped, true);
+          /*
+           * The same tap opens the card below (`onSelect`, further down). Where that card is in
+           * sight - the rail beside a console's map, the dialog over a full-screen one - pinning
+           * the pop-up as well would say everything twice and cover the map to do it (the owner,
+           * 19 Nov 2026), so the tap closes it instead and leaves the card to answer. A pointer's
+           * hover pop-up is untouched: on a laptop that is how a mark says what it is before
+           * anyone commits a click to it.
+           */
+          if (tapped && !cardSeen.current) show(tapped, true);
           else close();
           const ids = [
             MINE,
@@ -2079,7 +2118,7 @@ export function MapView({
         <PlaceRain
           map={loaded}
           places={rainWhere}
-          onCloud={peek ? (cloud, how) => peekCloud.current(cloud, how) : undefined}
+          onCloud={peek ? (cloud, how, at) => peekCloud.current(cloud, how, at) : undefined}
         />
       )}
       <div

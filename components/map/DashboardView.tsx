@@ -2684,6 +2684,14 @@ export function DashboardView(props: DashboardViewProps) {
                     onSelect={setSelection}
                     text={{ loading: t("loading"), failed: t("failed") }}
                     /*
+                     * On a console the card a tap opens is the rail beside the map, and over a
+                     * full-screen map it is a dialog on top of it: either way the reader can see
+                     * it, so the map's own pop-up need not repeat it (the owner, 19 Nov 2026). On
+                     * a phone with the map in the page the card is below the fold and nothing
+                     * scrolls to it by design, so there the pop-up stays.
+                     */
+                    cardInSight={onConsole || full}
+                    /*
                      * Inside a page that scrolls, one finger scrolls and two move the map (the
                      * owner, 20 Oct). Not while the map fills the screen, where it is the page.
                      */

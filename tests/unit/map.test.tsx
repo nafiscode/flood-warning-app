@@ -54,7 +54,9 @@ vi.mock("@/components/map/MapView", () => ({
     flashSatellite = 0,
     flashDam = null,
     onView,
+    cardInSight = false,
   }: {
+    cardInSight?: boolean;
     flashDam?: { kind: string; codes: string[] } | null;
     satellite?: { properties: { m2: number } }[] | null;
     flashSatellite?: number;
@@ -92,6 +94,7 @@ vi.mock("@/components/map/MapView", () => ({
       data-flash-satellite={flashSatellite}
       data-flash-kind={flashDam?.kind ?? ""}
       data-flash-codes={(flashDam?.codes ?? []).join(",")}
+      data-card-in-sight={cardInSight ? "1" : "0"}
     >
       {/* Stands in for the reader panning the map, which the real one reports on moveend. */}
       <button type="button" data-panned="true" onClick={() => onView?.([100.1, 6.1, 100.3, 6.3])} />
@@ -404,6 +407,46 @@ describe("the dam's card can be opened without hitting a two-pixel mark", () => 
   it("says nothing about a dam when there is none on the map", () => {
     const c = dashboard();
     expect(c.querySelector("[data-open-dam]")).toBeNull();
+  });
+});
+
+describe("the map's pop-up does not repeat a card the reader can already see", () => {
+  /*
+   * The owner, 19 Nov 2026: "the popup stays open over the map while the side panel shows the same
+   * values. Closing the popup when the panel opens would free up the map."
+   *
+   * A tap on a mark does two things - it pins the pop-up and it opens the card - and whether that
+   * is a repetition depends entirely on where the card lands. On a console the card is the rail
+   * beside the map; over a full-screen map it is a dialog on top of it. Either way the reader has
+   * it, so the pop-up is covering the map to say what is already said, and the tap closes it
+   * instead. On a phone the card opens under the map and nothing scrolls to it - a decision of
+   * 20 Oct, option C - so there the pop-up is the only answer the tap has in sight, and it stays.
+   *
+   * What is held here is which of those two the page asks for. That a pinned pop-up then closes is
+   * MapLibre's own business and needs WebGL, so it belongs to the e2e suite.
+   */
+  const inSight = (c: HTMLElement) =>
+    c.querySelector("[data-map]")?.getAttribute("data-card-in-sight");
+
+  it("keeps the pop-up on a phone, where the card opens below the map", () => {
+    // jsdom answers false to every query, which is what a phone answers to the console's.
+    expect(inSight(dashboard())).toBe("0");
+  });
+
+  it("leaves the answering to the card on a console, where it is in sight", () => {
+    const was = window.matchMedia;
+    window.matchMedia = ((q: string) =>
+      ({
+        matches: q === CONSOLE_QUERY,
+        media: q,
+        addEventListener() {},
+        removeEventListener() {},
+      }) as unknown as MediaQueryList) as typeof window.matchMedia;
+    try {
+      expect(inSight(dashboard())).toBe("1");
+    } finally {
+      window.matchMedia = was;
+    }
   });
 });
 

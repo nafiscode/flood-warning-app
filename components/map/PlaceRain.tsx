@@ -80,6 +80,9 @@ export function cloudElement(cloud: RainCloud, strike = 0): HTMLDivElement {
   defs.appendChild(gradient);
   body.insertBefore(defs, body.firstChild);
   body.querySelector("path")!.setAttribute("fill", `url(#${id})`);
+  // Marked so the cloud's own body can be the only part of the marker that answers the pointer
+  // (`PlaceRain` below); the rest of the box is the air the rain falls through.
+  body.dataset.cloudBody = "";
   root.appendChild(body);
 
   for (let i = 0; i < look.drops; i++) {
@@ -168,7 +171,16 @@ export function PlaceRain({
 }: {
   map: MapLibreMap;
   places: RainPlace[];
-  onCloud?: (cloud: RainCloud, how: "hover" | "leave" | "tap") => void;
+  /**
+   * What the pointer did to a cloud, with where it did it (the page's own coordinates). Answering
+   * `false` means the caller did not take it: the map has a mark of its own exactly there, and the
+   * event is left to reach the map so that mark opens instead.
+   */
+  onCloud?: (
+    cloud: RainCloud,
+    how: "hover" | "leave" | "tap",
+    at?: { x: number; y: number },
+  ) => boolean | void;
 }) {
   const weather = usePlaceWeather(places);
   // The newest handler, read when the pointer arrives: the clouds are not redrawn for it.
@@ -189,14 +201,32 @@ export function PlaceRain({
       markers = clouds.map((cloud, i) => {
         const element = cloudElement(cloud, (i * 1.7) % 4.6);
         if (answers) {
-          element.style.pointerEvents = "auto";
-          element.style.cursor = "pointer";
-          element.addEventListener("mouseenter", () => handler.current?.(cloud, "hover"));
+          /*
+           * Only the cloud's own body answers the pointer - not the whole 46x58 box (the owner,
+           * 19 Nov 2026: "my first click opened the reservoir rainfall popup instead of the
+           * gauge"). The box reaches well below the cloud, to where its rain falls, and that half
+           * of it is air: left taking taps it was a transparent lid over whatever the map had
+           * drawn under it, and a gauge there could not be opened at all.
+           */
+          const body = element.querySelector<SVGElement>("[data-cloud-body]");
+          if (body) {
+            body.style.pointerEvents = "auto";
+            body.style.cursor = "pointer";
+          }
+          const at = (event: MouseEvent) => ({ x: event.clientX, y: event.clientY });
+          element.addEventListener("mouseenter", (event) =>
+            handler.current?.(cloud, "hover", at(event)),
+          );
           element.addEventListener("mouseleave", () => handler.current?.(cloud, "leave"));
           element.addEventListener("click", (event) => {
-            // The map underneath must not take the same tap as "nothing here" and close it.
+            /*
+             * A mark the map drew under this very point keeps its tap: the handler says so by
+             * answering `false`, and the event is then left alone to reach the map, which opens
+             * that mark. Where the cloud does take the tap, the map underneath must not read the
+             * same one as "nothing here" and close what has just opened.
+             */
+            if (handler.current?.(cloud, "tap", at(event)) === false) return;
             event.stopPropagation();
-            handler.current?.(cloud, "tap");
           });
         }
         return new Marker({
