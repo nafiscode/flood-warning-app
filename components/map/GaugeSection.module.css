@@ -1,0 +1,61 @@
+/*
+ * The river's cross-section in a gauge's details card (lib/gauge-section.ts). Only the water
+ * moves: two bands drift across each other at different speeds and lengths, which is what makes
+ * a surface read as water rather than as a bar on a chart, and the body rises into place once
+ * when the card opens. The three level lines never move - a threshold that twitched would read as
+ * a reading. Nothing moves at all under reduced motion.
+ */
+.water {
+  transform-box: view-box;
+  animation: rise 1.1s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+@keyframes rise {
+  from {
+    transform: translateY(var(--rise, 0px));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* One wavelength sideways, on a loop: the path is three drawings wide, so the seam never shows. */
+.drift {
+  transform-box: view-box;
+  animation: drift var(--seconds, 7s) linear infinite;
+}
+.back {
+  animation-direction: reverse;
+}
+@keyframes drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(var(--length, 170) * -1px));
+  }
+}
+
+/* The light that runs along a water surface. Slower than the bands, so it reads as glare. */
+.glint {
+  animation: glint 5.5s ease-in-out infinite;
+}
+@keyframes glint {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water,
+  .drift,
+  .glint {
+    animation: none;
+  }
+  .glint {
+    opacity: 0.5;
+  }
+}

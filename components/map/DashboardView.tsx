@@ -114,6 +114,7 @@ import {
 } from "@/lib/sea";
 import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
+import { GaugeSection } from "./GaugeSection";
 import { MapFeatureChips } from "./MapFeatures";
 import { InstallCard } from "@/components/InstallCard";
 import { TeamEntryChip } from "@/components/authority/TeamEntry";
@@ -133,6 +134,7 @@ import {
   type MapFocus,
 } from "@/lib/map-focus";
 import { gaugeLook, trendOf } from "@/lib/gauge-marks";
+import { hasSection } from "@/lib/gauge-section";
 
 /** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
 function PlaceMark({ size }: { size: number }) {
@@ -1645,6 +1647,11 @@ export function DashboardView(props: DashboardViewProps) {
           {t(`gauge.${gauge.status}`)}
         </p>
         {gauge.value !== null && <p>{t("gauge.level", { value: gauge.value.toFixed(2) })}</p>}
+        {/*
+         * The river across its channel, with this station's three levels as lines (the owner, 19
+         * Nov 2026). The details card only: the mark on the map keeps its animated glass.
+         */}
+        {hasSection(gauge) && <GaugeSection gauge={gauge} />}
         {gauge.status !== "no_recent_data" &&
           gauge.value !== null &&
           gauge.bank != null &&

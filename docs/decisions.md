@@ -878,3 +878,44 @@ runner is believed broken (see the 18 Nov entry above).
   forwarded (A18), so it carries a stated period, and a period on a document that leaves the app
   with no zone on it is a real ambiguity rather than noise. The rule is about the app's own clock
   and its time labels, which is everywhere else.
+
+## 2026-11-19 - A river's cross-section in a gauge's details card, and three levels made public
+
+The owner, 19 Nov 2026: a river gauge's details "should also have the illustrate of the river bed
+with river live level with the line of the watch, alert and evacuate, similar to the one in Nara
+flood, the river level like should be animated like water wave realistic"; and, the same day,
+"This is for the Details view of the river gauges, not within the map view itself. Keep the same
+animated icon in the map view."
+
+**Where it is.** The drawing is in the gauge's details card alone (`components/map/GaugeSection.tsx`,
+geometry in `lib/gauge-section.ts`). The mark on the map and the small pop-up are untouched: the
+map keeps the animated glass of `lib/gauge-marks.ts`, which has to stay small enough to read at 48
+of them at once.
+
+**Three levels now leave the database as numbers.** `station_status()` has graded the public map on
+`public.gauge_levels` since 21 Oct but deliberately let nothing out of it but the word and the bank
+level, and a cross-section cannot be drawn from a word. So the function now also returns
+`watch_m`, `warning_m` and `evacuate_m` - the very ones the status word was decided on, so the
+picture and the word cannot disagree - plus `levels_provisional`, true unless an admin has reviewed
+that gauge's own row (migration `..a10_gauge_levels_public`). Nothing else from `gauge_levels`
+leaves: not who set them, not when, not the method. These are not personal data; the risk they
+carry is being read as an authority's published thresholds, which the card answers in words: they
+are provisional, chosen from past floods at that station, and an admin can change any of them.
+
+**What is measured and what is drawn are kept apart.** The water level and the three levels are
+figures, drawn and also printed in metres above mean sea level. The shape of the channel and the
+depth of the bed are a drawing - Jaga has no surveyed section for these stations - so the bed
+carries no height and the card says the shape is not a survey. A station that has gone quiet is
+drawn as an empty channel with its last reading as a grey dashed line, never as water still
+standing in it.
+
+**Colour.** The three lines wear the alert palette, as the explainer's own gauge figure already
+does, and each is named beneath the drawing with its level's icon and its height: never colour
+alone. The water keeps the map's water colour at every height, because a reading is a measurement
+and not an alert (safety rule 2), and the card still says so in words.
+
+**The movement.** Two sine bands of different length and speed drift across each other at the
+surface, with a light sheen and a glint along the crest; the body rises into place once when the
+card opens. Both lengths divide the drawing's width, so each loop ends where it began and no seam
+shows. Nothing moves under `prefers-reduced-motion`, and the whole thing is CSS on one SVG - no
+canvas, no animation frame, nothing per gauge on the map.

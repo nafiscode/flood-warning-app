@@ -669,7 +669,26 @@
         "at": "Ramalan laut dikeluarkan pada {time}",
         "caveat": "Dibandingkan dengan rekod muara ini sendiri, bukan ketinggian dan bukan amaran"
       },
-      "seaShort": "Air laut tidak surut"
+      "seaShort": "Air laut tidak surut",
+      "section": {
+        "alt": "Rentas sungai di stesen ini: paras air sekarang {value} m MSL, dengan garisan Berjaga-jaga, Amaran dan Pindah",
+        "altQuiet": "Rentas sungai di stesen ini: tiada bacaan terkini, hanya garisan Berjaga-jaga, Amaran dan Pindah",
+        "metres": "{value} m MSL",
+        "level": {
+          "watch": "Berjaga-jaga",
+          "warning": "Amaran",
+          "evacuate": "Pindah",
+          "bank": "Paras tebing"
+        },
+        "reached": "sudah dicapai",
+        "toGo": "lagi {value} m",
+        "overBank": "Air melepasi paras tebing di stesen ini",
+        "lastReading": "Garisan putus-putus kelabu ialah bacaan terakhir, bukan paras air sekarang",
+        "noLevels": "Stesen ini belum mempunyai paras rujukan, jadi tiada garisan dilukis",
+        "levelsUnavailable": "Paras rujukan stesen ini belum dapat ditunjukkan di sini",
+        "drawing": "Bentuk alur dan dasar sungai ialah lukisan, bukan ukur. Hanya paras air dan paras rujukan yang diukur",
+        "provisional": "Paras sementara, dipilih daripada banjir lalu di stesen ini. Pentadbir boleh mengubah mana-mana daripadanya"
+      }
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",
     "mine": {

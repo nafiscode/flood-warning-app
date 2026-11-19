@@ -57,6 +57,11 @@ const GAUGES = [
     observedAt: minutes(-20),
     status: "above_evacuate",
     bank: 8.8,
+    // Its own three levels, which the details card draws the cross-section from (19 Nov 2026).
+    watch: 6.5,
+    warning: 7.8,
+    evacuate: 8.8,
+    provisionalLevels: true,
   },
   {
     id: "g-ok",
@@ -755,6 +760,37 @@ test.describe("the live map on a laptop", () => {
     await pin.blur();
     await page.mouse.move(700, 800);
     await expect(more).toBeHidden();
+  });
+
+  /*
+   * The owner, 19 Nov 2026: the gauge's DETAILS card draws the river across its channel, with the
+   * station's three levels as lines - "and not within the map view itself. Keep the same animated
+   * icon in the map view". So this checks both halves: the drawing is in the card, each level is
+   * named in words beside it, and neither the map's mark nor its pop-up gained a drawing.
+   */
+  test("a gauge's details draw the river against its three levels", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await page.locator('[data-console-tile="gauges"] [data-tile-open="true"]').click();
+
+    const card = page.locator('[data-selected="gauge"]');
+    await expect(card).toBeVisible();
+    const section = card.locator("[data-gauge-section]");
+    await expect(section).toBeVisible();
+    // The three lines, lowest first in the drawing; named highest first beneath it.
+    await expect(section.locator("[data-section-line]")).toHaveCount(3);
+    for (const key of ["watch", "warning", "evacuate"] as const) {
+      await expect(section.locator(`[data-section-line="${key}"]`)).toHaveCount(1);
+      await expect(section).toContainText(th.map.gauge.section.level[key]);
+    }
+    // The water is drawn live, and the picture never passes itself off as a survey.
+    await expect(section.locator('[data-section-now="live"]')).toHaveCount(1);
+    await expect(section).toContainText(th.map.gauge.section.drawing.slice(0, 24));
+    // This river is over its bank, which the words say as well as the picture.
+    await expect(section).toContainText(th.map.gauge.section.overBank);
+
+    // The map itself is untouched: its marks are the drawn glasses, and the pop-up stays compact.
+    await expect(page.locator('[data-map-frame] [data-gauge-section]')).toHaveCount(0);
   });
 
   /** The owner, 18 Oct: the right panel folds away so the map has the room. */

@@ -669,7 +669,26 @@
         "at": "Sea forecast issued {time}",
         "caveat": "Compared with this river mouth's own record. Not a height and not an alert"
       },
-      "seaShort": "Sea not draining"
+      "seaShort": "Sea not draining",
+      "section": {
+        "alt": "A cross-section of the river at this station: the water now at {value} m MSL, with the Watch, Warning and Evacuate lines",
+        "altQuiet": "A cross-section of the river at this station: no current reading, only the Watch, Warning and Evacuate lines",
+        "metres": "{value} m MSL",
+        "level": {
+          "watch": "Watch",
+          "warning": "Warning",
+          "evacuate": "Evacuate",
+          "bank": "Bank level"
+        },
+        "reached": "reached",
+        "toGo": "{value} m to go",
+        "overBank": "The water is over the bank at this station",
+        "lastReading": "The grey dashed line is the last reading, not the water now",
+        "noLevels": "This station has no reference levels yet, so no lines are drawn",
+        "levelsUnavailable": "The levels for this station cannot be shown here just now",
+        "drawing": "The shape of the channel and the bed are a drawing, not a survey. Only the water level and the levels are measured",
+        "provisional": "Provisional levels, chosen from past floods at this station. An admin can change any of them"
+      }
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
     "mine": {

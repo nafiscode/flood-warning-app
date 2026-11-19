@@ -269,6 +269,13 @@ export const EXAMPLE_MAP: MapData = {
       // the rivers' card counting one.
       roseDays: 6,
       weekChange: 0.41,
+      // Its own three levels and its bank, so the details card can draw the cross-section
+      // (lib/gauge-section.ts). Provisional, as every gauge's are until an admin reviews them.
+      watch: 3.2,
+      warning: 4.1,
+      evacuate: 4.8,
+      bank: 4.8,
+      provisionalLevels: true,
     },
     {
       id: "g2",
@@ -278,6 +285,12 @@ export const EXAMPLE_MAP: MapData = {
       value: 1.12,
       observedAt: ago(35),
       status: "normal",
+      // A gauge whose bank sits above its Evacuate level, so the drawing shows both lines.
+      watch: 1.6,
+      warning: 2.0,
+      evacuate: 2.4,
+      bank: 2.65,
+      provisionalLevels: true,
       // The tide moves this one, so Module 11 judges no week for it: the card says so rather
       // than counting it as steady.
       roseDays: null,

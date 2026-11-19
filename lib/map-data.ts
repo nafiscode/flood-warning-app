@@ -40,6 +40,17 @@ export type Gauge = {
   /** The bank level, m MSL. */
   bank?: number | null;
   /**
+   * This gauge's own Watch, Warning and Evacuate levels in m MSL - the very ones `status` above was
+   * decided on (`station_status()`, 19 Nov 2026), so the cross-section drawn from them can never
+   * disagree with the word. `provisionalLevels` is true unless an admin has reviewed this gauge's
+   * row: Jaga's own figures from past floods, not an authority's published levels, and the card
+   * says which. A level is not an alert (safety rule 2).
+   */
+  watch?: number | null;
+  warning?: number | null;
+  evacuate?: number | null;
+  provisionalLevels?: boolean;
+  /**
    * On how many of the last seven whole Bangkok days this river's daily low was higher than the day
    * before (0..7), and the metres the daily low has moved over the eight days behind that
    * (`station_status()`, 10 Nov 2026; science plan Module 11).
@@ -142,6 +153,12 @@ export function toGauge(row: Record<string, unknown>): Gauge {
     roseDays:
       typeof row.rose_days === "number" && Number.isInteger(row.rose_days) ? row.rose_days : null,
     weekChange: num(row.week_change_m),
+    watch: num(row.watch_m),
+    warning: num(row.warning_m),
+    evacuate: num(row.evacuate_m),
+    // Absent (an older `station_status()` still on the database) is read as provisional, never as
+    // reviewed: a figure is never dressed up as more settled than it is.
+    provisionalLevels: row.levels_provisional !== false,
   };
 }
 
