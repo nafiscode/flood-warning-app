@@ -121,16 +121,32 @@ export type GaugeData = { gauges: Gauge[] };
 export type GaugeReading = Pick<
   Gauge,
   "lat" | "lon" | "status" | "observedAt" | "rise3h" | "roseDays"
->;
+> & {
+  /**
+   * And its id and name, but **only for a station the screen may have to name**: one at or near
+   * its bank, or one that has risen over the last three hours (`worthNaming`). The owner, 19 Nov
+   * 2026: "if they want to know which rivers have been rising then they can click to see those
+   * river gauge name".
+   *
+   * Left off every other station on purpose. Naming all forty-odd would put every station's name
+   * in three languages on a phone on slow 3G to answer a question about four of them; this way
+   * the extra bytes exist only when there is something to say, and are nothing when the rivers
+   * are quiet. A screen that has no name for a station says the count and no list.
+   */
+  id?: string;
+  name?: Record<string, string>;
+};
 
 /** Answer of /api/public/gauges/summary. */
 export type GaugeSummary = { generatedAt: string; gauges: GaugeReading[] };
 
 export const GAUGES_SUMMARY_URL = "/api/public/gauges/summary";
 
-export function toGaugeReading(row: Record<string, unknown>): GaugeReading {
-  const { lat, lon, status, observedAt, rise3h, roseDays } = toGauge(row);
-  return { lat, lon, status, observedAt, rise3h, roseDays };
+export function toGaugeReading(row: Record<string, unknown>, named = false): GaugeReading {
+  const full = toGauge(row);
+  const { lat, lon, status, observedAt, rise3h, roseDays } = full;
+  const reading: GaugeReading = { lat, lon, status, observedAt, rise3h, roseDays };
+  return named ? { ...reading, id: full.id, name: full.name } : reading;
 }
 
 /** One row of `station_status()` as the map draws it. */

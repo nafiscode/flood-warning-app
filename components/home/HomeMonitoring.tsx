@@ -6,12 +6,14 @@ import type { Dam } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
 import { monitoring, type Feed, type Point } from "@/lib/monitoring";
 import { useKeptRain } from "@/lib/use-rain";
+import { litHref } from "@/lib/map-focus";
 import { GAUGES_SUMMARY_URL, type GaugeSummary } from "@/lib/map-data";
 import { useFetched } from "@/lib/use-public";
 import { handBack, reveal } from "@/lib/reveal";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { MonitoringCard } from "@/components/monitoring/MonitoringCard";
 import { MonitoringDetail } from "@/components/monitoring/MonitoringDetail";
+import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -99,6 +101,21 @@ export function HomeMonitoring(props: HomeMonitoringProps) {
           }
           weather={rain.weather}
           dam={props.dam}
+          /*
+           * The home screen has no map of its own, so "which rivers?" is answered by the map:
+           * it opens with the gauges drawn, the rising ones lit and the frame holding both them
+           * and the reader's own area, so the distance between the two can be seen (the owner,
+           * 19 Nov 2026).
+           */
+          risingLink={
+            <Link
+              href={litHref("rising")}
+              data-monitoring-rising-link="home"
+              className="inline-flex min-h-tap items-center self-start underline"
+            >
+              {tMonitoring("gauges.seeOnMap")}
+            </Link>
+          }
         />
       }
     />

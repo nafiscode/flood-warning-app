@@ -5724,7 +5724,10 @@
       "noneReporting": "No river gauge is reporting, so the rivers in {scope} are not being measured right now",
       "unknown": "Jaga could not read the river gauges",
       "silent": "{count} gauges have sent nothing for six hours or more",
-      "risingWeek": "{count} of the {judged} gauges whose week could be read have been rising for about a week"
+      "risingWeek": "{count} of the {judged} gauges whose week could be read have been rising for about a week",
+        "risingNames": "Rising: {names}",
+        "risingMore": "{names} and {count} more",
+        "seeOnMap": "See these stations on the map"
     },
     "dam": {
       "who": "The dam's own figures, not an alert",
@@ -5775,6 +5778,12 @@
         "riversRising": "Water rising at {count} river gauges",
         "rainSoon": "Rain expected in the next {hours} hours",
         "rainSoonHeavy": "Heavy rain expected in the next {hours} hours"
+      },
+      "meaning": {
+        "watching": "What to do: check Jaga more often today, watch the water where you are, and follow the level Jaga has published.",
+        "inRange": "Nothing in these readings asks anything of you right now. Readings can change within hours, so look again when it rains hard.",
+        "incomplete": "Not all of the readings could be loaded, so they cannot be read as the whole picture. Follow official warnings as well.",
+        "unknown": "Follow official warnings as well. In an emergency call 1784."
       }
     },
     "detail": {

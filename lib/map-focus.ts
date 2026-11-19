@@ -53,6 +53,28 @@ export function focusHref(focus: MapFocus): { pathname: "/map"; query: { focus: 
 }
 
 /**
+ * ...and, with it, which marks the map should light once it gets there (the owner, 19 Nov 2026).
+ * One so far: the rivers that have risen over the last three hours, which is what the home
+ * screen's monitoring card has just counted. The map works out *which* stations those are from
+ * its own full feed, so no station id travels in the address - a reader who keeps the link, or
+ * passes it on, gets the rivers that are rising when they open it and never a stale set.
+ */
+export const MAP_LITS = ["rising"] as const;
+export type MapLit = (typeof MAP_LITS)[number];
+
+export function readLit(value: string | null | undefined): MapLit | null {
+  return MAP_LITS.find((l) => l === value) ?? null;
+}
+
+/** The map, opened on the river gauges with the rising ones lit. */
+export function litHref(lit: MapLit): {
+  pathname: "/map";
+  query: { focus: MapFocus; lit: MapLit };
+} {
+  return { pathname: "/map", query: { focus: "gauges", lit } };
+}
+
+/**
  * The dam the chips and tiles mean: the largest one whose zone or path is mapped (Bang Lang).
  * Before the dams arrive, its code, so the first paint can already ask for its card.
  */

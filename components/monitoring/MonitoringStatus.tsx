@@ -104,6 +104,30 @@ export function MonitoringHeadline({ status }: { status: MonitoringStatus }) {
 }
 
 /**
+ * And the line a reader actually came for: what this means for them (the owner, 19 Nov 2026 - of
+ * "4 river gauges have risen over the last three hours": "should the user worry? or it's still
+ * ok, or should follow jaga closely").
+ *
+ * One sentence, from the status alone. Two things it may never say, both of them tempting:
+ *
+ * - **Whether an alert is in force.** This module cannot know: the published level comes from
+ *   `areaStatus` and is drawn by the hero, and a line here reading "no alert in your area" would
+ *   be false for every reader who is under one (safety rule 3). So the words point at the level
+ *   Jaga has published rather than claiming anything about it.
+ * - **That anyone is safe.** `inRange` speaks about the readings, as the headline above it does,
+ *   and says in the same breath that they can change within hours - because an absence of
+ *   movement in instruments that lag is not an all-clear (safety rule 10). It asks nothing of a
+ *   reader and never tells them to stand down.
+ *
+ * Where nothing could be read, the sentence is the hotline: a reader whose phone can tell them
+ * nothing is pointed at the people who can (safety rule 4).
+ */
+export function MonitoringMeaning({ status }: { status: MonitoringStatus }) {
+  const t = useTranslations("monitoring.status.meaning");
+  return <span data-monitoring-meaning={status.kind}>{t(status.kind)}</span>;
+}
+
+/**
  * The line under the headline: how many rivers are reporting and when the newest reading was
  * taken, so the headline is never read without its own age (safety rules 3 and 8).
  */

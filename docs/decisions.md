@@ -952,3 +952,57 @@ page would have duplicated; it is made with `useId` now. And the reservoir's dra
 five duplicated SVG ids since 16 Oct, for the same reason - checked in a browser on 19 Nov, and
 every gradient and clip still resolves from the hidden copy, so nothing is broken. The same was
 confirmed for the tiles' one clip path.
+
+## 2026-11-19 - The monitoring card says what it means, and names the rivers that are rising
+
+**Decision.** The live monitoring card gains one sentence under its headline saying what the
+readings mean for the reader, and the line that counts rising rivers now names them and offers a
+way to see them on the map. The owner, of "4 river gauges have risen over the last three hours":
+"should the user worry? or it's still ok, or should follow jaga closely" - and then "if they want
+to know which rivers have been rising then they can click to see those river gauge name and should
+also blink and little bit zoom in in the map but yet still need to show the user's area, so the
+user can understand that how far the gauges are from their location".
+
+**What it means for the reader.** One sentence, chosen from the card's own four states and nothing
+else (`MonitoringMeaning`). Watching: check Jaga more often today, watch the water where you are,
+and follow the level Jaga has published. In range: nothing here asks anything of you now, and the
+readings can change within hours. Incomplete: the readings are not the whole picture, follow
+official warnings as well. Unknown: follow official warnings, and 1784 in an emergency.
+
+Two things it may never say, and tests hold both. **Whether an alert is in force**: this module
+cannot know - the level comes from `areaStatus` and is drawn by the hero - so a line here reading
+"no alert in your area" would be false for every reader who is under one (safety rule 3). It points
+at the published level instead of claiming anything about it. **That anybody is safe**: the quiet
+sentence speaks about the readings, as the headline above it does, and says in the same breath that
+they can change, because instruments that lag by hours going nowhere is not an all-clear (rule 10).
+
+**Which rivers.** The small home-screen feed now carries a station's id and name, but only for one
+at or near its bank or one that has risen in the last three hours (`worthNaming`): naming all
+forty-odd in three languages to answer a question about four of them is exactly what that feed
+exists to avoid, and when the rivers are quiet it costs nothing. The names are listed under the
+sentence that counted them, at most five with the rest said as a number - the count stays the
+authority, so a river cannot leave the screen for want of a name.
+
+Only ever under the rising sentence. With a river at or near its bank the line above is about that
+river, and a press lights the banks first (`gaugesLit`), so the names and the button are drawn only
+when the sentence is the rising one.
+
+**And the frame.** A press now frames the reader's own place beside the marks it lights
+(`litFrame`): a frame holding only the stations answers "which rivers" and hides the one thing a
+resident wants from it, which is whether those are up the road or in the next province. Only the lit
+stations within `GAUGES_NEAR_KM` of that place join the frame; where every one of them is further
+off, it holds their place and the nearest station alone, two points, rather than four provinces
+saying nothing. With no place saved it is the stations by themselves, as before. Stepping through
+stations one at a time inside the open card is unchanged - they have left the group they were shown.
+
+`gaugesLit` gained the three-hour tier between the banks and the week, because that is the order the
+words are in. From the home screen the same press is a link, `?focus=gauges&lit=rising`: the map
+works out which stations those are from its own full feed when it arrives, so a link that is kept or
+passed on gives the rivers that are rising when it is opened and never a stale set.
+
+**Why.** Both halves are the same question - a resident reading a measurement and not knowing what
+to do with it. Nothing here computes or suggests a level (safety rule 2).
+
+**Tested.** 112 unit cases over the frame, the tiers, the naming rule and the words, and one e2e on
+the home screen. Lint, typecheck and build clean. The map's own press is covered by unit tests on
+its pure parts only; `[data-map-lit]` e2e in this repo is timing-flaky and was not added to.

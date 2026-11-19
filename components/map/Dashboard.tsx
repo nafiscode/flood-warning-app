@@ -9,7 +9,7 @@ import type { Area, AreaDirectory } from "@/lib/area";
 import { DAM_URL, DAM_ZONE_URL, type DamData, type DamZoneData } from "@/lib/dam";
 import { REPORTS_NEAR_URL, type ReportsNear } from "@/lib/flood-reports";
 import type { Hazard } from "@/lib/hazards";
-import { readFocus } from "@/lib/map-focus";
+import { readFocus, readLit } from "@/lib/map-focus";
 import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
 import type { CoverageRow } from "@/lib/coverage";
@@ -54,6 +54,12 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       : null;
   // "?focus=gauges" from a tile on the home screen: the map opens on that feature (lib/map-focus.ts).
   const openFocus = readFocus(query.get("focus"));
+  /*
+   * "&lit=rising" with it, from the monitoring card's "see these stations on the map": the rivers
+   * that have risen in the last three hours light up, and the frame holds them and the reader's
+   * own area together (the owner, 19 Nov 2026).
+   */
+  const openLit = readLit(query.get("lit"));
   const reports = useFetched<ReportsNear>(REPORTS_NEAR_URL);
   const { status, checkedAt, failed } = usePublicStatus();
   const hazards = useFetched<{ hazards: Hazard[] }>("/api/public/hazards");
@@ -127,6 +133,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       openDam={openDam}
       openReports={openReports}
       openFocus={openFocus}
+      openLit={openLit}
       sea={sea.data}
       seaLoad={sea.state}
       reports={reports.data?.tambons ?? null}

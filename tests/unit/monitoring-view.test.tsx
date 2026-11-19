@@ -31,6 +31,11 @@ const note = (over: Partial<Note> & Pick<Note, "kind">): Note =>
     ageMin: 30,
     over: 0,
     near: 0,
+    rising: 0,
+    risingNamed: [],
+    risingWeek: 0,
+    weekJudged: 4,
+    weekUnjudged: 0,
     reporting: 4,
     silent: 0,
     total: 4,
@@ -455,5 +460,156 @@ describe("what the opened detail holds", () => {
 
   it("draws no way out where the screen has not offered one", () => {
     expect(detailOf().querySelector("[data-monitoring-hide]")).toBeNull();
+  });
+});
+
+/*
+ * "Should the user worry? or it's still ok, or should follow jaga closely" (the owner, 19 Nov
+ * 2026, of the line that says four rivers have risen). One sentence under the headline, in every
+ * state - and two things it is never allowed to say.
+ */
+describe("what the monitoring means for the reader", () => {
+  const every = ALL_KINDS.map((kind) => note({ kind }));
+  function cardOf(notes: Note[]) {
+    return renderWithIntl(
+      <MonitoringCard
+        summary={summary(notes)}
+        time={() => "13:00"}
+        open={false}
+        onToggle={() => {}}
+        detail={<p data-detail-here="true">detail</p>}
+        place="home"
+      />,
+    ).container;
+  }
+
+  const states: [string, Note[]][] = [
+    ["inRange", every],
+    ["watching", [note({ kind: "gauges", say: "active", weight: 1, rising: 4 })]],
+    ["incomplete", [note({ kind: "gauges" }), note({ kind: "dam", say: "unknown" })]],
+    ["unknown", ALL_KINDS.map((kind) => note({ kind, say: "unknown" }))],
+  ];
+
+  for (const [kind, notes] of states) {
+    it(`says what to do when the readings are "${kind}"`, () => {
+      const said = cardOf(notes).querySelector("[data-monitoring-meaning]")!;
+      expect(said.getAttribute("data-monitoring-meaning")).toBe(kind);
+      expect(said.textContent).toBe(
+        th.monitoring.status.meaning[kind as keyof typeof th.monitoring.status.meaning],
+      );
+    });
+  }
+
+  /*
+   * It cannot know: the level in force comes from `areaStatus` and is drawn by the hero. A line
+   * here reading "no alert in your area" would be false for every reader who is under one.
+   */
+  it("never says whether an alert is in force", () => {
+    for (const [, notes] of states) {
+      const said = cardOf(notes).querySelector("[data-monitoring-meaning]")!.textContent!;
+      expect(said).not.toContain("ไม่มีประกาศ");
+      expect(said).not.toMatch(/ปกติ|เฝ้าระวัง|เตือนภัย|อพยพ|กลับบ้านได้/);
+    }
+  });
+
+  it("never tells a reader they are safe, and never that they may stand down", () => {
+    const quiet = cardOf(every).querySelector("[data-monitoring-meaning]")!.textContent!;
+    expect(quiet).not.toContain("ปลอดภัย");
+    // It says in the same breath that the readings can change: not an all-clear (rule 10).
+    expect(quiet).toContain("เปลี่ยนได้");
+  });
+
+  it("points a reader whose phone could read nothing at the hotline", () => {
+    const none = cardOf(ALL_KINDS.map((kind) => note({ kind, say: "unknown" })));
+    expect(none.querySelector("[data-monitoring-meaning]")!.textContent).toContain("1784");
+  });
+
+  for (const [loc, msgs] of [
+    ["en", en],
+    ["ms", ms],
+  ] as const) {
+    it(`has the sentence in ${loc} too`, () => {
+      expect(Object.keys(msgs.monitoring.status.meaning)).toEqual(
+        Object.keys(th.monitoring.status.meaning),
+      );
+    });
+  }
+});
+
+/*
+ * "If they want to know which rivers have been rising then they can click to see those river
+ * gauge name" (the owner, 19 Nov 2026).
+ */
+describe("which rivers are rising", () => {
+  /* Whatever the screen puts there: here, a stand-in the assertions can find. */
+  const link = <span data-rising-link="true">map</span>;
+  function nowOf(note0: Note) {
+    return renderWithIntl(
+      <MonitoringNow
+        summary={summary([note0])}
+        scopeWords={{ province: "ปัตตานี", myPlace: "บานา" }}
+        damName="เขื่อนบางลาง"
+        damTambon="บานา"
+        rainPlace="บานา"
+        time={() => "13:00"}
+        place="home"
+        risingLink={link}
+      />,
+    ).container;
+  }
+  const named = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({ id: `g${i}`, name: { th: `สถานี ${i + 1}` } }));
+
+  it("names them under the sentence, and offers the way to them on the map", () => {
+    const c = nowOf(
+      note({ kind: "gauges", say: "active", weight: 1, rising: 2, risingNamed: named(2) }),
+    );
+    expect(c.querySelector("[data-monitoring-risers]")!.textContent).toContain("สถานี 1");
+    expect(c.querySelector("[data-monitoring-risers]")!.textContent).toContain("สถานี 2");
+    expect(c.querySelector("[data-rising-link]")).not.toBeNull();
+  });
+
+  it("says how many more there are than it can name", () => {
+    const c = nowOf(
+      note({ kind: "gauges", say: "active", weight: 1, rising: 9, risingNamed: named(7) }),
+    );
+    const said = c.querySelector("[data-monitoring-risers]")!.textContent!;
+    // Five names, and the other four said as a number rather than dropped (safety rule 10).
+    expect(said).toContain("สถานี 5");
+    expect(said).not.toContain("สถานี 6");
+    expect(said).toContain("4");
+  });
+
+  /*
+   * Under a bank sentence the line above is about that river; a list of the ones merely climbing
+   * would read as its own, and the button beside it lights the banks (`gaugesLit`).
+   */
+  it("names nothing, and offers nothing, under a bank sentence", () => {
+    const over = nowOf(
+      note({ kind: "gauges", say: "active", weight: 2, over: 1, rising: 3, risingNamed: named(3) }),
+    );
+    expect(over.querySelector("[data-monitoring-risers]")).toBeNull();
+    expect(over.querySelector("[data-rising-link]")).toBeNull();
+    const near = nowOf(
+      note({ kind: "gauges", say: "active", weight: 1, near: 1, rising: 3, risingNamed: named(3) }),
+    );
+    expect(near.querySelector("[data-rising-link]")).toBeNull();
+  });
+
+  it("offers nothing when no river is rising, or when the feed could not be read", () => {
+    expect(nowOf(note({ kind: "gauges" })).querySelector("[data-rising-link]")).toBeNull();
+    expect(
+      nowOf(note({ kind: "gauges", say: "unknown", rising: 2, risingNamed: named(2) })).querySelector(
+        "[data-rising-link]",
+      ),
+    ).toBeNull();
+  });
+
+  it("still says how many are rising when it has no name for any of them", () => {
+    const c = nowOf(note({ kind: "gauges", say: "active", weight: 1, rising: 2 }));
+    expect(c.querySelector("[data-monitoring-risers]")).toBeNull();
+    expect(c.querySelector('[data-monitoring-note="gauges"]')!.textContent).toContain("2");
+    // The way to the map is still offered: the marks are there to be lit even unnamed here.
+    expect(c.querySelector("[data-rising-link]")).not.toBeNull();
   });
 });

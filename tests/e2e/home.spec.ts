@@ -546,20 +546,32 @@ test.describe("what the monitoring shows now, on the home screen", () => {
   /** The gauge counts and the standing reports the section counts from. */
   async function serveMonitoring(
     page: Page,
-    options: { gauges?: "ok" | "fail"; reports?: "ok" | "fail" | "empty" } = {},
+    options: { gauges?: "ok" | "fail" | "rising"; reports?: "ok" | "fail" | "empty" } = {},
   ) {
     const gauges = options.gauges ?? "ok";
     const reports = options.reports ?? "ok";
+    /*
+     * "rising": nothing at a bank and two named rivers climbing, which is the feed the names and
+     * the way to the map are drawn from (the owner, 19 Nov 2026). The names ride along only for
+     * the stations a sentence can be about, exactly as the route sends them.
+     */
+    const climbing = [
+      { id: "a", name: { th: "สถานีหนึ่ง" }, lat: 6.9, lon: 101.3, rise3h: 0.3 },
+      { id: "b", name: { th: "สถานีสอง" }, lat: 6.85, lon: 101.25, rise3h: 0.2 },
+    ].map((g) => ({ ...g, status: "normal", observedAt: minutes(-25) }));
     await page.route("**/api/public/gauges/summary", (route) =>
       gauges === "fail"
         ? route.fulfill({ status: 503, json: { error: "unavailable" } })
         : route.fulfill({
             json: {
               generatedAt: new Date().toISOString(),
-              gauges: [
-                { lat: 6.9, lon: 101.3, status: "above_evacuate", observedAt: minutes(-25) },
-                { lat: 6.85, lon: 101.25, status: "normal", observedAt: minutes(-25) },
-              ],
+              gauges:
+                gauges === "rising"
+                  ? climbing
+                  : [
+                      { lat: 6.9, lon: 101.3, status: "above_evacuate", observedAt: minutes(-25) },
+                      { lat: 6.85, lon: 101.25, status: "normal", observedAt: minutes(-25) },
+                    ],
             },
           }),
     );
@@ -657,6 +669,32 @@ test.describe("what the monitoring shows now, on the home screen", () => {
     const sos = await page.locator('a[href="/sos"]').first().boundingBox();
     expect(box!.y).toBeGreaterThan(checklist!.y);
     expect(box!.y).toBeGreaterThan(sos!.y);
+  });
+
+  /*
+   * "Should the user worry?" and "which rivers?" (the owner, 19 Nov 2026): the sentence that says
+   * what to do, the rivers by name, and the way to see them on the map.
+   */
+  test("says what it means for the reader, and which rivers are rising", async ({ page }) => {
+    await serve(page, { inService: true, alerts: [] });
+    await serveMonitoring(page, { gauges: "rising" });
+    await page.goto("/");
+    const card = page.locator('[data-monitoring-card="home"]');
+    // The headline is the rise, and the line under it says what to do about it.
+    const meaning = card.locator("[data-monitoring-meaning]");
+    await expect(meaning).toHaveAttribute("data-monitoring-meaning", "watching");
+    await expect(meaning).toContainText(th.monitoring.status.meaning.watching);
+    // Never a claim about an alert: the hero above is the only thing that says a level.
+    await expect(meaning).not.toContainText("ไม่มีประกาศ");
+
+    await card.locator("[data-monitoring-open]").click();
+    const risers = card.locator("[data-monitoring-risers]");
+    await expect(risers).toContainText("สถานีหนึ่ง");
+    await expect(risers).toContainText("สถานีสอง");
+    const link = card.locator('[data-monitoring-rising-link="home"]');
+    await expect(link).toHaveAttribute("href", /focus=gauges/);
+    await expect(link).toHaveAttribute("href", /lit=rising/);
+    await noSidewaysScroll(page);
   });
 
   test("says the rivers could not be read, never that they are below their bank", async ({

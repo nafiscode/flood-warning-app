@@ -1,4 +1,5 @@
 import { attention, type Dam, type DamAttention } from "@/lib/dam";
+import { isRising3h } from "@/lib/gauge-marks";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import {
   ageMinutes,
@@ -73,6 +74,17 @@ export type GaugeNote = Base & {
    * invisible here until 18 Nov 2026, and it is the sentence a reader can act on soonest.
    */
   rising: number;
+  /**
+   * Those same rivers, named - as many of them as the feed named (`worthNaming`), in the order
+   * the counting walked, so a reader can be told *which* rivers and not only how many (the owner,
+   * 19 Nov 2026). The names arrive as the database holds them, one per language, and the
+   * component picks the reader's own.
+   *
+   * It can be shorter than `rising`, and the count is the authority: a station the feed did not
+   * name is still counted. A list that silently stood in for the count would make a river
+   * disappear by having no name (safety rule 10).
+   */
+  risingNamed: { id: string; name: Record<string, string> }[];
   /**
    * And the slow one behind it: stations whose daily low has risen on five of the last seven days
    * (`weekRise`), with the stations that measure could not be taken on. `judged` plus `unjudged`
@@ -202,7 +214,7 @@ const EARTH_KM_PER_DEG = 111.32;
  * lib/weather-grid.ts already use: at this latitude and over these distances it is well inside
  * the error of the question being asked.
  */
-export function gaugesNear<T extends GaugeReading>(
+export function gaugesNear<T extends Point>(
   gauges: readonly T[],
   point: Point,
   km = GAUGES_NEAR_KM,
@@ -302,6 +314,9 @@ export function monitoring(input: MonitoringInput): Monitoring {
     over: gTally.over,
     near: gTally.near,
     rising: gTally.rising,
+    risingNamed: mine
+      .filter((g) => isRising3h(g) && g.id && g.name)
+      .map((g) => ({ id: g.id!, name: g.name! })),
     risingWeek: week.rising,
     weekJudged: week.judged,
     weekUnjudged: week.unjudged,

@@ -4,6 +4,7 @@ import {
   MonitoringFigures,
   MonitoringHeadline,
   MonitoringMark,
+  MonitoringMeaning,
 } from "@/components/monitoring/MonitoringStatus";
 import { monitoringStatus, type Monitoring } from "@/lib/monitoring";
 import { reveal } from "@/lib/reveal";
@@ -49,6 +50,10 @@ export function MonitoringCard(props: MonitoringCardProps) {
       </p>
       <p className={hint}>
         <MonitoringFigures status={status} time={props.time} />
+      </p>
+      {/* What it means for them, before the way in: most readers never open the detail. */}
+      <p className="text-body text-jaga-ink">
+        <MonitoringMeaning status={status} />
       </p>
       <button
         type="button"

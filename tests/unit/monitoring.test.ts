@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { Dam, DamSignal } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
-import type { Gauge } from "@/lib/map-data";
+import type { Gauge, GaugeReading } from "@/lib/map-data";
 import {
   GAUGES_NEAR_KM,
   gaugesNear,
@@ -187,6 +187,36 @@ describe("what the monitoring shows now: the rivers", () => {
     expect(note.kind === "gauges" && note.rising).toBe(1);
     expect(note.kind === "gauges" && note.over).toBe(0);
     expect(note.kind === "gauges" && note.near).toBe(0);
+  });
+
+  /*
+   * And which rivers they are (the owner, 19 Nov 2026). The count stays the authority: a station
+   * the small feed left unnamed is still counted, because a river must not leave the screen for
+   * want of a name (safety rule 10).
+   */
+  it("names the rising rivers the feed named, and counts the ones it did not", () => {
+    const named = gauge({ id: "a", name: { th: "สถานีหนึ่ง", en: "One" }, rise3h: 0.3 });
+    // As the small home-screen feed gives an ordinary station: a point, a reading and a trend.
+    const nameless: GaugeReading = {
+      lat: 6.8,
+      lon: 101.2,
+      status: "normal",
+      observedAt: "2026-11-20T06:00:00.000Z",
+      rise3h: 0.4,
+    };
+    const note = noteOf(monitoring(input({ gauges: ok([named, nameless]) })).notes, "gauges");
+    expect(note.kind === "gauges" && note.rising).toBe(2);
+    expect(note.kind === "gauges" && note.risingNamed).toEqual([
+      { id: "a", name: { th: "สถานีหนึ่ง", en: "One" } },
+    ]);
+  });
+
+  it("never names a river that is not rising", () => {
+    const note = noteOf(
+      monitoring(input({ gauges: ok([gauge({ id: "a", rise3h: 0.01 })]) })).notes,
+      "gauges",
+    );
+    expect(note.kind === "gauges" && note.risingNamed).toEqual([]);
   });
 
   it("keeps a rise below a bank reached and a bank approached", () => {

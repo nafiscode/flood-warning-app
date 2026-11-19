@@ -73,6 +73,7 @@ import {
   gaugeRun,
   gaugesLit,
   levelTally,
+  litFrame,
   type DamContext,
 } from "@/lib/map-console";
 import { localName } from "@/lib/places";
@@ -132,8 +133,9 @@ import {
   satelliteBox,
   zoneFrame,
   type MapFocus,
+  type MapLit,
 } from "@/lib/map-focus";
-import { gaugeLook, trendOf } from "@/lib/gauge-marks";
+import { gaugeLook, isRising3h, trendOf } from "@/lib/gauge-marks";
 import { hasSection } from "@/lib/gauge-section";
 
 /** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
@@ -215,6 +217,12 @@ export type DashboardViewProps = {
   openReports?: { tambon: string; lat: number; lon: number } | null;
   /** One of the map's six features, asked for from a tile on the home screen (?focus=). */
   openFocus?: MapFocus | null;
+  /**
+   * And which marks to light once it is there (?lit=rising, from the monitoring card's own names
+   * on the home screen). Which stations those are is worked out here, from the map's own full
+   * feed, the moment it has one - so the link never carries a station that has stopped rising.
+   */
+  openLit?: MapLit | null;
   /** The sea off the coast (lib/sea.ts), and how asking for it went. */
   sea?: SeaData | null;
   seaLoad?: LoadState;
@@ -1033,14 +1041,21 @@ export function DashboardView(props: DashboardViewProps) {
     open: { id: string },
     lit: readonly { id: string; lon: number; lat: number }[],
     where: "panel" | "stay",
+    /**
+     * Whether their own place belongs in the frame (`litFrame`). A press on the readout says yes:
+     * the question behind it is how far these rivers are from them (the owner, 19 Nov 2026).
+     * Stepping from one station to the next inside the open card says no - they have left the
+     * group they were shown and are reading stations one at a time.
+     */
+    withMe = false,
   ) => {
     rememberFrame();
     setShowGauges(true);
     setSelection({ kind: "gauge", id: open.id });
-    const box = boundsAround(
-      lit.map((gauge) => ({ lon: gauge.lon, lat: gauge.lat })),
-      { minSpan: GAUGE_SPAN, margin: RESERVOIR_MARGIN },
-    );
+    const box = boundsAround(litFrame(lit, withMe ? myPoints : []), {
+      minSpan: GAUGE_SPAN,
+      margin: RESERVOIR_MARGIN,
+    });
     if (box) setFocus((was) => ({ box, key: (was?.key ?? 0) + 1 }));
     setFlashDam((was) => ({
       kind: "gauge",
@@ -1052,8 +1067,32 @@ export function DashboardView(props: DashboardViewProps) {
   };
   const openGauges = () => {
     const lit = gaugesLit(gaugeOrder);
-    if (lit.length > 0) lightGauges(lit[0]!, lit, "panel");
+    if (lit.length > 0) lightGauges(lit[0]!, lit, "panel", true);
   };
+  /*
+   * "Which rivers are rising?" - from the monitoring's own sentence, which has just counted them
+   * (the owner, 19 Nov 2026). Every one of them lights, not the three a readout press lights,
+   * because the words beside the button name them all and a reader who counted four names must
+   * not find three marks. The frame holds the near ones and their own area (`litFrame`).
+   */
+  const openRising = () => {
+    const lit = gaugeOrder.filter(isRising3h);
+    if (lit.length > 0) lightGauges(lit[0]!, lit, "panel", true);
+  };
+  /*
+   * ...and the same thing asked for from the home screen (?lit=rising). Once, and only once the
+   * stations have actually arrived: the link is followed on a phone that has yet to load them, and
+   * firing on an empty feed would light nothing and leave the reader on the four provinces with no
+   * sign that anything had been asked. A reader who then pans away is left alone.
+   */
+  const litAsked = useRef(false);
+  useEffect(() => {
+    if (litAsked.current || props.openLit !== "rising" || !(data?.gauges?.length ?? 0)) return;
+    litAsked.current = true;
+    openRising();
+    // openRising is rebuilt every render; the ref above is what keeps this to one firing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.openLit, data?.gauges]);
   /*
    * Previous and next, from inside the card that is already open (the owner, 20 Oct). One at a
    * time, framed and lit on its own: the reader has left the group they were shown and is now
@@ -1817,6 +1856,17 @@ export function DashboardView(props: DashboardViewProps) {
       gaugeScope={props.area ? tMonitoring("scope.nearMe") : tMonitoring("scope.fourProvinces")}
       weather={rain.weather}
       dam={summaryDam}
+      risingLink={
+        <button
+          type="button"
+          data-monitoring-rising-link="map"
+          onClick={openRising}
+          className={`${buttonQuiet} w-full justify-between text-start`}
+        >
+          {tMonitoring("gauges.seeOnMap")}
+          <WaveIcon size={20} aria-hidden="true" />
+        </button>
+      }
       damLink={
         summaryDam ? (
           <button

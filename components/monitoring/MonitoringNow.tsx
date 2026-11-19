@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { OpenMeteoAttribution } from "@/components/OpenMeteoAttribution";
 import { ClockIcon, DropIcon, MessageIcon, RainIcon, WaveIcon } from "@/components/icons";
@@ -11,6 +11,7 @@ import type {
   RainNote,
   ReportNote,
 } from "@/lib/monitoring";
+import { localName } from "@/lib/places";
 import { hint } from "@/lib/ui";
 
 /**
@@ -42,6 +43,14 @@ export type MonitoringNowProps = {
   /** Bangkok time of an instant, as the screen already formats it. */
   time: (iso: string) => string;
   place: "home" | "map";
+  /**
+   * The way to the rivers that are rising, drawn under their names (the owner, 19 Nov 2026: "they
+   * can click to see those river gauge name and should also blink and little bit zoom in in the
+   * map"). The screen supplies it, because the two screens answer the press differently: the map
+   * lights the marks where it stands, and the home screen has to travel to the map first. Left
+   * out and the names are simply a list.
+   */
+  risingLink?: ReactNode;
 };
 
 const ICON: Record<Note["kind"], typeof WaveIcon> = {
@@ -53,6 +62,7 @@ const ICON: Record<Note["kind"], typeof WaveIcon> = {
 
 export function MonitoringNow(props: MonitoringNowProps) {
   const { summary, scopeWords, damName, damTambon, rainPlace, time, place } = props;
+  const locale = useLocale();
   const t = useTranslations("monitoring");
   // The weather widget's own words for what is falling, so every screen says it the same way.
   const tWeather = useTranslations("weather");
@@ -141,6 +151,34 @@ export function MonitoringNow(props: MonitoringNowProps) {
     return [now, soon].filter(Boolean).join(" ") || t("rain.dry", { place: where });
   };
 
+  /**
+   * Which rivers, by name, when the card has just said how many are rising. The count stays the
+   * authority: where the feed named fewer than it counted, the rest are said as a number rather
+   * than left out, so a river cannot vanish from the screen for want of a name (safety rule 10).
+   */
+  const RISING_NAMES = 5;
+  /**
+   * Only under the rising sentence, and never under a bank one. With a river at or near its bank
+   * the line above is about that river, and a list of the ones merely climbing would read as its
+   * own - and the button beside it would light the banks, which is what a press lights first
+   * (`gaugesLit`). The names must always be the names of what was just said.
+   */
+  const saysRising = (n: GaugeNote): boolean =>
+    n.say === "active" && n.over === 0 && n.near === 0 && n.rising > 0;
+  const risers = (n: GaugeNote): ReactNode => {
+    if (!saysRising(n) || n.risingNamed.length === 0) return null;
+    const shown = n.risingNamed.slice(0, RISING_NAMES);
+    const names = shown.map((g) => localName(g.name, locale)).join(", ");
+    const rest = n.rising - shown.length;
+    return (
+      <p data-monitoring-risers={n.rising} className="text-jaga-ink">
+        {rest > 0
+          ? t("gauges.risingNames", { names: t("gauges.risingMore", { names, count: rest }) })
+          : t("gauges.risingNames", { names })}
+      </p>
+    );
+  };
+
   const sentence = (n: Note): ReactNode =>
     n.kind === "gauges"
       ? gauges(n)
@@ -200,6 +238,12 @@ export function MonitoringNow(props: MonitoringNowProps) {
                   <Icon size={24} aria-hidden="true" className="mt-1 shrink-0" />
                   <div className="flex min-w-0 flex-col gap-0.5">
                     <p>{sentence(note)}</p>
+                    {note.kind === "gauges" && (
+                      <>
+                        {risers(note)}
+                        {saysRising(note) && props.risingLink}
+                      </>
+                    )}
                     <p className={hint}>
                       {aside(note).join(" · ")}
                       {note.at !== null && ` · ${time(note.at)}`}

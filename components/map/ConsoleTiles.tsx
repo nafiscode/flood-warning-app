@@ -25,6 +25,7 @@ import { localName } from "@/lib/places";
 import {
   MonitoringFigures,
   MonitoringHeadline,
+  MonitoringMeaning,
   MonitoringMark,
 } from "@/components/monitoring/MonitoringStatus";
 import { monitoringStatus, type Monitoring } from "@/lib/monitoring";
@@ -584,6 +585,9 @@ export function ConsoleTiles(props: ConsoleTilesProps) {
               more={
                 <Foot>
                   <MonitoringFigures status={live} time={time} />
+                  <span className="mt-2 block text-body text-jaga-ink">
+                    <MonitoringMeaning status={live} />
+                  </span>
                 </Foot>
               }
               pinned={isPinned("monitoring")}

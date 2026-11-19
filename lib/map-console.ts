@@ -2,8 +2,8 @@ import { contrastRatio } from "@/lib/brand/contrast";
 import { ALERT_LEVELS, brand, darkBrand, type AlertLevel } from "@/lib/brand/tokens";
 import type { Dam, DamGrade } from "@/lib/dam";
 import type { TambonReports } from "@/lib/flood-reports";
-import { gaugeLook, trendOf, type GaugeLook } from "@/lib/gauge-marks";
-import { gaugesNear } from "@/lib/monitoring";
+import { gaugeLook, isRising3h, type GaugeLook } from "@/lib/gauge-marks";
+import { gaugesNear, GAUGES_NEAR_KM } from "@/lib/monitoring";
 import type { GaugeReading } from "@/lib/map-data";
 import type { PublicAlert } from "@/lib/public-status";
 
@@ -72,7 +72,7 @@ export function gaugeTally(gauges: readonly GaugeReading[]): GaugeTally {
     over: count("over"),
     near: count("near"),
     reporting: gauges.length - count("quiet"),
-    rising: gauges.filter((g, i) => trendOf(g.rise3h ?? null, looks[i]!) === "up").length,
+    rising: gauges.filter(isRising3h).length,
     silent: count("quiet"),
     total: gauges.length,
     newestAt: gauges.reduce<string | null>(
@@ -129,6 +129,16 @@ export function weekRise(
     judged: judged.length,
     unjudged: gauges.length - judged.length,
   };
+}
+
+/**
+ * Whether the small home-screen feed carries this station's name (`GaugeReading`): one at or near
+ * its bank, or one that has risen over the last three hours. Exactly the stations a sentence on
+ * that screen can be about, and no others - see the field's own note for why the rest go unnamed.
+ */
+export function worthNaming(g: GaugeReading): boolean {
+  const look = gaugeLook(g.status);
+  return look === "over" || look === "near" || isRising3h(g);
 }
 
 /** Whether this station is one of the rivers that has been rising for a week. */
@@ -226,17 +236,57 @@ export function gaugesLit<T extends GaugeInRun>(run: readonly T[]): T[] {
     return look === "over" || look === "near";
   });
   /*
-   * Where no river is near its bank, the rivers that have been rising for a week are what the
-   * card is now reporting, so those are what it lights (the owner, 10 Nov 2026). They are already
-   * at the front of the run, so this only decides how many of them light at once.
+   * Then the three hours behind, and then the week - in that order, because that is the order the
+   * words are in. The status line says "water rising at 4 river gauges" the moment nothing is at
+   * a bank (`gaugeSay`), and a press has to light the rivers the sentence just named; the week's
+   * rise is the slower line under it (the owner, 10 Nov 2026) and takes its turn after.
+   *
+   * Where no river is doing anything at all, the one station the card opens on, so that a press
+   * always points at something.
    */
-  const rising = concern.length > 0 ? [] : run.filter((g) => isRisingWeek(g));
-  const pick = concern.length > 0 ? concern : rising.length > 0 ? rising : run.slice(0, 1);
+  const hours = run.filter(isRising3h);
+  const week = run.filter((g) => isRisingWeek(g));
+  const pick = [concern, hours, week].find((set) => set.length > 0) ?? run.slice(0, 1);
   return pick.slice(0, LIT_MAX);
 }
 
 /** Longitudes shrink towards the poles; at this latitude the small-angle form is exact enough. */
 const SCALE = (lat: number) => Math.cos((lat * Math.PI) / 180);
+
+/**
+ * The points a press on the rivers' readout frames: the stations it has lit, **and the reader's
+ * own place beside them** (the owner, 19 Nov 2026: a press should zoom in "yet still need to show
+ * the user's area, so the user can understand that how far the gauges are from their location").
+ *
+ * A frame holding only the stations answers "which rivers" and hides the one thing a resident
+ * wants from it, which is whether those rivers are up the road or in the next province. So the
+ * nearest of their own places goes into the frame, and the distance becomes something they can
+ * see rather than something they have to be told.
+ *
+ * The frame is still allowed to be small. Only the lit stations within `GAUGES_NEAR_KM` of that
+ * place join it; where every lit station is further off than that, the frame holds their place and
+ * the nearest one alone - two points, so the distance is shown honestly instead of four provinces
+ * at once saying nothing. With no place saved it is the stations by themselves, which is what a
+ * visitor has always been shown.
+ */
+export function litFrame<T extends { lat: number; lon: number }>(
+  lit: readonly T[],
+  places: readonly { lat: number; lon: number }[] = [],
+  km = GAUGES_NEAR_KM,
+): { lon: number; lat: number }[] {
+  const point = (g: { lat: number; lon: number }) => ({ lon: g.lon, lat: g.lat });
+  if (lit.length === 0 || places.length === 0) return lit.map(point);
+  /** Flat-earth square distance, in degrees: only ever compared, never shown. */
+  const gap = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) =>
+    (a.lat - b.lat) ** 2 + ((a.lon - b.lon) * SCALE(b.lat)) ** 2;
+  const mine = [...places].sort(
+    (a, b) => Math.min(...lit.map((g) => gap(g, a))) - Math.min(...lit.map((g) => gap(g, b))),
+  )[0]!;
+  const near = gaugesNear(lit, mine, km);
+  const keep = near.length > 0 ? near : [[...lit].sort((a, b) => gap(a, mine) - gap(b, mine))[0]!];
+  return [point(mine), ...keep.map(point)];
+}
+
 
 export type ReportTally = {
   reports: number;

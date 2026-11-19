@@ -70,6 +70,18 @@ export function trendOf(rise: number | null, look: GaugeLook): Trend {
   return "flat";
 }
 
+/**
+ * Whether this station is one of the rivers that have risen over the last three hours - the one
+ * test, used by the map's chevrons, the readouts' count, the sentence on the home screen and the
+ * marks a press lights, so that none of the four can say a different thing about the same river.
+ *
+ * A station that is not reporting is never "rising" (`trendOf` returns flat for a quiet one): a
+ * river nobody is measuring is not a river going down either (safety rule 10).
+ */
+export function isRising3h(g: { status: Gauge["status"]; rise3h?: number | null }): boolean {
+  return trendOf(g.rise3h ?? null, gaugeLook(g.status)) === "up";
+}
+
 /** How full the glass is drawn. Over the bank it brims; with no levels it is half, and grey-ringed. */
 export const GAUGE_FILL: Record<GaugeLook, number> = {
   over: 1,

@@ -5724,7 +5724,10 @@
       "noneReporting": "Tiada tolok sungai menghantar bacaan, jadi sungai di {scope} tidak diukur sekarang",
       "unknown": "Jaga tidak dapat membaca tolok sungai",
       "silent": "{count} tolok tidak menghantar apa-apa selama enam jam atau lebih",
-      "risingWeek": "{count} daripada {judged} tolok yang arahnya dapat dibaca telah naik berterusan kira-kira 1 minggu"
+      "risingWeek": "{count} daripada {judged} tolok yang arahnya dapat dibaca telah naik berterusan kira-kira 1 minggu",
+        "risingNames": "Yang naik: {names}",
+        "risingMore": "{names} dan {count} lagi",
+        "seeOnMap": "Lihat stesen ini di peta"
     },
     "dam": {
       "who": "Angka empangan sendiri, bukan amaran",
@@ -5775,6 +5778,12 @@
         "riversRising": "Air naik di {count} tolok sungai",
         "rainSoon": "Hujan dijangka dalam {hours} jam akan datang",
         "rainSoonHeavy": "Hujan lebat dijangka dalam {hours} jam akan datang"
+      },
+      "meaning": {
+        "watching": "Apa yang perlu dibuat: lihat Jaga lebih kerap hari ini, perhatikan air di sekeliling anda, dan ikut tahap yang Jaga umumkan.",
+        "inRange": "Tiada bacaan di sini yang menuntut apa-apa daripada anda sekarang. Bacaan boleh berubah dalam beberapa jam, jadi lihat semula apabila hujan turun lebat.",
+        "incomplete": "Bukan semua bacaan dapat dimuatkan, jadi ia tidak boleh dibaca sebagai gambaran keseluruhan. Ikut juga amaran rasmi.",
+        "unknown": "Ikut juga amaran rasmi. Dalam kecemasan hubungi 1784."
       }
     },
     "detail": {

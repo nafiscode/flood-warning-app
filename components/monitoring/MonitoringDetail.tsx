@@ -60,6 +60,9 @@ export type MonitoringDetailProps = {
   /** A way back to the map's own card for this dam, where there is one. */
   damLink?: ReactNode;
 
+  /** And the way to the rivers that are rising, under their names (see `MonitoringNow`). */
+  risingLink?: ReactNode;
+
   /**
    * Shuts the detail again from its own foot, and takes the reader back up to the dashboard (the
    * owner, 17 Oct 2026). The way in is a long way above once the charts have drawn, so the way
@@ -137,6 +140,7 @@ export function MonitoringDetail(props: MonitoringDetailProps) {
         rainPlace={props.rainPlace}
         time={props.time}
         place={props.place}
+        risingLink={props.risingLink}
       />
 
       {charts}

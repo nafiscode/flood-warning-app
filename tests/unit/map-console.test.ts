@@ -25,9 +25,11 @@ import {
   gaugesLit,
   isRisingWeek,
   LIT_MAX,
+  litFrame,
   reportsAlarm,
   ROSE_DAYS_MIN,
   weekRise,
+  worthNaming,
 } from "@/lib/map-console";
 import { bandFor, CONSOLE_QUERY, LAPTOP_QUERY, TABLET_QUERY } from "@/lib/console-view";
 import { contrastRatio } from "@/lib/brand/contrast";
@@ -999,6 +1001,89 @@ describe("the tablet's rail and map height", () => {
     it("still lights one station when there is nothing to report at all", () => {
       const calm = gauge({ id: "calm", status: "normal", roseDays: 0 });
       expect(gaugesLit(gaugeRun([calm])).map((g) => g.id)).toEqual(["calm"]);
+    });
+  });
+});
+
+/*
+ * "Which rivers have been rising?" (the owner, 19 Nov 2026): the press that answers it, and the
+ * frame it leaves the reader looking at - which has to hold their own area, or the answer says
+ * which rivers and not how far away they are.
+ */
+describe("the rivers that have risen in the last three hours", () => {
+  const up = (over: Partial<Gauge>) => gauge({ status: "normal", rise3h: 0.2, ...over });
+
+  it("lights them when no river is at or near its bank", () => {
+    const risers = [1, 2, 3].map((n) => up({ id: `up${n}`, lon: 101 + n / 10 }));
+    const flat = gauge({ id: "flat", rise3h: 0.01 });
+    const lit = gaugesLit(gaugeRun([...risers, flat]));
+    expect(lit.map((g) => g.id).sort()).toEqual(["up1", "up2", "up3"]);
+    // Five centimetres in three hours is the threshold the map's chevrons use, and no other.
+    expect(gaugesLit(gaugeRun([flat])).map((g) => g.id)).toEqual(["flat"]);
+  });
+
+  it("gives way to a bank, and takes precedence over the week", () => {
+    const hours = up({ id: "hours" });
+    const week = gauge({ id: "week", status: "normal", roseDays: 7 });
+    const near = gauge({ id: "near", status: "above_warning" });
+    // The words say "rising" only once nothing is at a bank, so a press lights the bank first.
+    expect(gaugesLit(gaugeRun([hours, near])).map((g) => g.id)).toEqual(["near"]);
+    // And the three hours are what the sentence says before the week, so they light first.
+    expect(gaugesLit(gaugeRun([week, hours])).map((g) => g.id)).toEqual(["hours"]);
+  });
+
+  it("is never a river nobody is measuring", () => {
+    // A silent station's rise is history, not a rise: it must not be lit as if it were climbing.
+    expect(gaugesLit(gaugeRun([up({ id: "silent", status: "no_recent_data" })])).length).toBe(1);
+    expect(worthNaming(up({ id: "silent", status: "no_recent_data" }))).toBe(false);
+  });
+
+  it("names only the stations a sentence can be about", () => {
+    expect(worthNaming(up({}))).toBe(true);
+    expect(worthNaming(gauge({ status: "above_evacuate" }))).toBe(true);
+    expect(worthNaming(gauge({ status: "above_warning" }))).toBe(true);
+    // Everything else stays nameless in the small feed, which is the whole point of it.
+    expect(worthNaming(gauge({ status: "above_watch" }))).toBe(false);
+    expect(worthNaming(gauge({ status: "normal", rise3h: 0.04 }))).toBe(false);
+    expect(worthNaming(gauge({ status: "no_levels", rise3h: null }))).toBe(false);
+  });
+
+  describe("the frame a press leaves", () => {
+    const home = { lat: 6.8, lon: 101.2 };
+
+    it("holds the reader's own place beside the marks", () => {
+      const near = up({ id: "near", lat: 6.9, lon: 101.3 });
+      const points = litFrame([near], [home]);
+      expect(points).toHaveLength(2);
+      expect(points).toContainEqual({ lon: home.lon, lat: home.lat });
+      expect(points).toContainEqual({ lon: near.lon, lat: near.lat });
+    });
+
+    it("leaves a far-off station out of the frame, and keeps the nearest of them in it", () => {
+      const close = up({ id: "close", lat: 6.9, lon: 101.3 });
+      const far = up({ id: "far", lat: 9.5, lon: 99.5 });
+      expect(litFrame([close, far], [home])).toEqual([
+        { lon: home.lon, lat: home.lat },
+        { lon: close.lon, lat: close.lat },
+      ]);
+      // Every one of them far away: their place and the nearest, so the distance is still seen.
+      const alsoFar = up({ id: "alsoFar", lat: 10.5, lon: 99.1 });
+      expect(litFrame([alsoFar, far], [home])).toEqual([
+        { lon: home.lon, lat: home.lat },
+        { lon: far.lon, lat: far.lat },
+      ]);
+    });
+
+    it("picks the one of their places the rivers are nearest to", () => {
+      const river = up({ id: "river", lat: 6.9, lon: 101.3 });
+      const away = { lat: 7.9, lon: 100.0 };
+      expect(litFrame([river], [away, home])[0]).toEqual({ lon: home.lon, lat: home.lat });
+    });
+
+    it("frames the marks alone for somebody who has saved no place", () => {
+      const river = up({ id: "river", lat: 6.9, lon: 101.3 });
+      expect(litFrame([river], [])).toEqual([{ lon: river.lon, lat: river.lat }]);
+      expect(litFrame([], [home])).toEqual([]);
     });
   });
 });
