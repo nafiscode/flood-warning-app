@@ -12,7 +12,7 @@ import { TmdWarnings } from "./TmdWarnings";
 import { TwoForecasts } from "./TwoForecasts";
 import { WeatherMaps } from "./WeatherMaps";
 import type { WeatherPlace } from "@/lib/weather";
-import { WeatherView } from "./WeatherView";
+import { FULL_WIDTH, WeatherView } from "./WeatherView";
 
 /**
  * The live weather page: the place comes from the phone (a weather choice, or the home and area
@@ -51,8 +51,8 @@ export function WeatherScreen() {
       onCancelPick={() => setPicking(false)}
       onRetry={refresh}
       warnings={<TmdWarnings />}
-      measured={<TmdRain place={place} />}
-      twoModels={<TwoForecasts place={place} weather={weather} />}
+      measured={<TmdRain place={place} className={FULL_WIDTH} />}
+      twoModels={<TwoForecasts place={place} weather={weather} className={FULL_WIDTH} />}
       maps={
         <WeatherMaps
           place={place}

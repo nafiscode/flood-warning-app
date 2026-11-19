@@ -17,12 +17,20 @@
  * before**: the Open-Meteo forecast is shown alone, with no gap, no error and no mention of TMD.
  * Set the token and the comparison appears by itself.
  *
- * **Unverified against the live API.** Written from TMD's published documentation on 18 Nov 2026
- * and not yet run against the real endpoint, because no token exists yet. The reader below is
- * therefore deliberately forgiving: it accepts both spellings of the top-level key (TMD's own docs
- * show `WeatherForcasts` in one place and `WeatherForecast` in another), ignores fields it does not
- * know, and returns null rather than throwing on anything unexpected. The first thing to do once a
- * token exists is to check one real answer against `tests/unit/tmd-forecast.test.ts`.
+ * **Verified against the live API on 19 Nov 2026**, with the owner's token, at four points
+ * (Pattani, Yala, Narathiwat, Hat Yai). What the real endpoint does, as against the docs it was
+ * written from:
+ * - The top-level key is `WeatherForecasts`. The other spellings TMD's own documentation shows
+ *   (`WeatherForcasts`, `WeatherForecast`) are still accepted below, because a government feed
+ *   that disagrees with itself in writing may yet change its mind in production.
+ * - `location` comes back as TMD's **grid point**, not the point asked for - about 1 km off at
+ *   these latitudes. The forecast therefore reports the position it is actually for.
+ * - `duration=24` gave 24 hourly entries starting at the current Bangkok hour, each stamped
+ *   `+07:00`, with `rain`, `tc` and `cond` present on every one.
+ * - Condition codes 2-6 were seen live and all map to groups the app already draws; the rest of
+ *   the table is from the documentation and an unknown code yields a null group, never a wrong one.
+ * The reader stays deliberately forgiving: it ignores fields it does not know and returns null
+ * rather than throwing or half-reading, so a changed API costs the comparison card and nothing else.
  */
 
 export const NWP_API = "https://data.tmd.go.th/nwpapi/v1/forecast/location/hourly/at";

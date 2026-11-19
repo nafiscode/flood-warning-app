@@ -203,8 +203,8 @@ async function serve(page: Page, options: Options = {}) {
       ? route.fulfill({ json: { warnings: [TMD_WARNING], fetchedAt: new Date().toISOString() } })
       : route.fulfill({ json: { warnings: [], fetchedAt: new Date().toISOString() } }),
   );
-  // TMD's own forecast model, which needs a token the live site may not have: 503 unless a test
-  // asks for it, which is exactly how the page behaves before the owner registers.
+  // TMD's own forecast model, which needs a token an environment may not have: 503 unless a test
+  // asks for it, so the default here is the page without TMD's model.
   await page.route("**/api/public/tmd/forecast**", (route) =>
     options.tmdModel
       ? route.fulfill({ json: tmdModelForecast() })
@@ -514,7 +514,10 @@ test.describe("weather", () => {
   });
 
   test("without TMD's model the page is exactly as it was", async ({ page }) => {
-    // This is the live site's state until the owner registers for a token.
+    // A deployment with no `TMD_NWP_TOKEN` set: the route reports itself unavailable and the page
+    // is exactly what it was before TMD's model existed - no gap, no error, no mention of TMD.
+    // Still worth holding after the token arrived, because a preview build or a fresh environment
+    // without the secret must degrade this way and not break the weather page (safety rule 7).
     await serve(page, { area: true });
     await page.goto("/weather");
     await expect(page.locator('[data-weather-now="true"]')).toContainText("27°C");

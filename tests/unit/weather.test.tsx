@@ -320,14 +320,33 @@ describe("the weather page", () => {
     const grid = c.querySelector('[class*="lg:grid-cols-2"]')!;
     expect(grid).not.toBeNull();
     // Five children: now, the rain chart, the maps across both columns, the hours, the week.
-    // An even number of half-width cards, so none is ever left with an empty column beside it.
     const children = [...grid.children];
     expect(children).toHaveLength(5);
     const wide = children.filter((el) => el.className.includes("lg:col-span-2"));
     expect(wide).toHaveLength(1);
     expect(wide[0]!.querySelector("[data-maps]")).not.toBeNull();
+    // The rule the count above is only an instance of: an even number of half-width cards, so
+    // none is ever left with an empty column beside it. Full-width cards come and go with the
+    // data behind them (TMD's two, 19 Nov 2026), and must not be able to break the pairing.
+    expect((children.length - wide.length) % 2).toBe(0);
     // Heights are not set anywhere: a pair matches because the grid stretches them.
     expect(grid.className).not.toContain("items-start");
+  });
+
+  it("holds nothing for a full-width card that drew nothing (19 Nov 2026)", () => {
+    // TMD's two cards decide for themselves whether to draw: no token, no station in range, or
+    // TMD unreachable, and they render null - which is the ordinary case, not the exception. They
+    // are therefore grid children in their own right, with no wrapper around them. A wrapper
+    // would be a child of a `gap-5` column whichever way the card decided, leaving a hand's width
+    // of dead space at the foot of every such page.
+    const c = view({
+      maps: <div data-maps="stub" />,
+      twoModels: null,
+      measured: null,
+    });
+    const grid = c.querySelector('[class*="lg:grid-cols-2"]')!;
+    expect([...grid.children]).toHaveLength(5);
+    for (const child of grid.children) expect(child.innerHTML).not.toBe("");
   });
 
   it("writes every condition out in words, never the icon alone", () => {

@@ -17,7 +17,14 @@ import type { WeatherPlace } from "@/lib/weather";
  * kilometres away, never "rain near you", because rain here is local enough that the difference
  * matters (safety rule 8). It carries no level and no alert colour (safety rule 10).
  */
-export function TmdRain({ place }: { place: WeatherPlace | null }) {
+export function TmdRain({
+  place,
+  className,
+}: {
+  place: WeatherPlace | null;
+  /** The width the page wants this card at, worn by the card so an undrawn card takes none. */
+  className?: string;
+}) {
   const [stations, setStations] = useState<TmdStation[] | null>(null);
   const now = useNow();
 
@@ -48,23 +55,27 @@ export function TmdRain({ place }: { place: WeatherPlace | null }) {
   if (!stations || now === 0) return null;
   const nearest = nearestStations(stations, place, now);
   if (nearest.length === 0) return null;
-  return <TmdRainView stations={nearest} hasPlace={place !== null} />;
+  return <TmdRainView stations={nearest} hasPlace={place !== null} className={className} />;
 }
 
 export type TmdRainViewProps = {
   /** Already narrowed and sorted by the caller, so a test can fix the list. */
   stations: TmdStation[];
   hasPlace: boolean;
+  className?: string;
 };
 
-export function TmdRainView({ stations, hasPlace }: TmdRainViewProps) {
+export function TmdRainView({ stations, hasPlace, className }: TmdRainViewProps) {
   const t = useTranslations("tmdRain");
   const locale = useLocale();
   const format = useFormatter();
   if (stations.length === 0) return null;
 
   return (
-    <section className={card} data-tmd-rain={String(stations.length)}>
+    <section
+      className={className ? `${card} ${className}` : card}
+      data-tmd-rain={String(stations.length)}
+    >
       <div className="flex items-start gap-3">
         <DropIcon size={24} className="mt-0.5 shrink-0 text-jaga-slate" aria-hidden="true" />
         <div className="flex flex-col gap-1">

@@ -14,10 +14,11 @@ import { WEATHER_GROUPS } from "@/lib/weather";
 /**
  * Reading TMD's own forecast model, and comparing it with Open-Meteo's.
  *
- * **These tests encode TMD's published documentation, not a real answer** - no token exists yet
- * (registering asks for the owner's personal details). The sample below is built from TMD's own
- * documented example. The first job once a token exists is to run one real request and check it
- * against this file; the reader is written to be forgiving precisely because this is unverified.
+ * Most of these tests encode TMD's published documentation. One - "a real answer from TMD" at the
+ * end - is a verbatim slice of what the live endpoint actually returned for Pattani on 19 Nov 2026,
+ * captured with the owner's token. That one is the test that matters: if TMD changes the shape of
+ * its answer, it is the one that goes red. The others keep the reader honest about the shapes TMD's
+ * own documentation describes but production does not currently send.
  */
 
 const ANSWER = {
@@ -200,5 +201,86 @@ describe("whether the two models agree", () => {
     ]) {
       expect(agreement(a!, b!)).toBe(agreement(b!, a!));
     }
+  });
+});
+
+/**
+ * A real answer, kept verbatim.
+ *
+ * The first five hours of what `data.tmd.go.th/nwpapi/v1/forecast/location/hourly/at` returned for
+ * a point in Pattani on 19 November 2026, with the owner's token - including the key spelling
+ * (`WeatherForecasts`), the `+07:00` stamps, and the grid point TMD substitutes for the point asked
+ * for (6.8693,101.2502 was requested; 6.8764,101.2447 came back). Nothing here is hand-written: if
+ * this test fails, TMD's API has changed, not the test.
+ */
+const LIVE_ANSWER = {
+  WeatherForecasts: [
+    {
+      location: { lat: 6.8764, lon: 101.2447 },
+      forecasts: [
+        { time: "2026-11-19T08:00:00+07:00", data: { cond: 3, rain: 0, tc: 24.6 } },
+        { time: "2026-11-19T09:00:00+07:00", data: { cond: 4, rain: 0, tc: 27.55 } },
+        { time: "2026-11-19T10:00:00+07:00", data: { cond: 4, rain: 0, tc: 29.05 } },
+        { time: "2026-11-19T11:00:00+07:00", data: { cond: 4, rain: 0.1, tc: 28.32 } },
+        { time: "2026-11-19T12:00:00+07:00", data: { cond: 5, rain: 0.3, tc: 30.08 } },
+      ],
+    },
+  ],
+};
+
+describe("a real answer from TMD", () => {
+  it("is read whole", () => {
+    const forecast = toForecast(LIVE_ANSWER);
+    expect(forecast).not.toBeNull();
+    expect(forecast!.hours).toHaveLength(5);
+    expect(forecast!.hours.every((hour) => hour.rainMm !== null && hour.tempC !== null)).toBe(true);
+    // 0 + 0 + 0.1 + 0.3: a measured-looking total, and the zeros must stay zeros, not nulls.
+    expect(forecast!.rainMm).toBe(0.4);
+    expect(forecast!.hours[0]!.rainMm).toBe(0);
+  });
+
+  it("reports the grid point TMD answered for, not the point asked for", () => {
+    // The reader must never claim the forecast is for somewhere it is not, even by a kilometre.
+    const forecast = toForecast(LIVE_ANSWER)!;
+    expect(forecast.lat).toBe(6.8764);
+    expect(forecast.lon).toBe(101.2447);
+  });
+
+  it("turns TMD's Bangkok hours into instants", () => {
+    const forecast = toForecast(LIVE_ANSWER)!;
+    // 08:00 +07:00 is 01:00 UTC. Getting this wrong by seven hours would put tonight's rain in
+    // this afternoon's card.
+    expect(forecast.hours[0]!.at).toBe("2026-11-19T01:00:00.000Z");
+  });
+
+  it("maps every condition code the live answer used", () => {
+    const forecast = toForecast(LIVE_ANSWER)!;
+    expect(forecast.hours.map((hour) => hour.group)).toEqual([
+      "partlyCloudy",
+      "overcast",
+      "overcast",
+      "overcast",
+      "rainLight",
+    ]);
+  });
+
+  it("gives an hour TMD skipped no silent substitute", () => {
+    // Not something the live answer did - its hours were contiguous - but the reader must not
+    // assume they always will be. Hours are read as they come and the card compares the hours it
+    // was given, rather than quietly filling a gap with a zero that nobody forecast.
+    const gappy = {
+      WeatherForecasts: [
+        {
+          location: { lat: 6.8764, lon: 101.2447 },
+          forecasts: [
+            LIVE_ANSWER.WeatherForecasts[0]!.forecasts[0]!,
+            LIVE_ANSWER.WeatherForecasts[0]!.forecasts[3]!,
+          ],
+        },
+      ],
+    };
+    const forecast = toForecast(gappy)!;
+    expect(forecast.hours.map((hour) => hour.at.slice(11, 16))).toEqual(["01:00", "04:00"]);
+    expect(forecast.rainMm).toBe(0.1);
   });
 });

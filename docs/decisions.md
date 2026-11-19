@@ -793,3 +793,44 @@ tests/unit/phone-map.test.tsx; lint, typecheck and the touched suites clean.
 **Also found:** vitest is not broken on this laptop - it fails only when run from Git Bash
 ("Vitest failed to find the current suite" on every file, including untouched ones). The same
 command from PowerShell runs the whole suite. Noted in CLAUDE.local.md.
+
+## 2026-11-19 - TMD's forecast model verified against the live API, and a layout bug it exposed
+
+The owner registered at data.tmd.go.th/nwpapi and supplied `TMD_NWP_TOKEN` (issued 19 Nov 2026,
+expires **19 Nov 2027** - renewal is on the tracker's Reminders tab and in `docs/runbook.md`).
+
+**The reader was written blind on 18 Nov and is now checked.** One request per point at Pattani,
+Yala, Narathiwat and Hat Yai. Everything the reader assumed held, with three things worth writing
+down: the live top-level key is `WeatherForecasts` (TMD's own documentation also shows
+`WeatherForcasts` and `WeatherForecast`, and all three are still accepted, because a feed that
+disagrees with itself in writing may disagree with itself in production); `location` comes back as
+TMD's **grid point**, about 1 km from the point asked for, so the forecast reports the position it
+is actually for and not the one requested; and `duration=24` gives 24 contiguous hourly entries
+from the current Bangkok hour, each stamped `+07:00`, with rain, temperature and a condition code
+on every one. Condition codes 2-6 were seen live and all map to groups the app already draws. The
+first five hours of the real Pattani answer are now a verbatim fixture in
+`tests/unit/tmd-forecast.test.ts`: if TMD changes the shape of its answer, that test goes red.
+
+**The comparison earns its place on the evidence of its first day.** Over the 24 h from 08:00 on
+19 Nov, Open-Meteo and TMD said: Pattani 8.2 against 41.7 mm, Narathiwat 8.7 against 59.8 mm, Yala
+9.7 against 30 mm, Hat Yai 10.9 against 8.7 mm. Three of the four points disagree, two of them
+far apart, and TMD is the wetter in all three - which is also the direction of TMD's own warning
+for the lower South. A single figure on that page would have been Open-Meteo's ~9 mm, and would
+have read as settled. The card names the gap and points at the higher number (safety rule 8).
+
+**A real bug found by a test that had never been able to run.** The weather page's laptop grid was
+given TMD's two cards inside `lg:col-span-2` wrappers. A wrapper is a child of a `gap-5` column
+whether or not the card inside it draws anything, and TMD's cards draw nothing in the ordinary
+case - no token, no station within 80 km, or TMD unreachable. So the page carried about 40 px of
+dead space at its foot on every phone, which is the common case, not the exception. Fixed by
+removing the wrappers: the cards are grid children in their own right and wear the width
+themselves, through a `className` prop and `FULL_WIDTH` exported from `WeatherView` beside the
+grid it belongs to. The layout test now asserts the invariant it was written for - an even number
+of half-width cards - rather than a frozen count of five, so a card that comes and goes with its
+data cannot break the pairing unnoticed.
+
+This was shipped on 18 Nov believing the unit runner was broken. It was not: `vitest run` fails
+per-file on this laptop by timing out while spawning a worker for each file, and `--no-isolate`
+reuses one worker and runs the whole suite - 2,032 tests in 72 s. That is now the way to run it
+here, and is how this bug surfaced. The lesson is the plain one: a test suite believed broken is a
+test suite not running, and the cost lands on whatever shipped meanwhile.

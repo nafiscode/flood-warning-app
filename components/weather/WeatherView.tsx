@@ -31,6 +31,15 @@ import { PlacePicker } from "./PlacePicker";
 import { WeatherScene } from "./WeatherScene";
 import { WeatherIcon } from "./WeatherIcon";
 
+/**
+ * The class that makes a card span both columns of the laptop grid below.
+ *
+ * It lives here, beside the grid it belongs to, but is worn by the card itself: a card that may
+ * decide to draw nothing must be the thing the grid sees, so that when it draws nothing the grid
+ * holds nothing. See the comment on the grid.
+ */
+export const FULL_WIDTH = "lg:col-span-2";
+
 export type WeatherViewProps = {
   /** False while this is still the server's HTML: the phone's storage isn't readable yet. */
   ready: boolean;
@@ -150,13 +159,17 @@ export function WeatherView(props: WeatherViewProps) {
           <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2">
             <Now weather={weather} now={now} />
             <RainBars weather={weather} />
-            <div className="lg:col-span-2">{props.maps}</div>
+            {props.maps && <div className="lg:col-span-2">{props.maps}</div>}
             <Hours weather={weather} />
             <Days weather={weather} />
-            {/* The two-model comparison sits beside the measured rain: the forecast's own
-                uncertainty, and then the reading that will settle it. */}
-            <div className="lg:col-span-2">{props.twoModels}</div>
-            <div className="lg:col-span-2">{props.measured}</div>
+            {/* The two-model comparison, then the measured rain: the forecast's own uncertainty,
+                and then the reading that will settle it. These two go in unwrapped, and carry
+                `FULL_WIDTH` on their own card instead. A wrapper here would be a child of a
+                `gap-5` column whether or not the card inside it drew anything, which left a hand's
+                width of dead space at the foot of the page on every phone with no TMD card to
+                show - and that is the normal case, not the exception. */}
+            {props.twoModels}
+            {props.measured}
           </div>
           <section className="flex flex-col gap-2">
             <p className="inline-flex items-center gap-2 text-small text-jaga-text-2">

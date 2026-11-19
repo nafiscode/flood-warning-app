@@ -23,9 +23,12 @@ import { roundCoord } from "@/lib/weather";
 export function TwoForecasts({
   place,
   weather,
+  className,
 }: {
   place: WeatherPlace | null;
   weather: Weather | null;
+  /** The width the page wants this card at, worn by the card so an undrawn card takes none. */
+  className?: string;
 }) {
   const [tmd, setTmd] = useState<TmdForecast | null>(null);
 
@@ -56,22 +59,26 @@ export function TwoForecasts({
   const from = Date.parse(tmd.hours[0]!.at);
   if (!Number.isFinite(from)) return null;
   const openMeteoMm = sumRain(weather.hours, from, HOURS);
-  return <TwoForecastsView openMeteoMm={openMeteoMm} tmdMm={tmd.rainMm} />;
+  return <TwoForecastsView openMeteoMm={openMeteoMm} tmdMm={tmd.rainMm} className={className} />;
 }
 
 export type TwoForecastsViewProps = {
   openMeteoMm: number;
   tmdMm: number;
+  className?: string;
 };
 
-export function TwoForecastsView({ openMeteoMm, tmdMm }: TwoForecastsViewProps) {
+export function TwoForecastsView({ openMeteoMm, tmdMm, className }: TwoForecastsViewProps) {
   const t = useTranslations("twoForecasts");
   const format = useFormatter();
   const verdict = agreement(openMeteoMm, tmdMm);
   const high = Math.max(openMeteoMm, tmdMm);
 
   return (
-    <section className={card} data-two-forecasts={verdict}>
+    <section
+      className={className ? `${card} ${className}` : card}
+      data-two-forecasts={verdict}
+    >
       <div className="flex flex-col gap-1">
         <h2 className="text-h3 font-bold text-jaga-ink">{t("title")}</h2>
         <p className={hint}>{t("body", { hours: HOURS })}</p>
