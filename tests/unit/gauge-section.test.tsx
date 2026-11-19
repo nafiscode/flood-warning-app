@@ -81,6 +81,45 @@ describe("the vertical scale", () => {
   });
 });
 
+describe("the picture says where the river stands, and stations can be compared", () => {
+  /*
+   * The owner, 19 Nov 2026: stepping from one gauge to the next, "the animated cross sections looks
+   * the same, just numbering under it changes". The first scale took the reading into its span, so
+   * every station's water came out at the same height. The frame is the station's levels now.
+   */
+  const LOW = { watch: 3.2, warning: 4.1, evacuate: 4.8, bank: 4.8, value: 3.3 };
+  const HIGH = { ...LOW, value: 4.7 };
+  // Another station entirely - a river mouth, metres lower - standing where LOW stands.
+  const OTHER = { watch: 1.6, warning: 2.0, evacuate: 2.4, bank: 2.4, value: 1.7 };
+
+  it("draws a river near its bank far higher than one just above its watch level", () => {
+    const low = riverSection(LOW).surfaceY!;
+    const high = riverSection(HIGH).surfaceY!;
+    expect(low - high).toBeGreaterThan(40);
+  });
+
+  it("puts two stations standing alike at about the same height, whatever their metres", () => {
+    expect(Math.abs(riverSection(OTHER).surfaceY! - riverSection(LOW).surfaceY!)).toBeLessThan(10);
+    // ... and their lines land in the same places, which is what makes the two comparable.
+    const lines = (s: ReturnType<typeof riverSection>) => s.lines.map((l) => l.y);
+    const a = lines(riverSection(LOW));
+    const b = lines(riverSection(OTHER));
+    a.forEach((y, i) => expect(Math.abs(y - b[i]!)).toBeLessThan(10));
+  });
+
+  it("stretches only as far as it must to hold a reading outside the levels", () => {
+    const over = riverSection({ ...LOW, value: 6.2 });
+    expect(over.surfaceY).toBeGreaterThan(0);
+    // Over the bank, and drawn over it: above the Evacuate line, not clamped onto it.
+    expect(over.surfaceY).toBeLessThan(over.lines.at(-1)!.y - 2);
+    expect(over.overBank).toBe(true);
+
+    const under = riverSection({ ...OTHER, value: -0.4 });
+    expect(under.surfaceY).toBeLessThan(under.yOf(under.bedMetres));
+    expect(under.surfaceY).toBeGreaterThan(under.lines[0]!.y);
+  });
+});
+
 describe("the water surface", () => {
   it("runs wider than the drawing and closes, so the drift shows no seam", () => {
     const d = wavePath(170, 2.6);

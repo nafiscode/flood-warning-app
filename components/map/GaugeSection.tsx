@@ -92,46 +92,51 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
 
         {surfaceY !== null && live && (
           <g clipPath={`url(#${uid}-channel)`}>
-            <g className={styles.water} style={{ "--rise": `${section.riseFrom}px` } as object}>
-              <rect
-                x="0"
-                y={surfaceY}
-                width={SECTION_W}
-                height={Math.max(SECTION_H - surfaceY, 0)}
-                fill={`url(#${uid}-water)`}
-              />
-              {/* The surface: two bands of different length and speed drifting across each other. */}
-              <g transform={`translate(0 ${surfaceY})`}>
-                {WAVE_BANDS.map((band) => (
-                  <g
-                    key={band.length}
-                    className={`${styles.drift} ${band.back ? styles.back : ""}`}
-                    style={
-                      { "--length": band.length, "--seconds": `${band.seconds}s` } as object
-                    }
-                  >
-                    <path
-                      d={wavePath(band.length, band.amplitude, SECTION_H)}
-                      fill="var(--jaga-dam)"
-                      fillOpacity={band.opacity}
-                    />
-                    {!band.back && (
+            {/*
+             * The water's height is carried by this group alone, so stepping to the next station
+             * moves it: it slides up or down to the new level instead of jumping (the owner, 19
+             * Nov 2026). Everything inside is drawn with its surface at nought.
+             */}
+            <g className={styles.level} style={{ "--surface": `${surfaceY}px` } as object}>
+              <g className={styles.water} style={{ "--rise": `${section.riseFrom}px` } as object}>
+                <rect
+                  x="0"
+                  y="0"
+                  width={SECTION_W}
+                  height={SECTION_H}
+                  fill={`url(#${uid}-water)`}
+                />
+                {/* The surface: two bands of different length and speed drifting across each other. */}
+                <g>
+                  {WAVE_BANDS.map((band) => (
+                    <g
+                      key={band.length}
+                      className={`${styles.drift} ${band.back ? styles.back : ""}`}
+                      style={{ "--length": band.length, "--seconds": `${band.seconds}s` } as object}
+                    >
                       <path
                         d={wavePath(band.length, band.amplitude, SECTION_H)}
-                        fill={`url(#${uid}-sheen)`}
+                        fill="var(--jaga-dam)"
+                        fillOpacity={band.opacity}
                       />
-                    )}
+                      {!band.back && (
+                        <path
+                          d={wavePath(band.length, band.amplitude, SECTION_H)}
+                          fill={`url(#${uid}-sheen)`}
+                        />
+                      )}
+                    </g>
+                  ))}
+                  {/* The light that runs along a water surface. */}
+                  <g className={styles.glint}>
+                    <path
+                      d={waveLine(glint.length, glint.amplitude)}
+                      fill="none"
+                      stroke="var(--jaga-surface)"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
                   </g>
-                ))}
-                {/* The light that runs along a water surface. */}
-                <g className={styles.glint}>
-                  <path
-                    d={waveLine(glint.length, glint.amplitude)}
-                    fill="none"
-                    stroke="var(--jaga-surface)"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
                 </g>
               </g>
             </g>
@@ -183,10 +188,15 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
 
         {/* Where the water stands now, as a figure on the surface itself. */}
         {surfaceY !== null && value !== null && (
-          <g data-section-now={live ? "live" : "quiet"}>
+          /* The figure rides on the surface, so it travels with the water to the next station. */
+          <g
+            className={styles.level}
+            style={{ "--surface": `${surfaceY}px` } as object}
+            data-section-now={live ? "live" : "quiet"}
+          >
             {!live && (
               <path
-                d={`M4 ${surfaceY} L ${SECTION_W - 4} ${surfaceY}`}
+                d={`M4 0 L ${SECTION_W - 4} 0`}
                 stroke="var(--alert-stale)"
                 strokeWidth="2"
                 strokeDasharray="4 4"
@@ -195,7 +205,7 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
             )}
             <rect
               x="6"
-              y={surfaceY - 9}
+              y="-9"
               width="52"
               height="18"
               rx="4"
@@ -203,7 +213,7 @@ export function GaugeSection({ gauge }: { gauge: Gauge }) {
             />
             <text
               x="32"
-              y={surfaceY + 5.5}
+              y="5.5"
               textAnchor="middle"
               fontSize="12.5"
               fontWeight="700"

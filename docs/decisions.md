@@ -1006,3 +1006,18 @@ to do with it. Nothing here computes or suggests a level (safety rule 2).
 **Tested.** 112 unit cases over the frame, the tiers, the naming rule and the words, and one e2e on
 the home screen. Lint, typecheck and build clean. The map's own press is covered by unit tests on
 its pure parts only; `[data-map-lit]` e2e in this repo is timing-flaky and was not added to.
+
+**The frame is the station's levels, not its reading** (added the same day, after the owner stepped
+through the stations: "the animated cross sections looks the same just numbering under it
+changes"). The first scale took the reading into its own span, so every station's water came out at
+much the same height and only the figures moved - the picture carried no information at all. The
+frame is now set by that station's Watch, Warning, Evacuate and bank, which lands the three lines
+in about the same place at every station and leaves the water free to sit where the river really
+stands against them: low at a river well under its Watch, near the top at one close to its bank.
+Two stations can therefore be compared by eye, which is the whole point of stepping through them. A
+reading outside the levels still stretches the frame to hold it - a figure that fell off the
+drawing would read as "not reached" - but only by as much as that takes. The drawn bed sits well
+below the lowest level for a related reason: drawn any shallower, a river simply sitting at its
+ordinary level came out as a sliver and read as a dry bed. And the water's height is a CSS
+transition, so stepping to the next station slides the surface up or down to its new level instead
+of cutting to it.

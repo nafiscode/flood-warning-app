@@ -91,21 +91,41 @@ export function riverSection(input: SectionInput): Section {
     (l): l is { key: SectionLevelKey; metres: number } =>
       typeof l.metres === "number" && Number.isFinite(l.metres),
   );
-  const figures = [
+  /*
+   * The frame is set by the station's own levels, NOT by what it is reading now (the owner, 19 Nov
+   * 2026: stepping from one gauge to the next, "the animated cross sections looks the same, just
+   * numbering under it changes"). That was the first scale's doing: it took the reading into the
+   * span, so every station's water came out at much the same height and only the figures moved.
+   *
+   * With the levels holding the frame, the three lines land in about the same place at every
+   * station and the water is free to sit where the river really stands against them - low at a
+   * river well under its Watch, near the top at one close to its bank. That is the picture a
+   * reader can compare between stations, which is what makes stepping through them worth doing.
+   *
+   * A reading outside the levels still stretches the frame to hold it, because a figure that fell
+   * off the drawing would read as "not reached" (or as a dry channel) - but only by what it takes
+   * to show it, so the lines keep their places in every ordinary case.
+   */
+  const marks = [
     ...levels.map((l) => l.metres),
     ...(typeof bank === "number" && Number.isFinite(bank) ? [bank] : []),
-    ...(typeof value === "number" && Number.isFinite(value) ? [value] : []),
   ];
+  const reading = typeof value === "number" && Number.isFinite(value) ? value : null;
   // With nothing to go on at all, a plain 0..1 m frame: the drawing then shows a channel and says
   // in words that there is no reading and no level, rather than inventing either.
-  const high = figures.length ? Math.max(...figures) : 1;
-  const low = figures.length ? Math.min(...figures) : 0;
+  const high = marks.length ? Math.max(...marks) : (reading ?? 1);
+  const low = marks.length ? Math.min(...marks) : (reading ?? 0);
   const span = Math.max(high - low, 0.5);
-  const top = high + span * 0.28;
-  const bedMetres = low - span * 0.62;
+  let top = high + span * (marks.length ? 0.18 : 0.28);
+  // Deep enough under the lowest level that a river sitting at its ordinary level still looks like
+  // a river. Drawn shallower, a station that is simply normal would read as a dry bed.
+  let bedMetres = low - span * (marks.length ? 0.9 : 0.62);
+  if (reading !== null) {
+    top = Math.max(top, reading + span * 0.08);
+    bedMetres = Math.min(bedMetres, reading - span * 0.55);
+  }
   const plot = SECTION_H - PAD_TOP - PAD_BOTTOM;
-  const yOf = (metres: number) =>
-    PAD_TOP + ((top - metres) / (top - bedMetres)) * plot;
+  const yOf = (metres: number) => PAD_TOP + ((top - metres) / (top - bedMetres)) * plot;
 
   const bankMetres =
     typeof bank === "number" && Number.isFinite(bank)
@@ -139,7 +159,10 @@ export function riverSection(input: SectionInput): Section {
       .map(({ key, metres }) => ({ key, metres, y: yOf(metres) }))
       .sort((a, b) => a.metres - b.metres),
     overBank:
-      bankMetres !== null && typeof value === "number" && Number.isFinite(value) && value >= bankMetres,
+      bankMetres !== null &&
+      typeof value === "number" &&
+      Number.isFinite(value) &&
+      value >= bankMetres,
     groundPath,
     channelPath,
     riseFrom: surfaceY === null ? 0 : Math.max(bedY - surfaceY, 0),

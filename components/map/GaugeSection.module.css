@@ -5,6 +5,17 @@
  * when the card opens. The three level lines never move - a threshold that twitched would read as
  * a reading. Nothing moves at all under reduced motion.
  */
+/*
+ * How high the water stands. It is a transition, not a fixed position, so stepping from one
+ * station to the next slides the surface up or down to where that river stands instead of
+ * cutting to it - which is the only way a reader sees that the two are different (the owner,
+ * 19 Nov 2026). It never runs on the first drawing: there is no height to come from.
+ */
+.level {
+  transform-box: view-box;
+  transform: translateY(var(--surface, 0px));
+  transition: transform 0.9s cubic-bezier(0.33, 0.9, 0.3, 1);
+}
 .water {
   transform-box: view-box;
   animation: rise 1.1s cubic-bezier(0.22, 0.9, 0.3, 1) both;
@@ -54,6 +65,9 @@
   .drift,
   .glint {
     animation: none;
+  }
+  .level {
+    transition: none;
   }
   .glint {
     opacity: 0.5;
