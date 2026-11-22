@@ -694,13 +694,13 @@
         "lastReading": "Garisan putus-putus kelabu ialah bacaan terakhir, bukan paras air sekarang",
         "noLevels": "Stesen ini belum mempunyai paras rujukan, jadi tiada garisan dilukis",
         "levelsUnavailable": "Paras rujukan stesen ini belum dapat ditunjukkan di sini",
-        "drawing": "Bentuk alur dan dasar sungai ialah lukisan, bukan ukur. Hanya paras air dan paras rujukan yang diukur",
-        "provisional": "Paras sementara, dipilih daripada banjir lalu di stesen ini. Pentadbir boleh mengubah mana-mana daripadanya",
         "bankIsEvacuate": "sama dengan paras Pindah",
         "deep": "{value} m di bawah tebing",
         "wide": "kira-kira {value} m",
         "bedDeeper": "Dasar sungai lebih dalam daripada yang dilukis, jadi lukisan ini dipotong",
-        "measured": "Paras tebing dan dasar daripada rekod stesen ThaiWater, dan lebar diukur merentasi air yang dipetakan OpenStreetMap. Bentuk tebingnya ialah lukisan, bukan ukur"
+        "measured": "Paras tebing dan dasar daripada rekod stesen ThaiWater, dan lebar diukur merentasi air yang dipetakan OpenStreetMap. Bentuk tebingnya ialah lukisan, bukan ukur",
+        "drawing": "Bentuk alur dan dasar sungai ialah lukisan, bukan ukur. Hanya paras air dan paras rujukan yang diukur",
+        "provisional": "Paras sementara, dipilih daripada banjir lalu di stesen ini. Pentadbir boleh mengubah mana-mana daripadanya"
       }
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",
@@ -4070,6 +4070,10 @@
       "modeDrill": "Dalam mod latihan ia hanya menerbitkan latihan: tiada sesiapa selain pentadbir melihatnya.",
       "modeReal": "Ia menerbitkan amaran sebenar kepada penduduk mukim dalam zon itu.",
       "toReal": "Terbitkan amaran sebenar",
+      "lineOn": "Amaran automatik turut dihantar melalui LINE",
+      "lineOff": "Amaran automatik tidak dihantar melalui LINE",
+      "lineToOff": "Matikan LINE",
+      "lineToOn": "Hidupkan LINE",
       "toDrill": "Terbitkan latihan sahaja",
       "allOn": "Hidupkan bagi semua stesen sungai",
       "allOff": "Matikan bagi semua stesen sungai",

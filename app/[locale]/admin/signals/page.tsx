@@ -19,6 +19,7 @@ import {
   reviewSeasonNotice,
   setAutoAlarm,
   setAutoAlarmDam,
+  setAutoLine,
   setAutoMode,
   setDamLevels,
   setGaugeLevels,
@@ -120,6 +121,7 @@ export default async function SignalsPage({
       clearSuspectAction={clearGaugeSuspect.bind(null, locale)}
       allAction={setAutoAlarm.bind(null, locale)}
       modeAction={setAutoMode.bind(null, locale)}
+      lineAction={setAutoLine.bind(null, locale)}
       dismissAction={dismissAutoAlarm.bind(null, locale)}
       levelsAction={setGaugeLevels.bind(null, locale)}
       reservoirs={

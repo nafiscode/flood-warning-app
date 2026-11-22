@@ -227,6 +227,112 @@ export async function lineAlert(supabase: SupabaseClient, alertId: string): Prom
   }
 }
 
+/** One recipient of an automatically published alert, as `line_auto_alert_due` returns them. */
+type AutoAlertDue = {
+  alert_id: string;
+  level: string;
+  messages: Record<string, string> | null;
+  template_messages: Record<string, string> | null;
+  next_update_at: string | null;
+  tambons: number;
+  line_user_id: string;
+  locale: string;
+  placeless: boolean;
+};
+
+/**
+ * Send the alerts the automated alarm has published to the people they concern over LINE
+ * (the owner, 22 Nov 2026).
+ *
+ * `lineAlert` cannot serve this: it runs as the admin who has just pressed send, and an automatic
+ * alert has no admin and no screen. So the database hands the recipients, and the words to send
+ * them, to the gate token instead - and books each alert as it does, so a second tick sends
+ * nobody twice. Whether LINE is one of the roads at all is the admin's switch
+ * (`system_settings.auto_alarm.line`), which the database reads when it publishes; by the time a
+ * row reaches here the decision has been made.
+ *
+ * Never throws. An alert that LINE refuses is still in the app, on the map, in the bell and on
+ * every web push that was owed: LINE is a second road, never the only one.
+ */
+export async function lineAutoAlertTick(): Promise<
+  { sent: number; failed: number; alerts: number } | { skipped: string }
+> {
+  try {
+    const token = gateToken();
+    if (!token || !accessToken()) return { skipped: "no_keys" };
+    const supabase = createPublicClient();
+    const { data, error } = await supabase.rpc("line_auto_alert_due", { p_token: token });
+    if (error || !Array.isArray(data)) return { skipped: "not_set_up" };
+    const rows = data as AutoAlertDue[];
+    if (rows.length === 0) return { sent: 0, failed: 0, alerts: 0 };
+
+    // One alert at a time, grouped by language and by whether the reader has a place of their own.
+    const byAlert = new Map<string, AutoAlertDue[]>();
+    for (const row of rows) {
+      const list = byAlert.get(row.alert_id) ?? [];
+      list.push(row);
+      byAlert.set(row.alert_id, list);
+    }
+    let sent = 0;
+    let failed = 0;
+    for (const [alertId, people] of byAlert) {
+      const byGroup = new Map<string, { locale: Locale; placeless: boolean; ids: string[] }>();
+      for (const p of people) {
+        const locale = localeOf(p.locale);
+        const key = `${locale}:${p.placeless}`;
+        const group = byGroup.get(key) ?? { locale, placeless: p.placeless, ids: [] };
+        group.ids.push(p.line_user_id);
+        byGroup.set(key, group);
+      }
+      const first = people[0]!;
+      let alertSent = 0;
+      let alertFailed = 0;
+      for (const { locale, placeless, ids } of byGroup.values()) {
+        const message = alertFlex(
+          {
+            id: alertId,
+            level: first.level,
+            messages: first.messages ?? {},
+            nextUpdateAt: first.next_update_at,
+            /*
+             * Somebody who never chose a place is told about every alert, and for them "your
+             * area" would be a lie: they get the alert's own stored words, which name the
+             * tambons it is really for (the owner, 21 Oct 2026).
+             */
+            template: placeless ? null : first.template_messages,
+            tambons: first.tambons,
+          },
+          locale,
+          // An automatic alert is never a drill with an audience: the database only hands over a
+          // real one, or a drill meant for everyone.
+          headOf(locale, first.level, false),
+          wordsOf(locale),
+          siteUrl(),
+        );
+        if (!message) continue;
+        for (const group of batches(ids)) {
+          if (await multicast(group, message)) alertSent += group.length;
+          else alertFailed += group.length;
+        }
+      }
+      const q = await quota();
+      await supabase.rpc("line_auto_alert_sent", {
+        p_token: token,
+        p_alert: alertId,
+        p_recipients: alertSent,
+        p_failed: alertFailed,
+        p_used: q.used,
+        p_limit: q.limit,
+      });
+      sent += alertSent;
+      failed += alertFailed;
+    }
+    return { sent, failed, alerts: byAlert.size };
+  } catch {
+    return { skipped: "error" };
+  }
+}
+
 /**
  * Whether LINE accepts this server's access token: "ok", "none" when there is no token here, or
  * the status LINE refused it with (401 for a wrong or cut-short token). Says nothing else.

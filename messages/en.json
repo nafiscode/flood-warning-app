@@ -694,13 +694,13 @@
         "lastReading": "The grey dashed line is the last reading, not the water now",
         "noLevels": "This station has no reference levels yet, so no lines are drawn",
         "levelsUnavailable": "The levels for this station cannot be shown here just now",
-        "drawing": "The shape of the channel and the bed are a drawing, not a survey. Only the water level and the levels are measured",
-        "provisional": "Provisional levels, chosen from past floods at this station. An admin can change any of them",
         "bankIsEvacuate": "the same as the Evacuate level",
         "deep": "{value} m below the bank",
         "wide": "about {value} m",
         "bedDeeper": "The bed is deeper than the drawing shows, so the drawing is cut",
-        "measured": "The bank and bed levels are from ThaiWater's station record and the width is measured across the water OpenStreetMap has mapped. The shape of the sides is a drawing, not a survey"
+        "measured": "The bank and bed levels are from ThaiWater's station record and the width is measured across the water OpenStreetMap has mapped. The shape of the sides is a drawing, not a survey",
+        "drawing": "The shape of the channel and the bed are a drawing, not a survey. Only the water level and the levels are measured",
+        "provisional": "Provisional levels, chosen from past floods at this station. An admin can change any of them"
       }
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
@@ -4070,6 +4070,10 @@
       "modeDrill": "In drill mode it publishes drills only: nobody outside the admins sees them.",
       "modeReal": "It publishes real alerts to the residents of the zone's tambons.",
       "toReal": "Publish real alerts",
+      "lineOn": "An automatic alert also goes out over LINE",
+      "lineOff": "An automatic alert does not go out over LINE",
+      "lineToOff": "Turn LINE off",
+      "lineToOn": "Turn LINE on",
       "toDrill": "Publish drills only",
       "allOn": "Turn on for every river gauge",
       "allOff": "Turn off for every river gauge",

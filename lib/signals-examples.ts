@@ -144,7 +144,7 @@ const place = (
 export const EXAMPLE_SIGNALS: Signals = {
   now: EXAMPLE_SIGNALS_NOW,
   zones: [rising, quiet],
-  auto: { graceMinutes: 20, maxAgeH: 3, mode: "drill" },
+  auto: { graceMinutes: 20, maxAgeH: 3, mode: "drill", line: true },
   events: [
     {
       id: "00000000-0000-4000-8000-0000000000e1",

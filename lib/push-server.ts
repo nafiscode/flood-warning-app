@@ -236,8 +236,14 @@ export async function runPushTick(): Promise<PushOutcome> {
   lastTickAt = now;
   try {
     const token = gateToken();
-    // The LINE half runs beside this one, whatever happens to web push.
-    const line = import("@/lib/line-server").then((m) => m.lineCaseTick()).catch(() => null);
+    /*
+     * The LINE half runs beside this one, whatever happens to web push: the cases, and the
+     * alerts the alarm has published by itself (the owner, 22 Nov 2026). Neither can fail the
+     * other, and neither can fail the push tick.
+     */
+    const line = import("@/lib/line-server")
+      .then((m) => Promise.all([m.lineCaseTick(), m.lineAutoAlertTick()]))
+      .catch(() => null);
     if (!token || !configured()) {
       await line;
       return { skipped: "no_keys" };

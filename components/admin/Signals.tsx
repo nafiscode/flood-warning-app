@@ -1180,6 +1180,7 @@ function AutoPanel({
   t,
   allAction,
   modeAction,
+  lineAction,
   dismissAction,
 }: {
   data: Signals;
@@ -1187,9 +1188,15 @@ function AutoPanel({
   t: T;
   allAction?: (form: FormData) => void;
   modeAction?: (form: FormData) => void;
+  lineAction?: (form: FormData) => void;
   dismissAction?: (form: FormData) => void;
 }) {
-  const auto = data.auto ?? { graceMinutes: 20, maxAgeH: 3, mode: "drill" as const };
+  const auto = data.auto ?? {
+    graceMinutes: 20,
+    maxAgeH: 3,
+    mode: "drill" as const,
+    line: true,
+  };
   const inZones = (data.allGauges ?? []).filter((g) => g.zoneId);
   const on = inZones.filter((g) => g.auto).length;
   const events = data.events ?? [];
@@ -1212,7 +1219,15 @@ function AutoPanel({
         {auto.mode === "real" ? t("auto.modeReal") : t("auto.modeDrill")}
       </p>
       <p className={hint}>{t("auto.count", { on, all: inZones.length })}</p>
-      {allAction || modeAction ? (
+      {/*
+       * Which roads an automatic alert travels. Web push and the app always; LINE unless an admin
+       * turns it off (the owner, 22 Nov 2026). Said in words, because an alert that claims a road
+       * it does not travel is worse than one that claims none.
+       */}
+      <p className={hint} data-signals-auto-line={auto.line ? "on" : "off"}>
+        {auto.line ? t("auto.lineOn") : t("auto.lineOff")}
+      </p>
+      {allAction || modeAction || lineAction ? (
         <div className="flex flex-wrap gap-2">
           {allAction ? (
             <>
@@ -1244,6 +1259,18 @@ function AutoPanel({
               <input type="hidden" name="mode" value={auto.mode === "real" ? "drill" : "real"} />
               <button type="submit" className={`${buttonSecondary} w-auto px-4`}>
                 {auto.mode === "real" ? t("auto.toDrill") : t("auto.toReal")}
+              </button>
+            </form>
+          ) : null}
+          {lineAction ? (
+            <form action={lineAction}>
+              {!auto.line && <input type="hidden" name="line" value="on" />}
+              <button
+                type="submit"
+                className={`${buttonSecondary} w-auto px-4`}
+                data-signals-line-toggle={auto.line ? "off" : "on"}
+              >
+                {auto.line ? t("auto.lineToOff") : t("auto.lineToOn")}
               </button>
             </form>
           ) : null}
@@ -1366,6 +1393,7 @@ export function SignalsView({
   clearSuspectAction,
   allAction,
   modeAction,
+  lineAction,
   dismissAction,
   levelsAction,
   reservoirs,
@@ -1392,6 +1420,7 @@ export function SignalsView({
   clearSuspectAction?: (form: FormData) => void;
   allAction?: (form: FormData) => void;
   modeAction?: (form: FormData) => void;
+  lineAction?: (form: FormData) => void;
   dismissAction?: (form: FormData) => void;
   levelsAction?: (form: FormData) => void;
   /**
@@ -1461,6 +1490,7 @@ export function SignalsView({
         t={t}
         allAction={allAction}
         modeAction={modeAction}
+        lineAction={lineAction}
         dismissAction={dismissAction}
       />
       {view === "map" ? (

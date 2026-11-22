@@ -86,6 +86,20 @@ export async function setAutoMode(locale: string, form: FormData) {
 }
 
 /**
+ * Whether an alert the automated alarm publishes also travels LINE (the owner, 22 Nov 2026:
+ * "add in the Alert, that I can switch on or off, as of now make it on as default, but I can
+ * switch off anytime"). It changes the roads of alerts still to come, never one already sent, and
+ * it cannot make the alarm speak or stay silent. The database checks the caller is an admin and
+ * logs who turned it which way.
+ */
+export async function setAutoLine(locale: string, form: FormData) {
+  const on = form.get("line") === "on";
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_auto_alarm_line", { p_on: on });
+  redirect(`${localePath(locale, "/admin/signals")}?${error ? "error=auto" : "autosaved=1"}`);
+}
+
+/**
  * One reservoir's two shares of capacity (the owner, 27 Oct 2026). An empty box takes that rule
  * off the reservoir, which is why null is sent rather than refused: the database then grades it on
  * release, inflow and rise alone, as every dam was graded before 26 October.

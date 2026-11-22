@@ -211,7 +211,13 @@ export function withGaugeLevels(data: Signals, rows: unknown): Signals {
   };
 }
 
-export type AutoSettings = { graceMinutes: number; maxAgeH: number; mode: "drill" | "real" };
+export type AutoSettings = {
+  graceMinutes: number;
+  maxAgeH: number;
+  mode: "drill" | "real";
+  /** Whether an alert this alarm publishes also travels LINE (the owner, 22 Nov 2026). */
+  line: boolean;
+};
 export type AutoEvent = {
   id: string;
   zoneId: string;
@@ -355,6 +361,8 @@ export function toSignals(raw: unknown): Signals {
       graceMinutes: numberOrNull(auto.grace_minutes) ?? 20,
       maxAgeH: numberOrNull(auto.max_age_h) ?? 3,
       mode: auto.mode === "real" ? "real" : "drill",
+      // Absent means on: the switch was added after the setting, and LINE was the spec's default.
+      line: auto.line !== false,
     },
     events,
     allGauges,

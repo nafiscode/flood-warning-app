@@ -355,6 +355,44 @@ describe("the automated alarm", () => {
     expect(container.querySelectorAll("[data-signal-auto]").length).toBeGreaterThan(0);
   });
 
+  /*
+   * The owner, 22 Nov 2026: "for the LINE Channel, add in the Alert, that I can switch on or
+   * off, as of now make it on as default, but I can switch off anytime." The switch says in words
+   * which roads an automatic alert travels, because a card that claimed a road it did not travel
+   * would be worse than one that claimed none.
+   */
+  it("says whether an automatic alert travels LINE, and offers the switch", () => {
+    const fn = () => {};
+    const on = render(
+      <SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} lineAction={fn} />,
+    );
+    const panel = on.container.querySelector("[data-signals-auto]")!;
+    expect(panel.querySelector("[data-signals-auto-line]")!.getAttribute("data-signals-auto-line")).toBe("on");
+    expect(panel.textContent).toContain("also goes out over LINE");
+    // The button turns it the other way.
+    expect(panel.querySelector("[data-signals-line-toggle]")!.getAttribute("data-signals-line-toggle")).toBe("off");
+    expect(panel.querySelector("[data-signals-line-toggle]")!.textContent).toContain("Turn LINE off");
+
+    const off = render(
+      <SignalsView
+        data={{ ...EXAMPLE_SIGNALS, auto: { ...EXAMPLE_SIGNALS.auto!, line: false } }}
+        locale="en"
+        t={t}
+        lineAction={fn}
+      />,
+    );
+    const offPanel = off.container.querySelector("[data-signals-auto]")!;
+    expect(offPanel.querySelector("[data-signals-auto-line]")!.getAttribute("data-signals-auto-line")).toBe("off");
+    expect(offPanel.textContent).toContain("does not go out over LINE");
+    expect(offPanel.querySelector("[data-signals-line-toggle]")!.textContent).toContain("Turn LINE on");
+  });
+
+  it("shows the state but no switch without the action (the example page)", () => {
+    const { container } = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} />);
+    expect(container.querySelector("[data-signals-auto-line]")).not.toBeNull();
+    expect(container.querySelector("[data-signals-line-toggle]")).toBeNull();
+  });
+
   it("offers no buttons without the actions (the example page)", () => {
     const { container } = render(<SignalsView data={EXAMPLE_SIGNALS} locale="en" t={t} />);
     expect(container.querySelector("[data-signals-all-on]")).toBeNull();
