@@ -43,6 +43,22 @@ OUT = PIPELINE_DIR / "out" / "gauge_section"
 DEEP_M = 20.0
 # Below this, the figure is not a channel either (a kerb, or two numbers that are the same datum).
 SHALLOW_M = 0.3
+# How far the listed bank tops may sit from the station's own bank level before they are taken to
+# be on ANOTHER DATUM and dropped (22 Nov 2026, found by the owner on the card for X.67A).
+#
+# `min_bank_m` is the bank in m MSL - the level Jaga warns against and draws its lines from - and
+# `left_bank_m` / `right_bank_m` are the two bank tops. They describe the same bank and should
+# agree. At X.67A they do not: the bank is listed at 39.92 m MSL while its two bank tops are 6.278
+# and 6.29, which is a real 7.5 m channel measured down from the station's own staff gauge. Drawn
+# together with the levels, that put the water 29 m above both banks and the card showed a river
+# standing out of its channel while the words beside it said the station was normal.
+#
+# The threshold is not fine judgement. Of the 50 stations carrying both figures, 49 agree to
+# within 4.28 m (most to under 2 m, and a bank top a little above the warning bank is ordinary);
+# X.67A is 33.64 m out. Ten metres sits an order of magnitude from either side. The app applies
+# the same rule again at drawing time (lib/gauge-section.ts), because a figure this wrong must not
+# depend on the pipeline having been re-run.
+DATUM_TOLERANCE_M = 10.0
 
 
 def stations() -> pd.DataFrame:
@@ -66,8 +82,15 @@ def channel(row, water: width_mod.Water | None, to_merc) -> dict:
     left, right = _num(row.left_bank_m), _num(row.right_bank_m)
     bed = _num(row.ground_level_m)
     bank = min([b for b in (left, right) if b is not None], default=None)
-    depth = None if bed is None or bank is None else round(bank - bed, 3)
     note = []
+    # The whole channel is dropped where the bank tops cannot be on the same datum as the bank
+    # level, because the bed is listed on the datum of the bank tops: keeping it would be the same
+    # mistake with one fewer clue. See DATUM_TOLERANCE_M.
+    listed_bank = _num(getattr(row, "min_bank_m", None))
+    if bank is not None and listed_bank is not None and abs(bank - listed_bank) > DATUM_TOLERANCE_M:
+        note.append(f"another datum: bank tops {bank:g} against a bank level of {listed_bank:g}")
+        left = right = bed = bank = None
+    depth = None if bed is None or bank is None else round(bank - bed, 3)
     if depth is not None and depth <= SHALLOW_M:
         note.append("bed not below the bank")
         bed, depth = None, None

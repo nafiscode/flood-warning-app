@@ -211,6 +211,77 @@ describe("the channel, where the station's own figures give one", () => {
   });
 });
 
+describe("channel heights on another datum", () => {
+  /*
+   * X.67A \u0e1a\u0e49\u0e32\u0e19\u0e19\u0e32\u0e2a\u0e35\u0e17\u0e2d\u0e07 on jaga-dev, 22 Nov 2026, found by the owner looking at the card:
+   * ThaiWater lists its banks at 6.28 and 6.29 and its bed at -1.22 - a real 7.5 m channel, but
+   * measured down from the station's own staff gauge - while its levels are 38.65, 39.30 and
+   * 39.92 m MSL. Drawn together, the water stood 29 m over both banks and the picture showed a
+   * river out of its channel on both sides while the words beside it said "normal".
+   */
+  const X67A = {
+    value: 35.41,
+    watch: 38.65,
+    warning: 39.3,
+    evacuate: 39.92,
+    bank: 39.92,
+    bed: -1.223,
+    leftBank: 6.278,
+    rightBank: 6.29,
+    channelWidth: null,
+  };
+
+  it("drops heights that cannot be on the same datum as the levels", () => {
+    const s = riverSection(X67A);
+    expect(s.leftMetres).toBeNull();
+    expect(s.rightMetres).toBeNull();
+    expect(s.bed).toBeNull();
+    expect(s.depth).toBeNull();
+  });
+
+  it("stops the river being drawn standing over both its banks", () => {
+    const s = riverSection(X67A);
+    // The whole point: the water surface must sit BELOW the bank, as the words say it does.
+    expect(s.surfaceY).not.toBeNull();
+    expect(s.surfaceY!).toBeGreaterThan(s.bankY);
+  });
+
+  it("falls back to the drawn channel, and says so", () => {
+    const { container } = renderWithIntl(<GaugeSection gauge={X67A as never} />, "en");
+    // No measured-channel wording, because nothing of this station's channel was usable.
+    expect(container.textContent).not.toMatch(/ThaiWater's station record/);
+    expect(container.textContent).toMatch(/not a survey/);
+    expect(container.querySelector("[data-section-bed]")).toBeNull();
+  });
+
+  it("keeps heights that do agree, and keeps the width either way", () => {
+    // A station on one datum throughout is untouched.
+    const sane = riverSection({ ...X67A, bed: 1.9, leftBank: 39.9, rightBank: 40.2 });
+    expect(sane.leftMetres).toBe(39.9);
+    expect(sane.bed!.metres).toBe(1.9);
+    /*
+     * The width is a horizontal distance measured across OpenStreetMap's water. It has no datum
+     * to disagree with, so a rejected set of heights must not take it down too.
+     */
+    expect(riverSection({ ...X67A, channelWidth: 55 }).width).not.toBeNull();
+  });
+
+  it("keeps listed heights when the station has no levels to check them against", () => {
+    const noLevels = riverSection({
+      value: null,
+      watch: null,
+      warning: null,
+      evacuate: null,
+      bank: null,
+      bed: -1.223,
+      leftBank: 6.278,
+      rightBank: 6.29,
+    });
+    expect(noLevels.leftMetres).toBe(6.278);
+    expect(noLevels.bed!.metres).toBe(-1.223);
+  });
+});
+
 describe("the water surface", () => {
   it("runs wider than the drawing and closes, so the drift shows no seam", () => {
     const d = wavePath(170, 2.6);

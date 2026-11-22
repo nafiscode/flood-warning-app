@@ -33,6 +33,13 @@ export const SECTION_H = 190;
 const PAD_TOP = 10;
 const PAD_BOTTOM = 8;
 
+/**
+ * How far a listed bank height may sit from the station's own levels before it is treated as
+ * being on another datum and dropped. See the note in `riverSection`: the sane stations sit
+ * within 4.28 m, the one bad one 33.64 m away.
+ */
+export const DATUM_TOLERANCE_M = 10;
+
 export type SectionInput = {
   /** The newest reading, m MSL, or null when the station has gone quiet. */
   value: number | null;
@@ -136,10 +143,44 @@ export function riverSection(input: SectionInput): Section {
    * off the drawing would read as "not reached" (or as a dry channel) - but only by what it takes
    * to show it, so the lines keep their places in every ordinary case.
    */
-  const left = own(input.leftBank);
-  const right = own(input.rightBank);
-  const banks = [left, right].filter((m): m is number => m !== null);
+  /*
+   * The channel's heights are only drawn if they are on the SAME DATUM as the levels (22 Nov
+   * 2026). ThaiWater's station record gives most stations their bank and bed in m MSL, the datum
+   * the levels and the reading use - but not all of them: at X.67A บ้านนาสีทอง the banks are
+   * listed as 6.28 and 6.29 and the bed as -1.22, which is a real 7.5 m channel measured down
+   * from the station's own staff gauge, while its Watch, Warning and Evacuate are 38.65, 39.30
+   * and 39.92 m MSL.
+   *
+   * Drawn together, those two datums put the water 29 m above both banks, and the card showed a
+   * river standing over its banks on both sides while the words beside it said the station was
+   * normal. A picture that contradicts the sentence under it is worse than no picture (safety
+   * rule 10), and of the two it is the words that are checked.
+   *
+   * So the test is against the station's own bank level, because the listed bank and that level
+   * describe the same physical bank and must agree. Measured on jaga-dev, 22 Nov 2026: of the 46
+   * stations with listed heights, 45 sit between 0.00 m and 4.28 m of their bank level (average
+   * 0.46 m) and X.67A sits 33.64 m below it. Ten metres is an order of magnitude clear of both.
+   *
+   * Rejection costs nothing a reader needs: the station keeps the schematic channel and the card
+   * says the shape is a drawing, which is what every station without heights already does. The
+   * width is not touched - it is a horizontal distance measured across OpenStreetMap's water and
+   * has no datum to disagree with.
+   */
   const dbBank = own(bank);
+  const datum = [...levels.map((l) => l.metres), ...(dbBank !== null ? [dbBank] : [])];
+  const sameDatum = (m: number | null) =>
+    m === null || datum.length === 0 || datum.some((d) => Math.abs(m - d) <= DATUM_TOLERANCE_M)
+      ? m
+      : null;
+  const listedLeft = own(input.leftBank);
+  const listedRight = own(input.rightBank);
+  // One bank off the datum condemns the whole channel: the bed is listed on the same datum as the
+  // banks, so a bed kept beside rejected banks would be the same mistake with one fewer clue.
+  const heightsAgree =
+    sameDatum(listedLeft) !== null || sameDatum(listedRight) !== null || datum.length === 0;
+  const left = heightsAgree ? listedLeft : null;
+  const right = heightsAgree ? listedRight : null;
+  const banks = [left, right].filter((m): m is number => m !== null);
   const marks = [...levels.map((l) => l.metres), ...(dbBank !== null ? [dbBank] : []), ...banks];
   const reading = own(value);
   // With nothing to go on at all, a plain 0..1 m frame: the drawing then shows a channel and says
@@ -163,7 +204,8 @@ export function riverSection(input: SectionInput): Section {
    * the channel going down past a break, and the words give the bed's real height. Nothing is
    * ever drawn as shallower than it is without saying so.
    */
-  const bedOwn = own(input.bed);
+  // The bed is listed on the same datum as the banks, so it stands or falls with them.
+  const bedOwn = heightsAgree ? own(input.bed) : null;
   const floor = low - span * 2.4;
   let bedCut = false;
   if (bedOwn !== null) {

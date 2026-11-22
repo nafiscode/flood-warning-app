@@ -1399,3 +1399,44 @@ only path that stays $0, adds no scraping/proxy dependency, and cannot present a
 To flip a source to an in-app embed later: confirm its page both allows framing and shows a capture
 time, then set `embeddable: true` in `lib/cctv.ts`. Open follow-up (owner's idea, 22 Nov): find free
 city-corner / street-level CCTV showing rain-water pooling or flooding, to add the same way.
+
+## 2026-11-22 - A channel on another datum is not drawn at all
+
+The owner, looking at X.67A บ้านนาสีทอง on the live site: "check why this gauge has strange cross
+section with 2 sides water level, and fix it".
+
+**What it was.** The drawing was right and the figures were wrong. ThaiWater lists that station's
+bank at **39.92 m MSL** - the level Jaga warns against, and the one the Evacuate line is drawn from
+- while listing its two bank tops at **6.278 and 6.29** and its bed at **-1.223**. Those last three
+are a real channel, about 7.5 m deep, but measured down from the station's own staff gauge rather
+than from mean sea level. Two datums in one picture: the reading of 35.41 came out twenty-nine
+metres above both bank tops, so the card filled the ground on either side of the channel with
+water - a river standing out of its banks on both sides, beside a sentence saying the station was
+อยู่ในระดับปกติ. That is the failure that matters here: not an ugly drawing, but a picture
+contradicting the words under it, and between the two it is the words that have been checked
+(safety rule 10).
+
+**The rule.** A station's listed bank tops and its bank level describe the same physical bank and
+must agree. Where the lower bank top sits more than 10 m from the bank level, the whole channel is
+dropped - the bed too, because the bed is listed on the datum of the bank tops and keeping it would
+be the same mistake with one fewer clue. The station then keeps the schematic channel and the card
+says the shape is a drawing, which is already what every station without listed heights does.
+Nothing a reader needs is lost: the levels, the reading and the bank were never the part that was
+wrong, and the width is untouched because a distance measured across OpenStreetMap's water has no
+datum to disagree with.
+
+**Why ten metres is not fine judgement.** Of the 46 stations carrying listed heights, 45 sit within
+4.28 m of their bank level and most within 2 m - a surveyed bank top a little above the warning
+bank is ordinary - and X.67A sits 33.64 m away. The threshold has an order of magnitude of clear
+air on both sides. ThaiWater's own record gives the same answer independently: its `min_bank_m`
+matches `min(left_bank_m, right_bank_m)` at every station but this one.
+
+**Fixed in three places, deliberately.** `pipeline/gauge_section` applies the test and no longer
+writes the row (seed 62 is 49 rows, not 50); migration `20261122210000_a10_gauge_channel_datum`
+deletes it from jaga-dev, which is never rebuilt from the seed; and `lib/gauge-section.ts` applies
+it again at drawing time, so a bad row reaching the database from anywhere still cannot draw a
+river standing over its banks. The last of the three is the one that matters: the other two are
+housekeeping, and a figure this wrong must not depend on a pipeline having been re-run.
+
+Applied to jaga-dev and confirmed on jagaapp.org: X.67A now draws its water inside the channel,
+below all three level lines, with the schematic wording and no bank figures.
