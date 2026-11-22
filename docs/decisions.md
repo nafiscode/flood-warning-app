@@ -1371,3 +1371,31 @@ now reads -0.07 m. That is the window moving, not the guard firing. After applyi
 re-checked against the raw daily lows independently of the window: it still marks that day CAUGHT,
 and still leaves X.113's real 0.62 m of rain alone. The false 10.91 m is gone either way, but it is
 the guard, not the calendar, that stops the next dead sensor being published as a flood signal.
+
+## 2026-11-22 - Live CCTV: link out to the agency's own cameras, never embed or host
+
+The owner asked for free live CCTV of water gauges and dams/reservoirs for the four provinces, shown
+to users. Searched for a free API, MCP or embeddable feed and found none that is both documented and
+free: ThaiWater's API (the one we already use) has no CCTV service; EGAT's cameras are an
+undocumented SPA over SignalR and were returning 500; DDPM's `cctv.disaster.go.th` is the real
+live-flood-camera network but sits behind a Cloudflare JS challenge and, decisively, forbids being
+shown inside another app (`X-Frame-Options: SAMEORIGIN`, `CSP frame-ancestors 'self'`). No source
+exposes a per-frame capture time, so we cannot programmatically tell a live frame from a frozen or
+offline one.
+
+Given that, and the owner's choices in the session: **link out, do not embed or proxy.** A closable
+in-app window (`components/cctv/CameraWindow.tsx`) opens over the page and holds a button that opens
+the agency's own site in a new window; it embeds a page only where that page permits framing, which
+none of today's sources do, so every source in `lib/cctv.ts` is `embeddable: false`. We rejected
+proxying the feeds through our own server (a fragile scrape of a Cloudflare-protected government SPA,
+grey-area, and it still cannot prove freshness). The window says plainly the pictures are the
+agency's own, may lag/freeze/be offline, are not a Jaga alert and are not a reason not to act
+(safety rules 2, 8, 10), and need a connection (rule 7). Shown on the river-gauge details card
+(DDPM) and the dam report (EGAT). Commit 509b92d; i18n strings in 827aaf1.
+
+Reason: no free source gives embeddable, timestamped live video for our provinces; a link-out is the
+only path that stays $0, adds no scraping/proxy dependency, and cannot present a stale frame as live.
+
+To flip a source to an in-app embed later: confirm its page both allows framing and shows a capture
+time, then set `embeddable: true` in `lib/cctv.ts`. Open follow-up (owner's idea, 22 Nov): find free
+city-corner / street-level CCTV showing rain-water pooling or flooding, to add the same way.
