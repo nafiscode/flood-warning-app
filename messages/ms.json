@@ -1,4 +1,15 @@
 {
+  "cctv": {
+    "open": "Kamera langsung rasmi",
+    "title": "Kamera langsung rasmi",
+    "sourceDdpm": "CCTV bencana Thailand (DDPM)",
+    "sourceEgat": "Kamera empangan EGAT",
+    "launch": "Buka {source}",
+    "freshness": "Kamera ini milik agensi, bukan Jaga. Kamera mungkin lambat, beku pada gambar lama, atau tidak dalam talian — jadi semak masa yang ditunjuk pada laman mereka. Kamera bukan amaran Jaga, dan bukan sebab untuk tidak bertindak.",
+    "offline": "Kamera memerlukan sambungan internet.",
+    "emergency": "Dalam kecemasan, hubungi 1784 atau 1669.",
+    "close": "Tutup"
+  },
   "locationFinder": {
     "open": "Cari nama tempat atau tampal koordinat",
     "label": "Cari nama tempat, atau tampal koordinat",
@@ -4076,6 +4087,7 @@
       "lineToOn": "Hidupkan LINE",
       "toDrill": "Terbitkan latihan sahaja",
       "allOn": "Hidupkan bagi semua stesen sungai",
+      "allOnNote": "“Hidupkan semua stesen” hanya merangkumi stesen yang bacaannya ialah sungai itu sendiri. Stesen yang digerakkan oleh air pasang atau pelepasan empangan ditinggalkan, kerana air tingginya yang biasa akan mengeluarkan amaran; hidupkan stesen itu satu-satu jika itu yang anda mahu.",
       "allOff": "Matikan bagi semua stesen sungai",
       "count": "{on} daripada {all} stesen dalam zon ditetapkan automatik.",
       "gauge": "Penggera automatik bagi stesen ini",

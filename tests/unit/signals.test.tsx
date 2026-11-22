@@ -351,6 +351,9 @@ describe("the automated alarm", () => {
     expect(panel.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(panel.querySelector("[data-signals-all-on]")).not.toBeNull();
     expect(panel.querySelector("[data-signals-all-off]")).not.toBeNull();
+    // And the sweep says what it leaves alone (22 Nov 2026), so a tidal gauge is not armed by
+    // accident on a level its own high water reaches.
+    expect(panel.textContent).toContain("only the gauges whose reading is the river itself");
     expect(panel.querySelector("[data-signals-pending]")!.textContent).toContain("X.40A");
     expect(container.querySelectorAll("[data-signal-auto]").length).toBeGreaterThan(0);
   });

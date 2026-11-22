@@ -1,4 +1,15 @@
 {
+  "cctv": {
+    "open": "Official live cameras",
+    "title": "Official live cameras",
+    "sourceDdpm": "Thailand disaster CCTV (DDPM)",
+    "sourceEgat": "EGAT dam cameras",
+    "launch": "Open {source}",
+    "freshness": "These cameras belong to the agency, not to Jaga. A camera may lag, freeze on an old picture or be offline — so check the time shown on their page. A camera is never a Jaga alert, and never a reason not to act.",
+    "offline": "Cameras need an internet connection.",
+    "emergency": "In an emergency, call 1784 or 1669.",
+    "close": "Close"
+  },
   "locationFinder": {
     "open": "Search by place name or paste coordinates",
     "label": "Search a place name, or paste coordinates",
@@ -4076,6 +4087,7 @@
       "lineToOn": "Turn LINE on",
       "toDrill": "Publish drills only",
       "allOn": "Turn on for every river gauge",
+      "allOnNote": "“Arm every gauge” covers only the gauges whose reading is the river itself. A station the tide or a dam's releases move is left out, because its ordinary high water would publish an alert; arm one of those by hand if you mean to.",
       "allOff": "Turn off for every river gauge",
       "count": "{on} of {all} gauges in a zone are set to automatic.",
       "gauge": "Automated alarm for this gauge",

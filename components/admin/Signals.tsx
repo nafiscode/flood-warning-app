@@ -1276,6 +1276,13 @@ function AutoPanel({
           ) : null}
         </div>
       ) : null}
+      {/*
+        * What the sweep leaves alone (22 Nov 2026). "Arm every gauge" reaches only the gauges whose
+        * reading is the river: a station the tide or a dam's turbines move would publish from a high
+        * tide, which is why SLA005 was left unarmed on the same day. Any single gauge can still be
+        * armed by hand, which is a judgement; sweeping thirty is not the place to make one.
+        */}
+      {allAction ? <p className={hint}>{t("auto.allOnNote")}</p> : null}
       {pending.length > 0 && (
         <div className="flex flex-col gap-2" data-signals-pending={pending.length}>
           <h3 className="font-bold text-jaga-ink">{t("auto.pending")}</h3>
