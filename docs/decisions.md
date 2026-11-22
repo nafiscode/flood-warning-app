@@ -1353,3 +1353,21 @@ or gate mismatches, and X.73A silent instead of claiming eleven metres.
   **Two gaps the check turned up, with the owner's answers.** (1) **36 of 48 gauges have no zone**, so the alarm can never consider them; the owner chose to zone every one of them, with the list to approve first. Zoning does not arm: `auto_alarm_gauges.enabled` stays a separate tick per gauge, which matters because 8 of the 17 that can be zoned today are tidal or dam-pulse gauges that must not be armed on their raw levels. The remaining 18 stand in no existing zone's tambon and span three river systems, not one, so the zone scheme itself needs a decision rather than an invented lake-shore zone. (2) **Nothing tells anyone when the gauge feed dies** — the alarm needs a reading inside three hours and a dead feed shows only in the passive feed block on /admin/signals. Still to build.
 
   Also settled: the public map already colours an alert's whole area for every visitor, signed in or not (`public_alert_status` carries every alert with all its tambons, and `alertForTambon` paints them), so "for all users to see, not just the affected users" was already true. What it does not draw is the warning zone's own boundary as one shape; the owner asked for that outline, which is queued.
+
+## 2026-11-22 - The week chart and its sensor guard are applied to jaga-dev
+
+Follow-up to the entry above, the same day. The owner, having seen the drawings: "built and migrate
+to jaga dev". Migration `20261122093000_s11_gauge_week_series` is **applied**.
+
+Verified by `pg_get_function_result()` rather than the ledger: `station_status()` went 21 -> 22
+columns with `week_floors double precision[]` on the end. 31 of the 48 stations carry a full
+eight-day series, with no length or gate mismatches, and the chart is live on jagaapp.org - checked
+on a phone at SLA002 คลองหอยโข่ง, whose quiet week is drawn over a range of 2.48 to 2.98 m: exactly
+the half-metre scale floor, doing the job it was put there for.
+
+**One thing recorded so nobody later misreads it.** Bangkok rolled over to 23 November the same
+night, so X.73A's 14 November dropout fell out of the eight-day window by itself, and the station
+now reads -0.07 m. That is the window moving, not the guard firing. After applying, the rule was
+re-checked against the raw daily lows independently of the window: it still marks that day CAUGHT,
+and still leaves X.113's real 0.62 m of rain alone. The false 10.91 m is gone either way, but it is
+the guard, not the calendar, that stops the next dead sensor being published as a flood signal.
