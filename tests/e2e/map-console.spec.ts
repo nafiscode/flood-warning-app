@@ -62,6 +62,11 @@ const GAUGES = [
     warning: 7.8,
     evacuate: 8.8,
     provisionalLevels: true,
+    // Its week: the eight daily lows the card counts "rose on N of 7 days" from, and draws as a
+    // line (22 Nov 2026). A real riser, so the sentence and the chart both have something to say.
+    roseDays: 5,
+    weekChange: 0.9,
+    weekFloors: [3.46, 3.47, 3.35, 3.3, 3.51, 3.94, 4.32, 4.36],
   },
   {
     id: "g-ok",
@@ -791,6 +796,39 @@ test.describe("the live map on a laptop", () => {
 
     // The map itself is untouched: its marks are the drawn glasses, and the pop-up stays compact.
     await expect(page.locator('[data-map-frame] [data-gauge-section]')).toHaveCount(0);
+  });
+
+  /**
+   * The owner, 22 Nov 2026: "instead of just word we should have a minimal graph to support the
+   * wording as well, trend graphs". The sentence stays and the line joins it; neither replaces
+   * the other, and the chart carries no alert level (safety rules 2 and 8).
+   */
+  test("a gauge's week is drawn as a line beside the sentence that counts it", async ({ page }) => {
+    await serve(page);
+    await page.goto("/th/map");
+    await page.locator('[data-console-tile="gauges"] [data-tile-open="true"]').click();
+
+    const card = page.locator('[data-selected="gauge"]');
+    await expect(card).toBeVisible();
+    // The words are still there and still first: the chart supports them.
+    await expect(card.locator("[data-gauge-week]")).toContainText(
+      th.map.gauge.week.days.replace("{count}", "5"),
+    );
+    const chart = card.locator("[data-gauge-week-chart]");
+    await expect(chart).toBeVisible();
+    // Eight days, eight dots, and the range the box covers printed under it.
+    await expect(chart.locator("[data-week-point]")).toHaveCount(8);
+    await expect(chart).toContainText(th.map.gauge.week.axis);
+    // Every figure is in the label, so nothing the line says needs to be seen to be read.
+    const label = await chart.locator("svg").getAttribute("aria-label");
+    expect(label).toContain("4.36");
+    expect(label).toContain("3.30");
+
+    // No level is drawn across the week: a daily low below Watch says nothing about that day's
+    // peak, so the thresholds stay on the cross-section above it.
+    await expect(chart.locator("[data-section-line]")).toHaveCount(0);
+    // And the chart stays out of the map's own pop-up, like the cross-section.
+    await expect(page.locator("[data-map-frame] [data-gauge-week-chart]")).toHaveCount(0);
   });
 
   /** The owner, 18 Oct: the right panel folds away so the map has the room. */

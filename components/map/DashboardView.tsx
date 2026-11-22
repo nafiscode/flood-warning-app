@@ -116,6 +116,7 @@ import {
 import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { GaugeSection } from "./GaugeSection";
+import { GaugeWeek } from "./GaugeWeek";
 import { MapFeatureChips } from "./MapFeatures";
 import { InstallCard } from "@/components/InstallCard";
 import { TeamEntryChip } from "@/components/authority/TeamEntry";
@@ -1727,6 +1728,11 @@ export function DashboardView(props: DashboardViewProps) {
                 )}
               </p>
             )}
+            {/*
+             * The same week as a line (the owner, 22 Nov 2026). It comes after the sentence and
+             * the metres, never instead of them: the chart supports the words.
+             */}
+            <GaugeWeek gauge={gauge} />
             <p className={hint}>{t("gauge.week.caveat")}</p>
           </div>
         ) : (

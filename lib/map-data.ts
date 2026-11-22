@@ -72,6 +72,12 @@ export type Gauge = {
    */
   roseDays?: number | null;
   weekChange?: number | null;
+  /**
+   * The eight daily lows the two figures above were counted from, oldest first, m MSL, for the
+   * line on the card (`week_floors`, 22 Nov 2026). Gated exactly as they are: the database sends
+   * it only with the whole run of days behind it, so a partial week cannot be drawn.
+   */
+  weekFloors?: (number | null)[] | null;
   /** Only on a gauge the tide reaches, and only when the forecast could be read; see `SeaGate`. */
   sea?: SeaGate;
 };
@@ -180,6 +186,9 @@ export function toGauge(row: Record<string, unknown>): Gauge {
     roseDays:
       typeof row.rose_days === "number" && Number.isInteger(row.rose_days) ? row.rose_days : null,
     weekChange: num(row.week_change_m),
+    // An older `station_status()` still on the database sends no series at all, and the card then
+    // keeps the sentence without the line rather than drawing a short one.
+    weekFloors: Array.isArray(row.week_floors) ? row.week_floors.map(num) : null,
     watch: num(row.watch_m),
     warning: num(row.warning_m),
     evacuate: num(row.evacuate_m),

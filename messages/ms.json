@@ -654,7 +654,11 @@
         "changeUp": "Dalam 8 hari paras terendah harian naik {value} m",
         "changeDown": "Dalam 8 hari paras terendah harian turun {value} m",
         "caveat": "Ini ukuran, bukan ramalan dan bukan tahap amaran. Baca bersama hujan yang akan datang",
-        "none": "Arah 1 minggu belum dapat dibaca di stesen ini: air laut atau pelepasan empangan mempengaruhi bacaannya, atau 8 hari itu tidak lengkap"
+        "none": "Arah 1 minggu belum dapat dibaca di stesen ini: air laut atau pelepasan empangan mempengaruhi bacaannya, atau 8 hari itu tidak lengkap",
+        "chart": "Graf garis, paras terendah harian selama 8 hari, lama ke baharu {figures} m MSL. Terendah {low} m, tertinggi {high} m.",
+        "chartTitle": "Paras terendah harian dalam 8 hari lalu",
+        "scale": "Graf meliputi {low} hingga {high} m MSL",
+        "axis": "Kiri 8 hari lalu, kanan semalam"
       },
       "live": "Langsung",
       "updated": "Bacaan terbaru {time} · disemak semula setiap 5 minit",

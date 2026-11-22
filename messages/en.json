@@ -654,7 +654,11 @@
         "changeUp": "Over 8 days the daily low is {value} m higher",
         "changeDown": "Over 8 days the daily low is {value} m lower",
         "caveat": "A measurement, not a forecast and not an alert level. Read it beside the rain still to come",
-        "none": "The week's trend cannot be read at this station: the sea or a dam's releases move its readings, or the 8 days are incomplete"
+        "none": "The week's trend cannot be read at this station: the sea or a dam's releases move its readings, or the 8 days are incomplete",
+        "chart": "Line chart, the daily low over 8 days, oldest first: {figures} m MSL. Lowest {low} m, highest {high} m.",
+        "chartTitle": "The daily low over the last 8 days",
+        "scale": "The chart covers {low} to {high} m MSL",
+        "axis": "left is 8 days ago, right is yesterday"
       },
       "live": "Live",
       "updated": "Newest reading {time} · checked again every 5 minutes",

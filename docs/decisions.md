@@ -1286,3 +1286,56 @@ of 28.50/28.51 from its own output - those were the neighbouring station X.73's 
 X.73A's - and so reached the same wrong conclusion from the other direction. Both of us were
 reading a number near 28.5 and neither read the column it sat under. The check that settled it was
 the header and a count over all 46 rows.
+
+## 2026-11-22 - The week a river has had is drawn as a line, and the bad day that was faking a flood
+
+The owner: "now that we have the records of 7 days water level to tell the user if it's been risen
+for the past 7 days, instead of just word we should have a minimal graph to support the wording as
+well, trend graphs".
+
+**The chart.** `station_status()` has counted the week since 10 November but kept the series to
+itself: it returned how many days the daily low rose and how far it moved in all, and threw the
+eight daily lows away. They now come out as `week_floors`, gated exactly as the two counts are -
+null unless the whole run of days is there, so a partial week can never be drawn. The card keeps
+the sentence first and puts the line under it: the thing the owner wants a reader to see must not
+start depending on reading a picture.
+
+**What the chart deliberately does not do.** It carries **no level**. A *daily low* below Watch says
+nothing about whether that day's peak was, so drawing the thresholds across this series would be a
+claim the series cannot support; the levels stay on the cross-section, which is drawn from the
+reading they grade (safety rules 2 and 8). It is one hue, the river's own blue at every height,
+never the alert palette - the dam's charts settled that in October. Nothing moves: a line that drew
+itself in would be a week that looked like it was still happening. And all eight figures are in the
+label, so nothing the line says is gated behind seeing it.
+
+**The scale has a floor of half a metre, because auto-scaling is how you lie with a sparkline.**
+Fitted to its own range alone, a river whose daily low wandered two centimetres all week is drawn
+climbing the full height of the box and a reader sees a flood in the noise of a still river.
+Measured against the real series on jaga-dev: a quiet station wanders 10-15 cm in a week and now
+stays visibly flat, while X.119 rising 0.90 m still uses the whole height. The range the box covers
+is printed under it, so the shape always has a size attached.
+
+**The bug the picture found, which is the more important half of this.** Drawing the series was
+what finally showed it: X.73A read a daily low of **11.31 m on 14 November between two days of
+22.3 m**. A river does not fall eleven metres and climb back inside a day. That single dropout was
+the whole of the station's `week_change_m`, so the public map was telling residents the Pattani
+river at X.73A had **risen 10.91 m in eight days**. It had not moved at all. A sensor fault was
+being published as a flood signal, and the counting alone could never have shown it - this is an
+argument for the chart that is better than the chart.
+
+So a day whose daily low differs from the day before it *and* the day after it by more than 2 m, in
+opposite directions, is treated as the fault it is, and the station becomes unjudgeable for the week
+exactly as an incomplete run already does: null, and the card's existing "the week's trend cannot be
+read at this station". The bad day is **not** quietly dropped and the figure is **not** corrected,
+because either would publish a number nobody measured. Three things make the rule safe: a one-day V
+in a series of daily *minima* is an instrument and not a river, so a rise that holds even one more
+day is untouched; 2 m sits in open ground between the only two candidates anywhere in twelve days of
+every station (X.73A's 10.93 m dropout, and X.113's real 0.62 m of rain, which is left alone); and
+the worst a wrong guess can do is make Jaga say "this cannot be read" about a station it could have
+read - it can never publish anything, colour a tambon or move a level.
+
+Migration `20261122093000_s11_gauge_week_series`, rebuilt whole from the a10_gauge_channel version
+after diffing the live `pg_get_functiondef()` against it. **Not applied**: it changes what the
+public map says about a station, and the owner has not been asked yet. Verified read-only against
+jaga-dev by running the new body as a plain SELECT - 30 stations judged, 30 with a series, no length
+or gate mismatches, and X.73A silent instead of claiming eleven metres.
