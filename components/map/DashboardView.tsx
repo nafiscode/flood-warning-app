@@ -12,6 +12,7 @@ import { PlaceStatus } from "@/components/home/WatchedPlaces";
 import { SafePlaceCard } from "@/components/places/SafePlaceCard";
 import { HAZARD_CLASSES, hazardColor, hazardKey } from "@/lib/hazard-layer";
 import { riverColor } from "@/lib/river-layer";
+import { zoneCollection } from "@/lib/zone-layer";
 import {
   BASEMAPS,
   isPhotoBasemap,
@@ -409,6 +410,9 @@ export function DashboardView(props: DashboardViewProps) {
   const tDam = useTranslations("dam");
   const tMonitoring = useTranslations("monitoring");
   const tSea = useTranslations("sea");
+  // The reviewed level words the badges use, so the zone's label can never name a level
+  // differently from the alert card beside it.
+  const tAlert = useTranslations("alert");
   const tNear = useTranslations("reportsNear");
   const locale = useLocale();
   /*
@@ -532,6 +536,13 @@ export function DashboardView(props: DashboardViewProps) {
   // never an alert, so it never reads as a flood. The owner can turn it off from its chip. Drawn
   // only once the tiles are published (riverOnOffer below gates the chip and the layer).
   const [showRiver, setShowRiver] = useState(true);
+  /*
+   * The warning zones - the river basins Jaga issues for - start on (the owner, 22 Nov 2026: "in
+   * the map should highlight the warning zone, for all users to see, not just the affected
+   * users"). An outline with the basin's name on it; where an alert is in force the line goes
+   * solid and takes that level's colour, with the level in words beside it (lib/zone-layer.ts).
+   */
+  const [showZones, setShowZones] = useState(true);
   // The sea's waves along the coast start on (the owner, 15 Oct 2026), and can be switched off.
   const [showSea, setShowSea] = useState(true);
   // The sub-district (tambon) outlines (the owner, 29 Oct 2026): off by default in the risk view,
@@ -705,6 +716,17 @@ export function DashboardView(props: DashboardViewProps) {
   const [monitoringOpen, setMonitoringOpen] = useState(false);
   const hazard = hazards.find((h) => h.code === hazardCode) ?? hazards[0]!;
   // Pre-season the risk view opens first; with any alert in force, the live view (spec 4.2).
+  /*
+   * The zones as GeoJSON, with each one's level worked out from the live alerts by the same
+   * `alertForTambon()` that colours the tambons - so the outline and the tambons inside it can
+   * never disagree about what is in force (lib/zone-layer.ts).
+   */
+  const zoneData = useMemo(
+    () => zoneCollection(data?.zones ?? [], status, locale, (l) => tAlert(`level.${l}`)),
+    // `tAlert` is stable for a language, and `locale` is in the list, so it is not a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data?.zones, status, locale],
+  );
   const mode: MapMode = chosenMode ?? (hasActiveAlerts(status) ? "live" : "risk");
   // Off in the risk view, on in the live view, until the reader says otherwise (the owner, 29 Oct).
   const showTambon = tambonChoice ?? mode === "live";
@@ -1477,6 +1499,7 @@ export function DashboardView(props: DashboardViewProps) {
     dam: showDam,
     damzone: showDamZone,
     places: showPlaces,
+    zone: showZones,
     tambon: showTambon,
   };
   const toggleFeature = (f: MapFocus) => {
@@ -1494,6 +1517,8 @@ export function DashboardView(props: DashboardViewProps) {
       if (!next && selection?.kind === "sea") setSelection(null);
     } else if (f === "damzone") {
       setShowDamZone(next);
+    } else if (f === "zone") {
+      setShowZones(next);
     } else if (f === "places") {
       setShowPlaces(next);
     } else if (f === "tambon") {
@@ -2722,6 +2747,8 @@ export function DashboardView(props: DashboardViewProps) {
                     hazardUrl={props.hazardTiles ?? null}
                     riverUrl={props.riverTiles ?? null}
                     tambonLines={showTambon}
+                    zoneData={zoneData}
+                    showZones={showZones}
                     coverageCovered={coverageCovered}
                     coverageGaps={coverageGaps}
                     coverageMine={coverageMine}

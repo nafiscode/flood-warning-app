@@ -1069,9 +1069,18 @@ describe("the chips above the map (owner, 15 Oct)", () => {
     const order = [...c.querySelectorAll("[data-map-chip]")].map((b) =>
       b.getAttribute("data-map-chip"),
     );
-    // The river chip is hidden until its tiles are published; the tambon outlines are always
-    // offered, last, as the base reference layer.
-    expect(order).toEqual(["risk", "gauges", "sea", "dam", "damzone", "places", "tambon"]);
+    // The river chip is hidden until its tiles are published; the two boundary layers - the
+    // warning zones, then the tambon outlines - are always offered, last.
+    expect(order).toEqual([
+      "risk",
+      "gauges",
+      "sea",
+      "dam",
+      "damzone",
+      "places",
+      "zone",
+      "tambon",
+    ]);
     // What the map draws today starts on; the thousands of safe places start off. This example
     // has a warning in force, so the map opens on the live view, where the tambon outlines are on.
     const on = (f: string) => chip(c, f).getAttribute("aria-pressed");
@@ -1083,6 +1092,9 @@ describe("the chips above the map (owner, 15 Oct)", () => {
       "true",
     ]);
     expect(on("places")).toBe("false");
+    // The warning zones start on: the owner asked that every reader see the basin an alert covers,
+    // not only the people inside it (22 Nov 2026).
+    expect(on("zone")).toBe("true");
     expect(on("tambon")).toBe("true");
     const before = bounds(c);
     fireEvent.click(chip(c, "places"));

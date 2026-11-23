@@ -15,16 +15,20 @@ export const MAP_FOCUSES = [
   "dam",
   "sea",
   "river",
+  "zone",
   "tambon",
 ] as const;
 export type MapFocus = (typeof MAP_FOCUSES)[number];
 
 /**
- * The home screen's feature tiles: every focus except the sub-district ("tambon") outlines, which
- * are a base reference layer, not a flood feature someone comes to the map for (the owner, 29 Oct).
- * The map panel offers them; the home screen does not.
+ * The home screen's feature tiles: every focus except the two boundary layers - the sub-district
+ * ("tambon") outlines (the owner, 29 Oct) and the warning zones (22 Nov) - which are base
+ * reference layers, not flood features someone comes to the map for. The map panel offers them;
+ * the home screen does not.
  */
-export const TILE_FOCUSES: readonly MapFocus[] = MAP_FOCUSES.filter((f) => f !== "tambon");
+export const TILE_FOCUSES: readonly MapFocus[] = MAP_FOCUSES.filter(
+  (f) => f !== "tambon" && f !== "zone",
+);
 
 /**
  * The order of the chips above the map (the owner, 15 Oct): the flood-risk areas first, then what
@@ -40,6 +44,9 @@ export const CHIP_ORDER: readonly MapFocus[] = [
   "dam",
   "damzone",
   "places",
+  // The two boundary layers last: the basin an alert is issued for, then the sub-districts it is
+  // issued to.
+  "zone",
   "tambon",
 ];
 

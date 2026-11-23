@@ -1,4 +1,5 @@
 import type { SafePlace } from "@/lib/places";
+import type { MapZone } from "@/lib/zone-layer";
 
 /** Flood reports of the last 72 h in one hexagon of about 1 km2: a count, never a point. */
 export type ReportBin = {
@@ -203,4 +204,14 @@ export function toGauge(row: Record<string, unknown>): Gauge {
 }
 
 /** Answer of /api/public/map. */
-export type MapData = { places: SafePlace[]; reports: ReportBin[]; gauges: Gauge[] };
+/**
+ * `zones` is optional, and deliberately so: a payload cached before the warning zones existed, or
+ * a database where `warning_zone_map()` has not been applied, then draws no outline rather than
+ * failing the whole map (lib/zone-layer.ts).
+ */
+export type MapData = {
+  places: SafePlace[];
+  reports: ReportBin[];
+  gauges: Gauge[];
+  zones?: MapZone[];
+};

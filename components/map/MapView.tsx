@@ -49,6 +49,13 @@ import {
   RIVER_SOURCE_LAYER,
   riverColor,
 } from "@/lib/river-layer";
+import {
+  ZONE_IN_FORCE_LAYER,
+  ZONE_LABEL_LAYER,
+  ZONE_LINE_LAYER,
+  ZONE_SOURCE,
+  zonePaint,
+} from "@/lib/zone-layer";
 import { SEA_IMAGE_RATIO, SEA_RANK, seaImage, seaImageName, seaPaint } from "@/lib/sea-marks";
 import type { SeaGrade } from "@/lib/sea";
 import {
@@ -191,6 +198,14 @@ type Props = {
    * a boolean so its "Tambon" switch can hide or show them (the owner, 29 Oct).
    */
   tambonLines?: boolean;
+  /**
+   * The warning zones - the river basins Jaga issues for - as one GeoJSON FeatureCollection,
+   * already carrying each zone's level and label (lib/zone-layer.ts, zoneCollection). Left out,
+   * nothing is drawn: every other caller of this map is unaffected.
+   */
+  zoneData?: GeoJSON.FeatureCollection | null;
+  /** Whether those outlines are shown. Its own chip above the map (the owner, 22 Nov). */
+  showZones?: boolean;
   /**
    * The responsibility map (spec 2, 9), drawn as on the authority console's own map: the tambons a
    * rescue team covers, the gaps (no rescue team), and the viewer's own tambons. Readable only by
@@ -506,6 +521,8 @@ export function MapView({
   hazardUrl = null,
   riverUrl = null,
   tambonLines,
+  zoneData,
+  showZones = true,
   coverageCovered = [],
   coverageGaps = [],
   coverageMine = [],
@@ -904,6 +921,9 @@ export function MapView({
       [SATELLITE]: satelliteData,
       [SEA]: seaData,
       [AREA_LABEL_SOURCE]: areaNameData,
+      // Empty rather than absent when there are no zones, so the layers can be added once and
+      // simply draw nothing: a failed read must not leave a layer pointing at a missing source.
+      [ZONE_SOURCE]: zoneData ?? { type: "FeatureCollection", features: [] },
     };
     const show = (layer: MapLayer) => (layers.includes(layer) ? "visible" : "none");
     const dark = nightNow();
@@ -1650,6 +1670,87 @@ export function MapView({
           });
         }
         /*
+         * The warning zone's own outline (lib/zone-layer.ts), on top of everything else of ours
+         * (the owner, 22 Nov 2026: "in the map should highlight the warning zone, for all users
+         * to see, not just the affected users"). A line, not a filled area: the tambon colours
+         * underneath are what tell a reader about their own home, and must stay readable.
+         *
+         * Two line layers rather than one, because MapLibre cannot drive `line-dasharray` from a
+         * feature's properties. The resting line is dashed and wears the brand's edge, which by
+         * rule shows no status; the line in force is solid, thicker, and wears that level's own
+         * colour from the alert palette. The label carries the level in words either way, so the
+         * colour is never the only sign of it (accessibility: icon + text + colour).
+         */
+        const zRest = zonePaint(null, dark);
+        if (!m.getLayer(ZONE_LINE_LAYER)) {
+          m.addLayer({
+            id: ZONE_LINE_LAYER,
+            type: "line",
+            source: ZONE_SOURCE,
+            filter: ["==", ["get", "inForce"], 0],
+            layout: { "line-join": "round" },
+            paint: {
+              "line-color": zRest.color,
+              "line-width": zRest.width,
+              "line-opacity": zRest.opacity,
+              "line-dasharray": zRest.dash,
+            },
+          });
+        }
+        if (!m.getLayer(ZONE_IN_FORCE_LAYER)) {
+          m.addLayer({
+            id: ZONE_IN_FORCE_LAYER,
+            type: "line",
+            source: ZONE_SOURCE,
+            filter: ["==", ["get", "inForce"], 1],
+            layout: { "line-join": "round" },
+            paint: {
+              // The level each zone carries paints its own line, so two zones at different levels
+              // are each drawn correctly by the one layer.
+              "line-color": [
+                "match",
+                ["get", "level"],
+                "watch",
+                zonePaint("watch", dark).color,
+                "warning",
+                zonePaint("warning", dark).color,
+                "evacuate",
+                zonePaint("evacuate", dark).color,
+                "return",
+                zonePaint("return", dark).color,
+                zRest.color,
+              ] as unknown as string,
+              "line-width": zonePaint("warning", dark).width,
+              "line-opacity": 1,
+            },
+          });
+        }
+        if (!m.getLayer(ZONE_LABEL_LAYER)) {
+          m.addLayer({
+            id: ZONE_LABEL_LAYER,
+            type: "symbol",
+            source: ZONE_SOURCE,
+            layout: {
+              "text-field": ["get", "label"],
+              "text-font": ["Noto Sans Regular"],
+              "text-size": 12,
+              // Along the boundary itself, so the words name the line and not an area.
+              "symbol-placement": "line",
+              "symbol-spacing": 320,
+              "text-max-angle": 30,
+            },
+          });
+        }
+        // The resting line follows the theme while the page is open, as the dam's water does. The
+        // alert palette does not: those colours mean a level and are the same in both themes.
+        m.setPaintProperty(ZONE_LINE_LAYER, "line-color", zRest.color);
+        m.setPaintProperty(ZONE_LABEL_LAYER, "text-color", zRest.label);
+        m.setPaintProperty(ZONE_LABEL_LAYER, "text-halo-color", zRest.halo);
+        m.setPaintProperty(ZONE_LABEL_LAYER, "text-halo-width", 1.8);
+        for (const layer of [ZONE_LINE_LAYER, ZONE_IN_FORCE_LAYER, ZONE_LABEL_LAYER]) {
+          m.setLayoutProperty(layer, "visibility", showZones ? "visible" : "none");
+        }
+        /*
          * At the four-province view the capitals' names sit over every mark, and the other names
          * (reservoirs, sea points, gauge words) wait for a closer look; the marks themselves and
          * the person's own place names stay (lib/map.ts, quietOverview).
@@ -1731,6 +1832,8 @@ export function MapView({
     hazardUrl,
     riverUrl,
     tambonLines,
+    zoneData,
+    showZones,
     coverageCovered,
     coverageGaps,
     coverageMine,

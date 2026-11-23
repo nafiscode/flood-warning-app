@@ -4699,6 +4699,11 @@
       "note": "Where water normally sits — rivers, canals, reservoirs and lakes, from OpenStreetMap",
       "short": "Rivers"
     },
+    "zone": {
+      "name": "Warning zones",
+      "note": "The river basin alerts are issued for — a thicker, solid line with the level named where one is in force",
+      "short": "Zones"
+    },
     "tambon": {
       "name": "Sub-district boundaries",
       "note": "The outline of each tambon — off in the risk view, on in the live view",

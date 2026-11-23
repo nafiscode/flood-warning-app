@@ -5,7 +5,7 @@ import styles from "./FeatureIcon.module.css";
 /**
  * A small picture of each of the map's features, drawn the way the map draws it: the risk
  * pinks, the safe-place square, the hatched land below the dam, a river gauge's glass of water,
- * the dam's wall, the sea's crests and a river winding down. Decorative; the words beside it say what it is. Light
+ * the dam's wall, the sea's crests, a river winding down and the basin a warning is issued for. Decorative; the words beside it say what it is. Light
  * enough for the home screen (no map library). The risk pinks are never the alert colours (lib/hazard-layer.ts).
  */
 export function FeatureIcon({ feature, size = 32 }: { feature: MapFocus; size?: number }) {
@@ -98,6 +98,30 @@ export function FeatureIcon({ feature, size = 32 }: { feature: MapFocus; size?: 
             fill="none"
             className={styles.waterLine}
             strokeWidth="5"
+            strokeLinecap="round"
+          />
+        </>
+      )}
+      {feature === "zone" && (
+        <>
+          {/* The warning zone: a river basin ringed by a dashed boundary, the way the map draws
+              it at rest. Dashed and neutral on purpose - the solid, coloured line means an alert
+              is in force, and an icon must never claim one (lib/zone-layer.ts). */}
+          <path
+            d="M6 7 Q4 16 8 21 Q12 27 20 26 Q27 25 27 18 Q27 10 20 7 Q12 4 6 7 Z"
+            fill="none"
+            className="stroke-jaga-edge"
+            strokeWidth="2.2"
+            strokeDasharray="3.4 2.6"
+            strokeLinejoin="round"
+          />
+          {/* The river inside it, in the map's own water colour, so the ring reads as "the basin
+              this water drains" rather than as an area of its own. */}
+          <path
+            d="M10 9 Q14 14 13 18 Q12 22 17 24"
+            fill="none"
+            className={styles.waterLine}
+            strokeWidth="2.4"
             strokeLinecap="round"
           />
         </>

@@ -1,4 +1,5 @@
 import { toGauge, withSea, type MapData } from "@/lib/map-data";
+import { toMapZones } from "@/lib/zone-layer";
 import { toSafePlace } from "@/lib/places";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { CACHE_60S, createPublicClient, unavailable } from "@/lib/supabase/public";
@@ -7,7 +8,9 @@ type PlaceRow = Record<string, unknown> & { point: { coordinates: [number, numbe
 
 /**
  * What the public map draws besides the alerts: safe places, flood reports as counts per
- * hexagon, and river gauges. One address for everyone, kept at the edge for 60 s. Reports never
+ * hexagon, river gauges, and the warning zones' outlines. One address for everyone, kept at the
+ * edge for 60 s - the zone geometry is static, and which zone is under an alert is worked out in
+ * the browser from the live alert status, so the cache cannot hold a stale level. Reports never
  * leave the database as points (safety rule 6); the counting happens in report_hex_bins().
  */
 /** The API hands back at most this many rows per request, whatever `limit` asks for. */
@@ -41,11 +44,14 @@ export async function GET() {
     }
     return { data: rows, error: null };
   };
-  const [places, reports, gauges, sea] = await Promise.all([
+  const [places, reports, gauges, sea, zones] = await Promise.all([
     allPlaces(),
     supabase.rpc("report_hex_bins"),
     supabase.rpc("station_status"),
     supabase.rpc("gauge_sea_gate"),
+    // The warning zones' outlines (the owner, 22 Nov). Not in the guard below: a basin boundary
+    // is context, and losing it must never cost a reader the alerts, places and gauges.
+    supabase.rpc("warning_zone_map"),
   ]);
   if (places.error || reports.error || gauges.error) return unavailable();
   const body: MapData = {
@@ -62,6 +68,7 @@ export async function GET() {
       ((gauges.data ?? []) as Record<string, unknown>[]).map(toGauge),
       sea.error ? null : sea.data,
     ),
+    zones: zones.error ? [] : toMapZones(zones.data),
   };
   return Response.json(body, { headers: { "Cache-Control": CACHE_60S } });
 }

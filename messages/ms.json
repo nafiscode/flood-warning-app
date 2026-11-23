@@ -4699,6 +4699,11 @@
       "note": "Tempat air biasanya berada — sungai, terusan, takungan dan tasik, daripada OpenStreetMap",
       "short": "Sungai"
     },
+    "zone": {
+      "name": "Zon amaran",
+      "note": "Lembangan sungai yang menjadi asas amaran — garisnya tebal, padu dan bernama aras apabila ada amaran di dalamnya",
+      "short": "Zon"
+    },
     "tambon": {
       "name": "Sempadan mukim",
       "note": "Garis sempadan setiap mukim — tutup dalam paparan risiko, buka dalam paparan keadaan terkini",

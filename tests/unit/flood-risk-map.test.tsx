@@ -124,6 +124,7 @@ describe("the map's features", () => {
       "dam",
       "sea",
       "river",
+      "zone",
       "tambon",
     ]);
     expect(readFocus("gauges")).toBe("gauges");
@@ -162,6 +163,7 @@ describe("the map's features", () => {
       dam: true,
       damzone: false,
       places: false,
+      zone: true,
       tambon: false,
     };
     const c = renderWithIntl(
@@ -198,6 +200,7 @@ describe("the map's features", () => {
       dam: true,
       damzone: true,
       places: false,
+      zone: true,
       tambon: true,
     };
     const toggled: string[] = [];

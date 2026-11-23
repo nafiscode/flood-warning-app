@@ -1461,3 +1461,51 @@ shows a zero, and no class area at all reads as "not stated", never as "no risk"
 The four class areas, not `land_km2`, are the denominator: they are what the bar draws, and a bar
 built on the land area would not fill if a later radar run left them summing to slightly less,
 which reads as a sliver of "not stated" that nothing in the data says.
+
+## 2026-11-23 - The warning zone is drawn on the public map, for every reader
+
+The owner, 22 Nov 2026: "in the map should highlight the warning zone, for all users to see, not
+just the affected users." Said while deciding what to do about SLA005, whose daily high tide
+reaches its Evacuate level.
+
+A warning zone is the river basin Jaga issues for: the unit an admin ticks a gauge into, and the
+unit `auto_alarm_check()` publishes for. It was an internal idea. A reader saw only the result -
+their own tambon's colour - and never the basin the warning was about. Somebody one tambon outside
+an alert, upstream on the same river, had no way to see that the warning beside them follows the
+water they live on.
+
+**A line, never a filled area.** The map's colours are already spent: the alert palette on the
+tambons, ink on report hexagons, safe places and gauges, the water colour on the river, the dam
+and the sea, and ten cool shades on a person's own places. A filled zone would be a second amber
+over the first, and it would hide the tambon colours underneath - which are the thing that
+actually tells a reader about their own home.
+
+**What the line says.** At rest: dashed, in the brand's edge colour, which by rule shows no status
+(docs/brand.md), with the basin's name along it. In force: solid, thicker, in that level's own
+colour from the alert palette, with the level in words on the label. The form changes as well as
+the hue, so a reader who separates no colours at all still sees a thin broken line become a thick
+unbroken one with a word beside it (accessibility: icon + text + colour, never colour alone). Two
+MapLibre layers rather than one, because a dash cannot be driven from a feature's properties.
+
+**One definition of "in force".** `zoneLevel()` asks `alertForTambon()` - the very function that
+colours each tambon - for every tambon in the zone and keeps the most severe answer. Nothing in
+the new code decides what is in force, so the outline and the tambons inside it cannot drift
+apart. `normal` counts as no level: an all-clear must not thicken the line. A zone at rest is
+drawn as context and says nothing about whether the basin is safe (safety rule 10).
+
+**Nothing new is exposed.** `warning_zone_map()` returns the name, basin, tambon codes and
+outline, and no level. It is **not** security definer: `warning_zones` and `warning_zone_tambons`
+have been readable by `anon` since the first geography migration, as the tambon boundaries are, so
+it runs as the caller and a later narrowing of those tables narrows this too. Verified against
+jaga-dev in a rolled-back transaction, 24 checks, including that a visitor who has not signed in
+really gets all three zones - which is the owner's request, not a side effect.
+
+**Cost.** The three outlines are 1,027 points and 20 KB of GeoJSON at five decimals, and
+`st_simplifypreservetopology` at 50 m and at 100 m removes not one point: the stored outlines are
+made of whole tambons and are already coarser than that. So nothing is simplified - it would cost
+accuracy and save nothing. It rides on the existing public map payload, whose 60 s edge cache
+still holds because the geometry is static and the level is worked out in the browser.
+
+Still open, and the owner's to decide: the 18 stations that stand in no existing zone span three
+river systems, so the zone scheme itself needs their call before any zone is invented; and the
+estuary gauges still need tide-aware levels before they can be armed.
