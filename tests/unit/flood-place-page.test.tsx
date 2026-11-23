@@ -32,6 +32,8 @@ const view = (gauges: PlaceGauge[]): PlaceView => ({
   alerts: [],
   tally: [],
   summary: { tambons: 115, gauges, tambonList: null, places: { total: 80, verified: 0 } },
+  // These cases are about the gauges and the links; the hazard card has its own tests.
+  hazard: null,
 });
 
 const page = (gauges: PlaceGauge[]) =>

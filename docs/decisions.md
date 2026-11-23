@@ -1440,3 +1440,24 @@ housekeeping, and a figure this wrong must not depend on a pipeline having been 
 
 Applied to jaga-dev and confirmed on jagaapp.org: X.67A now draws its water inside the channel,
 below all three level lines, with the schematic wording and no bank figures.
+
+## 2026-11-23 - A place page carries its own flood-hazard figure, not a fifteenth copy of the template
+
+The fifteen `/flood/<place>` pages were about 285 words each and 77-80% identical to one another,
+and Search Console would not index the thinnest of them (`/flood/sadao`, validation failed
+14 Nov). Rather than write fifteen new paragraphs, each page now shows the long-term flood-hazard
+share of its own tambons, summed from S3's `hazard_by_tambon` (`lib/place-hazard.ts`).
+
+**Why this figure.** It is already computed, already public to read, and it genuinely differs from
+place to place: measured against jaga-dev on 23 Nov 2026 it runs from 30% of buildings on Medium or
+High land in Bannang Sata to 71% in Mueang Pattani, and all fifteen places have rows.
+
+**It reuses the home screen's card, words and all** (`TambonRiskView`), so no new safety sentence
+had to be written and none can drift from the reviewed one: the same eyebrow saying this is the
+long-term picture and not today's alert, and the same note that it is an estimate rather than a
+forecast (safety rules 8 and 10). A failed read leaves the section off the page entirely; it never
+shows a zero, and no class area at all reads as "not stated", never as "no risk" (safety rule 10).
+
+The four class areas, not `land_km2`, are the denominator: they are what the bar draws, and a bar
+built on the land area would not fill if a later radar run left them summing to slightly less,
+which reads as a sliver of "not stated" that nothing in the data says.

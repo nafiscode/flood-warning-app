@@ -2,7 +2,9 @@ import { inService } from "@/lib/features";
 import { levelTally, type LevelTally } from "@/lib/map-console";
 import { gaugeLook, trendOf, type GaugeLook } from "@/lib/gauge-marks";
 import { GAUGE_STATUSES, type Gauge } from "@/lib/map-data";
+import { aggregatePlaceHazard, type HazardRow } from "@/lib/place-hazard";
 import { toPublicAlert, type PublicAlert, type PublicStatus } from "@/lib/public-status";
+import type { TambonRisk } from "@/lib/tambon-risk";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -99,6 +101,12 @@ export type PlaceView = {
   tally: LevelTally[];
   /** Null when the summary could not be read. */
   summary: PlaceSummary | null;
+  /**
+   * This place's long-term flood-hazard picture, summed from its tambons (lib/place-hazard.ts).
+   * Null where the table has no row for it. It is the map's own estimate, not a forecast and not
+   * an alert, and the card that draws it says so.
+   */
+  hazard: TambonRisk | null;
 };
 
 function toGauge(row: Record<string, unknown>): PlaceGauge {
@@ -244,12 +252,24 @@ export async function readPlace(slug: string): Promise<PlaceView> {
     alerts: [],
     tally: [],
     summary: null,
+    hazard: null,
   };
   if (!supabaseConfigured()) return base;
   const supabase = createPublicClient();
-  const [statusRead, summaryRead] = await Promise.all([
+  const [statusRead, summaryRead, hazardRead] = await Promise.all([
     supabase.rpc("public_alert_status"),
     supabase.rpc("area_public_summary", { p_code: place.code }),
+    /*
+     * Every tambon of this place, by code prefix: a province is two digits and a district four,
+     * and a tambon's code begins with its district's, which begins with its province's. The table
+     * is public to read and changes once a season (S3, 20261013020000_s3_hazard_by_tambon.sql).
+     */
+    supabase
+      .from("hazard_by_tambon")
+      .select(
+        "tambon_code, land_km2, high_km2, medium_km2, low_km2, minimal_km2, buildings, high_buildings, medium_buildings",
+      )
+      .like("tambon_code", `${place.code}%`),
   ]);
 
   let status: PublicStatus | null = null;
@@ -268,5 +288,10 @@ export async function readPlace(slug: string): Promise<PlaceView> {
     alerts,
     tally: levelTally(alerts),
     summary: summaryRead.error ? null : toSummary(summaryRead.data),
+    // A failed read leaves the section off the page entirely; it never shows a zero.
+    hazard:
+      hazardRead.error || !Array.isArray(hazardRead.data)
+        ? null
+        : aggregatePlaceHazard(place.code, hazardRead.data as HazardRow[]),
   };
 }

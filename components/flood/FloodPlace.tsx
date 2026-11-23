@@ -6,6 +6,7 @@ import { StaleMarker } from "@/components/alerts/StaleMarker";
 import { LivePulse } from "@/components/flood/LivePulse";
 import { PlaceGaugeGlyph } from "@/components/flood/PlaceGaugeGlyph";
 import { DropIcon, MapIcon, MessageIcon, PinIcon, WaveIcon } from "@/components/icons";
+import { TambonRiskView } from "@/components/home/TambonRisk";
 import { Link } from "@/i18n/navigation";
 import { gaugeLook, trendOf, type Trend } from "@/lib/gauge-marks";
 import {
@@ -249,7 +250,7 @@ export function FloodPlace({ view, name, province, siblings, districts }: Props)
   const t = useTranslations("province");
   const tHome = useTranslations("home");
   const format = useFormatter();
-  const { status, alerts, tally, summary, kind } = view;
+  const { status, alerts, tally, summary, kind, hazard } = view;
   const facts = summary ? gaugeFacts(summary.gauges) : null;
   /** "Data as of" is at most 60 s old by construction, so the hour alone is unambiguous. */
   const clock = (iso: string) =>
@@ -463,6 +464,15 @@ export function FloodPlace({ view, name, province, siblings, districts }: Props)
           {t("act.map")}
         </Link>
       </section>
+
+      {/*
+        How much of this place sits on land the map marks as flood-prone, summed from its tambons
+        (19 Nov 2026). It is the same card the home screen gives one tambon, so it carries the same
+        reviewed words: the long-term picture, not today's alert, and an estimate rather than a
+        forecast (safety rules 8 and 10). It sits here, below what is happening now and above the
+        lists, because a reader wants the alert first and the background second.
+      */}
+      {hazard ? <TambonRiskView risk={hazard} name={name} /> : null}
 
       {/*
         A province's own districts, pointing down. A reader who lands on จ.สงขลา is usually after
