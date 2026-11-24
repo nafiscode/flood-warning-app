@@ -10,6 +10,27 @@
     "emergency": "In an emergency, call 1784 or 1669.",
     "close": "Close"
   },
+  "hatyaiCams": {
+    "open": "Hat Yai flood cameras",
+    "title": "Hat Yai flood cameras",
+    "freshness": "Live cameras from Hatyai City Climate and the Department of Water Resources, not from Jaga. The capture time is printed on each picture — if it looks old, that camera is lagging or offline. A camera is never a Jaga alert, and never a reason not to act.",
+    "refresh": "Load the newest pictures",
+    "noSignal": "No picture right now",
+    "credit": "Pictures: Hatyai City Climate (SCCCRN) and the Department of Water Resources, used under CC BY-SA 3.0.",
+    "source": "See all the cameras",
+    "offline": "Cameras need an internet connection.",
+    "emergency": "In an emergency, call 1784 or 1669.",
+    "close": "Close",
+    "cams": {
+      "s1": "Muang Kong Bridge",
+      "s2": "Bang Sala Bridge",
+      "s4": "Khuan Niang (Phatong)",
+      "s6": "Khlong Wa junction",
+      "s7": "Pracha Uthit Bridge, Khlong Wa",
+      "s8": "Bridge by the Hat Yai District Office",
+      "s9": "Rat Yindi Road (the 30-metre road)"
+    }
+  },
   "locationFinder": {
     "open": "Search by place name or paste coordinates",
     "label": "Search a place name, or paste coordinates",

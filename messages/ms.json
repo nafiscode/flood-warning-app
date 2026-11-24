@@ -10,6 +10,27 @@
     "emergency": "Dalam kecemasan, hubungi 1784 atau 1669.",
     "close": "Tutup"
   },
+  "hatyaiCams": {
+    "open": "Kamera banjir Hat Yai",
+    "title": "Kamera banjir Hat Yai",
+    "freshness": "Kamera langsung daripada Hatyai City Climate dan Jabatan Sumber Air, bukan daripada Jaga. Masa gambar diambil tercetak pada setiap gambar — jika masanya kelihatan lama, kamera itu lambat atau tidak dalam talian. Kamera bukan amaran Jaga, dan bukan sebab untuk tidak bertindak.",
+    "refresh": "Muatkan gambar terbaharu",
+    "noSignal": "Tiada gambar buat masa ini",
+    "credit": "Gambar: Hatyai City Climate (SCCCRN) dan Jabatan Sumber Air, digunakan di bawah lesen CC BY-SA 3.0.",
+    "source": "Lihat semua kamera",
+    "offline": "Kamera memerlukan sambungan internet.",
+    "emergency": "Dalam kecemasan, hubungi 1784 atau 1669.",
+    "close": "Tutup",
+    "cams": {
+      "s1": "Jambatan Muang Kong",
+      "s2": "Jambatan Bang Sala",
+      "s4": "Khuan Niang (Phatong)",
+      "s6": "Simpang Khlong Wa",
+      "s7": "Jambatan Pracha Uthit (Khlong Wa)",
+      "s8": "Jambatan sebelah Pejabat Daerah Hat Yai",
+      "s9": "Jalan Rat Yindi (jalan 30 meter)"
+    }
+  },
   "locationFinder": {
     "open": "Cari nama tempat atau tampal koordinat",
     "label": "Cari nama tempat, atau tampal koordinat",

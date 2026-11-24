@@ -117,6 +117,8 @@ import {
 import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { GaugeSection } from "./GaugeSection";
+import { HatYaiCameras } from "@/components/cctv/HatYaiCameras";
+import { inHatYai } from "@/lib/hatyai-cams";
 import { GaugeWeek } from "./GaugeWeek";
 import { MapFeatureChips } from "./MapFeatures";
 import { InstallCard } from "@/components/InstallCard";
@@ -1717,6 +1719,8 @@ export function DashboardView(props: DashboardViewProps) {
          * Nov 2026). The details card only: the mark on the map keeps its animated glass.
          */}
         {hasSection(gauge) && <GaugeSection gauge={gauge} />}
+        {/* Live Hat Yai / U-Tapao flood cameras, shown on gauge cards in that basin only (owner, 24 Nov 2026). */}
+        {inHatYai(gauge.lat, gauge.lon) && <HatYaiCameras />}
         {gauge.status !== "no_recent_data" &&
           gauge.value !== null &&
           gauge.bank != null &&
