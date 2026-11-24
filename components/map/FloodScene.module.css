@@ -1,0 +1,101 @@
+/*
+ * The flood scene (lib/flood-scene.ts): a river reaching its bank, drawn full-screen from the same
+ * measured channel the gauge card shows. The water rises once, slowly, from below the bank to the
+ * reading and spills over the lower bank; two surface bands drift across each other so it reads as
+ * water; a slow camera push gives it the cinematic feel. Nothing moves under reduced motion - the
+ * water is simply shown already over the bank, which is the fact that matters (safety rule 7's
+ * habit: the picture degrades, the information does not).
+ */
+
+/* The slow camera push over the channel. Subtle: the scene is a measurement, not a film set. */
+.camera {
+  transform-box: view-box;
+  transform-origin: 50% 70%;
+  animation: push 9s ease-in-out both;
+}
+@keyframes push {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/* The water body rises from below the bank to the reading, once, when the scene opens. Slower than
+   the card's quick fill, because here the rise is the whole point. */
+.water {
+  transform-box: view-box;
+  animation: rise 3.4s cubic-bezier(0.22, 0.85, 0.3, 1) both;
+}
+@keyframes rise {
+  from {
+    transform: translateY(var(--rise, 0px));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* One wavelength sideways on a loop; the path is three drawings wide, so the seam never shows. */
+.drift {
+  transform-box: view-box;
+  animation: drift var(--seconds, 7s) linear infinite;
+}
+.back {
+  animation-direction: reverse;
+}
+@keyframes drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(var(--length, 170) * -1px));
+  }
+}
+
+/* The light running along the surface. */
+.glint {
+  animation: glint 5.5s ease-in-out infinite;
+}
+@keyframes glint {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* The text and controls fade up once the water is on its way. */
+.caption {
+  animation: fade 1.2s ease-out 0.8s both;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera,
+  .water,
+  .drift,
+  .glint,
+  .caption {
+    animation: none;
+  }
+  .glint {
+    opacity: 0.5;
+  }
+  .caption {
+    opacity: 1;
+    transform: none;
+  }
+}

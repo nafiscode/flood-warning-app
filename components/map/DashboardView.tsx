@@ -65,7 +65,7 @@ import {
   provincesBox,
   SERVICE_BOUNDS,
 } from "@/lib/map";
-import type { MapData } from "@/lib/map-data";
+import type { Gauge, MapData } from "@/lib/map-data";
 import type { MyPlaces } from "@/lib/me";
 import { homeColor, mineColor } from "@/lib/mine-colors";
 import {
@@ -141,6 +141,8 @@ import {
 } from "@/lib/map-focus";
 import { gaugeLook, isRising3h, trendOf } from "@/lib/gauge-marks";
 import { hasSection } from "@/lib/gauge-section";
+import { canPlayScene } from "@/lib/flood-scene";
+import { FloodScene } from "./FloodScene";
 
 /** The safe places' marker as the map draws it (lib/place-icons.ts): a square with a house. */
 function PlaceMark({ size }: { size: number }) {
@@ -565,6 +567,9 @@ export function DashboardView(props: DashboardViewProps) {
   );
   // 2D or 3D (the owner, 15 Oct): flat by default; the switch sits on the map itself.
   const [scene, setScene] = useState(false);
+  // The flood scene: the river at one gauge, full-screen, when it has reached its bank (the owner,
+  // 24 Nov 2026). Opened by hand from the gauge card for now; the bell opens it on its own next.
+  const [floodScene, setFloodScene] = useState<Gauge | null>(null);
   // Esri's picture, or EOX's once Esri stops answering (lib/map.ts): the note says which.
   const satellite = useSyncExternalStore(subscribeSatellite, satelliteProvider, satelliteProvider);
   /*
@@ -1719,6 +1724,18 @@ export function DashboardView(props: DashboardViewProps) {
          * Nov 2026). The details card only: the mark on the map keeps its animated glass.
          */}
         {hasSection(gauge) && <GaugeSection gauge={gauge} />}
+        {/* When the river has reached its bank, the moment can be watched full-screen from this
+            same measured channel (the owner, 24 Nov 2026). A measurement, not an alert. */}
+        {canPlayScene(gauge) && (
+          <button
+            type="button"
+            onClick={() => setFloodScene(gauge)}
+            className="inline-flex min-h-tap items-center gap-2 self-start rounded-lg bg-jaga-dam px-4 font-semibold text-white"
+            data-flood-scene-open={gauge.id}
+          >
+            {t("gauge.scene.open")}
+          </button>
+        )}
         {/* Live Hat Yai / U-Tapao flood cameras, shown on gauge cards in that basin only (owner, 24 Nov 2026). */}
         {inHatYai(gauge.lat, gauge.lon) && <HatYaiCameras />}
         {gauge.status !== "no_recent_data" &&
@@ -3185,6 +3202,12 @@ export function DashboardView(props: DashboardViewProps) {
             </>
           )}
         </>
+      )}
+
+      {/* The flood scene stands over the map (but never over the hotline bar). Mounted at the root
+          so it is one overlay whatever card opened it. */}
+      {floodScene && (
+        <FloodScene gauge={floodScene} onClose={() => setFloodScene(null)} />
       )}
     </div>
   );

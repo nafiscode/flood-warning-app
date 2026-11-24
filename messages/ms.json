@@ -733,6 +733,20 @@
         "measured": "Paras tebing dan dasar daripada rekod stesen ThaiWater, dan lebar diukur merentasi air yang dipetakan OpenStreetMap. Bentuk tebingnya ialah lukisan, bukan ukur",
         "drawing": "Bentuk alur dan dasar sungai ialah lukisan, bukan ukur. Hanya paras air dan paras rujukan yang diukur",
         "provisional": "Paras sementara, dipilih daripada banjir lalu di stesen ini. Pentadbir boleh mengubah mana-mana daripadanya"
+      },
+      "scene": {
+        "eyebrow": "Ukuran sekarang",
+        "title": "{name}: air sungai sudah sampai tebing",
+        "over": "{value} m melebihi tebing",
+        "level": "Paras air {value} m MSL",
+        "at": "diukur {time} · {source}",
+        "area": "Kawasan anda: {name}",
+        "notAlert": "Ini ukuran, bukan amaran. Amaran hanya dikeluarkan oleh pentadbir Jaga.",
+        "hotlineHint": "Jika anda dalam bahaya, hubungi 1784 (bencana) atau 1669 (perubatan).",
+        "alt": "Sungai {name} dengan air naik {value} m melebihi tebing, melimpah ke sebelah yang lebih rendah.",
+        "replay": "Main semula",
+        "close": "Tutup",
+        "open": "Lihat air sampai tebing"
       }
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",

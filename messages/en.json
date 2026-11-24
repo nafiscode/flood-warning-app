@@ -733,6 +733,20 @@
         "measured": "The bank and bed levels are from ThaiWater's station record and the width is measured across the water OpenStreetMap has mapped. The shape of the sides is a drawing, not a survey",
         "drawing": "The shape of the channel and the bed are a drawing, not a survey. Only the water level and the levels are measured",
         "provisional": "Provisional levels, chosen from past floods at this station. An admin can change any of them"
+      },
+      "scene": {
+        "eyebrow": "Measured now",
+        "title": "{name}: the river has reached its bank",
+        "over": "{value} m over the bank",
+        "level": "Water level {value} m MSL",
+        "at": "measured {time} · {source}",
+        "area": "Your area: {name}",
+        "notAlert": "A measurement, not an alert. Alerts come only from Jaga’s admins.",
+        "hotlineHint": "If you are in danger, call 1784 (disaster) or 1669 (medical).",
+        "alt": "The river {name} with water risen {value} m above its bank, spilling over the lower side.",
+        "replay": "Play again",
+        "close": "Close",
+        "open": "Watch the river reach its bank"
       }
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
