@@ -20,7 +20,6 @@ import {
   type DamLevel,
   type DamSignal,
 } from "@/lib/dam";
-import { CameraWindow } from "@/components/cctv/CameraWindow";
 import { DamSectionFigure } from "@/components/dam/DamFigures";
 import { DamReadout } from "@/components/dam/DamReadout";
 import { DamArrivalLines } from "@/components/map/DamArrival";
@@ -423,8 +422,6 @@ export function DamCard({
         <p>{t("disclaimer.noArrivalTime")}</p>
       )}
       <p className={hint}>{t("source", { operator: operatorName(dam.operator, t) })}</p>
-      {/* The operator's own dam-site cameras, in a window that stays inside Jaga (owner, 22 Nov). */}
-      <CameraWindow source="dam" />
     </section>
   );
 }

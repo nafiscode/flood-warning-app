@@ -1,6 +1,15 @@
 /**
  * Official, agency-run live CCTV portals for the service area.
  *
+ * NOT MOUNTED (owner, 24 Nov 2026). The CameraWindow is built, tested and kept here, but it is
+ * deliberately not rendered anywhere: on 24 Nov the owner found DDPM under maintenance, and a check
+ * of DDPM, EGAT and ONWR confirmed none of them is a reliable, embeddable, timestamped feed for our
+ * four provinces. A prominent "Live cameras" button that often lands on a maintenance page is worse
+ * than none in a life-safety app. Re-mount <CameraWindow> on the gauge card (DashboardView) and the
+ * dam report (Dam.tsx) only once an official page is confirmed to stay up for our provinces - and
+ * flip a source to `embeddable: true` only once that page also permits framing and stamps each frame
+ * with a capture time.
+ *
  * Jaga never hosts, re-serves or proxies these images: the camera window links out to the agency's
  * own site (owner, 22 Nov 2026). The search for a free API, MCP or embeddable feed found none that
  * carries a verifiable per-frame capture time, and the one real flood-camera network - DDPM's

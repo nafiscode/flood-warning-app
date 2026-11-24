@@ -117,7 +117,6 @@ import {
 import { MineGlyph } from "./MineGlyph";
 import { GaugeGlyph, LiveDot } from "./GaugeGlyph";
 import { GaugeSection } from "./GaugeSection";
-import { CameraWindow } from "@/components/cctv/CameraWindow";
 import { GaugeWeek } from "./GaugeWeek";
 import { MapFeatureChips } from "./MapFeatures";
 import { InstallCard } from "@/components/InstallCard";
@@ -1718,8 +1717,6 @@ export function DashboardView(props: DashboardViewProps) {
          * Nov 2026). The details card only: the mark on the map keeps its animated glass.
          */}
         {hasSection(gauge) && <GaugeSection gauge={gauge} />}
-        {/* The agency's own live cameras, in a window that stays inside Jaga (owner, 22 Nov 2026). */}
-        <CameraWindow source="riverGauge" />
         {gauge.status !== "no_recent_data" &&
           gauge.value !== null &&
           gauge.bank != null &&

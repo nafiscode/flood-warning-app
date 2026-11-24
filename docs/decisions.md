@@ -1509,3 +1509,6 @@ still holds because the geometry is static and the level is worked out in the br
 Still open, and the owner's to decide: the 18 stations that stand in no existing zone span three
 river systems, so the zone scheme itself needs their call before any zone is invented; and the
 estuary gauges still need tide-aware levels before they can be armed.
+
+## 2026-11-24 - Live CCTV hidden until a reliable source exists
+The Live cameras window (built 22 Nov, decision 2026-11-22) is removed from the UI - unmounted from the gauge card and the dam report - and left in the code (`lib/cctv.ts`, `components/cctv/CameraWindow.tsx`, its test). The owner found DDPM's `cctv.disaster.go.th` under maintenance on 24 Nov; a re-check of DDPM, EGAT and ONWR confirmed none offers a reliable, embeddable, timestamped live feed for the four provinces (all JS apps that go down and cannot be framed). Reason: in a life-safety app a prominent button that often lands on a maintenance or offline agency page burns trust during the exact emergency it is for; nothing beats a flaky link here. Re-mount `<CameraWindow>` only once an official page is confirmed to stay up for our provinces. Supersedes the mounting part of 2026-11-22 (link-out design stands for when it returns).
