@@ -12,6 +12,11 @@ import {
 import { buttonQuiet, hint } from "@/lib/ui";
 
 /**
+ * NOT MOUNTED (owner, 24 Nov 2026, same day it was built): "hide all cctv, the Hat Yai one also not
+ * looking good." Kept whole - component, data (lib/hatyai-cams), i18n and tests - so it can be wired
+ * back into DashboardView the moment the owner wants it; it is just not rendered anywhere now. See
+ * docs/decisions.md 2026-11-24 and lib/cctv.ts, which is unmounted for the same reason.
+ *
  * A closable in-app window of the live Hat Yai flood cameras (owner, 24 Nov 2026: "Build it - embed,
  * Hat Yai only"). Unlike the link-out CameraWindow, this one shows the pictures: each camera's newest
  * frame is a live JPEG from Hatyai City Climate / the Department of Water Resources (lib/hatyai-cams).
