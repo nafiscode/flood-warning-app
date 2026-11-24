@@ -1593,3 +1593,55 @@ New helper `alertsElsewhereCount()` in lib/public-status.ts; counts tambons unde
 
 ## 2026-11-24 - All CCTV hidden, including Hat Yai
 Owner, same day the Hat Yai cameras were built: "hide all cctv, the Hat Yai one also not looking good." So every camera path is now unmounted from the UI, not just the agency link-out: the Hat Yai window (`components/cctv/HatYaiCameras.tsx`, `lib/hatyai-cams.ts`) is no longer rendered on any gauge card (import and call site removed from `components/map/DashboardView.tsx`), joining the already-hidden link-out `CameraWindow` (`lib/cctv.ts`). Nothing CCTV-related shows anywhere in the app now. All of it is kept whole - components, data, i18n and tests - so any source can be wired back in one edit once it proves itself. Reason: the owner judged even the self-dating Hat Yai feed not good enough to show residents yet; a flood app shows a camera only when the owner is confident it helps, and hides it otherwise (safety rules 8, 10). Supersedes the two 2026-11-24 CCTV entries above.
+
+## 2026-11-24 - The new warning levels loaded, after the owner handed the choice back
+The owner, asked to approve the lead-time table: "for that I let you chose the best." So the
+choice was made here and the reasoning is recorded, gauge by gauge, for them to overrule.
+
+**Seven level moves on four gauges are now in `jaga-dev`**: FOP041 (watch 6.50 -> 5.80, warning
+6.70 -> 6.20), JNA001 (4.50 -> 4.15, 4.70 -> 4.45), X.73 (14.00 -> 13.10, 14.85 -> 14.30) and
+X.119A's watch (8.20 -> 7.80; its warning stays at the 8.80 the owner accepted on 14 Oct). Every
+one rescues a level that bought 0 to 6 h against the hours it stands for - two of them bought
+exactly **0.0 h**, which is a record of the past, not a warning. Nothing else moved but 5 cm of
+drift at PTTEP4 and X.173A from a month more archive.
+
+**Reading the first table changed the answer, and three of its ten moves were dropped.** The floor
+exists because a level buys too little time; it had never tested whether the level *already* bought
+it. ONE039 (6.0 h against a 6 h target), X.274 (6.5 h) and X.283 (9.0 h) were already sound, and
+the proposed moves were the expensive ones - ONE039 would have paid 0 -> 7 false alarms to turn a
+good 6 h warning into a 117 h one, which describes a season, not a flood. Guard: **a level whose
+measured lead already meets its target does not move.**
+
+**PAT001 was dropped too, and it exposed a real hole.** A gauge a dam swings once a day keeps its
+bank - the river still leaves the channel there - but a level *lowered* reaches down into the
+turbine swing: 5 -> 17 false alarms for 3 h. Guard: **never lower a level on a gauge with a
+once-a-day swing**; like the sea's nine, it needs levels measured on the daily minimum (decision
+2026-11-22). This corrects the 24 Nov choice to drop `pulse_driven` from the exemption, which was
+right about the bank and wrong about everything below it.
+
+**A level that is wrong more often than right still moves, but the gauge is flagged** - JNA001 (11
+false against 5 floods) and X.73's watch (18 against 14). A level buying no time at all is worse;
+the hours are real and the judgement is a person's, so it is said in the report, not hidden.
+
+**The seed now refuses a gauge the report refuses**, which it had not done: a month more archive
+had let two gauges past the scoring test that the report says plainly must not be armed, and the
+seed wrote them anyway. Left out, each named in the file with its reason: TBV029 (0.1 years),
+X.73A (2.9 years), SAY001 (its three levels each exceeded 35.8 % of the record, which describes
+the river rather than a flood) and X.181 (**highest reading 16.60 m, 11.60 m above its 5.00 m
+bank, yet no flood found in 6.3 years** - the bank and the readings are not on the same datum, the
+22 Nov X.67A fault again). Leaving a gauge out erases nothing: the upsert only touches rows it
+names, so a gauge keeps what it has and one with no row stays ungraded - unjudgeable, never
+"normal" (safety rule 10). Also fixed: a latent bug where the guards' reasons were overwritten by
+the moves, and a `source` date hardcoded to 14 Oct in every row.
+
+Loaded by dry run first (`.claude/local/seed-dryrun.mjs`, which prints every row a load would
+change and rolls back): no admin-set level was touched, and every armed gauge's latest reading sat
+far below its warning, so the load could not trip an alarm. The alarm grades at Warning and never
+at Watch, so X.119A - the one armed and zoned gauge affected - is unchanged in what it would
+publish; only the Kolok zone's advisory suggestion threshold moved. Reason: a warning level must
+buy the time it promises, and where it already does, moving it only spends trust; where no honest
+level exists, the gauge is flagged for a person instead of being given a number that looks like an
+answer. 334 pipeline tests pass, 4 new.
+
+Still open and still the owner's: arming gauges (42 of 48 remain off), tide-aware levels for the
+nine gauges the sea reaches plus the five a dam swings, and a basin for the 18 unzoned stations.

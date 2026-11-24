@@ -17,16 +17,26 @@ A level must now also sit at least the rise this river makes, in its own record,
 hours it is meant to buy. The room is never a share of the channel: several stations' bed
 figures are wrong, and a bed cannot be trusted to set a warning.
 
-Two guards keep that from doing harm. A level is lowered only where the move buys at least
-2.0 h of extra warning - otherwise it would cost false alarms and buy
-nothing - and only on a gauge with at least 3 years of record,
-because a record too short to hold floods is too short to re-derive from.
+Five guards keep that from doing harm. A level is **not** lowered when:
+
+1. it already buys the hours it stands for, measured over this gauge's own floods - then
+   there is nothing to rescue and the move only costs false alarms;
+2. the move would buy less than 2.0 h of extra warning;
+3. something opens once a day at that gauge, so a lower level would be crossed by the
+   turbines and not by a flood - that gauge needs levels on the daily minimum instead;
+4. no level there can be both early and rare (it would stand above the new level more than
+   25 % of the record), or the rise is taller than the river's whole working depth;
+5. the gauge has under 3 years of record, which is too short to hold floods and so too
+   short to re-derive from.
+
+A level that moves but is then crossed more often without a flood than with one is still
+moved - a level buying no time is worse - but the gauge is flagged for a person to set.
 
 Both sides below are scored the same way over the same floods, so the hours gained and the
 false alarms paid for them are comparable. Nothing here publishes or raises anything: a level
 only ever starts a suggestion, or the alarm on a gauge an admin has ticked (safety rule 2).
 
-## Moved: 8 gauges
+## Moved: 4 gauges
 
 | Gauge | Level | Was | Now | Room to bank | Caught before | False before | Lead before | Caught after | False after | Lead after |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -34,11 +44,7 @@ only ever starts a suggestion, or the alarm on a gauge an admin has ticked (safe
 | FOP041 | watch | 6.50 | 5.80 | 0.96 m | 13 | 3 | 6.0 h | 13 | 3 | 16.0 h |
 | JNA001 | warning | 4.70 | 4.45 | 0.30 m | 5 | 3 | 0.0 h | 5 | 6 | 2.0 h |
 | JNA001 | watch | 4.50 | 4.15 | 0.60 m | 5 | 3 | 2.0 h | 5 | 11 | 7.0 h |
-| ONE039 | warning | 1.15 | 0.90 | 0.28 m | 5 | 0 | 6.0 h | 5 | 7 | 117.0 h |
-| PAT001 | warning | 37.95 | 36.80 | 1.55 m | 5 | 5 | 1.0 h | 5 | 17 | 4.0 h |
 | X.119A | watch | 8.20 | 7.80 | 1.50 m | 16 | 13 | 17.0 h | 16 | 15 | 26.0 h |
-| X.274 | warning | 22.75 | 22.20 | 1.30 m | 8 | 5 | 6.5 h | 8 | 9 | 10.0 h |
-| X.283 | warning | 9.70 | 9.30 | 0.70 m | 4 | 5 | 9.0 h | 4 | 7 | 15.5 h |
 | X.73 | warning | 14.85 | 14.30 | 0.60 m | 14 | 8 | 0.0 h | 14 | 10 | 3.0 h |
 | X.73 | watch | 13.95 | 13.10 | 1.80 m | 14 | 13 | 5.0 h | 14 | 18 | 13.0 h |
 
@@ -53,7 +59,17 @@ reaches the seed** - it is here so the disagreement is visible rather than silen
 |---|---|---|---|
 | X.119A | warning | 8.70 | 8.80 |
 
-## Left where it was, and why: 4 gauges
+These levels moved, and they buy real hours, but each is crossed more often without a
+flood than with one. **Do not arm a gauge on one of these without reading it first**:
+the hours are real, the judgement is a person's.
+
+| Gauge | Level | Now | The cost |
+|---|---|---|---|
+| JNA001 | warning | 4.45 | 6 false against 5 floods caught |
+| JNA001 | watch | 4.15 | 11 false against 5 floods caught |
+| X.73 | watch | 13.10 | 18 false against 14 floods caught |
+
+## Left where it was, and why: 6 gauges
 
 No fixed level at these gauges is both early and rare. That is a fact about the gauge - a
 wrong bank, or the sea - and it is said, not fudged: the level does not move, and the gauge
@@ -63,10 +79,14 @@ is marked as needing one from someone who knows the river.
 |---|---|---|---|---|
 | JNA002 | warning | 0.06 m | 0.34 m | it would buy only 0.5 h, under the 2.0 h this asks of a move (it would stand above it 18.7 % of the record) |
 | JNA002 | watch | 0.26 m | 0.62 m | it would buy only 0.0 h, under the 2.0 h this asks of a move (it would stand above it 18.7 % of the record) |
-| ONE039 | watch | 0.48 m | 0.60 m | no level here is both early and rare (it would stand above it 29.0 % of the record) |
-| PAT001 | watch | 1.75 m | 0.94 m | it would buy only 1.0 h, under the 2.0 h this asks of a move (it would stand above it 11.5 % of the record) |
+| ONE039 | warning | 0.03 m | 0.30 m | it already buys 6.0 h, the 6 h this level stands for (it would stand above it 11.8 % of the record) |
+| ONE039 | watch | 0.23 m | 0.60 m | no level here is both early and rare (it would stand above it 29.0 % of the record) |
+| PAT001 | warning | 0.40 m | 1.55 m | something opens once a day here, so a lower level would be crossed by that and not by a flood; it needs a level measured on the daily minimum, as the sea's gauges do |
+| PAT001 | watch | 0.60 m | 0.94 m | something opens once a day here, so a lower level would be crossed by that and not by a flood; it needs a level measured on the daily minimum, as the sea's gauges do |
 | SAY001 | warning | 0.07 m | 0.90 m | no level here is both early and rare (it would stand above it 35.8 % of the record) |
 | SAY001 | watch | 0.27 m | 1.19 m | no level here is both early and rare (it would stand above it 35.8 % of the record) |
+| X.274 | warning | 0.75 m | 1.31 m | it already buys 6.5 h, the 6 h this level stands for (it would stand above it 2.0 % of the record) |
+| X.283 | warning | 0.30 m | 0.71 m | it already buys 9.0 h, the 6 h this level stands for (it would stand above it 2.2 % of the record) |
 
 ## The owner's own levels, reported and not moved: 1
 

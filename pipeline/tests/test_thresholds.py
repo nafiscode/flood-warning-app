@@ -317,3 +317,97 @@ def test_the_comparison_table_prints_the_level_that_would_be_seeded():
     assert "8.80" in md and "which stands" in md
     # The floor's own figure appears only in the overridden table, never as the new level.
     assert "| X.119A | warning | 9.20 | 8.70 |" not in md
+
+def test_a_level_that_already_buys_its_hours_is_left_alone():
+    """The guard the first report was missing (found 24 Nov by reading it).
+
+    The floor exists to rescue a level that buys too little time. Three of its first ten moves
+    were on levels already past their target, and they were the expensive ones: ONE039's Warning
+    already bought 6 h with no false alarms, and the move paid 0 -> 7 false alarms to turn that
+    into a 117 h "lead", which is a season's state and not a warning. Where the level already
+    buys the hours it stands for, it must not move - and the reason must be recorded.
+    """
+    from thresholds import gauges as gs
+
+    # Warning at 4.00 is crossed a measured 8 h before the flood here, past the 6 h it stands for,
+    # and the floor's ceiling is 5.0 - 1.4 = 3.60, so the floor wants to move it. It must not.
+    level = flood_year(6, days=900)
+    out = {"watch": 3.0, "warning": 4.0, "evacuate": 5.0, "years": 6.0,
+           "rise_m": {"6h": 1.4, "24h": 1.0}}
+    onsets = [f["onset"] for f in hc.floods(level, 5.0, 3, 5)]
+    got = gs.apply_lead(dict(out), level, 5.0, gs.DEFAULTS, onsets, CFG)
+
+    note = (got.get("lead_floor_applied") or {}).get("warning")
+    assert note is not None, "the floor wanted to move it, so it has to say why it did not"
+    assert "now" not in note, "a level that already buys its hours must not move"
+    assert "already buys" in note["left_alone"]
+    assert got["warning"] == out["warning"], "the level itself is untouched"
+
+
+def test_a_level_is_not_lowered_into_a_once_a_day_swing():
+    """PAT001, 24 Nov: a 0.437 m daily pulse from a dam's turbines. Lowering its Warning 1.15 m
+    took false alarms from 5 to 17 to buy 3 h, because the turbines cross the lower level, not a
+    flood. Such a gauge keeps its bank - the river still leaves the channel there - but needs
+    levels measured on the daily minimum, as the sea's gauges do. It must be flagged, not moved.
+    """
+    from thresholds import gauges as gs
+
+    level = flood_year(6, days=900)
+    # Watch is kept a clear `min_gap_m` under Warning, so the min-gap clamp at the end has nothing
+    # to do here and the only thing that could move a level is the floor itself.
+    out = {"watch": 4.70, "warning": 4.95, "evacuate": 5.0, "years": 6.0,
+           "rise_m": {"6h": 0.5, "24h": 1.0}, "pulse_driven": True}
+    onsets = [f["onset"] for f in hc.floods(level, 5.0, 3, 5)]
+    got = gs.apply_lead(dict(out), level, 5.0, gs.DEFAULTS, onsets, CFG)
+
+    assert got["warning"] == out["warning"] and got["watch"] == out["watch"], "neither may move"
+    assert got["needs_human_level"] is True, "it needs a level from someone who knows the river"
+    for key in ("warning", "watch"):
+        why = got["lead_floor_applied"][key]["left_alone"]
+        assert "once a day" in why and "daily" in why
+
+
+def test_a_moved_level_that_cries_wolf_is_moved_but_flagged():
+    """A level crossed more often without a flood than with one still moves - one that buys no
+    time at all is worse - but the gauge must be flagged so nobody arms it unread (JNA001: 11
+    false against 5 floods caught)."""
+    from thresholds import gauges as gs
+
+    level = flood_year(6, days=900)
+    out = {"watch": 4.90, "warning": 4.95, "evacuate": 5.0, "years": 6.0,
+           "rise_m": {"6h": 0.5, "24h": 1.0}}
+    # One flood only, so the many other crossings of the lower level all score as false alarms.
+    onsets = [f["onset"] for f in hc.floods(level, 5.0, 3, 5)][:1]
+    got = gs.apply_lead(dict(out), level, 5.0, gs.DEFAULTS, onsets, CFG)
+
+    notes = got.get("lead_floor_applied") or {}
+    wolf = [n for n in notes.values() if n.get("cries_wolf")]
+    if wolf:
+        assert got["needs_human_level"] is True, "crying wolf has to reach the report"
+        for n in wolf:
+            assert "false against" in n["cries_wolf"]
+            assert "now" in n, "it is flagged, not vetoed"
+    else:
+        # The synthetic series gave no such level; the guard is then vacuously satisfied, and the
+        # real evidence is JNA001 in pipeline/thresholds/lead_time.md.
+        assert all("cries_wolf" not in n for n in notes.values())
+
+
+def test_every_guard_records_its_reason_in_one_place():
+    """The latent bug found on 24 Nov: the early-exit guards wrote straight into
+    `lead_floor_applied` while the moves collected into a separate dict that then overwrote it,
+    so a gauge that hit a guard on one level and moved on the other lost the guard's reason."""
+    from thresholds import gauges as gs
+
+    level = flood_year(6, days=900)
+    # Warning hits the working-depth guard (a 40 m rise in a 5 m river); Watch can still move.
+    out = {"watch": 4.90, "warning": 4.95, "evacuate": 5.0, "years": 6.0,
+           "rise_m": {"6h": 40.0, "24h": 1.0}}
+    onsets = [f["onset"] for f in hc.floods(level, 5.0, 3, 5)]
+    got = gs.apply_lead(dict(out), level, 5.0, gs.DEFAULTS, onsets, CFG)
+
+    notes = got.get("lead_floor_applied") or {}
+    assert "warning" in notes, "the guard's reason must survive the other level moving"
+    assert "working_depth_m" in notes["warning"]
+    assert got["warning"] == out["warning"], "the guarded level did not move"
+

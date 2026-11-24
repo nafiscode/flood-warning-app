@@ -80,7 +80,21 @@ closer than 0.3 m and 0.6 m (`min_room_warning_m`, `min_room_watch_m`). The room
 gauge's record and **never as a share of the channel**: `gauge_channel`'s bed figure is wrong at
 several stations (FOP041's implies a 19 m deep river), and a bed cannot be trusted to set a warning.
 
-Four guards keep this from doing harm of its own, every one of them found by running it:
+Six guards keep this from doing harm of its own, every one of them found by running it and
+reading the output - the first two by reading the first report it produced, which proposed ten
+moves of which three were on levels that needed none:
+
+- **There must be time to buy.** Where the level's *measured* median lead already meets the hours
+  it stands for, it does not move: the floor exists to rescue a level that buys too little, and on
+  one that already buys enough the move only spends trust. ONE039's Warning already bought 6.0 h
+  with no false alarm, and lowering it would have paid 0 -> 7 false alarms for a 117 h "lead",
+  which describes a season rather than a flood; X.274 (6.5 h) and X.283 (9.0 h) were sound too.
+- **It must not be lowered into a once-a-day swing.** A gauge a dam swings keeps its *bank* - the
+  river still leaves the channel there - but a level lowered reaches down into the turbines:
+  PAT001, a 0.437 m daily pulse, went 5 -> 17 false alarms to buy 3 h. Such a gauge is left alone
+  and flagged, and needs levels measured on the daily minimum exactly as the sea's gauges do. This
+  is checked only once a move is actually on the table, so a gauge already deep enough is not told
+  it was "left alone" for a move nobody proposed.
 
 - **It must buy time.** A level is lowered only where the move adds at least 2 hours of median lead
   (`min_gain_h`). At JNA002 it bought 0.5 h and cost an extra false alarm, which is paying for
@@ -100,14 +114,40 @@ Four guards keep this from doing harm of its own, every one of them found by run
   exceeds 0.05 m **and** its bank stands no more than 5 m above sea level (`tide_max_bank_m`). With
   that gate the nine are exactly Module 5's hand-written list (X.10A, BLGTD05, X.275, ONE038,
   ONE037, SLA005) plus three Songkhla-lake-shore gauges (ONE036, PTTEP4, SLA007).
-  An exactly-24-hour swing is a dam opening its turbines, not the moon (X.77, 0.52 m): it is
-  recorded, because Module 11 drops such a gauge from its baseflow floors, but it does **not**
-  exempt a gauge here, since the river still leaves its channel at its bank.
+  An exactly-24-hour swing is a dam opening its turbines, not the moon (X.77, 0.52 m). It does
+  not excuse the gauge's *bank*, since the river still leaves its channel there - but it does stop
+  a level being lowered, which is the guard above.
+
+A level that moves and is then still crossed more often without a flood than with one is **moved
+and flagged**, not vetoed: JNA001 (11 false against 5 floods caught) and X.73's Watch (18 against
+14). A level buying no time at all is worse than one that cries wolf, so the hours are taken and
+the gauge is named in the report for a person to judge.
 
 A key gauge's Warning and Evacuate are the levels the owner accepted for the zone on 14 Oct 2026
 and the floor never moves them; where it disagrees it says so (X.119A: it wanted 8.70, the accepted
 8.80 stands). The whole before-and-after table, both sides scored over the same floods, is
 `lead_time.md` beside this file.
+
+### The seed refuses what the report refuses (24 Nov 2026)
+
+`seed_sql` had only one test - does the gauge have a bank - so a gauge the report declines to
+re-derive was still given a level. Found by reading the seed's own diff: a month more archive had
+pushed two gauges past the scoring test, and the seed wrote levels for both although the report
+says in as many words that they must not be armed. The seed now skips, and names in the file:
+
+- a record too short to re-derive from (TBV029, 0.1 years; X.73A, 2.9);
+- levels each exceeded more than `max_share_hard` of the record (SAY001, 35.8 %), which describes
+  the river rather than a flood;
+- **a bank and a set of readings that are not on the same datum** - the highest reading more than
+  `datum_gap_m` above the bank while no flood is found in the record at all. X.181 reads 16.60 m
+  against a 5.00 m bank, is above that bank 0.0 % of 6.3 years, and has zero floods: a river 11.6 m
+  over its bank is not "no flood". This is the 22 Nov X.67A fault (a bank in MSL against
+  staff-gauge depths) caught on a gauge about to be given its first level. Both figures are
+  reported, neither is believed, and no level is published from them.
+
+Leaving a gauge out erases nothing. The upsert only touches the rows it names, so a gauge already
+holding a provisional level keeps exactly what it has, and one with no row stays ungraded -
+unjudgeable, never "normal" (safety rule 10).
 
 **`thresholds gauges` no longer writes the seed.** It writes the reports and stops; the seed
 (`supabase/seed/47_gauge_levels.sql`) is rewritten only with `--write-seed`, once the owner has read

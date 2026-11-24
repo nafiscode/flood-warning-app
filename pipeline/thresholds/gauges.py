@@ -25,6 +25,7 @@ suggestion, or the automated alarm an admin ticked).
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import math
 from pathlib import Path
@@ -73,6 +74,7 @@ DEFAULTS = {
     "max_share_hard": 0.25,
     # The tide cannot set the water at a gauge whose bank stands this far above the sea.
     "tide_max_bank_m": 5.0,
+    "datum_gap_m": 2.0,
     "max_tide_m": 0.05,
     "max_pulse_m": 0.20,
     "tide_min_hours": 9600,
@@ -172,6 +174,10 @@ def suggest(level: pd.Series, bank: float, cfg: dict, opts: dict | None = None) 
         out["tide"] = {k: fit[k] for k in ("tide_m", "pulse_m", "years")}
         out["tide_driven"] = fit["tide_driven"]
         out["tide_reason"] = "the sea reaches this gauge" if fit["tide_driven"] else None
+        # Carried on `out` so the lead-time floor reads the same fact the report prints: a gauge
+        # something opens once a day keeps its bank, but a level must not be lowered into that
+        # swing (24 Nov; PAT001 was the one that got through before this was set).
+        out["pulse_driven"] = fit["pulse_driven"]
         if fit["pulse_driven"]:
             # Said out loud, because it is why Module 11 leaves this gauge out of its floors.
             out["daily_pulse_m"] = fit["pulse_m"]
@@ -264,7 +270,7 @@ def apply_lead(out: dict, lv: pd.Series, bank: float, o: dict,
         # and is reported, because inventing one from a figure this wrong is worse than saying so.
         depth = bank - float(lv.median()) if not lv.empty else None
         if depth is not None and depth > 0 and room > depth:
-            out.setdefault("lead_floor_applied", {})[key] = {
+            moved[key] = {
                 "was": out[key], "room_needed_m": round(room, 2),
                 "working_depth_m": round(depth, 2),
                 "left_alone": f"the {lead_h} h rise in the record is {round(room, 2)} m, taller than the "
@@ -274,6 +280,22 @@ def apply_lead(out: dict, lv: pd.Series, bank: float, o: dict,
             continue
         ceiling = round_to(bank - room)
         if out[key] <= ceiling + 1e-9:
+            continue
+        # A gauge a dam swings once a day keeps its BANK - the river still leaves the channel
+        # there - but a level lowered into that swing is crossed by the turbines, not by a flood.
+        # PAT001 is the evidence (24 Nov): a 0.437 m daily pulse, and lowering its Warning 1.15 m
+        # took false alarms from 5 to 17 for 3 h. Such a gauge needs levels measured on the daily
+        # minimum, exactly as the sea's gauges do (decision 2026-11-22), not a lower raw level.
+        # Checked only once a move is actually on the table, so a gauge whose level is already
+        # deep enough is not told it was "left alone" for a move nobody proposed.
+        if out.get("pulse_driven"):
+            moved[key] = {
+                "was": out[key], "room_needed_m": round(room, 2),
+                "left_alone": "something opens once a day here, so a lower level would be crossed "
+                              "by that and not by a flood; it needs a level measured on the daily "
+                              "minimum, as the sea's gauges do",
+            }
+            out["needs_human_level"] = True
             continue
         share = share_above(lv, ceiling)
         note = {"was": out[key], "room_needed_m": round(room, 2),
@@ -292,6 +314,18 @@ def apply_lead(out: dict, lv: pd.Series, bank: float, o: dict,
                                    if k in sc}
             was_lead = (note.get("before") or {}).get("median_lead_h")
             now_lead = (note.get("after") or {}).get("median_lead_h")
+            # The floor exists because a level buys too little time. Where the level ALREADY buys
+            # the hours it stands for, measured over this gauge's own floods, there is nothing to
+            # rescue and the move only costs false alarms. Found on 24 Nov by reading the first
+            # report: three of its ten moves were on levels already past their target, and they
+            # were the expensive ones - ONE039 paid 0 -> 7 false alarms to turn a sound 6 h warning
+            # into a 117 h one, which is a season's state and not a warning at all.
+            if was_lead is not None and float(was_lead) >= float(lead_h):
+                note["left_alone"] = (f"it already buys {round(float(was_lead), 1)} h, the "
+                                      f"{lead_h} h this level stands for")
+                note.pop("now", None)
+                moved[key] = note
+                continue
             gain = None if was_lead is None or now_lead is None else float(now_lead) - float(was_lead)
             if gain is not None and gain < o.get("min_gain_h", 2.0):
                 # It would cost false alarms and buy no time. The level stays where it is.
@@ -302,6 +336,15 @@ def apply_lead(out: dict, lv: pd.Series, bank: float, o: dict,
                 continue
             out[key] = ceiling
             note["now"] = ceiling
+            # The move is made - a level buying no time is worse - but a level crossed more often
+            # without a flood than with one is not a level to arm a gauge on unseen. Flagged, not
+            # vetoed: the lead time is real and the judgement is a person's.
+            after = note.get("after") or {}
+            if (after.get("false_alarms") is not None and after.get("detected") is not None
+                    and int(after["false_alarms"]) > int(after["detected"])):
+                note["cries_wolf"] = (f"{after['false_alarms']} false against "
+                                      f"{after['detected']} floods caught")
+                out["needs_human_level"] = True
         moved[key] = note
     if out.get("watch") is not None and out.get("warning") is not None:
         out["watch"] = round_to(min(out["watch"], out["warning"] - o["min_gap_m"]))
@@ -492,10 +535,20 @@ def comparison(rows: list[dict], old: list[dict] | None) -> str:
         "hours it is meant to buy. The room is never a share of the channel: several stations' bed",
         "figures are wrong, and a bed cannot be trusted to set a warning.",
         "",
-        "Two guards keep that from doing harm. A level is lowered only where the move buys at least",
-        f"{DEFAULTS['min_gain_h']} h of extra warning - otherwise it would cost false alarms and buy",
-        f"nothing - and only on a gauge with at least {DEFAULTS['lead_min_years']} years of record,",
-        "because a record too short to hold floods is too short to re-derive from.",
+        "Five guards keep that from doing harm. A level is **not** lowered when:",
+        "",
+        "1. it already buys the hours it stands for, measured over this gauge's own floods - then",
+        "   there is nothing to rescue and the move only costs false alarms;",
+        f"2. the move would buy less than {DEFAULTS['min_gain_h']} h of extra warning;",
+        "3. something opens once a day at that gauge, so a lower level would be crossed by the",
+        "   turbines and not by a flood - that gauge needs levels on the daily minimum instead;",
+        "4. no level there can be both early and rare (it would stand above the new level more than",
+        f"   {round(DEFAULTS['max_share_hard'] * 100)} % of the record), or the rise is taller than the river's whole working depth;",
+        f"5. the gauge has under {DEFAULTS['lead_min_years']} years of record, which is too short to hold floods and so too",
+        "   short to re-derive from.",
+        "",
+        "A level that moves but is then crossed more often without a flood than with one is still",
+        "moved - a level buying no time is worse - but the gauge is flagged for a person to set.",
         "",
         "Both sides below are scored the same way over the same floods, so the hours gained and the",
         "false alarms paid for them are comparable. Nothing here publishes or raises anything: a level",
@@ -537,6 +590,20 @@ def comparison(rows: list[dict], old: list[dict] | None) -> str:
         ]
         for code, key, wanted, final in overridden:
             lines.append(f"| {code} | {key} | {f(wanted)} | {f(final)} |")
+        lines.append("")
+    wolf = [(r["code"], key, note) for r in sorted(rows, key=lambda r: r["code"])
+            for key, note in (r.get("lead_floor_applied") or {}).items() if note.get("cries_wolf")]
+    if wolf:
+        lines += [
+            "These levels moved, and they buy real hours, but each is crossed more often without a",
+            "flood than with one. **Do not arm a gauge on one of these without reading it first**:",
+            "the hours are real, the judgement is a person's.",
+            "",
+            "| Gauge | Level | Now | The cost |",
+            "|---|---|---|---|",
+        ]
+        for code, key, note in wolf:
+            lines.append(f"| {code} | {key} | {f(note.get('now'))} | {note['cries_wolf']} |")
         lines.append("")
     lines += [
         f"## Left where it was, and why: {len(held)} gauges",
@@ -645,19 +712,57 @@ def seed_sql(rows: list[dict]) -> str:
         "from (values",
     ]
     values = []
+    left_out: list[tuple[str, str]] = []
     for r in rows:
         if r.get("evacuate") is None and r.get("warning") is None:
+            continue
+        # A gauge the report refuses to re-derive must not be given a level here either. Found
+        # on 24 Nov by reading the seed's own diff: a month more archive had let two gauges past
+        # `scored` that the report says plainly must not be armed, and the seed wrote them
+        # regardless - TBV029 on 36 days and no flood at all, and SAY001 whose three levels are
+        # each exceeded 35.8 % of the record, which describes the river rather than a flood.
+        # Leaving a gauge out erases nothing: the upsert only touches the rows it names, so a
+        # gauge already holding a provisional level keeps exactly what it has, and one with no
+        # row stays ungraded - unjudgeable, never "normal" (safety rule 10).
+        if r.get("lead_floor_skipped"):
+            left_out.append((r["code"], r["lead_floor_skipped"]))
+            continue
+        # A reading far above the bank while the flood detector found no flood at all means the
+        # bank and the readings are not on the same datum - the 22 Nov X.67A fault again, where
+        # a bank in MSL was compared with staff-gauge depths. Caught on 24 Nov on a gauge about
+        # to be given its first level: highest 16.60 m against a 5.00 m bank, above that bank
+        # 0.0 % of 6.3 years, and 0 floods. A river 11.6 m over its bank is not no flood. Both
+        # figures are reported, neither is believed, and no level is published from them.
+        hi, ev, floods = r.get("max_m"), r.get("evacuate"), r.get("floods")
+        if (hi is not None and ev is not None and not floods
+                and float(hi) - float(ev) > DEFAULTS["datum_gap_m"]):
+            left_out.append((r["code"], f"its highest reading {float(hi):.2f} m is "
+                                        f"{float(hi) - float(ev):.2f} m above its {float(ev):.2f} m bank, "
+                                        f"yet no flood is found in the record: the bank and the "
+                                        f"readings disagree"))
+            continue
+        worst = max((v for v in (r.get("share") or {}).values() if v is not None), default=0.0)
+        if worst > DEFAULTS["max_share_hard"] * 100:
+            left_out.append((r["code"], f"its levels are each exceeded {worst} % of the "
+                                        f"record, which describes the river rather than a flood"))
             continue
         method = {
             "how": r.get("method"), "warning": r.get("warning_method"), "watch": r.get("watch_method"),
             "floods": r.get("floods"), "years": r.get("years"), "highest_m": r.get("max_m"),
             "share_above_pct": r.get("share"), "bank_suspect": bool(r.get("bank_suspect")),
             "never_reached_bank": bool(r.get("never_reached_bank")), "lifted": bool(r.get("lifted")),
-            "source": "thresholds gauges, 14 Oct 2026",
+            # Carried so an admin reading the dashboard sees a level that wants a person's eye.
+            "needs_human_level": bool(r.get("needs_human_level")),
+            "source": f"thresholds gauges, {dt.date.today().day} {dt.date.today():%b %Y}",
         }
         text = json.dumps(method, ensure_ascii=False).replace("'", "''")
         values.append(f"  ({int(r['thaiwater_id'])}, {num(r.get('watch'))}::double precision, "
                       f"{num(r.get('warning'))}::double precision, {num(r.get('evacuate'))}::double precision, '{text}')")
+    if left_out:
+        out.append("-- Deliberately NOT given a level here, so each stays ungraded rather than")
+        out.append("-- wrongly graded. They must not be armed on a level from this file:")
+        for code, why in sorted(left_out):
+            out.append(f"--   {code}: {why}")
     out.append(",\n".join(values))
     out += [
         ") as v (thaiwater_id, watch, warning, evacuate, method)",

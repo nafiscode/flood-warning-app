@@ -13,11 +13,11 @@ file, `gauge_levels` on jaga-dev still carries the previous levels.
 | pattani_river | X.40A (key) | 15.75 | 16.00 | 16.50 | 18.97 | 8 | 6.7 | Warning/Evacuate as accepted for the zone on 14 Oct; from rises 6h 0.41 m, 24h 0.74 m; above Watch 2.1 % of hours |
 | pattani_river | X.10A | 0.85 | 1.05 | 1.15 | 12.84 | 6 | 6.7 | Warning scored: caught 6/6, 5 false, lead 13.0 h; Watch scored: caught 6/6, lead 42.0 h; above Watch 2.6 % of hours |
 | pattani_river | X.275 | 1.75 | 1.95 | 2.00 | 3.77 | 14 | 6.3 | from rises 6h 0.34 m, 24h 0.47 m; lifted to its 3 % / 6 % floor; **listed bank looks too low: the river is within 0.3 m of it >10 % of the time**; above Watch 13.2 % of hours |
-| pattani_river | X.283 | 8.00 | 9.30 | 10.00 | 21.67 | 4 | 4.8 | Warning scored: caught 4/4, 5 false, lead 9.0 h; Watch scored: caught 4/4, lead 28.5 h; above Watch 5.8 % of hours |
+| pattani_river | X.283 | 8.00 | 9.70 | 10.00 | 21.67 | 4 | 4.8 | Warning scored: caught 4/4, 5 false, lead 9.0 h; Watch scored: caught 4/4, lead 28.5 h; above Watch 5.8 % of hours |
 | pattani_river | X.77 | 37.40 | 38.15 | 39.70 | 40.47 | 2 | 4.8 | from rises 6h 1.55 m, 24h 0.96 m; above Watch 5.8 % of hours |
 | kolok | X.119A (key) | 7.80 | 8.80 | 9.30 | 22.80 | 16 | 6.7 | Warning/Evacuate as accepted for the zone on 14 Oct; from rises 6h 0.58 m, 24h 1.52 m; lifted to its 3 % / 6 % floor; above Watch 7.6 % of hours |
 | kolok | X.119 | 5.75 | 6.25 | 7.00 | 7.95 | 4 | 6.7 | Warning scored: caught 4/4, 8 false, lead 16.5 h; Watch scored: caught 4/4, lead 120.0 h; above Watch 5.0 % of hours |
-| kolok | X.274 | 21.40 | 22.20 | 23.50 | 25.15 | 8 | 6.7 | Warning scored: caught 8/8, 5 false, lead 6.5 h; from rises 6h 1.31 m, 24h 2.09 m; above Watch 3.0 % of hours |
+| kolok | X.274 | 21.40 | 22.75 | 23.50 | 25.15 | 8 | 6.7 | Warning scored: caught 8/8, 5 false, lead 6.5 h; from rises 6h 1.31 m, 24h 2.09 m; above Watch 3.0 % of hours |
 | u_taphao | X.44 (key) | 6.60 | 7.05 | 7.40 | 9.97 | 1 | 6.7 | Evacuate as accepted for the zone on 14 Oct; from rises 6h 0.37 m, 24h 0.81 m; above Watch 0.3 % of hours |
 | u_taphao | X.173A | 14.80 | 15.65 | 16.13 | 18.00 | 2 | 6.7 | from rises 6h 0.46 m, 24h 1.35 m; above Watch 1.2 % of hours |
 | u_taphao | X.174 | 5.90 | 6.88 | 8.88 | 13.75 | 3 | 6.7 | Warning scored: caught 3/3, 4 false, lead 7.0 h; from rises 6h 0.29 m, 24h 0.6 m; above Watch 1.6 % of hours |
@@ -39,8 +39,8 @@ file, `gauge_levels` on jaga-dev still carries the previous levels.
 | – | ONE036 | 1.20 | 2.03 | 2.43 | 5.19 | 5 | 4.0 | Warning scored: caught 5/5, 1 false, lead 9.0 h; Watch scored: caught 5/5, lead 27.0 h; above Watch 4.8 % of hours |
 | – | ONE037 | 0.60 | 0.80 | 0.84 | 2.81 | 11 | 4.0 | from rises 6h 0.21 m, 24h 0.16 m; lifted to its 3 % / 6 % floor; **listed bank looks too low: the river is within 0.3 m of it >10 % of the time**; above Watch 14.2 % of hours |
 | – | ONE038 | 0.65 | 0.85 | 0.90 | 2.11 | 9 | 4.0 | from rises 6h 0.33 m, 24h 0.17 m; lifted to its 3 % / 6 % floor; **listed bank looks too low: the river is within 0.3 m of it >10 % of the time**; above Watch 10.6 % of hours |
-| – | ONE039 | 0.70 | 0.90 | 1.18 | 2.56 | 5 | 4.0 | from rises 6h 0.06 m, 24h 0.11 m; lifted to its 3 % / 6 % floor; **listed bank looks too low: the river is within 0.3 m of it >10 % of the time**; above Watch 22.1 % of hours |
-| – | PAT001 | 36.60 | 36.80 | 38.35 | 42.02 | 5 | 14.9 | from rises 6h 1.55 m, 24h 0.94 m; lifted to its 3 % / 6 % floor; above Watch 13.0 % of hours |
+| – | ONE039 | 0.95 | 1.15 | 1.18 | 2.56 | 5 | 4.0 | from rises 6h 0.06 m, 24h 0.11 m; lifted to its 3 % / 6 % floor; **listed bank looks too low: the river is within 0.3 m of it >10 % of the time**; above Watch 10.2 % of hours |
+| – | PAT001 | 37.75 | 37.95 | 38.35 | 42.02 | 5 | 14.9 | from rises 6h 1.55 m, 24h 0.94 m; lifted to its 3 % / 6 % floor; above Watch 11.3 % of hours |
 | – | PAT002 | 13.15 | 13.35 | 13.85 | 15.97 | 5 | 14.9 | Warning scored: caught 5/5, 52 false, lead 8.0 h; from rises 6h 0.19 m, 24h 0.38 m; lifted to its 3 % / 6 % floor; above Watch 15.4 % of hours |
 | – | PTTEP4 | 0.90 | 1.10 | 1.25 | 1.78 | 2 | 1.5 | from rises 6h 0.44 m, 24h 0.18 m; lifted to its 3 % / 6 % floor; above Watch 10.0 % of hours |
 | – | SAY001 | 88.25 | 88.45 | 88.52 | 103.52 | 2 | 14.1 | from rises 6h 0.9 m, 24h 1.19 m; lifted to its 3 % / 6 % floor; **listed bank looks too low: the river is within 0.3 m of it >10 % of the time**; above Watch 35.8 % of hours |
