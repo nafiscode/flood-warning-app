@@ -189,3 +189,131 @@ def test_forecast_check_scores_a_rule_that_sees_the_flood_coming():
     assert out["forecast_rule"]["detected"] == 1
     assert out["forecast_rule"]["median_lead_h"] > out["observed_rule"]["median_lead_h"]
     assert out["floods"][0]["forecast_day1_mm"] == 198.0
+
+
+def test_the_lead_time_floor_pulls_a_lifted_level_back_down():
+    """The defect this was written for: the 94/97th-percentile lift took all the warning away.
+
+    `finish` lifts a level the river stands above too often, and on a gauge whose water sits high
+    that percentile is centimetres under the bank - so Watch was set there and crossing it told
+    nobody anything. Here the lift has put Watch 0.1 m under a 5.0 m bank; the floor must pull it
+    back to where crossing it buys the day it promises, and the record must show the move.
+    """
+    from thresholds import gauges as gs
+
+    level = flood_year(6, days=900)
+    lifted = {"watch": 4.90, "warning": 4.95, "evacuate": 5.0, "years": 6.0,
+              "rise_m": {"6h": 0.5, "24h": 1.0}}
+    onsets = [f["onset"] for f in hc.floods(level, 5.0, 3, 5)]
+    got = gs.apply_lead(dict(lifted), level, 5.0, gs.DEFAULTS, onsets, CFG)
+
+    moved = got["lead_floor_applied"]
+    assert "now" in moved["watch"] and "now" in moved["warning"], "both levels had to move"
+    assert got["watch"] < lifted["watch"] and got["warning"] < lifted["warning"]
+    # Each now sits at least the rise it is meant to buy below the bank.
+    assert got["evacuate"] - got["warning"] >= 0.5 - 1e-9
+    assert got["evacuate"] - got["watch"] >= 1.0 - 1e-9
+    assert got["watch"] < got["warning"] < got["evacuate"]
+    # And the move is priced on both sides, over the same floods, so it can be weighed.
+    before, after = moved["watch"]["before"], moved["watch"]["after"]
+    assert after["median_lead_h"] > before["median_lead_h"], "it has to buy time to be worth it"
+    assert set(before) >= {"detected", "false_alarms", "median_lead_h"}
+
+
+def test_a_move_that_buys_no_time_is_not_made():
+    """Lowering a level costs false alarms, so it has to buy hours. One that buys none is declined
+    and says so, rather than being paid for in false alarms for nothing (JNA002, 0.5 h)."""
+    from thresholds import gauges as gs
+
+    out = {"watch": 4.5, "warning": 4.7, "evacuate": 5.0, "years": 14.0,
+           "rise_m": {"6h": 0.4, "24h": 0.9}}
+    level = flood_year(4, days=900)
+    # Scored against floods that the lower level reaches no earlier: the gain is zero.
+    onsets = [level.index[300]]
+    got = gs.apply_lead(dict(out), level, 5.0, {**gs.DEFAULTS, "min_gain_h": 2.0}, onsets, CFG)
+    for key in ("warning", "watch"):
+        note = got["lead_floor_applied"][key]
+        if "left_alone" in note:
+            assert got[key] == out[key], "a declined move must leave the level alone"
+
+
+def test_too_short_a_record_is_never_re_derived_from():
+    """TBV029 has 36 days and no flood; its 24 h "rise" came out at 49 m and would have put Watch
+    48 m under Warning. A record too short to hold floods is too short to set a level from."""
+    from thresholds import gauges as gs
+
+    out = {"watch": 69.8, "warning": 71.75, "evacuate": 72.66, "years": 0.1,
+           "rise_m": {"6h": 20.0, "24h": 49.1}}
+    got = gs.apply_lead(dict(out), flood_year(0, days=36), 72.66, gs.DEFAULTS, [], CFG)
+    assert got["watch"] == 69.8 and got["warning"] == 71.75
+    assert "only 0.1 years" in got["lead_floor_skipped"]
+    assert "lead_floor_applied" not in got
+
+
+def test_a_rise_taller_than_the_river_is_not_believed():
+    """A rise figure bigger than the gauge's whole working depth is a broken record, not a flood."""
+    from thresholds import gauges as gs
+
+    level = series(np.full(24 * 400, 23.0), start="2018-01-01")
+    out = {"watch": 69.8, "warning": 71.75, "evacuate": 72.66, "years": 4.0,
+           "rise_m": {"6h": 0.4, "24h": 400.0}}
+    got = gs.apply_lead(dict(out), level, 72.66, gs.DEFAULTS, [], CFG)
+    assert got["watch"] == 69.8, "the level must not move on a rise that cannot be real"
+    assert got["needs_human_level"]
+    assert "working_depth_m" in got["lead_floor_applied"]["watch"]
+
+
+def test_the_tide_is_only_believed_near_sea_level():
+    """Module 11's 0.05 m bar alone marked BLGTD01, whose bank is 48.68 m up, as the sea's gauge:
+    at that bar the tidal periods also fit a mountain river's noise. The bank has to be low too."""
+    from thresholds import gauges as gs
+
+    hours = np.arange(24 * 500)
+    tide = series(0.5 * np.sin(hours * 2 * np.pi / 12.4206), start="2018-01-01")
+    near = gs.tide_driven(tide, gs.DEFAULTS, bank=1.0)
+    far = gs.tide_driven(tide + 48.0, gs.DEFAULTS, bank=48.68)
+    assert near is not None and near["tide_driven"]
+    assert far is not None and not far["tide_driven"], "the sea cannot reach a bank 48 m above it"
+    # The amplitude is the same in both; only the elevation differs.
+    assert round(near["tide_m"], 2) == round(far["tide_m"], 2)
+
+
+def test_a_dam_opening_its_turbines_does_not_exempt_a_gauge():
+    """An exactly-24-hour swing is Bang Lang, not the moon (X.77, 0.52 m). It is recorded, because
+    Module 11 drops such a gauge, but the river still leaves its channel at its bank."""
+    from thresholds import gauges as gs
+
+    hours = np.arange(24 * 500)
+    pulse = series(0.5 * np.sin(hours * 2 * np.pi / 24.0) + 39.0, start="2018-01-01")
+    fit = gs.tide_driven(pulse, gs.DEFAULTS, bank=39.7)
+    assert fit is not None
+    assert fit["pulse_driven"] and not fit["tide_driven"]
+
+
+def test_the_sea_s_gauges_keep_their_lifted_levels():
+    """No fixed level in metres above sea level works where the tide sets the water, so the floor
+    leaves those gauges to the tide-aware work (decision 2026-11-22) instead of lowering them
+    into the tide's own range."""
+    from thresholds import gauges as gs
+
+    out = {"watch": 0.80, "warning": 0.90, "evacuate": 0.97, "years": 13.2,
+           "tide_driven": True, "rise_m": {"6h": 0.3, "24h": 0.5}}
+    got = gs.apply_lead(dict(out), series(np.zeros(100), start="2018-01-01"), 0.97, gs.DEFAULTS)
+    assert got["watch"] == 0.80 and got["warning"] == 0.90
+    assert "lead_floor_applied" not in got
+
+
+def test_the_comparison_table_prints_the_level_that_would_be_seeded():
+    """A key gauge's Warning is replaced afterwards by the level the owner accepted on 14 Oct 2026.
+    The table used to print the floor's own choice (X.119A 8.70) where the seed carries 8.80."""
+    from thresholds import gauges as gs
+
+    rows = [{
+        "code": "X.119A", "role": "key", "watch": 7.8, "warning": 8.8, "evacuate": 9.3,
+        "kept": ["warning", "evacuate"], "tide_driven": False,
+        "lead_floor_applied": {"warning": {"was": 9.2, "now": 8.7}},
+    }]
+    md = gs.comparison(rows, None)
+    assert "8.80" in md and "which stands" in md
+    # The floor's own figure appears only in the overridden table, never as the new level.
+    assert "| X.119A | warning | 9.20 | 8.70 |" not in md

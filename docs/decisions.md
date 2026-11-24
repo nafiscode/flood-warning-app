@@ -1512,3 +1512,58 @@ estuary gauges still need tide-aware levels before they can be armed.
 
 ## 2026-11-24 - Live CCTV hidden until a reliable source exists
 The Live cameras window (built 22 Nov, decision 2026-11-22) is removed from the UI - unmounted from the gauge card and the dam report - and left in the code (`lib/cctv.ts`, `components/cctv/CameraWindow.tsx`, its test). The owner found DDPM's `cctv.disaster.go.th` under maintenance on 24 Nov; a re-check of DDPM, EGAT and ONWR confirmed none offers a reliable, embeddable, timestamped live feed for the four provinces (all JS apps that go down and cannot be framed). Reason: in a life-safety app a prominent button that often lands on a maintenance or offline agency page burns trust during the exact emergency it is for; nothing beats a flaky link here. Re-mount `<CameraWindow>` only once an official page is confirmed to stay up for our provinces. Supersedes the mounting part of 2026-11-22 (link-out design stands for when it returns).
+
+## 2026-11-24 - A warning level must buy time, not just mark the bank
+
+The owner asked why the automatic alarm was silent while rivers were up. It was not broken: the
+cron had succeeded on every run, and the feed was honest - every stored reading matched ThaiWater
+to the centimetre and the same timestamp. Nothing was above Jaga's own Warning line except SLA005,
+the tidal gauge deliberately left unarmed. ThaiWater's own map was showing 15 of our 48 stations at
+`situation_level` 4, but that grading is `(level - bed) / (bank - bed)`: how full the channel is,
+not how close a flood is. PAT001 was 85.8 % "full" while sitting 2.63 m below its bank.
+
+The silence was correct behaviour on rules that could not speak. Two measurements showed why:
+
+- **Nineteen gauges had Watch less than 1 m below the bank, nine of them less than 0.30 m**, and on
+  four Warning sat 3 to 5 cm under it. The cause is the 3 % / 6 % share floors, which lift a level
+  the river stands above too often; on a gauge whose water sits high that percentile is centimetres
+  under the bank, and the lift was overriding the rise-based levels that had real lead time.
+- **No armed gauge had come within reach of its own Watch line in the entire six-week record**, and
+  **42 of 48 gauges were not armed** - including 13 of the 15 ThaiWater was grading at level 4.
+
+**Decided.** A level must also sit at least the rise that river makes, in its own record, over the
+hours it is meant to buy: Warning the 6-hour rise below the bank, Watch the 24-hour rise, never
+closer than 0.3 m / 0.6 m. The room comes from the record and never from a share of the channel,
+because `gauge_channel`'s bed figure is wrong at several stations. Chosen over a flat channel-share
+rule for exactly that reason, and over touching only the nine worst because the other ten are no
+more defensible.
+
+Four guards, each one found by running it: the move must buy at least 2 h of median lead (JNA002
+bought 0.5 h and cost a false alarm - declined); it must be able to stay rare, or the gauge is
+marked `needs_human_level` instead of fudged (SAY001 would stand above it 35.8 % of the record);
+it needs 3 years of record (TBV029 has 36 days, and its 49 m "rise" had put Watch 48 m below
+Warning); and it skips the sea's gauges, whose levels are their own piece of work (2026-11-22).
+
+The tidal test reuses Module 11's harmonic fit but **not its threshold alone**: at 0.05 m the tidal
+periods also fit a mountain river's noise, and it marked BLGTD01 (bank 48.68 m up), BLGTD02, PAT001
+and X.77 as the sea's. A bank within 5 m of sea level is now required too, which reproduces Module
+5's hand-written list plus three Songkhla-lake-shore gauges. A once-a-day swing is a dam opening
+its turbines, not the moon (X.77, 0.52 m): recorded, never an exemption.
+
+**`thresholds gauges` no longer writes the seed.** It writes the reports and stops; `--write-seed`
+is needed, once the owner has read the before-and-after table in `pipeline/thresholds/lead_time.md`
+where both sides are scored over the same floods. `jaga-dev` is the database the live site reads, so
+a run that quietly rewrote the seed would change what the app warns on. A key gauge's accepted
+levels (14 Oct 2026) are never moved; where the floor disagrees it says so (X.119A: it wanted 8.70,
+the accepted 8.80 stands).
+
+**No gauge is armed as part of this** (the owner, 24 Nov): arming one whose Warning is 4 cm below
+its bank would publish only once the river was already overtopping. Levels first, then arming in one
+reviewed batch. Nothing here publishes or raises anything - a level only ever starts a suggestion,
+or the alarm on a gauge an admin has ticked (safety rule 2).
+
+Also decided: **store ThaiWater's own grading** (`situation_level`, `storage_percent`,
+`diff_wl_bank`), already in the payload `gauges_fetch()` collects every 15 minutes and until now
+thrown away, and show it to admins beside Jaga's own grade. It is what the owner was looking at when
+the two disagreed, and the app could not see it. Advisory only: it never publishes and never sets a
+level.

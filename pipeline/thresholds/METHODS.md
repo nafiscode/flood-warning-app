@@ -65,6 +65,55 @@ The owner asked for Watch, Warning and Evacuate at every river gauge, not only t
 - **Nine gauges are flagged "bank looks too low"**: the river stands within 0.3 m of the listed bank more than a tenth of the time (X.275, FOP041, JNA001, JNA002, ONE037, ONE038, ONE039, SLA005, SLA007 — mostly tidal reaches). There the listed bank is no flood marker and the levels need someone who knows the gauge. **Two gauges never reached their listed bank** in the record (BLGTD01, MOU454). BLGTU05 and BLGTU06 have no bank and no levels.
 - The automated alarm reads them: a ticked gauge other than its zone's key gauge raises Warning (never more on its own) at its own Evacuate level.
 
+### The lead-time floor (24 Nov 2026)
+
+The 3 % / 6 % floors above stopped a level the river sits above for weeks. They also, on the gauges
+they bit hardest, took away all the warning: measured against `jaga-dev` on 24 Nov 2026, **nineteen
+gauges had Watch less than 1 m below the bank, nine of them less than 0.30 m**, and on ONE039,
+SLA007, ONE037 and X.73 Warning sat **3 to 5 cm** under it. Crossing such a line says nothing a
+person at the bridge cannot already see, and no gauge had come within reach of its own Watch line
+in the whole six-week live record. The alarm was correctly silent on rules that could not speak.
+
+So after the lift a level must also sit at least the rise this river makes, in its own record, over
+the hours it is meant to buy: Warning the 6-hour rise below the bank, Watch the 24-hour rise, never
+closer than 0.3 m and 0.6 m (`min_room_warning_m`, `min_room_watch_m`). The room is taken from the
+gauge's record and **never as a share of the channel**: `gauge_channel`'s bed figure is wrong at
+several stations (FOP041's implies a 19 m deep river), and a bed cannot be trusted to set a warning.
+
+Four guards keep this from doing harm of its own, every one of them found by running it:
+
+- **It must buy time.** A level is lowered only where the move adds at least 2 hours of median lead
+  (`min_gain_h`). At JNA002 it bought 0.5 h and cost an extra false alarm, which is paying for
+  nothing; that move is declined and the reason recorded.
+- **It must be able to be rare.** Where buying the lead would leave the river standing above the
+  level more than a quarter of the record (`max_share_hard`), nothing moves: the gauge is marked
+  `needs_human_level` and listed. That is almost always a gauge whose listed bank is wrong
+  (SAY001, 35.8 % of the record; ONE039's Watch, 29 %).
+- **It must rest on a record.** Under 3 years (`lead_min_years`), no re-derivation: TBV029 has 36
+  days and no flood, and its 24-hour "rise" came out at 49 m, which had put Watch 48 m below
+  Warning. A rise taller than the gauge's whole working depth is also refused outright.
+- **It must not be the sea's gauge.** No fixed level in metres above sea level works where the tide
+  sets the water (decision 2026-11-22), so those nine are skipped and left to the tide-aware
+  levels. The test reuses Module 11's harmonic fit, **but its 0.05 m bar is not enough on its own
+  here**: at that bar the tidal periods also fit a mountain river's noise, and it marked BLGTD01
+  (bank 48.68 m), BLGTD02, PAT001 and X.77 as tidal. A gauge counts as the sea's only when the fit
+  exceeds 0.05 m **and** its bank stands no more than 5 m above sea level (`tide_max_bank_m`). With
+  that gate the nine are exactly Module 5's hand-written list (X.10A, BLGTD05, X.275, ONE038,
+  ONE037, SLA005) plus three Songkhla-lake-shore gauges (ONE036, PTTEP4, SLA007).
+  An exactly-24-hour swing is a dam opening its turbines, not the moon (X.77, 0.52 m): it is
+  recorded, because Module 11 drops such a gauge from its baseflow floors, but it does **not**
+  exempt a gauge here, since the river still leaves its channel at its bank.
+
+A key gauge's Warning and Evacuate are the levels the owner accepted for the zone on 14 Oct 2026
+and the floor never moves them; where it disagrees it says so (X.119A: it wanted 8.70, the accepted
+8.80 stands). The whole before-and-after table, both sides scored over the same floods, is
+`lead_time.md` beside this file.
+
+**`thresholds gauges` no longer writes the seed.** It writes the reports and stops; the seed
+(`supabase/seed/47_gauge_levels.sql`) is rewritten only with `--write-seed`, once the owner has read
+the table (their choice, 24 Nov 2026). `jaga-dev` is the database the live site reads, so a run that
+quietly rewrote the seed would change what the app warns on.
+
 ## The tide check (14 Oct 2026)
 
 The A8 phase prompt asked for ThaiWater's own tide and storm-surge data to be evaluated before Open-Meteo Marine was taken. **ThaiWater's public API has no tide or surge series**: its summary call (`public/thailand_main`) carries `wave` and `storm`, and both are pictures (SWAN wave-height maps from HII, storm-track images), not numbers; no tide-station listing answers. The only observed sea-driven water level in the four provinces is at the river gauges the tide reaches, so they were the yardstick.

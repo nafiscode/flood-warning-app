@@ -227,8 +227,13 @@ def cmd_plots(cfg: dict) -> int:
     return 0
 
 
-def cmd_gauges(cfg: dict) -> int:
-    """Watch, Warning and Evacuate for every gauge with a bank level (thresholds/gauges.py)."""
+def cmd_gauges(cfg: dict, write_seed: bool = False) -> int:
+    """Watch, Warning and Evacuate for every gauge with a bank level (thresholds/gauges.py).
+
+    Writes the reports always and the seed only when asked. The owner approves the table before
+    any level reaches the database (their choice, 24 Nov 2026), and `jaga-dev` is the database the
+    live site reads, so a run that quietly rewrote the seed would change what the app warns on.
+    """
     import pandas as pd
 
     from . import gauges as gs
@@ -236,17 +241,30 @@ def cmd_gauges(cfg: dict) -> int:
     out = output_dir(cfg)
     stations = pd.read_csv(data_dir() / "stations.csv")
     hindcast = json.loads((out / "hindcast.json").read_text(encoding="utf-8"))
+    # The levels the last run proposed, read before this run overwrites them: the "before" column.
+    previous = out / "gauge_levels.json"
+    old_rows = json.loads(previous.read_text(encoding="utf-8")) if previous.exists() else None
     rows = gs.run(cfg, stations, data_dir() / "tidy", seed.gauges(stations, cfg, hindcast), cfg.get("gauge_levels"),
                   {z: v["proposal"] for z, v in hindcast["zones"].items()})
-    (out / "gauge_levels.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
+    previous.write_text(json.dumps(rows, ensure_ascii=False, indent=2, default=str) + chr(10), encoding="utf-8")
     for folder in (out, CONFIG_PATH.parent):
-        (folder / "gauge_levels.md").write_text(gs.markdown(rows), encoding="utf-8", newline="\n")
-    seed_path = REPO_DIR / "supabase" / "seed" / "47_gauge_levels.sql"
-    seed_path.write_text(gs.seed_sql(rows), encoding="utf-8", newline="\n")
+        (folder / "gauge_levels.md").write_text(gs.markdown(rows), encoding="utf-8", newline=chr(10))
+        (folder / "lead_time.md").write_text(gs.comparison(rows, old_rows), encoding="utf-8", newline=chr(10))
     counts = {}
     for r in rows:
         counts[r["method"]] = counts.get(r["method"], 0) + 1
+    moved = sum(1 for r in rows if r.get("lead_floor_applied"))
+    held = sum(1 for r in rows if r.get("needs_human_level"))
+    tidal = sum(1 for r in rows if r.get("tide_driven"))
     print(f"{len(rows)} gauges: {counts}")
+    print(f"lead-time floor: {moved} moved, {held} need a human level, {tidal} are the sea's gauges")
+    print(f"read {CONFIG_PATH.parent / 'lead_time.md'} before deciding")
+    if write_seed:
+        seed_path = REPO_DIR / "supabase" / "seed" / "47_gauge_levels.sql"
+        seed_path.write_text(gs.seed_sql(rows), encoding="utf-8", newline=chr(10))
+        print(f"wrote {seed_path}")
+    else:
+        print("seed NOT written (pass --write-seed once the table above is approved)")
     return 0
 
 
@@ -259,7 +277,10 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("glofas")
     sub.add_parser("hindcast")
     sub.add_parser("seed")
-    sub.add_parser("gauges")
+    p_gauges = sub.add_parser("gauges")
+    p_gauges.add_argument("--write-seed", action="store_true",
+                          help="also rewrite supabase/seed/47_gauge_levels.sql "
+                               "(default: report only)")
     sub.add_parser("tide")
     sub.add_parser("forecast")
     sub.add_parser("plots")
@@ -275,7 +296,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "seed":
         return cmd_seed(cfg)
     if args.command == "gauges":
-        return cmd_gauges(cfg)
+        return cmd_gauges(cfg, write_seed=getattr(args, "write_seed", False))
     if args.command == "tide":
         return cmd_tide(cfg)
     if args.command == "forecast":
