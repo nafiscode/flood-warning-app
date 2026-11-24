@@ -79,7 +79,12 @@ import {
 } from "@/lib/map-console";
 import { localName } from "@/lib/places";
 import { isAdminRoleName } from "@/lib/roles";
-import { damReleaseAt, hasActiveAlerts, type PublicStatus } from "@/lib/public-status";
+import {
+  alertsElsewhereCount,
+  damReleaseAt,
+  hasActiveAlerts,
+  type PublicStatus,
+} from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { buttonQuiet, buttonSecondary, card, hint, notice } from "@/lib/ui";
 import type { LoadState } from "@/lib/use-public";
@@ -749,6 +754,23 @@ export function DashboardView(props: DashboardViewProps) {
     .filter((a) => a.hazard === "flood")
     .map((a) => ({ alert: a, tambons: a.tambons.filter((c) => c.startsWith(province)) }))
     .filter((a) => a.tambons.length > 0);
+  /*
+   * Active alerts (Watch, Warning or Evacuate) in force OUTSIDE the province the map is scoped to
+   * (the owner, 24 Nov 2026). The "tambons with an alert now" list is scoped to the chosen
+   * province, by design - the map opens on the person's own province and the list matches it. But
+   * when that province is quiet while another is in alarm, a scoped list reading "no alerts" made
+   * the map look idle. This count drives one line in that card: "also in force in other provinces",
+   * with the button that pulls the whole view back to all four. It never carries a level or an
+   * alert colour of its own (safety rules 3, 10); the map's own colours already show every
+   * province from the full `status`.
+   */
+  const alertsElsewhere =
+    province === ""
+      ? 0
+      : alertsElsewhereCount(
+          status,
+          (status?.alerts ?? []).flatMap((a) => a.tambons.filter((c) => c.startsWith(province))),
+        );
 
   /*
    * The quiet dam notice goes only to someone whose own area or watched place is on the river
@@ -3172,6 +3194,24 @@ export function DashboardView(props: DashboardViewProps) {
                           </li>
                         ))}
                       </ul>
+                    )}
+                    {/*
+                     * Scoped to one province while another is in alarm: say so, and offer the
+                     * whole picture in one tap (the owner, 24 Nov 2026). Never a level or an alert
+                     * colour of its own; the map's tambons already carry every province's colour.
+                     */}
+                    {status && !(failed && !fresh) && alertsElsewhere > 0 && (
+                      <div className="flex flex-col gap-2" data-alerts-elsewhere={alertsElsewhere}>
+                        <p>{t("alertsList.elsewhere", { count: alertsElsewhere })}</p>
+                        <button
+                          type="button"
+                          data-show-all-provinces="true"
+                          onClick={() => setProvince("")}
+                          className="inline-flex min-h-tap items-center gap-1.5 self-start font-bold text-jaga-teal-ink underline"
+                        >
+                          {t("alertsList.showAll")}
+                        </button>
+                      </div>
                     )}
                   </section>
                 )}

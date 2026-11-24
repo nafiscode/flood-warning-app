@@ -106,6 +106,33 @@ export function hasActiveAlerts(status: PublicStatus | null): boolean {
   return !!status && status.alerts.some((a) => a.level !== "normal");
 }
 
+/** Levels that mean an alert is in force and asks something of people - not Normal, not the all-clear. */
+const IN_FORCE_LEVELS = new Set<AlertLevel>(["watch", "warning", "evacuate"]);
+
+/**
+ * How many tambons are under an in-force alert (Watch, Warning or Evacuate) right now, not
+ * counting the reader's own areas. It is what the quiet "an alert is in force in N areas" line on
+ * the home screen counts: the line says Jaga is live and points to the map, so a reader whose own
+ * tambon is quiet still learns that something is happening elsewhere. It carries no level and no
+ * alert colour of its own - the hero above it stays the one thing that says what level the reader
+ * is at (safety rules 3 and 10). The all-clear is left out: it means the emergency is over, not
+ * that an area needs attention now.
+ */
+export function alertsElsewhereCount(
+  status: PublicStatus | null,
+  mine: string[] = [],
+  hazard = "flood",
+): number {
+  if (!status) return 0;
+  const skip = new Set(mine);
+  const codes = new Set<string>();
+  for (const a of status.alerts) {
+    if (a.hazard !== hazard || !IN_FORCE_LEVELS.has(a.level)) continue;
+    for (const c of a.tambons) if (!skip.has(c)) codes.add(c);
+  }
+  return codes.size;
+}
+
 function isoOrNull(value: unknown): string | null {
   if (typeof value !== "string" && !(value instanceof Date)) return null;
   const time = new Date(value).getTime();

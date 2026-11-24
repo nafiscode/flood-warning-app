@@ -142,7 +142,11 @@
     },
     "mapLink": "Open the Risk & Live Map",
     "projectLine": "Jaga help line",
-    "issuerAuto": "Jaga's automatic alarm (from a river gauge reading, not issued by an admin)"
+    "issuerAuto": "Jaga's automatic alarm (from a river gauge reading, not issued by an admin)",
+    "alertsElsewhere": {
+      "line": "An alert is in force in {count, plural, one {# area} other {# areas}} now",
+      "cta": "See the map"
+    }
   },
   "install": {
     "title": {
@@ -643,7 +647,9 @@
       "none": "No alerts are in force now.",
       "unknown": "Couldn't load the alert status. Follow official warnings.",
       "areas": "Areas",
-      "nextUpdate": "Next update {time}"
+      "nextUpdate": "Next update {time}",
+      "elsewhere": "An alert is also in force in {count, plural, one {# area} other {# areas}} in other provinces.",
+      "showAll": "Show all four provinces"
     },
     "reports": {
       "count": "{count} reports in the last 72 hours",

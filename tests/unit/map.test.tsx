@@ -690,6 +690,32 @@ describe("map dashboard (spec 4.2)", () => {
     expect(list.textContent).toContain("บานา");
   });
 
+  it("when scoped to a quiet province, the list points to an alarm elsewhere (owner, 24 Nov)", () => {
+    const c = dashboard({
+      area: BANA, // Pattani (94)
+      status: exampleStatus([exampleAlert("warning", ["900101"])]), // an alert in Songkhla (90)
+    });
+    const list = c.querySelector("[data-alerts-list]")!;
+    // The scoped list has no alert of its own, but it says one is in force in another province.
+    expect(list.querySelector("[data-level]")).toBeNull();
+    const elsewhere = list.querySelector("[data-alerts-elsewhere]")!;
+    expect(elsewhere.getAttribute("data-alerts-elsewhere")).toBe("1");
+    // One tap pulls the whole view back to all four provinces; the alert then shows, note gone.
+    fireEvent.click(list.querySelector("[data-show-all-provinces]")!);
+    const after = c.querySelector("[data-alerts-list]")!;
+    expect(after.querySelector('[data-level="warning"]')).not.toBeNull();
+    expect(after.querySelector("[data-alerts-elsewhere]")).toBeNull();
+    expect((c.querySelector("#map-province") as HTMLSelectElement).value).toBe("");
+  });
+
+  it("the 'elsewhere' note stays silent when the scoped province holds the only alert", () => {
+    const c = dashboard({
+      area: BANA,
+      status: exampleStatus([exampleAlert("warning", [BANA.code])]),
+    });
+    expect(c.querySelector("[data-alerts-elsewhere]")).toBeNull();
+  });
+
   it("before launch the legend has no Normal and says why", () => {
     const c = dashboard({ status: exampleStatus([exampleAlert("watch", [BANA.code])], false) });
     expect(c.querySelector('[data-legend] [data-level="normal"]')).toBeNull();

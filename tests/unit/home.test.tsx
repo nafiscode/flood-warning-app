@@ -234,6 +234,49 @@ describe("home hero (safety rule 3)", () => {
   });
 });
 
+describe("a quiet area still sees that alerts are in force elsewhere (the owner, 24 Nov)", () => {
+  it("shows a line, linking to the map, when another area has an alert and mine is quiet", () => {
+    const c = home("normal", {
+      status: exampleStatus([exampleAlert("warning", ["900101"])]),
+    });
+    const line = c.querySelector("[data-alerts-elsewhere]")!;
+    expect(line).not.toBeNull();
+    expect(line.getAttribute("data-alerts-elsewhere")).toBe("1");
+    expect(line.getAttribute("href")).toBe("/map");
+    // It never carries a level or an alert colour: the hero stays the only thing that says a level.
+    expect(line.querySelector("[data-level]")).toBeNull();
+    expect(c.querySelector('[data-hero="normal"] [data-level="normal"]')).not.toBeNull();
+  });
+
+  it("does not count the reader's own areas", () => {
+    const c = home("watch", {
+      status: exampleStatus([
+        exampleAlert("watch", [BANA.code]),
+        exampleAlert("warning", ["900101"]),
+      ]),
+    });
+    // Mine (BANA) is left out; only the other area counts.
+    expect(c.querySelector("[data-alerts-elsewhere]")?.getAttribute("data-alerts-elsewhere")).toBe(
+      "1",
+    );
+  });
+
+  it("is gone while a place of mine is at Warning or Evacuate: the screen is the alert's", () => {
+    const c = home("warning", {
+      status: exampleStatus([
+        exampleAlert("warning", [BANA.code]),
+        exampleAlert("watch", ["900101"]),
+      ]),
+    });
+    expect(c.querySelector("[data-alerts-elsewhere]")).toBeNull();
+  });
+
+  it("the all-clear alone does not raise it (it means the emergency is over)", () => {
+    const c = home("normal", { status: exampleStatus([exampleAlert("return", ["900101"])]) });
+    expect(c.querySelector("[data-alerts-elsewhere]")).toBeNull();
+  });
+});
+
 describe("home never implies 'no risk' (safety rule 10)", () => {
   it("before launch a tambon without an alert shows no level, only the grey notice", () => {
     const c = home("notInService");

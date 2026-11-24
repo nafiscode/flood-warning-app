@@ -21,7 +21,13 @@ import { areaName, tambonName, type Area } from "@/lib/area";
 import { reportsNearMe, type TambonReports } from "@/lib/flood-reports";
 import type { MyPlaces } from "@/lib/me";
 import type { NearbyPlaces } from "@/lib/places";
-import { areaStatus, damReleaseAt, severity, type PublicStatus } from "@/lib/public-status";
+import {
+  alertsElsewhereCount,
+  areaStatus,
+  damReleaseAt,
+  severity,
+  type PublicStatus,
+} from "@/lib/public-status";
 import { BANGKOK_DATE_TIME } from "@/lib/time";
 import { homeStage, setupSteps } from "@/lib/home-stage";
 import { useConsoleView } from "@/lib/console-view";
@@ -199,6 +205,16 @@ export function HomeView(props: HomeViewProps) {
   const tense = [hero, ...watched.map((w) => w.status)].some(
     (s) => s?.kind === "alert" && (s.alert.level === "warning" || s.alert.level === "evacuate"),
   );
+  /*
+   * How many areas other than the reader's own have an alert in force right now (the owner,
+   * 24 Nov 2026). The home screen is scoped to the reader's own tambon, so on a quiet day it looks
+   * the same whether or not Jaga is doing anything anywhere. This is the one line that says it is:
+   * it names no level and wears no alert colour - the hero above it stays the only thing that says
+   * what the reader's own area is at - and it points to the map, where the areas can be seen
+   * (safety rules 3 and 10). It is dropped while a place of theirs is at Warning or Evacuate: then
+   * the screen belongs to their own alert, not to news about elsewhere.
+   */
+  const alertsElsewhere = loading ? 0 : alertsElsewhereCount(status, myCodes);
   const sos = <SOSButton href={getPathname({ href: "/sos", locale })} />;
   /*
    * A laptop gets one thing at a time (the owner, 23 Oct 2026; lib/home-stage.ts): the one-question
@@ -408,6 +424,31 @@ export function HomeView(props: HomeViewProps) {
             >
               {tFlow("mapCta", { place: tambonName(locale, home) })}
               <ForwardIcon size={20} className="rtl:-scale-x-100" />
+            </Link>
+          )}
+
+          {/*
+           * A quiet line under the hero (the owner, 24 Nov): "an alert is in force in N areas
+           * now - see the map", for a reader whose own tambon is quiet. It is the one place the
+           * home screen shows that Jaga is doing something somewhere, so the app never looks idle
+           * while a gauge is in alarm two provinces away. It never names a level or an alert
+           * colour, and it goes once a place of theirs is at Warning or Evacuate (safety rules 3,
+           * 10). On the map it lands on the live view, all four provinces.
+           */}
+          {!loading && !choosing && !tense && alertsElsewhere > 0 && (
+            <Link
+              href="/map"
+              prefetch={false}
+              data-alerts-elsewhere={alertsElsewhere}
+              className="flex min-h-tap items-center justify-between gap-3 rounded-xl border-2 border-jaga-line bg-jaga-surface px-4 py-2.5"
+            >
+              <span className="font-medium text-jaga-text">
+                {t("alertsElsewhere.line", { count: alertsElsewhere })}
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1.5 font-bold text-jaga-teal-ink underline">
+                {t("alertsElsewhere.cta")}
+                <ForwardIcon size={18} className="rtl:-scale-x-100" />
+              </span>
             </Link>
           )}
 

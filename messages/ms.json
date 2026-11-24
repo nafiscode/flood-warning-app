@@ -142,7 +142,11 @@
     },
     "mapLink": "Buka Peta Risiko & Semasa",
     "projectLine": "Talian bantuan Jaga",
-    "issuerAuto": "Penggera automatik Jaga (daripada bacaan paras air, bukan dikeluarkan oleh pentadbir)"
+    "issuerAuto": "Penggera automatik Jaga (daripada bacaan paras air, bukan dikeluarkan oleh pentadbir)",
+    "alertsElsewhere": {
+      "line": "Amaran sedang berkuat kuasa di {count, plural, one {# kawasan} other {# kawasan}} sekarang",
+      "cta": "Lihat peta"
+    }
   },
   "install": {
     "title": {
@@ -643,7 +647,9 @@
       "none": "Tiada amaran yang berkuat kuasa sekarang.",
       "unknown": "Status amaran tidak dapat dimuat. Ikuti amaran rasmi.",
       "areas": "Kawasan",
-      "nextUpdate": "Kemas kini seterusnya {time}"
+      "nextUpdate": "Kemas kini seterusnya {time}",
+      "elsewhere": "Amaran turut berkuat kuasa di {count, plural, one {# kawasan} other {# kawasan}} di wilayah lain.",
+      "showAll": "Tunjukkan keempat-empat wilayah"
     },
     "reports": {
       "count": "{count} laporan dalam 72 jam yang lalu",
