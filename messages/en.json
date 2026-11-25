@@ -752,7 +752,9 @@
         "alt": "The river {name} with water risen {value} m above its bank, spilling over the lower side.",
         "replay": "Play again",
         "close": "Close",
-        "open": "Watch the river reach its bank"
+        "open": "Watch the river reach its bank",
+        "loading": "Opening the river…",
+        "unavailable": "Couldn’t open the river. Try again."
       }
     },
     "legendStale": "Grey dashed outline: an alert that was not updated on time",
@@ -1160,6 +1162,12 @@
         "title": "A river has been rising for a week",
         "body": "{count, plural, one {# zone has been rising for a week with the rain behind it. Nothing has gone to anybody; it is waiting for you to read the figures and decide} other {# zones have been rising for a week with the rain behind them. Nothing has gone to anybody; they are waiting for you to read the figures and decide}}"
       }
+    },
+    "bankReached": {
+      "title": "A river near you has reached its bank",
+      "body": "{name} is at or over its bank.",
+      "note": "A measurement, not an alert. Alerts come only from Jaga’s admins.",
+      "watch": "Watch the river"
     }
   },
   "placeFinder": {

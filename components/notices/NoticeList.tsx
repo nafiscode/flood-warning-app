@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { DrillMark } from "@/components/alerts/DrillMark";
 import { ClockIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
+import { BankSceneButton } from "@/components/map/BankScene";
 import { ShareJagaButton } from "@/components/ShareJagaButton";
 import { Link } from "@/i18n/navigation";
 import { alertWords } from "@/lib/alert-words";
@@ -53,7 +54,9 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         ) : (
           <span className="inline-flex items-center gap-2 font-bold text-jaga-ink">
             <LifebuoyIcon size={24} />
-            {item.kind === "adminQueue"
+            {item.kind === "bankReached"
+              ? t("bankReached.title")
+              : item.kind === "adminQueue"
               ? t(`queue.${item.queue}.title`)
               : item.kind === "autoAlarm"
                 ? t("auto.title")
@@ -182,6 +185,17 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
           {item.unitName && (
             <p className="text-small text-jaga-text-2">{t("sos.by", { unit: item.unitName })}</p>
           )}
+        </>
+      )}
+      {/* A river near the person at or over its bank (24 Nov 2026): the measurement, the line that
+          it is not an official alert, and the button that plays the scene from the real channel. */}
+      {item.kind === "bankReached" && (
+        <>
+          <p className="font-medium">
+            {t("bankReached.body", { name: localName(item.name, locale) })}
+          </p>
+          <p className="text-small text-jaga-text-2">{t("bankReached.note")}</p>
+          <BankSceneButton gaugeId={item.gaugeId} />
         </>
       )}
 

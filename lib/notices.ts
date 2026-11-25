@@ -81,6 +81,16 @@ export type NoticeItem = Base &
     | { kind: "adminQueue"; queue: AdminQueue; count: number }
     | { kind: "report"; event: "approved" | "hidden"; tambon: { th: string; en: string } | null }
     | ({ kind: "autoAlarm" } & Omit<AutoAlarm, "id" | "createdAt" | "decidedAt">)
+    | {
+        /**
+         * A river near the person is at or over its bank (24 Nov 2026). A **measurement**, not an
+         * alert: it carries the flood scene for that gauge and says in words it is not an official
+         * alert. Where a published alert is in force, that alert rings on its own (safety rule 2).
+         */
+        kind: "bankReached";
+        gaugeId: string;
+        name: Record<string, string>;
+      }
   );
 
 /**
@@ -408,13 +418,15 @@ export function buildNotices(input: {
   autoAlarms?: AutoAlarm[];
   /** For an admin: every queue with something waiting in it. */
   attention?: AdminAttention[];
+  /** Rivers near the person that are at or over their bank (24 Nov 2026), newest reading in `at`. */
+  bankReached?: { id: string; name: Record<string, string>; at: string | null }[];
   now: number;
   /** The word for the person's own home, and how to name a chosen area, both translated. */
   homeLabel: string;
   areaLabel: (area: Area) => string;
 }): NoticeItem[] {
   const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
-  const { fieldWaiting, reports = [], autoAlarms = [], attention = [] } = input;
+  const { fieldWaiting, reports = [], autoAlarms = [], attention = [], bankReached = [] } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -595,6 +607,22 @@ export function buildNotices(input: {
               en: decision.tambonEn ?? decision.tambonTh ?? "",
             }
           : null,
+    });
+  }
+
+  // A river near the person at or over its bank (24 Nov 2026). One standing item per river while
+  // it is over - keyed on the gauge, not the reading, so it is marked read once and does not ring
+  // again at every poll. A measurement, never an alert; it carries the flood scene.
+  for (const river of bankReached) {
+    const at = river.at ?? new Date(now).toISOString();
+    if (!within(at)) continue;
+    items.push({
+      kind: "bankReached",
+      id: `bank:${river.id}`,
+      at,
+      places: [],
+      gaugeId: river.id,
+      name: river.name,
     });
   }
 

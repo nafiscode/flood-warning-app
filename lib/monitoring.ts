@@ -11,7 +11,11 @@ import {
   type GaugeTally,
 } from "@/lib/map-console";
 import type { GaugeReading } from "@/lib/map-data";
+import { gaugesNear, type Point } from "@/lib/near";
 import type { LoadState } from "@/lib/use-public";
+
+// Kept exported from here as well: callers have imported them from monitoring since 17 Oct 2026.
+export { gaugesNear, GAUGES_NEAR_KM, type Point } from "@/lib/near";
 import { DRY_MM, isHeavy, isStale, isWet, type RainSoon, type WeatherGroup } from "@/lib/weather";
 
 /**
@@ -176,9 +180,6 @@ export type RainReading = {
   soon: RainSoon | null;
 };
 
-/** A point to measure distance from: the person's own area. */
-export type Point = { lat: number; lon: number };
-
 export type MonitoringInput = {
   now: number;
   /** The person's own tambon codes (own area and watched places); [] for a visitor. */
@@ -196,37 +197,6 @@ export type MonitoringInput = {
   /** Left out where the device knows no weather place at all: there is then no rain note. */
   rain?: Feed<RainReading>;
 };
-
-/**
- * How far from the person's own area a river gauge still counts as one of "their" rivers.
- *
- * It is a distance and not a province on purpose. The public gauge feed carries a point but no
- * tambon or province, and the four provinces' bounding boxes overlap, so counting gauges by box
- * would put a station in two provinces at once. A distance is the honest answer to a question
- * about points, and it reads the way a person means it.
- */
-export const GAUGES_NEAR_KM = 50;
-
-const EARTH_KM_PER_DEG = 111.32;
-
-/**
- * The gauges within `km` of a point. The same small-angle approximation lib/sea.ts and
- * lib/weather-grid.ts already use: at this latitude and over these distances it is well inside
- * the error of the question being asked.
- */
-export function gaugesNear<T extends Point>(
-  gauges: readonly T[],
-  point: Point,
-  km = GAUGES_NEAR_KM,
-): T[] {
-  const scale = Math.cos((point.lat * Math.PI) / 180);
-  const limit = (km / EARTH_KM_PER_DEG) ** 2;
-  return gauges.filter((g) => {
-    const dy = g.lat - point.lat;
-    const dx = (g.lon - point.lon) * scale;
-    return dy * dy + dx * dx <= limit;
-  });
-}
 
 /**
  * A reading's age, or nothing at all before the page has a clock. `useNow()` is 0 in the server's

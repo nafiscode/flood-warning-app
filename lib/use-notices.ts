@@ -15,7 +15,10 @@ import {
   type ReportDecision,
 } from "@/lib/notices";
 import { FIELD_URL, type MyFieldRescue } from "@/lib/field-rescue";
+import { bankReachedNear } from "@/lib/flood-scene";
 import { REQUESTS_URL, type FieldWaiting, type UnitRequest } from "@/lib/journey";
+import { GAUGES_SUMMARY_URL, type GaugeReading, type GaugeSummary } from "@/lib/map-data";
+import type { Point } from "@/lib/near";
 import { readStored, useStored, writeStored } from "@/lib/phone-store";
 import { caseToken, rememberedCases, type SosTimeline } from "@/lib/sos";
 import { isSessionCookie } from "@/lib/supabase/env";
@@ -25,6 +28,7 @@ import { useMyPlaces, useNow } from "@/lib/use-public";
 const POLL_MS = 5 * 60_000;
 
 type StoredFeed = { key: string; rows: NoticeRow[]; checkedAt: number };
+type StoredGauges = { gauges: GaugeReading[]; checkedAt: number };
 type StoredCases = { cases: KnownCase[]; checkedAt: number };
 type StoredUnits = {
   units: UnitRequest[];
@@ -79,6 +83,7 @@ export function useNotices(options: {
   const area = useStored<Area>("area");
   const me = useMyPlaces();
   const stored = useStored<StoredFeed>("notices");
+  const storedGauges = useStored<StoredGauges>("noticeGauges");
   const storedCases = useStored<StoredCases>("noticeCases");
   const storedUnits = useStored<StoredUnits>("noticeUnits");
   const read = useStored<string[]>("noticesRead");
@@ -87,6 +92,19 @@ export function useNotices(options: {
 
   const tambons = useMemo(() => myTambons(area, me), [area, me]);
   const key = tambons.join(",");
+
+  // The person's own points - their area and any place they watch - for "a river near you has
+  // reached its bank". Empty for a visitor who has saved nothing, who then gets no such notice.
+  const points = useMemo<Point[]>(() => {
+    const pts: Point[] = [];
+    if (area) pts.push({ lat: area.lat, lon: area.lon });
+    if (me?.signedIn) {
+      if (me.home) pts.push({ lat: me.home.lat, lon: me.home.lon });
+      for (const p of me.places) if (p.area) pts.push({ lat: p.area.lat, lon: p.area.lon });
+    }
+    return pts;
+  }, [area, me]);
+  const hasPlace = points.length > 0;
 
   // The feed: alerts and announcements for the places this person cares about.
   useEffect(() => {
@@ -120,6 +138,40 @@ export function useNotices(options: {
       window.removeEventListener("online", load);
     };
   }, [ask, key]);
+
+  // The river gauges, reduced to points and readings (the same summary the home screen caches), so
+  // the bell can say when a river near the person has reached its bank. Only when they have a place
+  // to be near; a station is filtered to those points in the memo below, never on the server.
+  useEffect(() => {
+    if (!ask || !hasPlace) return;
+    let cancelled = false;
+    const load = () => {
+      getJson<GaugeSummary>(GAUGES_SUMMARY_URL).then(
+        (answer) => {
+          if (!cancelled) {
+            writeStored("noticeGauges", {
+              gauges: answer.gauges,
+              checkedAt: Date.now(),
+            } satisfies StoredGauges);
+          }
+        },
+        () => {},
+      );
+    };
+    load();
+    const timer = window.setInterval(load, POLL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", load);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("online", load);
+    };
+  }, [ask, hasPlace]);
 
   // Their own SOS cases, read one at a time with the key their phone holds. Only the cases the
   // phone remembers, so a visitor asks for nothing.
@@ -227,12 +279,15 @@ export function useNotices(options: {
       reports: storedUnits?.reports ?? [],
       autoAlarms: storedUnits?.admin?.autoAlarms ?? [],
       attention: storedUnits?.admin?.attention ?? [],
+      // Rivers near the person that are at or over their bank (24 Nov 2026), filtered to their own
+      // points here on the phone - the summary itself is the same for everyone.
+      bankReached: bankReachedNear(storedGauges?.gauges ?? [], points),
       // Zero until the phone's clock is readable (the server's HTML draws an empty bell).
       now,
       homeLabel,
       areaLabel,
     });
-  }, [stored, key, area, me, storedCases, storedUnits, now, homeLabel, areaLabel]);
+  }, [stored, key, area, me, storedGauges, points, storedCases, storedUnits, now, homeLabel, areaLabel]);
 
   const readIds = useMemo(() => syncedRead ?? read ?? [], [syncedRead, read]);
 

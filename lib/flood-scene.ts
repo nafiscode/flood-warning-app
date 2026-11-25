@@ -15,7 +15,8 @@
  * same `Gauge` the cross-section does, so the picture and the sentence can never disagree.
  */
 import { riverSection } from "@/lib/gauge-section";
-import type { Gauge } from "@/lib/map-data";
+import type { Gauge, GaugeReading } from "@/lib/map-data";
+import { nearAny, type Point } from "@/lib/near";
 
 /** What the scene needs to know about a gauge; `Gauge` already carries all of it. */
 export type SceneGauge = Gauge;
@@ -53,3 +54,32 @@ export function canPlayScene(gauge: SceneGauge): boolean {
  * network; a scene names it so the figure on screen carries where it came from (safety rule 3).
  */
 export const SCENE_SOURCE = "ThaiWater";
+
+/** One river that has reached its bank near the person, for the bell. Named, so it can be said. */
+export type BankReached = { id: string; name: Record<string, string>; at: string | null };
+
+/**
+ * The rivers at or over their bank within reach of any of the person's own places (the bell, 24
+ * Nov 2026), from the lightweight gauge summary the app already polls. `above_evacuate` is exactly
+ * "at or over its bank" (see `Gauge.status`), and the summary names such a station (`worthNaming`),
+ * so the bell can say which river. A station that has gone quiet carries a different status and is
+ * never picked up here (safety rule 10). One line per river, deduplicated.
+ *
+ * This decides only what the bell lists; it never raises a level and never publishes (safety rule
+ * 2). Where a published alert is in force, that alert's own alarm has already rung.
+ */
+export function bankReachedNear(
+  readings: readonly GaugeReading[],
+  points: readonly Point[],
+): BankReached[] {
+  if (points.length === 0) return [];
+  const seen = new Set<string>();
+  const out: BankReached[] = [];
+  for (const r of readings) {
+    if (r.status !== "above_evacuate" || !r.id || !r.name || seen.has(r.id)) continue;
+    if (!nearAny({ lat: r.lat, lon: r.lon }, points)) continue;
+    seen.add(r.id);
+    out.push({ id: r.id, name: r.name, at: r.observedAt });
+  }
+  return out;
+}

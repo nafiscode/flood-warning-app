@@ -752,7 +752,9 @@
         "alt": "Sungai {name} dengan air naik {value} m melebihi tebing, melimpah ke sebelah yang lebih rendah.",
         "replay": "Main semula",
         "close": "Tutup",
-        "open": "Lihat air sampai tebing"
+        "open": "Lihat air sampai tebing",
+        "loading": "Membuka paparan sungai…",
+        "unavailable": "Tidak dapat membuka paparan sungai. Cuba lagi."
       }
     },
     "legendStale": "Garis putus-putus kelabu: amaran yang tidak dikemas kini pada masanya",
@@ -1160,6 +1162,12 @@
         "title": "Ada sungai yang naik seminggu berterusan",
         "body": "{count, plural, one {# zon naik selama seminggu dengan hujan di belakangnya. Tiada apa-apa dihantar kepada sesiapa; ia menunggu anda membaca angka dan membuat keputusan} other {# zon naik selama seminggu dengan hujan di belakangnya. Tiada apa-apa dihantar kepada sesiapa; ia menunggu anda membaca angka dan membuat keputusan}}"
       }
+    },
+    "bankReached": {
+      "title": "Sungai dekat anda sudah sampai tebing",
+      "body": "{name} sudah sampai atau melebihi tebing.",
+      "note": "Ini ukuran, bukan amaran. Amaran hanya dikeluarkan oleh pentadbir Jaga.",
+      "watch": "Lihat sungai"
     }
   },
   "placeFinder": {
