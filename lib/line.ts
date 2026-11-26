@@ -288,7 +288,16 @@ export type DecisionRow = {
 
 /** The words of a decision: the `notices` group of a language (the bell says the same). */
 export type DecisionWords = {
-  unit: { title: string; verified: string; rejected: string; reason: string; suspended: string };
+  unit: {
+    title: string;
+    verified: string;
+    rejected: string;
+    reason: string;
+    suspended: string;
+    editedDetails: string;
+    editedContact: string;
+    editedScope: string;
+  };
   field: { title: string; approved: string; rejected: string };
   report: { title: string; approved: string; hidden: string };
   yourArea: string;
@@ -321,6 +330,18 @@ export function decisionLineMessage(
       "/requests",
     ],
     unit_suspended: [words.unit.title, words.unit.suspended.replace("{name}", unit), "/requests"],
+    // An admin corrected the team and left "tell the team" ticked (26 Nov 2026): which part,
+    // never the new values.
+    unit_edited: [
+      words.unit.title,
+      (d.part === "contact"
+        ? words.unit.editedContact
+        : d.part === "scope"
+          ? words.unit.editedScope
+          : words.unit.editedDetails
+      ).replace("{name}", unit),
+      "/requests",
+    ],
     field_approved: [words.field.title, words.field.approved, "/authority/field-rescue"],
     field_rejected: [words.field.title, words.field.rejected, "/authority/field-rescue"],
     report_approved: [
@@ -406,8 +427,11 @@ export function feedbackAsk(
 ) {
   return {
     type: "text" as const,
-    text: clip(`${words.title}
-${url}`, 380),
+    text: clip(
+      `${words.title}
+${url}`,
+      380,
+    ),
     quickReply: {
       items: [1, 2, 3, 4, 5].map((n) => ({
         type: "action" as const,

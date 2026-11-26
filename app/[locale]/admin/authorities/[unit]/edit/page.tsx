@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/BackLink";
+import { ScopeWarning, type OpenCaseTambon } from "@/components/admin/ScopeWarning";
 import { CoverageFields } from "@/components/authority/CoverageFields";
 import { DualTime } from "@/components/admin/DualTime";
 import { Link } from "@/i18n/navigation";
@@ -30,6 +31,7 @@ const ERRORS = [
   "capability",
   "coverage",
   "call",
+  "open",
   "save",
 ] as const;
 const DONE = ["details", "contact", "scope"] as const;
@@ -96,6 +98,43 @@ export default async function AdminEditUnit({
       .eq("unit_id", unit.id),
   ]);
 
+  /*
+   * The cases this team has accepted and is still working, by tambon: what a change of area or role
+   * could cut it off from (the database refuses that unless the admin confirms; see
+   * ScopeWarning). Tambon names and counts only: no case, point or phone reaches the page.
+   */
+  const { data: claimRows } = await supabase
+    .from("sos_claims")
+    .select("sos_requests(tambon, status)")
+    .eq("unit_id", unit.id)
+    .is("released_at", null);
+  const OPEN = ["received", "assigned", "en_route", "on_site"];
+  const perTambon = new Map<string, number>();
+  for (const row of (claimRows ?? []) as unknown as {
+    sos_requests:
+      | { tambon: string | null; status: string }
+      | { tambon: string | null; status: string }[]
+      | null;
+  }[]) {
+    const sos = Array.isArray(row.sos_requests) ? row.sos_requests[0] : row.sos_requests;
+    if (sos?.tambon && OPEN.includes(sos.status)) {
+      perTambon.set(sos.tambon, (perTambon.get(sos.tambon) ?? 0) + 1);
+    }
+  }
+  const tambonNames =
+    perTambon.size === 0
+      ? []
+      : ((
+          await supabase
+            .from("tambons")
+            .select("code, name_th, name_en")
+            .in("code", [...perTambon.keys()])
+        ).data ?? []);
+  const openCases: OpenCaseTambon[] = [...perTambon].map(([tambon, count]) => {
+    const n = tambonNames.find((x) => x.code === tambon);
+    return { tambon, count, name: n ? (locale === "th" ? n.name_th : n.name_en) : tambon };
+  });
+
   let contact: { poc_name: string; poc_phone: string } | null = null;
   if (query.reveal === "1") {
     const { data: rows } = await supabase.rpc("reveal_poc_phone", { p_unit_id: unit.id });
@@ -107,6 +146,17 @@ export default async function AdminEditUnit({
   );
   const org = unit.organizations;
   const base = `/admin/authorities/${unit.id}/edit`;
+
+  // "Tell the team": ticked unless the admin unticks it (owner, 26 Nov 2026).
+  const tellTeam = (
+    <label className={checkRow}>
+      <input type="checkbox" name="notify" value="yes" defaultChecked className={checkBox} />
+      <span>
+        {t("authorities.edit.notify")}
+        <span className={`block ${hint}`}>{t("authorities.edit.notifyHint")}</span>
+      </span>
+    </label>
+  );
 
   const hidden = (
     <>
@@ -126,8 +176,8 @@ export default async function AdminEditUnit({
       </p>
       {error && (
         <p role="alert" className={errorNotice}>
-          {error === "call"
-            ? t("authorities.edit.error.call")
+          {error === "call" || error === "open"
+            ? t(`authorities.edit.error.${error}`)
             : error === "save"
               ? t("authorities.error.save")
               : tr(`error.${error}`)}
@@ -209,6 +259,7 @@ export default async function AdminEditUnit({
             <span className={`block ${hint}`}>{tr("publicContact.hint")}</span>
           </span>
         </label>
+        {tellTeam}
         <button type="submit" className={buttonPrimary} data-save="details">
           {t("authorities.edit.saveDetails")}
         </button>
@@ -257,6 +308,7 @@ export default async function AdminEditUnit({
                 </span>
               </span>
             </label>
+            {tellTeam}
             <button type="submit" className={buttonPrimary} data-save="contact">
               {t("authorities.edit.saveContact")}
             </button>
@@ -296,6 +348,14 @@ export default async function AdminEditUnit({
           {(damLinks ?? 0) > 0 && <p className={hint}>{t("authorities.edit.damWarning")}</p>}
         </section>
         <CoverageFields locale={locale} selected={selected} />
+        <ScopeWarning
+          openCases={openCases}
+          text={{
+            body: t("authorities.edit.openCases"),
+            confirm: t("authorities.edit.openCasesConfirm"),
+          }}
+        />
+        {tellTeam}
         <button type="submit" className={buttonPrimary} data-save="scope">
           {t("authorities.edit.saveScope")}
         </button>

@@ -1080,7 +1080,10 @@
       "reason": "Sebab: {reason}",
       "rejectedNote": "Jika anda rasa ini satu kesilapan, perbetulkan butiran dan daftar semula, atau hubungi pentadbir Jaga.",
       "suspended": "Pasukan {name} digantung. Sila hubungi pentadbir Jaga.",
-      "see": "Lihat langkah"
+      "see": "Lihat langkah",
+      "editedDetails": "Pentadbir Jaga telah mengemas kini butiran {name}.",
+      "editedContact": "Pentadbir Jaga telah mengemas kini penyelaras {name}.",
+      "editedScope": "Pentadbir Jaga telah mengubah tugas atau kawasan yang diliputi {name}. Sila semak dalam Jaga."
     },
     "field": {
       "title": "Rekod penyelamatan yang ditemui sendiri",
@@ -1969,8 +1972,13 @@
           "scope": "Fungsi dan kawasan telah disimpan."
         },
         "error": {
-          "call": "Telefon nombor baharu dan tanda kotak itu sebelum menyimpan."
-        }
+          "call": "Telefon nombor baharu dan tanda kotak itu sebelum menyimpan.",
+          "open": "Perubahan ini akan memutuskan pasukan daripada kes yang telah diterimanya dan masih dikendalikan. Tanda pengesahan untuk menyimpannya, atau ubah kawasan."
+        },
+        "notify": "Beritahu pasukan tentang perubahan ini",
+        "notifyHint": "Pasukan nampak dalam loceng dan LINE bahagian mana yang berubah, tetapi bukan nilainya. Jika tidak ditanda, pasukan tidak diberitahu.",
+        "openCases": "Kes terbuka yang telah diterima pasukan ini: {count}, di {places}. Jika perubahan ini disimpan, pasukan tidak lagi dapat melihatnya, walaupun mungkin sedang dalam perjalanan untuk membantu.",
+        "openCasesConfirm": "Saya faham dan tetap simpan perubahan ini"
       }
     },
     "invitations": {

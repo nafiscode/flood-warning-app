@@ -430,3 +430,186 @@ describe("capabilities and coverage", () => {
     ).toBe(true);
   });
 });
+
+/** The text of the error a statement raises, for the one place the message is the contract. */
+async function messageOf(sql: string, params: unknown[]): Promise<string> {
+  await db.query("savepoint msg");
+  try {
+    await db.query(sql, params);
+  } catch (e) {
+    await db.query("rollback to savepoint msg");
+    return (e as Error).message;
+  }
+  await db.query("release savepoint msg");
+  throw new Error(`Expected an error from: ${sql}`);
+}
+
+const SCOPE_CONFIRMED =
+  "select admin_update_unit_scope($1, $2::authority_capability[], $3::jsonb, true, true)";
+
+describe("a case the team has accepted is not cut off by accident", () => {
+  const province = (code: string) => JSON.stringify([{ level: "province", code }]);
+  const accept = async (unit: string, sos: string) => {
+    await asOwner(db);
+    await db.query("insert into sos_claims (sos_id, unit_id) values ($1, $2)", [sos, unit]);
+  };
+
+  it("refuses a new area that leaves an accepted open case outside it, and changes nothing", async () => {
+    const unit = w.yalaRescue.id;
+    await accept(unit, w.yalaSos);
+    const before = await tambonsOf(unit);
+    await as(db, { uid: w.admin });
+    expect(await messageOf(SCOPE, [unit, ["rescue"], province("90")])).toContain(
+      "Open cases would be cut off: 1",
+    );
+    expect(await expectDenied(db, SCOPE, [unit, ["rescue"], province("90")])).toBe("23514");
+    await asOwner(db);
+    expect(await tambonsOf(unit)).toEqual(before);
+    expect(await audit("admin_edit_unit_scope", unit)).toHaveLength(0);
+    // The team still reads the case it is working.
+    await as(db, { uid: w.yalaRescue.user });
+    expect(
+      (await rows<{ id: string }>(db, "select id from sos_requests")).map((r) => r.id),
+    ).toEqual([w.yalaSos]);
+  });
+
+  it("goes through when the admin confirms, and the log says how many cases were cut off", async () => {
+    const unit = w.yalaRescue.id;
+    await accept(unit, w.yalaSos);
+    await as(db, { uid: w.admin });
+    await db.query(SCOPE_CONFIRMED, [unit, ["rescue"], province("90")]);
+    await asOwner(db);
+    expect((await tambonsOf(unit)).every((c) => c.startsWith("90"))).toBe(true);
+    expect((await audit("admin_edit_unit_scope", unit))[0]!.details).toMatchObject({
+      open_cases_cut_off: 1,
+    });
+  });
+
+  it("also asks when the unit would be left with planning only, the area unchanged", async () => {
+    const unit = w.yalaRescue.id;
+    await accept(unit, w.yalaSos);
+    const [only] = await tambonsOf(unit);
+    const same = JSON.stringify([{ level: "tambon", code: only }]);
+    await as(db, { uid: w.admin });
+    expect(await messageOf(SCOPE, [unit, ["planning"], same])).toContain("Open cases");
+    await db.query(SCOPE_CONFIRMED, [unit, ["planning"], same]);
+  });
+
+  it("does not ask for a released claim", async () => {
+    const unit = w.yalaRescue.id;
+    await accept(unit, w.yalaSos);
+    await db.query("update sos_claims set released_at = now() where unit_id = $1", [unit]);
+    await as(db, { uid: w.admin });
+    await db.query(SCOPE, [unit, ["rescue"], province("90")]);
+  });
+
+  it("does not ask for a finished case", async () => {
+    const unit = w.yalaRescue.id;
+    await accept(unit, w.yalaSos);
+    await db.query("update sos_requests set status = 'rescued' where id = $1", [w.yalaSos]);
+    await as(db, { uid: w.admin });
+    await db.query(SCOPE, [unit, ["rescue"], province("90")]);
+  });
+
+  it("does not ask when the change keeps the case's tambon", async () => {
+    const unit = w.yalaRescue.id;
+    await accept(unit, w.yalaSos);
+    await as(db, { uid: w.admin });
+    // The whole province still holds the case's tambon, and the team is still a field team.
+    await db.query(SCOPE, [unit, ["rescue", "coordination"], province("95")]);
+    await asOwner(db);
+    expect((await audit("admin_edit_unit_scope", unit))[0]!.details).toMatchObject({
+      open_cases_cut_off: 0,
+    });
+  });
+});
+
+describe("telling the team", () => {
+  const DETAILS_QUIET = "select admin_update_unit_details($1, $2, $3, $4::org_type, $5, $6, false)";
+  const decisions = async () =>
+    rows<{ kind: string; user_id: string; ref: string; data: Record<string, string> }>(
+      db,
+      "select kind, user_id, ref, data from admin_decisions_since('-infinity') where kind = 'unit_edited'",
+    );
+  const myEdits = async (uid: string) => {
+    await as(db, { uid });
+    const got = await rows<{ unit_id: string; part: string; unit_name: string }>(
+      db,
+      "select unit_id, part, unit_name from my_unit_edits() order by part",
+    );
+    await asOwner(db);
+    return got;
+  };
+
+  it("records the box: ticked by default, unticked when the admin says so", async () => {
+    await as(db, { uid: w.admin });
+    await db.query(DETAILS, detailsArgs(w.yalaRescue.id, { unitName: "Told" }));
+    const quiet = detailsArgs(w.yalaPending.id, { unitName: "Not told" });
+    await db.query(DETAILS_QUIET, quiet);
+    await asOwner(db);
+    expect((await audit("admin_edit_unit_details", w.yalaRescue.id))[0]!.details).toMatchObject({
+      notify: true,
+    });
+    expect((await audit("admin_edit_unit_details", w.yalaPending.id))[0]!.details).toMatchObject({
+      notify: false,
+    });
+  });
+
+  it("reaches LINE as one 'unit_edited' per ticked part: the unit and the part, no values", async () => {
+    const unit = w.yalaRescue;
+    await as(db, { uid: w.admin });
+    await db.query(DETAILS, detailsArgs(unit.id, { unitName: "Told" }));
+    await db.query(CONTACT, [unit.id, "Secret Person", "+66877776666", true]);
+    await db.query(SCOPE, [
+      unit.id,
+      ["rescue", "support"],
+      JSON.stringify([{ level: "province", code: "95" }]),
+    ]);
+    await db.query(DETAILS_QUIET, detailsArgs(w.yalaPending.id, { unitName: "Not told" }));
+    await asOwner(db);
+
+    const got = await decisions();
+    const mine = got.filter((d) => d.ref === unit.id);
+    expect(mine.map((d) => d.data.part).sort()).toEqual(["contact", "details", "scope"]);
+    expect(mine.every((d) => d.user_id === unit.user && d.data.unit === "Told")).toBe(true);
+    expect(mine.every((d) => Object.keys(d.data).sort().join() === "part,unit")).toBe(true);
+    expect(got.filter((d) => d.ref === w.yalaPending.id)).toHaveLength(0);
+    expect(JSON.stringify(got)).not.toContain("Secret Person");
+    expect(JSON.stringify(got)).not.toContain("66877776666");
+  });
+
+  it("leaves the three decisions it already carried as they were", async () => {
+    await as(db, { uid: w.admin });
+    await db.query("select suspend_authority_unit($1, 'test')", [w.yalaRescue.id]);
+    await asOwner(db);
+    const kinds = await rows<{ kind: string }>(
+      db,
+      "select kind from admin_decisions_since('-infinity') where ref = $1",
+      [w.yalaRescue.id],
+    );
+    expect(kinds).toEqual([{ kind: "unit_suspended" }]);
+  });
+
+  it("reaches the bell of the account that owns the team, and nobody else's", async () => {
+    const unit = w.yalaRescue;
+    await as(db, { uid: w.admin });
+    await db.query(DETAILS, detailsArgs(unit.id, { unitName: "Told" }));
+    await db.query(DETAILS_QUIET, detailsArgs(w.yalaPending.id, { unitName: "Not told" }));
+    await asOwner(db);
+
+    expect(await myEdits(unit.user)).toMatchObject([
+      { unit_id: unit.id, part: "details", unit_name: "Told" },
+    ]);
+    // The team it was not told about, another team, and a stranger read nothing.
+    expect(await myEdits(w.yalaPending.user)).toEqual([]);
+    expect(await myEdits(w.yalaPlanning.user)).toEqual([]);
+    expect(await myEdits(w.requester)).toEqual([]);
+    await as(db, "anon");
+    expect(await expectDenied(db, "select * from my_unit_edits()")).toBe("42501");
+    // The decisions feed is Jaga's server's alone.
+    await as(db, { uid: w.admin });
+    expect(await expectDenied(db, "select * from admin_decisions_since('-infinity')")).toBe(
+      "42501",
+    );
+  });
+});

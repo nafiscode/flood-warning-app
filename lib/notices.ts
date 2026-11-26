@@ -71,7 +71,9 @@ export type NoticeItem = Base &
       }
     | {
         kind: "unit";
-        event: "verified" | "rejected" | "suspended";
+        /** The three decisions, and the three parts an admin may correct and tell the team of. */
+        event:
+          "verified" | "rejected" | "suspended" | "editedDetails" | "editedContact" | "editedScope";
         unitName: string;
         /** The admin's reason, when the registration was turned down. */
         reason?: string | null;
@@ -272,6 +274,33 @@ export function toReportDecision(row: Record<string, unknown>): ReportDecision |
   };
 }
 
+/**
+ * An admin corrected one of the person's own teams and left "tell the team" ticked
+ * (/api/me/requests, from my_unit_edits, 26 Nov 2026). It says WHICH part changed and never the new
+ * values: a contact's name and phone are personal data.
+ */
+export type UnitEdit = {
+  id: string;
+  unitId: string;
+  unitName: string;
+  part: "details" | "contact" | "scope";
+  editedAt: string;
+};
+
+/** One row of my_unit_edits() as a UnitEdit, or null when it is not one. */
+export function toUnitEdit(row: Record<string, unknown>): UnitEdit | null {
+  const editedAt = isoOrNull(row.edited_at);
+  const id =
+    typeof row.audit_id === "number" || typeof row.audit_id === "string"
+      ? String(row.audit_id)
+      : "";
+  if (!id || !editedAt || typeof row.unit_id !== "string" || typeof row.unit_name !== "string") {
+    return null;
+  }
+  if (row.part !== "details" && row.part !== "contact" && row.part !== "scope") return null;
+  return { id, unitId: row.unit_id, unitName: row.unit_name, part: row.part, editedAt };
+}
+
 /** One row of public_notices(), as /api/public/notices gives it. */
 export type NoticeRow = {
   kind: "alert" | "announcement";
@@ -410,6 +439,8 @@ export function buildNotices(input: {
   units?: UnitRequest[];
   /** Rescues their team found by itself, for news of an admin's decision. */
   field?: MyFieldRescue[];
+  /** Corrections an admin made to the person's teams and chose to tell them of. */
+  unitEdits?: UnitEdit[];
   /** For an admin: field rescues waiting to be checked. */
   fieldWaiting?: FieldWaiting | null;
   /** What an admin decided about the person's own flood reports. */
@@ -427,6 +458,7 @@ export function buildNotices(input: {
 }): NoticeItem[] {
   const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
   const { fieldWaiting, reports = [], autoAlarms = [], attention = [], bankReached = [] } = input;
+  const { unitEdits = [] } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -518,6 +550,27 @@ export function buildNotices(input: {
       event: news.event,
       unitName: unit.name,
       reason: news.event === "rejected" ? (unit.reviewNote ?? null) : null,
+    });
+  }
+
+  // A correction to a team, told by an admin. The audit row's id is in the id: each correction is
+  // news of its own, and none of them carries what the part was changed to.
+  for (const edit of unitEdits) {
+    const at = isoOrNull(edit.editedAt);
+    if (!at || !within(at)) continue;
+    items.push({
+      kind: "unit",
+      id: `unit:edit:${edit.id}`,
+      at,
+      places: [],
+      event:
+        edit.part === "details"
+          ? "editedDetails"
+          : edit.part === "contact"
+            ? "editedContact"
+            : "editedScope",
+      unitName: edit.unitName,
+      reason: null,
     });
   }
 

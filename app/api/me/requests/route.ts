@@ -4,10 +4,12 @@ import {
   toAutoAlarm,
   toNoticeRow,
   toReportDecision,
+  toUnitEdit,
   type AdminAttention,
   type AutoAlarm,
   type NoticeRow,
   type ReportDecision,
+  type UnitEdit,
 } from "@/lib/notices";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { NO_STORE } from "@/lib/supabase/public";
@@ -48,6 +50,12 @@ export async function GET() {
       reasons.set(r.unit_id, r.reason);
     }
   }
+  // What an admin corrected on the caller's own teams and chose to tell them of (26 Nov 2026):
+  // which part changed, never the new values.
+  const edited = await supabase.rpc("my_unit_edits");
+  const unitEdits = (Array.isArray(edited.data) ? (edited.data as Record<string, unknown>[]) : [])
+    .map(toUnitEdit)
+    .filter((e): e is UnitEdit => e !== null);
   // For an admin: how many field rescues wait for them. The function refuses everyone else,
   // which simply leaves this out.
   const waiting = await supabase.rpc("admin_field_waiting");
@@ -91,6 +99,7 @@ export async function GET() {
     : null;
   return answer({
     admin,
+    unitEdits,
     fieldWaiting,
     reports,
     units: ((data ?? []) as Record<string, unknown>[])

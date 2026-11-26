@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NoticeList } from "@/components/notices/NoticeList";
 import { decisionLineMessage, LINE_LABEL_MAX, type DecisionWords } from "@/lib/line";
-import { buildNotices, toReportDecision } from "@/lib/notices";
+import { buildNotices, toReportDecision, toUnitEdit } from "@/lib/notices";
 import en from "@/messages/en.json";
 import ms from "@/messages/ms.json";
 import th from "@/messages/th.json";
@@ -77,6 +77,7 @@ describe("an admin's decision as a LINE message", () => {
         "unit_verified",
         "unit_rejected",
         "unit_suspended",
+        "unit_edited",
         "field_approved",
         "field_rejected",
         "report_approved",
@@ -218,6 +219,104 @@ describe("a report's decision in the bell", () => {
     );
     expect(container.textContent).toContain(en.notices.report.title);
     expect(container.textContent).toContain("Bana");
+    expect(container.querySelector('a[href="/en/requests"]')).not.toBeNull();
+  });
+});
+
+/**
+ * An admin corrected a team and left "tell the team" ticked (owner, 26 Nov 2026). The team is told
+ * WHICH part changed, in LINE and in the bell, and never what it was changed to.
+ */
+describe("a correction to a team, told to the team", () => {
+  const NOW = Date.parse("2026-11-26T06:00:00Z");
+  const row = {
+    audit_id: 812,
+    unit_id: "6d0c2d6e-0000-4000-8000-0000000000aa",
+    unit_name: "Bana rescue",
+    part: "contact",
+    edited_at: "2026-11-26T05:00:00Z",
+  };
+  const PARTS = [
+    ["details", "editedDetails"],
+    ["contact", "editedContact"],
+    ["scope", "editedScope"],
+  ] as const;
+
+  it("is read strictly from the database's row, and the id is the audit row's", () => {
+    expect(toUnitEdit(row)).toEqual({
+      id: "812",
+      unitId: row.unit_id,
+      unitName: "Bana rescue",
+      part: "contact",
+      editedAt: "2026-11-26T05:00:00.000Z",
+    });
+    expect(toUnitEdit({ ...row, part: "status" })).toBeNull();
+    expect(toUnitEdit({ ...row, edited_at: "nope" })).toBeNull();
+    expect(toUnitEdit({ ...row, audit_id: undefined })).toBeNull();
+    expect(toUnitEdit({ ...row, unit_name: 7 })).toBeNull();
+  });
+
+  it("says which part changed in LINE, in every language, inside LINE's 160, and links to Jaga", () => {
+    for (const lang of [th, ms, en] as unknown as (typeof th)[]) {
+      const said = new Set<string>();
+      for (const [part, key] of PARTS) {
+        const m = decisionLineMessage(
+          { kind: "unit_edited", locale: "th", ref: "u1", data: { unit: "Bana rescue", part } },
+          words(lang),
+          lang.line,
+          SITE,
+        ) as { template: { text: string; actions: { uri: string }[] } };
+        expect(m.template.text).toContain("Bana rescue");
+        expect(m.template.text).toContain(lang.notices.unit[key].replace("{name}", "Bana rescue"));
+        expect([...m.template.text].length).toBeLessThanOrEqual(160);
+        expect(m.template.actions[0]!.uri).toBe(`${SITE}/requests`);
+        said.add(m.template.text);
+      }
+      // Three parts, three different sentences: the team can tell what was touched.
+      expect(said.size).toBe(3);
+    }
+  });
+
+  it("is a bell item per correction, each its own news, naming the team and no value", () => {
+    const edits = PARTS.map(([part], i) => ({
+      id: String(900 + i),
+      unitId: row.unit_id,
+      unitName: "Bana rescue",
+      part,
+      editedAt: `2026-11-26T0${1 + i}:00:00.000Z`,
+    }));
+    const items = buildNotices({
+      rows: [],
+      area: null,
+      me: null,
+      cases: [],
+      unitEdits: [...edits, { ...edits[0]!, id: "old", editedAt: "2026-10-01T00:00:00.000Z" }],
+      now: NOW,
+      homeLabel: "Home",
+      areaLabel: () => "",
+    });
+    // The one from October is outside the bell's fourteen days.
+    expect(items.map((i) => i.kind)).toEqual(["unit", "unit", "unit"]);
+    expect(new Set(items.map((i) => i.id)).size).toBe(3);
+    expect(items.map((i) => (i.kind === "unit" ? i.event : null)).sort()).toEqual([
+      "editedContact",
+      "editedDetails",
+      "editedScope",
+    ]);
+
+    const { container } = renderWithIntl(
+      <ul>
+        <NoticeList items={items} read={[]} locale="en" emptyHint="" />
+      </ul>,
+      "en",
+    );
+    for (const [, key] of PARTS) {
+      expect(container.textContent).toContain(
+        en.notices.unit[key].replace("{name}", "Bana rescue"),
+      );
+    }
+    // A correction is not a rejection: no reason, no "register again" note.
+    expect(container.textContent).not.toContain(en.notices.unit.rejectedNote);
     expect(container.querySelector('a[href="/en/requests"]')).not.toBeNull();
   });
 });

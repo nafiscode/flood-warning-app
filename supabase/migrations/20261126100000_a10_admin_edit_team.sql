@@ -35,6 +35,21 @@
 -- capability would come back to life the day somebody ticked 'dam' again, without any admin having
 -- confirmed with the dam a second time; the one thing that grants a dam operator its power must
 -- always be a deliberate tie.
+--
+-- Telling the team (owner, 26 Nov 2026: "let the admin tick if the team could get notices or not,
+-- by default yes"). Each function takes `p_notify_team`, true unless the admin unticks it, and
+-- writes it into the audit row. A ticked edit reaches the account that registered the unit the
+-- way a verification does - the bell (`my_unit_edits()`) and LINE (a new branch in
+-- `admin_decisions_since()`) - and says WHICH part changed, never what it was changed to: a
+-- contact's name and phone are personal data and stay out of every message.
+--
+-- Open cases (owner, 26 Nov 2026: warn so the wrong coverage is not selected). What a team reads
+-- follows its coverage and its capabilities (`covers_tambon()`, `my_unit_for_sos()`), also for a
+-- case the team has already accepted. So a change that moves a tambon out of the area, or leaves
+-- the unit with nothing but planning and dam work, would cut a team off from a rescue in progress.
+-- `admin_update_unit_scope` therefore refuses (23514, "Open cases ...") when it would do that,
+-- unless the admin passes `p_confirm_open_cases`: the edit page names the cases' tambons and asks
+-- for a tick first. The database holds the line so no other caller can skip the question.
 -------------------------------------------------------------------------------
 
 create function public.admin_update_unit_details(
@@ -43,7 +58,8 @@ create function public.admin_update_unit_details(
   p_org_name text,
   p_org_type public.org_type,
   p_official_phone text,
-  p_public_contact_opt_in boolean
+  p_public_contact_opt_in boolean,
+  p_notify_team boolean default true
 ) returns void
 language plpgsql security definer set search_path = '' as $$
 declare
@@ -111,13 +127,14 @@ begin
   values ((select auth.uid()), 'admin_edit_unit_details', 'authority_units', p_unit::text,
           jsonb_build_object(
             'changes', v_changes,
+            'notify', coalesce(p_notify_team, true),
             'units_in_organization',
             (select count(*) from public.authority_units where org_id = v_org)));
 end $$;
 revoke all on function public.admin_update_unit_details(
-  uuid, text, text, public.org_type, text, boolean) from public, anon;
+  uuid, text, text, public.org_type, text, boolean, boolean) from public, anon;
 grant execute on function public.admin_update_unit_details(
-  uuid, text, text, public.org_type, text, boolean) to authenticated;
+  uuid, text, text, public.org_type, text, boolean, boolean) to authenticated;
 
 -------------------------------------------------------------------------------
 
@@ -125,7 +142,8 @@ create function public.admin_update_unit_contact(
   p_unit uuid,
   p_poc_name text,
   p_poc_phone text,
-  p_phone_confirmed_by_call boolean default false
+  p_phone_confirmed_by_call boolean default false,
+  p_notify_team boolean default true
 ) returns void
 language plpgsql security definer set search_path = '' as $$
 declare
@@ -181,11 +199,12 @@ begin
           jsonb_build_object(
             'name_changed', v_name_changed,
             'phone_changed', v_phone_changed,
-            'phone_confirmed_by_call', v_phone_changed and v_called));
+            'phone_confirmed_by_call', v_phone_changed and v_called,
+            'notify', coalesce(p_notify_team, true)));
 end $$;
-revoke all on function public.admin_update_unit_contact(uuid, text, text, boolean)
+revoke all on function public.admin_update_unit_contact(uuid, text, text, boolean, boolean)
   from public, anon;
-grant execute on function public.admin_update_unit_contact(uuid, text, text, boolean)
+grant execute on function public.admin_update_unit_contact(uuid, text, text, boolean, boolean)
   to authenticated;
 
 -------------------------------------------------------------------------------
@@ -196,10 +215,13 @@ grant execute on function public.admin_update_unit_contact(uuid, text, text, boo
 create function public.admin_update_unit_scope(
   p_unit uuid,
   p_capabilities public.authority_capability[],
-  p_coverage jsonb
+  p_coverage jsonb,
+  p_confirm_open_cases boolean default false,
+  p_notify_team boolean default true
 ) returns void
 language plpgsql security definer set search_path = '' as $$
 declare
+  v_cut integer;
   v_old_caps public.authority_capability[];
   v_old_sorted public.authority_capability[];
   v_new_caps public.authority_capability[];
@@ -262,6 +284,22 @@ begin
     from (select distinct selected_level, selected_code
             from public.authority_coverage where unit_id = p_unit) s;
 
+  -- Cases the team has accepted, is still working, can read now, and could not read afterwards
+  -- (see the header). Raising here undoes the coverage replacement above.
+  select count(*) into v_cut
+    from public.sos_claims c
+    join public.sos_requests s on s.id = c.sos_id
+   where c.unit_id = p_unit
+     and c.released_at is null
+     and s.status in ('received', 'assigned', 'en_route', 'on_site')
+     and s.tambon is not null
+     and not public.unit_is_office_only(v_old_caps)
+     and s.tambon = any (v_old_tambons)
+     and (public.unit_is_office_only(v_new_caps) or not (s.tambon = any (v_new_tambons)));
+  if v_cut > 0 and not coalesce(p_confirm_open_cases, false) then
+    raise exception 'Open cases would be cut off: %', v_cut using errcode = 'check_violation';
+  end if;
+
   if v_old_sorted is distinct from v_new_caps then
     update public.authority_units set capabilities = v_new_caps where id = p_unit;
     v_changes := v_changes || jsonb_build_object(
@@ -289,10 +327,106 @@ begin
   if v_changes <> '{}'::jsonb then
     insert into public.audit_log (actor, action, entity, entity_id, details)
     values ((select auth.uid()), 'admin_edit_unit_scope', 'authority_units', p_unit::text,
-            jsonb_build_object('changes', v_changes));
+            jsonb_build_object('changes', v_changes,
+                               'open_cases_cut_off', v_cut,
+                               'notify', coalesce(p_notify_team, true)));
   end if;
 end $$;
 revoke all on function public.admin_update_unit_scope(
-  uuid, public.authority_capability[], jsonb) from public, anon;
+  uuid, public.authority_capability[], jsonb, boolean, boolean) from public, anon;
 grant execute on function public.admin_update_unit_scope(
-  uuid, public.authority_capability[], jsonb) to authenticated;
+  uuid, public.authority_capability[], jsonb, boolean, boolean) to authenticated;
+
+-------------------------------------------------------------------------------
+-- The team hears of it. Two readers of the same audit rows, exactly as for a verification:
+--
+--   admin_decisions_since()  the LINE side: `line_decisions_due()` hands each row out once.
+--                            Rebuilt from the live definition (checked against the 16 Oct
+--                            migration on 26 Nov: identical) with one branch added.
+--   my_unit_edits()          the bell: the caller's own units, the last fourteen days.
+--
+-- Only an edit the admin left ticked ("tell the team") is read. The row says which part changed
+-- ('details', 'contact', 'scope') and the unit's name, and nothing else.
+-------------------------------------------------------------------------------
+create or replace function public.admin_decisions_since(p_since timestamptz)
+returns table (
+  audit_id bigint, kind text, user_id uuid, ref text, data jsonb, decided_at timestamptz
+)
+language sql stable security definer set search_path = '' as $$
+  select a.id,
+         case a.action
+           when 'verify_authority' then 'unit_verified'
+           when 'reject_authority' then 'unit_rejected'
+           else 'unit_suspended'
+         end,
+         u.user_id, u.id::text,
+         jsonb_strip_nulls(jsonb_build_object(
+           'unit', u.unit_name,
+           'reason', case when a.action = 'reject_authority' then a.details ->> 'reason' end)),
+         a.ts
+    from public.audit_log a
+    join public.authority_units u on u.id::text = a.entity_id
+   where a.entity = 'authority_units'
+     and a.action in ('verify_authority', 'suspend_authority', 'reject_authority')
+     and a.ts > p_since
+  union all
+  select a.id,
+         'unit_edited',
+         u.user_id, u.id::text,
+         jsonb_build_object(
+           'unit', u.unit_name,
+           'part', substr(a.action, length('admin_edit_unit_') + 1)),
+         a.ts
+    from public.audit_log a
+    join public.authority_units u on u.id::text = a.entity_id
+   where a.entity = 'authority_units'
+     and a.action in ('admin_edit_unit_details', 'admin_edit_unit_contact', 'admin_edit_unit_scope')
+     and a.details ->> 'notify' = 'true'
+     and a.ts > p_since
+  union all
+  select a.id,
+         case when coalesce((a.details ->> 'approved')::boolean, false)
+              then 'field_approved' else 'field_rejected' end,
+         u.user_id, f.id::text,
+         jsonb_build_object('unit', u.unit_name, 'tambon_th', t.name_th, 'tambon_en', t.name_en),
+         a.ts
+    from public.audit_log a
+    join public.field_rescues f on f.id::text = a.entity_id
+    join public.authority_units u on u.id = f.unit_id
+    left join public.tambons t on t.code = f.tambon
+   where a.entity = 'field_rescues'
+     and a.action = 'field_rescue_reviewed'
+     and a.ts > p_since
+  union all
+  select a.id,
+         case a.details ->> 'to' when 'approved' then 'report_approved' else 'report_hidden' end,
+         r.reporter_id, r.id::text,
+         jsonb_build_object('tambon_th', t.name_th, 'tambon_en', t.name_en),
+         a.ts
+    from public.audit_log a
+    join public.reports r on r.id::text = a.entity_id
+    left join public.tambons t on t.code = r.tambon
+   where a.entity = 'reports'
+     and a.action = 'report_moderated'
+     and a.details ->> 'to' in ('approved', 'hidden')
+     and r.reporter_id is not null
+     and a.ts > p_since
+$$;
+revoke execute on function public.admin_decisions_since(timestamptz) from public, anon, authenticated;
+
+create function public.my_unit_edits()
+returns table (audit_id bigint, unit_id uuid, unit_name text, part text, edited_at timestamptz)
+language sql stable security definer set search_path = '' as $$
+  select a.id, u.id, u.unit_name, substr(a.action, length('admin_edit_unit_') + 1), a.ts
+    from public.audit_log a
+    join public.authority_units u on u.id::text = a.entity_id
+   where a.entity = 'authority_units'
+     and a.action in ('admin_edit_unit_details', 'admin_edit_unit_contact', 'admin_edit_unit_scope')
+     and a.details ->> 'notify' = 'true'
+     and u.user_id = (select auth.uid())
+     and a.ts > now() - interval '14 days'
+   order by a.ts desc
+   limit 20
+$$;
+revoke execute on function public.my_unit_edits() from public, anon;
+grant execute on function public.my_unit_edits() to authenticated;

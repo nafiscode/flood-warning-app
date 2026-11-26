@@ -43,6 +43,21 @@ describe("admin.authorities.edit", () => {
     }
   });
 
+  it("has the team's three notices and the open-case warning in every language", () => {
+    for (const [name, messages] of Object.entries(LOCALES)) {
+      const unit = messages.notices.unit;
+      for (const key of ["editedDetails", "editedContact", "editedScope"] as const) {
+        expect(unit[key], `${name}: ${key}`).toContain("{name}");
+      }
+      const edit = messages.admin.authorities.edit;
+      // Both placeholders the page fills in as the admin changes the form.
+      expect(edit.openCases, name).toContain("{count}");
+      expect(edit.openCases, name).toContain("{places}");
+      expect(edit.openCasesConfirm.trim(), name).not.toBe("");
+      expect(edit.error.open.trim(), name).not.toBe("");
+    }
+  });
+
   it("says how many units share the organization, in every language", () => {
     for (const [name, messages] of Object.entries(LOCALES)) {
       const text = messages.admin.authorities.edit.orgShared;

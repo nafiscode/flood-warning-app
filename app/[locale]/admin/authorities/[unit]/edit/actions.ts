@@ -1,8 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { localePath } from "@/lib/auth";
 import { normalizePhone } from "@/lib/phone";
+import { runPushTick } from "@/lib/push-server";
 import { createClient } from "@/lib/supabase/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -30,7 +32,17 @@ function back(form: FormData, params: Record<string, string>): never {
  * The three forms on the edit page (admin only, owner 26 Nov 2026). Each saves on its own and
  * calls one database function, which checks the caller is an admin, checks the values again, and
  * writes the audit-log entry. Nothing here can touch the unit's status.
+ *
+ * Each form carries a "tell the team" box, ticked when the page is drawn (owner, 26 Nov 2026: the
+ * admin may untick it, and by default the team is told). When it is ticked the team's LINE hears
+ * at once and the minute's cron is the backstop, as for a verification.
  */
+
+/** Ticked boxes send "yes"; a form that never had the box tells nobody, the harmless direction. */
+function notifyTeam(form: FormData): boolean {
+  return field(form, "notify") === "yes";
+}
+
 export async function saveUnitDetails(form: FormData) {
   const unit = field(form, "unit");
   if (!UUID.test(unit)) back(form, { error: "save" });
@@ -53,8 +65,10 @@ export async function saveUnitDetails(form: FormData) {
     p_org_type: orgType,
     p_official_phone: officialPhone,
     p_public_contact_opt_in: field(form, "publicContact") === "yes",
+    p_notify_team: notifyTeam(form),
   });
   if (error) back(form, { error: "save" });
+  if (notifyTeam(form)) after(runPushTick);
   back(form, { done: "details" });
 }
 
@@ -71,6 +85,7 @@ export async function saveUnitContact(form: FormData) {
     p_poc_name: pocName,
     p_poc_phone: pocPhone,
     p_phone_confirmed_by_call: field(form, "called") === "yes",
+    p_notify_team: notifyTeam(form),
   });
   // A verified team's new number is only saved once the admin says they called it.
   if (error) {
@@ -79,6 +94,7 @@ export async function saveUnitContact(form: FormData) {
       reveal: "1",
     });
   }
+  if (notifyTeam(form)) after(runPushTick);
   back(form, { done: "contact" });
 }
 
@@ -100,9 +116,21 @@ export async function saveUnitScope(form: FormData) {
     p_unit: unit,
     p_capabilities: capabilities,
     p_coverage: coverage,
+    p_confirm_open_cases: field(form, "confirmOpen") === "yes",
+    p_notify_team: notifyTeam(form),
   });
   if (error) {
-    back(form, { error: error.message.includes("outside the provinces") ? "coverage" : "save" });
+    // The database refuses a change that would cut the team off from a case it has accepted and
+    // is still working, unless the admin ticked that they understand. The page asks first when
+    // it can; this is for a page without scripts, or one that was open while a case was accepted.
+    back(form, {
+      error: error.message.includes("Open cases")
+        ? "open"
+        : error.message.includes("outside the provinces")
+          ? "coverage"
+          : "save",
+    });
   }
+  if (notifyTeam(form)) after(runPushTick);
   back(form, { done: "scope" });
 }

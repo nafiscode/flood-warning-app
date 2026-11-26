@@ -13,6 +13,7 @@ import {
   type AutoAlarm,
   type NoticeRow,
   type ReportDecision,
+  type UnitEdit,
 } from "@/lib/notices";
 import { FIELD_URL, type MyFieldRescue } from "@/lib/field-rescue";
 import { bankReachedNear } from "@/lib/flood-scene";
@@ -36,6 +37,8 @@ type StoredUnits = {
   fieldWaiting?: FieldWaiting | null;
   /** What an admin decided about their own flood reports. */
   reports?: ReportDecision[];
+  /** Corrections an admin made to their teams and chose to tell them of. */
+  unitEdits?: UnitEdit[];
   /** For an admin: automatic alarms, and every alert when they chose to hear all of them. */
   admin?: {
     allAlerts: boolean;
@@ -231,6 +234,7 @@ export function useNotices(options: {
         units: UnitRequest[];
         fieldWaiting?: FieldWaiting | null;
         reports?: ReportDecision[];
+        unitEdits?: UnitEdit[];
         admin?: StoredUnits["admin"];
       }>(REQUESTS_URL).then(
         async (answer) => {
@@ -247,6 +251,7 @@ export function useNotices(options: {
               field,
               fieldWaiting: answer.fieldWaiting ?? null,
               reports: answer.reports ?? [],
+              unitEdits: answer.unitEdits ?? [],
               admin: answer.admin ?? null,
               checkedAt: Date.now(),
             } satisfies StoredUnits);
@@ -277,6 +282,7 @@ export function useNotices(options: {
       field: storedUnits?.field ?? [],
       fieldWaiting: storedUnits?.fieldWaiting ?? null,
       reports: storedUnits?.reports ?? [],
+      unitEdits: storedUnits?.unitEdits ?? [],
       autoAlarms: storedUnits?.admin?.autoAlarms ?? [],
       attention: storedUnits?.admin?.attention ?? [],
       // Rivers near the person that are at or over their bank (24 Nov 2026), filtered to their own
@@ -287,7 +293,19 @@ export function useNotices(options: {
       homeLabel,
       areaLabel,
     });
-  }, [stored, key, area, me, storedGauges, points, storedCases, storedUnits, now, homeLabel, areaLabel]);
+  }, [
+    stored,
+    key,
+    area,
+    me,
+    storedGauges,
+    points,
+    storedCases,
+    storedUnits,
+    now,
+    homeLabel,
+    areaLabel,
+  ]);
 
   const readIds = useMemo(() => syncedRead ?? read ?? [], [syncedRead, read]);
 

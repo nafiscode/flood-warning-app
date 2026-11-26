@@ -1080,7 +1080,10 @@
       "reason": "Reason given: {reason}",
       "rejectedNote": "If you think this is a mistake, correct the details and register again, or contact the Jaga admins.",
       "suspended": "{name} has been suspended. Please contact the Jaga admins.",
-      "see": "See the steps"
+      "see": "See the steps",
+      "editedDetails": "The Jaga admins updated the details of {name}.",
+      "editedContact": "The Jaga admins updated the contact person of {name}.",
+      "editedScope": "The Jaga admins changed what {name} does or the area it covers. Please check it in the app."
     },
     "field": {
       "title": "A rescue your team recorded",
@@ -1969,8 +1972,13 @@
           "scope": "Capabilities and area saved."
         },
         "error": {
-          "call": "Call the new number and tick the box before saving it."
-        }
+          "call": "Call the new number and tick the box before saving it.",
+          "open": "This change would cut the team off from cases it has accepted and is still working. Tick the confirmation to save it, or change the area."
+        },
+        "notify": "Tell the team about this change",
+        "notifyHint": "The team sees in the bell and in LINE which part changed, never the new values. Untick it and the team is not told.",
+        "openCases": "Open cases this team has accepted: {count}, in {places}. If you save this change the team will stop seeing them, even while it may be on its way to help.",
+        "openCasesConfirm": "I understand, and save this change anyway"
       }
     },
     "invitations": {
