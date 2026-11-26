@@ -1946,7 +1946,32 @@
       "damOperatorUnlink": "Buka ikatan",
       "damOperatorNone": "Tidak diikat kepada mana-mana empangan, jadi tidak boleh menghantar apa-apa",
       "damOperatorLinked": "Diikat kepada: {dams}",
-      "damOperatorDone": "Ikatan empangan telah disimpan"
+      "damOperatorDone": "Ikatan empangan telah disimpan",
+      "edit": {
+        "open": "Sunting unit ini",
+        "title": "Sunting unit",
+        "back": "Kembali ke senarai unit",
+        "detailsTitle": "Unit dan organisasi",
+        "orgShared": "{count, plural, =1 {Organisasi ini ada 1 unit. Perubahan pada nama, jenis atau nombor rasmi terpakai kepada unit ini.} other {Organisasi ini ada # unit. Perubahan pada nama, jenis atau nombor rasmi terpakai kepada semua unit itu.}}",
+        "saveDetails": "Simpan butiran unit",
+        "contactHint": "Nama dan nombor penyelaras ialah data peribadi. Setiap kali dibuka dan setiap kali diubah akan direkod, tetapi rekod hanya mencatat bahawa ia berubah, bukan apa nilainya.",
+        "called": "Saya sudah telefon nombor baharu dan penyelaras mengesahkannya",
+        "calledVerified": "Unit ini sudah disahkan, jadi nombor baharu hanya boleh disimpan selepas anda telefon.",
+        "calledOther": "Jika tidak ditanda, nombor baharu kekal belum disahkan dan mesti ditelefon sebelum unit diluluskan.",
+        "saveContact": "Simpan penyelaras",
+        "scopeTitle": "Apa yang boleh dibuat unit, dan di mana",
+        "scopeWarning": "Ini mengubah apa yang boleh dilihat unit serta-merta, walaupun sudah disahkan: lokasi dan nombor telefon permintaan bantuan di kawasannya.",
+        "damWarning": "Jika \"Pengendali empangan atau takungan\" dibuang, unit ini turut dilepaskan daripada empangannya.",
+        "saveScope": "Simpan fungsi dan kawasan",
+        "done": {
+          "details": "Butiran unit telah disimpan.",
+          "contact": "Penyelaras telah disimpan.",
+          "scope": "Fungsi dan kawasan telah disimpan."
+        },
+        "error": {
+          "call": "Telefon nombor baharu dan tanda kotak itu sebelum menyimpan."
+        }
+      }
     },
     "invitations": {
       "title": "Pentadbir dan jemputan",

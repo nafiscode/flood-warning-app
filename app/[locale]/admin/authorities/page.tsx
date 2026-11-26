@@ -223,6 +223,18 @@ export default async function AdminAuthorities({
     </>
   );
 
+  // Any team can be corrected, whatever its status (owner, 26 Nov 2026); the page it opens says
+  // what each part changes.
+  const editLink = (unit: Unit) => (
+    <Link
+      href={`/admin/authorities/${unit.id}/edit`}
+      className={`${buttonSecondary} sm:w-auto sm:self-start`}
+      data-edit-unit-link={unit.id}
+    >
+      {t("authorities.edit.open")}
+    </Link>
+  );
+
   // Shown for a registration still waiting, and again for one turned down: an admin who said no
   // by mistake can still call the contact and verify it.
   const verifyBlock = (unit: Unit) =>
@@ -366,6 +378,7 @@ export default async function AdminAuthorities({
       {pending.map((unit) => (
         <section key={unit.id} className={card}>
           {details(unit)}
+          {editLink(unit)}
           {verifyBlock(unit)}
           {rejectBlock(unit)}
         </section>
@@ -376,6 +389,7 @@ export default async function AdminAuthorities({
         <section key={unit.id} className={card}>
           {details(unit)}
           <p className="font-medium">{t(`authorities.status.${unit.status}`)}</p>
+          {editLink(unit)}
           {unit.status === "rejected" && (
             <>
               {notes.has(unit.id) && (

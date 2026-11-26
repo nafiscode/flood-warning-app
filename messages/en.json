@@ -1946,7 +1946,32 @@
       "damOperatorUnlink": "Untie",
       "damOperatorNone": "Tied to no dam, so it can send nothing",
       "damOperatorLinked": "Tied to: {dams}",
-      "damOperatorDone": "The dam link was saved"
+      "damOperatorDone": "The dam link was saved",
+      "edit": {
+        "open": "Edit this unit",
+        "title": "Edit unit",
+        "back": "Back to the units",
+        "detailsTitle": "Unit and organization",
+        "orgShared": "{count, plural, =1 {This organization has 1 unit. Changes to its name, type or office phone apply to this unit.} other {This organization has # units. Changes to its name, type or office phone apply to all of them.}}",
+        "saveDetails": "Save unit details",
+        "contactHint": "The contact's name and phone are personal data. Showing them is logged, and so is changing them, but the log records only that they changed, never what they were.",
+        "called": "I called the new number and the contact confirmed it",
+        "calledVerified": "This unit is verified, so a new number can only be saved once you have called it.",
+        "calledOther": "Leave this empty and the new number stays unconfirmed: it has to be called before the unit is approved.",
+        "saveContact": "Save contact",
+        "scopeTitle": "What the unit may do, and where",
+        "scopeWarning": "This changes what the unit can read straight away, even if it is already verified: the points and phone numbers of help requests in its area.",
+        "damWarning": "Taking away \"Dam or reservoir operator\" also unties the unit from its dams.",
+        "saveScope": "Save capabilities and area",
+        "done": {
+          "details": "Unit details saved.",
+          "contact": "Contact saved.",
+          "scope": "Capabilities and area saved."
+        },
+        "error": {
+          "call": "Call the new number and tick the box before saving it."
+        }
+      }
     },
     "invitations": {
       "title": "Admins and invitations",

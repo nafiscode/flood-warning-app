@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/BackLink";
-import { CoverageMap } from "@/components/authority/CoverageMap";
+import { CoverageFields } from "@/components/authority/CoverageFields";
 import { getSessionProfile, localePath, needsName, setupPath } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
 import {
   buttonPrimary,
   card,
@@ -34,18 +33,7 @@ const ORG_TYPES = ["government", "private", "nonprofit", "volunteer"] as const;
 // in the whole service area - and it is the one that grants nothing by itself. Ticking it only
 // tells an admin what to confirm with the dam; the power to send a release notice arrives when
 // they tie the verified unit to a named dam.
-const CAPABILITIES = [
-  "coordination",
-  "rescue",
-  "supplies",
-  "planning",
-  "support",
-  "dam",
-] as const;
-
-type Area = { code: string; name_th: string; name_en: string };
-type District = Area & { province_code: string };
-type Tambon = Area & { district_code: string };
+const CAPABILITIES = ["coordination", "rescue", "supplies", "planning", "support", "dam"] as const;
 
 export async function generateMetadata({
   params,
@@ -76,26 +64,6 @@ export default async function AuthorityRegister({
   const t = await getTranslations("authorityRegister");
   const tNav = await getTranslations("nav");
   const error = ERRORS.find((e) => e === query.error);
-
-  const supabase = await createClient();
-  const [{ data: provinces }, { data: districts }, { data: tambons }] = await Promise.all([
-    supabase
-      .from("provinces")
-      .select("code, name_th, name_en")
-      .eq("status", "active")
-      .order("code"),
-    supabase.from("districts").select("code, province_code, name_th, name_en").order("code"),
-    supabase
-      .from("tambons")
-      .select("code, district_code, name_th, name_en")
-      .order("code")
-      .limit(2000),
-  ]);
-  const name = (area: Area) => (locale === "th" ? area.name_th : area.name_en);
-  const districtsOf = (province: string) =>
-    ((districts ?? []) as District[]).filter((d) => d.province_code === province);
-  const tambonsOf = (district: string) =>
-    ((tambons ?? []) as Tambon[]).filter((tb) => tb.district_code === district);
 
   return (
     <form action={registerAuthority} className={`flex flex-col gap-5 ${formColumn}`}>
@@ -212,69 +180,7 @@ export default async function AuthorityRegister({
         </div>
       </fieldset>
 
-      <fieldset className={card}>
-        <legend className={`${label} float-start`}>{t("coverage.label")}</legend>
-        <p className={`clear-both ${hint}`}>{t("coverage.hint")}</p>
-        <CoverageMap
-          text={{
-            useMap: t("coverage.useMap"),
-            hideMap: t("coverage.hideMap"),
-            mapHint: t("coverage.mapHint"),
-            count: t("coverage.mapCount", { count: "{n}" }),
-            locked: t("coverage.mapLocked"),
-            mapFailed: t("coverage.mapFailed"),
-          }}
-        />
-        {((provinces ?? []) as Area[]).map((province) => (
-          <div key={province.code} className="flex flex-col border-t border-jaga-line pt-2">
-            <label className={checkRow}>
-              <input type="checkbox" name="province" value={province.code} className={checkBox} />
-              <span className="font-bold">
-                {t("coverage.wholeProvince", { name: name(province) })}
-              </span>
-            </label>
-            <details>
-              <summary className="min-h-tap cursor-pointer py-2 text-jaga-teal-ink underline">
-                {t("coverage.chooseDistricts", { name: name(province) })}
-              </summary>
-              <div className="flex flex-col ps-4">
-                {districtsOf(province.code).map((district) => (
-                  <div key={district.code}>
-                    <label className={checkRow}>
-                      <input
-                        type="checkbox"
-                        name="district"
-                        value={district.code}
-                        className={checkBox}
-                      />
-                      <span>{t("coverage.wholeDistrict", { name: name(district) })}</span>
-                    </label>
-                    <details>
-                      <summary className="min-h-tap cursor-pointer py-2 text-small text-jaga-teal-ink underline">
-                        {t("coverage.chooseTambons", { name: name(district) })}
-                      </summary>
-                      <div className="flex flex-col ps-4">
-                        {tambonsOf(district.code).map((tambon) => (
-                          <label key={tambon.code} className={checkRow}>
-                            <input
-                              type="checkbox"
-                              name="tambon"
-                              value={tambon.code}
-                              className={checkBox}
-                            />
-                            <span>{name(tambon)}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </details>
-                  </div>
-                ))}
-              </div>
-            </details>
-          </div>
-        ))}
-        {(provinces ?? []).length === 0 && <p role="alert">{t("coverage.unavailable")}</p>}
-      </fieldset>
+      <CoverageFields locale={locale} />
 
       <p className={hint}>{t("afterSubmit")}</p>
       <button type="submit" className={buttonPrimary}>
