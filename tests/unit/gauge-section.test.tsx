@@ -152,6 +152,91 @@ describe("the channel, where the station's own figures give one", () => {
     expect(s.channelPath.split("M").length - 1).toBe(3);
   });
 
+  /*
+   * The walls are anchored to the bank line (27 Nov 2026). ThaiWater's station record and its
+   * water-level feed disagree about the bank on ten RID gauges, and the card was drawing the
+   * record's figure while every word beside it used the feed's. X.90 and SLA002 sit 1 m apart at
+   * one bridge and read the same water to 0.13 m, yet drew two different channels.
+   */
+  // X.90 บ้านบางศาลา on jaga-dev, 27 Nov 2026: the feed puts the bank at 9.34 m and its own
+  // reading confirms it (2.62 + 6.72), while the station record lists both walls at 11.25.
+  const X90 = {
+    ...GAUGE,
+    watch: 8.55,
+    warning: 9.05,
+    evacuate: 9.34,
+    bank: 9.34,
+    value: 2.62,
+    bed: -0.881,
+    leftBank: 11.247,
+    rightBank: 11.25,
+  };
+
+  it("brings walls listed above the bank line down onto it", () => {
+    const s = riverSection(X90);
+    expect(s.bankMetres).toBe(9.34);
+    // Both walls stood 1.91 m above the bank line, so the Evacuate line was drawn below ground on
+    // both sides: a river inside its channel beside words saying it was at Evacuate.
+    expect(Math.abs(s.leftY - s.bankY)).toBeLessThan(1);
+    expect(Math.abs(s.rightY - s.bankY)).toBeLessThan(1);
+  });
+
+  it("does not move the bed with them, because the bed already agrees", () => {
+    const s = riverSection(X90);
+    expect(s.bed!.metres).toBe(-0.881);
+    // The depth is then the one the words give: bank line to bed.
+    expect(s.depth).toBe(10.22);
+  });
+
+  it("keeps the step between two unequal banks, so the water still spreads over the lower one", () => {
+    // X.119A สะพานลันตู: bank line 9.30, walls listed at 10.48 and 9.79 - a 0.69 m step. The
+    // lower wall goes onto the bank line and the higher keeps its step above it.
+    const s = riverSection({
+      ...GAUGE,
+      watch: 7.8,
+      warning: 8.8,
+      evacuate: 9.3,
+      bank: 9.3,
+      value: 6.99,
+      bed: null,
+      leftBank: 10.48,
+      rightBank: 9.79,
+    });
+    expect(s.bankMetres).toBe(9.3);
+    expect(Math.abs(s.rightY - s.bankY)).toBeLessThan(1);
+    // The left wall is still the higher of the two: smaller y is further up the drawing.
+    expect(s.leftY).toBeLessThan(s.rightY - 1);
+  });
+
+  it("leaves a record that already matches its bank line exactly where it is", () => {
+    // Every HII, EGAT and FOP station, and eight of the RID ones: nothing to anchor.
+    const s = riverSection(REAL);
+    expect(s.bankMetres).toBe(4.8);
+    expect(Math.abs(s.leftY - s.bankY)).toBeLessThan(0.001);
+    expect(s.rightY).toBeLessThan(s.leftY - 1);
+    expect(s.bed!.metres).toBe(1.9);
+  });
+
+  it("still throws away a record on another datum rather than anchoring it", () => {
+    // X.67A บ้านนาสีทอง: walls at 6.28/6.29 and a bed at -1.22 are a real channel measured down
+    // from the staff gauge, not m MSL. Anchoring would quietly keep a bed on the wrong datum, so
+    // the whole record goes and the card says the shape is a drawing.
+    const s = riverSection({
+      ...GAUGE,
+      watch: 38.65,
+      warning: 39.3,
+      evacuate: 39.92,
+      bank: 39.92,
+      value: 35.41,
+      bed: -1.22,
+      leftBank: 6.28,
+      rightBank: 6.29,
+    });
+    expect(s.bed).toBeNull();
+    expect(s.depth).toBeNull();
+    expect(s.bankMetres).toBe(39.92);
+  });
+
   it("draws a narrow river narrow and a wide one wide", () => {
     const narrow = riverSection({ ...REAL, channelWidth: 12 });
     const wide = riverSection({ ...REAL, channelWidth: 220 });
@@ -255,9 +340,13 @@ describe("channel heights on another datum", () => {
   });
 
   it("keeps heights that do agree, and keeps the width either way", () => {
-    // A station on one datum throughout is untouched.
+    // A station on one datum throughout is kept, not thrown away.
     const sane = riverSection({ ...X67A, bed: 1.9, leftBank: 39.9, rightBank: 40.2 });
-    expect(sane.leftMetres).toBe(39.9);
+    expect(sane.leftMetres).not.toBeNull();
+    // Kept, and then put on the bank line the words use: 0.02 m here, and the 0.30 m step up to
+    // the right bank is carried with it (27 Nov 2026).
+    expect(sane.leftMetres).toBe(39.92);
+    expect(sane.rightMetres).toBeCloseTo(40.22, 10);
     expect(sane.bed!.metres).toBe(1.9);
     /*
      * The width is a horizontal distance measured across OpenStreetMap's water. It has no datum

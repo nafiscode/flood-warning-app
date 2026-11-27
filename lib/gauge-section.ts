@@ -178,8 +178,44 @@ export function riverSection(input: SectionInput): Section {
   // banks, so a bed kept beside rejected banks would be the same mistake with one fewer clue.
   const heightsAgree =
     sameDatum(listedLeft) !== null || sameDatum(listedRight) !== null || datum.length === 0;
-  const left = heightsAgree ? listedLeft : null;
-  const right = heightsAgree ? listedRight : null;
+  const keptLeft = heightsAgree ? listedLeft : null;
+  const keptRight = heightsAgree ? listedRight : null;
+  /*
+   * The walls are anchored to the station's own bank line (27 Nov 2026, the owner: "fix it so the
+   * drawn walls match the bank line").
+   *
+   * The bank line - `stations.bankfull_m`, the agency's own ตลิ่ง - is what every level is
+   * measured against and what `overBank` below is tested against. The two wall heights come from
+   * ThaiWater's STATION RECORD instead, and on ten gauges the two sources disagree: measured on
+   * jaga-dev, 27 Nov 2026, every HII, EGAT and FOP station matches its bank line to the
+   * centimetre, while ten RID stations list walls ABOVE it, by 0.60 m at X.77 up to 4.28 m at
+   * X.274. The record's higher figure is not the ตลิ่ง there; it is whatever stands behind it, a
+   * deck or a levee crest.
+   *
+   * Found at X.90 and SLA002, two gauges ThaiWater itself places 1 m apart at the same bridge,
+   * whose readings agree to 0.13 m. Both agencies' feeds put the bank at 9.34 m - and the
+   * arithmetic in each feed confirms it - but X.90's record lists both walls at 11.25, so its card
+   * drew the Evacuate line 1.91 m below ground on both sides: a river still comfortably inside its
+   * channel beside words saying it was at Evacuate. SLA002, reading the same water, drew the bank
+   * exactly at its left wall. Same bridge, two different pictures (safety rule 10).
+   *
+   * So the LOWER wall is put on the bank line and the other moves with it, which keeps the step
+   * between the two banks - a real measurement, and what decides which side the water spreads
+   * over - while making the governing bank the one the words use. The bed is NOT moved: it is
+   * already on the levels' datum (X.90 lists -0.88 where SLA002 lists -1.01), so moving it would
+   * break the one height here that agrees. Checked against all 45 drawn channels: 11 move, none
+   * puts a wall below its own bed, and the depths that come out run 4.79 m to 12.38 m.
+   *
+   * A record on a genuinely different datum is still thrown away whole by the test above rather
+   * than anchored - at X.67A the bed is on that other datum too, so there is nothing to keep.
+   */
+  const lowestWall =
+    keptLeft !== null && keptRight !== null
+      ? Math.min(keptLeft, keptRight)
+      : (keptLeft ?? keptRight);
+  const anchor = dbBank !== null && lowestWall !== null ? dbBank - lowestWall : 0;
+  const left = keptLeft === null ? null : keptLeft + anchor;
+  const right = keptRight === null ? null : keptRight + anchor;
   const banks = [left, right].filter((m): m is number => m !== null);
   const marks = [...levels.map((l) => l.metres), ...(dbBank !== null ? [dbBank] : []), ...banks];
   const reading = own(value);

@@ -1712,3 +1712,37 @@ The owner said "migrate now". `20261127140000_a10_plan_meters` and seed 63 are a
 - **Found while checking, and not caused by this change:** between about 03:40 and 08:40 Bangkok on 27 Nov, 215 of the 1,436 `jaga-push-tick` runs, 48 of the 287 `jaga-auto-alarm` runs and 17 gauge-reading runs failed with "job startup timeout" (pg_cron could not start them in time). None have failed since. For those hours the automated alarm check and the push dispatch were mostly not running. The likely cause is the exhausted Disk IO budget Supabase warned about the same day, but that is an inference, not something measured. It is the strongest reason to upgrade Supabase now rather than later, and `admin_plan_health()` now shows failed runs per cron so a repeat is visible.
 - The first nightly snapshot will delete about 71,000 old cron-log rows once (84,336 now, 13 MB); after that the log holds seven days.
 - The table counters run since 25 Aug (the whole life of the project, including every `db:reset`), so the "heaviest tables" list is history, not the current rate. The real daily rate appears after two nightly snapshots.
+
+## 2026-11-27 - A gauge's drawn banks are put on the bank line its words use
+
+The owner, seeing X.90 and SLA002 in the same place on the map with different cross-sections:
+"fix it so the drawn walls match the bank line."
+
+The two are different gauges - RID 2589 บ้านบางศาลา and HII 860 คลองหอยโข่ง - that ThaiWater
+itself places 1 m apart at one bridge, and their readings agree to 0.13 m, so they measure the
+same water. The cards differed because a gauge's **bank line** (`stations.bankfull_m`, the
+agency's own ตลิ่ง) comes from ThaiWater's water-level feed, while the **drawn walls** come from
+its station record, and the two sources disagree. Both feeds put that bank at 9.34 m and each
+feed's own arithmetic confirms it (2.62 + 6.72 and 2.49 + 6.85), SLA002's record agrees to the
+centimetre, and X.90's record lists both walls at 11.25.
+
+Measured over all 45 drawn channels on jaga-dev, 27 Nov 2026: every HII, EGAT and FOP station
+matches its bank line exactly, and **ten RID stations list walls above it** - X.77 0.60 m,
+X.173A 0.81, X.283 1.21, X.44 1.26, X.113 1.43, X.90 1.91, X.240 1.98, X.184 2.91, X.73 3.91,
+X.274 4.28 (X.119A 0.48). Six of the seven gauges armed for the automatic alarm are among them.
+On those cards the Evacuate line was drawn below ground on both sides: a river comfortably
+inside its channel beside words saying it was at Evacuate (safety rule 10).
+
+So `riverSection` now anchors the walls: the **lower** wall is put on the bank line and the
+other moves with it. The step between the two banks is a real measurement and decides which side
+the water spreads over, so it is kept; the absolute height the record gives for a wall above the
+ตลิ่ง is not kept, because it is not the bank - it is whatever stands behind it, a deck or a
+levee crest. **The bed is not moved**: it is already on the levels' datum (X.90 lists -0.88
+where SLA002 lists -1.01), so moving it would break the one height that agrees, and the depth
+the card prints stays bank-line-to-bed. Checked against all 45: eleven move, none puts a wall
+below its own bed, and the resulting depths run 4.79 m to 12.38 m.
+
+A record on a genuinely different datum is still thrown away whole rather than anchored - at
+X.67A the bed is on that other datum too, so there is nothing worth keeping (decision
+2026-11-22). Reason: the picture and the sentence under it must agree, and of the two it is the
+sentence that is checked - so the drawing is made to follow the bank the words use.
