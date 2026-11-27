@@ -137,7 +137,7 @@ describe("clearing one case", () => {
     await as(db, { uid: w.admin });
     const board = await rows<{ sos_id: string; status: string }>(
       db,
-      "select sos_id, status from admin_sos_board(72)",
+      "select sos_id, status from admin_sos_board(720)",
     );
     expect(board.find((c) => c.sos_id === w.yalaSos)?.status).toBe("dismissed");
   });

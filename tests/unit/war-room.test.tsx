@@ -6,6 +6,7 @@ import {
   caseState,
   casesPerHour,
   directionsHref,
+  boardWindow,
   hasNoUnit,
   isOpen,
   peak,
@@ -147,6 +148,34 @@ describe("a case nobody has heard from in 72 hours", () => {
     const bands = triage(board, NOW, 15);
     expect(bands.stale.map((c) => c.id)).toEqual(["stale"]);
     expect(bands.overdue.map((c) => c.id)).toEqual(["late"]);
+  });
+});
+
+describe("which cases a wide read keeps on the board", () => {
+  it("keeps open cases of any age, recent closed ones, and ones cleared within the window", () => {
+    const old = ago(200 * 60);
+    const kept = boardWindow(
+      [
+        a("open-old", { createdAt: old }),
+        a("closed-recent", { status: "rescued", closedAt: ago(5), createdAt: ago(60) }),
+        a("closed-old", { status: "rescued", closedAt: ago(100 * 60), createdAt: ago(300 * 60) }),
+        a("cleared-now", {
+          status: "dismissed",
+          closedAt: ago(30),
+          createdAt: ago(300 * 60),
+          lastEvent: "cleared_obsolete",
+        }),
+        a("cleared-long-ago", {
+          status: "dismissed",
+          closedAt: ago(100 * 60),
+          createdAt: ago(500 * 60),
+          lastEvent: "cleared_obsolete",
+        }),
+      ],
+      NOW,
+      72,
+    ).map((c) => c.id);
+    expect(kept).toEqual(["open-old", "closed-recent", "cleared-now"]);
   });
 });
 

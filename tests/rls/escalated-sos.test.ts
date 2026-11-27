@@ -121,8 +121,8 @@ describe("who may read it", () => {
   it("opens to the owner of a verified rescue team and to its active dispatcher", async () => {
     await age(45);
     expect(await sees(w.songkhlaRescue.user)).toBe(true);
-    const dispatcher = await createUser(db, { name: "dispatcher", role: "authority" });
     await asOwner(db);
+    const dispatcher = await createUser(db, { name: "dispatcher", role: "authority" });
     await db.query(
       "insert into authority_unit_members (unit_id, user_id, role, status, decided_at) values ($1, $2, 'dispatcher', 'active', now())",
       [w.songkhlaRescue.id, dispatcher],

@@ -298,6 +298,25 @@ export function triage(cases: SosCase[], now: number, unclaimedMinutes: number):
   return out;
 }
 
+/**
+ * Which cases of a wide read stay on the board. The database function returns every open case
+ * whatever its age, plus the closed ones created inside the window it is given. A case an admin
+ * cleared as obsolete is by definition older than 72 hours, so it falls outside that window the
+ * moment it closes and its Reopen button would be unreachable. This keeps what the board always
+ * showed - open cases and cases created within `hours` - and adds the ones cleared within `hours`.
+ */
+export function boardWindow(cases: SosCase[], now: number, hours: number): SosCase[] {
+  const cutoff = now - hours * 3_600_000;
+  return cases.filter(
+    (c) =>
+      isOpen(c) ||
+      Date.parse(c.createdAt) > cutoff ||
+      (c.lastEvent === "cleared_obsolete" &&
+        c.closedAt !== null &&
+        Date.parse(c.closedAt) > cutoff),
+  );
+}
+
 /** A case nobody can take: open, unanswered, and no verified unit covers its tambon. */
 export function hasNoUnit(c: SosCase): boolean {
   return isOpen(c) && !c.unitId && c.unitsCovering === 0;

@@ -9,6 +9,7 @@
 import type { PointsAward, TeamHousehold, UnconfirmedRescue } from "@/lib/coverage";
 import { toDamSignal } from "@/lib/dam";
 import { createClient } from "@/lib/supabase/server";
+import { boardWindow } from "@/lib/war-room";
 import type {
   DamBoardRow,
   HistoryRow,
@@ -144,7 +145,9 @@ export async function readBoard(hours = 72): Promise<WarRoomBoard> {
   const supabase = await createClient();
   const [overview, board, dams, staleIds] = await Promise.all([
     supabase.rpc("admin_overview"),
-    supabase.rpc("admin_sos_board", { p_hours: hours }),
+    // Read wide (30 days) and cut to `hours` below, so a case cleared as obsolete, which is older
+    // than `hours` by definition, stays on the board to be reopened (lib/war-room.ts boardWindow).
+    supabase.rpc("admin_sos_board", { p_hours: Math.max(hours, 24 * 30) }),
     // Polled with the rest: a release waiting for a person to judge it is the one thing on this
     // screen that gets worse by being seen late.
     supabase.rpc("admin_dam_board"),
@@ -159,10 +162,14 @@ export async function readBoard(hours = 72): Promise<WarRoomBoard> {
       ((overview.data as Row[] | null)?.[0] ?? null)
         ? toOverview((overview.data as Row[])[0]!)
         : EMPTY_OVERVIEW,
-    cases: ((board.data as Row[] | null) ?? []).map((r) => {
-      const c = toCase(r);
-      return stale.has(c.id) ? { ...c, stale: true } : c;
-    }),
+    cases: boardWindow(
+      ((board.data as Row[] | null) ?? []).map((r) => {
+        const c = toCase(r);
+        return stale.has(c.id) ? { ...c, stale: true } : c;
+      }),
+      Date.now(),
+      hours,
+    ),
     dams: ((dams.data as Row[] | null) ?? []).map(toDam),
   };
 }
