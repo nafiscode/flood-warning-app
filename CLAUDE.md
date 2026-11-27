@@ -16,6 +16,7 @@ Read the relevant doc before starting a task. Don't load all of them every time.
 - `docs/prompts.md`: the phased build plan. The owner pastes one phase at a time.
 - `docs/brand.md`: name, logo assets, color and alert tokens, typography, voice. Read it before any UI work.
 - `docs/decisions.md`: decision log. Append an entry whenever a decision is made.
+- `docs/state.md`: where things stand - live addresses, which database is live, what a session without keys can and cannot do. Read it first in a session that has only the repository (a cloud or phone session). Keep it current.
 - `AGENTS.md`: Next.js 16 note, managed by `next dev` (don't edit the block). Next.js 16 differs from older versions (e.g. `proxy.ts` replaces middleware, request APIs are async-only, Turbopack builds by default): read the matching guide in `node_modules/next/dist/docs/` before writing Next.js code.
 
 ## Non-negotiable safety rules
@@ -136,6 +137,13 @@ Scripts and config never use absolute paths or drive letters; everything is rela
 - **Commits:** keep them small and reviewable, one logical change each. Commit with the owner's GitHub noreply address, never a personal email. The code repo is public (the data repo is private): no secrets, personal data or employer details in any commit.
 - **Contact:** the project email comes from `CONTACT_EMAIL` (`.env.example` / `.env.local`); never hardcode it.
 - **GitHub Actions:** default `permissions: contents: read`; jobs using secrets run only in `nafiscode/flood-warning-app`; never use `pull_request_target`; pin third-party actions to a commit SHA.
+
+## Sessions without a database (cloud, phone, a fresh clone)
+A session started from the Claude mobile app or claude.ai/code has the repository and nothing else: no `.env.local`, no `CLAUDE.local.md`, no `.claude/local/`, no `pipeline/data/`. Read `docs/state.md` first. In such a session:
+- Work only on what is in the repo. Never claim a migration is applied, a pipeline stage is run, or an RLS or e2e suite has passed - say plainly in the pull request that it is unapplied and untested.
+- A migration may be written, with its policy tests in `tests/rls/`. Check `ls supabase/migrations | cut -c1-14 | sort | uniq -d` prints nothing before adding one, and do not rebuild a database function "whole" from a body copied out of an older migration: the live definition cannot be checked from here, and a stale body silently reverts later work.
+- **Stop at a pull request. Never push to `main`**: `main` deploys to the live site, and CI on a throwaway database is the only real check available. The owner merges.
+- Unit tests: `npx vitest run --no-isolate`. Don't attempt e2e.
 
 ## Working with the owner
 - For each phase, read the phase prompt and the docs it names, then propose a short plan and wait for approval before large changes.
