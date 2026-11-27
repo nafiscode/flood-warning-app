@@ -5,6 +5,7 @@ import {
   alertPayload,
   announcementPayload,
   casePayload,
+  needNumberPayload,
   type DueRow,
   type PushAlert,
   type PushLevel,
@@ -279,11 +280,12 @@ export async function runPushTick(): Promise<PushOutcome> {
     const auto = await autoAlarmTick(supabase, token, gone);
     const season = await seasonTick(supabase, token, gone);
     const plan = await planTick(supabase, token, gone);
+    const number = await needNumberTick(supabase, token, gone);
     if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
     await line;
     return {
-      sent: sent + auto.sent + season.sent + plan.sent,
-      failed: failed + auto.failed + season.failed + plan.failed,
+      sent: sent + auto.sent + season.sent + plan.sent + number.sent,
+      failed: failed + auto.failed + season.failed + plan.failed + number.failed,
       gone: gone.length,
     };
   } catch {
@@ -490,6 +492,45 @@ async function planTick(
         if (status === 404 || status === 410) gone.push(row.endpoint);
         else failed++;
       }
+    }
+  }
+  return { sent, failed };
+}
+
+/**
+ * "A number would help" (owner, 28 Nov 2026): the phones that follow an open request with no
+ * phone number on file are told once to open the case and add one. The database hands each case
+ * out once and only when a phone follows it (push_need_number_due); a fault here changes nothing
+ * about the request (safety rule 1).
+ */
+async function needNumberTick(
+  supabase: ReturnType<typeof createPublicClient>,
+  token: string,
+  gone: string[],
+): Promise<{ sent: number; failed: number }> {
+  const { data, error } = await supabase.rpc("push_need_number_due", { p_token: token });
+  if (error || !Array.isArray(data)) return { sent: 0, failed: 0 };
+  let sent = 0;
+  let failed = 0;
+  for (const row of data as {
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+    locale: string;
+    sos_id: string;
+  }[]) {
+    const payload = needNumberPayload(row, SEND_WORDS[row.locale] ?? SEND_WORDS.th!);
+    if (!payload) continue;
+    try {
+      await webpush.sendNotification(
+        { endpoint: row.endpoint, keys: row.keys },
+        JSON.stringify(payload),
+        { TTL: 6 * 3600, urgency: "high" },
+      );
+      sent++;
+    } catch (e) {
+      const status = (e as { statusCode?: number }).statusCode;
+      if (status === 404 || status === 410) gone.push(row.endpoint);
+      else failed++;
     }
   }
   return { sent, failed };

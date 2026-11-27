@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CallNow } from "@/components/CallNow";
 import { CheckIcon, CrossIcon, HouseIcon, LifebuoyIcon, RetryIcon } from "@/components/icons";
 import { SosDetailsForm } from "@/components/sos/SosDetailsForm";
+import { SosPhoneAsk } from "@/components/sos/SosPhoneAsk";
 import { Journey } from "@/components/journey/Journey";
 import { TeamStatus } from "@/components/sos/TeamStatus";
 import { sosJourney } from "@/lib/journey";
@@ -497,6 +498,12 @@ export function CaseStatus({ id, merged }: Props) {
 
       {open && (
         <>
+          {/*
+           * No number on file: ask for one, above everything else here (owner, 28 Nov 2026). It is
+           * where the push "a number would help" lands. Never required, never in the way of the
+           * request, which is already on the teams' boards.
+           */}
+          {timeline && !timeline.hasPhone && <SosPhoneAsk id={id} token={token} onSaved={load} />}
           {/* After sending, never before: "tell this phone when a team accepts" (A7). */}
           <CasePush id={id} token={token} />
           {!supplies && <SosDetailsForm id={id} token={token} />}

@@ -522,7 +522,14 @@
     },
     "noPhone": "Saya tidak dapat memberi nombor (tiada telefon, atau tidak boleh dihubungi balik)",
     "phoneNeeded": "Masukkan nombor yang boleh dihubungi penyelamat, atau tandakan kotak di bawah. Permintaan anda tidak hilang.",
-    "phoneInvalid": "Nombor ini nampaknya tidak betul. Semak semula, atau tandakan kotak di bawah."
+    "phoneInvalid": "Nombor ini nampaknya tidak betul. Semak semula, atau tandakan kotak di bawah.",
+    "phoneAsk": {
+      "title": "Beri nombor telefon supaya pasukan penyelamat boleh menelefon anda",
+      "save": "Simpan nombor",
+      "saved": "Nombor disimpan. Pasukan penyelamat boleh menelefon anda.",
+      "invalid": "Nombor ini nampaknya tidak betul. Semak sekali lagi.",
+      "private": "Nombor anda tidak pernah awam. Hanya pasukan penyelamat dan admin boleh melihatnya."
+    }
   },
   "hotlines": {
     "title": "Talian kecemasan",
@@ -3821,7 +3828,9 @@
       "assignedTitle": "Kes di {tambon} diserahkan kepada anda",
       "assignedBody": "Pasukan anda menyerahkan kes ini kepada anda. Buka untuk melihat lokasi dan apa yang perlu diketahui.",
       "assignedSuppliesTitle": "Penghantaran makanan dan air di {tambon} diserahkan kepada anda",
-      "assignedSuppliesBody": "Pasukan anda menyerahkan penghantaran ini kepada anda. Buka untuk melihat lokasi."
+      "assignedSuppliesBody": "Pasukan anda menyerahkan penghantaran ini kepada anda. Buka untuk melihat lokasi.",
+      "needNumberTitle": "Tambah nombor telefon",
+      "needNumberBody": "Permintaan anda tiada nombor, jadi pasukan penyelamat tidak dapat menelefon anda. Ketik untuk menambah."
     },
     "quiet": {
       "button": "Benarkan Jaga walaupun mod Jangan Ganggu atau Tidur dihidupkan",

@@ -522,7 +522,14 @@
     },
     "noPhone": "I can't give a number (no phone, or I can't be called back)",
     "phoneNeeded": "Enter a number rescuers can call, or tick the box below. Your request is not lost.",
-    "phoneInvalid": "That doesn't look like a phone number. Check it, or tick the box below."
+    "phoneInvalid": "That doesn't look like a phone number. Check it, or tick the box below.",
+    "phoneAsk": {
+      "title": "Add a phone number so rescuers can call you",
+      "save": "Save the number",
+      "saved": "Number saved. Rescuers can call you.",
+      "invalid": "That doesn't look like a phone number. Check it again.",
+      "private": "Your number is never public. Only rescue teams and admins can see it."
+    }
   },
   "hotlines": {
     "title": "Hotlines",
@@ -3821,7 +3828,9 @@
       "assignedTitle": "A case in {tambon} was handed to you",
       "assignedBody": "Your team gave you this case. Open it to see where to go and what to know.",
       "assignedSuppliesTitle": "A food and water delivery in {tambon} was handed to you",
-      "assignedSuppliesBody": "Your team gave you this delivery. Open it to see where to go."
+      "assignedSuppliesBody": "Your team gave you this delivery. Open it to see where to go.",
+      "needNumberTitle": "Add a phone number",
+      "needNumberBody": "Your request has no number, so rescuers can't call you. Tap to add one."
     },
     "quiet": {
       "button": "Let Jaga through Do Not Disturb and Sleep",

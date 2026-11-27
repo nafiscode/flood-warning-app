@@ -208,6 +208,41 @@ export function casePayload(row: DueRow, words: Record<string, string>): CasePay
   };
 }
 
+/**
+ * "A number would help" (owner, 28 Nov 2026): the push that asks the sender of an open request
+ * for a phone number, so a team can call them. It carries no place, name or number, only the words
+ * and the link to the sender's own case page, where the field is. A case that has no words for
+ * the phone's language yields nothing rather than a message in the wrong one.
+ */
+export type NeedNumberRow = { sos_id: string; locale: string };
+
+export function needNumberPayload(
+  row: NeedNumberRow,
+  words: Record<string, string>,
+): {
+  kind: "announcement";
+  title: string;
+  body: string;
+  url: string;
+  tag: string;
+  sticky: false;
+} | null {
+  if (!/^[0-9a-f-]{36}$/i.test(row.sos_id)) return null;
+  const title = words.needNumberTitle;
+  const body = words.needNumberBody;
+  if (!title || !body) return null;
+  const prefix = row.locale === "th" ? "" : `/${row.locale}`;
+  return {
+    kind: "announcement",
+    title,
+    body: clip(body),
+    url: `${prefix}/sos/${row.sos_id}`,
+    // Its own tag, so it does not replace "a team accepted" and is not replaced by it.
+    tag: `need-number-${row.sos_id}`,
+    sticky: false,
+  };
+}
+
 /** One row of `weather_push_due()`: one advisory, for one phone, in that phone's language. */
 export type WeatherDueRow = {
   advisory_id: string;
