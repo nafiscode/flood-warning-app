@@ -73,10 +73,13 @@ test.describe("asking for help", () => {
     // Tap one: the SOS button on the home screen.
     await page.locator('main a[href="/sos"]').click();
     await expect(page.locator('[data-sos-live="true"]')).toBeVisible();
-    // The phone field is there, prominent and optional, with the hint about calling back.
+    // The phone field is there, asked for, with the hint about calling back.
     await expect(page.locator('input[name="phone"]')).toBeVisible();
     await expect(page.getByText(th.sos.phoneHint)).toBeVisible();
-    // Tap two: send.
+    // Tap two: send - held back once for want of a number, then sent with one.
+    await page.locator("[data-sos-send]").click();
+    await expect(page.locator("[data-sos-phone-need]")).toBeVisible();
+    await page.locator('input[name="phone"]').fill("0812345678");
     await page.locator("[data-sos-send]").click();
 
     await expect(page.locator("[data-case-status]")).toContainText(th.sos.status.received);
@@ -106,6 +109,7 @@ test.describe("asking for help", () => {
 
     await page.goto("/sos");
     await expect(page.locator('[data-sos-live="true"]')).toBeVisible();
+    await page.locator("[data-sos-nophone]").check();
     await page.locator("[data-sos-send]").click();
 
     // Not an error screen: the request is kept, and calling is offered meanwhile.
@@ -178,6 +182,7 @@ test.describe("asking for help", () => {
 
     await page.goto("/sos");
     await expect(page.locator('[data-sos-live="true"]')).toBeVisible();
+    await page.locator("[data-sos-nophone]").check();
     await page.locator("[data-sos-send]").click();
     await expect(page.locator("[data-case-status]")).toContainText(th.sos.status.received);
 
@@ -197,6 +202,7 @@ test.describe("asking for help", () => {
     await page.route(`**/api/sos/${CASE_ID}`, (route) => route.fulfill({ json: TIMELINE }));
     await page.goto("/sos");
     await expect(page.locator('[data-sos-live="true"]')).toBeVisible();
+    await page.locator("[data-sos-nophone]").check();
     await page.locator("[data-sos-send]").click();
     const hazard = page.locator("[data-sos-hazard]");
     await expect(hazard).toBeVisible();

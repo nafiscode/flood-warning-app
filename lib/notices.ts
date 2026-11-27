@@ -79,6 +79,16 @@ export type NoticeItem = Base &
         reason?: string | null;
       }
     | { kind: "field"; event: "approved" | "rejected" }
+    | {
+        /**
+         * For a verified team's people, on a device where Jaga is not installed (27 Nov 2026): put
+         * Jaga on this device, so an offered case can reach it. Stays until it is installed; never
+         * rings, and says nothing about any alert. `device` is in the id so a phone and a laptop
+         * are each told once.
+         */
+        kind: "teamInstall";
+        device: "phone" | "computer";
+      }
     | { kind: "fieldWaiting"; count: number }
     | { kind: "adminQueue"; queue: AdminQueue; count: number }
     | { kind: "report"; event: "approved" | "hidden"; tambon: { th: string; en: string } | null }
@@ -449,6 +459,8 @@ export function buildNotices(input: {
   autoAlarms?: AutoAlarm[];
   /** For an admin: every queue with something waiting in it. */
   attention?: AdminAttention[];
+  /** For a verified team's people on a device without the installed app: the install guide. */
+  teamInstall?: { device: "phone" | "computer" } | null;
   /** Rivers near the person that are at or over their bank (24 Nov 2026), newest reading in `at`. */
   bankReached?: { id: string; name: Record<string, string>; at: string | null }[];
   now: number;
@@ -458,7 +470,7 @@ export function buildNotices(input: {
 }): NoticeItem[] {
   const { rows, area, me, cases, units = [], field = [], now, homeLabel, areaLabel } = input;
   const { fieldWaiting, reports = [], autoAlarms = [], attention = [], bankReached = [] } = input;
-  const { unitEdits = [] } = input;
+  const { unitEdits = [], teamInstall = null } = input;
   const from = now - WINDOW_MS;
   const items: NoticeItem[] = [];
   const within = (at: string) => {
@@ -571,6 +583,18 @@ export function buildNotices(input: {
             : "editedScope",
       unitName: edit.unitName,
       reason: null,
+    });
+  }
+
+  // The install guide for a team's people (27 Nov). Not held to the fourteen days: it stays until
+  // Jaga is installed on this device, which the caller knows and this function does not.
+  if (teamInstall) {
+    items.push({
+      kind: "teamInstall",
+      id: `teaminstall:${teamInstall.device}`,
+      at: new Date(now).toISOString(),
+      places: [],
+      device: teamInstall.device,
     });
   }
 

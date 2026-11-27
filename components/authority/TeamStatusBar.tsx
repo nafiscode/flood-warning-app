@@ -63,18 +63,11 @@ export function TeamStatusBar({
             {units.length > 1 ? `${unit.name} · ` : ""}
             {unit.onDuty ? t("unit.onDuty") : t("unit.offDuty")}
           </label>
-          {unit.isOwner && (
-            <label className={pill} title={t("unit.sharing")}>
-              <input
-                type="checkbox"
-                className={`${checkBox} !mt-0 size-5`}
-                checked={unit.sharesPocPhone}
-                onChange={(e) => unitActions.sharing(unit.id, e.target.checked)}
-                data-sharing="true"
-              />
-              {t("war.sharingShort")}
-            </label>
-          )}
+          {/* Locked on (27 Nov 2026): shown as a fact, not a switch. */}
+          <span className={pill} title={t("unit.sharing")} data-sharing="fixed">
+            <CheckIcon size={16} />
+            {t("war.sharingShort")}
+          </span>
         </span>
       ))}
     </div>

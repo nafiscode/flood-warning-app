@@ -435,15 +435,33 @@ describe("the one phone number a requester may see", () => {
     expect(log).toHaveLength(1);
   });
 
-  it("gives the organisation's number instead when the team turned sharing off", async () => {
+  it("keeps showing the team's own number when the team asks to turn sharing off", async () => {
+    // 27 Nov 2026: the switch is locked on. Asking for off changes nothing, whoever asks and
+    // however (the function, or a plain update of the row).
     await as(db, { uid: w.yalaRescue.user });
-    await db.query("select authority_set_phone_sharing($1, false)", [w.yalaRescue.id]);
-    await db.query("select * from authority_accept_sos($1)", [w.yalaSos]);
+    const [asked] = await rows<{ authority_set_phone_sharing: boolean }>(
+      db,
+      "select authority_set_phone_sharing($1, false)",
+      [w.yalaRescue.id],
+    );
+    expect(asked!.authority_set_phone_sharing).toBe(true);
+    await asOwner(db);
+    await db.query("update authority_units set poc_phone_to_requester = false where id = $1", [
+      w.yalaRescue.id,
+    ]);
+    const [unit] = await rows<{ poc_phone_to_requester: boolean }>(
+      db,
+      "select poc_phone_to_requester from authority_units where id = $1",
+      [w.yalaRescue.id],
+    );
+    expect(unit!.poc_phone_to_requester).toBe(true);
 
+    await as(db, { uid: w.yalaRescue.user });
+    await db.query("select * from authority_accept_sos($1)", [w.yalaSos]);
     await as(db, { uid: w.requester });
     const r = await one<Reveal>("select * from reveal_responder_phone($1, null)", [w.yalaSos]);
-    expect(r.phone).toBe("073000000");
-    expect(r.is_poc).toBe(false);
+    expect(r.phone).toBe("66830000001");
+    expect(r.is_poc).toBe(true);
   });
 
   it("gives nothing before a team has accepted", async () => {

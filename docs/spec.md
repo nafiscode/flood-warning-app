@@ -56,7 +56,7 @@ It lets government and volunteer responders coordinate rescues without duplicati
 
 | Role | How to join | Sign-in | Summary |
 |---|---|---|---|
-| Visitor | No account | None | View map, alerts, safe places, hotlines. Can send SOS; the phone number is optional. |
+| Visitor | No account | None | View map, alerts, safe places, hotlines. Can send SOS; a phone number is asked for, with one tick for "I can't give one". |
 | User | Self sign-up | LINE Login or phone OTP (equal options) | Everything a visitor can do, plus home and watched places, household profiles, reports, SOS with status, alert notifications. |
 | Authority | Self-registration, then admin verification | Phone OTP (LINE Login as fallback, see below) | Case board for their coverage area, claim and rescue workflow, contact requesters, hero score. |
 | Admin | Added by a super admin or a deputy, or asks from their account page and is approved | Email code or link, or phone OTP | Monitor, issue alerts, verify authorities, escalate and assign SOS, moderate, export. |
@@ -204,8 +204,8 @@ This is the main page, served on MapLibre with the OpenFreeMap basemap.
 ### 4.6 SOS
 **Sending:**
 - SOS button → one confirmation screen → sent. That is two taps at most from home.
-- Location is sent immediately. It is the only required field.
-- Anonymous visitors see a prominent, optional phone field on the confirmation screen, with the hint "Without a number, rescuers can't call you." Sending never waits for it.
+- Location is sent immediately, and is required: GPS, or a pin or a typed place when GPS fails.
+- **The phone number is asked for before sending** (owner, 27 Nov 2026: nine requests in five days arrived with none, so no team could call back). The confirmation screen shows the phone field with the hint "Without a number, rescuers can't call you." and, under it, a tick "I can't give a number (no phone, or I can't be called back)". Send is held back, with the reason in words, until there is a number or the tick. The tick is the one way out, so no request is ever refused for want of a number (safety rule 1). The server accepts a request without a number exactly as before: only this screen asks.
 
 **Optional details** (after sending, not before):
 - what's happening: flood, flash flood, landslide, fire, earthquake/building damage, other, or not sure. Never pre-selected and never required. Defaults to "not sure".
@@ -326,7 +326,7 @@ A case does not wait to be noticed. It is offered to the teams covering its tamb
 - **Navigation.** The case shows the exact point, a copy-coordinates button, and a "Navigate" button that opens Google Maps on the responder's phone with that destination. The card says plainly that road directions do not know which roads are flooded or closed; Jaga's own map with the flood layer is one tap away.
 - Authorities can also reveal other units' POC phones within shared coverage, for coordination. Each reveal is logged.
 - **The requester can call the team that is coming.** Once a unit accepts a case, the sender of that case sees that unit's POC phone, so they reach the person actually on the way. This is the one exception to "personal phone numbers are never public" (safety rule 5), and it is fenced in: only the sender of that case, only while the case is open and claimed by that unit, every reveal written to `audit_log`, and masked with the other personal fields when the case closes.
-  - Each unit has a tick in its settings, **on by default**, worded "When you accept an SOS, the person you are rescuing can see this number." A unit that turns it off shows the organisation's official phone instead.
+  - **Locked on** (owner, 27 Nov 2026; before that a unit could untick it, and two of twelve had). A unit's settings show it as a fact, not a switch, and the database forces `poc_phone_to_requester` to true on every write, so a unit cannot turn it off; the "official phone instead" branch of the reveal remains in the function but nothing can reach it.
 - LINE users can also be messaged through the Official Account.
 
 ### 5.4 Completion and confirmation

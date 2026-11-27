@@ -17,6 +17,8 @@ import {
 } from "@/lib/notices";
 import { FIELD_URL, type MyFieldRescue } from "@/lib/field-rescue";
 import { bankReachedNear } from "@/lib/flood-scene";
+import { installDevice } from "@/lib/install";
+import { useStandalone } from "@/lib/use-install";
 import { REQUESTS_URL, type FieldWaiting, type UnitRequest } from "@/lib/journey";
 import { GAUGES_SUMMARY_URL, type GaugeReading, type GaugeSummary } from "@/lib/map-data";
 import type { Point } from "@/lib/near";
@@ -33,6 +35,8 @@ type StoredGauges = { gauges: GaugeReading[]; checkedAt: number };
 type StoredCases = { cases: KnownCase[]; checkedAt: number };
 type StoredUnits = {
   units: UnitRequest[];
+  /** On a verified team (owner or active member): the install guide is for them (27 Nov). */
+  onTeam?: boolean;
   field?: MyFieldRescue[];
   fieldWaiting?: FieldWaiting | null;
   /** What an admin decided about their own flood reports. */
@@ -89,6 +93,12 @@ export function useNotices(options: {
   const storedGauges = useStored<StoredGauges>("noticeGauges");
   const storedCases = useStored<StoredCases>("noticeCases");
   const storedUnits = useStored<StoredUnits>("noticeUnits");
+  // A verified team's people on a device that does not have Jaga installed (27 Nov 2026).
+  const installed = useStandalone();
+  const teamInstall =
+    storedUnits?.onTeam === true && !installed
+      ? installDevice(navigator.userAgent, navigator.maxTouchPoints ?? 0)
+      : null;
   const read = useStored<string[]>("noticesRead");
   const now = useNow();
   const [syncedRead, setSyncedRead] = useState<string[] | null>(null);
@@ -232,6 +242,7 @@ export function useNotices(options: {
     const load = () => {
       getJson<{
         units: UnitRequest[];
+        onTeam?: boolean;
         fieldWaiting?: FieldWaiting | null;
         reports?: ReportDecision[];
         unitEdits?: UnitEdit[];
@@ -248,6 +259,7 @@ export function useNotices(options: {
           if (!cancelled) {
             writeStored("noticeUnits", {
               units: answer.units,
+              onTeam: answer.onTeam === true,
               field,
               fieldWaiting: answer.fieldWaiting ?? null,
               reports: answer.reports ?? [],
@@ -279,6 +291,7 @@ export function useNotices(options: {
       me,
       cases: storedCases?.cases ?? [],
       units: storedUnits?.units ?? [],
+      teamInstall: teamInstall ? { device: teamInstall } : null,
       field: storedUnits?.field ?? [],
       fieldWaiting: storedUnits?.fieldWaiting ?? null,
       reports: storedUnits?.reports ?? [],
@@ -302,6 +315,7 @@ export function useNotices(options: {
     points,
     storedCases,
     storedUnits,
+    teamInstall,
     now,
     homeLabel,
     areaLabel,

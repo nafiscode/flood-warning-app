@@ -229,6 +229,11 @@
       "text": "Jaga memberi amaran banjir, menghantar permintaan bantuan dan menunjukkan tempat selamat berhampiran, untuk Pattani, Yala, Narathiwat dan Songkhla. Percuma, buka terus tanpa memasang apa-apa.",
       "copied": "Pautan disalin. Tampal dalam sembang.",
       "manual": "Salin pautan ini dan tampal dalam sembang"
+    },
+    "team": {
+      "title": "Pasang Jaga pada peranti ini",
+      "intro": "Pasukan anda hanya mendengar kes yang ditawarkan semasa Jaga dibuka. Dengan Jaga pada skrin utama, atau dipasang pada komputer anda, ia dibuka dengan satu ketikan dan, pada iPhone atau iPad, pemberitahuan baru boleh sampai kepada anda. Ikut langkah di bawah; kurang daripada seminit.",
+      "installed": "Jaga sudah dipasang pada peranti ini. Tiada apa lagi yang perlu dibuat di sini."
     }
   },
   "alert": {
@@ -293,7 +298,7 @@
     "intro": "Tekan butang merah untuk menghantar permintaan. Lokasi anda akan dihantar serta-merta. Tidak perlu log masuk.",
     "send": "Hantar SOS",
     "sending": "Menghantar…",
-    "phoneLabel": "Nombor telefon (pilihan)",
+    "phoneLabel": "Nombor telefon anda",
     "phoneHint": "Tanpa nombor, penyelamat tidak dapat menelefon anda.",
     "location": {
       "locating": "Mencari lokasi…",
@@ -313,7 +318,7 @@
       "title": "Minta bantuan untuk orang di {place}",
       "note": "Beritahu penyelamat tentang orang di sana (pilihan)",
       "sitePhone": "Nombor orang di sana (pilihan)",
-      "yourPhone": "Nombor anda (pilihan)",
+      "yourPhone": "Nombor anda",
       "locationHint": "Lokasi yang dihantar ialah tempat ini, bukan tempat anda berada."
     },
     "sent": {
@@ -514,7 +519,10 @@
         "urgent": "Jika keadaan bertambah buruk, jangan tunggu: tekan butang menyelamat di bawah, atau telefon."
       },
       "soonBody": "Permintaan makanan dan air melalui Jaga akan dibuka pada 25 Oktober 2026. Sebelum itu tiada sesiapa menerima permintaan daripada aplikasi ini. Jika dalam bahaya, telefon segera."
-    }
+    },
+    "noPhone": "Saya tidak dapat memberi nombor (tiada telefon, atau tidak boleh dihubungi balik)",
+    "phoneNeeded": "Masukkan nombor yang boleh dihubungi penyelamat, atau tandakan kotak di bawah. Permintaan anda tidak hilang.",
+    "phoneInvalid": "Nombor ini nampaknya tidak betul. Semak semula, atau tandakan kotak di bawah."
   },
   "hotlines": {
     "title": "Talian kecemasan",
@@ -1171,6 +1179,14 @@
       "body": "{name} sudah sampai atau melebihi tebing.",
       "note": "Ini ukuran, bukan amaran. Amaran hanya dikeluarkan oleh pentadbir Jaga.",
       "watch": "Lihat sungai"
+    },
+    "teamInstall": {
+      "title": "Pasang Jaga pada peranti ini",
+      "body": {
+        "phone": "Apabila ada kes ditawarkan kepada pasukan anda, penggera hanya berbunyi semasa Jaga dibuka pada telefon. Tambah Jaga ke skrin utama supaya boleh dibuka dengan satu ketikan. Panduan animasi menunjukkan caranya.",
+        "computer": "Apabila ada kes ditawarkan kepada pasukan anda, penggera hanya berbunyi semasa Jaga dibuka. Pasang Jaga pada komputer ini supaya dibuka dalam tetingkapnya sendiri. Panduan animasi menunjukkan caranya."
+      },
+      "see": "Tunjukkan caranya"
     }
   },
   "placeFinder": {
@@ -1527,14 +1543,16 @@
       "on": "Bunyi amaran sudah dibuka",
       "none": "Pelayar ini tidak dapat membunyikan amaran. Biarkan halaman ini di depan mata.",
       "openOnly": "Amaran hanya berbunyi semasa halaman ini dibuka.",
-      "ringing": "{count} kes sedang ditawarkan kepada pasukan anda"
+      "ringing": "{count} kes sedang ditawarkan kepada pasukan anda",
+      "banner": "Ketik di sini untuk menghidupkan bunyi penggera. Tanpanya anda tidak akan dengar apabila ada kes ditawarkan kepada pasukan anda."
     },
     "unit": {
       "onDuty": "Bertugas, sedia terima kes",
       "offDuty": "Tidak bertugas",
       "dutyHint": "Jika tidak bertugas, anda masih nampak semua kes dan boleh terima. Cuma pasukan anda ditawarkan paling akhir.",
       "sharing": "Apabila anda terima SOS, orang yang anda selamatkan boleh nampak nombor penyelaras pasukan anda.",
-      "sharingOff": "Mereka akan nampak nombor rasmi organisasi anda."
+      "sharingOff": "Mereka akan nampak nombor rasmi organisasi anda.",
+      "sharingFixed": "Sentiasa dihidupkan. Tidak boleh dimatikan, supaya orang itu boleh menelefon anda semasa anda dalam perjalanan."
     },
     "filter": {
       "open": "Masih terbuka ({count})",

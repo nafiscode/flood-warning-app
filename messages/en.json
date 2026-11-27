@@ -229,6 +229,11 @@
       "text": "Jaga warns of floods, sends requests for help and shows safe places nearby, for Pattani, Yala, Narathiwat and Songkhla. Free, and it opens without installing anything.",
       "copied": "Link copied. Paste it into a chat.",
       "manual": "Copy this link and paste it into a chat"
+    },
+    "team": {
+      "title": "Put Jaga on this device",
+      "intro": "Your team hears a case offered to it only while Jaga is open. With Jaga on your home screen, or installed on your computer, it opens in one tap and, on an iPhone or iPad, notifications can reach you at all. Follow the steps below; they take under a minute.",
+      "installed": "Jaga is installed on this device. Nothing more to do here."
     }
   },
   "alert": {
@@ -293,7 +298,7 @@
     "intro": "Press the red button to send. Your location goes immediately. No sign-in needed.",
     "send": "Send SOS",
     "sending": "Sending…",
-    "phoneLabel": "Phone number (optional)",
+    "phoneLabel": "Your phone number",
     "phoneHint": "Without a number, rescuers can't call you.",
     "location": {
       "locating": "Finding your location…",
@@ -313,7 +318,7 @@
       "title": "Ask for help for someone at {place}",
       "note": "Tell rescuers about the person there (optional)",
       "sitePhone": "Phone of the person there (optional)",
-      "yourPhone": "Your phone (optional)",
+      "yourPhone": "Your phone",
       "locationHint": "The location sent is that place, not where you are."
     },
     "sent": {
@@ -514,7 +519,10 @@
         "urgent": "If things get worse, don't wait: press the rescue button below, or call."
       },
       "soonBody": "Asking for food and water through Jaga opens on 25 October 2026. Until then nobody receives requests from this app. If you are in danger, call straight away."
-    }
+    },
+    "noPhone": "I can't give a number (no phone, or I can't be called back)",
+    "phoneNeeded": "Enter a number rescuers can call, or tick the box below. Your request is not lost.",
+    "phoneInvalid": "That doesn't look like a phone number. Check it, or tick the box below."
   },
   "hotlines": {
     "title": "Hotlines",
@@ -1171,6 +1179,14 @@
       "body": "{name} is at or over its bank.",
       "note": "A measurement, not an alert. Alerts come only from Jaga’s admins.",
       "watch": "Watch the river"
+    },
+    "teamInstall": {
+      "title": "Put Jaga on this device",
+      "body": {
+        "phone": "A case offered to your team rings the alarm only while Jaga is open on a phone. Add Jaga to your home screen so it opens in one tap. An animated guide shows how.",
+        "computer": "A case offered to your team rings the alarm only while Jaga is open. Install Jaga on this computer so it opens from its own window. An animated guide shows how."
+      },
+      "see": "Show me how"
     }
   },
   "placeFinder": {
@@ -1527,14 +1543,16 @@
       "on": "The alarm sound is on",
       "none": "This browser can't play the alarm. Keep this page where you can see it.",
       "openOnly": "The alarm only sounds while this page is open.",
-      "ringing": "{count, plural, one {# case is being offered to your team} other {# cases are being offered to your team}}"
+      "ringing": "{count, plural, one {# case is being offered to your team} other {# cases are being offered to your team}}",
+      "banner": "Tap here to turn on the alarm sound. Without it you will not hear a case offered to your team."
     },
     "unit": {
       "onDuty": "On duty, ready for cases",
       "offDuty": "Off duty",
       "dutyHint": "Off duty, you still see every case and can accept any of them. Your team is only asked last.",
       "sharing": "When you accept an SOS, the person you are rescuing can see your team's contact number.",
-      "sharingOff": "They see your organisation's official number instead."
+      "sharingOff": "They see your organisation's official number instead.",
+      "sharingFixed": "Always on. This cannot be switched off, so the person can call you while you are on your way."
     },
     "filter": {
       "open": "Open ({count})",

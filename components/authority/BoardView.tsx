@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { CaseCard, type CaseActions } from "@/components/authority/CaseCard";
 import { TeamControls } from "@/components/authority/TeamControls";
-import { TriangleIcon } from "@/components/icons";
+import { BellIcon, TriangleIcon } from "@/components/icons";
 import {
   caseState,
   filterCases,
@@ -176,6 +176,21 @@ export function BoardView({
         )}
         {notice && <BoardNoticeLine notice={notice} />}
       </header>
+
+      {/* The sound is on by default (27 Nov): the console arms it on the first tap anywhere, because
+          a browser plays nothing before one. Until then this is the one thing at the top, and it
+          is itself a button for the tap. */}
+      {alarm === "off" && (
+        <button
+          type="button"
+          onClick={onArm}
+          data-alarm-banner="true"
+          className="flex min-h-tap w-full items-center gap-3 rounded-2xl bg-jaga-slate px-4 py-3 text-start text-h3 font-bold text-white"
+        >
+          <BellIcon size={24} />
+          {t("alarm.banner")}
+        </button>
+      )}
 
       {/* The offer itself, said in words as well as in sound: sound is never the only channel. */}
       {ringing > 0 && (

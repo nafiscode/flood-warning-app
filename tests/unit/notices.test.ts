@@ -291,3 +291,30 @@ describe("what has been read", () => {
     expect(keepRead(["alert:a", "alert:gone", "alert:a"], items)).toEqual(["alert:a"]);
   });
 });
+
+describe("the install guide for a team's people (27 Nov 2026)", () => {
+  const withTeam = (teamInstall: { device: "phone" | "computer" } | null) =>
+    buildNotices({
+      rows: [],
+      area: area("940101", "สะบารัง"),
+      me,
+      cases: [],
+      teamInstall,
+      now: NOW,
+      homeLabel: "บ้านของฉัน",
+      areaLabel: (one) => one.nameTh,
+    });
+
+  it("is one item per kind of device, and none when the caller says there is nothing to install", () => {
+    expect(withTeam(null).filter((i) => i.kind === "teamInstall")).toHaveLength(0);
+    const phone = withTeam({ device: "phone" }).filter((i) => i.kind === "teamInstall");
+    expect(phone.map((i) => i.id)).toEqual(["teaminstall:phone"]);
+    expect(withTeam({ device: "computer" })[0]!.id).toBe("teaminstall:computer");
+  });
+
+  it("is never an alert and carries no level", () => {
+    const [item] = withTeam({ device: "phone" });
+    expect(item!.kind).toBe("teamInstall");
+    expect("level" in item!).toBe(false);
+  });
+});

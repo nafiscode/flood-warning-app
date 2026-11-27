@@ -67,15 +67,17 @@ afterEach(() => {
 });
 
 describe("the SOS confirmation screen", () => {
-  it("is one screen with the send button, an optional phone and its hint", async () => {
+  it("is one screen with the send button, the phone field, its way out and its hint", async () => {
     await act(async () => {
       renderWithIntl(<SendSOS projectLine={null} place={null} />);
     });
     const send = document.querySelector("[data-sos-send]")!;
     expect(send.textContent).toContain(th.sos.send);
-    // The phone field is prominent but not required: nothing on this screen is, except location.
+    // The phone is asked for before sending (27 Nov); the tick under it is the only way past it.
     const phone = document.querySelector('input[name="phone"]') as HTMLInputElement;
-    expect(phone.required).toBe(false);
+    expect(phone.disabled).toBe(false);
+    expect(document.querySelector("[data-sos-nophone]")).not.toBeNull();
+    expect(screen.getByText(th.sos.noPhone)).not.toBeNull();
     expect(screen.getByText(th.sos.phoneHint)).not.toBeNull();
     expect(document.body.textContent).toContain("1784");
     expect(document.body.textContent).toContain("1669");
@@ -121,6 +123,53 @@ describe("the SOS confirmation screen", () => {
     expect(openCase()?.id).toBe(remembered[0]?.id);
   });
 
+  it("holds the request back until there is a number or the tick, and says why", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await act(async () => {
+      renderWithIntl(<SendSOS projectLine={null} place={null} />);
+    });
+    await act(async () => {
+      fireEvent.click(document.querySelector("[data-sos-send]")!);
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(document.querySelector("[data-sos-phone-need]")?.textContent).toBe(th.sos.phoneNeeded);
+    // Something typed that is not a number is told apart from nothing typed.
+    fireEvent.change(document.querySelector('input[name="phone"]')!, { target: { value: "abc" } });
+    await act(async () => {
+      fireEvent.click(document.querySelector("[data-sos-send]")!);
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(document.querySelector("[data-sos-phone-need]")?.textContent).toBe(th.sos.phoneInvalid);
+  });
+
+  it("still sends, with no number, once the person ticks that they cannot give one", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "33333333-3333-4333-8333-333333333333",
+          token: "b".repeat(48),
+          merged: false,
+          status: "received",
+          createdAt: new Date().toISOString(),
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await act(async () => {
+      renderWithIntl(<SendSOS projectLine={null} place={null} />);
+    });
+    fireEvent.click(document.querySelector("[data-sos-nophone]")!);
+    await act(async () => {
+      fireEvent.click(document.querySelector("[data-sos-send]")!);
+    });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+    expect(body.phone).toBeNull();
+    expect(body.lat).toBeCloseTo(6.8669);
+  });
+
   it("asks for a pin or an area when GPS fails, instead of sending nothing", async () => {
     withoutGeolocation();
     const fetchMock = vi.fn();
@@ -141,6 +190,7 @@ describe("the SOS confirmation screen", () => {
     await act(async () => {
       renderWithIntl(<SendSOS projectLine="0812345678" place={null} />);
     });
+    fireEvent.click(document.querySelector("[data-sos-nophone]")!);
     await act(async () => {
       fireEvent.click(document.querySelector("[data-sos-send]")!);
     });
@@ -172,6 +222,7 @@ describe("the SOS confirmation screen", () => {
       renderWithIntl(<SendSOS projectLine={null} place={place} />);
     });
     expect(document.body.textContent).toContain("บ้านแม่");
+    fireEvent.click(document.querySelector("[data-sos-nophone]")!);
     await act(async () => {
       fireEvent.click(document.querySelector("[data-sos-send]")!);
     });

@@ -28,7 +28,17 @@ import {
   type SentSos,
 } from "@/lib/sos";
 import { useBattery, useLocation, useQueue } from "@/lib/use-sending";
-import { buttonSecondary, card, formColumn, hint, input, label, notice } from "@/lib/ui";
+import {
+  buttonSecondary,
+  card,
+  checkBox,
+  checkRow,
+  formColumn,
+  hint,
+  input,
+  label,
+  notice,
+} from "@/lib/ui";
 
 type Place = { id: string; label: string; lat: number; lon: number };
 
@@ -42,9 +52,12 @@ type Props = {
 type Phase = "ready" | "sending" | "queued" | "failed";
 
 /**
- * The one confirmation screen between the home screen's SOS button and a sent request: two taps
- * in all (spec 4.6). Nothing here may delay the request - no sign-in, no captcha, no required
- * field but the location, which the screen starts looking for the moment it opens.
+ * The one confirmation screen between the home screen's SOS button and a sent request (spec 4.6).
+ * Nothing here may delay the request - no sign-in, no captcha. Two things are asked for before it
+ * goes (the owner, 27 Nov 2026, after nine requests in five days arrived with no number): where
+ * the person is (which the screen starts looking for the moment it opens) and a number rescuers
+ * can call. The number has one way out, a tick that says "I can't give one": the request is never
+ * refused for want of it (safety rule 1).
  *
  * When the request cannot go out, it is queued on the phone and retried, and this screen shows
  * the SMS fallback and the hotlines instead of an error (safety rules 1, 4 and 7).
@@ -55,6 +68,11 @@ export function SendSOS({ projectLine, place }: Props) {
   const [phase, setPhase] = useState<Phase>("ready");
   const [phone, setPhone] = useState("");
   const [sitePhone, setSitePhone] = useState("");
+  // "I can't give a number": the one way past the phone field, so no request is ever refused.
+  const [noPhone, setNoPhone] = useState(false);
+  // Set by a tap on Send that was held back for the number, so the reason shows only then.
+  const [tried, setTried] = useState(false);
+  const phoneField = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState("");
   const [locationText, setLocationText] = useState("");
   const [pin, setPin] = useState<{ lat: number; lon: number } | null>(null);
@@ -74,6 +92,7 @@ export function SendSOS({ projectLine, place }: Props) {
   // While a request waits in the queue this screen keeps trying and watches for the answer.
   const queue = useQueue({ poll: phase === "queued" });
   const sent = useRef(false);
+  const phoneOk = noPhone || normalizePhone(phone) !== null;
 
   const mine = useMemo(
     () => (cases ?? []).find((c) => OPEN_STATUSES.includes(c.status)) ?? null,
@@ -99,6 +118,13 @@ export function SendSOS({ projectLine, place }: Props) {
       setShowMap(true);
       return;
     }
+    // A number rescuers can call, or the tick saying there is none. Typed but not a number at all
+    // counts as missing: the person is told, and the tick is right there under it.
+    if (!phoneOk) {
+      setTried(true);
+      phoneField.current?.focus();
+      return;
+    }
     sent.current = true;
     setPhase("sending");
     const body: SendSos = {
@@ -109,7 +135,7 @@ export function SendSOS({ projectLine, place }: Props) {
       deviceId: deviceId(),
       // This phone's own open case, if any: a repeat then updates it (submit_sos).
       caseToken: openCase()?.token ?? null,
-      phone: normalizePhone(phone) ?? (phone.trim() === "" ? null : phone.trim()),
+      phone: noPhone ? null : normalizePhone(phone),
       onBehalf: !!place,
       onBehalfNote: place ? note.trim() || place.label : null,
       onSitePhone: place ? normalizePhone(sitePhone) : null,
@@ -144,7 +170,20 @@ export function SendSOS({ projectLine, place }: Props) {
         setPhase("failed");
       }
     }
-  }, [point, place, gps.accuracy, locationText, phone, sitePhone, note, battery, cases, router]);
+  }, [
+    point,
+    place,
+    gps.accuracy,
+    locationText,
+    phone,
+    phoneOk,
+    noPhone,
+    sitePhone,
+    note,
+    battery,
+    cases,
+    router,
+  ]);
 
   const smsHref =
     projectLine && point
@@ -285,16 +324,35 @@ export function SendSOS({ projectLine, place }: Props) {
         <label className="flex flex-col gap-2">
           <span className={label}>{place ? t("forPlace.yourPhone") : t("phoneLabel")}</span>
           <input
+            ref={phoneField}
             type="tel"
             inputMode="tel"
             autoComplete="tel"
             name="phone"
             value={phone}
+            disabled={noPhone}
+            aria-invalid={tried && !phoneOk}
+            aria-describedby="sos-phone-need"
             onChange={(event) => setPhone(event.target.value)}
             className={input}
           />
           <span className="font-medium text-jaga-ink">{t("phoneHint")}</span>
         </label>
+        <label className={checkRow}>
+          <input
+            type="checkbox"
+            className={checkBox}
+            checked={noPhone}
+            onChange={(event) => setNoPhone(event.target.checked)}
+            data-sos-nophone="true"
+          />
+          <span className="font-medium">{t("noPhone")}</span>
+        </label>
+        {tried && !phoneOk && (
+          <p id="sos-phone-need" role="alert" className={notice} data-sos-phone-need="true">
+            {phone.trim() === "" ? t("phoneNeeded") : t("phoneInvalid")}
+          </p>
+        )}
         {place && (
           <>
             <label className="flex flex-col gap-2">

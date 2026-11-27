@@ -69,21 +69,15 @@ export function TeamControls({
               <span className={hint}>{t("unit.dutyHint")}</span>
             </span>
           </label>
-          {unit.isOwner && (
-            <label className={checkRow}>
-              <input
-                type="checkbox"
-                className={checkBox}
-                checked={unit.sharesPocPhone}
-                onChange={(e) => unitActions.sharing(unit.id, e.target.checked)}
-                data-sharing="true"
-              />
-              <span className="flex flex-col">
-                <span className="font-medium">{t("unit.sharing")}</span>
-                {!unit.sharesPocPhone && <span className={hint}>{t("unit.sharingOff")}</span>}
-              </span>
-            </label>
-          )}
+          {/* Locked on (27 Nov 2026): once a team accepts, the person it is rescuing can always
+              call the team's number. A line, not a switch. */}
+          <p className="flex items-start gap-2" data-sharing="fixed">
+            <CheckIcon size={20} />
+            <span className="flex flex-col">
+              <span className="font-medium">{t("unit.sharing")}</span>
+              <span className={hint}>{t("unit.sharingFixed")}</span>
+            </span>
+          </p>
         </section>
       ))}
     </>

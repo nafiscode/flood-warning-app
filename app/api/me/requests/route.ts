@@ -97,7 +97,20 @@ export async function GET() {
           .filter((r): r is NoticeRow => r !== null),
       }
     : null;
+  // On a verified team, as its owner or as an active member (27 Nov 2026): the bell then carries
+  // the install guide on a device that does not have Jaga installed. A yes or no, nothing more.
+  let onTeam = ((data ?? []) as Record<string, unknown>[]).some((u) => u.status === "verified");
+  if (!onTeam) {
+    const member = await supabase
+      .from("authority_unit_members")
+      .select("unit_id")
+      .eq("user_id", user)
+      .eq("status", "active")
+      .limit(1);
+    onTeam = (member.data?.length ?? 0) > 0;
+  }
   return answer({
+    onTeam,
     admin,
     unitEdits,
     fieldWaiting,

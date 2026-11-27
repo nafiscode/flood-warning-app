@@ -159,6 +159,19 @@ export function Console({
     void arm().then((ok) => setAlarm(ok ? "on" : "none"));
   }, []);
 
+  // On by default (27 Nov 2026): a browser plays nothing before a tap, so the first tap anywhere on
+  // the console - on a case, a switch, the page - arms the alarm. Until then the banner at the top
+  // of the board asks for that tap. Nothing is armed without one, and that cannot be forced.
+  useEffect(() => {
+    if (alarm !== "off") return;
+    const first = () => onArm();
+    const events = ["click", "touchend", "keydown"] as const;
+    for (const type of events) document.addEventListener(type, first, { once: true, capture: true });
+    return () => {
+      for (const type of events) document.removeEventListener(type, first, { capture: true });
+    };
+  }, [alarm, onArm]);
+
   const send = useCallback(
     (body: Record<string, unknown>, key: string, after?: (answer: Answer) => void) => {
       setBusy(key);

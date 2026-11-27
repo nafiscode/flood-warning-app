@@ -3,7 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { AlertBadge } from "@/components/alerts/AlertBadge";
 import { DrillMark } from "@/components/alerts/DrillMark";
-import { ClockIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
+import { ClockIcon, InstallIcon, LifebuoyIcon, MegaphoneIcon } from "@/components/icons";
 import { BankSceneButton } from "@/components/map/BankScene";
 import { ShareJagaButton } from "@/components/ShareJagaButton";
 import { Link } from "@/i18n/navigation";
@@ -50,6 +50,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
           <span className="inline-flex items-center gap-2 font-bold text-jaga-ink">
             <MegaphoneIcon size={24} />
             {t("announcement")}
+          </span>
+        ) : item.kind === "teamInstall" ? (
+          <span className="inline-flex items-center gap-2 font-bold text-jaga-ink">
+            <InstallIcon size={24} />
+            {t("teamInstall.title")}
           </span>
         ) : (
           <span className="inline-flex items-center gap-2 font-bold text-jaga-ink">
@@ -112,6 +117,7 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
         </>
       )}
       {item.kind === "field" && <p>{t(`field.${item.event}`)}</p>}
+      {item.kind === "teamInstall" && <p>{t(`teamInstall.body.${item.device}`)}</p>}
       {item.kind === "report" && (
         <p>
           {t(`report.${item.event}`, {
@@ -231,6 +237,11 @@ function Item({ item, unread, locale }: { item: NoticeItem; unread: boolean; loc
             className="underline"
           >
             {t(item.status === "pending" ? "auto.act" : "auto.see")}
+          </Link>
+        )}
+        {item.kind === "teamInstall" && (
+          <Link href="/authority/install" prefetch={false} className="underline" data-team-install>
+            {t("teamInstall.see")}
           </Link>
         )}
         {item.kind === "field" && (

@@ -71,6 +71,7 @@ test.describe("airplane mode (A9, safety rule 7)", () => {
     await page.locator("#area-district").selectOption("9401");
     await page.locator("#area-tambon").selectOption(BANA.code);
     await page.getByRole("button", { name: "ใช้พื้นที่นี้" }).click();
+    await page.locator("[data-sos-nophone]").check();
     await page.locator("[data-sos-send]").click();
     // Queued on the phone, to go out when the signal is back; the hotlines are there to call.
     await expect(page.locator('[data-sos-state="queued"]')).toBeVisible();

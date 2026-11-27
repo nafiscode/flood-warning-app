@@ -21,8 +21,8 @@ Read the relevant doc before starting a task. Don't load all of them every time.
 ## Non-negotiable safety rules
 1. Never block or delay an SOS.
    - No extra login wall, no verification step.
-   - The only required field is location (GPS, or a manual pin/text if GPS fails).
-   - Anonymous SOS is allowed. The phone number is optional but shown prominently, with the hint "Without a number, rescuers can't call you."
+   - Required before sending: location (GPS, or a manual pin/text if GPS fails) and a phone number, or a tick "I can't give a number" (owner, 27 Nov 2026). The tick is the one way out, so nothing is ever refused for want of a number; the server still accepts a request without one.
+   - Anonymous SOS is allowed. The phone field is shown prominently, with the hint "Without a number, rescuers can't call you."
    - Never reject an SOS, even when rate-limited. While a case is open, a repeat SOS from the same device or phone merges into that case as an update. Above a threshold, new cases are flagged `suspected_spam` for admin review (admins can bulk-dismiss; authorities see the flag). They are still delivered.
    - When offline, queue the SOS and retry, and offer SMS and call fallbacks.
 2. Only humans publish alerts, with one exception the owner chose on 14 Oct 2026. Code may compute signals and suggest a level.
@@ -37,7 +37,7 @@ Read the relevant doc before starting a task. Don't load all of them every time.
    - A **dam operator** is not a team in the field (9 Nov 2026): a unit whose only capability is `dam` gets none of these reads, whatever its coverage area says - no SOS point or phone, no reporter, no vulnerable household, no case board. Its one power is sending its own dam's release notice, and only after an admin ties it to that dam. A unit that runs boats as well as a dam keeps everything a team has.
    - A verified team's people count as the team (24 Oct 2026): the owner and active dispatchers read what the team may read. A **field member** reads only the exact point and the requester's phone of a case **assigned to them**, until it closes; never vulnerable-household data. Every reveal is logged under their own account.
    - Personal phone numbers are never public. An organization's official phone is public only if the org opts in (`organizations.public_contact_opt_in`, default false).
-   - One exception, and only this one: the POC phone of the unit that has **accepted** an SOS is shown to the sender of that case while it is open, so they can reach the team on its way (`docs/spec.md` 5.3). The unit can turn it off, and every reveal is logged like any other.
+   - One exception, and only this one: the POC phone of the unit that has **accepted** an SOS is shown to the sender of that case while it is open, so they can reach the team on its way (`docs/spec.md` 5.3). It is locked on for every unit (27 Nov 2026), and every reveal is logged like any other.
    - Authorities may read other units' POC phones only within shared coverage.
    - Every reveal of a phone number (including POC phones) or vulnerable-household record is written to `audit_log`.
 6. The public map shows only aggregated or moderated data. Never show exact SOS points, rescue-team positions, or reporter identities.
