@@ -181,7 +181,10 @@ describe("the push to the super admin", () => {
 
   it("hands the readings to the server's token, and writes nothing to alerts", async () => {
     await asOwner(db);
-    await add();
+    // The owner is not an admin, so the admin function would refuse it: write the row directly.
+    await db.query(
+      "insert into public.plan_readings (service, meter, value) values ('vercel', 'active_cpu', 3)",
+    );
     const before = await rows<{ n: number }>(db, "select count(*)::int n from public.alerts");
     const got = await rows<{ meter: string }>(db, "select * from public.push_plan_readings($1)", [
       await token(),
