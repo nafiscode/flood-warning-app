@@ -14,10 +14,17 @@ import type { MapData } from "@/lib/map-data";
 import { useOnPhone, useStored } from "@/lib/phone-store";
 import { publicCoverageRows, type CoverageRow, type PublicCoverageRow } from "@/lib/coverage";
 import { SEA_URL, type SeaData } from "@/lib/sea";
+import {
+  SOS_PULSE_POLL_MS,
+  SOS_PULSE_URL,
+  freshPulseRows,
+  type SosPulse,
+} from "@/lib/sos-pulse";
 import { satelliteUrl, type SatelliteFlood, type SatelliteWindow } from "@/lib/satellite-flood";
 import {
   useFetched,
   useLiveGauges,
+  useLivePolled,
   useMyPlaces,
   useMyRole,
   useNow,
@@ -120,6 +127,14 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
   const chosen = useStored<Area>("area");
   const area = me?.signedIn && me.home ? me.home : chosen;
   const now = useNow();
+  // Where a request for rescue is waiting and no team has taken it (owner, 27 Nov 2026): asked
+  // for again every minute while the map is open and in front. A copy older than five minutes is
+  // dropped, so a signal that has probably been answered is not left lit (lib/sos-pulse.ts).
+  const pulse = useLivePolled<SosPulse>(SOS_PULSE_URL, SOS_PULSE_POLL_MS);
+  const sosPulse = useMemo(
+    () => freshPulseRows(pulse.data, pulse.askedAt, now),
+    [pulse.data, pulse.askedAt, now],
+  );
   return (
     <DashboardView
       status={status}
@@ -137,6 +152,7 @@ export function Dashboard({ transparency }: { transparency: boolean }) {
       hazardTiles={hazardSourceUrl(tiles, manifest.data)}
       riverTiles={riverSourceUrl(tiles, manifest.data)}
       coverage={coverageRows}
+      sosPulse={sosPulse}
       satelliteDays={satelliteDays}
       onSatelliteDays={setSatelliteDays}
       satellite={satellite.data}

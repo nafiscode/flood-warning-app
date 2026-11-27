@@ -968,6 +968,17 @@
       "choose": "Choose how to view",
       "asMeters": "Show as meters",
       "asDetails": "Show full details"
+    },
+    "sosPulse": {
+      "badge": "SOS",
+      "title": "Someone is asking for rescue and no team has taken it yet",
+      "line": "{place} · {count, plural, one {# request} other {# requests}} · waiting {time}",
+      "timeHm": "{hours} h {minutes} min",
+      "timeM": "{minutes} min",
+      "timeNew": "under 10 min",
+      "what": "The request has reached Jaga's admins. The map shows only the area, never the person's place or number. If you can help safely, call 1784 first.",
+      "call": "Call {number}",
+      "mapWord": "SOS · no team yet"
     }
   },
   "tmd": {

@@ -596,6 +596,7 @@ These tables are created in phase A11 only, not with the initial schema.
 | Place checks on a safe place (4.3) | the latest one's time and standing, and counts of what residents said, never who | same, and may send a check of their own (signed in, rate-limited); it writes the status only where no team covers the tambon | read the checks on the places the unit covers; write one for a place it covers | read all; write one for any place (every check logged) |
 | Exact report location and reporter | none | own | read | read |
 | SOS exact location, details, phone | none | own | read (phone reveal logged) | read (logged) |
+| SOS waiting with no team on it (27 Nov) | per tambon only: a count and the oldest wait to ten minutes, as a pulsing outline and a line above the map; never a point, phone or sender | own | read | read |
 | SOS suspected-spam flag | none | none | read | read/write (bulk dismiss, logged) |
 | Watched places and the stored person's name and phone | none | own (read/write/delete) | none | none |
 | Households and vulnerable data | none | own (read/write/delete) | read only with rescue or coordination capability (logged) | read (logged) |

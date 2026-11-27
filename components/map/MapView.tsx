@@ -68,6 +68,12 @@ import {
 import { placeIcon, placeIconName, PLACE_ICON_RATIO } from "@/lib/place-icons";
 import { localName } from "@/lib/places";
 import {
+  SOS_PULSE_COLOR,
+  SOS_PULSE_FILL,
+  SOS_PULSE_LABEL,
+  SOS_PULSE_LINE,
+} from "@/lib/sos-pulse";
+import {
   GAUGE_IMAGE_RATIO,
   gaugeImage,
   gaugeImageName,
@@ -216,6 +222,13 @@ type Props = {
   coverageGaps?: readonly string[];
   coverageMine?: readonly string[];
   showCoverage?: boolean;
+  /**
+   * The tambons where a request for rescue is waiting and no team holds it (owner, 27 Nov 2026):
+   * drawn with a pulsing red outline and the words in `sosPulseWord`. A tambon, never a point
+   * (safety rule 6). Empty when nothing is waiting, and then nothing is drawn.
+   */
+  sosPulse?: readonly string[];
+  sosPulseWord?: string;
   /** The basemap under our layers (lib/map.ts). */
   basemap?: Basemap;
   /** 3D: the ground raised and the map tilted (lib/map.ts, setScene). 2D when left out. */
@@ -527,6 +540,8 @@ export function MapView({
   coverageGaps = [],
   coverageMine = [],
   showCoverage = false,
+  sosPulse = [],
+  sosPulseWord = "SOS",
   basemap = "streets",
   scene = false,
   fill = false,
@@ -1117,6 +1132,60 @@ export function MapView({
         if (!m.getLayer(ALERT_FILL)) {
           m.addLayer({ id: ALERT_FILL, type: "fill", source: TAMBON_SOURCE, paint: {} }, above);
         }
+        /*
+         * A request for rescue waiting with no team on it (owner, 27 Nov 2026): the tambon's own
+         * outline pulses red with the words "SOS - no team yet" at its middle. The outline of the
+         * AREA, not a point: the public map never shows where a person is (safety rule 6). Words,
+         * outline and fill together, so it is never colour alone, and it is held still for a
+         * reader who asked for less motion (the effect below). It sits above the alert colours
+         * and says nothing about the alert level.
+         */
+        if (!m.getLayer(SOS_PULSE_FILL)) {
+          m.addLayer(
+            {
+              id: SOS_PULSE_FILL,
+              type: "fill",
+              source: TAMBON_SOURCE,
+              paint: { "fill-color": SOS_PULSE_COLOR, "fill-opacity": 0.22 },
+              filter: ["in", ["get", "code"], ["literal", []]],
+            },
+            above,
+          );
+          m.addLayer(
+            {
+              id: SOS_PULSE_LINE,
+              type: "line",
+              source: TAMBON_SOURCE,
+              paint: { "line-color": SOS_PULSE_COLOR, "line-width": 4, "line-opacity": 0.95 },
+              filter: ["in", ["get", "code"], ["literal", []]],
+            },
+            above,
+          );
+          m.addLayer({
+            id: SOS_PULSE_LABEL,
+            type: "symbol",
+            source: TAMBON_SOURCE,
+            filter: ["in", ["get", "code"], ["literal", []]],
+            layout: {
+              "text-field": "SOS",
+              "text-font": ["Noto Sans Bold"],
+              "text-size": 14,
+              "text-max-width": 9,
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+            },
+            paint: {
+              "text-color": SOS_PULSE_COLOR,
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 2.4,
+            },
+          });
+        }
+        const sosFilter = ["in", ["get", "code"], ["literal", [...sosPulse]]] as unknown as never;
+        for (const id of [SOS_PULSE_FILL, SOS_PULSE_LINE, SOS_PULSE_LABEL]) {
+          m.setFilter(id, sosFilter);
+        }
+        m.setLayoutProperty(SOS_PULSE_LABEL, "text-field", sosPulseWord);
         if (!m.getLayer(REPORTS)) {
           m.addLayer(
             {
@@ -1838,6 +1907,8 @@ export function MapView({
     coverageGaps,
     coverageMine,
     showCoverage,
+    sosPulse,
+    sosPulseWord,
     satelliteData,
     seaData,
     areaNameData,
@@ -1845,6 +1916,28 @@ export function MapView({
     overWord,
     seaShutWord,
   ]);
+
+  /*
+   * The SOS pulse breathes: the outline's width and the fill's weight rise and fall about once
+   * every 1.6 seconds, far below the three flashes a second that can harm a photosensitive reader.
+   * Asked for less motion, it is held at one steady weight and the words and outline still say it.
+   */
+  const pulsing = sosPulse.length > 0;
+  useEffect(() => {
+    const m = map.current;
+    if (!m || state !== "ready" || !pulsing) return;
+    let frame = 0;
+    const tick = () => {
+      if (m.getLayer(SOS_PULSE_LINE)) {
+        const wave = reducedMotion() ? 0.5 : (Math.sin(Date.now() / 255) + 1) / 2;
+        m.setPaintProperty(SOS_PULSE_LINE, "line-width", 2.5 + wave * 4.5);
+        m.setPaintProperty(SOS_PULSE_FILL, "fill-opacity", 0.12 + wave * 0.2);
+      }
+      if (!reducedMotion()) frame = window.setTimeout(tick, 100);
+    };
+    tick();
+    return () => window.clearTimeout(frame);
+  }, [pulsing, state]);
 
   useEffect(() => {
     if (!container.current) return;

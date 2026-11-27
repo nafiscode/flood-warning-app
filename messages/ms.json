@@ -968,6 +968,17 @@
       "choose": "Pilih cara melihat",
       "asMeters": "Tunjukkan sebagai meter",
       "asDetails": "Tunjukkan semua butiran"
+    },
+    "sosPulse": {
+      "badge": "SOS",
+      "title": "Ada orang meminta bantuan dan belum ada pasukan yang menerimanya",
+      "line": "{place} · {count} permintaan · menunggu {time}",
+      "timeHm": "{hours} j {minutes} min",
+      "timeM": "{minutes} min",
+      "timeNew": "kurang 10 min",
+      "what": "Permintaan ini sudah sampai kepada admin Jaga. Peta hanya menunjukkan kawasan, bukan tempat atau nombor orang itu. Jika anda boleh membantu dengan selamat, hubungi 1784 dahulu.",
+      "call": "Hubungi {number}",
+      "mapWord": "SOS · belum ada pasukan"
     }
   },
   "tmd": {

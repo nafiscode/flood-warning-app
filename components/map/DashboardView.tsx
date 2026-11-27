@@ -22,6 +22,8 @@ import {
   type Basemap,
 } from "@/lib/map";
 import { HOUSE } from "@/lib/place-icons";
+import { pulseCodes, type SosPulseRow } from "@/lib/sos-pulse";
+import { SosPulseNotice } from "./SosPulseNotice";
 import {
   BackIcon,
   CrossIcon,
@@ -203,6 +205,8 @@ export type DashboardViewProps = {
    * null or empty means no switch is shown, so visitors and ordinary users never see it.
    */
   coverage?: CoverageRow[] | null;
+  /** Tambons where a request for rescue waits with no team on it (lib/sos-pulse.ts). */
+  sosPulse?: SosPulseRow[];
   /**
    * Flood seen by satellite (GISTDA): the window asked for (null = switched off), the answer
    * and how the asking went. Left out, the switch is not offered.
@@ -828,6 +832,7 @@ export function DashboardView(props: DashboardViewProps) {
    * everyone, the fuller rows for a verified team or admin (safety rules 5 and 6).
    */
   const [coverageOn, setCoverageOn] = useState(false);
+  const sosCodes = useMemo(() => pulseCodes(props.sosPulse), [props.sosPulse]);
   const coverageOffered = (props.coverage?.length ?? 0) > 0;
   const coverageCovered = useMemo(
     () => (props.coverage ?? []).filter((r) => !isGap(r)).map((r) => r.tambon),
@@ -2484,6 +2489,8 @@ export function DashboardView(props: DashboardViewProps) {
                     />
                   </div>
                 )}
+                {/* Where somebody is asking for rescue and no team has taken it yet (owner, 27 Nov). */}
+                <SosPulseNotice rows={props.sosPulse ?? []} />
                 {damsOnMyPath.map(({ dam, hit }) => (
                   <DamNotice
                     key={dam.code}
@@ -2792,6 +2799,8 @@ export function DashboardView(props: DashboardViewProps) {
                     coverageGaps={coverageGaps}
                     coverageMine={coverageMine}
                     showCoverage={coverageOffered && coverageOn}
+                    sosPulse={sosCodes}
+                    sosPulseWord={t("sosPulse.mapWord")}
                     sea={seaMarks}
                     satellite={
                       props.satelliteDays && props.satellite?.days === props.satelliteDays

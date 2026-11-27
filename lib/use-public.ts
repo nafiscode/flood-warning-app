@@ -418,3 +418,47 @@ export function useLiveGauges(url: string): { data: GaugeData | null; askedAt: n
   }, [url]);
   return state;
 }
+
+/**
+ * One public answer asked for again and again while the page is open and in front: the first ask
+ * at once, then every `intervalMs`, and again when the page comes back to the front after a
+ * minute. A failed ask keeps the last answer and its time, so the reader of this hook can say how
+ * old it is and drop it (lib/sos-pulse.ts does, after five minutes). Nothing is asked for while
+ * the page is hidden. Realtime is for the consoles only (CLAUDE.md), so this is a poll.
+ */
+export function useLivePolled<T>(
+  url: string | null,
+  intervalMs: number,
+): { data: T | null; askedAt: number } {
+  const [state, setState] = useState<{ data: T | null; askedAt: number }>({
+    data: null,
+    askedAt: 0,
+  });
+  useEffect(() => {
+    if (!url) return;
+    let cancelled = false;
+    let last = 0;
+    const ask = () => {
+      if (document.visibilityState !== "visible") return;
+      last = Date.now();
+      getJson<T>(url).then(
+        (data) => {
+          if (!cancelled) setState({ data, askedAt: Date.now() });
+        },
+        () => {},
+      );
+    };
+    ask();
+    const timer = window.setInterval(ask, intervalMs);
+    const back = () => {
+      if (Date.now() - last > 60_000) ask();
+    };
+    document.addEventListener("visibilitychange", back);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", back);
+    };
+  }, [url, intervalMs]);
+  return state;
+}
