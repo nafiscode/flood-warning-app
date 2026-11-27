@@ -2227,7 +2227,8 @@
       "overdue": "Belum ada sesiapa ambil, {time}",
       "waiting": "Menunggu diambil, {time}",
       "working": "{unit} sudah ambil",
-      "closed": "Sudah ditutup"
+      "closed": "Sudah ditutup",
+      "stale": "Tiada khabar lebih 72 jam"
     },
     "gate": {
       "badge": "Buat sekarang",
@@ -2266,7 +2267,10 @@
       "noneWorking": "Belum ada kes yang diambil unit.",
       "closed": "Sudah ditutup ({count})",
       "closedNote": "Sudah ditolong, pengirim kata sudah selamat, atau kes dihentikan.",
-      "noneClosed": "Belum ada kes ditutup."
+      "noneClosed": "Belum ada kes ditutup.",
+      "stale": "Lebih 72 jam ({count})",
+      "staleNote": "Masih terbuka, tiada unit mengambilnya, dan penghantar tidak dihubungi lebih {hours} jam. Ia tidak lagi dikira kerja. Tutup yang sudah lapuk; serahkan kepada unit jika mungkin masih benar.",
+      "noneStale": "Tiada kes lebih 72 jam."
     },
     "case": {
       "noArea": "Tambon tak diketahui",
@@ -2325,7 +2329,9 @@
       "spam_dismissed": "Bendera dibuang",
       "details_added": "Butiran ditambah",
       "media_added": "Gambar atau suara ditambah",
-      "location_added": "Lokasi dikemas kini"
+      "location_added": "Lokasi dikemas kini",
+      "cleared_obsolete": "Admin menutupnya sebagai lapuk",
+      "reopened_by_admin": "Admin membukanya semula"
     },
     "assign": {
       "title": "Serah kepada unit mana",
@@ -2406,7 +2412,10 @@
       "spam": "Bendera sudah diberi.",
       "spamDismissed": "Bendera sudah dibuang.",
       "damSent": "Dicatat: amaran dihantar",
-      "damDismissed": "Dicatat: tiada amaran dihantar"
+      "damDismissed": "Dicatat: tiada amaran dihantar",
+      "cleared": "Sudah ditutup. Ia di bawah Ditutup dan boleh dibuka semula.",
+      "clearedAll": "Sudah ditutup. Ia di bawah Ditutup dan boleh dibuka semula.",
+      "reopened": "Dibuka semula. Ia kembali di papan."
     },
     "error": {
       "save": "Tak jadi. Cuba lagi.",
@@ -2415,7 +2424,8 @@
       "notCovered": "Unit ini tidak menjaga tambon kes ini.",
       "unverified": "Unit ini belum disahkan.",
       "reason": "Sebab wajib diisi.",
-      "forbidden": "Halaman ini untuk admin sahaja."
+      "forbidden": "Halaman ini untuk admin sahaja.",
+      "notStale": "Penghantar menghubungi dalam masa 72 jam lalu, jadi kes ini tidak boleh ditutup."
     },
     "dam": {
       "toReview": "Menunggu keputusan",
@@ -2484,6 +2494,17 @@
     "supplies": {
       "mark": "Makanan dan air",
       "open": "Permintaan makanan dan air yang masih terbuka: {count}"
+    },
+    "stale": {
+      "clear": "Tutup sebagai lapuk",
+      "clearTitle": "Tutup kes ini sebagai lapuk",
+      "clearNote": "Kes ditutup dan kekal dalam rekod. Guna apabila tiada khabar daripada penghantar selama {hours} jam. Boleh dibuka semula daripada Ditutup.",
+      "why": "Sebab (wajib)",
+      "reasonDefault": "Tiada khabar daripada penghantar selama {hours} jam, tiada unit mengambilnya",
+      "confirm": "Tutup kes",
+      "allWhy": "Sebab untuk semua {count} kes (wajib)",
+      "allConfirm": "Tutup semua {count} sebagai lapuk",
+      "reopen": "Buka semula"
     }
   },
   "impactPublic": {

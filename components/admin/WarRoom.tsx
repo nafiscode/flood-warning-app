@@ -14,6 +14,7 @@ import { hint } from "@/lib/ui";
 import {
   splitMinutes,
   triage,
+  waitingMinutes,
   type PeoplePage,
   type WarRoomBoard,
   type WarRoomMapData,
@@ -123,9 +124,12 @@ export function WarRoom({
   const o = board.overview;
   const bands = triage(board.cases, now, o.unclaimedMinutes);
   const open = bands.overdue.length + bands.waiting.length + bands.working.length;
-  const oldest = o.oldestWaitingAt
-    ? Math.max(0, Math.floor((now - Date.parse(o.oldestWaitingAt)) / 60_000))
-    : 0;
+  // The longest wait among cases that are still work. The database's own "oldest waiting"
+  // would still count a case past 72 hours, so it is not used here.
+  const oldest = Math.max(
+    0,
+    ...[...bands.overdue, ...bands.waiting].map((c) => waitingMinutes(c, now)),
+  );
   const tab = (key: WarRoomView, text: string) => {
     const className = `inline-flex min-h-tap items-center rounded-xl px-4 font-bold ${
       view === key

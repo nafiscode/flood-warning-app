@@ -15,7 +15,15 @@ import {
   revealSosPhone,
 } from "@/lib/admin-board";
 import { warRoomMessages } from "@/lib/messages";
-import { assignCase, judgeSpam, noteCase, releaseCase, reviewDamNotice } from "./actions";
+import {
+  assignCase,
+  clearStaleCase,
+  judgeSpam,
+  noteCase,
+  releaseCase,
+  reopenCase,
+  reviewDamNotice,
+} from "./actions";
 
 export async function generateMetadata({
   params,
@@ -70,6 +78,7 @@ export default async function WarRoomPage({
   const release = id(query.release);
   const note = id(query.note);
   const spam = id(query.spam);
+  const clear = id(query.clear);
   const search = one(query.q).slice(0, 80);
   const offset = Math.max(0, Math.min(5000, Number(one(query.from)) || 0));
 
@@ -95,7 +104,9 @@ export default async function WarRoomPage({
       ? { kind: "note", caseId: note }
       : spam
         ? { kind: "spam", caseId: spam }
-        : null;
+        : clear
+          ? { kind: "clear", caseId: clear }
+          : null;
 
   return (
     <NextIntlClientProvider messages={warRoomMessages(await getMessages())}>
@@ -120,6 +131,8 @@ export default async function WarRoomPage({
             release: releaseCase.bind(null, locale),
             note: noteCase.bind(null, locale),
             spam: judgeSpam.bind(null, locale),
+            clear: clearStaleCase.bind(null, locale),
+            reopen: reopenCase.bind(null, locale),
           }}
           reviewDam={reviewDamNotice.bind(null, locale)}
           done={one(query.done) || null}

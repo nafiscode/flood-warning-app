@@ -60,7 +60,13 @@ const point = (
 });
 
 /** The case states as a number the map can switch on: 0 answered by nobody, 1 held, 2 closed. */
-const STATE_CODE: Record<CaseState, number> = { overdue: 0, waiting: 0, working: 1, closed: 2 };
+const STATE_CODE: Record<CaseState, number> = {
+  overdue: 0,
+  waiting: 0,
+  working: 1,
+  stale: 2,
+  closed: 2,
+};
 
 function collections(
   cases: SosCase[],

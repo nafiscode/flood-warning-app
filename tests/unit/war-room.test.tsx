@@ -126,6 +126,30 @@ describe("the state of a case", () => {
   });
 });
 
+describe("a case nobody has heard from in 72 hours", () => {
+  it("leaves the work list for its own fold, and never while a unit holds it", () => {
+    const old = a("1", { createdAt: ago(80 * 60), stale: true });
+    expect(caseState(old, NOW, 15)).toBe("stale");
+    expect(caseState({ ...old, unitId: "u" }, NOW, 15)).toBe("working");
+    expect(caseState({ ...old, status: "dismissed", closedAt: ago(1) }, NOW, 15)).toBe("closed");
+    // Age alone does not do it: the database says who is stale (a re-send keeps a case alive).
+    expect(caseState(a("2", { createdAt: ago(80 * 60) }), NOW, 15)).toBe("overdue");
+  });
+
+  it("is sorted after the work and before the closed ones, and kept out of the alarm", () => {
+    const board = [
+      a("closed", { status: "rescued", closedAt: ago(5) }),
+      a("stale", { createdAt: ago(90 * 60), stale: true }),
+      a("held", { unitId: "u", createdAt: ago(30) }),
+      a("late", { createdAt: ago(40) }),
+    ];
+    expect(sortCases(board, NOW, 15).map((c) => c.id)).toEqual(["late", "held", "stale", "closed"]);
+    const bands = triage(board, NOW, 15);
+    expect(bands.stale.map((c) => c.id)).toEqual(["stale"]);
+    expect(bands.overdue.map((c) => c.id)).toEqual(["late"]);
+  });
+});
+
 describe("the order of the board", () => {
   it("puts the longest unanswered case first, then the rest, then what is done", () => {
     const cases = [

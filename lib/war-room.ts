@@ -58,6 +58,12 @@ export type SosCase = {
   needs: string[];
   needsNote: string | null;
   suppliesLeft: string | null;
+  /**
+   * Open, no unit on it, and the sender not heard from for 72 hours (the database decides:
+   * admin_sos_stale_ids). Such a case is no longer work; it waits in its own fold for an admin
+   * to clear it. Absent on the example page.
+   */
+  stale?: boolean;
 };
 
 export type Overview = {
@@ -205,10 +211,15 @@ export type UnitOption = {
  *  - `overdue`: open, nobody has accepted it, and it has waited longer than the setting. Act now.
  *  - `waiting`: open, nobody has accepted it yet, still inside the window.
  *  - `working`: a unit holds it. Watch it.
+ *  - `stale`: open, nobody has it, and the sender has not been heard from for 72 hours. Out of
+ *    the counters and the alarm; an admin clears it, or assigns it if it is still real.
  *  - `closed`: rescued, cancelled by the sender, or dismissed. Nothing to do.
  * The state is never carried by colour alone: every card shows the icon and the words too.
  */
-export type CaseState = "overdue" | "waiting" | "working" | "closed";
+export type CaseState = "overdue" | "waiting" | "working" | "stale" | "closed";
+
+/** How long a case may go without a word from its sender before it leaves the work list. */
+export const STALE_HOURS = 72;
 
 const OPEN: SosCaseStatus[] = ["received", "assigned", "en_route", "on_site"];
 
@@ -240,6 +251,7 @@ export function waitingMinutes(c: SosCase, now: number): number {
 export function caseState(c: SosCase, now: number, unclaimedMinutes: number): CaseState {
   if (!isOpen(c)) return "closed";
   if (c.unitId) return "working";
+  if (c.stale) return "stale";
   return waitingMinutes(c, now) >= overdueAfter(c, unclaimedMinutes) ? "overdue" : "waiting";
 }
 
@@ -249,7 +261,13 @@ export function caseState(c: SosCase, now: number, unclaimedMinutes: number): Ca
  * vulnerable flags, injuries: sos_priority() in the database).
  */
 export function sortCases(cases: SosCase[], now: number, unclaimedMinutes: number): SosCase[] {
-  const rank: Record<CaseState, number> = { overdue: 0, waiting: 1, working: 2, closed: 3 };
+  const rank: Record<CaseState, number> = {
+    overdue: 0,
+    waiting: 1,
+    working: 2,
+    stale: 3,
+    closed: 4,
+  };
   return [...cases].sort((a, b) => {
     const byState =
       rank[caseState(a, now, unclaimedMinutes)] - rank[caseState(b, now, unclaimedMinutes)];
@@ -267,12 +285,13 @@ export type Triage = {
   overdue: SosCase[];
   waiting: SosCase[];
   working: SosCase[];
+  stale: SosCase[];
   closed: SosCase[];
 };
 
 /** The board split into the four states, each already in reading order. */
 export function triage(cases: SosCase[], now: number, unclaimedMinutes: number): Triage {
-  const out: Triage = { overdue: [], waiting: [], working: [], closed: [] };
+  const out: Triage = { overdue: [], waiting: [], working: [], stale: [], closed: [] };
   for (const c of sortCases(cases, now, unclaimedMinutes)) {
     out[caseState(c, now, unclaimedMinutes)].push(c);
   }

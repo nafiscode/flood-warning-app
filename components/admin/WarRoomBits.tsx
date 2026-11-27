@@ -17,6 +17,7 @@ const STATE_ICON = {
   overdue: TriangleIcon,
   waiting: ClockIcon,
   working: LifebuoyIcon,
+  stale: ClockIcon,
   closed: CheckIcon,
 };
 
@@ -25,6 +26,7 @@ const STATE_CLASS: Record<CaseState, string> = {
   overdue: "bg-sos text-sos-fg",
   waiting: "border-2 border-jaga-edge bg-jaga-surface text-jaga-ink",
   working: "border-2 border-jaga-teal-ink bg-jaga-surface text-jaga-ink",
+  stale: "border-2 border-jaga-line bg-jaga-ground text-jaga-text-2",
   closed: "bg-alert-stale text-alert-stale-fg",
 };
 
@@ -48,7 +50,9 @@ export function StateBadge({
         ? t("state.waiting", { time })
         : state === "working"
           ? t("state.working", { unit: unitName ?? "" })
-          : t("state.closed");
+          : state === "stale"
+            ? t("state.stale")
+            : t("state.closed");
   return (
     <span
       className={`inline-flex min-h-tap items-center gap-2 rounded-xl px-3 py-1 font-bold ${STATE_CLASS[state]}`}

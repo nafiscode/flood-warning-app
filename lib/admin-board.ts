@@ -142,20 +142,27 @@ function toDam(r: Row): DamBoardRow {
 /** The board and the counters: the one read that is polled while the war room is open. */
 export async function readBoard(hours = 72): Promise<WarRoomBoard> {
   const supabase = await createClient();
-  const [overview, board, dams] = await Promise.all([
+  const [overview, board, dams, staleIds] = await Promise.all([
     supabase.rpc("admin_overview"),
     supabase.rpc("admin_sos_board", { p_hours: hours }),
     // Polled with the rest: a release waiting for a person to judge it is the one thing on this
     // screen that gets worse by being seen late.
     supabase.rpc("admin_dam_board"),
+    // Which open cases nobody has heard from in 72 hours: asked of the database, so the screen
+    // and the clearing functions share one definition. A fault here leaves the board whole.
+    supabase.rpc("admin_sos_stale_ids"),
   ]);
+  const stale = new Set(((staleIds.data as unknown[] | null) ?? []).map(String));
   return {
     now: Date.now(),
     overview:
       ((overview.data as Row[] | null)?.[0] ?? null)
         ? toOverview((overview.data as Row[])[0]!)
         : EMPTY_OVERVIEW,
-    cases: ((board.data as Row[] | null) ?? []).map(toCase),
+    cases: ((board.data as Row[] | null) ?? []).map((r) => {
+      const c = toCase(r);
+      return stale.has(c.id) ? { ...c, stale: true } : c;
+    }),
     dams: ((dams.data as Row[] | null) ?? []).map(toDam),
   };
 }

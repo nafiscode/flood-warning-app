@@ -36,6 +36,8 @@ function why(error: { code?: string; message?: string } | null): string {
     if (m.includes("cover")) return "notCovered";
     if (m.includes("verified")) return "unverified";
     if (m.includes("reason")) return "reason";
+    if (m.includes("heard from")) return "notStale";
+    if (m.includes("holds")) return "held";
   }
   return "save";
 }
@@ -91,6 +93,42 @@ export async function judgeSpam(locale: string, form: FormData) {
   });
   if (error) back(locale, { error: why(error), spam: sos });
   back(locale, { done: spam ? "spam" : "spamDismissed" });
+}
+
+/**
+ * Take a case nobody has heard from in 72 hours off the work list (owner, 27 Nov 2026). The
+ * database refuses anything younger, anything a unit holds and anything already closed, and it
+ * writes the reason into the case's own history. The case is closed, never deleted, and an admin
+ * can reopen it. `all=yes` clears the whole fold at once.
+ */
+export async function clearStaleCase(locale: string, form: FormData) {
+  const sos = field(form, "sos");
+  const reason = field(form, "reason");
+  const all = field(form, "all") === "yes";
+  if (!all && !UUID.test(sos)) back(locale, { error: "save" });
+  if (reason === "") back(locale, { error: "reason", ...(all ? {} : { clear: sos }) });
+  const supabase = await createClient();
+  if (all) {
+    const { error } = await supabase.rpc("admin_sos_clear_stale_all", { p_reason: reason });
+    if (error) back(locale, { error: why(error) });
+    back(locale, { done: "clearedAll" });
+  }
+  const { error } = await supabase.rpc("admin_sos_clear_stale", {
+    p_sos_id: sos,
+    p_reason: reason,
+  });
+  if (error) back(locale, { error: why(error), clear: sos });
+  back(locale, { done: "cleared" });
+}
+
+/** Undo a clearing: the case comes back to the board (it will sit in the fold again until heard). */
+export async function reopenCase(locale: string, form: FormData) {
+  const sos = field(form, "sos");
+  if (!UUID.test(sos)) back(locale, { error: "save" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_sos_reopen", { p_sos_id: sos });
+  if (error) back(locale, { error: why(error) });
+  back(locale, { done: "reopened", case: sos });
 }
 
 /**

@@ -2227,7 +2227,8 @@
       "overdue": "No answer for {time}",
       "waiting": "Waiting {time}",
       "working": "{unit} has it",
-      "closed": "Closed"
+      "closed": "Closed",
+      "stale": "Not heard from for over 72 h"
     },
     "gate": {
       "badge": "Do this now",
@@ -2266,7 +2267,10 @@
       "noneWorking": "No case has been taken yet.",
       "closed": "Closed ({count})",
       "closedNote": "Rescued, the sender said they are safe, or the case was stopped.",
-      "noneClosed": "No closed cases yet."
+      "noneClosed": "No closed cases yet.",
+      "stale": "Older than 72 hours ({count})",
+      "staleNote": "Open, no unit on it, and the sender has not been heard from for {hours} hours. These no longer count as work. Clear the obsolete ones; assign any that may still be real.",
+      "noneStale": "Nothing is older than 72 hours."
     },
     "case": {
       "noArea": "Tambon unknown",
@@ -2325,7 +2329,9 @@
       "spam_dismissed": "Flag removed",
       "details_added": "Details added",
       "media_added": "Photo or voice added",
-      "location_added": "Location updated"
+      "location_added": "Location updated",
+      "cleared_obsolete": "An admin cleared it as obsolete",
+      "reopened_by_admin": "An admin reopened it"
     },
     "assign": {
       "title": "Which unit takes it",
@@ -2406,7 +2412,10 @@
       "spam": "Flagged.",
       "spamDismissed": "Flag removed.",
       "damSent": "Recorded: the notice was sent",
-      "damDismissed": "Recorded: no notice sent"
+      "damDismissed": "Recorded: no notice sent",
+      "cleared": "Cleared. It is under Closed and can be reopened.",
+      "clearedAll": "Cleared. They are under Closed and can be reopened.",
+      "reopened": "Reopened. It is back on the board."
     },
     "error": {
       "save": "That didn't work. Try again.",
@@ -2415,7 +2424,8 @@
       "notCovered": "That unit doesn't cover this case's tambon.",
       "unverified": "That unit isn't verified.",
       "reason": "A reason is needed.",
-      "forbidden": "This page is for admins only."
+      "forbidden": "This page is for admins only.",
+      "notStale": "The sender was heard from in the last 72 hours, so this case can't be cleared."
     },
     "dam": {
       "toReview": "Waiting on you",
@@ -2484,6 +2494,17 @@
     "supplies": {
       "mark": "Food and water",
       "open": "Food and water requests open: {count}"
+    },
+    "stale": {
+      "clear": "Clear as obsolete",
+      "clearTitle": "Clear this case as obsolete",
+      "clearNote": "The case is closed as stopped and stays in the record. Use it when nothing has been heard from the sender in {hours} hours. You can reopen it from Closed.",
+      "why": "Reason (required)",
+      "reasonDefault": "No word from the sender for {hours} hours, no unit took it",
+      "confirm": "Clear the case",
+      "allWhy": "Reason for all {count} cases (required)",
+      "allConfirm": "Clear all {count} as obsolete",
+      "reopen": "Reopen"
     }
   },
   "impactPublic": {

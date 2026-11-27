@@ -18,6 +18,7 @@ import {
   caseState,
   directionsHref,
   hasNoUnit,
+  STALE_HOURS,
   triage,
   vulnerableKeys,
   waitingMinutes,
@@ -40,6 +41,10 @@ export type CaseActions = {
   release: (form: FormData) => Promise<void>;
   note: (form: FormData) => Promise<void>;
   spam: (form: FormData) => Promise<void>;
+  /** Clear one case (or, with all=yes, the whole 72-hour fold) as obsolete. */
+  clear: (form: FormData) => Promise<void>;
+  /** Undo a clearing. */
+  reopen: (form: FormData) => Promise<void>;
 };
 
 /** What the page has already read for one case, because its panel is open in the address. */
@@ -48,7 +53,7 @@ export type CasePanels = {
   assign: { caseId: string; units: UnitOption[] } | null;
   history: { caseId: string; rows: HistoryRow[] } | null;
   /** A form that needs nothing from the server to open. */
-  form: { kind: "release" | "note" | "spam"; caseId: string } | null;
+  form: { kind: "release" | "note" | "spam" | "clear"; caseId: string } | null;
 };
 
 type Shared = CasePanels & {
@@ -67,6 +72,28 @@ export function WarRoomCases({ cases, ...shared }: Props) {
   const t = useTranslations("warRoom");
   const bands = triage(cases, shared.now, shared.unclaimedMinutes);
   const needAnswer = [...bands.overdue, ...bands.waiting];
+  const clearAll = (
+    <form
+      action={shared.actions?.clear}
+      className="flex flex-col gap-2 rounded-xl border-2 border-jaga-edge p-3"
+    >
+      <input type="hidden" name="all" value="yes" />
+      <label className={label} htmlFor="clear-all-reason">
+        {t("stale.allWhy", { count: bands.stale.length })}
+      </label>
+      <input
+        id="clear-all-reason"
+        name="reason"
+        required
+        maxLength={500}
+        className={input}
+        defaultValue={t("stale.reasonDefault", { hours: STALE_HOURS })}
+      />
+      <button type="submit" className={buttonPrimary} disabled={!shared.actions}>
+        {t("stale.allConfirm", { count: bands.stale.length })}
+      </button>
+    </form>
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -89,6 +116,15 @@ export function WarRoomCases({ cases, ...shared }: Props) {
         {...shared}
       />
       <Band
+        title={t("band.stale", { count: bands.stale.length })}
+        note={t("band.staleNote", { hours: STALE_HOURS })}
+        cases={bands.stale}
+        empty={t("band.noneStale")}
+        foldAway
+        extra={bands.stale.length > 0 ? clearAll : null}
+        {...shared}
+      />
+      <Band
         title={t("band.closed", { count: bands.closed.length })}
         note={t("band.closedNote")}
         cases={bands.closed}
@@ -106,6 +142,7 @@ function Band({
   cases,
   empty,
   foldAway = false,
+  extra = null,
   ...shared
 }: Shared & {
   title: string;
@@ -113,6 +150,8 @@ function Band({
   cases: SosCase[];
   empty: string;
   foldAway?: boolean;
+  /** Something to show above the fold's cases, such as the clear-everything form. */
+  extra?: React.ReactNode;
 }) {
   // One column on a phone, two once there is room: the board is read on a laptop as well.
   const list = (
@@ -133,7 +172,10 @@ function Band({
       ) : foldAway ? (
         <details>
           <summary className="min-h-tap cursor-pointer py-2 underline">{title}</summary>
-          <div className="pt-3">{list}</div>
+          <div className="flex flex-col gap-3 pt-3">
+            {extra}
+            {list}
+          </div>
         </details>
       ) : (
         list
@@ -276,6 +318,21 @@ function CaseCard({
             icon={<CheckIcon size={20} />}
           />
         )}
+        {state === "stale" && (
+          <Act
+            href={link({ clear: c.id })}
+            label={t("stale.clear")}
+            icon={<CheckIcon size={20} />}
+          />
+        )}
+        {c.status === "dismissed" && c.lastEvent === "cleared_obsolete" && (
+          <form action={actions?.reopen} className="contents">
+            <input type="hidden" name="sos" value={c.id} />
+            <button type="submit" className={actClass} disabled={!actions}>
+              {t("stale.reopen")}
+            </button>
+          </form>
+        )}
         <Act href={link({ case: c.id })} label={t("case.history")} />
       </div>
 
@@ -361,6 +418,31 @@ function CaseCard({
           <input id={`note-${c.id}`} name="note" required maxLength={500} className={input} />
           <button type="submit" className={buttonPrimary} disabled={!actions}>
             {t("note.confirm")}
+          </button>
+        </form>
+      )}
+
+      {mine("clear") && (
+        <form
+          action={actions?.clear}
+          className="flex flex-col gap-2 border-t border-jaga-line pt-3"
+        >
+          <input type="hidden" name="sos" value={c.id} />
+          <p className="font-medium">{t("stale.clearTitle")}</p>
+          <p className={hint}>{t("stale.clearNote", { hours: STALE_HOURS })}</p>
+          <label className={label} htmlFor={`clear-${c.id}`}>
+            {t("stale.why")}
+          </label>
+          <input
+            id={`clear-${c.id}`}
+            name="reason"
+            required
+            maxLength={500}
+            className={input}
+            defaultValue={t("stale.reasonDefault", { hours: STALE_HOURS })}
+          />
+          <button type="submit" className={buttonPrimary} disabled={!actions}>
+            {t("stale.confirm")}
           </button>
         </form>
       )}
