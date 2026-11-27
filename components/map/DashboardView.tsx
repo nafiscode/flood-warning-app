@@ -824,8 +824,8 @@ export function DashboardView(props: DashboardViewProps) {
 
   /*
    * The responsibility map (spec 2, 9): the tambons a verified team covers, on its own switch,
-   * off to begin with. Offered only when the server returned coverage, which it does only for a
-   * verified authority or admin (safety rule 5), so the switch is simply absent for everyone else.
+   * off to begin with. Offered once coverage has come back: the public cut (covered or not) for
+   * everyone, the fuller rows for a verified team or admin (safety rules 5 and 6).
    */
   const [coverageOn, setCoverageOn] = useState(false);
   const coverageOffered = (props.coverage?.length ?? 0) > 0;
@@ -2408,10 +2408,11 @@ export function DashboardView(props: DashboardViewProps) {
                 )}
                 {/*
                  * The responsibility map (spec 2, 9): per-tambon team coverage, drawn the same way
-                 * as the authority console's map - teal where a rescue team covers, the map ink for
-                 * a gap, a teal outline on the viewer's own tambons (never an alert colour, brand.md).
-                 * Offered only to verified authorities and admins (the server returns no coverage to
-                 * anyone else, safety rule 5), off to begin with.
+                 * as the authority console's map - violet where a rescue team covers, the map ink for
+                 * a gap, an outline on a verified team's own tambons (never an alert colour, brand.md).
+                 * Offered to everyone since 27 Nov (decision): a visitor gets only covered or not per
+                 * tambon, a team or admin the fuller rows (safety rules 5 and 6). Off to begin with,
+                 * and it always says SOS and the hotlines work where no team is registered (rule 10).
                  */}
                 {coverageOffered && (
                   <div className="flex flex-col gap-1" data-coverage-switch="true">
@@ -2434,6 +2435,8 @@ export function DashboardView(props: DashboardViewProps) {
                         covered: coverageCovered.length,
                         gaps: coverageGaps.length,
                       })}
+                      {coverageMine.length > 0 && ` ${t("coverage.noteMine")}`}
+                      {` ${t("coverage.sos")}`}
                     </span>
                   </div>
                 )}

@@ -233,3 +233,24 @@ export function livePoints(rows: PointsAward[]): number {
 
 /** Another team's point of contact, once a team asked for it (spec 5.3). */
 export type UnitContact = { name: string | null; phone: string | null };
+
+/** One tambon as the public feed says it (`/api/public/team-coverage`): covered or not, nothing more. */
+export type PublicCoverageRow = { tambon: string; province: string; covered: boolean };
+
+/**
+ * The public feed in the shape the map's coverage layer already reads. The public answer has no
+ * team count, so a covered tambon is given one rescue team and an uncovered one none; the names are
+ * left empty because the map paints by code. Never `mine`: the public cannot tell whose tambon it is.
+ */
+export function publicCoverageRows(rows: readonly PublicCoverageRow[]): CoverageRow[] {
+  return rows.map((r) => ({
+    tambon: r.tambon,
+    nameTh: "",
+    nameEn: "",
+    province: r.province,
+    rescueUnits: r.covered ? 1 : 0,
+    coordinationUnits: 0,
+    suppliesUnits: 0,
+    mine: false,
+  }));
+}

@@ -16,6 +16,7 @@ import {
   gapsByProvince,
   isGap,
   livePoints,
+  publicCoverageRows,
   myPoints,
   pointsByProvince,
   type UnconfirmedRescue,
@@ -32,6 +33,20 @@ vi.mock("next/navigation", async (original) => ({
   ...(await original<typeof import("next/navigation")>()),
   useRouter: () => ({ refresh }),
 }));
+
+describe("the public cut of the responsibility map", () => {
+  it("turns covered or not into rows the map layer already reads, with no counts and never 'mine'", () => {
+    const rows = publicCoverageRows([
+      { tambon: "940102", province: "94", covered: true },
+      { tambon: "940105", province: "94", covered: false },
+    ]);
+    expect(rows.map(isGap)).toEqual([false, true]);
+    expect(rows.every((r) => !r.mine && r.coordinationUnits === 0 && r.suppliesUnits === 0)).toBe(
+      true,
+    );
+    expect(coverageTotals(rows)).toMatchObject({ tambons: 2, covered: 1, gaps: 1, mine: 0 });
+  });
+});
 
 describe("the responsibility map's arithmetic", () => {
   it("calls a tambon a gap when no rescue team covers it, coordinators or not", () => {

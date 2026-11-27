@@ -622,7 +622,9 @@
     },
     "coverage": {
       "show": "Liputan pasukan",
-      "note": "Ungu: ada pasukan menyelamat berdaftar ({covered}). Tambon tanpa warna belum ada pasukan berdaftar ({gaps}). Tambon pasukan anda bergaris. Pasukan dan admin sahaja."
+      "note": "Ungu: ada pasukan menyelamat berdaftar ({covered} tambon). Tambon tanpa warna belum ada pasukan berdaftar ({gaps}); ini tidak bermakna tiada siapa akan membantu.",
+      "noteMine": "Tambon pasukan anda bergaris.",
+      "sos": "SOS, 1784 dan 1669 boleh digunakan di setiap tambon, sama ada ada pasukan berdaftar atau tidak."
     },
     "layers": {
       "title": "Apa yang ditunjukkan pada peta",
@@ -4871,6 +4873,10 @@
     "tambon": {
       "lead": "Garis sempadan mukim yang boleh dibuka",
       "text": "Garis sempadan nipis bagi 377 mukim, daripada sempadan pentadbiran rasmi yang sama (Jabatan Ukur Diraja Thai, melalui OCHA). Ia ditutup dalam paparan risiko supaya warna risiko mudah dibaca, dan dibuka dalam paparan keadaan terkini, yang membantu melihat mukim mana sesuatu amaran atau laporan berada; satu suis pada peta membuka atau menutupnya dalam kedua-dua paparan. Ia garis rujukan sahaja, bukan status."
+    },
+    "coverage": {
+      "lead": "Pasukan mana yang telah berdaftar",
+      "text": "Suis \"Liputan pasukan\" pada peta menunjukkan tambon yang ada pasukan menyelamat, yang telah disahkan oleh admin, berdaftar untuk bertugas sekarang. Ia hanya mengira pasukan yang berdaftar dengan Jaga, jadi bukan semua pasukan yang wujud, dan tidak menunjukkan nama pasukan, bilangan orang atau kedudukan. Tambon tanpa warna belum ada pasukan berdaftar, yang tidak bermakna tiada siapa akan membantu: SOS, 1784 dan 1669 boleh digunakan di setiap tambon. Ia ditutup apabila peta dibuka."
     }
   },
   "tambonRisk": {

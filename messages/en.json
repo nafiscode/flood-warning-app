@@ -622,7 +622,9 @@
     },
     "coverage": {
       "show": "Team coverage",
-      "note": "Violet: a registered rescue team covers it ({covered}). Other tambons are left plain; that means no team has registered there yet ({gaps}). Your own tambons are outlined. Teams and admins only."
+      "note": "Violet: a registered rescue team covers it ({covered} tambons). Tambons left plain have no team registered yet ({gaps}); that does not mean nobody will help.",
+      "noteMine": "Your own tambons are outlined.",
+      "sos": "SOS, 1784 and 1669 work in every tambon, whether or not a team is registered."
     },
     "layers": {
       "title": "What the map shows",
@@ -4871,6 +4873,10 @@
     "tambon": {
       "lead": "Sub-district (tambon) outlines you can switch on",
       "text": "The thin boundary lines of the 377 tambons, from the same official administrative boundaries (Royal Thai Survey Department, via OCHA). They are off in the risk view, so the risk colours read clearly, and on in the live view, where it helps to see which tambon an alert or report falls in; a switch on the map turns them on or off either way. They are reference lines only, never a status."
+    },
+    "coverage": {
+      "lead": "Which teams have registered",
+      "text": "The \"Team coverage\" switch on the map shows the tambons where a rescue team that an admin has verified is registered to work right now. It counts only teams registered with Jaga, so it is not every team that exists, and it shows no team names, headcounts or positions. A tambon left plain has no team registered yet, which does not mean nobody will help: SOS, 1784 and 1669 work in every tambon. It is off when the map opens."
     }
   },
   "tambonRisk": {

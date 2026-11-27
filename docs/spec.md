@@ -602,7 +602,7 @@ These tables are created in phase A11 only, not with the initial schema.
 | Authority POC phones | none | the POC of the unit that accepted their own open SOS (logged, 5.3) | read within shared coverage (each reveal logged) | read (logged) |
 | Authority org name and official phone | read only if `public_contact_opt_in` | same | read | read |
 | Any personal phone number | never | own | as above, logged | as above, logged |
-| Coverage / responsibility map | none | none | read | read |
+| Coverage / responsibility map | covered or not per tambon only (27 Nov) | covered or not per tambon only | read, with team counts and own tambons | read |
 | Which tambons Jaga's users are in (`tambons_with_people()`, 21 Oct) | none | none | none | read, admin only - it is the area tick for a drill, and it says where people are |
 | A drill that is sent | only one sent to everyone | only one sent to everyone | only one sent to their own kind of unit, within coverage | read, all |
 | Audit log | none | none | none | read |
