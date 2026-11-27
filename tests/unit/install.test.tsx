@@ -1,6 +1,7 @@
 import { act, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { HomeView } from "@/components/home/HomeView";
+import { InstallBannerView } from "@/components/InstallBanner";
 import { InstallCardView, type InstallCardViewProps } from "@/components/InstallCard";
 import { DEMO_STEP_MS, demoFrames, InstallDemo } from "@/components/InstallDemo";
 import { EXAMPLE_NOW, EXAMPLE_PLACES, homeExample, type HomeScenario } from "@/lib/dev-examples";
@@ -8,8 +9,10 @@ import {
   INSTALL_LATER_MS,
   installDevice,
   installGuide,
+  installReason,
   installSnoozed,
   type InstallGuide,
+  type InstallReason,
 } from "@/lib/install";
 import { mapMessages } from "@/lib/messages";
 import en from "@/messages/en.json";
@@ -175,7 +178,7 @@ describe("the install card on the home screen", () => {
         onRetry={() => {}}
         projectLine={null}
         install={<div data-install-slot="true" />}
-        installLine={<div data-install-line-slot="true" />}
+        installBanner={<div data-install-banner-slot="true" />}
       />,
     ).container;
   }
@@ -195,22 +198,25 @@ describe("the install card on the home screen", () => {
     expect(before(c.querySelector("[data-hero]")!)).toBe(false);
   });
 
-  it("is pointed at by one line under the hero, which comes before the card itself", () => {
+  it("is asked for by a banner under the hero, which comes before the card itself", () => {
     const c = home("normal");
-    const line = c.querySelector("[data-install-line-slot]")!;
+    const banner = c.querySelector("[data-install-banner-slot]")!;
     const slot = c.querySelector("[data-install-slot]")!;
-    expect(line).not.toBeNull();
-    // Under the hero, above the card: the card is 56% down a phone's page and the line is not.
-    expect(c.querySelector("[data-hero]")!.compareDocumentPosition(line) &
-      Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(line.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(banner).not.toBeNull();
+    // Under the hero, never above it: the tambon's own level is the first thing on this screen.
+    expect(
+      c.querySelector("[data-hero]")!.compareDocumentPosition(banner) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // Above the card, which on a phone is 56% down the page (measured, 19 Oct).
+    expect(banner.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("is not shown while the tambon is at Warning or Evacuate", () => {
     for (const scenario of ["warning", "evacuate"] as const) {
       const c = home(scenario);
       expect(c.querySelector("[data-install-slot]")).toBeNull();
-      expect(c.querySelector("[data-install-line-slot]")).toBeNull();
+      expect(c.querySelector("[data-install-banner-slot]")).toBeNull();
     }
   });
 });
@@ -298,5 +304,101 @@ describe("the moving guide", () => {
     fireEvent.click(c.querySelector("[data-install-how]")!);
     expect(c.querySelector('[data-install-demo="android"]')).not.toBeNull();
     expect(props.onInstall).not.toHaveBeenCalled();
+  });
+});
+
+describe("which wording the banner uses", () => {
+  const facts = { pushOn: false, savedPlaces: 0, visits: 1 };
+
+  it("asks a first-time visitor plainly", () => {
+    expect(installReason(facts)).toBe("first");
+  });
+
+  it("says so to someone who has been here before", () => {
+    expect(installReason({ ...facts, visits: 2 })).toBe("again");
+  });
+
+  it("speaks of their own places once they have any, however many visits", () => {
+    expect(installReason({ ...facts, savedPlaces: 1 })).toBe("place");
+    expect(installReason({ ...facts, savedPlaces: 3, visits: 9 })).toBe("place");
+  });
+
+  it("speaks of the bell first of all, because that is what installing makes surer", () => {
+    expect(installReason({ pushOn: true, savedPlaces: 2, visits: 5 })).toBe("push");
+  });
+
+  it("has all three languages for every reason and both devices", () => {
+    const reasons: InstallReason[] = ["push", "place", "again", "first"];
+    for (const messages of [th, ms, en]) {
+      for (const reason of reasons) {
+        for (const device of ["phone", "computer"] as const) {
+          expect(messages.install.banner.why[reason][device].length).toBeGreaterThan(10);
+        }
+      }
+      for (const key of ["do", "how", "later"] as const) {
+        expect(messages.install.banner[key].length).toBeGreaterThan(1);
+      }
+    }
+  });
+});
+
+describe("the install banner", () => {
+  function banner(props: Partial<Parameters<typeof InstallBannerView>[0]> = {}) {
+    const calls = { install: 0, how: 0, later: 0 };
+    const { container } = renderWithIntl(
+      <InstallBannerView
+        reason="first"
+        device="phone"
+        canAsk
+        onInstall={async () => {
+          calls.install += 1;
+          return "accepted";
+        }}
+        onShowHow={() => {
+          calls.how += 1;
+        }}
+        onLater={() => {
+          calls.later += 1;
+        }}
+        {...props}
+      />,
+    );
+    return { c: container, calls };
+  }
+
+  it("opens the browser's own dialog where there is one", async () => {
+    const { c, calls } = banner();
+    fireEvent.click(c.querySelector("[data-install-banner-button]")!);
+    await waitFor(() => expect(calls.install).toBe(1));
+    expect(calls.how).toBe(0);
+  });
+
+  it("sends an iPhone to the steps instead, because no page can add the icon itself", async () => {
+    const { c, calls } = banner({ canAsk: false });
+    fireEvent.click(c.querySelector("[data-install-banner-button]")!);
+    await waitFor(() => expect(calls.how).toBe(1));
+    expect(calls.install).toBe(0);
+  });
+
+  it("falls back to the steps when the browser's dialog cannot be opened after all", async () => {
+    const { c, calls } = banner({ onInstall: async () => "unavailable" });
+    fireEvent.click(c.querySelector("[data-install-banner-button]")!);
+    await waitFor(() => expect(calls.how).toBe(1));
+  });
+
+  it("can be put off, and says which reason it was showing", () => {
+    const { c, calls } = banner({ reason: "place" });
+    expect(c.querySelector("[data-install-banner]")!.getAttribute("data-install-banner")).toBe(
+      "place",
+    );
+    fireEvent.click(c.querySelector("[data-install-banner-later]")!);
+    expect(calls.later).toBe(1);
+  });
+
+  it("says \"this computer\", not \"home screen\", on a laptop", () => {
+    const { c } = banner({ device: "computer" });
+    // Thai is what renderWithIntl draws, and Thai is the source of truth for the copy.
+    expect(c.textContent).toContain(th.install.banner.title.computer);
+    expect(c.textContent).not.toContain(th.install.banner.title.phone);
   });
 });

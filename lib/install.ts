@@ -52,3 +52,29 @@ export const INSTALL_LATER_MS = 21 * 24 * 3_600_000;
 export function installSnoozed(laterAt: number | null, now: number): boolean {
   return laterAt !== null && now - laterAt < INSTALL_LATER_MS;
 }
+
+/** Which wording the banner uses. Not a different offer - the same one, said in their terms. */
+export type InstallReason =
+  /** Notifications are on in a browser tab: say that the bell is surer from the icon. */
+  | "push"
+  /** They have places of their own: say those keep working with no signal. */
+  | "place"
+  /** They have opened Jaga before. */
+  | "again"
+  /** First time here. */
+  | "first";
+
+/**
+ * Why the banner is being shown, from what the home screen already knows. The order is by how
+ * much the person has shown they care: notifications on, then saved places, then a repeat visit.
+ * Pure, so the choice can be tested without a browser.
+ */
+export function installReason(facts: {
+  pushOn: boolean;
+  savedPlaces: number;
+  visits: number;
+}): InstallReason {
+  if (facts.pushOn) return "push";
+  if (facts.savedPlaces > 0) return "place";
+  return facts.visits > 1 ? "again" : "first";
+}

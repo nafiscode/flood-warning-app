@@ -10,7 +10,8 @@ import {
   useNow,
   usePublicStatus,
 } from "@/lib/use-public";
-import { InstallCard, InstallLine } from "@/components/InstallCard";
+import { InstallBanner } from "@/components/InstallBanner";
+import { InstallCard } from "@/components/InstallCard";
 import { ShareApp } from "@/components/ShareApp";
 import { RequestsLink } from "@/components/journey/MyRequests";
 import { PushCard } from "@/components/push/PushCard";
@@ -90,7 +91,7 @@ export function HomeScreen({ projectLine }: { projectLine: string | null }) {
       unitCard={<JoinJaga place="act" />}
       welcome={<NewToJaga />}
       install={<InstallCard place="home" />}
-      installLine={<InstallLine />}
+      installBanner={<InstallBanner />}
       share={<ShareApp />}
     />
   );

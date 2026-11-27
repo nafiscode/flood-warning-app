@@ -23,9 +23,8 @@ import {
   type InstallGuide,
 } from "@/lib/install";
 import { useOnPhone, useStored, writeStored } from "@/lib/phone-store";
-import { reveal } from "@/lib/reveal";
-import { buttonPrimary, hint, offerCard } from "@/lib/ui";
-import { askToInstall, useInstallOffer, useStandalone } from "@/lib/use-install";
+import { buttonPrimary, offerCard } from "@/lib/ui";
+import { askToInstall, useGuideWanted, useInstallOffer, useStandalone } from "@/lib/use-install";
 import { useNow } from "@/lib/use-public";
 
 /** The picture beside each written step, in the order of the steps. */
@@ -59,6 +58,8 @@ export type InstallCardViewProps = {
   onLater?: () => void;
   /** The review page shows the guide already open. */
   startOpen?: boolean;
+  /** The banner asking, from elsewhere on the page, for the steps to be opened. */
+  openNow?: boolean;
 };
 
 /**
@@ -73,6 +74,7 @@ export function InstallCardView({
   onInstall,
   onLater,
   startOpen = false,
+  openNow = false,
 }: InstallCardViewProps) {
   const t = useTranslations("install");
   // The dev page draws every device's card at once, so the heading's id cannot be a fixed one.
@@ -82,6 +84,11 @@ export function InstallCardView({
   const [frame, setFrame] = useState(0);
   const [playing, setPlaying] = useState(true);
   const frames = demoFrames(guide);
+
+  // Somebody tapped "show me how" on the banner above: open the steps here rather than repeat them.
+  useEffect(() => {
+    if (openNow) setOpen(true);
+  }, [openNow]);
 
   useEffect(() => {
     if (!open || !playing) return;
@@ -218,37 +225,6 @@ export function useInstallWanted(place: "home" | "account"): boolean {
 }
 
 /**
- * One line, high on the home screen, that brings the card into view (the owner, 19 Oct: nobody
- * noticed how to install Jaga). It is for phones and tablets only: the card itself opens 7% down
- * a laptop's page but 56% down a 360 px one, measured, because on a phone the home screen's three
- * columns stack and the card sits in the last of them. Nothing is said twice - the line carries
- * no reasons of its own, it only points.
- */
-export function InstallLine() {
-  const t = useTranslations("install");
-  const wanted = useInstallWanted("home");
-  if (!wanted) return null;
-  const device = installDevice(navigator.userAgent, navigator.maxTouchPoints ?? 0);
-  return (
-    <p data-install-line={device} className={`${hint} flex items-center gap-2 lg:hidden`}>
-      <InstallIcon size={18} />
-      <span>
-        {`${t(`line.${device}`)} `}
-        <button
-          type="button"
-          onClick={() => reveal(() => document.querySelector<HTMLElement>("[data-install]"))}
-          data-install-show="true"
-          // The words are one line of a sentence; the touch area is not (HIG: 44 pt at least).
-          className="relative font-bold text-jaga-ink underline after:absolute after:inset-x-0 after:-inset-y-3 after:content-['']"
-        >
-          {t("lineShow")}
-        </button>
-      </span>
-    </p>
-  );
-}
-
-/**
  * "Put Jaga on your home screen", with what it is good for. On the home screen it is the first
  * card of the column that holds the person's own places, gone once Jaga is installed and for
  * three weeks after "Not now"; on the Account page it stays, as the place to come back to.
@@ -256,6 +232,7 @@ export function InstallLine() {
  */
 export function InstallCard({ place }: { place: "home" | "account" }) {
   const canAsk = useInstallOffer();
+  const openNow = useGuideWanted();
   const wanted = useInstallWanted(place);
   if (!wanted) return null;
   const touch = navigator.maxTouchPoints ?? 0;
@@ -264,6 +241,7 @@ export function InstallCard({ place }: { place: "home" | "account" }) {
       device={installDevice(navigator.userAgent, touch)}
       guide={installGuide(navigator.userAgent, touch)}
       canAsk={canAsk}
+      openNow={openNow}
       onInstall={askToInstall}
       onLater={place === "home" ? () => writeStored("install.later", Date.now()) : undefined}
     />

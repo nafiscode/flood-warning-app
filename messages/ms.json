@@ -117,6 +117,10 @@
       "retry": "Cuba lagi"
     },
     "normalBody": "Sekarang tiada amaran banjir untuk kawasan ini.",
+    "alertsElsewhere": {
+      "line": "Amaran sedang berkuat kuasa di {count, plural, one {# kawasan} other {# kawasan}} sekarang",
+      "cta": "Lihat peta"
+    },
     "reason": "Sebab",
     "issuedBy": "Dikeluarkan oleh",
     "issuer": "Admin Jaga",
@@ -142,13 +146,14 @@
     },
     "mapLink": "Buka Peta Risiko & Semasa",
     "projectLine": "Talian bantuan Jaga",
-    "issuerAuto": "Penggera automatik Jaga (daripada bacaan paras air, bukan dikeluarkan oleh pentadbir)",
-    "alertsElsewhere": {
-      "line": "Amaran sedang berkuat kuasa di {count, plural, one {# kawasan} other {# kawasan}} sekarang",
-      "cta": "Lihat peta"
-    }
+    "issuerAuto": "Penggera automatik Jaga (daripada bacaan paras air, bukan dikeluarkan oleh pentadbir)"
   },
   "install": {
+    "team": {
+      "title": "Pasang Jaga pada peranti ini",
+      "intro": "Pasukan anda hanya mendengar kes yang ditawarkan semasa Jaga dibuka. Dengan Jaga pada skrin utama, atau dipasang pada komputer anda, ia dibuka dengan satu ketikan dan, pada iPhone atau iPad, pemberitahuan baru boleh sampai kepada anda. Ikut langkah di bawah; kurang daripada seminit.",
+      "installed": "Jaga sudah dipasang pada peranti ini. Tiada apa lagi yang perlu dibuat di sini."
+    },
     "title": {
       "phone": "Letak Jaga di skrin utama telefon",
       "computer": "Pasang Jaga pada komputer ini"
@@ -173,11 +178,33 @@
       "phone": "Tambah ke skrin utama",
       "computer": "Pasang Jaga"
     },
-    "line": {
-      "phone": "Letak Jaga di skrin utama, ia tetap berfungsi tanpa isyarat.",
-      "computer": "Pasang Jaga pada komputer ini, buka terus dari ikon."
+    "banner": {
+      "title": {
+        "phone": "Letak Jaga di skrin utama",
+        "computer": "Pasang Jaga pada komputer ini"
+      },
+      "why": {
+        "first": {
+          "phone": "Buka dari ikon macam aplikasi biasa, dan status, tempat selamat serta minta tolong masih jalan walaupun tiada talian. Kurang seminit sahaja.",
+          "computer": "Buka dari ikon pada komputer, tak perlu taip alamat laman setiap kali, dan masih jalan walaupun internet terputus."
+        },
+        "again": {
+          "phone": "Awak pernah buka Jaga. Letak di skrin utama sekali sahaja, lepas tu terus buka pada hari ia betul-betul diperlukan.",
+          "computer": "Awak pernah buka Jaga. Pasang sekali sahaja, lepas tu buka terus dari ikon."
+        },
+        "place": {
+          "phone": "Tempat yang awak simpan dan paras amaran kawasan itu masih boleh dilihat walaupun tiada talian, bila Jaga ada di skrin utama.",
+          "computer": "Tempat yang awak simpan dan paras amaran kawasan itu masih boleh dilihat walaupun internet terputus, bila Jaga dipasang."
+        },
+        "push": {
+          "phone": "Awak sudah hidupkan pemberitahuan. Bila Jaga ada di skrin utama, pemberitahuan lebih pasti sampai ke peranti ini.",
+          "computer": "Awak sudah hidupkan pemberitahuan. Bila Jaga dipasang, pemberitahuan lebih pasti sampai ke komputer ini."
+        }
+      },
+      "do": "Letak di peranti",
+      "how": "Tunjuk caranya",
+      "later": "Nanti dulu"
     },
-    "lineShow": "Sebabnya dan caranya",
     "later": "Nanti dulu",
     "how": "Tunjukkan caranya",
     "demo": {
@@ -229,11 +256,6 @@
       "text": "Jaga memberi amaran banjir, menghantar permintaan bantuan dan menunjukkan tempat selamat berhampiran, untuk Pattani, Yala, Narathiwat dan Songkhla. Percuma, buka terus tanpa memasang apa-apa.",
       "copied": "Pautan disalin. Tampal dalam sembang.",
       "manual": "Salin pautan ini dan tampal dalam sembang"
-    },
-    "team": {
-      "title": "Pasang Jaga pada peranti ini",
-      "intro": "Pasukan anda hanya mendengar kes yang ditawarkan semasa Jaga dibuka. Dengan Jaga pada skrin utama, atau dipasang pada komputer anda, ia dibuka dengan satu ketikan dan, pada iPhone atau iPad, pemberitahuan baru boleh sampai kepada anda. Ikut langkah di bawah; kurang daripada seminit.",
-      "installed": "Jaga sudah dipasang pada peranti ini. Tiada apa lagi yang perlu dibuat di sini."
     }
   },
   "alert": {
@@ -292,6 +314,13 @@
     }
   },
   "sos": {
+    "phoneAsk": {
+      "title": "Beri nombor telefon supaya pasukan penyelamat boleh menelefon anda",
+      "save": "Simpan nombor",
+      "saved": "Nombor disimpan. Pasukan penyelamat boleh menelefon anda.",
+      "invalid": "Nombor ini nampaknya tidak betul. Semak sekali lagi.",
+      "private": "Nombor anda tidak pernah awam. Hanya pasukan penyelamat dan admin boleh melihatnya."
+    },
     "label": "SOS",
     "action": "Minta bantuan",
     "title": "Minta bantuan",
@@ -300,6 +329,9 @@
     "sending": "Menghantar…",
     "phoneLabel": "Nombor telefon anda",
     "phoneHint": "Tanpa nombor, penyelamat tidak dapat menelefon anda.",
+    "noPhone": "Saya tidak dapat memberi nombor (tiada telefon, atau tidak boleh dihubungi balik)",
+    "phoneNeeded": "Masukkan nombor yang boleh dihubungi penyelamat, atau tandakan kotak di bawah. Permintaan anda tidak hilang.",
+    "phoneInvalid": "Nombor ini nampaknya tidak betul. Semak semula, atau tandakan kotak di bawah.",
     "location": {
       "locating": "Mencari lokasi…",
       "found": "Lokasi diperoleh (mungkin tersasar lebih kurang {meters} m)",
@@ -519,16 +551,6 @@
         "urgent": "Jika keadaan bertambah buruk, jangan tunggu: tekan butang menyelamat di bawah, atau telefon."
       },
       "soonBody": "Permintaan makanan dan air melalui Jaga akan dibuka pada 25 Oktober 2026. Sebelum itu tiada sesiapa menerima permintaan daripada aplikasi ini. Jika dalam bahaya, telefon segera."
-    },
-    "noPhone": "Saya tidak dapat memberi nombor (tiada telefon, atau tidak boleh dihubungi balik)",
-    "phoneNeeded": "Masukkan nombor yang boleh dihubungi penyelamat, atau tandakan kotak di bawah. Permintaan anda tidak hilang.",
-    "phoneInvalid": "Nombor ini nampaknya tidak betul. Semak semula, atau tandakan kotak di bawah.",
-    "phoneAsk": {
-      "title": "Beri nombor telefon supaya pasukan penyelamat boleh menelefon anda",
-      "save": "Simpan nombor",
-      "saved": "Nombor disimpan. Pasukan penyelamat boleh menelefon anda.",
-      "invalid": "Nombor ini nampaknya tidak betul. Semak sekali lagi.",
-      "private": "Nombor anda tidak pernah awam. Hanya pasukan penyelamat dan admin boleh melihatnya."
     }
   },
   "hotlines": {
@@ -598,6 +620,17 @@
     }
   },
   "map": {
+    "sosPulse": {
+      "badge": "SOS",
+      "title": "Ada orang meminta bantuan dan belum ada pasukan yang menerimanya",
+      "line": "{place} · {count} permintaan · menunggu {time}",
+      "timeHm": "{hours} j {minutes} min",
+      "timeM": "{minutes} min",
+      "timeNew": "kurang 10 min",
+      "what": "Permintaan ini sudah sampai kepada admin Jaga. Peta hanya menunjukkan kawasan, bukan tempat atau nombor orang itu. Jika anda boleh membantu dengan selamat, hubungi 1784 dahulu.",
+      "call": "Hubungi {number}",
+      "mapWord": "SOS · belum ada pasukan"
+    },
     "title": "Peta Risiko & Semasa",
     "zoomAll": "Lihat 4 wilayah",
     "tabs": {
@@ -975,17 +1008,6 @@
       "choose": "Pilih cara melihat",
       "asMeters": "Tunjukkan sebagai meter",
       "asDetails": "Tunjukkan semua butiran"
-    },
-    "sosPulse": {
-      "badge": "SOS",
-      "title": "Ada orang meminta bantuan dan belum ada pasukan yang menerimanya",
-      "line": "{place} · {count} permintaan · menunggu {time}",
-      "timeHm": "{hours} j {minutes} min",
-      "timeM": "{minutes} min",
-      "timeNew": "kurang 10 min",
-      "what": "Permintaan ini sudah sampai kepada admin Jaga. Peta hanya menunjukkan kawasan, bukan tempat atau nombor orang itu. Jika anda boleh membantu dengan selamat, hubungi 1784 dahulu.",
-      "call": "Hubungi {number}",
-      "mapWord": "SOS · belum ada pasukan"
     }
   },
   "tmd": {
@@ -1194,12 +1216,6 @@
         "body": "{count, plural, one {# zon naik selama seminggu dengan hujan di belakangnya. Tiada apa-apa dihantar kepada sesiapa; ia menunggu anda membaca angka dan membuat keputusan} other {# zon naik selama seminggu dengan hujan di belakangnya. Tiada apa-apa dihantar kepada sesiapa; ia menunggu anda membaca angka dan membuat keputusan}}"
       }
     },
-    "bankReached": {
-      "title": "Sungai dekat anda sudah sampai tebing",
-      "body": "{name} sudah sampai atau melebihi tebing.",
-      "note": "Ini ukuran, bukan amaran. Amaran hanya dikeluarkan oleh pentadbir Jaga.",
-      "watch": "Lihat sungai"
-    },
     "teamInstall": {
       "title": "Pasang Jaga pada peranti ini",
       "body": {
@@ -1207,6 +1223,12 @@
         "computer": "Apabila ada kes ditawarkan kepada pasukan anda, penggera hanya berbunyi semasa Jaga dibuka. Pasang Jaga pada komputer ini supaya dibuka dalam tetingkapnya sendiri. Panduan animasi menunjukkan caranya."
       },
       "see": "Tunjukkan caranya"
+    },
+    "bankReached": {
+      "title": "Sungai dekat anda sudah sampai tebing",
+      "body": "{name} sudah sampai atau melebihi tebing.",
+      "note": "Ini ukuran, bukan amaran. Amaran hanya dikeluarkan oleh pentadbir Jaga.",
+      "watch": "Lihat sungai"
     }
   },
   "placeFinder": {
@@ -1552,27 +1574,47 @@
     }
   },
   "authority": {
+    "escalated": {
+      "badge": "Terbuka kepada semua pasukan",
+      "title": "Permintaan yang belum diterima mana-mana pasukan, di luar kawasan anda ({count})",
+      "note": "Permintaan ini sudah lama menunggu tanpa pasukan. Jaga tidak menugaskannya kepada anda. Jika anda boleh sampai kepada orang itu, atur sendiri di luar aplikasi. Setiap kali nombor telefon dibuka, ia direkodkan.",
+      "noArea": "Tambon tidak diketahui",
+      "waited": "Menunggu {time}",
+      "timeHm": "{hours} j {minutes} min",
+      "timeM": "{minutes} min",
+      "typedPlace": "Penghantar menaip tempatnya: {text}",
+      "people": "{count} orang",
+      "onBehalf": "Dihantar untuk orang lain",
+      "injuries": "Kecederaan: {text}",
+      "said": "Penghantar menulis: {text}",
+      "coords": "Koordinat {coords}",
+      "accuracy": "Ketepatan ±{m} m",
+      "directions": "Arah",
+      "showPhone": "Tunjuk nombor telefon",
+      "phoneNone": "Penghantar tidak memberi nombor telefon",
+      "phoneLogged": "Direkodkan bahawa anda melihat nombor ini"
+    },
     "title": "Papan kes bantuan",
     "subtitle": "Permintaan di kawasan jagaan pasukan anda. Kes yang sedang ditawarkan kepada pasukan anda berada di atas.",
     "pollFailed": "Tidak dapat dikemas kini. Apa yang dipaparkan mungkin bukan yang terbaru. Periksa sambungan.",
     "refresh": "Kemas kini",
     "alarm": {
       "title": "Bunyi amaran",
+      "banner": "Ketik di sini untuk menghidupkan bunyi penggera. Tanpanya anda tidak akan dengar apabila ada kes ditawarkan kepada pasukan anda.",
       "off": "Bunyi amaran masih tutup. Sentuh sekali untuk buka bunyi.",
       "arm": "Buka bunyi amaran",
       "on": "Bunyi amaran sudah dibuka",
       "none": "Pelayar ini tidak dapat membunyikan amaran. Biarkan halaman ini di depan mata.",
       "openOnly": "Amaran hanya berbunyi semasa halaman ini dibuka.",
-      "ringing": "{count} kes sedang ditawarkan kepada pasukan anda",
-      "banner": "Ketik di sini untuk menghidupkan bunyi penggera. Tanpanya anda tidak akan dengar apabila ada kes ditawarkan kepada pasukan anda."
+      "ringing": "{count} kes sedang ditawarkan kepada pasukan anda"
     },
     "unit": {
       "onDuty": "Bertugas, sedia terima kes",
       "offDuty": "Tidak bertugas",
       "dutyHint": "Jika tidak bertugas, anda masih nampak semua kes dan boleh terima. Cuma pasukan anda ditawarkan paling akhir.",
       "sharing": "Apabila anda terima SOS, orang yang anda selamatkan boleh nampak nombor penyelaras pasukan anda.",
-      "sharingOff": "Mereka akan nampak nombor rasmi organisasi anda.",
-      "sharingFixed": "Sentiasa dihidupkan. Tidak boleh dimatikan, supaya orang itu boleh menelefon anda semasa anda dalam perjalanan."
+      "sharingFixed": "Sentiasa dihidupkan. Tidak boleh dimatikan, supaya orang itu boleh menelefon anda semasa anda dalam perjalanan.",
+      "sharingOff": "Mereka akan nampak nombor rasmi organisasi anda."
     },
     "filter": {
       "open": "Masih terbuka ({count})",
@@ -1894,26 +1936,6 @@
         "idle": "Tiada permintaan bantuan masuk buat masa ini"
       },
       "suppliesOffered": "{count} permintaan makanan dan air ditawarkan kepada pasukan anda"
-    },
-    "escalated": {
-      "badge": "Terbuka kepada semua pasukan",
-      "title": "Permintaan yang belum diterima mana-mana pasukan, di luar kawasan anda ({count})",
-      "note": "Permintaan ini sudah lama menunggu tanpa pasukan. Jaga tidak menugaskannya kepada anda. Jika anda boleh sampai kepada orang itu, atur sendiri di luar aplikasi. Setiap kali nombor telefon dibuka, ia direkodkan.",
-      "noArea": "Tambon tidak diketahui",
-      "waited": "Menunggu {time}",
-      "timeHm": "{hours} j {minutes} min",
-      "timeM": "{minutes} min",
-      "typedPlace": "Penghantar menaip tempatnya: {text}",
-      "people": "{count} orang",
-      "onBehalf": "Dihantar untuk orang lain",
-      "injuries": "Kecederaan: {text}",
-      "said": "Penghantar menulis: {text}",
-      "coords": "Koordinat {coords}",
-      "accuracy": "Ketepatan ±{m} m",
-      "directions": "Arah",
-      "showPhone": "Tunjuk nombor telefon",
-      "phoneNone": "Penghantar tidak memberi nombor telefon",
-      "phoneLogged": "Direkodkan bahawa anda melihat nombor ini"
     }
   },
   "admin": {
@@ -2249,6 +2271,17 @@
     }
   },
   "warRoom": {
+    "stale": {
+      "clear": "Tutup sebagai lapuk",
+      "clearTitle": "Tutup kes ini sebagai lapuk",
+      "clearNote": "Kes ditutup dan kekal dalam rekod. Guna apabila tiada khabar daripada penghantar selama {hours} jam. Boleh dibuka semula daripada Ditutup.",
+      "why": "Sebab (wajib)",
+      "reasonDefault": "Tiada khabar daripada penghantar selama {hours} jam, tiada unit mengambilnya",
+      "confirm": "Tutup kes",
+      "allWhy": "Sebab untuk semua {count} kes (wajib)",
+      "allConfirm": "Tutup semua {count} sebagai lapuk",
+      "reopen": "Buka semula"
+    },
     "title": "Bilik gerakan",
     "subtitle": "Gambaran kejadian, permintaan tolong, dan orang yang mendaftar",
     "updated": "Data pada",
@@ -2263,11 +2296,11 @@
       "m": "{minutes} minit"
     },
     "state": {
+      "stale": "Tiada khabar lebih 72 jam",
       "overdue": "Belum ada sesiapa ambil, {time}",
       "waiting": "Menunggu diambil, {time}",
       "working": "{unit} sudah ambil",
-      "closed": "Sudah ditutup",
-      "stale": "Tiada khabar lebih 72 jam"
+      "closed": "Sudah ditutup"
     },
     "gate": {
       "badge": "Buat sekarang",
@@ -2298,6 +2331,9 @@
     "perHourBar": "{hour}:00 — {count} kes",
     "now": "{hour}:00 (terkini)",
     "band": {
+      "stale": "Lebih 72 jam ({count})",
+      "staleNote": "Masih terbuka, tiada unit mengambilnya, dan penghantar tidak dihubungi lebih {hours} jam. Ia tidak lagi dikira kerja. Tutup yang sudah lapuk; serahkan kepada unit jika mungkin masih benar.",
+      "noneStale": "Tiada kes lebih 72 jam.",
       "needAnswer": "Perlu diambil ({count})",
       "needAnswerNote": "Yang paling lama menunggu di atas. Lebih {minutes} minit dikira lambat.",
       "noneWaiting": "Semua kes sudah ada unit.",
@@ -2306,10 +2342,7 @@
       "noneWorking": "Belum ada kes yang diambil unit.",
       "closed": "Sudah ditutup ({count})",
       "closedNote": "Sudah ditolong, pengirim kata sudah selamat, atau kes dihentikan.",
-      "noneClosed": "Belum ada kes ditutup.",
-      "stale": "Lebih 72 jam ({count})",
-      "staleNote": "Masih terbuka, tiada unit mengambilnya, dan penghantar tidak dihubungi lebih {hours} jam. Ia tidak lagi dikira kerja. Tutup yang sudah lapuk; serahkan kepada unit jika mungkin masih benar.",
-      "noneStale": "Tiada kes lebih 72 jam."
+      "noneClosed": "Belum ada kes ditutup."
     },
     "case": {
       "noArea": "Tambon tak diketahui",
@@ -2355,6 +2388,8 @@
       "super_admin": "Admin utama"
     },
     "event": {
+      "cleared_obsolete": "Admin menutupnya sebagai lapuk",
+      "reopened_by_admin": "Admin membukanya semula",
       "received": "Diterima",
       "merged_update": "Hantaran berulang, digabung ke sini",
       "claimed": "Unit ambil kes",
@@ -2368,9 +2403,7 @@
       "spam_dismissed": "Bendera dibuang",
       "details_added": "Butiran ditambah",
       "media_added": "Gambar atau suara ditambah",
-      "location_added": "Lokasi dikemas kini",
-      "cleared_obsolete": "Admin menutupnya sebagai lapuk",
-      "reopened_by_admin": "Admin membukanya semula"
+      "location_added": "Lokasi dikemas kini"
     },
     "assign": {
       "title": "Serah kepada unit mana",
@@ -2445,26 +2478,26 @@
       "density": "Orang per tambon (sedikit → banyak)"
     },
     "done": {
+      "cleared": "Sudah ditutup. Ia di bawah Ditutup dan boleh dibuka semula.",
+      "clearedAll": "Sudah ditutup. Ia di bawah Ditutup dan boleh dibuka semula.",
+      "reopened": "Dibuka semula. Ia kembali di papan.",
       "assigned": "Sudah diserah. Jangan lupa telefon unit itu.",
       "released": "Sudah dipulangkan ke barisan.",
       "noted": "Sudah disimpan.",
       "spam": "Bendera sudah diberi.",
       "spamDismissed": "Bendera sudah dibuang.",
       "damSent": "Dicatat: amaran dihantar",
-      "damDismissed": "Dicatat: tiada amaran dihantar",
-      "cleared": "Sudah ditutup. Ia di bawah Ditutup dan boleh dibuka semula.",
-      "clearedAll": "Sudah ditutup. Ia di bawah Ditutup dan boleh dibuka semula.",
-      "reopened": "Dibuka semula. Ia kembali di papan."
+      "damDismissed": "Dicatat: tiada amaran dihantar"
     },
     "error": {
+      "notStale": "Penghantar menghubungi dalam masa 72 jam lalu, jadi kes ini tidak boleh ditutup.",
       "save": "Tak jadi. Cuba lagi.",
       "closed": "Kes ini sudah ditutup.",
       "held": "Unit lain sudah ambil kes ini. Pulangkan ke barisan dahulu.",
       "notCovered": "Unit ini tidak menjaga tambon kes ini.",
       "unverified": "Unit ini belum disahkan.",
       "reason": "Sebab wajib diisi.",
-      "forbidden": "Halaman ini untuk admin sahaja.",
-      "notStale": "Penghantar menghubungi dalam masa 72 jam lalu, jadi kes ini tidak boleh ditutup."
+      "forbidden": "Halaman ini untuk admin sahaja."
     },
     "dam": {
       "toReview": "Menunggu keputusan",
@@ -2533,17 +2566,6 @@
     "supplies": {
       "mark": "Makanan dan air",
       "open": "Permintaan makanan dan air yang masih terbuka: {count}"
-    },
-    "stale": {
-      "clear": "Tutup sebagai lapuk",
-      "clearTitle": "Tutup kes ini sebagai lapuk",
-      "clearNote": "Kes ditutup dan kekal dalam rekod. Guna apabila tiada khabar daripada penghantar selama {hours} jam. Boleh dibuka semula daripada Ditutup.",
-      "why": "Sebab (wajib)",
-      "reasonDefault": "Tiada khabar daripada penghantar selama {hours} jam, tiada unit mengambilnya",
-      "confirm": "Tutup kes",
-      "allWhy": "Sebab untuk semua {count} kes (wajib)",
-      "allConfirm": "Tutup semua {count} sebagai lapuk",
-      "reopen": "Buka semula"
     }
   },
   "impactPublic": {
@@ -2808,7 +2830,11 @@
       "macSafari": "Mac (Safari)",
       "inApp": "Dibuka dari aplikasi lain, seperti Messenger atau LINE",
       "quietIos": "Melepasi Jangan Ganggu: iPhone dan iPad",
-      "quietAndroid": "Melepasi Jangan Ganggu: Android"
+      "quietAndroid": "Melepasi Jangan Ganggu: Android",
+      "bannerFirst": "Sepanduk: kali pertama",
+      "bannerAgain": "Sepanduk: pernah datang",
+      "bannerPlace": "Sepanduk: ada tempat yang disimpan",
+      "bannerPush": "Sepanduk: pemberitahuan sudah hidup"
     }
   },
   "report": {
@@ -3806,6 +3832,8 @@
     "caseTitle": "Terima pemberitahuan apabila pasukan menerima permintaan",
     "caseBody": "Jaga memberitahu peranti ini apabila pasukan menerima permintaan anda, dalam perjalanan atau sudah tiba, walaupun aplikasi ditutup.",
     "send": {
+      "needNumberTitle": "Tambah nombor telefon",
+      "needNumberBody": "Permintaan anda tiada nombor, jadi pasukan penyelamat tidak dapat menelefon anda. Ketik untuk menambah.",
       "somewhere": "di kawasan anda",
       "aTeam": "Pasukan bantuan",
       "offerTitle": "SOS minta bantuan: {tambon}",
@@ -3828,9 +3856,7 @@
       "assignedTitle": "Kes di {tambon} diserahkan kepada anda",
       "assignedBody": "Pasukan anda menyerahkan kes ini kepada anda. Buka untuk melihat lokasi dan apa yang perlu diketahui.",
       "assignedSuppliesTitle": "Penghantaran makanan dan air di {tambon} diserahkan kepada anda",
-      "assignedSuppliesBody": "Pasukan anda menyerahkan penghantaran ini kepada anda. Buka untuk melihat lokasi.",
-      "needNumberTitle": "Tambah nombor telefon",
-      "needNumberBody": "Permintaan anda tiada nombor, jadi pasukan penyelamat tidak dapat menelefon anda. Ketik untuk menambah."
+      "assignedSuppliesBody": "Pasukan anda menyerahkan penghantaran ini kepada anda. Buka untuk melihat lokasi."
     },
     "quiet": {
       "button": "Benarkan Jaga walaupun mod Jangan Ganggu atau Tidur dihidupkan",

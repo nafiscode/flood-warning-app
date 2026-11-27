@@ -117,6 +117,10 @@
       "retry": "Try again"
     },
     "normalBody": "There is no flood alert for this area now.",
+    "alertsElsewhere": {
+      "line": "An alert is in force in {count, plural, one {# area} other {# areas}} now",
+      "cta": "See the map"
+    },
     "reason": "Why",
     "issuedBy": "Issued by",
     "issuer": "Jaga admin",
@@ -142,13 +146,14 @@
     },
     "mapLink": "Open the Risk & Live Map",
     "projectLine": "Jaga help line",
-    "issuerAuto": "Jaga's automatic alarm (from a river gauge reading, not issued by an admin)",
-    "alertsElsewhere": {
-      "line": "An alert is in force in {count, plural, one {# area} other {# areas}} now",
-      "cta": "See the map"
-    }
+    "issuerAuto": "Jaga's automatic alarm (from a river gauge reading, not issued by an admin)"
   },
   "install": {
+    "team": {
+      "title": "Put Jaga on this device",
+      "intro": "Your team hears a case offered to it only while Jaga is open. With Jaga on your home screen, or installed on your computer, it opens in one tap and, on an iPhone or iPad, notifications can reach you at all. Follow the steps below; they take under a minute.",
+      "installed": "Jaga is installed on this device. Nothing more to do here."
+    },
     "title": {
       "phone": "Put Jaga on your home screen",
       "computer": "Install Jaga on this computer"
@@ -173,11 +178,33 @@
       "phone": "Add to home screen",
       "computer": "Install Jaga"
     },
-    "line": {
-      "phone": "Put Jaga on your home screen and it keeps working with no signal.",
-      "computer": "Install Jaga on this computer and open it straight from the icon."
+    "banner": {
+      "title": {
+        "phone": "Put Jaga on your home screen",
+        "computer": "Install Jaga on this computer"
+      },
+      "why": {
+        "first": {
+          "phone": "Open it from the icon like any app, and the alert status, safe places and SOS keep working with no signal. Under a minute.",
+          "computer": "Open it from the icon instead of typing the address, and it keeps working when the internet does not."
+        },
+        "again": {
+          "phone": "You have opened Jaga before. Put it on your home screen once and it is there on the day it matters.",
+          "computer": "You have opened Jaga before. Install it once and open it from the icon."
+        },
+        "place": {
+          "phone": "Your saved places and their alert level stay readable with no signal once Jaga is on your home screen.",
+          "computer": "Your saved places and their alert level stay readable when the internet does not, once Jaga is installed."
+        },
+        "push": {
+          "phone": "You have notifications on. They reach this device far more surely once Jaga is on your home screen.",
+          "computer": "You have notifications on. They reach this computer far more surely once Jaga is installed."
+        }
+      },
+      "do": "Add to device",
+      "how": "Show me how",
+      "later": "Not now"
     },
-    "lineShow": "Why, and how",
     "later": "Not now",
     "how": "Show me how",
     "demo": {
@@ -229,11 +256,6 @@
       "text": "Jaga warns of floods, sends requests for help and shows safe places nearby, for Pattani, Yala, Narathiwat and Songkhla. Free, and it opens without installing anything.",
       "copied": "Link copied. Paste it into a chat.",
       "manual": "Copy this link and paste it into a chat"
-    },
-    "team": {
-      "title": "Put Jaga on this device",
-      "intro": "Your team hears a case offered to it only while Jaga is open. With Jaga on your home screen, or installed on your computer, it opens in one tap and, on an iPhone or iPad, notifications can reach you at all. Follow the steps below; they take under a minute.",
-      "installed": "Jaga is installed on this device. Nothing more to do here."
     }
   },
   "alert": {
@@ -292,6 +314,13 @@
     }
   },
   "sos": {
+    "phoneAsk": {
+      "title": "Add a phone number so rescuers can call you",
+      "save": "Save the number",
+      "saved": "Number saved. Rescuers can call you.",
+      "invalid": "That doesn't look like a phone number. Check it again.",
+      "private": "Your number is never public. Only rescue teams and admins can see it."
+    },
     "label": "SOS",
     "action": "Ask for help",
     "title": "Ask for help",
@@ -300,6 +329,9 @@
     "sending": "Sending…",
     "phoneLabel": "Your phone number",
     "phoneHint": "Without a number, rescuers can't call you.",
+    "noPhone": "I can't give a number (no phone, or I can't be called back)",
+    "phoneNeeded": "Enter a number rescuers can call, or tick the box below. Your request is not lost.",
+    "phoneInvalid": "That doesn't look like a phone number. Check it, or tick the box below.",
     "location": {
       "locating": "Finding your location…",
       "found": "Location found (accurate to about {meters} m)",
@@ -519,16 +551,6 @@
         "urgent": "If things get worse, don't wait: press the rescue button below, or call."
       },
       "soonBody": "Asking for food and water through Jaga opens on 25 October 2026. Until then nobody receives requests from this app. If you are in danger, call straight away."
-    },
-    "noPhone": "I can't give a number (no phone, or I can't be called back)",
-    "phoneNeeded": "Enter a number rescuers can call, or tick the box below. Your request is not lost.",
-    "phoneInvalid": "That doesn't look like a phone number. Check it, or tick the box below.",
-    "phoneAsk": {
-      "title": "Add a phone number so rescuers can call you",
-      "save": "Save the number",
-      "saved": "Number saved. Rescuers can call you.",
-      "invalid": "That doesn't look like a phone number. Check it again.",
-      "private": "Your number is never public. Only rescue teams and admins can see it."
     }
   },
   "hotlines": {
@@ -598,6 +620,17 @@
     }
   },
   "map": {
+    "sosPulse": {
+      "badge": "SOS",
+      "title": "Someone is asking for rescue and no team has taken it yet",
+      "line": "{place} · {count, plural, one {# request} other {# requests}} · waiting {time}",
+      "timeHm": "{hours} h {minutes} min",
+      "timeM": "{minutes} min",
+      "timeNew": "under 10 min",
+      "what": "The request has reached Jaga's admins. The map shows only the area, never the person's place or number. If you can help safely, call 1784 first.",
+      "call": "Call {number}",
+      "mapWord": "SOS · no team yet"
+    },
     "title": "Risk & Live Map",
     "zoomAll": "All 4 provinces",
     "tabs": {
@@ -975,17 +1008,6 @@
       "choose": "Choose how to view",
       "asMeters": "Show as meters",
       "asDetails": "Show full details"
-    },
-    "sosPulse": {
-      "badge": "SOS",
-      "title": "Someone is asking for rescue and no team has taken it yet",
-      "line": "{place} · {count, plural, one {# request} other {# requests}} · waiting {time}",
-      "timeHm": "{hours} h {minutes} min",
-      "timeM": "{minutes} min",
-      "timeNew": "under 10 min",
-      "what": "The request has reached Jaga's admins. The map shows only the area, never the person's place or number. If you can help safely, call 1784 first.",
-      "call": "Call {number}",
-      "mapWord": "SOS · no team yet"
     }
   },
   "tmd": {
@@ -1194,12 +1216,6 @@
         "body": "{count, plural, one {# zone has been rising for a week with the rain behind it. Nothing has gone to anybody; it is waiting for you to read the figures and decide} other {# zones have been rising for a week with the rain behind them. Nothing has gone to anybody; they are waiting for you to read the figures and decide}}"
       }
     },
-    "bankReached": {
-      "title": "A river near you has reached its bank",
-      "body": "{name} is at or over its bank.",
-      "note": "A measurement, not an alert. Alerts come only from Jaga’s admins.",
-      "watch": "Watch the river"
-    },
     "teamInstall": {
       "title": "Put Jaga on this device",
       "body": {
@@ -1207,6 +1223,12 @@
         "computer": "A case offered to your team rings the alarm only while Jaga is open. Install Jaga on this computer so it opens from its own window. An animated guide shows how."
       },
       "see": "Show me how"
+    },
+    "bankReached": {
+      "title": "A river near you has reached its bank",
+      "body": "{name} is at or over its bank.",
+      "note": "A measurement, not an alert. Alerts come only from Jaga’s admins.",
+      "watch": "Watch the river"
     }
   },
   "placeFinder": {
@@ -1552,27 +1574,47 @@
     }
   },
   "authority": {
+    "escalated": {
+      "badge": "Open to every team",
+      "title": "Requests no team has taken, outside your area ({count})",
+      "note": "These requests have waited a long time with no team. Jaga does not assign them to you. If you can reach the person, arrange it yourselves, outside the app. Every look at a phone number is recorded.",
+      "noArea": "Tambon unknown",
+      "waited": "Waiting {time}",
+      "timeHm": "{hours} h {minutes} min",
+      "timeM": "{minutes} min",
+      "typedPlace": "The sender typed their place: {text}",
+      "people": "{count} people",
+      "onBehalf": "Sent for someone else",
+      "injuries": "Injuries: {text}",
+      "said": "The sender said: {text}",
+      "coords": "Coordinates {coords}",
+      "accuracy": "Accuracy ±{m} m",
+      "directions": "Directions",
+      "showPhone": "Show the phone number",
+      "phoneNone": "The sender gave no phone number",
+      "phoneLogged": "It is recorded that you looked at this number"
+    },
     "title": "Case board",
     "subtitle": "Requests in the area your team covers. A case being offered to your team is on top.",
     "pollFailed": "The board couldn't update. What you see may be out of date. Check your connection.",
     "refresh": "Update",
     "alarm": {
       "title": "Alarm sound",
+      "banner": "Tap here to turn on the alarm sound. Without it you will not hear a case offered to your team.",
       "off": "The alarm is silent. Tap once to turn the sound on.",
       "arm": "Turn on the alarm sound",
       "on": "The alarm sound is on",
       "none": "This browser can't play the alarm. Keep this page where you can see it.",
       "openOnly": "The alarm only sounds while this page is open.",
-      "ringing": "{count, plural, one {# case is being offered to your team} other {# cases are being offered to your team}}",
-      "banner": "Tap here to turn on the alarm sound. Without it you will not hear a case offered to your team."
+      "ringing": "{count, plural, one {# case is being offered to your team} other {# cases are being offered to your team}}"
     },
     "unit": {
       "onDuty": "On duty, ready for cases",
       "offDuty": "Off duty",
       "dutyHint": "Off duty, you still see every case and can accept any of them. Your team is only asked last.",
       "sharing": "When you accept an SOS, the person you are rescuing can see your team's contact number.",
-      "sharingOff": "They see your organisation's official number instead.",
-      "sharingFixed": "Always on. This cannot be switched off, so the person can call you while you are on your way."
+      "sharingFixed": "Always on. This cannot be switched off, so the person can call you while you are on your way.",
+      "sharingOff": "They see your organisation's official number instead."
     },
     "filter": {
       "open": "Open ({count})",
@@ -1894,26 +1936,6 @@
         "idle": "No requests for help coming in right now"
       },
       "suppliesOffered": "{count, plural, one {# request for food and water is offered to your team} other {# requests for food and water are offered to your team}}"
-    },
-    "escalated": {
-      "badge": "Open to every team",
-      "title": "Requests no team has taken, outside your area ({count})",
-      "note": "These requests have waited a long time with no team. Jaga does not assign them to you. If you can reach the person, arrange it yourselves, outside the app. Every look at a phone number is recorded.",
-      "noArea": "Tambon unknown",
-      "waited": "Waiting {time}",
-      "timeHm": "{hours} h {minutes} min",
-      "timeM": "{minutes} min",
-      "typedPlace": "The sender typed their place: {text}",
-      "people": "{count} people",
-      "onBehalf": "Sent for someone else",
-      "injuries": "Injuries: {text}",
-      "said": "The sender said: {text}",
-      "coords": "Coordinates {coords}",
-      "accuracy": "Accuracy ±{m} m",
-      "directions": "Directions",
-      "showPhone": "Show the phone number",
-      "phoneNone": "The sender gave no phone number",
-      "phoneLogged": "It is recorded that you looked at this number"
     }
   },
   "admin": {
@@ -2249,6 +2271,17 @@
     }
   },
   "warRoom": {
+    "stale": {
+      "clear": "Clear as obsolete",
+      "clearTitle": "Clear this case as obsolete",
+      "clearNote": "The case is closed as stopped and stays in the record. Use it when nothing has been heard from the sender in {hours} hours. You can reopen it from Closed.",
+      "why": "Reason (required)",
+      "reasonDefault": "No word from the sender for {hours} hours, no unit took it",
+      "confirm": "Clear the case",
+      "allWhy": "Reason for all {count} cases (required)",
+      "allConfirm": "Clear all {count} as obsolete",
+      "reopen": "Reopen"
+    },
     "title": "War room",
     "subtitle": "What is happening, who is waiting for help, and who has registered where",
     "updated": "Data from",
@@ -2263,11 +2296,11 @@
       "m": "{minutes} min"
     },
     "state": {
+      "stale": "Not heard from for over 72 h",
       "overdue": "No answer for {time}",
       "waiting": "Waiting {time}",
       "working": "{unit} has it",
-      "closed": "Closed",
-      "stale": "Not heard from for over 72 h"
+      "closed": "Closed"
     },
     "gate": {
       "badge": "Do this now",
@@ -2298,6 +2331,9 @@
     "perHourBar": "{hour}:00 — {count} cases",
     "now": "{hour}:00 (latest)",
     "band": {
+      "stale": "Older than 72 hours ({count})",
+      "staleNote": "Open, no unit on it, and the sender has not been heard from for {hours} hours. These no longer count as work. Clear the obsolete ones; assign any that may still be real.",
+      "noneStale": "Nothing is older than 72 hours.",
       "needAnswer": "Needs an answer ({count})",
       "needAnswerNote": "Longest wait first. Over {minutes} minutes counts as late.",
       "noneWaiting": "Every case has a unit.",
@@ -2306,10 +2342,7 @@
       "noneWorking": "No case has been taken yet.",
       "closed": "Closed ({count})",
       "closedNote": "Rescued, the sender said they are safe, or the case was stopped.",
-      "noneClosed": "No closed cases yet.",
-      "stale": "Older than 72 hours ({count})",
-      "staleNote": "Open, no unit on it, and the sender has not been heard from for {hours} hours. These no longer count as work. Clear the obsolete ones; assign any that may still be real.",
-      "noneStale": "Nothing is older than 72 hours."
+      "noneClosed": "No closed cases yet."
     },
     "case": {
       "noArea": "Tambon unknown",
@@ -2355,6 +2388,8 @@
       "super_admin": "Super admin"
     },
     "event": {
+      "cleared_obsolete": "An admin cleared it as obsolete",
+      "reopened_by_admin": "An admin reopened it",
       "received": "Received",
       "merged_update": "Repeat send, merged into this case",
       "claimed": "A unit took the case",
@@ -2368,9 +2403,7 @@
       "spam_dismissed": "Flag removed",
       "details_added": "Details added",
       "media_added": "Photo or voice added",
-      "location_added": "Location updated",
-      "cleared_obsolete": "An admin cleared it as obsolete",
-      "reopened_by_admin": "An admin reopened it"
+      "location_added": "Location updated"
     },
     "assign": {
       "title": "Which unit takes it",
@@ -2445,26 +2478,26 @@
       "density": "People per tambon (few → many)"
     },
     "done": {
+      "cleared": "Cleared. It is under Closed and can be reopened.",
+      "clearedAll": "Cleared. They are under Closed and can be reopened.",
+      "reopened": "Reopened. It is back on the board.",
       "assigned": "Assigned. Remember to call the unit.",
       "released": "Handed back to the queue.",
       "noted": "Saved.",
       "spam": "Flagged.",
       "spamDismissed": "Flag removed.",
       "damSent": "Recorded: the notice was sent",
-      "damDismissed": "Recorded: no notice sent",
-      "cleared": "Cleared. It is under Closed and can be reopened.",
-      "clearedAll": "Cleared. They are under Closed and can be reopened.",
-      "reopened": "Reopened. It is back on the board."
+      "damDismissed": "Recorded: no notice sent"
     },
     "error": {
+      "notStale": "The sender was heard from in the last 72 hours, so this case can't be cleared.",
       "save": "That didn't work. Try again.",
       "closed": "This case is closed.",
       "held": "Another unit holds this case. Hand it back to the queue first.",
       "notCovered": "That unit doesn't cover this case's tambon.",
       "unverified": "That unit isn't verified.",
       "reason": "A reason is needed.",
-      "forbidden": "This page is for admins only.",
-      "notStale": "The sender was heard from in the last 72 hours, so this case can't be cleared."
+      "forbidden": "This page is for admins only."
     },
     "dam": {
       "toReview": "Waiting on you",
@@ -2533,17 +2566,6 @@
     "supplies": {
       "mark": "Food and water",
       "open": "Food and water requests open: {count}"
-    },
-    "stale": {
-      "clear": "Clear as obsolete",
-      "clearTitle": "Clear this case as obsolete",
-      "clearNote": "The case is closed as stopped and stays in the record. Use it when nothing has been heard from the sender in {hours} hours. You can reopen it from Closed.",
-      "why": "Reason (required)",
-      "reasonDefault": "No word from the sender for {hours} hours, no unit took it",
-      "confirm": "Clear the case",
-      "allWhy": "Reason for all {count} cases (required)",
-      "allConfirm": "Clear all {count} as obsolete",
-      "reopen": "Reopen"
     }
   },
   "impactPublic": {
@@ -2808,7 +2830,11 @@
       "macSafari": "Mac (Safari)",
       "inApp": "Opened inside another app, such as Messenger or LINE",
       "quietIos": "Through Do Not Disturb: iPhone and iPad",
-      "quietAndroid": "Through Do Not Disturb: Android"
+      "quietAndroid": "Through Do Not Disturb: Android",
+      "bannerFirst": "Banner: first visit",
+      "bannerAgain": "Banner: been here before",
+      "bannerPlace": "Banner: has saved places",
+      "bannerPush": "Banner: notifications already on"
     }
   },
   "report": {
@@ -3806,6 +3832,8 @@
     "caseTitle": "Get notified when a team accepts",
     "caseBody": "Jaga notifies this device when a team accepts your request, is on its way, or has arrived, even with the app closed.",
     "send": {
+      "needNumberTitle": "Add a phone number",
+      "needNumberBody": "Your request has no number, so rescuers can't call you. Tap to add one.",
       "somewhere": "your area",
       "aTeam": "A response team",
       "offerTitle": "SOS request in {tambon}",
@@ -3828,9 +3856,7 @@
       "assignedTitle": "A case in {tambon} was handed to you",
       "assignedBody": "Your team gave you this case. Open it to see where to go and what to know.",
       "assignedSuppliesTitle": "A food and water delivery in {tambon} was handed to you",
-      "assignedSuppliesBody": "Your team gave you this delivery. Open it to see where to go.",
-      "needNumberTitle": "Add a phone number",
-      "needNumberBody": "Your request has no number, so rescuers can't call you. Tap to add one."
+      "assignedSuppliesBody": "Your team gave you this delivery. Open it to see where to go."
     },
     "quiet": {
       "button": "Let Jaga through Do Not Disturb and Sleep",

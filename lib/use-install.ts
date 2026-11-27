@@ -20,8 +20,12 @@ const changed = () => listeners.forEach((listener) => listener());
 
 if (typeof window !== "undefined") {
   window.addEventListener("beforeinstallprompt", (event) => {
-    // Keeps Chrome's own small banner away: the card's button is the one way in.
-    event.preventDefault();
+    /*
+     * The event is kept but NOT cancelled (the owner, 28 Nov 2026, superseding 19 Oct's "the
+     * card's button is the one way in"): cancelling it also took away Chrome's own install bar,
+     * so an Android visitor who never scrolled was never asked by anybody. Chrome may now show
+     * its bar as well; our banner and card still work, because the event is stored either way.
+     */
     offer = event as InstallEvent;
     // The browser only offers when Jaga is not installed, so an old "installed" note is wrong.
     writeStored("install.done", null);
@@ -81,4 +85,27 @@ export async function askToInstall(): Promise<"accepted" | "dismissed" | "unavai
   } finally {
     changed();
   }
+}
+
+/**
+ * "Show me where that button is." The banner cannot open the card's own guide by itself, so it
+ * asks here and the card listens. One shared signal, so there is never a second set of steps.
+ */
+let guideWanted = false;
+const guideListeners = new Set<() => void>();
+
+export function openGuide(): void {
+  guideWanted = true;
+  guideListeners.forEach((listener) => listener());
+}
+
+export function useGuideWanted(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      guideListeners.add(onChange);
+      return () => guideListeners.delete(onChange);
+    },
+    () => guideWanted,
+    () => false,
+  );
 }

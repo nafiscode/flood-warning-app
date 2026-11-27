@@ -490,13 +490,12 @@ test.describe("the install card", () => {
     const card = page.locator("[data-install]");
     await expect(card).toBeVisible();
 
-    // The owner, 19 Oct: nobody noticed it. One line high on the page brings the card into view,
-    // and the card says what installing is good for before it says how.
-    const line = page.locator("[data-install-line]");
-    await expect(line).toBeVisible();
+    // The owner, 19 Oct: nobody noticed it; 28 Nov: ask, rather than point. The banner under the
+    // hero asks, and the card below it says what installing is good for before it says how.
+    const banner = page.locator("[data-install-banner]");
+    await expect(banner).toBeVisible();
     await expect(card.locator("[data-install-why] li")).toHaveCount(3);
-    await line.locator("[data-install-show]").click();
-    await expect(card).toBeInViewport();
+    await expect(card.locator("[data-install-guide]")).toHaveCount(0);
 
     // What Chrome and Edge hand a page they are willing to install; the person says no here.
     await page.evaluate(() => {
@@ -508,18 +507,27 @@ test.describe("the install card", () => {
         userChoice: Promise.resolve({ outcome: "dismissed" }),
       });
       window.dispatchEvent(offer);
+      // The owner, 28 Nov: the event is kept but not cancelled, so Chrome may still ask itself.
+      document.body.dataset.cancelled = offer.defaultPrevented ? "yes" : "no";
     });
-    await card.locator("[data-install-button]").click();
+    await expect(page.locator("body")).toHaveAttribute("data-cancelled", "no");
+
+    // The banner's own button opens that dialog, so nobody has to find the card at all.
+    await banner.locator("[data-install-banner-button]").click();
     await expect(page.locator("body")).toHaveAttribute("data-asked", "yes");
     await expect(card.locator("[data-install-guide]")).toHaveCount(0);
 
-    // An offer can be used once. After it, the button shows where the browser's own menu is.
-    await card.locator("[data-install-button]").click();
+    // An offer can be used once. After it, the banner sends them to the card's own steps, which
+    // is all any page can do on an iPhone, in Safari or in Firefox.
+    await banner.locator("[data-install-banner-button]").click();
+    await expect(card).toBeInViewport();
     await expect(card.locator("[data-install-guide] li").first()).toBeVisible();
     await noSidewaysScroll(page);
 
+    // One "Not now" silences the banner and the card together, and stays silenced on reload.
     await card.locator("[data-install-later]").click();
     await expect(card).toHaveCount(0);
+    await expect(banner).toHaveCount(0);
     await page.reload();
     await expect(page.locator("[data-hero]")).toBeVisible();
     await expect(page.locator('a[href="/map"]').last()).toBeVisible();
@@ -531,6 +539,7 @@ test.describe("the install card", () => {
     await page.goto("/");
     await expect(page.locator('[data-hero="alert"]')).toBeVisible();
     await expect(page.locator("[data-install]")).toHaveCount(0);
+    await expect(page.locator("[data-install-banner]")).toHaveCount(0);
   });
 });
 

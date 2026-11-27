@@ -87,8 +87,13 @@ export type HomeViewProps = {
    * Evacuate.
    */
   install?: ReactNode;
-  /** One line pointing at that card, high on the page. Phones and tablets only; see InstallLine. */
-  installLine?: ReactNode;
+  /**
+   * The banner asking that Jaga be installed (the owner, 28 Nov 2026). It replaced the one line
+   * that used to point down at the card: the line only ever showed on phones, and pointing at a
+   * card is a step more than asking. It sits under the hero, on every device, and like the card
+   * it is dropped at Warning and Evacuate. See components/InstallBanner.tsx.
+   */
+  installBanner?: ReactNode;
   /** "Share Jaga". Drawn last, after the dam's card, and not at Warning or Evacuate either. */
   share?: ReactNode;
   /**
@@ -465,10 +470,14 @@ export function HomeView(props: HomeViewProps) {
           {tense && !wide && <TeamEntryCard />}
 
           {/*
-           * And one line saying Jaga can be installed, because on a phone the card itself is 56%
-           * down the page (measured, 19 Oct) - the three columns stack and it is in the last one.
+           * Asking that Jaga be installed, high on the page and on every device - a phone reaches
+           * the card itself only 56% down (measured, 19 Oct) and a laptop was never pointed at it
+           * at all. It sits under the hero and not above it: the level of their own tambon is the
+           * first thing on this screen and nothing is put in front of it (safety rule 3). Not
+           * drawn at Warning or Evacuate.
            */}
-          {!loading && !choosing && !tense && props.installLine}
+          {!loading && !choosing && !tense && props.installBanner}
+
         </div>
 
         {/* The band under it: what is happening, in the wide column. */}
