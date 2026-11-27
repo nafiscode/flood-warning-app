@@ -9,6 +9,7 @@ import {
   type PushAlert,
   type PushLevel,
 } from "@/lib/push";
+import { adviseService, PLAN_SERVICES, pushSignature, type PlanReading } from "@/lib/plan-limits";
 import { siteUrl } from "@/lib/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import en from "@/messages/en.json";
@@ -277,11 +278,12 @@ export async function runPushTick(): Promise<PushOutcome> {
     await Promise.all(Array.from({ length: 8 }, worker));
     const auto = await autoAlarmTick(supabase, token, gone);
     const season = await seasonTick(supabase, token, gone);
+    const plan = await planTick(supabase, token, gone);
     if (gone.length > 0) await supabase.rpc("push_forget", { p_token: token, p_endpoints: gone });
     await line;
     return {
-      sent: sent + auto.sent + season.sent,
-      failed: failed + auto.failed + season.failed,
+      sent: sent + auto.sent + season.sent + plan.sent,
+      failed: failed + auto.failed + season.failed + plan.failed,
       gone: gone.length,
     };
   } catch {
@@ -402,6 +404,117 @@ async function seasonTick(
     }
   }
   return { sent, failed };
+}
+
+/**
+ * A push to the super admin when Vercel or Supabase reaches "upgrade now" (the owner, 27 Nov 2026).
+ * The verdict is lib/plan-limits.ts's, the one the plan page shows. Checked once an hour (the tick
+ * itself runs every minute, and the readings change by hand or once a night), and the database
+ * hands each phone one push per episode and per two days. An ordinary notice, no level and no ring:
+ * it says what is at its line and that nothing has stopped. It opens /admin/plans.
+ */
+const PLAN_WORDS: Record<string, { title: string; body: string }> = {
+  th: th.plans.push,
+  ms: ms.plans.push,
+  en: en.plans.push,
+};
+/** The minute of the hour the check runs in (UTC), off the minute the other crons start on. */
+const PLAN_CHECK_MINUTE = 17;
+
+async function planTick(
+  supabase: ReturnType<typeof createPublicClient>,
+  token: string,
+  gone: string[],
+): Promise<{ sent: number; failed: number }> {
+  const now = new Date();
+  if (now.getUTCMinutes() !== PLAN_CHECK_MINUTE) return { sent: 0, failed: 0 };
+  const { data, error } = await supabase.rpc("push_plan_readings", { p_token: token });
+  if (error || !Array.isArray(data)) return { sent: 0, failed: 0 };
+  const readings = (
+    data as {
+      service: string;
+      meter: string;
+      value: number;
+      read_at: string;
+      resets_on: string | null;
+    }[]
+  ).map((r): PlanReading => ({
+    service: r.service as PlanReading["service"],
+    meter: r.meter,
+    value: r.value,
+    at: r.read_at,
+    resetsOn: r.resets_on,
+    note: null,
+  }));
+  let sent = 0;
+  let failed = 0;
+  for (const service of PLAN_SERVICES) {
+    const advice = adviseService(service, readings, now);
+    const signature = pushSignature(advice, now);
+    if (!signature) continue;
+    const { data: due, error: dueError } = await supabase.rpc("push_plan_due", {
+      p_token: token,
+      p_service: service,
+      p_signature: signature,
+    });
+    if (dueError || !Array.isArray(due)) continue;
+    for (const row of due as {
+      endpoint: string;
+      keys: { p256dh: string; auth: string };
+      locale: string;
+    }[]) {
+      const words = PLAN_WORDS[row.locale] ?? PLAN_WORDS.th!;
+      const names = (PLAN_NAMES[row.locale] ?? PLAN_NAMES.th!)(
+        service,
+        advice.because.map((m) => m.def.id),
+      );
+      const fill = (text: string) =>
+        text.replace("{service}", names.service).replace("{meters}", names.meters);
+      const payload = {
+        kind: "announcement" as const,
+        title: fill(words.title),
+        body: fill(words.body),
+        url: row.locale === "th" ? "/admin/plans" : `/${row.locale}/admin/plans`,
+        tag: `plan-${service}`,
+        sticky: false,
+      };
+      try {
+        await webpush.sendNotification(
+          { endpoint: row.endpoint, keys: row.keys },
+          JSON.stringify(payload),
+          { TTL: 24 * 3600, urgency: "normal" },
+        );
+        sent++;
+      } catch (e) {
+        const status = (e as { statusCode?: number }).statusCode;
+        if (status === 404 || status === 410) gone.push(row.endpoint);
+        else failed++;
+      }
+    }
+  }
+  return { sent, failed };
+}
+
+/** The service's name and the meters at their line, in the phone's own language. */
+const PLAN_NAMES: Record<
+  string,
+  (service: string, meters: string[]) => { service: string; meters: string }
+> = {
+  th: (s, m) => planNames(th.plans, s, m),
+  ms: (s, m) => planNames(ms.plans, s, m),
+  en: (s, m) => planNames(en.plans, s, m),
+};
+
+function planNames(
+  words: typeof en.plans,
+  service: string,
+  meters: string[],
+): { service: string; meters: string } {
+  const name = (words.service as Record<string, { name: string }>)[service]?.name ?? service;
+  const list = meters
+    .map((id) => (words.meter as Record<string, { name: string }>)[id]?.name ?? id)
+    .join(", ");
+  return { service: name, meters: list };
 }
 
 async function autoAlarmTick(

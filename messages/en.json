@@ -1914,7 +1914,8 @@
       "usage": "App usage",
       "back": "Back to the admin home",
       "members": "Admin team",
-      "feedback": "Feedback"
+      "feedback": "Feedback",
+      "plans": "Free plans"
     },
     "role": {
       "admin": "Admin",
@@ -7042,5 +7043,169 @@
     "differ": "The two models disagree. Plan for {mm} mm.",
     "farApart": "The two models are far apart. Plan for {mm} mm and check again later.",
     "source": "Sources: Open-Meteo and the Thai Meteorological Department. A forecast, not a Jaga alert."
+  },
+  "plans": {
+    "title": "Vercel and Supabase free plans",
+    "intro": "Jaga runs on the free plans of Vercel (the website) and Supabase (the database). Past its limits Vercel pauses the site, and Supabase slows down or pauses the database. This page shows how close each one is and when an upgrade is due. It is an estimate, not a certainty, so dates are shown as ranges.",
+    "source": "The numbers come from two places: what an admin types from each provider's own page (they can't be read from here), and what the database measures about itself every night.",
+    "saved": "Reading saved.",
+    "removed": "Reading removed.",
+    "error": {
+      "meter": "That meter isn't known. Choose one from the list.",
+      "value": "That number isn't valid. Type it the way the provider shows it, for example 3h 12m, 192k or 3.6 GB.",
+      "date": "That date isn't valid. Use YYYY-MM-DD.",
+      "save": "It could not be saved. Try again."
+    },
+    "verdict": {
+      "now": "Upgrade now",
+      "soon": "Upgrade soon",
+      "later": "Later is fine",
+      "done": "Upgraded"
+    },
+    "verdictBody": {
+      "now": "{service} is at or past the line set for upgrading.",
+      "soon": "{service} is getting close to its limit. Plan the upgrade; don't wait for the warning email.",
+      "later": "{service} is well inside its free plan. Check it again in a few days.",
+      "done": "{service} has been on a paid plan since {date}. The free-plan limits below no longer apply, so this page stops warning."
+    },
+    "blind": "No fresh reading in the last 7 days, so this advice is a guess. Type in today's numbers from {service}.",
+    "dueBetween": "Upgrade is due between {from} and {to}",
+    "dueOn": "Upgrade is due around {from}",
+    "dueNext": "At this pace the line is reached after the counter resets, around {from} or later.",
+    "dueNone": "No date yet: at this pace the line isn't reached, or there are too few readings to say.",
+    "pausesBetween": "If nothing is done, {service} could stop between {from} and {to}",
+    "pausesOn": "If nothing is done, {service} could stop around {from}",
+    "seasonMargin": "It is flood season. A flood day can bring several times the usual visitors, so the fast case counts the recent pace times {margin}.",
+    "status": {
+      "ok": "Fine",
+      "watch": "Watch",
+      "act": "At the line",
+      "none": "No reading"
+    },
+    "meters": "Meters",
+    "meter": {
+      "active_cpu": {
+        "name": "Active CPU",
+        "where": "Vercel → team → Usage → Fluid Active CPU"
+      },
+      "transfer": {
+        "name": "Data transfer",
+        "where": "Vercel → team → Usage → Fast Data Transfer"
+      },
+      "cdn_requests": {
+        "name": "CDN requests",
+        "where": "Vercel → team → Usage → Edge Requests"
+      },
+      "function_calls": {
+        "name": "Function calls",
+        "where": "Vercel → team → Usage → Function Invocations"
+      },
+      "db_size": {
+        "name": "Database size",
+        "where": "Supabase → organisation → Usage (the database also records its own size every night)"
+      },
+      "egress": {
+        "name": "Egress (data sent out)",
+        "where": "Supabase → organisation → Usage → Egress"
+      },
+      "log_ingest": {
+        "name": "Log data",
+        "where": "Supabase → organisation → Usage → Log ingestion"
+      },
+      "disk_io": {
+        "name": "Disk IO budget",
+        "where": "Supabase → project → Reports → Database → Disk IO. Type yes when Supabase emails a warning, and no when the chart is back to normal."
+      },
+      "vercel_upgraded": {
+        "name": "Plan upgraded",
+        "where": "Type yes once you have upgraded: warnings and pushes for Vercel then stop. Type no to undo."
+      },
+      "supabase_upgraded": {
+        "name": "Plan upgraded",
+        "where": "Type yes once you have upgraded: warnings and pushes for Supabase then stop. Type no to undo."
+      }
+    },
+    "ofLimit": "{value} of {limit}",
+    "share": "{percent}% of the free limit",
+    "line": "Upgrade line: {value}",
+    "readAt": "Read {when}",
+    "staleReading": "This reading is {days} days old. Read it again.",
+    "pace": "About {low} to {high} a day",
+    "endShare": "When the counter resets on {date} it would stand at {low}% to {high}% of the limit.",
+    "limitReached": "Limit reached between {from} and {to}",
+    "flagOn": "Supabase has warned (in the last 14 days)",
+    "flagOff": "No warning in force",
+    "noReading": "No reading yet. Add one below.",
+    "service": {
+      "vercel": {
+        "name": "Vercel",
+        "plan": "Hobby (free)",
+        "role": "The website and app",
+        "upgrade": "Pro costs $20 a month. It removes the 4-hour Active CPU cap: CPU is billed by use against a $20 monthly credit, and the site is no longer paused at the free limits. To upgrade: Vercel → team → Settings → Billing.",
+        "open": "Open Vercel's Usage page"
+      },
+      "supabase": {
+        "name": "Supabase",
+        "plan": "Free",
+        "role": "The database",
+        "upgrade": "Pro costs $25 a month and adds daily backups. Its compute credit covers a Micro instance, which has about twice the base disk speed of the free one. A Small instance has about four times and costs a little more a month; see Supabase's Compute page for the price. To upgrade: Supabase → organisation → Billing.",
+        "open": "Open Supabase's dashboard"
+      }
+    },
+    "diskIo": {
+      "title": "About the Disk IO warning",
+      "body": "Supabase's free instance can read and write the disk at full speed for about 30 minutes a day, then drops to a much slower base speed. The warning means that budget is running out: the database gets slower, then may stop answering. Upgrading to Pro (a Micro instance) roughly doubles the base speed. Doing less disk work helps first and costs nothing: see the heaviest tables and the scheduled jobs below."
+    },
+    "health": {
+      "title": "From the database itself",
+      "intro": "Measured by the database, not typed in. The counters run since {since} (Postgres starts them again after a pause or a restore).",
+      "missing": "The database can't be asked yet, because the migration plan_meters hasn't been applied.",
+      "size": "Database size",
+      "sizeOf": "{size} of the 500 MB the free plan gives",
+      "storage": "Stored files",
+      "users": "Accounts",
+      "cache": "Read from memory",
+      "cacheHint": "Below 99% means the disk is read more often",
+      "connections": "Connections",
+      "writers": "Heaviest tables",
+      "writersHint": "Writes since the counters started. Dead rows are old rows waiting for the database to clear them.",
+      "table": "Table",
+      "writes": "Writes",
+      "dead": "Dead rows",
+      "bytes": "Size",
+      "crons": "Scheduled jobs: runs in the last 24 hours",
+      "failed": "{count} failed",
+      "off": "off",
+      "cronLog": "Cron run log: {rows} rows, {size}",
+      "cronLogHint": "Nothing was clearing this table, and the every-minute job writes to it thousands of times a day. The nightly snapshot keeps 7 days once the migration is applied.",
+      "io": "Read about {read} a day and wrote about {write} a day (from the nightly snapshots)",
+      "ioNone": "Not enough nightly snapshots yet: it needs at least two nights."
+    },
+    "add": {
+      "title": "Write down a reading",
+      "meter": "Meter",
+      "value": "Value",
+      "valueHint": "Type it the way the provider shows it, for example 3h 12m, 192k, 3.6 GB or 71 MB. For the Disk IO budget type yes (Supabase has warned) or no (normal).",
+      "resets": "Counter resets on (optional)",
+      "resetsHint": "Vercel and Supabase show the date the counter starts again. It lets this page work out a pace.",
+      "note": "Note (optional)",
+      "save": "Save reading"
+    },
+    "history": {
+      "title": "Earlier readings",
+      "none": "No readings yet.",
+      "auto": "{count} readings the database took of itself are kept but not listed here.",
+      "remove": "Remove",
+      "removeLabel": "Remove the {meter} reading from {when}"
+    },
+    "needsReset": "Add the date {service} resets its counter (shown on its Usage page) with the next reading, and this page will estimate when the limit would be reached.",
+    "today": "now",
+    "push": {
+      "title": "Jaga · {service}: upgrade now",
+      "body": "At the line set for upgrading: {meters}. Nothing has stopped yet. Open the plan page for the dates."
+    },
+    "pushNote": "The super admin gets a push when a service reaches \"Upgrade now\", then again every two days until it is marked as upgraded.",
+    "yes": "yes",
+    "no": "no"
   }
 }

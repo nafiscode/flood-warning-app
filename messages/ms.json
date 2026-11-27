@@ -1914,7 +1914,8 @@
       "usage": "Penggunaan aplikasi",
       "back": "Kembali ke utama pentadbir",
       "members": "Pasukan pentadbir",
-      "feedback": "Nilai dan pendapat"
+      "feedback": "Nilai dan pendapat",
+      "plans": "Pelan percuma"
     },
     "role": {
       "admin": "Pentadbir",
@@ -7042,5 +7043,169 @@
     "differ": "Kedua-dua model berbeza. Bersiap untuk {mm} mm.",
     "farApart": "Kedua-dua model jauh berbeza. Bersiap untuk {mm} mm dan periksa semula nanti.",
     "source": "Sumber: Open-Meteo dan Jabatan Meteorologi Thailand. Ini ramalan, bukan amaran Jaga."
+  },
+  "plans": {
+    "title": "Pelan percuma Vercel dan Supabase",
+    "intro": "Jaga berjalan di atas pelan percuma Vercel (laman web) dan Supabase (pangkalan data). Apabila had dilepasi, Vercel menghentikan laman web, manakala Supabase memperlahankan atau menghentikan pangkalan data. Halaman ini menunjukkan sejauh mana setiap satu menghampiri had dan bila naik taraf patut dibuat. Ini anggaran, bukan kepastian, maka tarikh diberi sebagai julat.",
+    "source": "Angka datang dari dua tempat: yang ditaip oleh pentadbir daripada halaman penyedia sendiri (tidak boleh dibaca dari sini), dan yang diukur oleh pangkalan data tentang dirinya setiap malam.",
+    "saved": "Bacaan disimpan.",
+    "removed": "Bacaan dibuang.",
+    "error": {
+      "meter": "Meter ini tidak dikenali. Pilih daripada senarai.",
+      "value": "Nombor tidak sah. Taip seperti yang ditunjukkan penyedia, contohnya 3h 12m, 192k atau 3.6 GB.",
+      "date": "Tarikh tidak sah. Guna bentuk TTTT-BB-HH.",
+      "save": "Tidak dapat disimpan. Cuba lagi."
+    },
+    "verdict": {
+      "now": "Naik taraf sekarang",
+      "soon": "Naik taraf tidak lama lagi",
+      "later": "Belum perlu tergesa-gesa",
+      "done": "Sudah naik taraf"
+    },
+    "verdictBody": {
+      "now": "{service} sudah sampai atau melepasi garis yang ditetapkan untuk naik taraf.",
+      "soon": "{service} menghampiri had. Sediakan naik taraf; jangan tunggu e-mel amaran.",
+      "later": "{service} masih jauh di dalam pelan percuma. Semak lagi dalam beberapa hari.",
+      "done": "{service} berada pada pelan berbayar sejak {date}. Had pelan percuma di bawah tidak lagi terpakai, jadi halaman ini berhenti memberi amaran."
+    },
+    "blind": "Tiada bacaan baharu dalam 7 hari, jadi nasihat ini hanya tekaan. Taip angka hari ini daripada {service}.",
+    "dueBetween": "Naik taraf patut dibuat antara {from} dan {to}",
+    "dueOn": "Naik taraf patut dibuat sekitar {from}",
+    "dueNext": "Pada kadar ini garis dicapai selepas pembilang ditetapkan semula, sekitar {from} atau selepas itu.",
+    "dueNone": "Belum ada tarikh: pada kadar ini garis tidak dicapai, atau bacaan terlalu sedikit untuk dinyatakan.",
+    "pausesBetween": "Jika tiada tindakan, {service} boleh berhenti antara {from} dan {to}",
+    "pausesOn": "Jika tiada tindakan, {service} boleh berhenti sekitar {from}",
+    "seasonMargin": "Sekarang musim banjir. Hari banjir boleh membawa pengunjung beberapa kali ganda, maka kes pantas mengira kadar terkini darab {margin}.",
+    "status": {
+      "ok": "Baik",
+      "watch": "Pantau",
+      "act": "Di garis",
+      "none": "Tiada bacaan"
+    },
+    "meters": "Meter",
+    "meter": {
+      "active_cpu": {
+        "name": "Active CPU",
+        "where": "Vercel → pasukan → Usage → Fluid Active CPU"
+      },
+      "transfer": {
+        "name": "Pemindahan data",
+        "where": "Vercel → pasukan → Usage → Fast Data Transfer"
+      },
+      "cdn_requests": {
+        "name": "Permintaan CDN",
+        "where": "Vercel → pasukan → Usage → Edge Requests"
+      },
+      "function_calls": {
+        "name": "Panggilan fungsi",
+        "where": "Vercel → pasukan → Usage → Function Invocations"
+      },
+      "db_size": {
+        "name": "Saiz pangkalan data",
+        "where": "Supabase → organisasi → Usage (pangkalan data juga mencatat saiznya setiap malam)"
+      },
+      "egress": {
+        "name": "Data keluar (egress)",
+        "where": "Supabase → organisasi → Usage → Egress"
+      },
+      "log_ingest": {
+        "name": "Data log",
+        "where": "Supabase → organisasi → Usage → Log ingestion"
+      },
+      "disk_io": {
+        "name": "Bajet Disk IO",
+        "where": "Supabase → projek → Reports → Database → Disk IO. Taip yes apabila Supabase menghantar e-mel amaran, dan no apabila carta kembali biasa."
+      },
+      "vercel_upgraded": {
+        "name": "Sudah naik taraf",
+        "where": "Taip yes selepas naik taraf: amaran dan pemberitahuan untuk Vercel akan berhenti. Taip no untuk membatalkan."
+      },
+      "supabase_upgraded": {
+        "name": "Sudah naik taraf",
+        "where": "Taip yes selepas naik taraf: amaran dan pemberitahuan untuk Supabase akan berhenti. Taip no untuk membatalkan."
+      }
+    },
+    "ofLimit": "{value} daripada {limit}",
+    "share": "{percent}% daripada had percuma",
+    "line": "Garis naik taraf: {value}",
+    "readAt": "Dibaca {when}",
+    "staleReading": "Bacaan ini sudah {days} hari. Baca semula.",
+    "pace": "Kira-kira {low} hingga {high} sehari",
+    "endShare": "Apabila pembilang ditetapkan semula pada {date}, ia akan berada pada {low}% hingga {high}% daripada had.",
+    "limitReached": "Had dicapai antara {from} dan {to}",
+    "flagOn": "Supabase sudah memberi amaran (dalam 14 hari lalu)",
+    "flagOff": "Tiada amaran yang masih berkuat kuasa",
+    "noReading": "Belum ada bacaan. Tambah di bawah.",
+    "service": {
+      "vercel": {
+        "name": "Vercel",
+        "plan": "Hobby (percuma)",
+        "role": "Laman web dan aplikasi",
+        "upgrade": "Pro berharga 20 dolar sebulan. Active CPU tidak lagi dihadkan pada 4 jam: ia dikira ikut penggunaan, ditolak daripada kredit 20 dolar sebulan, dan laman web tidak dihentikan apabila had percuma dicapai. Cara naik taraf: Vercel → pasukan → Settings → Billing.",
+        "open": "Buka halaman Usage Vercel"
+      },
+      "supabase": {
+        "name": "Supabase",
+        "plan": "Free",
+        "role": "Pangkalan data",
+        "upgrade": "Pro berharga 25 dolar sebulan dan menambah sandaran harian. Kredit pengiraan Pro menampung mesin Micro, yang kelajuan cakera asasnya kira-kira dua kali ganda mesin percuma. Mesin Small kira-kira empat kali ganda dan kosnya sedikit lebih sebulan. Lihat harga di halaman Compute Supabase. Cara naik taraf: Supabase → organisasi → Billing.",
+        "open": "Buka papan pemuka Supabase"
+      }
+    },
+    "diskIo": {
+      "title": "Tentang amaran Disk IO",
+      "body": "Mesin percuma Supabase boleh membaca dan menulis cakera pada kelajuan penuh kira-kira 30 minit sehari, kemudian turun ke kelajuan asas yang jauh lebih perlahan. Amaran bermakna bajet ini sedang habis: pangkalan data menjadi perlahan, kemudian mungkin berhenti menjawab. Naik taraf ke Pro (mesin Micro) menggandakan kelajuan asas. Mengurangkan kerja cakera membantu dahulu dan tidak berkos: lihat jadual paling kerap ditulis dan senarai kerja berjadual di bawah."
+    },
+    "health": {
+      "title": "Daripada pangkalan data sendiri",
+      "intro": "Diukur oleh pangkalan data, bukan ditaip. Pembilang berjalan sejak {since} (Postgres memulakannya semula selepas projek dijeda atau dipulihkan).",
+      "missing": "Pangkalan data belum dapat ditanya kerana migrasi plan_meters belum digunakan.",
+      "size": "Saiz pangkalan data",
+      "sizeOf": "{size} daripada 500 MB yang diberi pelan percuma",
+      "storage": "Fail disimpan",
+      "users": "Akaun",
+      "cache": "Dibaca dari memori",
+      "cacheHint": "Di bawah 99% bermakna cakera dibaca lebih kerap",
+      "connections": "Sambungan",
+      "writers": "Jadual paling kerap ditulis",
+      "writersHint": "Bilangan penulisan sejak pembilang bermula. Baris mati ialah baris lama yang menunggu pangkalan data membersihkannya.",
+      "table": "Jadual",
+      "writes": "Tulis",
+      "dead": "Baris mati",
+      "bytes": "Saiz",
+      "crons": "Kerja berjadual: bilangan larian dalam 24 jam",
+      "failed": "{count} gagal",
+      "off": "dimatikan",
+      "cronLog": "Log larian kerja berjadual: {rows} baris, {size}",
+      "cronLogHint": "Selama ini tiada apa-apa yang mengosongkan jadual ini, dan kerja setiap minit menulis ke dalamnya beribu-ribu kali sehari. Syot kilat malam menyimpan 7 hari selepas migrasi digunakan.",
+      "io": "Membaca kira-kira {read} sehari dan menulis kira-kira {write} sehari (daripada syot kilat malam)",
+      "ioNone": "Syot kilat malam belum cukup: perlu sekurang-kurangnya dua malam."
+    },
+    "add": {
+      "title": "Catat bacaan",
+      "meter": "Meter",
+      "value": "Nilai",
+      "valueHint": "Taip seperti yang ditunjukkan penyedia, contohnya 3h 12m, 192k, 3.6 GB atau 71 MB. Untuk bajet Disk IO taip yes (Supabase sudah memberi amaran) atau no (biasa).",
+      "resets": "Pembilang ditetapkan semula pada (pilihan)",
+      "resetsHint": "Vercel dan Supabase menunjukkan tarikh pembilang bermula semula. Ia membolehkan halaman ini mengira kadar penggunaan.",
+      "note": "Catatan (pilihan)",
+      "save": "Simpan bacaan"
+    },
+    "history": {
+      "title": "Bacaan terdahulu",
+      "none": "Belum ada bacaan.",
+      "auto": "{count} bacaan yang dicatat sendiri oleh pangkalan data disimpan tetapi tidak disenaraikan di sini.",
+      "remove": "Buang",
+      "removeLabel": "Buang bacaan {meter} yang dibaca pada {when}"
+    },
+    "needsReset": "Tambah tarikh {service} menetapkan semula pembilang (lihat halaman Usage) bersama bacaan seterusnya, dan halaman ini akan menganggar tarikh had dicapai.",
+    "today": "sekarang",
+    "push": {
+      "title": "Jaga · {service}: naik taraf sekarang",
+      "body": "Di garis naik taraf: {meters}. Belum ada yang berhenti. Buka halaman pelan untuk melihat tarikh."
+    },
+    "pushNote": "Pentadbir utama menerima pemberitahuan apabila sesuatu perkhidmatan sampai ke \"Naik taraf sekarang\", dan sekali lagi setiap dua hari sehingga ditandakan sudah naik taraf.",
+    "yes": "ya",
+    "no": "tidak"
   }
 }

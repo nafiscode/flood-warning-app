@@ -104,6 +104,8 @@ Upgrade to Pro (about 2 minutes, $20 a month, can be undone later). Upgrade when
   does not say whether it is instant, so also post a notice in `public/status/notice.json` and send the
   LINE broadcast while it clears.
 
+The admin page `/admin/plans` shows how close Vercel is, with an estimate of the date; the super admin is pushed when it reaches "Upgrade now". Mark it upgraded there afterwards so the warnings stop.
+
 Afterwards, record it in `docs/decisions.md` and set the Vercel spend notification to notify only,
 with no automatic action (a budget action can pause the deployment).
 
@@ -129,6 +131,7 @@ marks as upcoming).
   sponsor's credit arrives; and at once after any pause. Pro also lets the refresh-token revocation be
   turned off (admins on the iPhone home-screen app stop being signed out) and gives daily backups.
   A separate paid `jaga-live` project is optional then (tracker walkthrough 7 keeps the steps).
+- `/admin/plans` shows the same for Supabase (size, egress, the provider's Disk IO warning) with the heaviest tables and the cron list, and pushes the super admin at "Upgrade now". The nightly snapshot also keeps `cron.job_run_details` to seven days: it was never cleared, and the every-minute jobs write to it all day.
 - **Never run `npm run db:reset`, the full e2e suite or the RLS suite against `jaga-dev` after launch**
   without asking: it is the live database now.
 
