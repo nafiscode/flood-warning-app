@@ -1887,6 +1887,26 @@
         "idle": "No requests for help coming in right now"
       },
       "suppliesOffered": "{count, plural, one {# request for food and water is offered to your team} other {# requests for food and water are offered to your team}}"
+    },
+    "escalated": {
+      "badge": "Open to every team",
+      "title": "Requests no team has taken, outside your area ({count})",
+      "note": "These requests have waited a long time with no team. Jaga does not assign them to you. If you can reach the person, arrange it yourselves, outside the app. Every look at a phone number is recorded.",
+      "noArea": "Tambon unknown",
+      "waited": "Waiting {time}",
+      "timeHm": "{hours} h {minutes} min",
+      "timeM": "{minutes} min",
+      "typedPlace": "The sender typed their place: {text}",
+      "people": "{count} people",
+      "onBehalf": "Sent for someone else",
+      "injuries": "Injuries: {text}",
+      "said": "The sender said: {text}",
+      "coords": "Coordinates {coords}",
+      "accuracy": "Accuracy ±{m} m",
+      "directions": "Directions",
+      "showPhone": "Show the phone number",
+      "phoneNone": "The sender gave no phone number",
+      "phoneLogged": "It is recorded that you looked at this number"
     }
   },
   "admin": {

@@ -1887,6 +1887,26 @@
         "idle": "Tiada permintaan bantuan masuk buat masa ini"
       },
       "suppliesOffered": "{count} permintaan makanan dan air ditawarkan kepada pasukan anda"
+    },
+    "escalated": {
+      "badge": "Terbuka kepada semua pasukan",
+      "title": "Permintaan yang belum diterima mana-mana pasukan, di luar kawasan anda ({count})",
+      "note": "Permintaan ini sudah lama menunggu tanpa pasukan. Jaga tidak menugaskannya kepada anda. Jika anda boleh sampai kepada orang itu, atur sendiri di luar aplikasi. Setiap kali nombor telefon dibuka, ia direkodkan.",
+      "noArea": "Tambon tidak diketahui",
+      "waited": "Menunggu {time}",
+      "timeHm": "{hours} j {minutes} min",
+      "timeM": "{minutes} min",
+      "typedPlace": "Penghantar menaip tempatnya: {text}",
+      "people": "{count} orang",
+      "onBehalf": "Dihantar untuk orang lain",
+      "injuries": "Kecederaan: {text}",
+      "said": "Penghantar menulis: {text}",
+      "coords": "Koordinat {coords}",
+      "accuracy": "Ketepatan ±{m} m",
+      "directions": "Arah",
+      "showPhone": "Tunjuk nombor telefon",
+      "phoneNone": "Penghantar tidak memberi nombor telefon",
+      "phoneLogged": "Direkodkan bahawa anda melihat nombor ini"
     }
   },
   "admin": {

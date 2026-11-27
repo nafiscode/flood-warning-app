@@ -13,6 +13,7 @@ import {
   releaseCase,
   revealHouseholdPhone,
   revealUnitContact,
+  revealEscalatedPhone,
   revealRequesterPhone,
   setDuty,
   setEta,
@@ -126,6 +127,13 @@ export async function POST(request: Request) {
         if (!sos) return answer({ error: "bad_request" }, 400);
         // Logged by the database function itself, one line per look (safety rule 5).
         extra = { phone: await revealRequesterPhone(sos) };
+        break;
+      }
+      case "escalated_phone": {
+        // A case nobody has taken for 30 minutes, opened to every rescue team (27 Nov 2026).
+        // The database checks the caller and the case and logs the look.
+        if (!sos) return answer({ error: "bad_request" }, 400);
+        extra = { phone: await revealEscalatedPhone(sos) };
         break;
       }
       case "complete": {

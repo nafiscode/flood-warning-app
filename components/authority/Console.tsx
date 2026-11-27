@@ -13,6 +13,7 @@ import {
   type UnitActions,
 } from "@/components/authority/BoardView";
 import type { CaseActions } from "@/components/authority/CaseCard";
+import { EscalatedCases } from "@/components/authority/EscalatedCases";
 import { OtherView } from "@/components/authority/OtherView";
 import type {
   CoverageRow,
@@ -412,8 +413,25 @@ export function Console({
     />
   );
 
+  // Requests nobody has taken for 30 minutes, opened to every rescue team (27 Nov 2026): the
+  // point on the card, the number one logged tap away. Drawn first on a phone, and in the war
+  // room's own extras slot on a laptop. Nothing is drawn when there are none.
+  const escalated = (
+    <EscalatedCases
+      cases={board.escalated ?? []}
+      phones={phones}
+      busy={busy}
+      onPhone={(sos) =>
+        send({ action: "escalated_phone", sos }, sos, (answer) =>
+          setPhones((seen) => ({ ...seen, [sos]: answer.phone ?? null })),
+        )
+      }
+    />
+  );
+
   return (
     <>
+      {!warRoom && escalated}
       {/* The offer reaches this phone with the board closed once notifications are on (A7). */}
       {!warRoom && tools}
       {!warRoom && <PushCard place="team" />}
@@ -438,7 +456,12 @@ export function Console({
           onView={openView}
           other={otherView}
           tools={tools}
-          extras={<PushCard place="team" />}
+          extras={
+            <>
+              {escalated}
+              <PushCard place="team" />
+            </>
+          }
         />
       ) : (
         <BoardView

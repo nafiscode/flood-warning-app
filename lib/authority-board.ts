@@ -25,6 +25,7 @@ import type {
   TeamReport,
   UnitContact,
 } from "@/lib/coverage";
+import { toEscalated, type EscalatedCase } from "@/lib/escalated";
 import { createClient } from "@/lib/supabase/server";
 
 type Row = Record<string, unknown>;
@@ -101,8 +102,32 @@ export async function readAuthorityBoard(userId: string, hours = 72): Promise<Au
     const byId = new Map(((names as Row[]) ?? []).map((r) => [String(r.id), String(r.unit_name)]));
     for (const c of cases) c.offeredToName = c.offeredTo ? (byId.get(c.offeredTo) ?? null) : null;
   }
-  const { crew, assignments } = await readCrew(supabase, units);
-  return { cases, units, crew, assignments, readAt: new Date().toISOString() };
+  const [{ crew, assignments }, escalated] = await Promise.all([
+    readCrew(supabase, units),
+    readEscalated(supabase),
+  ]);
+  return { cases, units, crew, assignments, escalated, readAt: new Date().toISOString() };
+}
+
+/**
+ * The requests no team has taken for 30 minutes, outside the caller's own coverage (owner, 27 Nov
+ * 2026). The database refuses anyone who is not the owner or a dispatcher of a verified rescue
+ * team; for them, and on any fault, the answer is an empty list and the board is as it was.
+ */
+async function readEscalated(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<EscalatedCase[]> {
+  const { data, error } = await supabase.rpc("authority_escalated_cases");
+  if (error || !Array.isArray(data)) return [];
+  return (data as Row[]).map(toEscalated);
+}
+
+/** The sender's number for one case opened to every team: logged by the database on each look. */
+export async function revealEscalatedPhone(sosId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("reveal_escalated_sos_phone", { p_sos_id: sosId });
+  if (error) throw new Error(error.message);
+  return typeof data === "string" && data !== "" ? data : null;
 }
 
 /**

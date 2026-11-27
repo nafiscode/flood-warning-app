@@ -1,3 +1,5 @@
+import type { EscalatedCase } from "@/lib/escalated";
+
 /**
  * The authority console's own arithmetic (spec 5.2). Pure, so the console's behaviour is decided
  * by tested functions: what state a case is in, how long is left on an offer, how a case is
@@ -251,6 +253,11 @@ export type AuthorityBoard = {
   crew: CrewMember[];
   /** Who holds which open case, across the caller's teams. */
   assignments: CaseAssignment[];
+  /**
+   * Requests nobody has taken for 30 minutes, outside this team's own coverage, opened to every
+   * rescue team (owner, 27 Nov 2026). Absent for a team that is not a rescue team.
+   */
+  escalated?: EscalatedCase[];
   readAt: string;
 };
 
