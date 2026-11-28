@@ -67,7 +67,7 @@ describe("push_tick_owed", () => {
     );
     await db.query("insert into sos_claims (sos_id, unit_id) values ($1, $2)", [
       w.yalaSos,
-      w.yalaRescue,
+      w.yalaRescue.id,
     ]);
     expect(await owed(QUIET)).toBe(false);
     // The ten-minute net still reaches it.
