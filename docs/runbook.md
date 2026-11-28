@@ -132,6 +132,7 @@ marks as upcoming).
   turned off (admins on the iPhone home-screen app stop being signed out) and gives daily backups.
   A separate paid `jaga-live` project is optional then (tracker walkthrough 7 keeps the steps).
 - `/admin/plans` shows the same for Supabase (size, egress, the provider's Disk IO warning) with the heaviest tables and the cron list, and pushes the super admin at "Upgrade now". The nightly snapshot also keeps `cron.job_run_details` to seven days: it was never cleared, and the every-minute jobs write to it all day.
+- The full RLS suite (about 4 hours, tens of thousands of small transactions) and the full e2e run are **left to CI**: on the free instance they are the likeliest cause of a burst that drains the Disk IO budget (decision 2026-11-28). On the laptop run one RLS file, with the owner's yes; before a heavy run, look at Supabase → Reports → Database → Disk IO, and stop if the budget is already low.
 - **Never run `npm run db:reset`, the full e2e suite or the RLS suite against `jaga-dev` after launch**
   without asking: it is the live database now.
 

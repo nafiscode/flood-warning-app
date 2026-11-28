@@ -1777,3 +1777,12 @@ The owner asked whether an idea that arrives away from the laptop can be given t
 - **`docs/state.md` is new**: a short public, personal-free summary of where things stand, for a session that has only the repository. `CLAUDE.local.md` stays on the laptop and is not duplicated there.
 - Walkthrough 11 on the progress tracker (part 135) has the eight steps, including the GitHub permission screen - one repository, code and pull requests only, never the private `jaga-data`.
 - Reason: ideas should not have to wait for the owner to be at the laptop, and life-safety code should not reach the public from a session that cannot run its tests. A pull request satisfies both.
+
+## 2026-11-28 - The full RLS suite and e2e run are left to CI; the laptop runs one file at a time
+
+The owner asked what eats the Supabase and Vercel free plans. Measured on `jaga-dev` (read-only, `pg_stat_statements` since 28 Sep and `pg_stat_io` since 25 Aug): the steady load is small, about 60 MB of writes a day from the two biggest jobs (`gauges_fetch` every 15 minutes, `signals_fetch` hourly) and about 5 GB written in total in 95 days, which cannot by itself drain the free instance's disk budget. What is large is bursts: the RLS suite created 51,818 test users and hundreds of delete-and-reinsert transactions on `safe_places`, in runs of about 4 hours. The cron "job startup timeout" failures of 27 Nov (03:40 to 08:40 Bangkok) fit a burst; what ran then was not established, so this is a likely cause, not a proven one. The Disk IO chart in Supabase is the real evidence and has not been read yet.
+
+Chosen by the owner ("yes to A"): **the full RLS suite and the full e2e run are no longer run against `jaga-dev`; CI runs them on a throwaway database.** On the laptop, one RLS file at a time and only with the owner's yes for that session (the earlier rule); before a heavy run, look at the Disk IO chart. Policy only, no code.
+
+- Corrects an earlier line in the 2026-11-27 free-plans entry: the cron run log is about 5% of the writes, not "a likely cause" of the warning. Trimming it stays, because it was never cleared.
+- Two drafts follow from the same look and wait for the owner's yes, kept on the branch `draft/push-tick-and-gauges` and not in `supabase/migrations/`, so no `db:push` can apply them by accident: B (`push_tick` knocks when something is owed, with a ten-minute safety net) and C (`gauges_fetch` skips unchanged readings).
