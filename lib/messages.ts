@@ -279,6 +279,10 @@ export function layoutMessages(messages: AbstractIntlMessages): AbstractIntlMess
     // The level names for the badge, and the drill mark's three lines: the bell is where a sent
     // drill is read, and without them next-intl prints the key path (the owner saw it, 21 Oct).
     alert: { level: (all.alert as Messages).level!, drill: (all.alert as Messages).drill! },
+    // The flood scene a bank-reached notice opens from the bell (BankScene -> FloodScene): its
+    // one group of "map". Without it next-intl printed "map.gauge.scene.title" and the rest in
+    // place of the words (the owner's phone, 28 Nov 2026).
+    map: { gauge: { scene: ((all.map as Messages).gauge as Messages).scene! } },
     // The guide tour: the words of every page's steps (24 Oct 2026).
     guide: all.guide!,
     // The laptop header's "For rescue teams" (23 Oct): one phrase of the home flow's words.
